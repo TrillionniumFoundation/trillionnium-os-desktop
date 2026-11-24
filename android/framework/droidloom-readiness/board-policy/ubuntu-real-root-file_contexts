@@ -51,3 +51,22 @@
 /etc/selinux/droidloom/seusers -- u:object_r:p4_linux_board_selinux_config_t:s0
 /etc/selinux/droidloom/contexts/default_contexts -- u:object_r:p4_linux_board_selinux_config_t:s0
 /usr/lib/systemd/system/(sssd\.service|sssd-nss\.(service|socket)) -- u:object_r:p4_linux_identity_unit_file_t:s0
+
+# Keep native libselinux path lookup consistent with the board's original
+# held runtime inodes. Restrict directory rules so private/notify socket
+# automatic transitions and service-specific runtime types stay separate.
+/run -d u:object_r:p4_linux_run_t:s0
+/run/systemd -d u:object_r:p4_linux_systemd_run_t:s0
+/run/systemd/(system|units|mount-rootfs|inaccessible|propagate)(/.*)? -d u:object_r:p4_linux_systemd_run_t:s0
+/run/systemd/journal -d u:object_r:p4_linux_journal_runtime_t:s0
+/run/systemd/temporary-credentials -d u:object_r:p4_linux_credential_staging_t:s0
+/run/credentials -d u:object_r:p4_linux_credentials_root_t:s0
+/run/(credentials|systemd/temporary-credentials)/systemd-journald\.service -d u:object_r:p4_linux_journal_credentials_t:s0
+/run/log -d u:object_r:p4_linux_volatile_log_root_t:s0
+/run/log/journal -d u:object_r:p4_linux_volatile_journal_store_t:s0
+/run/udev -d u:object_r:p4_linux_udev_run_t:s0
+/run/udev/data -d u:object_r:p4_linux_udev_state_t:s0
+
+# Only the normal native PID 1 configuration fragment directories and files.
+/(etc|run|usr/lib)/systemd/system\.conf\.d -d u:object_r:p4_linux_systemd_config_t:s0
+/(etc|run|usr/lib)/systemd/system\.conf\.d/[^/]+\.conf -- u:object_r:p4_linux_systemd_config_t:s0

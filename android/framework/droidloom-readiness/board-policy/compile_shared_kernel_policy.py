@@ -217,6 +217,29 @@ def verify_host_control(library, binary, export):
     check(helper, kernel, "security", ["load_policy", "setenforce", "setbool"], False)
 
     verify_public_apk_payload(check, obj, client, broker)
+
+    # The native manager's actual FSCREATE and runtime-directory contract.
+    check(manager, manager, "process", ["setfscreate"], True)
+    check(manager, manager, "process", ["setcurrent", "dyntransition"], False)
+    check(manager, kernel, "security", ["load_policy", "setenforce", "setbool"], False)
+    check(manager, obj("p4_linux_systemd_run_t"), "dir",
+          ["getattr", "open", "read", "search", "create", "write", "add_name", "remove_name"], True)
+    check(manager, obj("p4_linux_systemd_run_t"), "dir", ["relabelfrom", "relabelto"], False)
+    check(manager, obj("p4_linux_rootdir_t"), "dir",
+          ["create", "write", "add_name", "remove_name", "relabelfrom", "relabelto"], False)
+    check(manager, obj("p4_linux_etc_dir_t"), "dir", ["getattr", "open", "read", "search", "watch"], True)
+    check(manager, obj("p4_linux_etc_dir_t"), "dir", ["write", "add_name", "remove_name"], False)
+    check(manager, obj("p4_linux_systemd_config_t"), "dir", ["getattr", "open", "read", "search"], True)
+    check(manager, obj("p4_linux_systemd_config_t"), "dir", ["create", "write", "add_name", "remove_name"], False)
+    check(manager, obj("p4_linux_systemd_config_t"), "file", ["getattr", "open", "read"], True)
+    check(manager, obj("p4_linux_systemd_config_t"), "file", ["create", "write", "append", "setattr"], False)
+    check(manager, obj("p4_linux_credentials_root_t"), "dir", ["getattr", "open", "read", "search"], True)
+    check(manager, obj("p4_linux_credentials_root_t"), "dir", ["create", "write", "add_name", "remove_name", "setattr"], False)
+    for subject in [helper, client, broker, loader]:
+        check(subject, subject, "process", ["setfscreate"], False)
+    for subject in ["u:r:init:s0", "u:r:untrusted_app:s0"]:
+        check(subject, obj("p4_linux_systemd_run_t"), "dir", ["open", "read", "search", "create", "write"], False)
+
     lines = export_binary_policy(policy, binary, export)
     transitions = [
         "(typetransition droidloom_public_control_client tmpfs file droidloom_public_apk_payload)",
@@ -274,6 +297,7 @@ def main():
         "early-readiness-inode-owner.cil", "linux-host-service-roles.cil",
         "linux-initial-calibration.cil", "protected-device-readiness-target.cil", "orderly-android-shutdown.cil",
         "ubuntu-real-root-interpreter.cil", "ubuntu-mounted-api-metadata.cil",
+        "ubuntu-native-pid1-startup.cil",
         "ubuntu-core-cgroup-ownership.cil", "ubuntu-native-services.cil",
         "frontend-android-interface.cil", "linux-frontend-observer.cil", "instance-launcher.cil",
         "linux-query-owner.cil", "linux-fixed-metadata-observer.cil",

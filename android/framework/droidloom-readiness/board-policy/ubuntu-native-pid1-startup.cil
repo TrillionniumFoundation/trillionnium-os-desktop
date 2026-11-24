@@ -1,0 +1,25 @@
+; The original Ubuntu PID 1 uses the native libselinux FSCREATE API before
+; mkdir/symlink, including paths that already exist. The target inode checks
+; still decide which dedicated native type it may create. This is not a
+; permission to relabel existing objects or mutate the loaded policy.
+(allow init_t self (process (setfscreate)))
+(neverallow init_t self (process (setcurrent dyntransition)))
+
+; The timezone event source opens the immutable /etc directory before adding
+; its existing read/watch permission. Configuration fragments are confined
+; to the same fixed systemd configuration type as system.conf itself.
+(allow init_t p4_linux_etc_dir_t (dir (open)))
+(allow init_t p4_linux_systemd_config_t (dir (getattr search open read)))
+(neverallow init_t p4_linux_systemd_config_t (dir (create write add_name remove_name setattr relabelto relabelfrom)))
+
+; The board already creates and labels these two root-owned directories before
+; policy load. PID 1 can discover its inherited credentials without gaining
+; mutation access to either root or another service's private payload.
+(allow init_t p4_linux_credentials_root_t (dir (getattr search open read)))
+(allow init_t p4_linux_credential_staging_t (dir (getattr search)))
+(neverallow init_t p4_linux_credentials_root_t (dir (write add_name remove_name setattr)))
+(neverallow init_t p4_linux_credential_staging_t (dir (write add_name remove_name setattr)))
+
+; The generic root and private Android/production inodes remain outside the
+; native manager's creation authority even when a caller requests FSCREATE.
+(neverallow init_t p4_linux_rootdir_t (dir (create write add_name remove_name relabelto relabelfrom)))

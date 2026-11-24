@@ -236,10 +236,18 @@ pub fn run(config: &Path, expected: &str) -> Result<()> {
     // Original PID 1 emits successful process-exit records only at DEBUG.
     // Calibration collection requires those trusted fields; ordinary Android
     // acceptance uses its native live lifecycle and keeps the normal log level.
-    let (unit, manager_log_level) = if prepared["calibration_requested"] == true {
-        ("droidloom-calibration-qualification.target", "debug")
+    // The admitted kernel applies sysctl.* before its first userspace init.
+    // Its audit printk fallback otherwise shares the 10-record / 5s limiter
+    // with the complete AppArmor profile load, hiding the first native AVCs.
+    let (unit, manager_log_level, audit_diagnostics) = if prepared["calibration_requested"] == true
+    {
+        (
+            "droidloom-calibration-qualification.target",
+            "debug",
+            " sysctl.kernel.printk_ratelimit=0",
+        )
     } else {
-        ("graphical.target", "info")
+        ("graphical.target", "info", "")
     };
     let uuid = prepared["root_filesystem_uuid"]
         .as_str()
@@ -249,7 +257,7 @@ pub fn run(config: &Path, expected: &str) -> Result<()> {
         "invalid root UUID",
     )?;
     let cmdline = format!(
-        "console=ttyS0,115200 root=UUID={uuid} rootfstype=ext4 rw rootwait loglevel=7 enforcing=1 audit_backlog_limit=32768 lsm=lockdown,capability,landlock,yama,selinux,apparmor,bpf,ima,evm audit=1 init=/usr/lib/droidloom/production/current/droidloom-board-init systemd.unit={unit} systemd.log_target=journal-or-kmsg systemd.show_status=1 systemd.log_level={manager_log_level}"
+        "console=ttyS0,115200 root=UUID={uuid} rootfstype=ext4 rw rootwait loglevel=7 enforcing=1 audit_backlog_limit=32768 lsm=lockdown,capability,landlock,yama,selinux,apparmor,bpf,ima,evm audit=1 init=/usr/lib/droidloom/production/current/droidloom-board-init systemd.unit={unit} systemd.log_target=journal-or-kmsg systemd.show_status=1 systemd.log_level={manager_log_level}{audit_diagnostics}"
     );
     let mut args = launch.fixed_args();
     args.extend(vec![
