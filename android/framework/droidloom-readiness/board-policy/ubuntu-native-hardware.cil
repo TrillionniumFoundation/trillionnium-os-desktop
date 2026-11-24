@@ -24,6 +24,8 @@
 (type p4_linux_hardware_label_t)
 (roletype system_r p4_linux_hardware_label_t)
 (typeattributeset p4_linux_procs (p4_linux_hardware_label_t))
+(typeattributeset p4_handle_owner (p4_linux_hardware_label_t))
+(typeattributeset p4_native_dev_root_traversers (p4_linux_hardware_label_t))
 (typeattributeset p4_native_device_directory_relabelers (p4_linux_hardware_label_t))
 (typetransition p4_linux_udev_t droidloom_container_entry_exec_t process p4_linux_hardware_label_t)
 (allow p4_linux_udev_t droidloom_container_entry_exec_t (file (getattr open read execute map)))
