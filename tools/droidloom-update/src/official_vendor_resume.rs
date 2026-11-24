@@ -269,6 +269,7 @@ pub(crate) fn run(
     )?;
     native_receipt.check()?;
     vendor_receipt.check()?;
+    crate::assemble::prepare_vendor_build_tools(repo, work, jobs)?;
     let bridge = check_bridge(&archive.path, &out.join("native-vendor-inputs"), &inputs)?;
     // Keep the original native source receipt and archive. The new vendor phase
     // consumes that checked binary input and normally rebuilds changed targets.
