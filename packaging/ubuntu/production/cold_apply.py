@@ -15,7 +15,11 @@ import os
 import re
 from pathlib import Path
 import stat
+import subprocess
+import signal
 import sys
+import tarfile
+import tempfile
 import time
 from release import (
     Rejected, STORE, HOST_ACL_MEMBER, need, exact, digest, canonical, f9,
@@ -115,8 +119,9 @@ def load_inputs(bundle,release_id):
     intent,_=read_json_file(bundle/"COLD-INTENT.json",2*1024*1024,True,{0o444})
     need(intent["root_uuid"]==ROOT_UUID and intent["original_kernel"]==ORIGINAL_KERNEL,
          "cold target identity")
-    entries={};packages={};controls={};directories={}
+    entries={};packages={};controls={};directories={};audit_scopes={}
     for role in PUBLIC_ORDER:
+        role_files={};role_directories={}
         result,_=read_json_file(bundle/(role+"-result.json"),2*1024*1024,True,{0o444})
         need(result["normal_build_exit_code"]==0 and result["physical_install"] is False and
              result["runtime_qualified"] is False,"completed normal candidate component")
@@ -133,7 +138,8 @@ def load_inputs(bundle,release_id):
                  "normal host source")
             rows=[{"path":r["path"],"bytes":r["size"],"sha256":r["sha256"],"mode":r["mode"]}
                   for r in manifest["files"]]
-            for row in manifest["directories"]:directories[row["path"]]=row["mode"]
+            for row in manifest["directories"]:
+                directories[row["path"]]=row["mode"];role_directories[row["path"]]=row["mode"]
         else:
             ip=file_pin(bundle/(role+"-inventory.json"))
             need((ip["bytes"],ip["sha256"])==(result["inventory"]["bytes"],result["inventory"]["sha256"]),
@@ -159,12 +165,102 @@ def load_inputs(bundle,release_id):
                      rel.startswith("var/lib/droidloom/cohorts/"+COHORT+"/") or
                      rel.startswith("var/lib/droidloom/runtime-cohorts/"+RUNTIME+"/"),
                      "exact public Android cohort; no userdata")
-            entries[rel]=dict(row,role=role)
+            entries[rel]=dict(row,role=role);role_files[rel]=dict(row)
             parts=rel.split("/")
-            for count in range(1,len(parts)):directories.setdefault("/".join(parts[:count]),0o755)
+            for count in range(1,len(parts)):
+                parent="/".join(parts[:count])
+                directories.setdefault(parent,0o755);role_directories.setdefault(parent,0o755)
+        for rel in list(role_directories):
+            parts=rel.split("/")
+            for count in range(1,len(parts)):
+                parent="/".join(parts[:count])
+                directories.setdefault(parent,0o755);role_directories.setdefault(parent,0o755)
+        audit_scopes[role]={"files":role_files,"directories":role_directories}
     need(0<len(entries)<=MAX_FILES and sum(r["bytes"] for r in entries.values())<=MAX_BYTES,
          "whole normal public transaction bound")
-    return intent,entries,directories,packages,controls
+    return intent,entries,directories,packages,controls,audit_scopes
+
+
+def package_payload(pin,scope,workdir):
+    """Read the real Debian data stream before dpkg may mutate the root.
+
+    The uncompressed tar is an anonymous, mode-0600 temporary file under the
+    protected transaction. Its byte/deadline bounds are independent of the
+    caller result JSON. No archive member is extracted or executed here.
+    """
+    expected=scope["files"];directories=scope["directories"]
+    limit=MAX_BYTES+MAX_FILES*4096+4*1024*1024
+    started=time.monotonic()
+    with held(pin["path"],root=True,modes={0o444}) as (source,original), \
+         tempfile.TemporaryFile(dir=workdir) as data, \
+         tempfile.TemporaryFile(dir=workdir) as errors:
+        need(original.st_size==pin["bytes"] and hash_fd(source)==pin["sha256"],
+             "original public Debian bytes before payload audit")
+        os.lseek(source,0,os.SEEK_SET)
+        child=subprocess.Popen(["/usr/bin/dpkg-deb","--fsys-tarfile",f"/proc/self/fd/{source}"],
+              stdin=subprocess.DEVNULL,stdout=data,stderr=errors,close_fds=True,
+              pass_fds=(source,),start_new_session=True,
+              env={"PATH":"/usr/bin:/bin","LC_ALL":"C"})
+        deadline=time.monotonic()+300
+        try:
+            while child.poll() is None:
+                need(time.monotonic()<deadline,"normal Debian payload reader deadline")
+                need(os.fstat(data.fileno()).st_size<=limit and
+                     os.fstat(errors.fileno()).st_size<=1024*1024,
+                     "normal Debian payload reader output bound")
+                time.sleep(0.05)
+            need(child.wait()==0,"normal Debian data reader failed")
+        finally:
+            if child.poll() is None:
+                os.killpg(child.pid,signal.SIGKILL);child.wait(timeout=5)
+        length=os.fstat(data.fileno()).st_size
+        need(1024<=length<=limit and os.fstat(errors.fileno()).st_size<=1024*1024,
+             "complete bounded Debian data stream")
+        data.seek(0);seen=set();seen_dirs=set();total=0;count=0
+        with tarfile.open(fileobj=data,mode="r:") as archive:
+            for entry in archive:
+                count+=1;need(count<=2*MAX_FILES+64,"normal Debian member count")
+                rel=entry.name[2:] if entry.name.startswith("./") else entry.name
+                if entry.isdir():rel=rel.rstrip("/")
+                if rel==".":rel=""
+                need(entry.uid==entry.gid==0 and not entry.pax_headers and
+                     not entry.issparse() and not entry.linkname,
+                     "Debian payload has unexpected ownership or extension")
+                if entry.isdir():
+                    need(rel not in seen_dirs and entry.size==0 and
+                         ((rel=="" and entry.mode==0o755) or
+                          (rel in directories and entry.mode==directories[rel])),
+                         "Debian directory differs from the normal inventory")
+                    seen_dirs.add(rel);continue
+                public_relative(rel)
+                need(entry.isfile() and rel in expected and rel not in seen,
+                     "unlisted, duplicate or nonregular Debian payload")
+                row=expected[rel]
+                need(entry.size==row["bytes"] and entry.mode==row["mode"],
+                     "Debian public payload metadata differs")
+                total+=entry.size;need(total<=MAX_BYTES,"Debian public payload bytes")
+                body=archive.extractfile(entry);need(body is not None,"Debian body unavailable")
+                checksum=hashlib.sha256();read=0
+                while True:
+                    block=body.read(1024*1024)
+                    if not block:break
+                    read+=len(block);need(read<=entry.size,"Debian body grew")
+                    checksum.update(block)
+                need(read==entry.size and checksum.hexdigest()==row["sha256"],
+                     "Debian body differs from the original normal inventory")
+                seen.add(rel)
+            end=archive.offset
+        need(seen==set(expected) and seen_dirs==set(directories)|{""},
+             "Debian payload omitted normal files or directories")
+        data.seek(end)
+        while True:
+            tail=data.read(1024*1024)
+            if not tail:break
+            need(not any(tail),"nonzero data after normal Debian archive terminator")
+        need(f9(os.fstat(source))==f9(original),"Debian package changed during payload audit")
+        return {"package_sha256":pin["sha256"],"files":len(seen),
+                "directories":len(seen_dirs)-1,"body_bytes":total,
+                "data_stream_bytes":length,"elapsed_seconds":time.monotonic()-started}
 
 class PublicTransaction:
     """Actual dpkg public phase; CLI owns the cold/qualification authority gate.
@@ -180,7 +276,7 @@ class PublicTransaction:
             self.root=Path(root);self.bundle=Path(bundle);self.release_id=digest(release_id)
             s=self.root.lstat();need(stat.S_ISDIR(s.st_mode) and s.st_uid==s.st_gid==0,"root directory ownership")
             self.root_device=s.st_dev
-            self.intent,self.files,self.directories,self.packages,self.controls=load_inputs(self.bundle,release_id)
+            self.intent,self.files,self.directories,self.packages,self.controls,self.audit_scopes=load_inputs(self.bundle,release_id)
             state=ensure_private_state(self.root)
             # One original cold transaction, across every release; also honor
             # the standard frontend lock while the actual dpkg child operates.
@@ -214,6 +310,7 @@ class PublicTransaction:
                 (self.path/"backups").mkdir(mode=0o700)
                 self.snapshot=None
             self.journal=self.path/"journal.jsonl"
+            self._payload_audited=False
         except BaseException:
             self._owned.close();raise
 
@@ -271,8 +368,16 @@ class PublicTransaction:
             if lines.get("Package")==name:
                 need(lines.get("Status","").split()[-1:]==["not-installed"],"existing package version requires a separate admitted upgrade transaction")
 
+    def audit_payloads(self):
+        if self._payload_audited:return
+        for role in PUBLIC_ORDER:
+            result=package_payload(self.packages[role],self.audit_scopes[role],self.path)
+            self.event("public-package-payload-verified",role=role,**result)
+        self._payload_audited=True
+
     def capture(self):
         need(self.snapshot is None,"transaction already snapshotted")
+        self.audit_payloads()
         for name in NAMES.values():self.package_absent(name)
         dirs={};leaves={};budget=0
         for rel in sorted(self.directories,key=lambda x:(x.count("/"),x)):
@@ -346,12 +451,66 @@ class PublicTransaction:
             need(list(f9((self.root/path.lstrip("/")).lstat()))==original,
                  "account/SSH/home metadata changed during public transaction")
 
-    def restore_directory_metadata(self):
+    def recreated_directories(self):
+        result={}
+        if not self.journal.exists():return result
+        with held(self.journal,root=True,modes={0o600},maximum=16*1024*1024) as (fd,st):
+            raw=os.read(fd,st.st_size+1);need(len(raw)==st.st_size,"complete owned transaction journal")
+        for line in raw.splitlines():
+            value=json_bytes(line)
+            need(value.get("release_id")==self.release_id,"journal release identity")
+            if value.get("phase")!="rollback-directory-created":continue
+            exact(value,("phase","release_id","monotonic_ns","path","original_identity","identity"),
+                  "owned recreated directory event")
+            rel=public_relative(value["path"]);row=self.snapshot["directories"].get(rel)
+            identity=value["identity"]
+            need(row is not None and row["existed"] and rel not in result and
+                 value["original_identity"]==row["identity"][:2] and
+                 isinstance(identity,list) and len(identity)==9 and
+                 identity[0]==self.root_device and identity[1]>0 and
+                 stat.S_ISDIR(identity[2]) and identity[3:5]==[0,0] and
+                 type(value["monotonic_ns"]) is int and value["monotonic_ns"]>0,
+                 "recreated directory must belong to this original snapshot")
+            result[rel]=identity[:2]
+        return result
+
+    def recreate_original_directories(self):
+        owned=self.recreated_directories()
+        for rel,row in sorted(self.snapshot["directories"].items(),
+                              key=lambda x:(x[0].count("/"),x[0])):
+            if not row["existed"]:continue
+            parent,_,leaf=rel.rpartition("/")
+            with self.directory(parent) as parent_fd:
+                try:fd=os.open(leaf,os.O_RDONLY|os.O_DIRECTORY|os.O_CLOEXEC|os.O_NOFOLLOW,dir_fd=parent_fd)
+                except FileNotFoundError:
+                    need(rel not in owned,"previously recreated directory disappeared")
+                    os.mkdir(leaf,0o700,dir_fd=parent_fd)
+                    fd=os.open(leaf,os.O_RDONLY|os.O_DIRECTORY|os.O_CLOEXEC|os.O_NOFOLLOW,dir_fd=parent_fd)
+                    try:
+                        st=os.fstat(fd)
+                        need(st.st_dev==self.root_device and st.st_uid==st.st_gid==0 and
+                             stat.S_IMODE(st.st_mode)==0o700,"new rollback directory identity")
+                        os.fsync(fd);os.fsync(parent_fd)
+                        self.event("rollback-directory-created",path=rel,
+                                   original_identity=row["identity"][:2],identity=list(f9(st)))
+                        owned[rel]=[st.st_dev,st.st_ino]
+                    except BaseException:
+                        os.close(fd);raise
+                try:
+                    st=os.fstat(fd)
+                    need([st.st_dev,st.st_ino]==owned.get(rel,row["identity"][:2]),
+                         "unknown directory replacement blocks public rollback")
+                finally:os.close(fd)
+        return owned
+
+    def restore_directory_metadata(self,*,owned=None):
+        owned={} if owned is None else owned
         for rel,row in sorted(self.snapshot["directories"].items(),key=lambda x:x[0].count("/")):
             if not row["existed"]:continue
             with self.directory(rel) as fd:
                 s=os.fstat(fd);before=row["identity"]
-                need([s.st_dev,s.st_ino]==before[:2],"original public parent directory replaced")
+                need([s.st_dev,s.st_ino]==owned.get(rel,before[:2]),
+                     "original public parent directory replaced")
                 os.fchown(fd,before[3],before[4]);os.fchmod(fd,stat.S_IMODE(before[2]))
                 restore_xattrs(fd,row["xattrs"]);os.fsync(fd)
 
@@ -404,6 +563,7 @@ class PublicTransaction:
 
     def restore_files(self):
         self.validate_snapshot()
+        owned=self.recreate_original_directories()
         for index,(rel,row) in enumerate(sorted(self.snapshot["files"].items())):
             parent,_,leaf=rel.rpartition("/")
             if not row["existed"]:
@@ -422,11 +582,6 @@ class PublicTransaction:
                         os.unlink(leaf,dir_fd=d);os.fsync(d)
                     finally:os.close(fd)
                 continue
-            # Recreate only the fixed original directories from this snapshot.
-            for count in range(1,len(rel.split("/"))):
-                prefix="/".join(rel.split("/")[:count])
-                if not absolute_under(self.root,prefix).exists():
-                    absolute_under(self.root,prefix).mkdir(mode=0o700)
             with self.directory(parent) as d:
                 try:current=os.open(leaf,os.O_RDONLY|os.O_CLOEXEC|os.O_NOFOLLOW,dir_fd=d)
                 except FileNotFoundError:current=None
@@ -453,7 +608,7 @@ class PublicTransaction:
                     restore_xattrs(fd,row["xattrs"]);os.fsync(fd)
                 finally:os.close(fd)
                 os.rename(temporary,leaf,src_dir_fd=d,dst_dir_fd=d);os.fsync(d)
-        self.restore_directory_metadata()
+        self.restore_directory_metadata(owned=owned)
         for rel,row in sorted(self.snapshot["directories"].items(),key=lambda x:-x[0].count("/")):
             if row["existed"]:continue
             try:absolute_under(self.root,rel).rmdir()
@@ -466,6 +621,7 @@ class PublicTransaction:
 
     def rollback(self):
         need(self.snapshot is not None,"rollback needs the original durable snapshot")
+        self.audit_payloads()
         self.preserved()
         # Check before dpkg is allowed to unlink a leaf. A different public
         # update or a changed file is preserved and requires reconciliation.
