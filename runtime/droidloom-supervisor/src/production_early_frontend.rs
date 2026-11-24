@@ -5,6 +5,7 @@ use super::{EarlyBoardResources, invalid};
 use crate::production_execution::RuntimeMacOwner;
 #[path = "production_frontend_observation.rs"]
 mod observation;
+pub(crate) use observation::{QueryObservation, observe_query};
 #[path = "production_frontend_protocol.rs"]
 mod wire;
 use std::ffi::{CStr, CString};

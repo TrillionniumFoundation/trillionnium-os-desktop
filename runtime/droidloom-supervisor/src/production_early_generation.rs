@@ -404,8 +404,10 @@ impl EarlyBoardResources {
                 .map_err(io::Error::other)?;
         let saved: Resources = serde_json::from_slice(&bytes)?;
         if record.node.mode & 0o7777 != 0o400
-            || !matches!((saved.schema.as_str(), &saved.device_source),
-                ("droidloom-early-resources-v1", None) | ("droidloom-early-resources-v2", Some(_)))
+            || !matches!(
+                (saved.schema.as_str(), &saved.device_source),
+                ("droidloom-early-resources-v1", None) | ("droidloom-early-resources-v2", Some(_))
+            )
             || saved.boot_id != generation.birth.boot_id
             || saved.host_pid != generation.birth.host_pid
             || saved.selection_sha256 != generation.birth.selection_sha256
@@ -478,7 +480,11 @@ impl EarlyBoardResources {
         &self.user
     }
     pub(crate) fn device_source_identity(&self) -> io::Result<(u64, u64, u64)> {
-        let source = self.saved.device_source.as_ref().ok_or_else(|| invalid("early device source missing from this generation"))?;
+        let source = self
+            .saved
+            .device_source
+            .as_ref()
+            .ok_or_else(|| invalid("early device source missing from this generation"))?;
         if source.device == 0 || source.inode != 1 || source.mount == 0 {
             return Err(invalid("incomplete early device filesystem identity"));
         }
@@ -622,7 +628,7 @@ mod tests {
 mod resources;
 pub(crate) use resources::{EarlyBaseAdmission, EarlyBoundNamespaces};
 
-#[path="production_early_retirement.rs"]
+#[path = "production_early_retirement.rs"]
 mod retirement;
 pub(crate) use retirement::{EarlyBaseRetirement, verify_exit};
 
@@ -630,6 +636,7 @@ pub(crate) use retirement::{EarlyBaseRetirement, verify_exit};
 mod application;
 pub(crate) use application::{EarlyApplicationAuthority, EarlyFrameworkObservation};
 
-#[path="production_early_lifecycle.rs"]
+#[path = "production_early_lifecycle.rs"]
 mod lifecycle;
 pub use lifecycle::complete_early_resources;
+pub(crate) use lifecycle::{QueryObservation, observe_query};

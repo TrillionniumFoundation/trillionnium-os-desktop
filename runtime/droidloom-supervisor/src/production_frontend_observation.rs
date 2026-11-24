@@ -13,7 +13,8 @@ use std::os::fd::{AsRawFd, FromRawFd, OwnedFd};
 use std::time::{Duration, Instant};
 
 const LIMIT: usize = 8192;
-const DESCRIPTORS: usize = 5;
+const DESCRIPTORS: usize = 9;
+const FRONTEND_DESCRIPTORS: usize = 5;
 const MAGIC: [u8; 8] = *b"DLPROCO1";
 const REAP_LIMIT: Duration = Duration::from_secs(2);
 const PIDFD_GET_INFO: libc::c_ulong = 0xc040ff0b;
@@ -198,9 +199,47 @@ pub(super) struct Observation {
     pub executable: File,
     pub namespaces: [File; 3], // user, pid, mnt
     pub root: File,
+    extra_namespaces: Option<[File; 4]>, // fixed query: ipc, uts, net, cgroup
     pub context: Vec<u8>,
     pub command: Vec<u8>,
     pub environment: Vec<u8>,
+}
+/// A fixed observation made only while the original query is held at TRACEEXEC.
+/// All descriptors came from its held proc directory and were admitted only
+/// after the zero-capability reader actually exited and was reaped.
+pub(crate) struct QueryObservation {
+    pub(crate) executable: File,
+    pub(crate) namespaces: [File; 7], // user, pid, mnt, ipc, uts, net, cgroup
+    pub(crate) root: File,
+    pub(crate) selinux: Vec<u8>,
+    pub(crate) apparmor: Vec<u8>,
+}
+pub(crate) fn observe_query(
+    directory: &File,
+    peer: &OwnedFd,
+    userns: &File,
+) -> io::Result<QueryObservation> {
+    let result = Observer::default().sample_mode(
+        directory,
+        peer,
+        Some(userns),
+        2000,
+        2000,
+        false,
+        c"attr/current",
+        true,
+    )?;
+    let [user, pid, mnt] = result.namespaces;
+    let [ipc, uts, net, cgroup] = result
+        .extra_namespaces
+        .ok_or_else(|| io::Error::other("query namespace observation incomplete"))?;
+    Ok(QueryObservation {
+        executable: result.executable,
+        namespaces: [user, pid, mnt, ipc, uts, net, cgroup],
+        root: result.root,
+        selinux: result.context,
+        apparmor: result.command,
+    })
 }
 #[derive(Default)]
 pub(super) struct Observer {
@@ -251,7 +290,39 @@ impl Observer {
         input: bool,
         context_path: &std::ffi::CStr,
     ) -> io::Result<Observation> {
+        self.sample_mode(
+            directory,
+            peer,
+            userns,
+            uid,
+            gid,
+            input,
+            context_path,
+            false,
+        )
+    }
+    #[allow(clippy::too_many_arguments)]
+    fn sample_mode(
+        &mut self,
+        directory: &File,
+        peer: &OwnedFd,
+        userns: Option<&File>,
+        uid: u32,
+        gid: u32,
+        input: bool,
+        context_path: &std::ffi::CStr,
+        query: bool,
+    ) -> io::Result<Observation> {
         self.clean()?;
+        check(
+            !query || !input,
+            "query reader cannot request frontend environment",
+        )?;
+        let descriptor_count = if query {
+            DESCRIPTORS
+        } else {
+            FRONTEND_DESCRIPTORS
+        };
         super::procfs(directory)?;
         let before = OwnerCredentials::read()?;
         let peer_before = wire::pid_info(peer)?;
@@ -373,6 +444,8 @@ impl Observer {
                     uid,
                     gid,
                     input,
+                    query,
+                    descriptor_count,
                     context_path.as_ptr(),
                     receive.as_raw_fd(),
                     send.as_raw_fd(),
@@ -434,7 +507,7 @@ impl Observer {
                 "frontend observer retained capabilities outside its fixed reader role",
             )?;
             check(
-                descriptors.len() == DESCRIPTORS,
+                descriptors.len() == descriptor_count,
                 "frontend observation descriptor roles differ",
             )?;
             for length in packet.lengths {
@@ -449,6 +522,16 @@ impl Observer {
                     files.next().unwrap(),
                 ],
                 root: files.next().unwrap(),
+                extra_namespaces: if query {
+                    Some([
+                        files.next().unwrap(),
+                        files.next().unwrap(),
+                        files.next().unwrap(),
+                        files.next().unwrap(),
+                    ])
+                } else {
+                    None
+                },
                 context: packet.bytes[0][..packet.lengths[0] as usize]
                     .strip_suffix(&[0])
                     .unwrap_or(&packet.bytes[0][..packet.lengths[0] as usize])
@@ -473,6 +556,23 @@ impl Observer {
                         && unsafe { libc::ioctl(fd.as_raw_fd(), 0xb703 as libc::c_ulong) } == kind,
                     "frontend observation namespace role",
                 )?;
+            }
+            if let Some(extra) = &observation.extra_namespaces {
+                for (fd, kind) in extra.iter().zip([
+                    libc::CLONE_NEWIPC,
+                    libc::CLONE_NEWUTS,
+                    libc::CLONE_NEWNET,
+                    libc::CLONE_NEWCGROUP,
+                ]) {
+                    let mut fs: libc::statfs = unsafe { mem::zeroed() };
+                    cv(unsafe { libc::fstatfs(fd.as_raw_fd(), &mut fs) })?;
+                    check(
+                        fs.f_type == NSFS
+                            && unsafe { libc::ioctl(fd.as_raw_fd(), 0xb703 as libc::c_ulong) }
+                                == kind,
+                        "query observation namespace role",
+                    )?;
+                }
             }
             let after = wire::pid_info(peer)?;
             check(
@@ -761,6 +861,8 @@ unsafe fn child_read(
     uid: u32,
     gid: u32,
     input: bool,
+    query: bool,
+    descriptor_count: usize,
     context: *const libc::c_char,
     unused: i32,
     out: i32,
@@ -847,11 +949,15 @@ unsafe fn child_read(
             c"ns/pid".as_ptr(),
             c"ns/mnt".as_ptr(),
             c"root".as_ptr(),
+            c"ns/ipc".as_ptr(),
+            c"ns/uts".as_ptr(),
+            c"ns/net".as_ptr(),
+            c"ns/cgroup".as_ptr(),
         ];
         if error == 0 {
-            for i in 0..DESCRIPTORS {
+            for i in 0..descriptor_count {
                 let flags = libc::O_CLOEXEC
-                    | if i == 0 {
+                    | if i == 0 && !query {
                         libc::O_PATH
                     } else if i == 4 {
                         libc::O_PATH | libc::O_DIRECTORY
@@ -867,6 +973,14 @@ unsafe fn child_read(
         }
         if error == 0 {
             error = child_file(proc, context, &mut packet.bytes[0], &mut packet.lengths[0]);
+        }
+        if error == 0 && query {
+            error = child_file(
+                proc,
+                c"attr/apparmor/current".as_ptr(),
+                &mut packet.bytes[1],
+                &mut packet.lengths[1],
+            );
         }
         if error == 0 && input {
             error = child_file(
@@ -902,16 +1016,16 @@ unsafe fn child_read(
         if error == 0 {
             message.msg_control = ancillary.0.as_mut_ptr().cast();
             message.msg_controllen =
-                libc::CMSG_SPACE((DESCRIPTORS * mem::size_of::<i32>()) as u32) as usize;
+                libc::CMSG_SPACE((descriptor_count * mem::size_of::<i32>()) as u32) as usize;
             let header = libc::CMSG_FIRSTHDR(&message);
             (*header).cmsg_level = libc::SOL_SOCKET;
             (*header).cmsg_type = libc::SCM_RIGHTS;
             (*header).cmsg_len =
-                libc::CMSG_LEN((DESCRIPTORS * mem::size_of::<i32>()) as u32) as usize;
+                libc::CMSG_LEN((descriptor_count * mem::size_of::<i32>()) as u32) as usize;
             std::ptr::copy_nonoverlapping(
                 files.as_ptr(),
                 libc::CMSG_DATA(header).cast(),
-                DESCRIPTORS,
+                descriptor_count,
             );
         }
         let sent = libc::sendmsg(out, &message, libc::MSG_DONTWAIT | libc::MSG_NOSIGNAL);
@@ -963,6 +1077,46 @@ mod tests {
             "frontend observer eight real clone/read/SCM/waitid operations: {:?}",
             started.elapsed()
         );
+    }
+    #[test]
+    fn query_reader_returns_all_exact_namespaces_and_body_after_real_retirement() {
+        let directory = File::open("/proc/self").unwrap();
+        let before = OwnerCredentials::read().unwrap();
+        let executable = File::open("/proc/self/exe").unwrap();
+        let mut reader = Observer::default();
+        let got = reader
+            .sample_mode(
+                &directory,
+                &peer(),
+                None,
+                before.uids[0],
+                before.gids[0],
+                false,
+                c"attr/current",
+                true,
+            )
+            .unwrap();
+        assert_eq!(
+            Node::of(&got.executable).unwrap(),
+            Node::of(&executable).unwrap()
+        );
+        assert_eq!(
+            unsafe { libc::fcntl(got.executable.as_raw_fd(), libc::F_GETFL) } & libc::O_PATH,
+            0
+        );
+        for (fd, name) in got
+            .namespaces
+            .iter()
+            .chain(got.extra_namespaces.as_ref().unwrap())
+            .zip(["user", "pid", "mnt", "ipc", "uts", "net", "cgroup"])
+        {
+            let actual = File::open(format!("/proc/self/ns/{name}")).unwrap();
+            assert_eq!(Node::of(fd).unwrap(), Node::of(&actual).unwrap());
+        }
+        assert!(!got.context.is_empty() && !got.command.is_empty());
+        assert!(got.environment.is_empty());
+        reader.clean().unwrap();
+        assert_eq!(OwnerCredentials::read().unwrap(), before);
     }
     #[test]
     fn frontend_observer_rejects_wrong_scope_ids_and_missing_metadata_and_reaps() {

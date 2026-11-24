@@ -146,7 +146,7 @@ pub(super) fn connect(
     deadline: Instant,
 ) -> Result<()> {
     require(files.len() == 11, "fixed bridge descriptor count differs")?;
-    let init = validate_owner_descriptors(files, parent)?;
+    let init = validate_owner_descriptors(files, parent, QueryProjection::LegacyRoot)?;
     before(files, deadline)?;
     let endpoint = files[10].metadata()?;
     require(

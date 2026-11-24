@@ -3,6 +3,7 @@
 //! the complete bytes of its actual selected system counterpart. Only fixed
 //! root-relative components are opened; no packet supplies a binary pathname.
 use super::*;
+use crate::production_execution_profile::query_inputs as fixed;
 use sha2::{Digest, Sha256};
 use std::os::unix::fs::FileExt;
 
@@ -44,14 +45,13 @@ fn at(root: &File, path: &[&CStr]) -> Result<File> {
             libc::openat(
                 file.as_raw_fd(),
                 component.as_ptr(),
-                libc::O_RDONLY
-                    | libc::O_CLOEXEC
+                libc::O_CLOEXEC
                     | libc::O_NOFOLLOW
                     | libc::O_NONBLOCK
                     | if i + 1 < path.len() {
-                        libc::O_DIRECTORY
+                        libc::O_PATH | libc::O_DIRECTORY
                     } else {
-                        0
+                        libc::O_RDONLY
                     },
             )
         };
@@ -150,6 +150,14 @@ fn complete_hash(file: &File, expected: Node, deadline: Instant) -> Result<[u8; 
     Ok(hash.finalize().into())
 }
 
+fn original_metadata(node: Node, input: fixed::FixedQueryInput, uid: u32, gid: u32) -> bool {
+    node.mode == input.original_mode
+        && node.uid == uid
+        && gid.checked_add(input.original_gid) == Some(node.gid)
+        && node.links == 1
+        && node.bytes == input.bytes
+}
+
 fn private_role(root: &File, projection: QueryProjection, leaf: &CStr) -> Result<File> {
     match projection {
         QueryProjection::LegacyRoot => at(root, &[c".droidloom-query", leaf]),
@@ -165,12 +173,13 @@ pub(super) fn verify(
     root_gid: u32,
     deadline: Instant,
 ) -> Result<()> {
-    let original_label: &[u8] = match query.binary().to_bytes() {
-        b"cmd" => b"u:object_r:system_file:s0\0",
-        b"toybox" => b"u:object_r:toolbox_exec:s0\0",
-        b"app_process64" if query.needs_content_jar() => b"u:object_r:zygote_exec:s0\0",
+    let original_input = fixed::INPUTS[match query.binary().to_bytes() {
+        b"cmd" => 0,
+        b"toybox" => 1,
+        b"app_process64" if query.needs_content_jar() => 2,
         _ => return Err(reject("unknown fixed query executable role")),
-    };
+    }];
+    let original_label = original_input.original_label;
     let private_label = if query.needs_content_jar() {
         PROVIDER_LABEL
     } else {
@@ -188,12 +197,7 @@ pub(super) fn verify(
         "query executable descriptors are not distinct fixed original/private roles",
     )?;
     require(
-        source.mode & libc::S_IFMT == libc::S_IFREG
-            && source.mode & 0o6022 == 0
-            && source.mode & 0o111 != 0
-            && source.uid == root_uid
-            && source.gid == root_gid
-            && source.links > 0
+        original_metadata(source, original_input, root_uid, root_gid)
             && copy.mode == libc::S_IFREG | 0o555
             && copy.uid == root_uid
             && copy.gid == root_gid
@@ -225,7 +229,13 @@ pub(super) fn verify(
     )
 }
 
-fn verify_content_jar(files: &[File], projection: QueryProjection, uid: u32, gid: u32, deadline: Instant) -> Result<()> {
+fn verify_content_jar(
+    files: &[File],
+    projection: QueryProjection,
+    uid: u32,
+    gid: u32,
+    deadline: Instant,
+) -> Result<()> {
     let original = at(&files[2], &[c"system", c"framework", c"content.jar"])?;
     let private = private_role(&files[2], projection, c"content.jar")?;
     let source = identity(&original)?;
@@ -235,11 +245,7 @@ fn verify_content_jar(files: &[File], projection: QueryProjection, uid: u32, gid
             && copy == identity(&files[protocol::CONTENT_JAR])?
             && (source.dev, source.ino) != (copy.dev, copy.ino)
             && source.bytes == copy.bytes
-            && source.mode & libc::S_IFMT == libc::S_IFREG
-            && source.mode & 0o6133 == 0
-            && source.uid == uid
-            && source.gid == gid
-            && source.links > 0
+            && original_metadata(source, fixed::INPUTS[3], uid, gid)
             && copy.mode == libc::S_IFREG | 0o444
             && copy.uid == uid
             && copy.gid == gid
@@ -275,4 +281,34 @@ fn verify_content_jar(files: &[File], projection: QueryProjection, uid: u32, gid
         Instant::now() < deadline,
         "Contacts classpath verification deadline",
     )
+}
+
+#[cfg(test)]
+mod metadata_tests {
+    use super::*;
+    #[test]
+    fn worker_uses_the_original_shell_group_instead_of_private_root_ownership() {
+        let fixed = crate::production_execution_profile::query_inputs::INPUTS;
+        let file = tempfile::tempfile().unwrap();
+        for input in fixed {
+            let mut original = identity(&file).unwrap();
+            original.mode = input.original_mode;
+            original.uid = 200_000;
+            original.gid = 300_000 + input.original_gid;
+            original.links = 1;
+            original.bytes = input.bytes;
+            assert!(original_metadata(original, input, 200_000, 300_000));
+            let mut wrong = original;
+            wrong.gid = if input.original_gid == 0 {
+                302_000
+            } else {
+                300_000
+            };
+            assert!(!original_metadata(wrong, input, 200_000, 300_000));
+            wrong = original;
+            wrong.mode ^= 0o111;
+            assert!(!original_metadata(wrong, input, 200_000, 300_000));
+            assert!(!original_metadata(original, input, 200_000, u32::MAX));
+        }
+    }
 }

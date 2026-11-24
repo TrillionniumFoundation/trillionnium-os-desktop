@@ -544,7 +544,9 @@ impl ApplicationWorkerAuthority for EarlyApplicationAuthority<'_> {
                 && observed.pid != self.init.pid,
             "application pidfd is not this broker's direct child",
         )?;
-        let (uid, gid) = if query { self.mapped_root()? } else { (0, 0) };
+        // The query is parked before USER setns and credential changes. Only
+        // its PID namespace is already the selected Android namespace.
+        let (uid, gid) = (0, 0);
         require(
             [observed.ruid, observed.euid, observed.suid, observed.fsuid] == [uid; 4]
                 && [observed.rgid, observed.egid, observed.sgid, observed.fsgid] == [gid; 4],
@@ -556,14 +558,21 @@ impl ApplicationWorkerAuthority for EarlyApplicationAuthority<'_> {
             "created application child parent changed",
         )?;
         if query {
+            let own = self.process_dir(std::process::id())?;
             require(
-                self.same_guest(&directory)?,
-                "created query left its original Android generation",
+                identity(&proc_link(&directory, c"ns/user")?)?
+                    == identity(&proc_link(&own, c"ns/user")?)?,
+                "parked query changed its original host user namespace",
             )?;
             for ((name, _), held) in NS_NAMES.into_iter().zip(&self.namespaces) {
+                let expected = if name == c"ns/pid" {
+                    held.try_clone()?
+                } else {
+                    proc_link(&own, name)?
+                };
                 require(
-                    identity(&proc_link(&directory, name)?)? == identity(held)?,
-                    "created query namespace differs from the exact borrowed target",
+                    identity(&proc_link(&directory, name)?)? == identity(&expected)?,
+                    "parked query has changed namespace before its original trace owner",
                 )?;
             }
         }

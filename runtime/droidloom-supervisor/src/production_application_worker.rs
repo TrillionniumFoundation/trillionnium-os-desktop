@@ -239,12 +239,16 @@ fn node(file: &File) -> Result<(u64, u64)> {
     Ok((m.dev(), m.ino()))
 }
 
-fn validate_owner_descriptors(files: &[File], parent: libc::pid_t) -> Result<PidfdInfo> {
+fn validate_owner_descriptors(
+    files: &[File],
+    parent: libc::pid_t,
+    projection: QueryProjection,
+) -> Result<PidfdInfo> {
     require(files.len() >= 10, "original owner descriptor prefix absent")?;
     let init = pidfd_info(&files[0])?;
     let broker = pidfd_info(&files[1])?;
     require(
-        init.ppid == parent as u32
+        (projection == QueryProjection::EarlyDev || init.ppid == parent as u32)
             && broker.pid == parent as u32
             && init.ruid == init.euid
             && init.ruid == init.suid
@@ -271,21 +275,36 @@ fn validate_owner_descriptors(files: &[File], parent: libc::pid_t) -> Result<Pid
                 && unsafe { libc::ioctl(files[index].as_raw_fd(), 0xb703_u64) } == kind,
             "application namespace descriptor has wrong type",
         )?;
-        let current = unsafe {
-            libc::ioctl(
-                files[0].as_raw_fd(),
-                command as libc::c_ulong,
-                0 as libc::c_ulong,
-            )
-        };
-        if current < 0 {
-            return Err(io::Error::last_os_error().into());
+        if projection == QueryProjection::LegacyRoot {
+            let current = unsafe {
+                libc::ioctl(
+                    files[0].as_raw_fd(),
+                    command as libc::c_ulong,
+                    0 as libc::c_ulong,
+                )
+            };
+            if current < 0 {
+                return Err(io::Error::last_os_error().into());
+            }
+            let current = unsafe { File::from_raw_fd(current) };
+            require(
+                node(&current)? == node(&files[index])?,
+                "namespace is not from the original held init",
+            )?;
+        } else if index != 3 {
+            // The early owner lends the already retained original namespace
+            // capabilities. Reopening through a differently mapped init would
+            // require forbidden SYS_PTRACE. Verify their actual kernel owner.
+            let raw = unsafe { libc::ioctl(files[index].as_raw_fd(), 0xb701 as libc::c_ulong) };
+            if raw < 0 {
+                return Err(io::Error::last_os_error().into());
+            }
+            let owner = unsafe { File::from_raw_fd(raw) };
+            require(
+                node(&owner)? == node(&files[3])?,
+                "early query namespace does not belong to the borrowed user namespace",
+            )?;
         }
-        let current = unsafe { File::from_raw_fd(current) };
-        require(
-            node(&current)? == node(&files[index])?,
-            "namespace is not from the original held init",
-        )?;
     }
     require(
         files[2].metadata()?.is_dir(),
@@ -305,7 +324,7 @@ fn validate_descriptors(
         files.len() == query.descriptor_count(),
         "application descriptor count differs",
     )?;
-    let init = validate_owner_descriptors(files, parent)?;
+    let init = validate_owner_descriptors(files, parent, projection)?;
     executable::verify(files, query, projection, init.ruid, init.rgid, deadline)?;
     for index in [protocol::STDOUT, protocol::STDERR] {
         require(
@@ -438,8 +457,12 @@ fn prepare_query(
         len: filter.len() as u16,
         filter: filter.as_mut_ptr(),
     };
-    // All namespaces are the copies checked against the original init pidfd.
-    // PID setns affects only the next child; no caller-selected task is joined.
+    // The early query is born in the selected PID namespace while it still
+    // has the original host-root credentials/user namespace. Its actual broker
+    // wait owner seizes that parked direct child before any credential change.
+    // Joining USER and the remaining namespaces happens only after the gate.
+    // This avoids granting the broker SYS_PTRACE across mapped credentials.
+    let enter_late = projection == QueryProjection::EarlyDev;
     for (index, kind) in [
         (3, libc::CLONE_NEWUSER),
         (6, libc::CLONE_NEWIPC),
@@ -449,21 +472,13 @@ fn prepare_query(
         (4, libc::CLONE_NEWNS),
         (5, libc::CLONE_NEWPID),
     ] {
-        if unsafe { libc::setns(files[index].as_raw_fd(), kind) } != 0 {
+        if (!enter_late || kind == libc::CLONE_NEWPID)
+            && unsafe { libc::setns(files[index].as_raw_fd(), kind) } != 0
+        {
             return Err(io::Error::last_os_error().into());
         }
     }
-    if unsafe {
-        libc::syscall(
-            libc::SYS_setgroups,
-            0_usize,
-            std::ptr::null::<libc::gid_t>(),
-        )
-    } != 0
-        || unsafe { libc::syscall(libc::SYS_setresgid, 0_u32, 0_u32, 0_u32) } != 0
-        || unsafe { libc::syscall(libc::SYS_setresuid, 0_u32, 0_u32, 0_u32) } != 0
-        || unsafe { libc::prctl(libc::PR_SET_PDEATHSIG, libc::SIGKILL) } != 0
-    {
+    if !enter_late && unsafe { query_root_credentials() } != 0 {
         return Err(io::Error::last_os_error().into());
     }
     alive(&files[0])?;
@@ -488,6 +503,7 @@ fn prepare_query(
                 &armed,
                 deadline_ns,
                 domain,
+                enter_late,
                 argv.as_ptr(),
                 envp.as_ptr(),
                 &program,
@@ -510,12 +526,31 @@ fn prepare_query(
     )
 }
 
+unsafe fn query_root_credentials() -> i32 {
+    unsafe {
+        if libc::syscall(
+            libc::SYS_setgroups,
+            0_usize,
+            std::ptr::null::<libc::gid_t>(),
+        ) != 0
+            || libc::syscall(libc::SYS_setresgid, 0_u32, 0_u32, 0_u32) != 0
+            || libc::syscall(libc::SYS_setresuid, 0_u32, 0_u32, 0_u32) != 0
+            || libc::prctl(libc::PR_SET_PDEATHSIG, libc::SIGKILL) != 0
+        {
+            -1
+        } else {
+            0
+        }
+    }
+}
+
 unsafe fn query_child(
     files: &[File],
     expected_go: &[u8],
     armed: &[u8],
     deadline_ns: u64,
     domain: OperationDomain,
+    enter_late: bool,
     argv: *const *const libc::c_char,
     envp: *const *const libc::c_char,
     filter: &libc::sock_fprog,
@@ -594,6 +629,25 @@ unsafe fn query_child(
                     index += 1;
                 }
                 break;
+            }
+        }
+        if enter_late {
+            // All descriptors were authenticated before clone; no path or PID
+            // is accepted at this gate. CLONE_FS/THREAD/VM are never used.
+            for (index, kind) in [
+                (3, libc::CLONE_NEWUSER),
+                (6, libc::CLONE_NEWIPC),
+                (7, libc::CLONE_NEWUTS),
+                (8, libc::CLONE_NEWNET),
+                (9, libc::CLONE_NEWCGROUP),
+                (4, libc::CLONE_NEWNS),
+            ] {
+                if libc::setns(files[index].as_raw_fd(), kind) != 0 {
+                    libc::_exit(125);
+                }
+            }
+            if query_root_credentials() != 0 {
+                libc::_exit(125);
             }
         }
         if libc::fchdir(files[2].as_raw_fd()) != 0

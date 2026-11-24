@@ -356,6 +356,11 @@ fn run_owned(
     request.validate()?;
     authority.revalidate().map_err(external)?;
     let mut files = authority.descriptors(request.binary()).map_err(external)?;
+    let query_namespaces = if authority.query_projection() == QueryProjection::EarlyDev {
+        Some(exec_stop::NamespaceBinding::from_original_owner(&files)?)
+    } else {
+        None
+    };
     let classpath = if request.needs_content_jar() {
         Some(authority.contacts_content_descriptors().map_err(external)?)
     } else {
@@ -466,8 +471,18 @@ fn run_owned(
                 require(
                     actual == nonce
                         && received.files.len() == 1
-                        && received.peer.uid == root_uid
-                        && received.peer.gid == root_gid,
+                        && received.peer.uid
+                            == if query_namespaces.is_some() {
+                                0
+                            } else {
+                                root_uid
+                            }
+                        && received.peer.gid
+                            == if query_namespaces.is_some() {
+                                0
+                            } else {
+                                root_gid
+                            },
                     "application child transfer identity differs",
                 )?;
                 let fd = received.files.into_iter().next().unwrap();
@@ -522,6 +537,7 @@ fn run_owned(
             shell_uid,
             shell_gid,
             request.domain(),
+            query_namespaces.as_ref(),
             deadline,
         )?;
         let mut native_progress = || {

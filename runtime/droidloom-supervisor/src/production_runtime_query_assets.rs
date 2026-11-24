@@ -23,7 +23,7 @@ const APP_PROCESS_ORIGINAL: &[u8; 26] = b"u:object_r:zygote_exec:s0\0";
 const PROVIDER_EXEC: &[u8; 38] = b"u:object_r:droidloom_provider_exec:s0\0";
 const PROVIDER_JAR: &[u8; 37] = b"u:object_r:droidloom_provider_jar:s0\0";
 const TMPFS_MAGIC: libc::c_long = 0x0102_1994;
-const INITIAL_TMPFS: &[u8; 20] = b"u:object_r:tmpfs:s0\0";
+const INITIAL_TMPFS: &[u8; 38] = b"u:object_r:droidloom_query_tmpfs_t:s0\0";
 const FSCONFIG_CMD_RECONFIGURE: u32 = 7;
 const FSPICK_CLOEXEC: u32 = 1;
 const FSPICK_EMPTY_PATH: u32 = 8;
@@ -216,16 +216,22 @@ impl QueryDeclaration {
         sources
     }
     pub(super) fn validate_kernel_first(&self, system: &str) -> Result<()> {
-        require(self.scope == "fixed_application_query_v1"
-            && self.source_system_sha256 == system && system == fixed::SYSTEM_SHA256,
-            "kernel-first query roles must come from the selected original CP3A system")?;
+        require(
+            self.scope == "fixed_application_query_v1"
+                && self.source_system_sha256 == system
+                && system == fixed::SYSTEM_SHA256,
+            "kernel-first query roles must come from the selected original CP3A system",
+        )?;
         let contacts = self.contacts.as_ref().ok_or(MountError::Rejected(
             "kernel-first v2 requires all four fixed query roles",
         ))?;
-        require(contacts.scope == "fixed_contacts_content_query_v1"
-            && contacts.content_jar.interpreter.is_none()
-            && self.layout() == QueryLayout::Contacts && self.sources().len() == 4,
-            "kernel-first query layout must contain the exact commands and Contacts roles")?;
+        require(
+            contacts.scope == "fixed_contacts_content_query_v1"
+                && contacts.content_jar.interpreter.is_none()
+                && self.layout() == QueryLayout::Contacts
+                && self.sources().len() == 4,
+            "kernel-first query layout must contain the exact commands and Contacts roles",
+        )?;
         self.validate_cp3a()
     }
 
@@ -515,6 +521,16 @@ impl QueryResources {
         configure(&context, FSCONFIG_SET_STRING, c"mode", Some(c"0755"))?;
         configure(&context, FSCONFIG_SET_STRING, c"uid", Some(c"0"))?;
         configure(&context, FSCONFIG_SET_STRING, c"gid", Some(c"0"))?;
+        // Creation is confined to this new private filesystem; no ordinary
+        // Android tmpfs inode gains a broker relabel permission.
+        for name in [c"fscontext", c"rootcontext"] {
+            configure(
+                &context,
+                FSCONFIG_SET_STRING,
+                name,
+                Some(c"u:object_r:droidloom_query_tmpfs_t:s0"),
+            )?;
+        }
         zero_rc(unsafe {
             libc::syscall(
                 libc::SYS_fsconfig,
@@ -807,7 +823,12 @@ impl RuntimeQueryExecutable<'_> {
     pub(crate) fn file(&self) -> &File {
         &self.executable.copy
     }
-    pub(crate) fn verify_original(&self, original: &File, root_uid: u32, root_gid: u32) -> Result<()> {
+    pub(crate) fn verify_original(
+        &self,
+        original: &File,
+        root_uid: u32,
+        root_gid: u32,
+    ) -> Result<()> {
         verify_original(self.executable, original, root_uid, root_gid)
     }
     pub(crate) fn verify_projection(&self, target: &File) -> Result<()> {
@@ -816,49 +837,50 @@ impl RuntimeQueryExecutable<'_> {
 }
 
 fn verify_original(
-        executable: &QueryExecutable,
-        original: &File,
-        root_uid: u32,
-        root_gid: u32,
-    ) -> Result<()> {
-        let node = FileIdentity::of(&original.metadata()?);
-        require(
-            executable
-                .role
-                .original_metadata(node, root_uid, root_gid)
-                && node.bytes == executable.identity.bytes
-                && (node.dev, node.ino)
-                    != (executable.identity.dev, executable.identity.ino)
-                && [0xef53, 0xe0f5_e1e2_u32 as libc::c_long].contains(&fs_type(original)?),
-            "guest original query role does not match its selected image metadata",
-        )?;
-        let mut flags: libc::statvfs = unsafe { std::mem::zeroed() };
-        zero_rc(unsafe { libc::fstatvfs(original.as_raw_fd(), &mut flags) })?;
-        require(
-            flags.f_flag as u64 & READONLY_FLAGS == READONLY_FLAGS,
-            "guest original query executable is not on its readonly system image",
-        )?;
-        executable.role.original_security(original)?;
-        require(
-            full_digest(original, node)? == executable.digest,
-            "guest original query bytes differ from the complete selected source role",
-        )?;
-        executable
-            .role
-            .verify_format(original, node.bytes, &executable.interpreter)
-    }
-fn verify_projection(resources: &QueryResources, executable: &QueryExecutable, target: &File) -> Result<()> {
-        readonly_private(
-            target,
-            executable.identity,
-            resources.mount_id,
-            executable.role.private_label(),
-        )?;
-        require(
-            full_digest(target, executable.identity)? == executable.digest,
-            "attached private query role has different bytes",
-        )
-    }
+    executable: &QueryExecutable,
+    original: &File,
+    root_uid: u32,
+    root_gid: u32,
+) -> Result<()> {
+    let node = FileIdentity::of(&original.metadata()?);
+    require(
+        executable.role.original_metadata(node, root_uid, root_gid)
+            && node.bytes == executable.identity.bytes
+            && (node.dev, node.ino) != (executable.identity.dev, executable.identity.ino)
+            && [0xef53, 0xe0f5_e1e2_u32 as libc::c_long].contains(&fs_type(original)?),
+        "guest original query role does not match its selected image metadata",
+    )?;
+    let mut flags: libc::statvfs = unsafe { std::mem::zeroed() };
+    zero_rc(unsafe { libc::fstatvfs(original.as_raw_fd(), &mut flags) })?;
+    require(
+        flags.f_flag as u64 & READONLY_FLAGS == READONLY_FLAGS,
+        "guest original query executable is not on its readonly system image",
+    )?;
+    executable.role.original_security(original)?;
+    require(
+        full_digest(original, node)? == executable.digest,
+        "guest original query bytes differ from the complete selected source role",
+    )?;
+    executable
+        .role
+        .verify_format(original, node.bytes, &executable.interpreter)
+}
+fn verify_projection(
+    resources: &QueryResources,
+    executable: &QueryExecutable,
+    target: &File,
+) -> Result<()> {
+    readonly_private(
+        target,
+        executable.identity,
+        resources.mount_id,
+        executable.role.private_label(),
+    )?;
+    require(
+        full_digest(target, executable.identity)? == executable.digest,
+        "attached private query role has different bytes",
+    )
+}
 
 /// Opaque, same-owner classpath data. No path/FD/digest can construct it.
 pub(crate) struct RuntimeQueryData<'a> {

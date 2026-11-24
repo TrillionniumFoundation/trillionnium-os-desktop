@@ -43,6 +43,7 @@ unsafe extern "C" {
 }
 #[path = "production_early_frontend.rs"]
 mod frontend;
+pub(crate) use frontend::{QueryObservation, observe_query};
 
 struct ServiceSignals {
     events: File,

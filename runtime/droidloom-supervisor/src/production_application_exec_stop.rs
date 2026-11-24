@@ -337,6 +337,49 @@ pub(crate) struct ExecReceipt {
     seccomp_filter_mode: u32,
 }
 
+pub(super) struct NamespaceBinding {
+    root: File,
+    namespaces: [File; 7], // user, pid, mnt, ipc, uts, net, cgroup
+}
+impl NamespaceBinding {
+    pub(super) fn from_original_owner(files: &[File]) -> Result<Self> {
+        require(files.len() >= 10, "original query namespace prefix absent")?;
+        Ok(Self {
+            root: files[2].try_clone()?,
+            namespaces: [
+                files[3].try_clone()?,
+                files[5].try_clone()?,
+                files[4].try_clone()?,
+                files[6].try_clone()?,
+                files[7].try_clone()?,
+                files[8].try_clone()?,
+                files[9].try_clone()?,
+            ],
+        })
+    }
+    fn verify(
+        &self,
+        actual: &crate::production_selection::early_generation::QueryObservation,
+    ) -> Result<()> {
+        let same = |left: &File, right: &File| -> Result<bool> {
+            let a = left.metadata()?;
+            let b = right.metadata()?;
+            Ok((a.dev(), a.ino()) == (b.dev(), b.ino()))
+        };
+        require(
+            same(&self.root, &actual.root)?,
+            "stopped query root is not the exact original owner root",
+        )?;
+        for (left, right) in self.namespaces.iter().zip(&actual.namespaces) {
+            require(
+                same(left, right)?,
+                "stopped query namespace differs from its original held target",
+            )?;
+        }
+        Ok(())
+    }
+}
+
 pub(super) struct ExecTrace<'a> {
     child: &'a mut Child,
     proc: File,
@@ -495,6 +538,7 @@ impl<'a> ExecTrace<'a> {
         shell_uid: u32,
         shell_gid: u32,
         domain: OperationDomain,
+        namespaces: Option<&NamespaceBinding>,
         deadline: Instant,
     ) -> Result<ExecReceipt> {
         require(
@@ -507,29 +551,47 @@ impl<'a> ExecTrace<'a> {
             "operation domain does not match its private executable role",
         )?;
         let previous_tid = self.actual_exec_stop(deadline)?;
-        // This is the held process's kernel exe link, not a task lookup or a
-        // caller pathname. The already stopped original task cannot race exec.
-        let raw = unsafe {
-            libc::openat(
-                self.proc.as_raw_fd(),
-                c"exe".as_ptr(),
-                libc::O_RDONLY | libc::O_CLOEXEC | libc::O_NONBLOCK,
+        // At this actual kernel exec stop, a fixed zero-capability reader can
+        // match the query filesystem IDs without changing the original owner.
+        // The reader has no SYS_PTRACE and cannot bypass a nondumpable target.
+        // Its returned bodies/namespaces become usable only after real waitid.
+        let (actual, selinux, apparmor) = if let Some(expected) = namespaces {
+            let observed = crate::production_selection::early_generation::observe_query(
+                &self.proc,
+                &self.child.pidfd,
+                &expected.namespaces[0],
+            )
+            .map_err(external)?;
+            expected.verify(&observed)?;
+            (observed.executable, observed.selinux, observed.apparmor)
+        } else {
+            let raw = unsafe {
+                libc::openat(
+                    self.proc.as_raw_fd(),
+                    c"exe".as_ptr(),
+                    libc::O_RDONLY | libc::O_CLOEXEC | libc::O_NONBLOCK,
+                )
+            };
+            if raw < 0 {
+                return Err(io::Error::last_os_error().into());
+            }
+            (
+                unsafe { File::from_raw_fd(raw) },
+                current_label(&self.proc, ProcLabel::Selinux)?,
+                current_label(&self.proc, ProcLabel::AppArmor)?,
             )
         };
-        if raw < 0 {
-            return Err(io::Error::last_os_error().into());
-        }
-        let actual = unsafe { File::from_raw_fd(raw) };
+        require(
+            Instant::now() < deadline,
+            "query exec observation exceeded its deadline",
+        )?;
         binding.verify(&actual, deadline)?;
         require(
-            label_matches(
-                &current_label(&self.proc, ProcLabel::Selinux)?,
-                domain.context().as_bytes(),
-            ),
+            label_matches(&selinux, domain.context().as_bytes()),
             "actual stopped query SELinux domain differs",
         )?;
         require(
-            current_label(&self.proc, ProcLabel::AppArmor)? == AA_STACK,
+            apparmor == AA_STACK,
             "actual stopped query lost the required AppArmor stack",
         )?;
         let observed = status(&self.proc)?;
