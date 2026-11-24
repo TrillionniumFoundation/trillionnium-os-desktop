@@ -1,0 +1,10 @@
+--- a/security/selinux/hooks.c
++++ b/security/selinux/hooks.c
+@@ -752,6 +752,7 @@
+ 	    !strcmp(sb->s_type->name, "bpf") ||
+ 	    !strcmp(sb->s_type->name, "pstore") ||
+ 	    !strcmp(sb->s_type->name, "securityfs") ||
++	    !strcmp(sb->s_type->name, "apparmorfs") ||
+ 	    (selinux_policycap_functionfs_seclabel() &&
+ 	     !strcmp(sb->s_type->name, "functionfs")))
+ 		sbsec->flags |= SE_SBGENFS;
