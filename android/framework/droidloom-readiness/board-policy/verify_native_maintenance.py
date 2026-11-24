@@ -68,7 +68,7 @@ def verify_native_maintenance(library, binary, export, export_binary_policy):
     exact(maint,obj("p4_linux_factory_unit_file_t"),"service",services,["status"])
     exact(maint,obj("p4_linux_maintenance_exec_t"),"file",["execute_no_trans"],[])
     sources=[]
-    for line in lines:
+    for line in sorted(lines):
         for role in ("r","system_r"):
             prefix=f"(roletype {role} "
             if line.startswith(prefix):
