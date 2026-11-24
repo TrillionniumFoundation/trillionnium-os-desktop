@@ -1,0 +1,51 @@
+; One ordinary immutable ACL utility prepares only already-retiring native
+; runtime metadata. Original stock user-runtime-dir performs actual removal.
+; The caller cannot read runtime file contents, remove names, create objects,
+; use DAC override, mount, enter namespaces, or modify SELinux policy.
+(type p4_linux_runtime_acl_t)
+(type p4_linux_runtime_acl_exec_t)
+(roletype system_r p4_linux_runtime_acl_t)
+(roletype object_r p4_linux_runtime_acl_exec_t)
+(typeattributeset p4_linux_native_processes (p4_linux_runtime_acl_t))
+(typeattributeset p4_linux_native_executables (p4_linux_runtime_acl_exec_t))
+(call p4_ubuntu_system_service (p4_linux_runtime_acl_t p4_linux_runtime_acl_exec_t))
+; The public utility remains an ordinary unprivileged command when invoked
+; from a session or its original user service executor.
+(call p4_ubuntu_user_service (p4_linux_user_session_t p4_linux_runtime_acl_exec_t))
+(allow p4_linux_user_session_t p4_linux_runtime_acl_exec_t (file (getattr open read execute execute_no_trans map)))
+(neverallow p4_linux_user_session_t p4_linux_runtime_acl_t (process (transition dyntransition)))
+(neverallow p4_linux_user_executor_t p4_linux_runtime_acl_t (process (transition dyntransition)))
+
+(allow p4_linux_runtime_acl_t self (capability (fowner)))
+; Journal stdio is created by the original executor before the fixed exec.
+(allow p4_linux_runtime_acl_t p4_linux_service_executor_t (unix_stream_socket (getattr read write)))
+(typeattribute p4_native_runtime_acl_data)
+(typeattributeset p4_native_runtime_acl_data (p4_linux_user_run_t droidloom_presenter_runtime))
+(typeattribute p4_native_runtime_acl_sockets)
+(typeattributeset p4_native_runtime_acl_sockets (p4_native_runtime_acl_data p4_linux_session_bus_socket_t p4_native_desktop_socket_inodes))
+(typeattribute p4_native_runtime_acl_all_types)
+(typeattributeset p4_native_runtime_acl_all_types (all))
+(typeattribute p4_native_runtime_acl_other_data)
+(typeattributeset p4_native_runtime_acl_other_data (and (all) (not (p4_native_runtime_acl_data))))
+(typeattribute p4_native_runtime_acl_other_sockets)
+(typeattributeset p4_native_runtime_acl_other_sockets (and (all) (not (p4_native_runtime_acl_sockets))))
+(allow p4_linux_runtime_acl_t p4_native_runtime_acl_data (dir (getattr search open read setattr)))
+(allow p4_linux_runtime_acl_t p4_native_runtime_acl_data (file (getattr setattr)))
+(allow p4_linux_runtime_acl_t p4_native_runtime_acl_data (fifo_file (getattr setattr)))
+(allow p4_linux_runtime_acl_t p4_native_runtime_acl_data (lnk_file (getattr)))
+(allow p4_linux_runtime_acl_t p4_native_runtime_acl_sockets (sock_file (getattr setattr)))
+; Physical recursion must not follow symlinks or consume payload bytes.
+(neverallow p4_linux_runtime_acl_t p4_native_runtime_acl_data (file (open read write append create map link unlink rename execute execute_no_trans entrypoint)))
+(neverallow p4_linux_runtime_acl_t p4_native_runtime_acl_data (lnk_file (read write create setattr link unlink rename)))
+(neverallow p4_linux_runtime_acl_t p4_native_runtime_acl_data (fifo_file (open read write append create unlink)))
+(neverallow p4_linux_runtime_acl_t p4_native_runtime_acl_all_types (dir (write create add_name remove_name rename reparent rmdir mounton relabelto relabelfrom)))
+(neverallow p4_linux_runtime_acl_t p4_native_runtime_acl_all_types (file (write append create link unlink rename relabelto relabelfrom)))
+(neverallow p4_linux_runtime_acl_t p4_native_runtime_acl_all_types (sock_file (create unlink rename relabelto relabelfrom)))
+(neverallow p4_linux_runtime_acl_t p4_native_runtime_acl_other_data (dir (setattr)))
+(neverallow p4_linux_runtime_acl_t p4_native_runtime_acl_other_data (file (setattr)))
+(neverallow p4_linux_runtime_acl_t p4_native_runtime_acl_other_data (fifo_file (setattr)))
+(neverallow p4_linux_runtime_acl_t p4_native_runtime_acl_other_sockets (sock_file (setattr)))
+(neverallow p4_linux_runtime_acl_t kernel (security (load_policy setenforce setbool setsecparam setcheckreqprot read_policy)))
+(neverallow p4_linux_runtime_acl_t self (capability (chown dac_override dac_read_search fsetid kill setgid setuid setpcap linux_immutable net_bind_service net_broadcast net_admin net_raw ipc_lock ipc_owner sys_module sys_rawio sys_chroot sys_ptrace sys_pacct sys_admin sys_boot sys_nice sys_resource sys_time sys_tty_config mknod lease audit_write audit_control setfcap)))
+(neverallow p4_linux_runtime_acl_t self (capability2 (mac_override mac_admin syslog wake_alarm block_suspend audit_read perfmon bpf checkpoint_restore)))
+(neverallow p4_linux_runtime_acl_t self (cap_userns (chown dac_override dac_read_search fowner fsetid kill setgid setuid setpcap linux_immutable net_bind_service net_broadcast net_admin net_raw ipc_lock ipc_owner sys_module sys_rawio sys_chroot sys_ptrace sys_pacct sys_admin sys_boot sys_nice sys_resource sys_time sys_tty_config mknod lease audit_write audit_control setfcap)))

@@ -278,6 +278,30 @@ def verify_host_control(library, binary, export):
         check(subject, subject, "capability2", ["mac_admin", "mac_override"], False)
     check(manager, obj("p4_linux_user_run_t"), "dir", ["create", "add_name", "setattr", "relabelto", "relabelfrom"], False)
 
+    # A fixed immutable utility prepares retirement ACL metadata, without
+    # payload reads, unlink authority, DAC override, or MAC-management rights.
+    runtime_acl = "u:system_r:p4_linux_runtime_acl_t:s0"
+    check(runtime_acl, runtime_acl, "capability", ["fowner"], True)
+    check(runtime_acl, executor, "unix_stream_socket", ["getattr", "read", "write"], True)
+    check(runtime_acl, executor, "unix_stream_socket", ["create", "bind", "connectto"], False)
+    check(runtime_acl, runtime_acl, "capability", ["chown", "dac_override", "dac_read_search", "setuid", "setgid", "sys_admin", "sys_ptrace"], False)
+    check(runtime_acl, runtime_acl, "capability2", ["mac_admin", "mac_override"], False)
+    for target in ["p4_linux_user_run_t", "droidloom_presenter_runtime"]:
+        check(runtime_acl, obj(target), "dir", ["getattr", "search", "open", "read", "setattr"], True)
+        check(runtime_acl, obj(target), "dir", ["create", "write", "add_name", "remove_name", "rmdir", "mounton", "relabelto", "relabelfrom"], False)
+        for kind in ["file", "fifo_file"]:
+            check(runtime_acl, obj(target), kind, ["getattr", "setattr"], True)
+            check(runtime_acl, obj(target), kind, ["open", "read", "write", "append", "create", "unlink"], False)
+        check(runtime_acl, obj(target), "lnk_file", ["getattr"], True)
+        check(runtime_acl, obj(target), "lnk_file", ["read", "setattr", "create", "unlink"], False)
+    for target in ["p4_linux_user_run_t", "droidloom_presenter_runtime", "p4_linux_session_bus_socket_t", "p4_linux_wayland_socket_t", "p4_linux_pipewire_socket_t", "p4_linux_pipewire_manager_socket_t"]:
+        check(runtime_acl, obj(target), "sock_file", ["getattr", "setattr"], True)
+        check(runtime_acl, obj(target), "sock_file", ["write", "create", "unlink", "rename", "relabelto", "relabelfrom"], False)
+    for target in ["p4_linux_user_home_t", "p4_linux_tmp_t", "p4_linux_product_store_t", "p4_linux_public_launcher_t"]:
+        check(runtime_acl, obj(target), "file", ["getattr", "open", "read", "write", "create", "setattr", "relabelto", "relabelfrom"], False)
+    check(runtime_acl, kernel, "security", ["load_policy", "setenforce", "setbool"], False)
+    check("u:system_r:p4_linux_user_session_t:s0", runtime_acl, "process", ["transition", "dyntransition"], False)
+
     # Native transport is bound to fixed peers and socket-activation origin.
     compositor = "u:system_r:p4_linux_compositor_t:s0"
     audio = "u:system_r:p4_linux_audio_t:s0"
@@ -361,6 +385,10 @@ def verify_host_control(library, binary, export):
     transitions.extend(
         f'(typetransition {actor} p4_linux_user_run_t dir "droidloom-presenter" droidloom_presenter_runtime)'
         for actor in ["p4_linux_user_executor_t", "droidloom_presenter"])
+    transitions.extend([
+        "(typetransition p4_linux_service_executor_t p4_linux_runtime_acl_exec_t process p4_linux_runtime_acl_t)",
+        "(typetransition p4_linux_user_executor_t p4_linux_runtime_acl_exec_t process p4_linux_user_session_t)",
+    ])
     missing = [line for line in transitions if line not in lines]
     if missing:
         raise ValueError("Linked binary lacks exact automatic transitions: " + repr(missing))
@@ -471,6 +499,7 @@ def main():
         "linux-application-roles.cil", "linux-install-catalog.cil",
         "ubuntu-dbus.cil", "ubuntu-native-selinux-query.cil",
         "ubuntu-native-pam.cil", "ubuntu-native-session-storage.cil", "ubuntu-native-session-ipc.cil",
+        "ubuntu-native-runtime-retirement.cil",
         "ubuntu-presenter-runtime.cil",
         "linux-package-maintenance.cil", "linux-public-control.cil",
     )
