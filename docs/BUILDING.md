@@ -1172,6 +1172,15 @@ ownership, then extracts it privately and checks every file, permission and the
 empty directory. HOST-STAGE.json records both files and directories; RELEASE.json
 binds the final archive and manifest hashes. An existing output is never replaced.
 
+The normal container-host build also compiles the Wayland presenter, application
+catalog and doctor with the same locked source as the production supervisor. The
+archive owns fresh `/usr/bin/droidloomctl`, `droidloom-wayland`,
+`droidloom-applications` and `droidloom-doctor` files, so existing XDG launcher
+commands cannot silently retain an earlier binary. The public and production
+control clients have identical bytes. This stage does not install the legacy
+user service that starts and stops `droidloomd.service`; production desktop
+lifecycle and authenticated presenter registration require their own qualification.
+
 A file-only archive drops the empty StateDirectory and is not a valid input to
 the original Ubuntu calibration qualifier. Packaging success does not establish
 boot, calibration, Android readiness or application acceptance.

@@ -6,6 +6,19 @@ use std::{fs, os::unix::fs::symlink, path::Path, process::Command};
 #[path="early_boot_package.rs"]
 mod early_boot_package;
 
+const CONTAINER_HOST_PACKAGES: &[&str] = &[
+    "droidloom-supervisor",
+    "droidloom-wayland",
+    "droidloom-applications",
+    "droidloom-doctor",
+];
+const DESKTOP_CLIENT_BINARIES: &[&str] = &[
+    "droidloomctl",
+    "droidloom-wayland",
+    "droidloom-applications",
+    "droidloom-doctor",
+];
+
 fn validate_builder(jobs: usize) -> Result<()> {
     if unsafe { libc::geteuid() } == 0 {
         return fail("package compilation must run as an ordinary build user, without sudo");
@@ -43,7 +56,10 @@ pub fn stage_container_host(
         .env("CARGO_TARGET_DIR", &target)
         .args(["build", "--locked", "--release", "--jobs"])
         .arg(jobs.to_string());
-    build.args(["-p", "droidloom-supervisor", "--bins"]);
+    for package in CONTAINER_HOST_PACKAGES {
+        build.arg("-p").arg(package);
+    }
+    build.arg("--bins");
     run_build(&mut build)?;
     run_build(&mut crate::container_entry_build::command(
         repo, &target, jobs,
@@ -264,6 +280,20 @@ fn production_host_payload(repo: &Path, host: &Path, runtime: &Path) -> Result<(
         copy(&source, &target)?;
         mode(&target, 0o755)?;
     }
+    // Existing XDG launchers and the native presenter resolve these public
+    // paths. Publish independent copies from this same normal build so a
+    // complete host release cannot silently keep using an older desktop peer.
+    // User service activation is qualified separately; the legacy cell-owning
+    // droidloom.service is deliberately not part of this host payload.
+    for binary in DESKTOP_CLIENT_BINARIES {
+        let source = host.join(binary);
+        if !fs::symlink_metadata(&source)?.is_file() {
+            return fail("desktop package binaries must be regular build outputs");
+        }
+        let target = runtime.join("usr/bin").join(binary);
+        copy(&source, &target)?;
+        mode(&target, 0o755)?;
+    }
     for unit in [
         "droidloom-production.service",
         "droidloom-manager-label.service",
@@ -397,7 +427,29 @@ mod tests {
         .unwrap();
         assert!(production_host_payload(&repo, &host, &runtime).is_err());
         fs::write(host.join("droidloom-container-entry"), b"package-copy fixture: container-entry").unwrap();
+        // A core-only host build is still incomplete for the native desktop.
+        assert!(production_host_payload(&repo, &host, &runtime).is_err());
+        for binary in DESKTOP_CLIENT_BINARIES {
+            if !host.join(binary).exists() {
+                fs::write(host.join(binary), format!("normal desktop peer: {binary}")).unwrap();
+            }
+        }
         production_host_payload(&repo, &host, &runtime).unwrap();
+        for binary in DESKTOP_CLIENT_BINARIES {
+            let source = host.join(binary);
+            let staged = runtime.join("usr/bin").join(binary);
+            let metadata = fs::symlink_metadata(&staged).unwrap();
+            assert!(metadata.is_file());
+            assert_eq!(metadata.mode() & 0o7777, 0o755);
+            assert_eq!(metadata.nlink(), 1);
+            assert_ne!(metadata.ino(), fs::metadata(&source).unwrap().ino());
+            assert_eq!(fs::read(&staged).unwrap(), fs::read(&source).unwrap());
+        }
+        assert_eq!(
+            fs::read(runtime.join("usr/bin/droidloomctl")).unwrap(),
+            fs::read(runtime.join("usr/lib/droidloom/production/current/droidloomctl")).unwrap(),
+        );
+        assert!(!runtime.join("usr/lib/systemd/user/droidloom.service").exists());
         for (name, expected) in [
             ("ubuntu-real-root-devices", include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-real-root-devices").as_slice()),
             ("ubuntu-real-root-file_contexts", include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-real-root-file_contexts").as_slice()),
