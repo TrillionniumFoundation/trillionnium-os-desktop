@@ -371,7 +371,7 @@ class PublicTransaction:
                     os.lseek(fd,0,os.SEEK_SET);held_fds.append(fd);argv.append(f"/proc/self/fd/{fd}")
             else:argv.extend(NAMES[r] for r in PUBLIC_ORDER)
             r=bounded_process(argv,env={"PATH":"/usr/sbin:/usr/bin:/sbin:/bin","LC_ALL":"C",
-                    "DEBIAN_FRONTEND":"noninteractive","DPKG_FRONTEND_LOCKED":"1"},seconds=900,maximum=8*1024*1024,pass_fds=tuple(held_fds))
+                    "DEBIAN_FRONTEND":"noninteractive","DPKG_FRONTEND_LOCKED":"1"},seconds=300,maximum=8*1024*1024,pass_fds=tuple(held_fds))
             suffix=str(time.monotonic_ns())
             new_file(self.path/(operation+"-"+suffix+".stdout"),r["stdout"],0o600)
             new_file(self.path/(operation+"-"+suffix+".stderr"),r["stderr"],0o600)
