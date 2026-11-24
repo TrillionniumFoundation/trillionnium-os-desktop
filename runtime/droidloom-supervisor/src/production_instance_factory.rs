@@ -30,6 +30,7 @@ const CLIENT_APPARMOR: &str = "droidloom-instance-launcher (enforce)";
 unsafe extern "C" {
     fn droidloom_factory_context() -> libc::c_int;
     fn droidloom_factory_prepare() -> libc::c_int;
+    fn droidloom_factory_boot_operation() -> *const libc::c_char;
     fn droidloom_factory_device_directory() -> libc::c_int;
 }
 
@@ -689,36 +690,149 @@ fn serve_generation(
         }
     }
 }
+#[repr(u8)]
+#[derive(Clone, Copy)]
+enum BootStage {
+    Selected = 1,
+    Executable = 2,
+    NativePrepare = 3,
+    Devices = 4,
+    Publication = 5,
+    Listener = 6,
+    Sink = 7,
+    Ready = 8,
+}
+
+const BOOT_ERROR_DETAIL: usize = 240;
+
+struct BootDetail {
+    bytes: [u8; BOOT_ERROR_DETAIL],
+    len: usize,
+}
+impl std::fmt::Write for BootDetail {
+    fn write_str(&mut self, text: &str) -> std::fmt::Result {
+        for byte in text.bytes() {
+            if self.len == self.bytes.len() {
+                return Err(std::fmt::Error);
+            }
+            self.bytes[self.len] = if (b' '..=b'~').contains(&byte) {
+                byte
+            } else {
+                b'?'
+            };
+            self.len += 1;
+        }
+        Ok(())
+    }
+}
+
+fn boot_error_frame(
+    stage: BootStage,
+    error: &io::Error,
+    native: Option<&str>,
+) -> ([u8; 248], usize) {
+    use std::fmt::Write as _;
+    let mut detail = BootDetail {
+        bytes: [0; BOOT_ERROR_DETAIL],
+        len: 0,
+    };
+    if let Some(operation) = native {
+        let _ = write!(&mut detail, "{operation}: {error}");
+    } else {
+        let _ = write!(&mut detail, "{error}");
+    }
+    if detail.len == 0 {
+        let _ = detail.write_str("bootstrap error");
+    }
+    let mut frame = [0; 248];
+    frame[..4].copy_from_slice(&[b'E', 1, stage as u8, detail.len as u8]);
+    frame[4..8].copy_from_slice(&error.raw_os_error().unwrap_or(0).to_le_bytes());
+    frame[8..8 + detail.len].copy_from_slice(&detail.bytes[..detail.len]);
+    (frame, 8 + detail.len)
+}
+
+fn report_boot_error(stage: BootStage, error: &io::Error) {
+    let native = if matches!(stage, BootStage::NativePrepare | BootStage::Devices) {
+        // The native getter owns a static, bounded ASCII operation name and
+        // preserves errno. It carries no path, identity or permission evidence.
+        let pointer = unsafe { droidloom_factory_boot_operation() };
+        if pointer.is_null() {
+            None
+        } else {
+            let bytes = unsafe { std::ffi::CStr::from_ptr(pointer) }.to_bytes();
+            (bytes.len() <= 96 && bytes.iter().all(|b| (b' '..=b'~').contains(b)))
+                .then(|| std::str::from_utf8(bytes).ok())
+                .flatten()
+        }
+    } else {
+        None
+    };
+    let (frame, size) = boot_error_frame(stage, error, native);
+    // One <= PIPE_BUF frame to the original board PID 1 pipe. No second
+    // channel, global log, dynamic path, role transition or ready token exists.
+    for _ in 0..4 {
+        let count = unsafe { libc::write(libc::STDOUT_FILENO, frame.as_ptr().cast(), size) };
+        if count >= 0 || io::Error::last_os_error().kind() != io::ErrorKind::Interrupted {
+            break;
+        }
+    }
+}
+
+fn flush_boot_ready(output: &mut impl Write) -> io::Result<()> {
+    output.write_all(b"F")?;
+    output.flush()
+}
+
 /// Serve fresh original namespace generations from the boot's kernel lineage.
 /// Only board PID 1 can create this role; ordinary service units cannot enter it.
 pub fn run_instance_factory(shutdown: &AtomicBool) -> io::Result<()> {
-    let selected = SharedKernelLauncher::read()?
-        .ok_or_else(|| invalid("public selected release is absent"))?;
-    if !selected.entry_program()?.matches_current_process()? {
-        return Err(invalid(
-            "boot factory does not execute the published original manager",
-        ));
-    }
-    cv(unsafe { droidloom_factory_prepare() })?;
-    cv(unsafe { droidloom_factory_device_directory() })?;
-    let publication = boot_identity::Publication::publish()?;
-    let listener = Listener::bind()?;
-    // The one byte goes only to the original board PID 1's inherited pipe.
-    std::io::stdout().write_all(b"F")?;
-    // Keep all three standard descriptor numbers occupied before native clone.
-    // Reopening a birth handle as fd 1 would otherwise collide with init's close.
-    let sink = std::fs::OpenOptions::new()
-        .write(true)
-        .custom_flags(libc::O_CLOEXEC | libc::O_NOFOLLOW)
-        .open("/dev/null")?;
-    let metadata = sink.metadata()?;
-    if !metadata.file_type().is_char_device() || metadata.rdev() != libc::makedev(1, 3) {
-        return Err(invalid(
-            "factory standard output is not the original null device",
-        ));
-    }
-    cv(unsafe { libc::dup2(sink.as_raw_fd(), libc::STDOUT_FILENO) })?;
-    drop(sink);
+    let mut stage = BootStage::Selected;
+    let bootstrap = (|| {
+        let selected = SharedKernelLauncher::read()?
+            .ok_or_else(|| invalid("public selected release is absent"))?;
+        stage = BootStage::Executable;
+        if !selected.entry_program()?.matches_current_process()? {
+            return Err(invalid(
+                "boot factory does not execute the published original manager",
+            ));
+        }
+        stage = BootStage::NativePrepare;
+        cv(unsafe { droidloom_factory_prepare() })?;
+        stage = BootStage::Devices;
+        cv(unsafe { droidloom_factory_device_directory() })?;
+        stage = BootStage::Publication;
+        let publication = boot_identity::Publication::publish()?;
+        stage = BootStage::Listener;
+        let listener = Listener::bind()?;
+        // Validate the sink while the inherited pipe can still report failure.
+        stage = BootStage::Sink;
+        let sink = std::fs::OpenOptions::new()
+            .write(true)
+            .custom_flags(libc::O_CLOEXEC | libc::O_NOFOLLOW)
+            .open("/dev/null")?;
+        let metadata = sink.metadata()?;
+        if !metadata.file_type().is_char_device() || metadata.rdev() != libc::makedev(1, 3) {
+            return Err(invalid(
+                "factory standard output is not the original null device",
+            ));
+        }
+        stage = BootStage::Ready;
+        {
+            let mut output = std::io::stdout().lock();
+            flush_boot_ready(&mut output)?;
+        }
+        // The F byte is now in the original pipe before fd 1 can name null.
+        cv(unsafe { libc::dup2(sink.as_raw_fd(), libc::STDOUT_FILENO) })?;
+        drop(sink);
+        Ok((selected, publication, listener))
+    })();
+    let (_selected, publication, listener) = match bootstrap {
+        Ok(ready) => ready,
+        Err(error) => {
+            report_boot_error(stage, &error);
+            return Err(error);
+        }
+    };
     let mut adoption = None;
     while !shutdown.load(Ordering::Relaxed) {
         publication.revalidate()?;
@@ -773,6 +887,47 @@ pub fn run_instance_factory(shutdown: &AtomicBool) -> io::Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn boot_pipe() -> (File, File) {
+        let mut fds = [-1; 2];
+        cv(unsafe { libc::pipe2(fds.as_mut_ptr(), libc::O_CLOEXEC | libc::O_NONBLOCK) }).unwrap();
+        (unsafe { File::from_raw_fd(fds[0]) }, unsafe {
+            File::from_raw_fd(fds[1])
+        })
+    }
+
+    #[test]
+    fn boot_ready_flush_reaches_original_pipe_before_writer_is_dropped() {
+        let (mut read, write) = boot_pipe();
+        let mut buffered = std::io::BufWriter::with_capacity(64, write);
+        flush_boot_ready(&mut buffered).unwrap();
+        let mut actual = [0; 1];
+        read.read_exact(&mut actual).unwrap();
+        assert_eq!(actual, *b"F");
+        // The buffered writer is deliberately still alive. A write_all-only
+        // announcement leaves the original pipe empty at this exact point.
+        assert!(buffered.buffer().is_empty());
+    }
+
+    #[test]
+    fn boot_error_keeps_native_errno_and_a_bounded_printable_frame() {
+        let error = io::Error::from_raw_os_error(libc::EACCES);
+        let (frame, size) = boot_error_frame(BootStage::NativePrepare, &error, Some("aa-current"));
+        assert_eq!(&frame[..3], &[b'E', 1, 3]);
+        assert_eq!(&frame[4..8], &libc::EACCES.to_le_bytes());
+        assert_eq!(size, 8 + usize::from(frame[3]));
+        assert!(
+            std::str::from_utf8(&frame[8..size])
+                .unwrap()
+                .starts_with("aa-current: ")
+        );
+        let long = io::Error::other("bad\n\u{001b}\u{2603}".repeat(200));
+        let (frame, size) = boot_error_frame(BootStage::Publication, &long, None);
+        assert_eq!(size, 248);
+        assert_eq!(&frame[4..8], &0i32.to_le_bytes());
+        assert!(frame[8..size].iter().all(|b| (b' '..=b'~').contains(b)));
+    }
+
     fn pair() -> (File, File) {
         let mut fds = [-1; 2];
         cv(unsafe {
