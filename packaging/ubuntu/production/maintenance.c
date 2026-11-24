@@ -13,6 +13,7 @@
 #include <sys/prctl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/syscall.h>
 #include <sys/sysmacros.h>
 #include <unistd.h>
 #include "maintenance_inputs.h"
@@ -99,6 +100,32 @@ static bool text_is(const char *path,const char *expected) {
     while(n>0 && (body[n-1]=='\0'||body[n-1]=='\n')) --n;
     return (size_t)n==strlen(expected) && !memcmp(body,expected,(size_t)n);
 }
+/* x86_64 Linux 6.18 UAPI, include/uapi/linux/lsm.h and syscall_64.tbl.
+ * Select SELinux explicitly; never fall back to the first legacy proc hook. */
+struct maintenance_lsm_context {
+    uint64_t id, flags, len, ctx_len;
+    unsigned char data[256];
+};
+_Static_assert(sizeof(struct maintenance_lsm_context) == 288, "LSM context ABI");
+static bool selinux_context_is(void) {
+#if !defined(__x86_64__)
+#error "The admitted maintenance executable is x86_64 only"
+#endif
+    struct maintenance_lsm_context context = { .id = 101 };
+    uint32_t size = sizeof(context);
+    long count = syscall(459, (unsigned int)100, &context, &size, (uint32_t)1);
+    if (count != 1 || context.id != 101 || context.flags != 0 ||
+        context.ctx_len != sizeof(CONTEXT) ||
+        context.len != ((32 + context.ctx_len + 7) & ~7ULL) ||
+        size != context.len || size > sizeof(context) ||
+        memcmp(context.data, CONTEXT, sizeof(CONTEXT))) {
+        if (count >= 0) errno = EPROTO;
+        return false;
+    }
+    for (uint64_t i = context.ctx_len; i < context.len - 32; ++i)
+        if (context.data[i] != 0) { errno = EPROTO; return false; }
+    return true;
+}
 static bool release_id(const char *s) {
     if(strlen(s)!=64) return false;
     for(size_t i=0;i<64;i++)
@@ -124,7 +151,7 @@ int main(int argc,char **argv) {
         return 64;
     }
     if(getuid()!=0 || geteuid()!=0 || getgid()!=0 || getegid()!=0 ||
-       !root_mapping() || !text_is("/proc/self/attr/current",CONTEXT) ||
+       !root_mapping() || !selinux_context_is() ||
        !text_is("/sys/fs/selinux/enforce","1")) return reject("authenticated native maintenance context required");
     int own=fixed_open(SELF,0755,0,NULL), proc=open("/proc/self/exe",O_RDONLY|O_CLOEXEC);
     struct stat a,b;

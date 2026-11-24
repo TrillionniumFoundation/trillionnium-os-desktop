@@ -7,6 +7,7 @@ Cold installation is a separate original-Ubuntu/offline transaction.
 """
 import argparse
 import contextlib
+import ctypes
 import errno
 import fcntl
 import hashlib
@@ -30,6 +31,7 @@ RELEASE = re.compile(r"[0-9a-f]{64}\Z")
 COMMIT = re.compile(r"[0-9a-f]{40}\Z")
 UUID = re.compile(r"[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}\Z")
 SAFE = re.compile(r"[A-Za-z0-9_./+-]+\Z")
+HOST_ACL_MEMBER = "etc/systemd/system/user-runtime-dir@.service.d/50-droidloom-native-session.conf"
 KERNEL = "6.18.64-p4ctx6181-fusectl-aafs-peer-r1"
 KERNEL_SHA = "19052ac77e40a86147f6bc186739763628916033f7c36f3448b4a872914090df"
 SYSTEM = "dc781249bb4724b7a0777e5077321b84576db46f61abb4b9086b81077bfd0ab4"
@@ -82,15 +84,28 @@ def safe_relative(value):
     need(not value.startswith("/") and all(x not in ("",".","..") for x in value.split("/")),"unsafe member component")
     return value
 
+def safe_host_relative(value):
+    # This single reviewed stock template drop-in is the only @ pathname
+    # in the normal host export; no generic template/path exception exists.
+    if value==HOST_ACL_MEMBER:
+        return value
+    return safe_relative(value)
+
+def safe_host_absolute(value):
+    need(isinstance(value,str) and value.endswith("/"+HOST_ACL_MEMBER),"fixed host ACL member required")
+    prefix=value[:-len(HOST_ACL_MEMBER)-1]
+    safe_absolute(prefix)
+    return Path(value)
+
 def safe_absolute(value):
     need(isinstance(value,str) and value.startswith("/") and not value.startswith("//"),"absolute path required")
     safe_relative(value[1:])
     return Path(value)
 
 @contextlib.contextmanager
-def held(path, *, root=False, modes=None, maximum=16*1024**3, mutable_grub=False):
+def held(path, *, root=False, modes=None, maximum=16*1024**3, mutable_grub=False, host_acl=False):
     """Pin every real component; the final original fd remains held."""
-    path=safe_absolute(str(path))
+    path=safe_host_absolute(str(path)) if host_acl else safe_absolute(str(path))
     need(not mutable_grub or (root and str(path)=="/boot/grub/grubenv"),"only the fixed stock environment is mutable")
     fd=os.open("/",os.O_PATH|os.O_DIRECTORY|os.O_CLOEXEC)
     try:
@@ -261,9 +276,33 @@ def fixed_command(name,argv,*,uid=None,seconds=30,maximum=8*1024*1024,borrowed=(
         return bounded_process([f"/proc/self/fd/{fd}",*argv],env=env,uid=uid,
                                seconds=seconds,maximum=maximum,pass_fds=(fd,*borrowed))
 
+class _LsmContext(ctypes.Structure):
+    _fields_=[("id",ctypes.c_uint64),("flags",ctypes.c_uint64),("length",ctypes.c_uint64),
+              ("context_length",ctypes.c_uint64),("data",ctypes.c_ubyte*256)]
+
+def selinux_current():
+    # No named SELinux proc directory exists in the admitted 6.18 kernel.
+    # The fixed native provider is independent of legacy hook ordering.
+    need(os.uname().machine=="x86_64" and ctypes.sizeof(_LsmContext)==288,"admitted native LSM ABI")
+    value=_LsmContext();value.id=101;size=ctypes.c_uint32(ctypes.sizeof(value))
+    libc=ctypes.CDLL(None,use_errno=True);libc.syscall.restype=ctypes.c_long
+    count=libc.syscall(ctypes.c_long(459),ctypes.c_uint(100),ctypes.byref(value),
+                       ctypes.byref(size),ctypes.c_uint32(1))
+    if count<0:
+        number=ctypes.get_errno()
+        raise OSError(number,os.strerror(number))
+    need(count==1 and value.id==101 and value.flags==0,"native SELinux provider")
+    n=value.context_length
+    need(1<=n<=256 and value.length==((32+n+7)&~7) and size.value==value.length
+         and size.value<=ctypes.sizeof(value),"native SELinux context bounds")
+    body=bytes(value.data[:n])
+    need(body[-1:]==bytes([0]) and 0 not in body[:-1],"native SELinux context terminator")
+    need(not any(value.data[n:value.length-32]),"native SELinux context padding")
+    return body[:-1]
+
 def maintenance_context():
     need(os.getuid()==os.geteuid()==os.getgid()==os.getegid()==0,"root maintenance required")
-    need(Path("/proc/self/attr/current").read_bytes().rstrip(b"\0\n")==CONTEXT,"fixed SELinux maintenance role")
+    need(selinux_current()==CONTEXT,"fixed SELinux maintenance role")
     need(Path("/sys/fs/selinux/enforce").read_bytes().strip()==b"1","SELinux enforcing required")
     need(Path("/proc/self/uid_map").read_text().split()==["0","0","4294967295"],"initial user namespace required")
     need(os.readlink("/proc/self/fd/4")=="/usr/lib/droidloom/production/current/droidloom-maintenance.py",
@@ -299,7 +338,7 @@ def status():
     need(UUID.fullmatch(boot),"real boot identity")
     return {"schema":"droidloom-maintenance-status-v1","boot_id":boot,
             "observed_monotonic_ns":time.monotonic_ns(),"kernel":os.uname().release,
-            "selinux_context":text_metadata("/proc/self/attr/current",256),
+            "selinux_context":selinux_current().decode("ascii","strict"),
             "selinux_enforcing":text_metadata("/sys/fs/selinux/enforce",8)=="1",
             "apparmor_enabled":text_metadata("/sys/module/apparmor/parameters/enabled",8),
             "self_apparmor":text_metadata("/proc/self/attr/apparmor/current",512),
@@ -404,7 +443,7 @@ def host_manifest(pin):
     expected={}
     for row in value["files"]:
         exact(row,("path","size","sha256","mode"),"normal host member")
-        rel=safe_relative(row["path"]);need(rel.startswith(("usr/","etc/selinux/","etc/systemd/")),"host namespace")
+        rel=safe_host_relative(row["path"]);need(rel.startswith(("usr/","etc/selinux/")) or rel==HOST_ACL_MEMBER,"host namespace")
         need(rel not in expected,"duplicate host file")
         integer(row["size"],0,32*1024*1024,"host file bytes");digest(row["sha256"])
         integer(row["mode"],0,0o7777,"host mode");need(not(row["mode"]&0o7022),"unsafe host mode")
@@ -426,7 +465,7 @@ def unpack_host(archive,manifest,out):
         with os.fdopen(os.dup(fd),"rb") as stream,tarfile.open(fileobj=stream,mode="r:xz") as tar:
             for item in tar:
                 rel=item.name.rstrip("/")
-                safe_relative(rel)
+                safe_host_relative(rel)
                 need(rel not in seen and item.uid==item.gid==0,"duplicate/non-root archive member")
                 seen.add(rel);target=out/rel
                 if item.isdir():
@@ -489,7 +528,7 @@ def pack_host(plan_path,output):
             rel=p.relative_to(readback).as_posix();got.add(rel)
             need(rel in expected,"unexpected Debian payload")
             row=expected[rel]
-            with held(p,modes={row["mode"]}) as (fd,st):
+            with held(p,modes={row["mode"]},host_acl=rel==HOST_ACL_MEMBER) as (fd,st):
                 need(st.st_size==row["size"] and hash_fd(fd)==row["sha256"],"Debian payload readback mismatch")
     need(got==set(expected),"Debian payload incomplete")
     control_readback=output/"control-readback";control_readback.mkdir(mode=0o700)

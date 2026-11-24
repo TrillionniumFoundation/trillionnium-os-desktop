@@ -370,6 +370,10 @@ pub fn install(
     )?;
     for (relative, expected) in [
         (
+            "usr/lib/droidloom/production/current/droidloom-maintenance.py",
+            include_bytes!("../../../packaging/ubuntu/production/release.py").as_slice(),
+        ),
+        (
             "etc/selinux/droidloom/contexts/dbus_contexts",
             include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-dbus_contexts").as_slice(),
         ),
@@ -407,6 +411,13 @@ pub fn install(
             "native SELinux configuration differs from the normal publisher",
         )?;
     }
+    let maintenance = manifest.files.iter().find(|entry| {
+        entry.path == "usr/lib/droidloom/production/current/droidloom-maintenance"
+    }).ok_or("normal host archive lacks the fixed maintenance executable")?;
+    ensure(
+        maintenance.mode == 0o755 && maintenance.size > 0,
+        "normal maintenance executable mode or size differs",
+    )?;
     Ok(
         serde_json::json!({"normal_host_manifest":manifest_pin,"normal_host_archive":archive_pin,
         "source_commit":manifest.commit,"source_tree":manifest.tree,"entries":entries,

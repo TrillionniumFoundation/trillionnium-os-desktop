@@ -70,6 +70,49 @@ class Admission(unittest.TestCase):
             release.bounded_process([sys.executable,"-c","import time;time.sleep(30)"],seconds=1)
         self.assertLess(time.monotonic()-before,6)
         with self.assertRaises(ChildProcessError):os.waitpid(-1,os.WNOHANG)
+    def test_only_reviewed_host_template_has_at_exception(self):
+        leaf=release.HOST_ACL_MEMBER
+        self.assertEqual(release.safe_host_relative(leaf),leaf)
+        with self.assertRaises(release.Rejected):release.safe_relative(leaf)
+        for candidate in (leaf+"x",leaf.replace("runtime-dir@","other@"),"usr/bin/a@b",leaf.replace("50-","../50-")):
+            with self.subTest(candidate=candidate),self.assertRaises(release.Rejected):
+                release.safe_host_relative(candidate)
+        self.assertEqual(release.safe_host_absolute(str(self.root/leaf)),self.root/leaf)
+        with self.assertRaises(release.Rejected):
+            release.safe_host_absolute(str(self.root/"a@b"/leaf))
+    def test_native_lsm_selects_only_selinux_and_rejects_malformed_or_denied(self):
+        from unittest.mock import patch
+        import ctypes
+        import errno
+        class Call:
+            def __init__(self,case):self.case=case;self.calls=0
+            def __call__(self,nr,attr,context,size,flags):
+                self.calls+=1;value=context._obj;bound=size._obj
+                if (nr.value,attr.value,value.id,flags.value)!=(459,100,101,1):
+                    raise AssertionError("native selector changed")
+                body=release.CONTEXT+bytes([0])
+                value.context_length=len(body);value.length=(32+len(body)+7)&~7;bound.value=value.length
+                for i,b in enumerate(body):value.data[i]=b
+                if self.case=="denied":
+                    ctypes.set_errno(errno.EACCES);return -1
+                if self.case=="provider":value.id=104
+                if self.case=="flags":value.flags=1
+                if self.case=="size":bound.value+=1
+                if self.case=="length":value.context_length=257
+                if self.case=="terminator":value.data[len(body)-1]=1
+                if self.case=="embedded-nul":value.data[3]=0
+                if self.case=="padding":value.data[len(body)]=1
+                return 0 if self.case=="count" else 1
+        for case in ("valid","denied","provider","flags","size","length","terminator","embedded-nul","padding","count"):
+            call=Call(case);library=type("Library",(),{})();library.syscall=call
+            with self.subTest(case=case),patch.object(release.ctypes,"CDLL",return_value=library):
+                if case=="valid":self.assertEqual(release.selinux_current(),release.CONTEXT)
+                elif case=="denied":
+                    with self.assertRaises(OSError) as result:release.selinux_current()
+                    self.assertEqual(result.exception.errno,errno.EACCES)
+                else:
+                    with self.assertRaises(release.Rejected):release.selinux_current()
+                self.assertEqual(call.calls,1)
     def test_successful_original_process_is_reaped(self):
         actual=release.bounded_process([sys.executable,"-c","print('original')"])
         self.assertEqual((actual["exit"],actual["stdout"]),(0,b"original\n"))

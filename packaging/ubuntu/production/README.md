@@ -75,7 +75,9 @@ the exact SHA256/length of this script and the admitted original Ubuntu Python
 The C entry opens the original interpreter and script through root-owned,
 non-writable, non-symlink directory components, verifies complete SHA256 and
 nine-field inode identity, retains the original descriptors, clears the
-environment, sets no-new-privileges, and enters the pinned interpreter in isolated
+environment, verifies the actual SELinux role with the explicit native LSM
+provider (single ID 101, CURRENT 100, no legacy fallback), sets no-new-privileges,
+and enters the pinned interpreter in isolated
 mode with bytecode writes disabled. A caller-supplied interpreter, script,
 environment, or module search path is not consumed.
 
@@ -91,6 +93,9 @@ droidloom-normal-host-deb-plan-v1. Each input pin has exactly path, bytes, sha25
 Inputs are the actual normal HOST-STAGE.json and HOST-STAGE.tar.xz. The producer
 verifies all original archive members against the manifest, rejects duplicate
 paths, links, unexpected types/modes/owners, and retains its source commit/tree.
+The only at-sign path exception is the exact reviewed normal
+etc/systemd/system/user-runtime-dir@.service.d/50-droidloom-native-session.conf
+member. General relative and absolute path admission still rejects at signs.
 The ordinary Debian build uses dpkg-deb --root-owner-group and contains only
 control and md5sums in its control archive, with no maintainer scripts. Actual
 extraction verifies the complete file inventory, bytes, modes, directories, and
