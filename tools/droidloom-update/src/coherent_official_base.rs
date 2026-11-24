@@ -136,7 +136,9 @@ pub(super) fn publish(
     if pin(&manifest, MAX_JSON)?.sha256 != cohort {
         return fail("staged base declaration changed");
     }
-    let kernel_first = readiness.map(|_| super::kernel_first::install(stage, &cohort, system)).transpose()?;
+    let kernel_first = readiness
+        .map(|_| super::kernel_first::install(stage, &cohort, system))
+        .transpose()?;
     for tree in [&images, manifest.parent().unwrap()] {
         for dir in tree.ancestors().take_while(|p| p.starts_with(stage)) {
             File::open(dir)?.sync_all()?;
@@ -154,7 +156,9 @@ pub(super) fn publish(
     File::open(parent)?.sync_all()?;
     let mut result = json!({"layout":"droidloom-private-cohort-package-v1","cohort_sha256":cohort,
         "manifest":relative_manifest,"images_directory":images_path,"base":value});
-    if let Some(runtime) = kernel_first { result["kernel_first"] = runtime; }
+    if let Some(runtime) = kernel_first {
+        result["kernel_first"] = runtime;
+    }
     Ok(result)
 }
 
@@ -162,8 +166,10 @@ fn verify_normal_vendor(value: &Value, vendor: &FileRef) -> Result<BTreeMap<Stri
     if value["schema"] != "droidloom-official-gsi-independent-vendor-normal-result-v1"
         || value["normal_user_commands_returned_success"] != true
         || value["official_system_bytes_preserved"] != true
-        || value["software_keymint_compatibility"]["schema"] != "droidloom-keymint-soong-host-test-v1"
-        || value["software_keymint_compatibility"]["target"] != "droidloom_keymint_software_compat_test"
+        || value["software_keymint_compatibility"]["schema"]
+            != "droidloom-keymint-soong-host-test-v1"
+        || value["software_keymint_compatibility"]["target"]
+            != "droidloom_keymint_software_compat_test"
         || value["software_keymint_compatibility"]["passed"] != true
         || value["software_keymint_compatibility"]["boringssl_same_build"] != true
         || value["software_keymint_compatibility"]["test_count"] != 10
@@ -245,7 +251,30 @@ pub(crate) fn stage_existing(
     let temp = tempfile::Builder::new()
         .prefix("official-base-input-")
         .tempdir_in(parent)?;
-    let (raw, converter) = decode_image(&vendor, &temp.path().join("vendor.raw.img"))?;
+    // A completed normal record retains its original converter. An older
+    // extension record already carries the same explicit binding; neither path
+    // may choose an unrelated tool from the current host PATH.
+    let direct_converter: Option<FileRef> = value
+        .get("normal_sparse_image_reader")
+        .map(|v| serde_json::from_value(v.clone()))
+        .transpose()?;
+    let extension_converter: Option<FileRef> = value
+        .get("system_ext_lib64")
+        .and_then(|v| v.get("sparse_converter"))
+        .filter(|v| !v.is_null())
+        .map(|v| serde_json::from_value(v.clone()))
+        .transpose()?;
+    if let (Some(direct), Some(extension)) = (&direct_converter, &extension_converter) {
+        if direct != extension {
+            return fail("normal vendor and extension bind different sparse converters");
+        }
+    }
+    let selected_converter = direct_converter.or(extension_converter);
+    let (raw, converter) = decode_image(
+        &vendor,
+        &temp.path().join("vendor.raw.img"),
+        selected_converter.as_ref(),
+    )?;
     let ext = extension_path
         .map(|p| pin(p, 32 * 1024 * 1024))
         .transpose()?;
@@ -345,10 +374,18 @@ mod tests {
         );
         assert!(verify_normal_vendor(&record, &member("b")).is_err());
         let mut missing_test = record.clone();
-        missing_test.as_object_mut().unwrap().remove("software_keymint_compatibility");
+        missing_test
+            .as_object_mut()
+            .unwrap()
+            .remove("software_keymint_compatibility");
         assert!(verify_normal_vendor(&missing_test, &vendor).is_err());
-        for (field, invalid) in [("passed", json!(false)), ("boringssl_same_build", json!(false)),
-            ("test_count", json!(0)), ("list_exit_code", json!(1)), ("run_exit_code", json!(1))] {
+        for (field, invalid) in [
+            ("passed", json!(false)),
+            ("boringssl_same_build", json!(false)),
+            ("test_count", json!(0)),
+            ("list_exit_code", json!(1)),
+            ("run_exit_code", json!(1)),
+        ] {
             let mut failed_test = record.clone();
             failed_test["software_keymint_compatibility"][field] = invalid;
             assert!(verify_normal_vendor(&failed_test, &vendor).is_err());
@@ -401,7 +438,8 @@ mod tests {
         let extra = pin(path("readiness")?, 16 * 1024 * 1024)?;
         let elf = pin(path("observer")?, 8 * 1024 * 1024)?;
         let rc = pin(path("rc")?, 4096)?;
-        let frontend: library::FrontendDeclaration = serde_json::from_value(cfg["frontend"].clone())?;
+        let frontend: library::FrontendDeclaration =
+            serde_json::from_value(cfg["frontend"].clone())?;
         if cfg["readiness_sha256"].as_str() != Some(&extra.sha256)
             || cfg["observer_sha256"].as_str() != Some(&elf.sha256)
             || cfg["rc_sha256"].as_str() != Some(&rc.sha256)

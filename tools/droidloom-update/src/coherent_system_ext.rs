@@ -13,6 +13,7 @@ pub(crate) fn build(
     output_dir: &Path,
     modules: &BTreeMap<String, String>,
     readiness_result: &Value,
+    sparse_converter: &FileRef,
 ) -> Result<Value> {
     let _scope = resources::Scope::writing(output_dir, 2 * resources::GIB)?;
     let temporary = tempfile::Builder::new()
@@ -21,7 +22,11 @@ pub(crate) fn build(
     let work = temporary.path();
     let system = pin(system_image, MAX_IMAGE)?;
     let vendor = pin(vendor_image, MAX_IMAGE)?;
-    let (raw_vendor, converter) = decode_image(&vendor, &work.join("vendor.raw.img"))?;
+    let (raw_vendor, converter) = decode_image(
+        &vendor,
+        &work.join("vendor.raw.img"),
+        Some(sparse_converter),
+    )?;
     let host = vendor_build.join("host/linux-x86/bin");
     let output = output_dir.join(NAME);
     if output.symlink_metadata().is_ok() {

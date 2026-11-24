@@ -876,8 +876,10 @@ pub(super) fn build(
         actual.insert(vendor_path(original)?, installed);
     }
     let vendor_image = artifact(&product_out.join("vendor.img"), 2 * 1024 * 1024 * 1024)?;
-    let graphics_hal_entries =
-        crate::coherent_images::verify_vendor_graphics_hal_entries(&product_out)?;
+    let sparse_converter = crate::coherent_images::normal_sparse_converter(&vendor_out)?;
+    let graphics_hal_entries = crate::coherent_images::verify_vendor_graphics_hal_entries(
+        &product_out, &sparse_converter, out,
+    )?;
     let mut host_digests = BTreeMap::new();
     for name in HOST_MODULES {
         let filename = format!("{name}.so");
@@ -887,10 +889,15 @@ pub(super) fn build(
     }
     let readiness = crate::coherent_images::readiness::build(inputs.system_path()?, &product_out, &vendor_out, out)?;
     let system_extension = crate::coherent_images::system_ext::build(
-        inputs.system_path()?, &product_out.join("vendor.img"), &vendor_out, out, &host_digests, &readiness)?;
+        inputs.system_path()?, &product_out.join("vendor.img"), &vendor_out, out, &host_digests, &readiness,
+        &sparse_converter)?;
     inputs.verify_unchanged()?;
     vendor_image.check()?;
+    if crate::coherent_images::normal_sparse_converter(&vendor_out)? != sparse_converter {
+        return fail("normal sparse converter changed during vendor image readback");
+    }
     let record = json!({"schema":"droidloom-official-gsi-independent-vendor-normal-result-v1",
+        "normal_sparse_image_reader":sparse_converter,
         "system_ext_lib64":system_extension,"early_boot_readiness":readiness,
         "official_inputs":inputs.receipt()?,"native_build_inputs":artifact(&native.join(INPUT_NAME),16*1024*1024)?,
         "vendor_build_inputs":artifact(&vendor_out.join(INPUT_NAME),16*1024*1024)?,
