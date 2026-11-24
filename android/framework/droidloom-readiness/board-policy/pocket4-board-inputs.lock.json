@@ -1,8 +1,8 @@
 {
   "schema": "droidloom-pocket4-joint-initramfs-inputs-v1",
   "kernel": {
-    "release": "6.18.64-p4ctx6181-fusectl-r1",
-    "sha256": "12ce8084ec713b04c001556a3698dda078b81bf2b6d1d31909f48f7b51a6685f",
+    "release": "6.18.64-p4ctx6181-fusectl-aafs-r1",
+    "sha256": "4ea7d505344f29c7772ef0ead82c8c28b0dfbe24627454d2d82fc9956544229c",
     "apparmor_features": "pocket4-6.18.64-apparmor.features",
     "apparmor_features_sha256": "facafbfb0ab5705d3846b53d6d09d753a872b8cb011d27b8465f7cf6b90c0c2b",
     "lsm": [
@@ -19,16 +19,16 @@
   },
   "files": {
     "joint.policy": {
-      "size": 926530,
-      "sha256": "1044e871b558aa0661c6cdf8d5d31328872cab04263d6ef53f59faac685eba3c",
+      "size": 926844,
+      "sha256": "d645d0dcf663e53204ebb0d672ba255efd4fe1a9e9cbc55022123aa893fe72b4",
       "producer": "compile_shared_kernel_policy.py",
       "linux_board_source": "pocket4-linux-board.cil",
       "linux_board_source_sha256": "e7f9127184ea8c8298eb250d8d0cf69bace8d16eb3330ed189c74051fafda767",
       "original_android_policy_sha256": "65553139e595e8db62ccd1dfc8d649369bbf7034ca73e5c384ce5d73ee79c62a"
     },
     "ubuntu-apparmor.profiles": {
-      "size": 5795693,
-      "sha256": "4b1d14661725ab515ce1db60a164eb53650df34115d371a3d294071636dbe9d1",
+      "size": 5797221,
+      "sha256": "0de44977973e5cd70d513e1009149eaf0e3c6e15e58c07453efe1886031010c0",
       "producer": "pack_pocket4_ubuntu_apparmor.py",
       "parser_sha256": "11e9595527b8bb5b775709e4626ec69dc682585760ec7c6d0b045e759f1c0df2",
       "active_sources": 165,
@@ -36,10 +36,10 @@
       "ubuntu_size": 5663265,
       "board_profiles": {
         "droidloom-policy-loader": {
-          "source_sha256": "826ac2ca438ee81cc00e29c34492761b56a96361eda7f0e86076e4e7ec0b2845",
-          "compiled_sha256": "eca92f3ae409c7947359d456a4a3cf51c007f3e37e786f51252fbe0681db0a68",
-          "size": 41281,
-          "kernel_profile_sha256": "9fbf01755818b5b83afb7df02041f2860fc859a50bd1c2c64518fa0c791de8e6"
+          "source_sha256": "3bb045b0159c61718f5a70e48f86745711230f8abd6ad37804e2908758cd322a",
+          "compiled_sha256": "1e10e23d5e9e8ec64983ecb5a7398ab6d16027147b4b8846ecf2bb896c5dfd37",
+          "size": 41825,
+          "kernel_profile_sha256": "312992d5794e0faf0aa93376b316f2691922097ce3c2720d17b9ecbdf2f5766e"
         },
         "droidloom-production-android": {
           "source_sha256": "bde2dc5d183368f8e26656e1f72767cfb40dc74b63102fba11aa77d7cc00c9f1",
@@ -48,10 +48,10 @@
           "kernel_profile_sha256": "7eb26bc6c45e18a35ddfeefecca1b58c0fcec35ffff6ace6c32221c0dad8ebbc"
         },
         "droidloom-production-broker": {
-          "source_sha256": "2d5a9206e416da3a9415e5b6218add4d10627f4081914b6462eb253c7f78bd94",
-          "compiled_sha256": "08b22146df428f52b16790128216a6b678fc896376959f12cbfccd639724c44a",
-          "size": 46137,
-          "kernel_profile_sha256": "539fc2a2fcc19347057860887eea5c00bcd47a125ea82888483fbc27f46d00d0"
+          "source_sha256": "9f8312f4a68ad3b577672aac9f088b4d6187fa461557bfb3a67c26eb6696f041",
+          "compiled_sha256": "4393dc96006d3df2fe4f0d5d25487336c18b90cee4ed696a144d182185dff44d",
+          "size": 47121,
+          "kernel_profile_sha256": "c47ebc2f7231013d728aafed18016aa4c1b89d1b1c0f1cdd80b79fc5560dc4fe"
         },
         "droidloom-ubuntu-journald": {
           "source_sha256": "612d05acc6105c21594adb7486a7e46b9a9f6b8fa5f691c9934efea02ec38663",

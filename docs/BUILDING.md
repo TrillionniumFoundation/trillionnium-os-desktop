@@ -1120,3 +1120,40 @@ binds the final archive and manifest hashes. An existing output is never replace
 A file-only archive drops the empty StateDirectory and is not a valid input to
 the original Ubuntu calibration qualifier. Packaging success does not establish
 boot, calibration, Android readiness or application acceptance.
+
+## Protected AppArmor object generations
+
+The early publisher emits DLAAREV3 only after loading the admitted empty root
+namespace in its fixed order: 165 Ubuntu sources followed by four board
+profiles. It seals the original raw object, the revision inode, and initial
+counter value for each protected loader, Android, and broker profile. The
+three raw births are 164, 165, and 166; their initial counters are 165, 166,
+and 167. The selected shared kernel must support SELinux genfs labels on
+AppArmor's internal filesystem.
+
+Runtime consumers retain original namespace and object descriptors. Every
+observation opens a fresh revision descriptor through the held original root,
+checks filesystem, mount, inode, owner, mode, and the dedicated SELinux type
+before reading data, then checks the descriptor again. Global namespace
+revision reads bracket the complete observation and must be stable; later
+operations permit only monotonic global advancement with the three protected
+counters unchanged. DLAAREV1, DLAAREV2, and direct evidence retain their original
+exact global-generation rules. The original authority identity is immutable.
+
+The narrow AppArmor synthetic prefix permits reads at only the three revision
+paths. A connected file with a matching synthetic name and an already-readable
+SELinux label can still be opened; the original-object gate rejects it before
+reading its data. No claim that every alias is denied by the LSMs is implied.
+Raw policy contents, replacement, relabeling, and writes remain excluded.
+
+The harness-free actual-board-epoch test invokes the maintained Rust gate on
+its main thread inside an isolated target-kernel fixture. The enforcing
+loader and broker cases cover unrelated replacement, same-byte resubmission,
+A-to-B-to-A replacement, and a nested namespace. The positive case also checks
+a readable-label alias, a default-label alias, and a foreign task executable
+link. Preserve the raw serial log: timestamped kernel printk records can
+interrupt a userspace marker mid-line, so an independent marker readback may
+remove only complete timestamped kernel records while retaining the original
+bytes and original result. These tests qualify the object-generation gate;
+the real systemd service and complete Ubuntu boot require their separate
+normal-package qualifications.

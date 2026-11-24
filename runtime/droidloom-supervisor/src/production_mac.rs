@@ -100,6 +100,12 @@ const LINKERCONFIG_EXEC: &str = "u:object_r:linkerconfig_exec:s0";
 #[path = "production_mac_board_epoch.rs"]
 mod board_epoch;
 
+#[cfg(test)]
+pub(crate) fn run_actual_board_epoch_fixture() {
+    board_epoch::tests::check_actual_joint_kernel_counter_evidence_and_aliases();
+}
+
+
 #[path = "production_mac_kernel_first.rs"]
 mod kernel_first;
 pub(crate) use kernel_first::EarlyManagerClient;
@@ -774,7 +780,9 @@ struct AaProfile {
 }
 struct AaPolicy {
     security: File,
+    // Immutable authority binding; unrelated reloads do not create a new provider.
     revision: i64,
+    operation_revision: std::cell::Cell<i64>,
     evidence: AaEvidence,
 }
 enum AaEvidence {
@@ -962,7 +970,9 @@ impl AaPolicy {
                 [&declaration.apparmor_loader_policy_sha256, &declaration.apparmor_android_policy_sha256,
                     &declaration.apparmor_broker_policy_sha256],
             )?;
-            return Ok(Self { security, revision: observed.revision, evidence: AaEvidence::Boot(observed) });
+            return Ok(Self { security, revision: observed.revision,
+                operation_revision: std::cell::Cell::new(observed.revision),
+                evidence: AaEvidence::Boot(observed) });
         }
         let policy = aa_policy_root(&security)?;
         let revision = aa_revision(&security)?;
@@ -1032,15 +1042,19 @@ impl AaPolicy {
         let value = Self {
             security,
             revision,
+            operation_revision: std::cell::Cell::new(revision),
             evidence: AaEvidence::Direct { policy, profiles_directory, profiles },
         };
         value.revalidate()?;
         Ok(value)
     }
     fn revalidate(&self) -> Result<()> {
+        let current = aa_revision(&self.security)?;
+        let advances = matches!(&self.evidence, AaEvidence::Boot(epoch) if epoch.has_counters());
         require(
-            aa_revision(&self.security)? == self.revision,
-            "AppArmor policy load generation changed",
+            if advances { current >= self.operation_revision.get() }
+            else { current == self.revision },
+            "AppArmor policy load generation changed without protected counter evidence",
         )?;
         let security = open_absolute(
             "/sys/kernel/security/apparmor",
@@ -1052,7 +1066,13 @@ impl AaPolicy {
         )?;
         let (held_policy, held_directory, held_profiles) = match &self.evidence {
             AaEvidence::Direct { policy, profiles_directory, profiles } => (policy, profiles_directory, profiles),
-            AaEvidence::Boot(epoch) => return epoch.revalidate(),
+            AaEvidence::Boot(epoch) => {
+                epoch.revalidate_at(current)?;
+                require(aa_revision(&self.security)? == current,
+                    "AppArmor changed during protected profile observation")?;
+                self.operation_revision.set(current);
+                return Ok(());
+            },
         };
         let policy = aa_policy_root(&security)?;
         require(

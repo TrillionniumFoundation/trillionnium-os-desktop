@@ -2,7 +2,10 @@
 abi <abi/5.0>,
 #include <tunables/global>
 @{droidloom_mac_release_digest}=[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]
-profile droidloom-policy-loader {
+profile droidloom-policy-loader flags=(attach_disconnected.path=/.droidloom-kernel-apparmorfs) {
+  # The consumer authenticates the sealed original AAFS objects before reading.
+  # Only three synthetic paths gain read access; the object gate rejects aliases.
+  /.droidloom-kernel-apparmorfs/raw_data/{164,165,166}/revision r,
   # Dynamic loader and NSS inputs used by the packaged Ubuntu executables.
   /etc/ld.so.cache r,
   /{,usr/}lib{,64}/ld-linux-x86-64.so.2 mr,
