@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #define _GNU_SOURCE
 #include "apparmor_epoch.h"
+#include "board_policy_inputs.h"
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -203,6 +204,40 @@ static int read_role(int parent, const char *base, size_t index, struct epoch *e
     return error ? reject(error) : 0;
 }
 
+/* Only the initial kernel-lineage loader calls this before the first SELinux
+ * load. The persisted runtime custody contract remains its original three
+ * profiles; no runtime reader is asked to inspect unrelated board roles. */
+static int board_profile_fields(size_t index, const char *name,
+                                const char *mode, const char *digest)
+{
+    if (index >= DROIDLOOM_BOARD_APPARMOR_BOARD_ENTRIES)
+        return reject(EBADMSG);
+    const struct droidloom_board_apparmor_profile *role =
+        &droidloom_board_apparmor_profiles[index];
+    return strcmp(name, role->name) || strcmp(mode, "enforce") ||
+        strcmp(digest, role->kernel_sha256) ? reject(EBADMSG) : 0;
+}
+
+static int read_board_profile(int parent, const char *base, size_t index,
+                              uint64_t expected_mount)
+{
+    int fd = openat(parent, base, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
+    if (fd < 0) return -1;
+    uint64_t mount, inode;
+    int error = 0;
+    char name[96], mode[32], digest[68];
+    if (identity(fd, &mount, &inode) < 0) error = errno;
+    else if (mount != expected_mount) error = EXDEV;
+    if (!error && (kernel_line(fd, "name", AAFS_MAGIC, name, sizeof(name)) < 0 ||
+                   kernel_line(fd, "mode", AAFS_MAGIC, mode, sizeof(mode)) < 0 ||
+                   kernel_line(fd, "sha256", AAFS_MAGIC, digest, sizeof(digest)) < 0))
+        error = errno;
+    if (!error && board_profile_fields(index, name, mode, digest) < 0)
+        error = errno;
+    close(fd);
+    return error ? reject(error) : 0;
+}
+
 static int capture(struct epoch *epoch, const struct droidloom_raw_profile inputs[3])
 {
     if (kernel_line(AT_FDCWD, "/proc/sys/kernel/random/boot_id", PROC_SUPER_MAGIC,
@@ -231,10 +266,27 @@ static int capture(struct epoch *epoch, const struct droidloom_raw_profile input
     if (error) { close(profiles); return reject(error); }
     DIR *entries = fdopendir(profiles);
     if (!entries) { error = errno; close(profiles); return reject(error); }
+    bool seen[DROIDLOOM_BOARD_APPARMOR_BOARD_ENTRIES] = {false};
     do {
         errno = 0;
         struct dirent *entry = readdir(entries);
         if (!entry) { error = errno; break; }
+        for (size_t i = 0; i < DROIDLOOM_BOARD_APPARMOR_BOARD_ENTRIES; ++i) {
+            const char *name = droidloom_board_apparmor_profiles[i].name;
+            size_t n = strlen(name);
+            if (strncmp(entry->d_name, name, n) || entry->d_name[n] != '.') continue;
+            const char *suffix = entry->d_name + n + 1;
+            if (seen[i] || !*suffix || suffix[strspn(suffix, "0123456789")]) {
+                error = EBADMSG;
+                break;
+            }
+            if (read_board_profile(profiles, entry->d_name, i, epoch->mount) < 0) {
+                error = errno;
+                break;
+            }
+            seen[i] = true;
+        }
+        if (error) break;
         for (size_t i = 0; i < 3; i++) {
             size_t n = strlen(names[i]);
             if (strncmp(entry->d_name, names[i], n) || entry->d_name[n] != '.') continue;
@@ -245,6 +297,8 @@ static int capture(struct epoch *epoch, const struct droidloom_raw_profile input
     } while (!error);
     closedir(entries);
     if (error) return reject(error);
+    for (size_t i = 0; i < DROIDLOOM_BOARD_APPARMOR_BOARD_ENTRIES; ++i)
+        if (!seen[i]) return reject(ENOENT);
     for (size_t i = 0; i < 3; i++) if (!epoch->roles[i].directory[0]) return reject(ENOENT);
     char last[32];
     if (kernel_line(AT_FDCWD, AA_DIR "/revision", SECURITYFS_MAGIC, last, sizeof(last)) < 0) return -1;

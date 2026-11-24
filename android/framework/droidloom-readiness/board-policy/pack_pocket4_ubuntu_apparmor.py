@@ -53,8 +53,10 @@ def main():
             raise ValueError("The original Ubuntu AppArmor archive differs from the admitted distro inputs")
         roles = expected["board_profiles"]
         names = ("droidloom-ubuntu-journald", "droidloom-policy-loader", "droidloom-production-android", "droidloom-production-broker", "droidloom-instance-launcher", "droidloom-instance-factory", "droidloom-native-hardware-label")
-        if set(roles) != set(names):
-            raise ValueError("The board must select exactly the seven service roles")
+        ordered = tuple(expected["board_profile_order"])
+        if ordered != names or set(roles) != set(ordered):
+            raise ValueError("The board must select exactly the seven ordered service roles")
+        names = ordered
         with result.open("r+b") as target:
             target.seek(8)
             target.write(struct.pack("<I", len(sources) + len(names)))

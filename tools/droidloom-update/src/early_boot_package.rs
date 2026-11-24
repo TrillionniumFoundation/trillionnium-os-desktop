@@ -12,9 +12,42 @@ const BOARD_INPUTS: &[u8] = include_bytes!(
 );
 
 #[derive(serde::Deserialize)]
+struct AppArmorProfileInput {
+    size: u64,
+    source_sha256: String,
+    compiled_sha256: String,
+    kernel_profile_sha256: String,
+}
+
+#[derive(serde::Deserialize)]
 struct ReleaseInput {
     size: u64,
     sha256: String,
+    #[serde(default)]
+    active_sources: Option<u32>,
+    #[serde(default)]
+    board_profile_order: Vec<String>,
+    #[serde(default)]
+    board_profiles: std::collections::BTreeMap<String, AppArmorProfileInput>,
+}
+
+// Preserve the original first six roles and append only the selected hardware
+// helper. The committed lock owns the serialized order; this is its closed set.
+const APPARMOR_BOARD_ROLES: [&str; 7] = [
+    "droidloom-ubuntu-journald",
+    "droidloom-policy-loader",
+    "droidloom-production-android",
+    "droidloom-production-broker",
+    "droidloom-instance-launcher",
+    "droidloom-instance-factory",
+    "droidloom-native-hardware-label",
+];
+
+fn sha256_text(value: &str) -> bool {
+    value.len() == 64
+        && value
+            .bytes()
+            .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
 }
 
 #[derive(serde::Deserialize)]
@@ -59,13 +92,45 @@ fn parse_board_inputs(bytes: &[u8]) -> Result<BoardInputs> {
             return fail(format!("invalid bounded board input pin for {name}"));
         }
     }
+    let aa = &lock.files["ubuntu-apparmor.profiles"];
+    let ubuntu = aa
+        .active_sources
+        .ok_or("AppArmor Ubuntu source count is absent")?;
+    if ubuntu == 0
+        || ubuntu > 4096
+        || !aa
+            .board_profile_order
+            .iter()
+            .map(String::as_str)
+            .eq(APPARMOR_BOARD_ROLES.iter().copied())
+        || aa.board_profiles.len() != APPARMOR_BOARD_ROLES.len()
+    {
+        return fail(
+            "AppArmor lock must preserve the bounded Ubuntu prefix and seven ordered board roles",
+        );
+    }
+    for name in &aa.board_profile_order {
+        let role = aa
+            .board_profiles
+            .get(name)
+            .ok_or("ordered AppArmor role is absent")?;
+        if role.size == 0
+            || role.size > 64 * 1024 * 1024
+            || !sha256_text(&role.source_sha256)
+            || !sha256_text(&role.compiled_sha256)
+            || !sha256_text(&role.kernel_profile_sha256)
+        {
+            return fail(format!("invalid bounded AppArmor role pin for {name}"));
+        }
+    }
     Ok(lock)
 }
 
 fn board_policy_header(lock: &BoardInputs) -> String {
     let policy = &lock.files["joint.policy"];
     let aa = &lock.files["ubuntu-apparmor.profiles"];
-    format!(
+    let ubuntu = aa.active_sources.expect("validated AppArmor prefix");
+    let mut header = format!(
         concat!(
             "/* Generated from the committed pocket4-board-inputs.lock.json. */\n",
             "#ifndef DROIDLOOM_BOARD_POLICY_INPUTS_H\n",
@@ -75,10 +140,51 @@ fn board_policy_header(lock: &BoardInputs) -> String {
             "#define DROIDLOOM_BOARD_SELINUX_SHA256 \"{}\"\n",
             "#define DROIDLOOM_BOARD_APPARMOR_SIZE {}ULL\n",
             "#define DROIDLOOM_BOARD_APPARMOR_SHA256 \"{}\"\n",
-            "#endif\n"
+            "#define DROIDLOOM_BOARD_APPARMOR_UBUNTU_ENTRIES {}U\n",
+            "#define DROIDLOOM_BOARD_APPARMOR_BOARD_ENTRIES {}U\n",
+            "#define DROIDLOOM_BOARD_APPARMOR_PROFILE_ENTRIES {}U\n",
         ),
-        lock.kernel.release, policy.size, policy.sha256, aa.size, aa.sha256,
-    )
+        lock.kernel.release,
+        policy.size,
+        policy.sha256,
+        aa.size,
+        aa.sha256,
+        ubuntu,
+        aa.board_profile_order.len(),
+        ubuntu as usize + aa.board_profile_order.len(),
+    );
+    for (symbol, name) in [
+        ("LOADER", "droidloom-policy-loader"),
+        ("ANDROID", "droidloom-production-android"),
+        ("BROKER", "droidloom-production-broker"),
+    ] {
+        let index = aa
+            .board_profile_order
+            .iter()
+            .position(|role| role == name)
+            .expect("validated epoch role");
+        header.push_str(&format!(
+            "#define DROIDLOOM_BOARD_APPARMOR_EPOCH_{symbol}_INDEX {}U\n",
+            ubuntu as usize + index,
+        ));
+    }
+    header.push_str(concat!(
+        "struct droidloom_board_apparmor_profile {\n",
+        "    const char *name; unsigned long long size;\n",
+        "    const char *compiled_sha256; const char *kernel_sha256;\n",
+        "};\n",
+        "static const struct droidloom_board_apparmor_profile ",
+        "droidloom_board_apparmor_profiles[DROIDLOOM_BOARD_APPARMOR_BOARD_ENTRIES] = {\n",
+    ));
+    for name in &aa.board_profile_order {
+        let role = &aa.board_profiles[name];
+        header.push_str(&format!(
+            "    {{\"{}\", {}ULL, \"{}\", \"{}\"}},\n",
+            name, role.size, role.compiled_sha256, role.kernel_profile_sha256,
+        ));
+    }
+    header.push_str("};\n#endif\n");
+    header
 }
 
 pub(super) fn stage_board_policy(inputs: &Path, destination: &Path) -> Result<()> {
@@ -468,6 +574,167 @@ mod tests {
             let mut value = original.clone();
             value["files"].as_object_mut().unwrap().remove(name);
             assert!(parse_board_inputs(&serde_json::to_vec(&value).unwrap()).is_err());
+        }
+    }
+    #[test]
+    fn malformed_apparmor_role_layouts_are_rejected_before_generating_c() {
+        let original: serde_json::Value = serde_json::from_slice(BOARD_INPUTS).unwrap();
+        for count in [0_u64, 4097, u64::MAX] {
+            let mut value = original.clone();
+            value["files"]["ubuntu-apparmor.profiles"]["active_sources"] = serde_json::json!(count);
+            assert!(parse_board_inputs(&serde_json::to_vec(&value).unwrap()).is_err());
+        }
+        for field in ["active_sources", "board_profile_order", "board_profiles"] {
+            let mut value = original.clone();
+            value["files"]["ubuntu-apparmor.profiles"]
+                .as_object_mut()
+                .unwrap()
+                .remove(field);
+            assert!(parse_board_inputs(&serde_json::to_vec(&value).unwrap()).is_err());
+        }
+        for mutation in 0..4 {
+            let mut value = original.clone();
+            let aa = &mut value["files"]["ubuntu-apparmor.profiles"];
+            match mutation {
+                0 => {
+                    aa["board_profile_order"].as_array_mut().unwrap().pop();
+                }
+                1 => {
+                    aa["board_profile_order"].as_array_mut().unwrap().swap(1, 2);
+                }
+                2 => {
+                    aa["board_profile_order"][6] = serde_json::json!("droidloom-instance-factory");
+                }
+                _ => {
+                    aa["board_profiles"]
+                        .as_object_mut()
+                        .unwrap()
+                        .remove("droidloom-native-hardware-label");
+                }
+            }
+            assert!(parse_board_inputs(&serde_json::to_vec(&value).unwrap()).is_err());
+        }
+        for field in ["source_sha256", "compiled_sha256", "kernel_profile_sha256"] {
+            let mut value = original.clone();
+            value["files"]["ubuntu-apparmor.profiles"]["board_profiles"]
+                ["droidloom-native-hardware-label"][field] = serde_json::json!("bad");
+            assert!(parse_board_inputs(&serde_json::to_vec(&value).unwrap()).is_err());
+        }
+    }
+
+    #[test]
+    #[ignore = "requires the exact admitted normal AppArmor archive in DROIDLOOM_TEST_APPARMOR_ARCHIVE"]
+    fn admitted_apparmor_archive_reaches_original_epoch_roles() {
+        let lock = committed_board_inputs().unwrap();
+        let aa = &lock.files["ubuntu-apparmor.profiles"];
+        let path = std::env::var_os("DROIDLOOM_TEST_APPARMOR_ARCHIVE")
+            .expect("exact normal AppArmor archive path");
+        let archive =
+            crate::coherent_images::read_release_input(Path::new(&path), aa.size, &aa.sha256)
+                .unwrap();
+        let work = tempfile::tempdir().unwrap();
+        let dir = work.path();
+        fs::write(
+            dir.join("board_policy_inputs.h"),
+            board_policy_header(&lock),
+        )
+        .unwrap();
+        fs::write(dir.join("archive"), archive).unwrap();
+        for (name, source) in [
+            (
+                "board_policy.c",
+                include_bytes!("../../../runtime/droidloom-early-boot/board_policy.c").as_slice(),
+            ),
+            (
+                "board_policy.h",
+                include_bytes!("../../../runtime/droidloom-early-boot/board_policy.h").as_slice(),
+            ),
+            (
+                "apparmor_epoch.c",
+                include_bytes!("../../../runtime/droidloom-early-boot/apparmor_epoch.c").as_slice(),
+            ),
+            (
+                "apparmor_epoch.h",
+                include_bytes!("../../../runtime/droidloom-early-boot/apparmor_epoch.h").as_slice(),
+            ),
+            (
+                "boot_diagnostics.h",
+                include_bytes!("../../../runtime/droidloom-early-boot/boot_diagnostics.h")
+                    .as_slice(),
+            ),
+            (
+                "linux_run_label.h",
+                include_bytes!("../../../runtime/droidloom-early-boot/linux_run_label.h")
+                    .as_slice(),
+            ),
+            (
+                "device_source.h",
+                include_bytes!("../../../runtime/droidloom-early-boot/device_source.h").as_slice(),
+            ),
+            (
+                "device_template.h",
+                include_bytes!("../../../runtime/droidloom-early-boot/device_template.h")
+                    .as_slice(),
+            ),
+            (
+                "board.h",
+                include_bytes!("../../../runtime/droidloom-early-boot/board.h").as_slice(),
+            ),
+            (
+                "custody.h",
+                include_bytes!("../../../runtime/droidloom-early-boot/custody.h").as_slice(),
+            ),
+            (
+                "apparmor_pack_test.c",
+                include_bytes!("../../../runtime/droidloom-early-boot/tests/apparmor_pack_test.c")
+                    .as_slice(),
+            ),
+            (
+                "apparmor_role_fields_test.c",
+                include_bytes!(
+                    "../../../runtime/droidloom-early-boot/tests/apparmor_role_fields_test.c"
+                )
+                .as_slice(),
+            ),
+        ] {
+            fs::write(dir.join(name), source).unwrap();
+        }
+        for source in ["apparmor_pack_test.c", "apparmor_role_fields_test.c"] {
+            let elf = dir.join(source.trim_end_matches(".c"));
+            let compile = Command::new("cc")
+                .current_dir(dir)
+                .args([
+                    "-std=c11",
+                    "-O2",
+                    "-Wall",
+                    "-Wextra",
+                    "-Werror",
+                    "-ffunction-sections",
+                    "-fdata-sections",
+                    source,
+                    "-Wl,--gc-sections",
+                    "-lcrypto",
+                    "-o",
+                ])
+                .arg(&elf)
+                .output()
+                .unwrap();
+            assert!(
+                compile.status.success(),
+                "{}",
+                String::from_utf8_lossy(&compile.stderr)
+            );
+            let output = Command::new(&elf)
+                .arg(dir.join("archive"))
+                .output()
+                .unwrap();
+            assert!(
+                output.status.success(),
+                "stdout={} stderr={}",
+                String::from_utf8_lossy(&output.stdout),
+                String::from_utf8_lossy(&output.stderr)
+            );
+            println!("{}", String::from_utf8_lossy(&output.stdout));
         }
     }
 }

@@ -224,24 +224,56 @@ static int submit(const char *path, const unsigned char *data, size_t length)
     return error ? reject(error) : 0;
 }
 
-/* The pinned distribution archive contains 165 Ubuntu entries and six board roles. */
-#define APPARMOR_PROFILE_ENTRIES 171U
+/* Counts, order, raw bytes and epoch indexes come from the same committed lock
+ * as the normal AppArmor publisher. Appending a role never moves the original
+ * loader/Android/broker custody slots. */
+static int apparmor_profile_bytes(const unsigned char *data, size_t length,
+                                 const struct droidloom_board_apparmor_profile *role)
+{
+    if (length != role->size)
+        return reject(EBADMSG);
+    unsigned char digest[EVP_MAX_MD_SIZE];
+    unsigned int count = 0;
+    if (EVP_Digest(data, length, digest, &count, EVP_sha256(), NULL) != 1 || count != 32)
+        return reject(EIO);
+    char actual[65];
+    for (size_t i = 0; i < 32; ++i)
+        snprintf(actual + 2 * i, 3, "%02x", digest[i]);
+    return strcmp(actual, role->compiled_sha256) ? reject(EBADMSG) : 0;
+}
 
 static int apparmor_profiles(const struct input *pack, int activate,
                              struct droidloom_raw_profile selected[3])
 {
-    if (pack->size < 12 || memcmp(pack->data, "DLAA0001", 8) || le32(pack->data + 8) != APPARMOR_PROFILE_ENTRIES)
+    if (pack->size < 12 || memcmp(pack->data, "DLAA0001", 8) ||
+        le32(pack->data + 8) != DROIDLOOM_BOARD_APPARMOR_PROFILE_ENTRIES)
         return reject(EBADMSG);
+    static const unsigned int epoch_indexes[3] = {
+        DROIDLOOM_BOARD_APPARMOR_EPOCH_LOADER_INDEX,
+        DROIDLOOM_BOARD_APPARMOR_EPOCH_ANDROID_INDEX,
+        DROIDLOOM_BOARD_APPARMOR_EPOCH_BROKER_INDEX,
+    };
     size_t pos = 12;
-    for (unsigned int i = 0; i != APPARMOR_PROFILE_ENTRIES; ++i) {
+    for (unsigned int i = 0; i != DROIDLOOM_BOARD_APPARMOR_PROFILE_ENTRIES; ++i) {
         if (pack->size - pos < 4)
             return reject(EBADMSG);
         size_t length = le32(pack->data + pos);
         pos += 4;
         if (!length || length > pack->size - pos)
             return reject(EBADMSG);
-        if (selected && i >= APPARMOR_PROFILE_ENTRIES - 5U && i < APPARMOR_PROFILE_ENTRIES - 2U) {
-            selected[i - (APPARMOR_PROFILE_ENTRIES - 5U)] = (struct droidloom_raw_profile){pack->data + pos,length};
+        if (i >= DROIDLOOM_BOARD_APPARMOR_UBUNTU_ENTRIES) {
+            const size_t board = i - DROIDLOOM_BOARD_APPARMOR_UBUNTU_ENTRIES;
+            if (board >= DROIDLOOM_BOARD_APPARMOR_BOARD_ENTRIES)
+                return reject(EBADMSG);
+            if (apparmor_profile_bytes(pack->data + pos, length,
+                                       &droidloom_board_apparmor_profiles[board]) < 0)
+                return -1;
+        }
+        if (selected) {
+            for (size_t role = 0; role < 3; ++role) {
+                if (i == epoch_indexes[role])
+                    selected[role] = (struct droidloom_raw_profile){pack->data + pos, length};
+            }
         }
         if (activate && submit(AA_DIR "/.load", pack->data + pos, length) < 0)
             return -1;
