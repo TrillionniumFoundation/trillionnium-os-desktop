@@ -83,8 +83,10 @@ The first independent comparison of baseline and candidate covered all 390
 process contexts, 63,960 bit decisions total, and exactly 24 additions in these
 seven global capability sets. The later login-audit component adds only
 AUDIT_WRITE for the GDM worker and the independently owned service executor;
-its combined comparison requires exactly 26 additions in eight roles, no
-removals, and no change to namespace capability bits. The normal compiler additionally preserves the
+its combined comparison requires exactly 26 additions in eight roles. The
+normal GDM filesystem-credential repair subsequently adds only SETUID/SETGID
+to the GDM manager: exactly 28 additions in eight roles, no removals and no
+change to namespace capability bits. The normal compiler additionally preserves the
 original 2,010 Android effective-access comparisons, 190 exact ioctl decisions
 and original host-control checks.
 
@@ -95,7 +97,11 @@ Passing this capability gate is not a service or desktop acceptance receipt.
 1. GDM 50.1 creates dyn_uid-owned 0700 .config/environment.d, then its root
    process attempts g_file_replace for gdm.conf without changing credentials.
    The original Android DAC_OVERRIDE assertion remains intact. A normal
-   source-package fix and an actual GDM startup test are required.
+   source-package fix is now maintained in packaging/ubuntu/gdm: it uses a
+   verified thread-local fsuid/fsgid scope through atomic file close/rename.
+   The normal Debian build and three real root/cap-minimal regressions pass.
+   Actual GDM dynamic-greeter startup under the final shared kernel/policy is
+   still required; autologin alone cannot prove that path.
 2. The selected OpenSSH helper binaries import the Linux audit functions.
    The separate fixed login-audit component now closes its binary policy
    prerequisites. Real login under the final enforcing policy is still pending.

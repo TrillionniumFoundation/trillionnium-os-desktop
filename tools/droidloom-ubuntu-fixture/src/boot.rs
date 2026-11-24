@@ -103,6 +103,7 @@ struct MaterialSmokePlan {
     initrd_tools: crate::boot_runtime::InitrdTools,
     libselinux_candidate: crate::boot_candidate::LibselinuxCandidate,
     libapparmor_candidate: Option<crate::boot_apparmor_candidate::LibapparmorCandidate>,
+    gdm_candidate: Option<crate::boot_gdm_candidate::GdmCandidate>,
 }
 
 /// Exercise normal archive, candidate and initrd code on an independent copy of
@@ -151,11 +152,16 @@ pub fn verify_boot_materials(config: &Path, expected: &str) -> Result<()> {
         .as_ref()
         .map(|input| crate::boot_apparmor_candidate::apply(&root, &boot, &manifest, input))
         .transpose()?;
+    let gdm_candidate = plan
+        .gdm_candidate
+        .as_ref()
+        .map(|input| crate::boot_gdm_candidate::apply(&root, &boot, &manifest, input))
+        .transpose()?;
     let initrd =
         crate::boot_runtime::build_initrd(&root, &boot, &plan.base_initrd, &plan.initrd_tools)?;
     let result = serde_json::json!({"schema":"droidloom.boot-material-smoke-verified.v1",
         "input_sha256":expected,"public_clone":clone,"root":root,"host_import":host,
-        "candidate":candidate,"libapparmor_candidate":apparmor_candidate,"initrd":initrd,"construction_only_aliases":aliases,
+        "candidate":candidate,"libapparmor_candidate":apparmor_candidate,"gdm_candidate":gdm_candidate,"initrd":initrd,"construction_only_aliases":aliases,
         "construction_only_runtime_directories":["/dev","/proc","/sys","/run"],
         "accounts_initialized":false,"android_userdata_copied":false,"guest_started":false,
         "materials_only":true,"guest_qualified":false,"production_ready":false});
@@ -256,6 +262,7 @@ pub struct BootPlan {
     pub initrd_tools: crate::boot_runtime::InitrdTools,
     pub libselinux_candidate: Option<crate::boot_candidate::LibselinuxCandidate>,
     pub libapparmor_candidate: Option<crate::boot_apparmor_candidate::LibapparmorCandidate>,
+    pub gdm_candidate: Option<crate::boot_gdm_candidate::GdmCandidate>,
     pub root_image_gib: u64,
 }
 
@@ -451,6 +458,15 @@ pub fn prepare_boot(config: &Path, expected: &str) -> Result<()> {
         .as_ref()
         .map(|input| crate::boot_apparmor_candidate::apply(&root, &boot, &original, input))
         .transpose()?;
+    ensure(
+        plan.android.calibrate || plan.gdm_candidate.is_some(),
+        "full native boot requires the admitted GDM filesystem-credential candidate",
+    )?;
+    let gdm_candidate = plan
+        .gdm_candidate
+        .as_ref()
+        .map(|input| crate::boot_gdm_candidate::apply(&root, &boot, &original, input))
+        .transpose()?;
     for path in [
         "usr/bin/droidloomctl",
         "usr/bin/droidloom-wayland",
@@ -551,6 +567,7 @@ pub fn prepare_boot(config: &Path, expected: &str) -> Result<()> {
         "libselinux_candidate":candidate,
         "libapparmor_candidate":apparmor_candidate,
         "qualification_presenter_trace_environment":presenter_trace_environment,
+        "gdm_candidate":gdm_candidate,
         "desktop_enable":{"command":desktop_enable,"unit":desktop_unit,
             "wants_path":desktop_wants,"target":desktop_target,"identity":desktop_link},
         "labels":boot_files::pin_file(&boot.join("ROOT-LABELS.json"))?,

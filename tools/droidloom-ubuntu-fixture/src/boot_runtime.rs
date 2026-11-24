@@ -924,6 +924,7 @@ pub fn make_root_image(
         "/lib64",
         "/usr/lib/systemd/systemd",
         "/usr/lib/systemd/systemd-executor",
+        "/usr/sbin/gdm3",
         "/usr/lib/x86_64-linux-gnu/libselinux.so.1",
         "/usr/lib/x86_64-linux-gnu/libapparmor.so.1",
         "/usr/lib/x86_64-linux-gnu/libapparmor.so.1.30.7",
@@ -1071,13 +1072,14 @@ pub fn make_root_image(
         .map(|runtime| crate::boot_query_image::verify(root, work, &disk, runtime))
         .transpose()?;
     let apparmor_readback = crate::boot_apparmor_candidate::verify_image(root, work, &disk)?;
+    let gdm_readback = crate::boot_gdm_candidate::verify_image(root, work, &disk)?;
     let record = boot_files::pin_file(&disk)?;
     fs::write_json(
         &fs::absolute_string(&work.join("ROOT-IMAGE.json"))?,
         &json!({
         "image":record,"root_filesystem_uuid":uuid,"critical_label_paths":selected,
         "privilege_attributes_verified":attrs.len(),"inode_metadata_readback":metadata,
-        "fixed_query_input_readback":query_readback,"apparmor_library_readback":apparmor_readback,"guest_qualified":false}),
+        "fixed_query_input_readback":query_readback,"apparmor_library_readback":apparmor_readback,"gdm_executable_readback":gdm_readback,"guest_qualified":false}),
         0,
     )?;
     Ok(record)

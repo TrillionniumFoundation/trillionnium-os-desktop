@@ -10,8 +10,10 @@
 (allow p4_linux_sshd_t self (capability (chown fowner kill setgid setuid net_bind_service sys_chroot audit_write)))
 (neverallow p4_linux_sshd_t self (capability (not (chown fowner kill setgid setuid net_bind_service sys_chroot audit_write))))
 
-(allow p4_linux_gdm_t self (capability (chown fowner)))
-(neverallow p4_linux_gdm_t self (capability (not (chown fowner))))
+; The maintained normal GDM writer scopes only fsuid/fsgid to its held dynamic user.
+; Root tests retain exactly CHOWN/FOWNER/SETUID/SETGID, with no DAC override.
+(allow p4_linux_gdm_t self (capability (chown fowner setgid setuid)))
+(neverallow p4_linux_gdm_t self (capability (not (chown fowner setgid setuid))))
 
 (allow p4_linux_gdm_worker_t self (capability (kill setgid setuid sys_tty_config audit_write)))
 (neverallow p4_linux_gdm_worker_t self (capability (not (kill setgid setuid sys_tty_config audit_write))))

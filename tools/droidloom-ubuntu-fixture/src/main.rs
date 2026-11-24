@@ -6,6 +6,7 @@ mod boot_candidate;
 mod boot_child;
 mod boot_collect;
 mod boot_files;
+mod boot_gdm_candidate;
 mod boot_host;
 mod boot_kernel;
 mod boot_native;
