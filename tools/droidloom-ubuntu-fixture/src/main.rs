@@ -1,6 +1,7 @@
 #![forbid(unsafe_code)]
 
 mod boot;
+mod boot_apparmor_candidate;
 mod boot_candidate;
 mod boot_child;
 mod boot_collect;

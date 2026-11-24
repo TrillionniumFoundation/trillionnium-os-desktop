@@ -338,10 +338,12 @@ pub fn build_initrd(
     let hook_pin = boot_files::pin_file(&hook)?;
     let selinux = root.join("usr/lib/x86_64-linux-gnu/libselinux.so.1");
     let selinux_pin = boot_files::pin_file(&selinux)?;
+    let (apparmor_pin, _) =
+        boot_files::resolve_public_file(root, "/usr/lib/x86_64-linux-gnu/libapparmor.so.1")?;
     // Use the upstream shell interface, with its normal construction umask.
     // The exported project hook need not link libselinux itself; explicitly
     // carry the admitted native library so an older base cannot retain it.
-    let hook_command = "umask 022\n/usr/share/initramfs-tools/hooks/droidloom-early-release\n. /usr/share/initramfs-tools/hook-functions\ncopy_exec /usr/lib/x86_64-linux-gnu/libselinux.so.1\n";
+    let hook_command = "umask 022\n/usr/share/initramfs-tools/hooks/droidloom-early-release\n. /usr/share/initramfs-tools/hook-functions\ncopy_exec /usr/lib/x86_64-linux-gnu/libselinux.so.1\ncopy_exec /usr/lib/x86_64-linux-gnu/libapparmor.so.1\n";
     boot_files::run_logged(
         work,
         "ordinary-initrd-hook",
@@ -386,7 +388,8 @@ pub fn build_initrd(
     ensure(
         boot_files::pin_file(&hook)?.sha256 == hook_pin.sha256
             && boot_files::pin_file(&support)?.sha256 == tools.hook_functions.sha256
-            && boot_files::pin_file(&selinux)?.sha256 == selinux_pin.sha256,
+            && boot_files::pin_file(&selinux)?.sha256 == selinux_pin.sha256
+            && boot_files::pin_file(&apparmor_pin.path)?.sha256 == apparmor_pin.sha256,
         "normal hook changed during execution",
     )?;
     let mut copied = Vec::new();
@@ -396,6 +399,7 @@ pub fn build_initrd(
         "libcrypto.so.3",
         "libc.so.6",
         "libselinux.so.1",
+        "libapparmor.so.1",
     ] {
         ensure(
             copied
@@ -729,7 +733,7 @@ pub fn label_root(
     Ok(output)
 }
 
-fn debugfs_command_path(path: &str) -> Result<String> {
+pub(super) fn debugfs_command_path(path: &str) -> Result<String> {
     ensure(
         path.starts_with('/') && !path.bytes().any(|b| b < 32 || b == b'"' || b == b'\\'),
         "unsupported debugfs readback path",
@@ -921,6 +925,8 @@ pub fn make_root_image(
         "/usr/lib/systemd/systemd",
         "/usr/lib/systemd/systemd-executor",
         "/usr/lib/x86_64-linux-gnu/libselinux.so.1",
+        "/usr/lib/x86_64-linux-gnu/libapparmor.so.1",
+        "/usr/lib/x86_64-linux-gnu/libapparmor.so.1.30.7",
         "/etc/passwd",
         "/etc/shadow",
         "/etc/selinux/droidloom/policy/policy.30",
@@ -1058,13 +1064,14 @@ pub fn make_root_image(
     let query_readback = query_runtime
         .map(|runtime| crate::boot_query_image::verify(root, work, &disk, runtime))
         .transpose()?;
+    let apparmor_readback = crate::boot_apparmor_candidate::verify_image(root, work, &disk)?;
     let record = boot_files::pin_file(&disk)?;
     fs::write_json(
         &fs::absolute_string(&work.join("ROOT-IMAGE.json"))?,
         &json!({
         "image":record,"root_filesystem_uuid":uuid,"critical_label_paths":selected,
         "privilege_attributes_verified":attrs.len(),"inode_metadata_readback":metadata,
-        "fixed_query_input_readback":query_readback,"guest_qualified":false}),
+        "fixed_query_input_readback":query_readback,"apparmor_library_readback":apparmor_readback,"guest_qualified":false}),
         0,
     )?;
     Ok(record)

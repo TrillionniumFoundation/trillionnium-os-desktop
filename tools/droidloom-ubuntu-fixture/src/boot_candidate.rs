@@ -31,7 +31,7 @@ pub struct LibselinuxCandidate {
     pub source_orig_signature: FilePin,
 }
 
-fn artifact(value: &Value) -> Result<FilePin> {
+pub(super) fn artifact(value: &Value) -> Result<FilePin> {
     Ok(FilePin {
         path: PathBuf::from(value["path"].as_str().ok_or("artifact path absent")?),
         bytes: value["bytes"].as_u64().ok_or("artifact size absent")?,
@@ -41,16 +41,16 @@ fn artifact(value: &Value) -> Result<FilePin> {
             .into(),
     })
 }
-fn equal_pin(a: &FilePin, b: &FilePin) -> bool {
+pub(super) fn equal_pin(a: &FilePin, b: &FilePin) -> bool {
     a.path == b.path && a.bytes == b.bytes && a.sha256 == b.sha256
 }
-fn read_json(pin: &FilePin) -> Result<Value> {
+pub(super) fn read_json(pin: &FilePin) -> Result<Value> {
     Ok(serde_json::from_slice(&boot_files::read_pin(
         pin,
         1024 * 1024,
     )?)?)
 }
-fn safe_member(path: &str) -> bool {
+pub(super) fn safe_member(path: &str) -> bool {
     !path.is_empty()
         && !path.starts_with('/')
         && path.split('/').all(|p| {
@@ -495,7 +495,7 @@ fn elf_report(path: &Path, work: &Path, name: &str) -> Result<(BTreeSet<String>,
     ))
 }
 
-fn dpkg_status(root: &Path) -> Result<Option<FilePin>> {
+pub(super) fn dpkg_status(root: &Path) -> Result<Option<FilePin>> {
     let path = root.join("var/lib/dpkg/status");
     match std::fs::symlink_metadata(&path) {
         Ok(_) => Ok(Some(boot_files::pin_file(&path)?)),
