@@ -35,7 +35,8 @@
 (allow droidloom_broker p4_broker_frontend_image_files (file (getattr)))
 (allow droidloom_broker labeledfs (filesystem (getattr)))
 (neverallow droidloom_broker p4_broker_frontend_image_dirs (dir (open read write add_name remove_name mounton relabelto relabelfrom)))
-(neverallow droidloom_broker p4_broker_frontend_image_files (file (open read write append map execute execute_no_trans entrypoint create link unlink rename setattr relabelto relabelfrom)))
+(neverallow droidloom_broker p4_broker_frontend_image_files (file (write append map execute execute_no_trans entrypoint create link unlink rename setattr relabelto relabelfrom)))
+(neverallow droidloom_broker p4_broker_frontend_image_files_without_query (file (open read)))
 ; The independently installed native presenter is already a Linux executable.
 (allow droidloom_broker droidloom_presenter_exec (file (getattr open read)))
 

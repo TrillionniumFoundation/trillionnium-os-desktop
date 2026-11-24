@@ -305,7 +305,9 @@ fn full_digest(file: &File, identity: FileIdentity) -> Result<String> {
 fn require_private_query_label(file: &File, label: &[u8]) -> Result<()> {
     // Keep each read bounded by the exact fixed label, without turning the
     // variable-length role into a caller-sized allocation or truncated read.
-    if label == QUERY_EXEC {
+    if label == INITIAL_TMPFS {
+        require_exact_xattr(file, c"security.selinux", INITIAL_TMPFS)
+    } else if label == QUERY_EXEC {
         require_exact_xattr(file, c"security.selinux", QUERY_EXEC)
     } else if label == PROVIDER_EXEC {
         require_exact_xattr(file, c"security.selinux", PROVIDER_EXEC)
@@ -563,7 +565,9 @@ impl QueryResources {
         for (role, source) in declared.sources() {
             copied.push(copy_original(role, source, parent, &root, admit)?);
         }
-        label_new_inode(&root, QUERY_EXEC)?;
+        // The private filesystem root keeps its dedicated non-executable label.
+        // Only the fixed copied files receive the selected executable/data role.
+        require_exact_xattr(&root, c"security.selinux", INITIAL_TMPFS)?;
         zero_rc(unsafe { libc::fchmod(root.as_raw_fd(), 0o555) })?;
         let mut root_identity = FileIdentity::of(&root.metadata()?);
         drop(root);
@@ -658,7 +662,7 @@ impl QueryResources {
             "private query superblock or mapped-root custody differs",
         )?;
         readonly_mount_node(&self.mount, self.root_identity, self.mount_id)?;
-        readonly_private(&self.root, self.root_identity, self.mount_id, QUERY_EXEC)?;
+        readonly_private(&self.root, self.root_identity, self.mount_id, INITIAL_TMPFS)?;
         require_detached(&self.mount)?;
         let names = std::fs::read_dir(format!("/proc/self/fd/{}", self.root.as_raw_fd()))?
             .take(self.executables.len() + 1)

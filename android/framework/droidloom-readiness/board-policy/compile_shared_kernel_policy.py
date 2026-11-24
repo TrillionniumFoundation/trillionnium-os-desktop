@@ -67,6 +67,7 @@ def main():
         "ubuntu-real-root-interpreter.cil", "ubuntu-mounted-api-metadata.cil",
         "ubuntu-core-cgroup-ownership.cil", "ubuntu-native-services.cil",
         "frontend-android-interface.cil", "linux-frontend-observer.cil", "instance-launcher.cil",
+        "linux-query-owner.cil", "linux-fixed-metadata-observer.cil",
     )
     components = [here / name for name in component_names]
     sources = [compiler, library, args.linux_board_cil, *args.android_cil, *components,

@@ -210,7 +210,7 @@ static int query_projection(int dev,int query,uint32_t uid,uint32_t gid) {
     if(fstat(query,&source)||fstatvfs(query,&flags))return -1;
     if(!S_ISDIR(source.st_mode)||source.st_uid!=uid||source.st_gid!=gid||
        (source.st_mode&07777)!=0555||(flags.f_flag&7)!=7||(flags.f_flag&8)!=0||
-       directory_label(query,"u:object_r:droidloom_query_exec:s0"))return fail(ESTALE);
+       directory_label(query,"u:object_r:droidloom_query_tmpfs_t:s0"))return fail(ESTALE);
     int target=beneath(dev,"droidloom-query");
     if(target<0)return -1;
     int error=0;
