@@ -1,0 +1,90 @@
+# Complete defaults for the Linux real root. More specific, original board and
+# service rules remain authoritative. Android image contents are not relabeled.
+# Unknown files are data, not service entrypoints.
+/.* -d u:object_r:p4_linux_rootdir_t:s0
+/.* -- u:object_r:p4_linux_native_data_t:s0
+/.* -l u:object_r:p4_linux_usrmerge_link_t:s0
+/? -d u:object_r:p4_linux_rootdir_t:s0
+/etc(/.*)? -- u:object_r:p4_linux_native_config_t:s0
+/etc(/.*)? -l u:object_r:p4_linux_usrmerge_link_t:s0
+/usr/lib(/.*)? -- u:object_r:p4_linux_runtime_lib_t:s0
+/usr/libexec(/.*)? -- u:object_r:p4_linux_native_bin_t:s0
+# Ubuntu's Rust coreutils aliases are hard links to /usr/bin/coreutils.
+# Every path to that original inode must carry the same executable type.
+/usr/lib/cargo/bin/coreutils/[^/]+ -- u:object_r:p4_linux_native_bin_t:s0
+/usr/(s?bin)(/.*)? -- u:object_r:p4_linux_native_bin_t:s0
+/usr/share(/.*)? -- u:object_r:p4_linux_native_data_t:s0
+/usr/src(/.*)? -- u:object_r:p4_linux_native_data_t:s0
+/usr/lib/modules(/.*)? -- u:object_r:p4_linux_kernel_modules_t:s0
+/var/cache -d u:object_r:p4_linux_var_cache_t:s0
+/var/spool -d u:object_r:p4_linux_var_spool_t:s0
+/tmp(/.*)? u:object_r:p4_linux_tmp_t:s0
+/var/tmp(/.*)? u:object_r:p4_linux_tmp_t:s0
+/home(/.*)? u:object_r:p4_linux_user_home_t:s0
+/root(/.*)? u:object_r:p4_linux_user_home_t:s0
+/run/user(/.*)? u:object_r:p4_linux_user_run_t:s0
+/etc/(shadow|gshadow|shadow-|gshadow-|subuid|subgid) -- u:object_r:p4_linux_auth_data_t:s0
+/etc/ssh/ssh_host_[^/]+_key -- u:object_r:p4_linux_auth_data_t:s0
+/etc/ssl/private(/.*)? u:object_r:p4_linux_auth_data_t:s0
+/etc/sssd(/.*)? u:object_r:p4_linux_auth_data_t:s0
+/etc/security/opasswd -- u:object_r:p4_linux_auth_data_t:s0
+/var/lib/droidloom(/.*)? u:object_r:p4_linux_product_store_t:s0
+/run/droidloom[^/]*(/.*)? u:object_r:p4_linux_product_store_t:s0
+
+# Original helper entrypoints from the selected Ubuntu system and user units.
+/usr/lib/systemd/(system|user)-generators/[^/]+ -- u:object_r:p4_linux_generator_exec_t:s0
+/usr/lib/systemd/systemd-(battery-check|binfmt|bsod|factory-reset|hibernate-resume|pcrextend|random-seed|tpm2-setup|update-done|user-sessions|user-runtime-dir) -- u:object_r:p4_linux_setup_exec_t:s0
+/usr/bin/systemd-(firstboot|hwdb|machine-id-setup|sysusers|tmpfiles|sysext|confext) -- u:object_r:p4_linux_setup_exec_t:s0
+/usr/sbin/ldconfig -- u:object_r:p4_linux_setup_exec_t:s0
+/usr/lib/systemd/systemd-modules-load -- u:object_r:p4_linux_module_loader_exec_t:s0
+/usr/bin/kmod -- u:object_r:p4_linux_module_loader_exec_t:s0
+/usr/lib/systemd/systemd-sysctl -- u:object_r:p4_linux_sysctl_exec_t:s0
+/usr/sbin/sysctl -- u:object_r:p4_linux_sysctl_exec_t:s0
+/usr/bin/dbus-daemon -- u:object_r:p4_linux_dbus_exec_t:s0
+/usr/sbin/NetworkManager -- u:object_r:p4_linux_network_manager_exec_t:s0
+/usr/libexec/nm-dispatcher -- u:object_r:p4_linux_network_manager_exec_t:s0
+/usr/bin/nm-online -- u:object_r:p4_linux_network_manager_exec_t:s0
+/usr/sbin/wpa_supplicant -- u:object_r:p4_linux_wpa_exec_t:s0
+/usr/lib/systemd/systemd-resolved -- u:object_r:p4_linux_resolved_exec_t:s0
+/usr/lib/systemd/systemd-logind -- u:object_r:p4_linux_logind_exec_t:s0
+/usr/libexec/accounts-daemon -- u:object_r:p4_linux_accounts_exec_t:s0
+/usr/lib/polkit-1/polkitd -- u:object_r:p4_linux_polkit_exec_t:s0
+/usr/libexec/rtkit-daemon -- u:object_r:p4_linux_rtkit_exec_t:s0
+/usr/libexec/bluetooth/bluetoothd -- u:object_r:p4_linux_bluetooth_exec_t:s0
+/usr/sbin/gdm3 -- u:object_r:p4_linux_gdm_exec_t:s0
+/usr/share/gdm/generate-config -- u:object_r:p4_linux_gdm_exec_t:s0
+/usr/libexec/gdm-session-worker -- u:object_r:p4_linux_gdm_worker_exec_t:s0
+/usr/libexec/gdm-wayland-session -- u:object_r:p4_linux_native_bin_t:s0
+/usr/sbin/sshd -- u:object_r:p4_linux_sshd_exec_t:s0
+/usr/lib/openssh/sshd-session -- u:object_r:p4_linux_sshd_exec_t:s0
+/usr/lib/openssh/sshd-auth -- u:object_r:p4_linux_sshd_exec_t:s0
+/usr/lib/snapd/snapd -- u:object_r:p4_linux_snapd_exec_t:s0
+/snap/snapd/[0-9]+/usr/lib/snapd/snapd -- u:object_r:p4_linux_snapd_exec_t:s0
+/usr/lib/snapd/snapd-apparmor -- u:object_r:p4_linux_apparmor_updater_exec_t:s0
+/snap/snapd/[0-9]+/usr/lib/snapd/snapd-apparmor -- u:object_r:p4_linux_apparmor_updater_exec_t:s0
+/usr/lib/apparmor/apparmor.systemd -- u:object_r:p4_linux_apparmor_updater_exec_t:s0
+/usr/sbin/apparmor_parser -- u:object_r:p4_linux_apparmor_updater_exec_t:s0
+/usr/bin/droidloom-wayland -- u:object_r:droidloom_presenter_exec:s0
+/usr/bin/gnome-shell -- u:object_r:p4_linux_compositor_exec_t:s0
+/usr/bin/(pipewire|pipewire-pulse|wireplumber) -- u:object_r:p4_linux_audio_exec_t:s0
+/usr/libexec/xdg-(desktop-portal[^/]*|document-portal|permission-store) -- u:object_r:p4_linux_desktop_portal_exec_t:s0
+
+# Per-service state and runtime paths. Newly created children inherit these
+# dedicated types; ordinary service executors prepare only named directories.
+/var/lib/NetworkManager(/.*)? u:object_r:p4_linux_network_manager_state_t:s0
+/etc/NetworkManager/system-connections(/.*)? u:object_r:p4_linux_network_manager_state_t:s0
+/run/NetworkManager(/.*)? u:object_r:p4_linux_network_manager_run_t:s0
+/run/wpa_supplicant(/.*)? u:object_r:p4_linux_wpa_run_t:s0
+/run/systemd/resolve(/.*)? u:object_r:p4_linux_resolved_run_t:s0
+/var/lib/systemd/linger(/.*)? u:object_r:p4_linux_logind_state_t:s0
+/run/systemd/(sessions|seats|users|inhibit|shutdown)(/.*)? u:object_r:p4_linux_logind_run_t:s0
+/var/lib/AccountsService(/.*)? u:object_r:p4_linux_accounts_state_t:s0
+/var/lib/polkit-1(/.*)? u:object_r:p4_linux_polkit_state_t:s0
+/var/lib/bluetooth(/.*)? u:object_r:p4_linux_bluetooth_state_t:s0
+/var/lib/gdm3(/.*)? u:object_r:p4_linux_gdm_state_t:s0
+/run/gdm3(/.*)? u:object_r:p4_linux_gdm_run_t:s0
+/run/sshd(/.*)? u:object_r:p4_linux_sshd_run_t:s0
+/run/dbus(/.*)? u:object_r:p4_linux_dbus_run_t:s0
+/var/lib/snapd(/.*)? u:object_r:p4_linux_snapd_state_t:s0
+/run/snapd(/.*)? u:object_r:p4_linux_snapd_run_t:s0
+/var/cache/apparmor(/.*)? u:object_r:p4_linux_apparmor_updater_state_t:s0

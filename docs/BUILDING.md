@@ -1184,3 +1184,35 @@ lifecycle and authenticated presenter registration require their own qualificati
 A file-only archive drops the empty StateDirectory and is not a valid input to
 the original Ubuntu calibration qualifier. Packaging success does not establish
 boot, calibration, Android readiness or application acceptance.
+
+### Native Ubuntu service identities and file labels
+
+The normal host stage also installs `ubuntu-native-file_contexts` and merges it
+with the original real-root, service and calibration rules in
+`etc/selinux/droidloom/contexts/files/file_contexts`. Unknown regular files are
+Linux data; only declared service entrypoints receive executable identities.
+The distribution's Rust coreutils hard-link aliases have the same type as
+`/usr/bin/coreutils`. A hard-linked inode cannot have a different label for each
+path.
+
+Use the distribution's actual `setfiles` implementation, with the same admitted
+libsepol that produced the joint policy, to validate the complete selected root.
+Retain `-c` policy validation and `-E` conflict rejection. A dry run must have no
+unmatched paths or hard-link conflicts before labels are applied to a fresh
+fixture. The root path itself is covered even when `setfiles -r` presents it as
+an empty lookup name. Do not replace libselinux's matching rules with a custom
+regex selector or hand-label only the successful service's files.
+
+`ubuntu-native-services.cil` declares separate native system, user-manager,
+user-executor, desktop and presenter roles, all within `p4_linux_procs`.
+The two executors use the native exec-attribute libselinux component and cannot
+write their own procfs file class. Both the user executor and an interactive
+user session transition to `droidloom_presenter` only through the dedicated
+Wayland executable; the NNP transition is explicit. Ordinary session roles do
+not inherit the presenter's Android transport authority.
+
+Strict compilation and a complete file-label dry run are candidate preparation
+checks. Native service runtime permissions, user cgroups, device access, native
+AppArmor refresh, networking, login and desktop operation still require the
+real distribution's enforcing cold-boot qualifier. Neither this source policy
+nor those preparation checks represent a completed Ubuntu runtime acceptance.

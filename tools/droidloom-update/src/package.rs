@@ -451,6 +451,7 @@ mod tests {
         );
         assert!(!runtime.join("usr/lib/systemd/user/droidloom.service").exists());
         for (name, expected) in [
+            ("ubuntu-native-file_contexts", include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-native-file_contexts").as_slice()),
             ("ubuntu-real-root-devices", include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-real-root-devices").as_slice()),
             ("ubuntu-real-root-file_contexts", include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-real-root-file_contexts").as_slice()),
         ] {
