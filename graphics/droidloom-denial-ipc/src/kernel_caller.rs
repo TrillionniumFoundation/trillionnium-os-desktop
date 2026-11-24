@@ -155,8 +155,10 @@ fn info(fd: &OwnedFd) -> io::Result<PidInfo> {
         mask: 3,
         ..Default::default()
     };
+    // Bionic uses an int ioctl request while glibc uses unsigned long. The
+    // fixed request occupies 32 bits; preserve that bit pattern for either ABI.
     // SAFETY: PIDFD_GET_INFO with the pinned 64-byte ABI writes this live buffer.
-    cv(unsafe { libc::ioctl(fd.as_raw_fd(), PIDFD_GET_INFO, &mut value) })?;
+    cv(unsafe { libc::ioctl(fd.as_raw_fd(), PIDFD_GET_INFO as _, &mut value) })?;
     need(
         value.mask & 3 == 3 && value.pid > 1 && value.pid == value.tgid,
         "kernel PIDFD identity fields",
