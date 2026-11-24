@@ -11,6 +11,8 @@ mod insets;
 mod presentation_audit;
 mod text_input;
 
+static KEY_TRACE: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+
 use std::collections::{BTreeMap, VecDeque};
 use std::env;
 use std::fs::{self, File, OpenOptions};
@@ -1325,7 +1327,6 @@ impl App {
         object: TaskObjectId,
         event: InputEvent,
     ) -> Result<(), PresenterError> {
-        static KEY_TRACE: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
         if self.clipboard.blocked() && self.clipboard_inputs.len() < 512 {
             self.clipboard_inputs.push_back((object, event));
             return Ok(());
@@ -1395,6 +1396,27 @@ impl App {
             if let Some(endpoint) = self.endpoint.as_ref() {
                 endpoint.send_visibility(object, Visibility::Visible, true)?;
             }
+        }
+        Ok(())
+    }
+
+    fn trace_focus(
+        &self,
+        object: Option<TaskObjectId>,
+        serial: u32,
+        focus: &'static str,
+    ) -> Result<(), PresenterError> {
+        if *KEY_TRACE.get_or_init(|| {
+            env::var_os("DROIDLOOM_INPUT_TRACE").as_deref() == Some(std::ffi::OsStr::new("1"))
+        }) {
+            let timestamp = monotonic_timestamp_nanos()?;
+            eprintln!(
+                "Droidloom focus trace: pid={} object={} serial={} observed_ns={} focus={focus}",
+                std::process::id(),
+                object.map_or(0, |value| value.0),
+                serial,
+                timestamp
+            );
         }
         Ok(())
     }
@@ -1886,7 +1908,10 @@ impl KeyboardHandler for App {
         self.clipboard.focus(true);
         self.clipboard.serial(serial);
         let object = self.task_for_surface(surface);
-        if let Err(error) = self.set_focus(object) {
+        if let Err(error) = self
+            .set_focus(object)
+            .and_then(|()| self.trace_focus(object, serial, "enter"))
+        {
             self.fail(&error);
         }
     }
@@ -1897,12 +1922,18 @@ impl KeyboardHandler for App {
         _qh: &QueueHandle<Self>,
         _keyboard: &wl_keyboard::WlKeyboard,
         surface: &wl_surface::WlSurface,
-        _serial: u32,
+        serial: u32,
     ) {
         self.clipboard.focus(false);
-        if self.focused == self.task_for_surface(surface)
-            && let Err(error) = self.set_focus(None)
-        {
+        let object = self.task_for_surface(surface);
+        // A leave for an unmapped surface cannot preserve a claimed focus.
+        // The zero object in the optional trace records that explicit revocation.
+        let result = if object.is_none() || self.focused == object {
+            self.set_focus(None)
+        } else {
+            Ok(())
+        };
+        if let Err(error) = result.and_then(|()| self.trace_focus(object, serial, "leave")) {
             self.fail(&error);
         }
     }
