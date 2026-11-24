@@ -472,6 +472,25 @@ pub fn prepare_boot(config: &Path, expected: &str) -> Result<()> {
         )?;
     }
     let android = crate::boot_release::install_android(&root, &boot, &plan.android)?;
+    // Qualification traces belong to the fresh guest user-manager environment.
+    // Keep the exported production desktop unit unchanged and without drop-ins.
+    // Calibration has no desktop qualification and leaves tracing disabled.
+    let presenter_trace_environment = if plan.android.calibrate {
+        None
+    } else {
+        let directory = "/etc/systemd/system/user@1000.service.d";
+        boot_files::ensure_dir(&root, directory, 0o755)?;
+        let path = boot_files::guest_path(
+            &root,
+            "/etc/systemd/system/user@1000.service.d/99-droidloom-qualification-traces.conf",
+        )?;
+        boot_files::write_new(
+            &path,
+            b"# Fresh qualification guest only.\n[Service]\nEnvironment=DROIDLOOM_INPUT_TRACE=1 DROIDLOOM_FRAME_TRACE=1\n",
+            0o644,
+        )?;
+        Some(boot_files::pin_file(&path)?)
+    };
     let unit = "droidloom-production-desktop.service";
     let installed = root.join(format!("usr/lib/systemd/user/{unit}"));
     if std::fs::symlink_metadata(&installed)
@@ -531,6 +550,7 @@ pub fn prepare_boot(config: &Path, expected: &str) -> Result<()> {
         "kernel_admission":kernel_report,"host_release":host,"android_release":android,
         "libselinux_candidate":candidate,
         "libapparmor_candidate":apparmor_candidate,
+        "qualification_presenter_trace_environment":presenter_trace_environment,
         "desktop_enable":{"command":desktop_enable,"unit":desktop_unit,
             "wants_path":desktop_wants,"target":desktop_target,"identity":desktop_link},
         "labels":boot_files::pin_file(&boot.join("ROOT-LABELS.json"))?,
