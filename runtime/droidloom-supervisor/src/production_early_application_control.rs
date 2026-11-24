@@ -98,6 +98,52 @@ impl EarlyApplicationControl {
                 .expect("acquired original application owner");
             let progress = Reporter::new(stream, streaming)?;
             match request {
+                ControlRequest::ListApplications { user } => {
+                    validate_android_user(user)?;
+                    progress.report("Reading the current Android launcher catalog...");
+                    let output = crate::production_application::catalog_early(
+                        authority,
+                        crate::production_application::CatalogCommand::List { user },
+                        launch_deadline,
+                    )
+                    .map_err(|e| early_application_error(e, &mut acquisition_quarantined))?;
+                    let applications: Vec<AndroidApplication> = serde_json::from_str(&output)
+                        .map_err(|e| {
+                            ControlError::Invalid(format!("Android catalog JSON differs: {e}"))
+                        })?;
+                    validate_application_catalog(&applications)?;
+                    response.message = format!(
+                        "observed {} enabled Android launcher activities",
+                        applications.len()
+                    );
+                    response.applications = Some(applications);
+                }
+                ControlRequest::ApplicationIcon {
+                    component,
+                    user,
+                    size,
+                } => {
+                    validate_component(&component)?;
+                    validate_android_user(user)?;
+                    if !(MIN_ICON_SIZE..=MAX_ICON_SIZE).contains(&size) {
+                        return Err(ControlError::Invalid(
+                            "application icon extent is outside the fixed bound".into(),
+                        ));
+                    }
+                    progress.report("Rendering the current Android application icon...");
+                    let icon = crate::production_application::catalog_early(
+                        authority,
+                        crate::production_application::CatalogCommand::Icon {
+                            user,
+                            component: component.clone(),
+                            size,
+                        },
+                        launch_deadline,
+                    )
+                    .map_err(|e| early_application_error(e, &mut acquisition_quarantined))?;
+                    response.message = format!("rendered Android application icon for {component}");
+                    response.application_icon = Some(icon);
+                }
                 ControlRequest::Install { user } => {
                     validate_android_user(user)?;
                     let file = file.ok_or_else(|| {

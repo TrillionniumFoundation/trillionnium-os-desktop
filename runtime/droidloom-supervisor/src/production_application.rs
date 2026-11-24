@@ -45,6 +45,11 @@ mod install;
 mod install_input;
 pub(crate) use install::install_early;
 
+#[path = "production_application_catalog.rs"]
+mod catalog;
+use catalog::CatalogRequest;
+pub(crate) use catalog::{CatalogCommand, catalog_early};
+
 #[path = "production_application_operation.rs"]
 mod operation;
 pub(crate) use launch_command::LaunchCommand;

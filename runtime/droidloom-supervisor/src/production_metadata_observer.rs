@@ -60,6 +60,7 @@ pub(crate) enum MetadataRole {
     LaunchRead,
     LaunchStart,
     Install,
+    CatalogRead,
 }
 impl MetadataRole {
     fn uid(self) -> u32 {
@@ -81,6 +82,7 @@ impl MetadataRole {
             Self::LaunchRead => b"u:r:droidloom_launch_read:s0",
             Self::LaunchStart => b"u:r:droidloom_launch_start:s0",
             Self::Install => b"u:r:droidloom_install:s0",
+            Self::CatalogRead => b"u:r:droidloom_catalog_read:s0",
         }
     }
     fn matches_context(self, actual: &[u8]) -> bool {
@@ -95,6 +97,7 @@ impl MetadataRole {
             super::OperationDomain::LaunchRead => Self::LaunchRead,
             super::OperationDomain::LaunchStart => Self::LaunchStart,
             super::OperationDomain::Install => Self::Install,
+            super::OperationDomain::CatalogRead => Self::CatalogRead,
         }
     }
 }

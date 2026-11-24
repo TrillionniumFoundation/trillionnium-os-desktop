@@ -11,6 +11,7 @@ pub(crate) enum OperationDomain {
     LaunchRead,
     LaunchStart,
     Install,
+    CatalogRead,
 }
 impl OperationDomain {
     pub(super) const fn context(self) -> &'static str {
@@ -21,6 +22,7 @@ impl OperationDomain {
             Self::LaunchRead => "u:r:droidloom_launch_read:s0",
             Self::LaunchStart => "u:r:droidloom_launch_start:s0",
             Self::Install => "u:r:droidloom_install:s0",
+            Self::CatalogRead => "u:r:droidloom_catalog_read:s0",
         }
     }
 
@@ -32,6 +34,7 @@ impl OperationDomain {
             Self::LaunchRead => b"u:r:droidloom_launch_read:s0\0",
             Self::LaunchStart => b"u:r:droidloom_launch_start:s0\0",
             Self::Install => b"u:r:droidloom_install:s0\0",
+            Self::CatalogRead => b"u:r:droidloom_catalog_read:s0\0",
         }
     }
 }
@@ -153,6 +156,7 @@ pub(super) enum ApplicationOperation {
     ContactsRead { value: ContactsQuery },
     Launch { value: LaunchCommand },
     Install { value: InstallCommand },
+    Catalog { value: CatalogRequest },
 }
 
 impl ApplicationOperation {
@@ -163,6 +167,23 @@ impl ApplicationOperation {
             Self::ContactsRead { value } => value.validate(),
             Self::Launch { value } => value.validate(),
             Self::Install { value } => value.validate(),
+            Self::Catalog { value } => value.validate(),
+        }
+    }
+
+    pub(super) const fn uses_app_process(&self) -> bool {
+        matches!(self, Self::ContactsRead { .. } | Self::Catalog { .. })
+    }
+    pub(super) fn catalog_jar_digest(&self) -> Option<&str> {
+        match self {
+            Self::Catalog { value } => Some(value.jar_digest()),
+            _ => None,
+        }
+    }
+    pub(super) const fn output_limit(&self) -> usize {
+        match self {
+            Self::Catalog { .. } => super::catalog::OUTPUT_BYTES,
+            _ => OUTPUT_LIMIT,
         }
     }
 
@@ -193,6 +214,8 @@ impl ApplicationOperation {
         ];
         if self.needs_content_jar() {
             values.push(projection.content_classpath());
+        } else if matches!(self, Self::Catalog { .. }) {
+            values.push(c"CLASSPATH=/system/system_ext/framework/droidloom-input-bridge.jar");
         }
         values
     }
@@ -201,7 +224,7 @@ impl ApplicationOperation {
         match self {
             Self::Read { value } => value.binary(),
             Self::Browser { .. } => c"cmd",
-            Self::ContactsRead { .. } => c"app_process64",
+            Self::ContactsRead { .. } | Self::Catalog { .. } => c"app_process64",
             Self::Launch { .. } | Self::Install { .. } => c"cmd",
         }
     }
@@ -213,6 +236,7 @@ impl ApplicationOperation {
             Self::ContactsRead { value } => value.arguments(),
             Self::Launch { value } => value.arguments(),
             Self::Install { value } => value.arguments(),
+            Self::Catalog { value } => value.arguments(),
         }
     }
 
@@ -223,6 +247,7 @@ impl ApplicationOperation {
             Self::ContactsRead { .. } => OperationDomain::ContactsRead,
             Self::Launch { value } => value.domain(),
             Self::Install { .. } => OperationDomain::Install,
+            Self::Catalog { .. } => OperationDomain::CatalogRead,
         }
     }
 }

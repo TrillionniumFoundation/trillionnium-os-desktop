@@ -745,6 +745,12 @@ impl<'a> EarlyApplicationAuthority<'a> {
         self.verify_framework_processes(&held)?;
         Ok(held)
     }
+    pub(crate) fn catalog_jar_digest(&self) -> Result<String> {
+        self.ready()?;
+        let digest = self.query.catalog_jar_digest(self.base).map_err(external)?;
+        self.revalidate()?;
+        Ok(digest)
+    }
     pub(crate) fn epoch(&self, held: &EarlyFrameworkObservation) -> Result<RuntimeEpoch> {
         self.verify_framework_processes(held)?;
         Ok(held.epoch.clone())

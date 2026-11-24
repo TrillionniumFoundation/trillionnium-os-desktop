@@ -120,6 +120,16 @@ impl EarlyQueryResources {
         Ok(())
     }
 
+    /// Read the normal Soong JAR digest from this same original selected base
+    /// manifest. A digest computed from an arbitrary runtime JAR is insufficient.
+    pub(crate) fn catalog_jar_digest(&self, admission: &EarlyBaseAdmission<'_>) -> Result<String> {
+        self.revalidate(admission)?;
+        let raw = self.base_manifest.bounded_bytes(MAX_MANIFEST)?;
+        let digest = selected_catalog_digest(&raw, &self.cohort)?;
+        self.revalidate(admission)?;
+        Ok(digest)
+    }
+
     pub(crate) fn mount(&self, admission: &EarlyBaseAdmission<'_>) -> Result<BorrowedFd<'_>> {
         self.revalidate(admission)?;
         Ok(self.query.mount())
@@ -183,5 +193,71 @@ impl EarlyQueryResources {
         )?;
         self.revalidate(admission)?;
         Ok([copy, original])
+    }
+}
+
+fn selected_catalog_digest(raw: &[u8], selected_cohort: &str) -> Result<String> {
+    require(
+        raw.len() as u64 <= MAX_MANIFEST
+            && is_digest(selected_cohort)
+            && format!("{:x}", Sha256::digest(raw)) == selected_cohort,
+        "catalog original selected base manifest body differs",
+    )?;
+    let observer = crate::production_mounts::selected_early_observer(raw)?;
+    Ok(observer.frontend.input_bridge_jar_sha256)
+}
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn catalog_jar_requires_the_exact_selected_four_image_chain_and_normal_frontend_declaration() {
+        use droidloom_contracts::system_ext as contract;
+        let normal = serde_json::json!({
+            "schema":3,"scope":"android_base_images_v3","layout":"gsi_system_as_root",
+            "system":{"file":"system.img","bytes":4096,"sha256":contract::SYSTEM_SHA256},
+            "vendor":{"file":"vendor.img","bytes":4096,"sha256":"1".repeat(64)},
+            "system_ext_lib64":{"file":contract::FILE,"bytes":4096,"sha256":"2".repeat(64),
+                "target":contract::TARGET,"source_system_sha256":contract::SYSTEM_SHA256,
+                "source_vendor_sha256":"1".repeat(64)},
+            "system_ext_readiness":{"file":contract::READINESS_FILE,"bytes":4096,"sha256":"3".repeat(64),
+                "targets":contract::READINESS_TARGETS,"source_system_sha256":contract::SYSTEM_SHA256,
+                "source_vendor_sha256":"1".repeat(64),"source_system_ext_lib64_sha256":"2".repeat(64),
+                "observer_sha256":"4".repeat(64),"init_rc_sha256":contract::OBSERVER_ONLY_RC_SHA256,
+                "frontend":{"input_bridge_wrapper_sha256":"5".repeat(64),"input_bridge_jar_sha256":"6".repeat(64),
+                    "input_bridge_init_rc_sha256":"7".repeat(64),"task_launcher_sha256":"8".repeat(64)}}});
+        let bytes = serde_json::to_vec(&normal).unwrap();
+        let cohort = format!("{:x}", Sha256::digest(&bytes));
+        assert_eq!(
+            selected_catalog_digest(&bytes, &cohort).unwrap(),
+            "6".repeat(64)
+        );
+        assert!(selected_catalog_digest(&bytes, &"9".repeat(64)).is_err());
+        for mutation in 0..4 {
+            let mut changed = normal.clone();
+            match mutation {
+                0 => {
+                    changed["system_ext_readiness"]["source_vendor_sha256"] =
+                        serde_json::json!("9".repeat(64))
+                }
+                1 => {
+                    changed["system_ext_readiness"]["targets"][2] =
+                        serde_json::json!("/data/arbitrary")
+                }
+                2 => {
+                    changed["system_ext_readiness"]
+                        .as_object_mut()
+                        .unwrap()
+                        .remove("frontend");
+                }
+                _ => {
+                    changed["system_ext_readiness"]["frontend"]["classpath"] =
+                        serde_json::json!("/data/arbitrary.jar")
+                }
+            }
+            let bytes = serde_json::to_vec(&changed).unwrap();
+            assert!(
+                selected_catalog_digest(&bytes, &format!("{:x}", Sha256::digest(&bytes))).is_err()
+            );
+        }
     }
 }

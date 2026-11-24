@@ -176,11 +176,11 @@ pub(in crate::production_application) fn verify(
     let original_input = fixed::INPUTS[match query.binary().to_bytes() {
         b"cmd" => 0,
         b"toybox" => 1,
-        b"app_process64" if query.needs_content_jar() => 2,
+        b"app_process64" if query.uses_app_process() => 2,
         _ => return Err(reject("unknown fixed query executable role")),
     }];
     let original_label = original_input.original_label;
-    let private_label = if query.needs_content_jar() {
+    let private_label = if query.uses_app_process() {
         PROVIDER_LABEL
     } else {
         QUERY_LABEL
@@ -222,6 +222,13 @@ pub(in crate::production_application) fn verify(
     security(&private, private_label)?;
     if query.needs_content_jar() {
         verify_content_jar(files, projection, root_uid, root_gid, deadline)?;
+    }
+    if let Some(digest) = query.catalog_jar_digest() {
+        require(
+            projection == QueryProjection::EarlyDev,
+            "catalog requires the selected early cohort",
+        )?;
+        bind_catalog(&files[2], digest, root_uid, root_gid, deadline)?;
     }
     require(
         Instant::now() < deadline,
@@ -281,6 +288,85 @@ fn verify_content_jar(
         Instant::now() < deadline,
         "Contacts classpath verification deadline",
     )
+}
+
+/// Retain the actual fixed normal-JAR inode for the complete query lifetime.
+pub(in crate::production_application) struct CatalogJar {
+    file: File,
+    node: Node,
+}
+impl CatalogJar {
+    pub(in crate::production_application) fn revalidate(
+        &self,
+        root: &File,
+        digest: &str,
+        uid: u32,
+        gid: u32,
+        deadline: Instant,
+    ) -> Result<()> {
+        let current = bind_catalog(root, digest, uid, gid, deadline)?;
+        require(
+            identity(&self.file)? == self.node && current.node == self.node,
+            "catalog normal JAR path no longer names the retained original inode",
+        )
+    }
+}
+pub(in crate::production_application) fn bind_catalog(
+    root: &File,
+    digest: &str,
+    uid: u32,
+    gid: u32,
+    deadline: Instant,
+) -> Result<CatalogJar> {
+    require(
+        digest.len() == 64
+            && digest
+                .bytes()
+                .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b)),
+        "catalog normal JAR digest shape differs",
+    )?;
+    // This is READINESS_TARGETS[2], without following the /system_ext alias.
+    let file = at(
+        root,
+        &[
+            c"system",
+            c"system_ext",
+            c"framework",
+            c"droidloom-input-bridge.jar",
+        ],
+    )?;
+    let node = identity(&file)?;
+    require(
+        node.mode == libc::S_IFREG | 0o644
+            && node.uid == uid
+            && node.gid == gid
+            && node.links == 1
+            && (64..=MAXIMUM).contains(&node.bytes),
+        "catalog normal JAR ownership, mode, links or size differs",
+    )?;
+    readonly(&file, false)?;
+    security(&file, b"u:object_r:system_file:s0\0")?;
+    let mut magic = [0_u8; 4];
+    file.read_exact_at(&mut magic, 0)?;
+    require(
+        magic == *b"PK\x03\x04",
+        "catalog normal JAR is not a ZIP/JAR",
+    )?;
+    let actual = complete_hash(&file, node, deadline)?
+        .iter()
+        .map(|b| format!("{b:02x}"))
+        .collect::<String>();
+    require(
+        actual == digest,
+        "catalog whole JAR does not match the selected normal cohort",
+    )?;
+    require(
+        identity(&file)? == node,
+        "catalog normal JAR changed while binding",
+    )?;
+    readonly(&file, false)?;
+    security(&file, b"u:object_r:system_file:s0\0")?;
+    Ok(CatalogJar { file, node })
 }
 
 #[cfg(test)]

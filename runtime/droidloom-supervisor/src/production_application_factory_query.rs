@@ -519,6 +519,7 @@ fn native_domain(domain: OperationDomain) -> u32 {
         OperationDomain::LaunchRead => 3,
         OperationDomain::LaunchStart => 4,
         OperationDomain::Install => 5,
+        OperationDomain::CatalogRead => 6,
     }
 }
 unsafe extern "C" {
@@ -1415,7 +1416,13 @@ impl RetiredQuery<'_> {
     }
 }
 
-fn drain(file: &mut File, body: &mut Vec<u8>, total: &mut usize, eof: &mut bool) -> Result<()> {
+fn drain(
+    file: &mut File,
+    body: &mut Vec<u8>,
+    total: &mut usize,
+    eof: &mut bool,
+    limit: usize,
+) -> Result<()> {
     use std::io::Read;
     if *eof {
         return Ok(());
@@ -1432,7 +1439,7 @@ fn drain(file: &mut File, body: &mut Vec<u8>, total: &mut usize, eof: &mut bool)
                     .checked_add(n)
                     .ok_or_else(|| reject("query output overflow"))?;
                 require(
-                    *total <= OUTPUT_LIMIT,
+                    *total <= limit,
                     "factory query combined output exceeded bound",
                 )?;
                 body.extend_from_slice(&bytes[..n]);
@@ -1448,6 +1455,7 @@ fn capture(
     stdout: &mut File,
     stderr: &mut File,
     input: &mut Option<super::install_input::InputPump>,
+    output_limit: usize,
     deadline: Instant,
     progress: &mut dyn FnMut() -> Result<()>,
 ) -> Result<(Vec<u8>, Vec<u8>)> {
@@ -1463,8 +1471,14 @@ fn capture(
             progress_after = Instant::now() + Duration::from_millis(20);
         }
         require(Instant::now() < deadline, "factory query output deadline")?;
-        drain(stdout, &mut output, &mut total, &mut output_eof)?;
-        drain(stderr, &mut error, &mut total, &mut error_eof)?;
+        drain(
+            stdout,
+            &mut output,
+            &mut total,
+            &mut output_eof,
+            output_limit,
+        )?;
+        drain(stderr, &mut error, &mut total, &mut error_eof, output_limit)?;
         if client.poll_terminal(deadline)?.is_some() {
             if let Some(input) = input {
                 input.close();
@@ -1562,7 +1576,7 @@ pub(super) fn run_with_input(
     } else {
         None
     };
-    let binding = if request.needs_content_jar() {
+    let binding = if request.uses_app_process() {
         super::process::ExecutableBinding::from_contacts_role(
             &files[10], root_uid, root_gid, deadline,
         )?
@@ -1639,6 +1653,7 @@ pub(super) fn run_with_input(
             &mut stdout,
             &mut stderr,
             &mut input,
+            request.output_limit(),
             deadline,
             &mut progress,
         )?;
