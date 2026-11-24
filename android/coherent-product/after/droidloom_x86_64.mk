@@ -44,12 +44,14 @@ PRODUCT_BUILD_SUPER_EMPTY_IMAGE := false
 
 PRODUCT_SHIPPING_API_LEVEL := $(PLATFORM_SDK_VERSION)
 
+# The stock KeyMint provider reports SOFTWARE; the feature configuration below
+# removes hardware-only capabilities inherited from its default package.
 PRODUCT_PACKAGES += \
     vendor_compatibility_matrix.xml \
     selinux_policy_vendor \
     libdroidloom_selinux_compat \
     droidloom-readiness \
-    android.hardware.security.keymint-service.nonsecure \
+    android.hardware.security.keymint-service \
     android.hardware.health-service.example \
     android.hardware.power-service.example \
     com.android.hardware.audio.droidloom \
@@ -73,6 +75,7 @@ PRODUCT_PACKAGES += \
     vulkan.radeon
 
 PRODUCT_COPY_FILES += \
+    vendor/droidloom/android/device/droidloom_x86_64/droidloom_software_keystore.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/droidloom_software_keystore.xml \
     vendor/droidloom/android/device/droidloom_x86_64/cgroups.json:$(TARGET_COPY_OUT_VENDOR)/etc/cgroups.json \
     vendor/droidloom/android/device/droidloom_x86_64/task_profiles.json:$(TARGET_COPY_OUT_VENDOR)/etc/task_profiles.json \
     vendor/droidloom/android/device/droidloom_arm64/android.hardware.droidloom_input.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.droidloom_input.xml \
