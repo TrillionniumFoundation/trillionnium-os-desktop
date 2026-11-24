@@ -72,6 +72,15 @@ static void require(int good, const char *what)
 		finish(0);
 	}
 }
+static void require_errno(int rc, int observed_errno, int wanted_errno,
+			  const char *stage)
+{
+	if (rc != -1 || observed_errno != wanted_errno) {
+		fprintf(stderr, "P4_PEER_RUNTIME_FAILED %s rc=%d errno=%d expected_rc=-1 expected_errno=%d\n",
+			stage, rc, observed_errno, wanted_errno);
+		finish(0);
+	}
+}
 static void directory(const char *path)
 {
 	require(mkdir(path, 0755) == 0 || errno == EEXIST, path);
@@ -203,8 +212,8 @@ static void invalid_header(unsigned int mutation)
 	default: require(0, "unknown matrix mutation");
 	}
 	errno = 0;
-	require(getsockopt(peer_fd, SOL_SOCKET, PEER_OPTION, h, &size) == -1 &&
-		errno == EINVAL, "invalid request rejected");
+	int rc = getsockopt(peer_fd, SOL_SOCKET, PEER_OPTION, h, &size);
+	require_errno(rc, errno, EINVAL, "invalid request rejected");
 	matrix_checks++;
 }
 static void short_buffer(uint64_t provider, const struct label *baseline,
@@ -214,8 +223,8 @@ static void short_buffer(uint64_t provider, const struct label *baseline,
 	struct peer_header *h = request(&p, provider);
 	socklen_t size = sizeof(*h) + capacity;
 	errno = 0;
-	require(getsockopt(peer_fd, SOL_SOCKET, PEER_OPTION, h, &size) == -1 &&
-		errno == ERANGE, "short buffer ERANGE");
+	int rc = getsockopt(peer_fd, SOL_SOCKET, PEER_OPTION, h, &size);
+	require_errno(rc, errno, ERANGE, "short buffer ERANGE");
 	require(h->size == sizeof(*h) && h->version == 1 &&
 		h->lsm_id == provider && !h->flags && !h->reserved &&
 		!h->reserved2 && h->context_len == baseline->size &&
@@ -258,8 +267,8 @@ static void outer_denial(void)
 			socklen_t n = sizeof(p.bytes);
 			errno = 0;
 			int option = i == 2 ? SO_PEERSEC : PEER_OPTION;
-			require(getsockopt(peer_fd, SOL_SOCKET, option, h, &n) == -1 &&
-				errno == EACCES, "outer AA gate preserves denial");
+			int rc = getsockopt(peer_fd, SOL_SOCKET, option, h, &n);
+			require_errno(rc, errno, EACCES, "outer AA gate preserves denial");
 		}
 		_exit(0);
 	}
@@ -337,21 +346,56 @@ int main(void)
 	short_buffer(AA_ID, &apparmor_peer, apparmor_peer.size - 1);
 	socklen_t n = sizeof(struct peer_header);
 	errno = 0;
-	require(getsockopt(peer_fd, SOL_SOCKET, PEER_OPTION, NULL, &n) == -1 &&
-		errno == EFAULT, "null request EFAULT");
+	int rc = getsockopt(peer_fd, SOL_SOCKET, PEER_OPTION, NULL, &n);
+	require_errno(rc, errno, EFAULT, "null request EFAULT");
 	matrix_checks++;
 	int unconnected = socket(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0);
-	require(unconnected >= 0, "unconnected socket");
-	for (unsigned int i = 0; i < 2; i++) {
-		union packet p;
-		struct peer_header *h = request(&p, i == 0 ? SE_ID : AA_ID);
-		n = sizeof(p.bytes);
-		errno = 0;
-		require(getsockopt(unconnected, SOL_SOCKET, PEER_OPTION, h, &n) == -1 &&
-			errno == EOPNOTSUPP, "missing peer cannot masquerade as absent UAPI");
-		matrix_checks++;
-	}
-	require(close(unconnected) == 0, "close unconnected");
+	require(unconnected >= 0, "unconnected stream socket");
+	/* The original SELinux hook initializes an unconnected stream's peer SID
+	 * to UNLABELED. Preserve that real legacy result; it is not an error. */
+	struct label unconnected_old;
+	unconnected_old.size = sizeof(unconnected_old.bytes);
+	errno = 0;
+	int old_rc = getsockopt(unconnected, SOL_SOCKET, SO_PEERSEC,
+			      unconnected_old.bytes, &unconnected_old.size);
+	int old_errno = errno;
+	union packet packet;
+	struct peer_header *h = request(&packet, SE_ID);
+	n = sizeof(packet.bytes);
+	errno = 0;
+	rc = getsockopt(unconnected, SOL_SOCKET, PEER_OPTION, h, &n);
+	int selected_errno = errno;
+	printf("P4_PEER_RUNTIME_OBSERVED unconnected-selinux legacy_rc=%d legacy_errno=%d legacy_len=%u selected_rc=%d selected_errno=%d selected_len=%u\n",
+	       old_rc, old_errno, unconnected_old.size, rc, selected_errno, n);
+	require(old_rc == 0 && rc == 0 && old_errno == selected_errno &&
+		unconnected_old.size > 0 && unconnected_old.size <= CAPACITY &&
+		h->size == sizeof(*h) && h->version == 1 && h->lsm_id == SE_ID &&
+		!h->flags && !h->reserved && !h->reserved2 &&
+		h->context_len == unconnected_old.size &&
+		n == sizeof(*h) + h->context_len &&
+		!memcmp(h->context, unconnected_old.bytes, unconnected_old.size) &&
+		text_matches(&unconnected_old, "unlabeled"),
+		"unconnected SELinux preserves exact original unlabeled context");
+	/* AppArmor has no peer label on this same stream. The new option maps
+	 * that provider's ENOPROTOOPT to EOPNOTSUPP, without legacy fallback. */
+	h = request(&packet, AA_ID);
+	n = sizeof(packet.bytes);
+	errno = 0;
+	rc = getsockopt(unconnected, SOL_SOCKET, PEER_OPTION, h, &n);
+	require_errno(rc, errno, EOPNOTSUPP, "AppArmor stream has no peer");
+	matrix_checks++;
+	require(close(unconnected) == 0, "close unconnected stream");
+	/* A datagram is outside the original SELinux stream hook's supported
+	 * classes, so it supplies a separate real unsupported-provider check. */
+	int datagram = socket(AF_UNIX, SOCK_DGRAM | SOCK_CLOEXEC, 0);
+	require(datagram >= 0, "unconnected datagram socket");
+	h = request(&packet, SE_ID);
+	n = sizeof(packet.bytes);
+	errno = 0;
+	rc = getsockopt(datagram, SOL_SOCKET, PEER_OPTION, h, &n);
+	require_errno(rc, errno, EOPNOTSUPP, "SELinux stream hook rejects datagram");
+	matrix_checks++;
+	require(close(datagram) == 0, "close unconnected datagram");
 	pthread_t threads[THREADS];
 	for (uintptr_t i = 0; i < THREADS; i++)
 		require(pthread_create(&threads[i], NULL, worker, (void *)(i % 4)) == 0,
