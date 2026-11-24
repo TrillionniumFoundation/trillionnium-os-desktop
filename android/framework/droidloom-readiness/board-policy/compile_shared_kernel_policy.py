@@ -8,6 +8,8 @@ from pathlib import Path
 import subprocess
 import tempfile
 
+from derive_shared_payload_cgroup_policy import derive, verify
+
 
 def sha256(path):
     with path.open("rb") as source:
@@ -68,10 +70,12 @@ def main():
         "ubuntu-core-cgroup-ownership.cil", "ubuntu-native-services.cil",
         "frontend-android-interface.cil", "linux-frontend-observer.cil", "instance-launcher.cil",
         "linux-query-owner.cil", "linux-fixed-metadata-observer.cil",
+        "instance-factory-cgroup.cil", "ubuntu-systemd-unit-status.cil",
     )
     components = [here / name for name in component_names]
     sources = [compiler, library, args.linux_board_cil, *args.android_cil, *components,
-               here / "cp3a-kernel-handle-inputs.json", Path(__file__)]
+               here / "cp3a-kernel-handle-inputs.json", Path(__file__),
+               here / "derive_shared_payload_cgroup_policy.py"]
     if any(output.resolve() == path.resolve() for path in sources):
         raise ValueError("The output path is a policy input or build tool")
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -82,10 +86,13 @@ def main():
         compile_policy(compiler, args.android_cil, original, contexts, environment)
         if sha256(original) != release["original_binary_sha256"]:
             raise ValueError("The linked original Android policy differs from its release digest")
+        shared = work / "shared-payload.cil"
+        contract = derive(library, original, args.android_cil, shared)
         board = work / "linux-board.cil"
         board.write_text(add_namespace_to_board_guard(args.linux_board_cil.read_text()))
         linked = work / "combined.policy"
-        compile_policy(compiler, [*args.android_cil, board, *components], linked, contexts, environment)
+        compile_policy(compiler, [*args.android_cil, board, *components, shared], linked, contexts, environment)
+        shared_access = verify(library, linked, contract)
         result = {
             "android_original": sha256(original),
             "secilc": sha256(compiler),
@@ -94,6 +101,8 @@ def main():
             "original_input_count": len(actual),
             "components": {part.name: sha256(part) for part in components},
             "output": sha256(linked),
+            "shared_payload_android_access": shared_access,
+            "shared_payload_deriver": sha256(here / "derive_shared_payload_cgroup_policy.py"),
         }
         os.replace(linked, output)
     print(json.dumps(result, sort_keys=True))

@@ -53,8 +53,9 @@
 (genfscon cgroup2 "/system.slice/" (u object_r p4_linux_unit_cgroup_t ((s0) (s0))))
 ; The trusted manager fixes cell-u1000, keeper and payload under the selected
 ; systemd unit. Only the payload is the Android namespace root. The original
-; Android rule classifies children of apps; the directory itself uses cgroup_v2.
-(genfscon cgroup2 "/system.slice/droidloom-production.service/cell-u1000/payload" (u object_r cgroup_v2 ((s0) (s0))))
+; Android rule classifies children of apps. The fixed shared payload retains
+; exactly the original Android cgroup_v2 access through the normal linker.
+(genfscon cgroup2 "/system.slice/droidloom-production.service/cell-u1000/payload" (u object_r p4_android_payload_cgroup_t ((s0) (s0))))
 (genfscon cgroup2 "/system.slice/droidloom-production.service/cell-u1000/payload/apps/" (u object_r cgroup_app ((s0) (s0))))
 (allow init_t p4_linux_system_slice_t (dir (getattr search read open write add_name remove_name)))
 (typetransition init_t p4_linux_system_slice_t dir p4_linux_unit_cgroup_t)
@@ -87,10 +88,10 @@
 (roletype object_r p4_linux_production_unit_cgroup_t)
 (typeattributeset p4_linux_init_cgroup_inodes (p4_linux_production_unit_cgroup_t))
 (genfscon cgroup2 "/system.slice/droidloom-production.service" (u object_r p4_linux_production_unit_cgroup_t ((s0) (s0))))
-(genfscon cgroup2 "/system.slice/droidloom-production.service/" (u object_r p4_linux_unit_cgroup_t ((s0) (s0))))
+(genfscon cgroup2 "/system.slice/droidloom-production.service/" (u object_r p4_linux_production_subtree_t ((s0) (s0))))
 (typetransition init_t p4_linux_system_slice_t dir "droidloom-production.service" p4_linux_production_unit_cgroup_t)
-(typetransition init_t p4_linux_production_unit_cgroup_t dir "broker" p4_linux_unit_cgroup_t)
-(typetransition p4_linux_service_executor_t p4_linux_production_unit_cgroup_t dir "broker" p4_linux_unit_cgroup_t)
+(typetransition init_t p4_linux_production_unit_cgroup_t dir "broker" p4_linux_production_subtree_t)
+(typetransition p4_linux_service_executor_t p4_linux_production_unit_cgroup_t dir "broker" p4_linux_production_subtree_t)
 (allow init_t p4_linux_production_unit_cgroup_t (dir (getattr search open read create write add_name remove_name rmdir setattr)))
 (allow p4_linux_service_executor_t p4_linux_production_unit_cgroup_t (dir (getattr search open write add_name)))
 (allow p4_linux_service_executor_t p4_linux_unit_cgroup_t (dir (create)))

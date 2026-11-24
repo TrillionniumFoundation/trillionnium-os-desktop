@@ -1,0 +1,110 @@
+; Permanent boot factory placement and scoped production cgroup ownership.
+; The global-root membership neverallow in ubuntu-core-cgroup-ownership.cil
+; remains unchanged. The original executor opens one fixed O_WRONLY file;
+; the adopter only inherits it and the factory uses its original f_cred.
+
+(type p4_linux_factory_unit_cgroup_t)
+(type p4_linux_factory_membership_t)
+(type p4_linux_system_slice_membership_t)
+(type p4_linux_production_subtree_t)
+(type p4_linux_factory_target_membership_t)
+(roletype object_r p4_linux_factory_unit_cgroup_t)
+(roletype object_r p4_linux_factory_membership_t)
+(roletype object_r p4_linux_system_slice_membership_t)
+(roletype object_r p4_linux_production_subtree_t)
+(roletype object_r p4_linux_factory_target_membership_t)
+(typeattributeset p4_linux_init_cgroup_inodes
+ (p4_linux_factory_unit_cgroup_t p4_linux_factory_membership_t
+  p4_linux_system_slice_membership_t p4_linux_production_subtree_t
+  p4_linux_factory_target_membership_t))
+
+(genfscon cgroup2 "/system.slice/cgroup.procs" (u object_r p4_linux_system_slice_membership_t ((s0) (s0))))
+(genfscon cgroup2 "/system.slice/droidloom-instance-factory.service" (u object_r p4_linux_factory_unit_cgroup_t ((s0) (s0))))
+(genfscon cgroup2 "/system.slice/droidloom-instance-factory.service/" (u object_r p4_linux_unit_cgroup_t ((s0) (s0))))
+(genfscon cgroup2 "/system.slice/droidloom-instance-factory.service/cgroup.procs" (u object_r p4_linux_factory_membership_t ((s0) (s0))))
+(genfscon cgroup2 "/system.slice/droidloom-production.service/cell-u1000/application-read/cgroup.procs" (u object_r p4_linux_factory_target_membership_t ((s0) (s0))))
+(typetransition init_t p4_linux_system_slice_t dir "droidloom-instance-factory.service" p4_linux_factory_unit_cgroup_t)
+
+; Keep the native manager/executor's pre-existing ownership and membership
+; access on the newly distinguished inodes.
+(typeattribute p4_factory_native_membership)
+(typeattributeset p4_factory_native_membership
+ (p4_linux_factory_membership_t p4_linux_system_slice_membership_t
+  p4_linux_factory_target_membership_t))
+(allow init_t p4_linux_factory_unit_cgroup_t (dir (getattr search open read create write add_name remove_name rmdir setattr)))
+(allow p4_linux_service_executor_t p4_linux_factory_unit_cgroup_t (dir (getattr search open)))
+(allow init_t p4_factory_native_membership (file (getattr open read watch create write)))
+(allow p4_linux_service_executor_t p4_factory_native_membership (file (getattr open write)))
+(allow init_t p4_linux_production_subtree_t (dir (getattr search open read create write add_name remove_name rmdir setattr)))
+(allow init_t p4_linux_production_subtree_t (file (getattr open read watch create write)))
+(allow p4_linux_service_executor_t p4_linux_production_subtree_t (dir (getattr search open create)))
+(allow p4_linux_service_executor_t p4_linux_production_subtree_t (file (getattr open write)))
+(neverallow p4_linux_service_executor_t p4_linux_factory_unit_cgroup_t (dir (create rmdir rename setattr write add_name remove_name)))
+(neverallow p4_linux_service_executor_t p4_linux_production_subtree_t (dir (write add_name remove_name)))
+
+; Normal SELinux/AppArmor exec checks require WRITE for an inherited O_WRONLY
+; stdout. OPEN/READ stay denied, so the adopter cannot manufacture this FD.
+(allow droidloom_instance_launcher p4_linux_factory_membership_t (file (getattr write)))
+(neverallow droidloom_instance_launcher p4_linux_factory_membership_t (file (open read append setattr create unlink rename relabelfrom relabelto map ioctl)))
+(allow kernel p4_linux_service_executor_t (fd (use)))
+(allow kernel p4_linux_factory_membership_t (file (getattr open read write)))
+(allow kernel p4_linux_cgroup_root_t (dir (getattr search open read)))
+(allow kernel p4_linux_system_slice_t (dir (getattr search open read)))
+(allow kernel p4_linux_factory_unit_cgroup_t (dir (getattr search open read)))
+(allow kernel p4_linux_production_unit_cgroup_t (dir (getattr search open read)))
+(allow kernel p4_linux_production_subtree_t (dir (getattr search open read)))
+(allow kernel p4_linux_production_subtree_t (file (getattr open read)))
+(allow kernel p4_linux_factory_target_membership_t (file (getattr open read write)))
+(allow p4_instance_host_readers cgroup_v2 (filesystem (getattr)))
+
+; Once adopted, the common ancestor is exactly system.slice. This gives the
+; kernel factory MAY_WRITE for migration, without any way to open/read it.
+(allow kernel p4_linux_system_slice_membership_t (file (write)))
+(neverallow kernel p4_linux_system_slice_membership_t (file (getattr open read append setattr create unlink rename map ioctl relabelfrom relabelto)))
+(neverallow droidloom_broker p4_linux_system_slice_membership_t (file (open read write append setattr)))
+(neverallow droidloom_broker p4_linux_factory_membership_t (file (open read write append setattr)))
+
+; The original broker manages only its own delegated production subtree.
+; Foreign host units retain the distinct p4_linux_unit_cgroup_t label.
+(allow droidloom_broker cgroup_v2 (filesystem (getattr)))
+(allow droidloom_broker p4_linux_cgroup_root_t (dir (getattr search open read)))
+(allow droidloom_broker p4_linux_system_slice_t (dir (getattr search open read)))
+(allow droidloom_broker p4_linux_production_unit_cgroup_t (dir (getattr search open read write add_name remove_name)))
+(allow droidloom_broker p4_linux_production_subtree_t (dir (getattr search open read create write add_name remove_name rmdir setattr)))
+(allow droidloom_broker p4_linux_production_subtree_t (file (getattr open read write setattr)))
+(allow droidloom_broker p4_linux_factory_target_membership_t (file (getattr open read write setattr)))
+(neverallow droidloom_broker p4_linux_unit_cgroup_t (file (open read write append setattr)))
+(neverallow droidloom_broker p4_linux_factory_unit_cgroup_t (dir (open read write create add_name remove_name rmdir setattr)))
+
+; The payload is an explicitly shared, fixed cgroup namespace root. These
+; kernel control inodes are board-owned, not Linux-private data. Android's
+; effective access is derived from the pinned original policy, bounded by
+; generated complementary neverallows, and checked after strict linking.
+(type p4_android_payload_cgroup_t)
+(type p4_android_payload_membership_t)
+(roletype object_r p4_android_payload_cgroup_t)
+(roletype object_r p4_android_payload_membership_t)
+(typeattribute p4_android_payload_objects)
+(typeattributeset p4_android_payload_objects (p4_android_payload_cgroup_t p4_android_payload_membership_t))
+(typeattributeset p4_all_board_owned (p4_android_payload_objects))
+(allow p4_android_payload_objects cgroup_v2 (filesystem (associate)))
+(genfscon cgroup2 "/system.slice/droidloom-production.service/cell-u1000/payload/cgroup.procs" (u object_r p4_android_payload_membership_t ((s0) (s0))))
+(allow droidloom_broker p4_android_payload_cgroup_t (dir (getattr search open read create write add_name remove_name rmdir setattr)))
+(allow droidloom_broker p4_android_payload_objects (file (getattr open read write setattr)))
+(allow kernel p4_android_payload_cgroup_t (dir (getattr search open read)))
+(allow kernel p4_android_payload_cgroup_t (file (getattr open read)))
+(allow kernel p4_android_payload_membership_t (file (getattr open read write)))
+(typeattribute p4_linux_not_payload_owner)
+(typeattributeset p4_linux_not_payload_owner (and (p4_linux_procs) (not (droidloom_broker))))
+(neverallow p4_linux_not_payload_owner p4_android_payload_objects (dir (open read create write add_name remove_name rmdir setattr)))
+(neverallow p4_linux_not_payload_owner p4_android_payload_objects (file (open read write append setattr)))
+(neverallow p4_linux_procs p4_android_payload_objects (dir (relabelfrom relabelto mounton)))
+(neverallow p4_linux_procs p4_android_payload_objects (file (relabelfrom relabelto mounton)))
+
+(typetransition droidloom_broker p4_linux_production_unit_cgroup_t dir "cell-u1000" p4_linux_production_subtree_t)
+(typetransition droidloom_broker p4_linux_production_subtree_t dir "payload" p4_android_payload_cgroup_t)
+(allow init_t p4_android_payload_cgroup_t (dir (getattr)))
+
+; cpuset v2 migration checks setsched when effective CPU/memory sets change.
+; The fixed raw migration helper retains the original permitted capability set.
+(allow kernel init (process (setsched)))

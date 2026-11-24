@@ -4,3 +4,5 @@
 /var/lib/droidloom/runtime-cohorts/[0-9a-f]{64}/images/toybox-original -- u:object_r:toolbox_exec:s0
 /var/lib/droidloom/runtime-cohorts/[0-9a-f]{64}/images/contacts-app-process64-original -- u:object_r:zygote_exec:s0
 /var/lib/droidloom/runtime-cohorts/[0-9a-f]{64}/images/contacts-content-jar-original -- u:object_r:system_file:s0
+/etc/systemd/system/droidloom-instance-factory\.service -- u:object_r:p4_linux_factory_unit_file_t:s0
+/etc/systemd/system/droidloom-production\.service -- u:object_r:p4_linux_production_unit_file_t:s0
