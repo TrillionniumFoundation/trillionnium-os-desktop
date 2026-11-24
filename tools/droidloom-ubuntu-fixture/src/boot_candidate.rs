@@ -16,8 +16,11 @@ use std::{
 const MEMBER: &str = "usr/lib/x86_64-linux-gnu/libselinux.so.1";
 const PATCH: &str = "debian/patches/p4-native-lsm-exec-attribute.patch";
 const ORIGINAL_VERSION: &str = "3.9-4build1";
-const CANDIDATE_VERSION: &str = "3.9-4build1+p4lsmexec2";
+const CANDIDATE_VERSION: &str = "3.9-4build1+p4lsmexec3";
 const ORIGINAL_SHA: &str = "7538ee77765a27966563c0d22437a3080dcdb346ff76cc16d71a3ce3379a716a";
+
+#[path = "boot_candidate_evidence.rs"]
+mod evidence;
 
 #[derive(Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -217,7 +220,10 @@ fn dsc_sources(text: &str) -> Result<BTreeMap<String, (u64, String)>> {
             "duplicate source archive",
         )?;
     }
-    ensure(found && result.len() == 3, "source archives and signature set incomplete")?;
+    ensure(
+        found && result.len() == 3,
+        "source archives and signature set incomplete",
+    )?;
     Ok(result)
 }
 
@@ -240,6 +246,7 @@ fn verify_sources(input: &LibselinuxCandidate, declaration: &Value, work: &Path)
             && source["patch_sha256"] == declaration["source"]["patch_sha256"],
         "candidate maintained-source proof differs",
     )?;
+    evidence::maintained_source(&source, declaration, input)?;
     let packages = declaration["source_and_binary_packages"]
         .as_array()
         .ok_or("source package pins absent")?;
@@ -283,8 +290,7 @@ fn verify_sources(input: &LibselinuxCandidate, declaration: &Value, work: &Path)
             .and_then(|s| s.to_str())
             .ok_or("invalid source archive basename")?;
         ensure(
-            name == expected_name
-                && sources.get(name) == Some(&(pin.bytes, pin.sha256.clone())),
+            name == expected_name && sources.get(name) == Some(&(pin.bytes, pin.sha256.clone())),
             "exact source archive or signature is not bound by .dsc",
         )?;
         ensure(
@@ -317,89 +323,15 @@ fn verify_sources(input: &LibselinuxCandidate, declaration: &Value, work: &Path)
     )?;
     let build_pin = artifact(&declaration["normal_build"])?;
     let build = read_json(&build_pin)?;
-    ensure(
-        build["schema"] == "p4-libselinux-debian-normal-build-v1"
-            && build["exit_code"] == 0
-            && build["candidate_version"] == CANDIDATE_VERSION
-            && build["production_qualified"] == false,
-        "candidate did not come from its declared successful normal Debian build",
-    )?;
+    evidence::normal_build(&build, declaration)?;
     let api_pin = artifact(&declaration["public_api_unit_tests"])?;
     let api = read_json(&api_pin)?;
-    ensure(
-        api["schema"] == "p4-libselinux-native-exec-public-abi-tests-v1"
-            && api["test_source_sha256"] == source["test_sha256"]
-            && api["tested_attributes"] == json!(["exec", "keycreate"]),
-        "public API test source binding differs",
-    )?;
-    let library = declaration["candidate_library"]["path"]
-        .as_str()
-        .ok_or("test library identity absent")?;
-    ensure(
-        api["libraries"]
-            .as_array()
-            .ok_or("tested libraries absent")?
-            .iter()
-            .filter(|v| {
-                v["path"] == library && v["sha256"] == declaration["candidate_library"]["sha256"]
-            })
-            .count()
-            == 1,
-        "API tests did not use the actual stripped package library",
-    )?;
-    let mut cases = BTreeSet::new();
-    for test in api["tests"]
-        .as_array()
-        .ok_or("API tests absent")?
-        .iter()
-        .filter(|v| v["library"] == library)
-    {
-        ensure(
-            test["exit_code"] == 0
-                && cases.insert((
-                    test["attribute"].as_str().ok_or("API test attribute absent")?,
-                    test["case"].as_str().ok_or("API test name absent")?,
-                )),
-            "failed or repeated actual package API test",
-        )?;
-    }
-    let mut expected_cases = BTreeSet::new();
-    for attribute in ["exec", "keycreate"] {
-        for case in [
-            "cache-and-clear",
-            "eintr",
-            "enosys",
-            "eopnotsupp",
-            "eacces",
-            "eperm",
-            "einval",
-            "e2big",
-            "efault",
-            "enomem",
-            "null-first",
-            "enosys-null",
-            "eopnotsupp-null",
-            "fallback-failure",
-            "failure-retains-cache",
-            "thread-local",
-            "public-wrapper",
-        ] {
-            expected_cases.insert((attribute, case));
-        }
-    }
-    expected_cases.insert(("exec", "independent-cache"));
-    for attribute in ["current", "fscreate", "sockcreate"] {
-        expected_cases.insert((attribute, "other-attribute"));
-    }
-    ensure(
-        cases == expected_cases,
-        "actual package API test set differs",
-    )?;
+    let case_count = evidence::public_api(&api, &source, declaration)?;
     Ok(json!({"source_commit":input.source_commit,"source":source,
         "dsc":input.source_dsc,"debian_archive":input.source_debian_archive,
         "orig_archive":input.source_orig_archive,"orig_signature":input.source_orig_signature,
         "patch_member":PATCH,"patch_sha256":fs::digest(&patch),
-        "normal_build":build_pin,"api_tests":api_pin,"package_api_cases":cases.len()}))
+        "normal_build":build_pin,"api_tests":api_pin,"package_api_cases":case_count}))
 }
 
 fn exports(text: &str) -> Result<BTreeSet<String>> {
@@ -504,6 +436,75 @@ pub(super) fn dpkg_status(root: &Path) -> Result<Option<FilePin>> {
     }
 }
 
+fn verify_declaration(input: &LibselinuxCandidate, declaration: &Value) -> Result<()> {
+    ensure(
+        declaration["schema"] == "p4-libselinux-native-exec-candidate-v1"
+            && declaration["package_name"] == "libselinux1"
+            && declaration["architecture"] == "amd64"
+            && declaration["version"] == CANDIDATE_VERSION
+            && declaration["member"] == MEMBER
+            && declaration["original_library"]["sha256"] == ORIGINAL_SHA
+            && declaration["original_library"]["bytes"] == 199120
+            && equal_pin(&artifact(&declaration["package"])?, &input.package)
+            && declaration["target_kernel_systemd_qualified"] == false
+            && declaration["public_versioned_exports_equal"] == true
+            && declaration["public_versioned_exports_count"] == 247
+            && declaration["tested_attributes"] == json!(["exec", "keycreate", "fscreate"]),
+        "candidate declaration is outside the reviewed replacement contract",
+    )?;
+    Ok(())
+}
+
+fn stage_debian_library(
+    input: &LibselinuxCandidate,
+    declaration: &Value,
+    layer: &Path,
+) -> Result<FilePin> {
+    let deb = layer.join("candidate.deb");
+    boot_files::copy_pin(&input.package, &deb, 0o400)?;
+    for (field, want) in [
+        ("Package", "libselinux1"),
+        ("Version", CANDIDATE_VERSION),
+        ("Architecture", "amd64"),
+    ] {
+        let actual = boot_files::run_logged(
+            &layer,
+            &format!("deb-{}", field.to_lowercase()),
+            "/usr/bin/dpkg-deb",
+            &["--field".into(), deb.to_string_lossy().into(), field.into()],
+            30,
+        )?;
+        ensure(
+            String::from_utf8(boot_files::read_pin(&actual.log, 4096)?)?.trim() == want,
+            "actual Debian package metadata differs",
+        )?;
+    }
+    let tar = crate::boot_runtime::redirected(
+        &layer,
+        "deb-data",
+        "/usr/bin/dpkg-deb",
+        &["--fsys-tarfile".into(), deb.to_string_lossy().into()],
+        None,
+        None,
+        &layer.join("data.tar"),
+        16 * 1024 * 1024,
+        30,
+    )?;
+    let bytes = pick_regular(
+        &boot_files::read_pin(&tar, 16 * 1024 * 1024)?,
+        MEMBER,
+        Some(0o644),
+    )?;
+    let wanted = artifact(&declaration["candidate_library"])?;
+    ensure(
+        bytes.len() as u64 == wanted.bytes && fs::digest(&bytes) == wanted.sha256,
+        "actual Debian library differs from tested candidate",
+    )?;
+    let candidate = layer.join("libselinux.so.1");
+    boot_files::write_new(&candidate, &bytes, 0o644)?;
+    boot_files::pin_file(&candidate)
+}
+
 pub fn apply(
     root: &Path,
     boot: &Path,
@@ -549,66 +550,12 @@ pub fn apply(
         "original fixture library bytes differ",
     )?;
     let declaration = read_json(&input.declaration)?;
-    ensure(
-        declaration["schema"] == "p4-libselinux-native-exec-candidate-v1"
-            && declaration["package_name"] == "libselinux1"
-            && declaration["architecture"] == "amd64"
-            && declaration["version"] == CANDIDATE_VERSION
-            && declaration["member"] == MEMBER
-            && declaration["original_library"]["sha256"] == ORIGINAL_SHA
-            && declaration["original_library"]["bytes"] == 199120
-            && equal_pin(&artifact(&declaration["package"])?, &input.package)
-            && declaration["target_kernel_systemd_qualified"] == false
-            && declaration["public_versioned_exports_equal"] == true
-            && declaration["public_versioned_exports_count"] == 247
-            && declaration["tested_attributes"] == json!(["exec", "keycreate"]),
-        "candidate declaration is outside the reviewed replacement contract",
-    )?;
+    verify_declaration(input, &declaration)?;
     let layer = boot.join("libselinux-candidate");
     boot_files::private_dir(&layer)?;
     let sources = verify_sources(input, &declaration, &layer)?;
-    let deb = layer.join("candidate.deb");
-    boot_files::copy_pin(&input.package, &deb, 0o400)?;
-    for (field, want) in [
-        ("Package", "libselinux1"),
-        ("Version", CANDIDATE_VERSION),
-        ("Architecture", "amd64"),
-    ] {
-        let actual = boot_files::run_logged(
-            &layer,
-            &format!("deb-{}", field.to_lowercase()),
-            "/usr/bin/dpkg-deb",
-            &["--field".into(), deb.to_string_lossy().into(), field.into()],
-            30,
-        )?;
-        ensure(
-            String::from_utf8(boot_files::read_pin(&actual.log, 4096)?)?.trim() == want,
-            "actual Debian package metadata differs",
-        )?;
-    }
-    let tar = crate::boot_runtime::redirected(
-        &layer,
-        "deb-data",
-        "/usr/bin/dpkg-deb",
-        &["--fsys-tarfile".into(), deb.to_string_lossy().into()],
-        None,
-        None,
-        &layer.join("data.tar"),
-        16 * 1024 * 1024,
-        30,
-    )?;
-    let bytes = pick_regular(
-        &boot_files::read_pin(&tar, 16 * 1024 * 1024)?,
-        MEMBER,
-        Some(0o644),
-    )?;
+    let candidate = stage_debian_library(input, &declaration, &layer)?.path;
     let wanted = artifact(&declaration["candidate_library"])?;
-    ensure(
-        bytes.len() as u64 == wanted.bytes && fs::digest(&bytes) == wanted.sha256,
-        "actual Debian library differs from tested candidate",
-    )?;
-    let candidate = layer.join("libselinux.so.1");
-    boot_files::write_new(&candidate, &bytes, 0o644)?;
     let before = layer.join("original-libselinux.so.1");
     boot_files::copy_pin(&original_pin, &before, 0o400)?;
     let (original_exports, original_elf) = elf_report(&before, &layer, "original")?;
@@ -739,10 +686,7 @@ mod tests {
             " {} 17 libselinux_{CANDIDATE_VERSION}.debian.tar.xz\n",
             "b".repeat(64)
         );
-        let signature = format!(
-            " {} 833 libselinux_3.9.orig.tar.gz.asc\n",
-            "c".repeat(64)
-        );
+        let signature = format!(" {} 833 libselinux_3.9.orig.tar.gz.asc\n", "c".repeat(64));
         let text = format!(
             "Source: libselinux\nVersion: {CANDIDATE_VERSION}\nChecksums-Sha256:\n{row}{signature}{second}Files:\n"
         );
@@ -750,6 +694,139 @@ mod tests {
         assert!(dsc_sources(&text.replace(&signature, "")).is_err());
         assert!(dsc_sources(&text.replace(CANDIDATE_VERSION, "3.9-other")).is_err());
         assert!(dsc_sources(&text.replace(&second, &row)).is_err());
+        Ok(())
+    }
+    #[test]
+    #[ignore = "requires the explicitly pinned original exec3 Debian materials on pocket4"]
+    fn actual_exec3_normal_package_evidence_and_negative_gates() -> Result<()> {
+        ensure(
+            rustix::process::geteuid().as_raw() == 0,
+            "actual candidate proof requires root",
+        )?;
+        let path = PathBuf::from(std::env::var("DROIDLOOM_EXEC3_INPUTS")?);
+        ensure(
+            path.starts_with("/var/lib/droidloom-qualification")
+                && path.file_name().and_then(|n| n.to_str()) == Some("INPUTS.json"),
+            "actual candidate proof plan path differs",
+        )?;
+        let pin = boot_files::pin_file(&path)?;
+        ensure(
+            pin.bytes < 16384 && pin.sha256 == std::env::var("DROIDLOOM_EXEC3_INPUTS_SHA256")?,
+            "actual candidate proof plan pin differs",
+        )?;
+        let held = boot_files::checked_file(&pin)?;
+        let identity = fs::stat(&held)?;
+        ensure(
+            identity.uid == 0
+                && identity.gid == 0
+                && identity.nlink == 1
+                && identity.mode & 0o7777 == 0o400,
+            "actual candidate proof plan is not protected",
+        )?;
+        let input: LibselinuxCandidate =
+            serde_json::from_slice(&boot_files::read_pin(&pin, 16384)?)?;
+        let layer = path
+            .parent()
+            .ok_or("proof plan parent absent")?
+            .join("source-proof");
+        boot_files::private_dir(&layer)?;
+        let declaration = read_json(&input.declaration)?;
+        verify_declaration(&input, &declaration)?;
+        let sources = verify_sources(&input, &declaration, &layer)?;
+        let library = stage_debian_library(&input, &declaration, &layer)?;
+        let original =
+            boot_files::pin_file(Path::new("/usr/lib/x86_64-linux-gnu/libselinux.so.1"))?;
+        ensure(
+            original.sha256 == ORIGINAL_SHA && original.bytes == 199120,
+            "actual read-only original library differs",
+        )?;
+        let original_copy = layer.join("original-libselinux.so.1");
+        boot_files::copy_pin(&original, &original_copy, 0o400)?;
+        let (old_exports, old_elf) = elf_report(&original_copy, &layer, "original")?;
+        let (new_exports, new_elf) = elf_report(&library.path, &layer, "candidate")?;
+        ensure(
+            old_exports == new_exports,
+            "actual package versioned ABI differs",
+        )?;
+        let source = read_json(&input.source_commit)?;
+        let api_pin = artifact(&declaration["public_api_unit_tests"])?;
+        let api = read_json(&api_pin)?;
+        for invalid in [
+            {
+                let mut x = api.clone();
+                x["tests"][0]["exit"] = json!(1);
+                x
+            },
+            {
+                let mut x = api.clone();
+                x["tests"].as_array_mut().unwrap().pop();
+                x
+            },
+            {
+                let mut x = api.clone();
+                x["tests"][1] = x["tests"][0].clone();
+                x
+            },
+            {
+                let mut x = api.clone();
+                x["tested_library"]["sha256"] = json!("0".repeat(64));
+                x
+            },
+            {
+                let mut x = api.clone();
+                x["test_sha256"] = json!("0".repeat(64));
+                x
+            },
+            {
+                let mut x = api.clone();
+                x["tests"][57]["case"] = json!("other-attribute");
+                x
+            },
+            {
+                let mut x = api.clone();
+                x["exports_count"] = json!(246);
+                x
+            },
+        ] {
+            assert!(evidence::public_api(&invalid, &source, &declaration).is_err());
+        }
+        let build_pin = artifact(&declaration["normal_build"])?;
+        let build = read_json(&build_pin)?;
+        for invalid in [
+            {
+                let mut x = build.clone();
+                x["success"] = json!(false);
+                x
+            },
+            {
+                let mut x = build.clone();
+                x["commands"][4]["argv"][0] = json!("cc");
+                x
+            },
+            {
+                let mut x = build.clone();
+                x["library"]["sha256"] = json!("0".repeat(64));
+                x
+            },
+            {
+                let mut x = build.clone();
+                x["schema"] = json!("p4-libselinux-debian-normal-build-v1");
+                x
+            },
+        ] {
+            assert!(evidence::normal_build(&invalid, &declaration).is_err());
+        }
+        let result = json!({"schema":"droidloom.exec3-actual-source-and-package-admission.v1",
+            "input":pin,"sources":sources,"candidate_library":library,"original_library":original,
+            "original_elf":old_elf,"candidate_elf":new_elf,"actual_package_api_cases":86,
+            "negative_gate_cases":11,"host_library_opened_for_write":false,
+            "guest_qualified":false,"production_qualified":false});
+        fs::write_json(
+            &fs::absolute_string(&layer.join("ADMISSION.json"))?,
+            &result,
+            0,
+        )?;
+        println!("{}", serde_json::to_string(&result)?);
         Ok(())
     }
 }
