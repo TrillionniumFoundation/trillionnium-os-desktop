@@ -24,6 +24,15 @@ journald-manager.c: 101185 bytes, SHA256
 journal-file.c: 174091 bytes, SHA256
 3608596a276974248862638d5a2e5be318e5c17a01b399e426b9ea149975013b.
 
+The reviewed upstream revision is
+[systemd 63c0371fa71ae32ba02f05f90658bc40aaa19168](https://github.com/systemd/systemd/tree/63c0371fa71ae32ba02f05f90658bc40aaa19168).
+The matching [journal-vacuum.c](https://github.com/systemd/systemd/blob/63c0371fa71ae32ba02f05f90658bc40aaa19168/src/libsystemd/sd-journal/journal-vacuum.c)
+is 11421 bytes with SHA256
+c038f8b0a500f7726e1993f79c2036f5282acded604abb88c6c6bde9012a1e2f.
+Its normal directory walk rejects nonregular and unknown files, preserves
+active journals, and unlinks recognized archived/isolated files according
+to the configured retention, size and count limits (including empty archives).
+
 ## Contract
 
 Journald alone obtains a regular-file default transition within the already
