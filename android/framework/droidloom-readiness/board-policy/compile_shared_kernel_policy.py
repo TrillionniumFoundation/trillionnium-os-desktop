@@ -200,6 +200,18 @@ def verify_host_control(library, binary, export):
         check(helper, obj(unit), "service", ["status", "stop"], True)
         check(helper, obj(unit), "service", ["start", "reload", "kill", "load", "enable", "disable"], False)
     check(helper, obj("p4_linux_unit_file_t"), "service", ["stop"], False)
+    for unit in ["p4_linux_factory_unit_file_t", "droidloom_package_early_unit_file"]:
+        check(helper, obj(unit), "service", ["status", "stop"], True)
+        check(helper, obj(unit), "service", ["start", "reload", "kill", "load", "enable", "disable"], False)
+        check(helper, obj(unit), "file", ["getattr", "open", "read", "write", "append", "map", "execute"], False)
+    check(manager, obj("droidloom_package_early_unit_file"), "file", ["getattr", "open", "read", "map"], True)
+    for subject in [broker, kernel, "u:r:droidloom_instance_launcher:s0"]:
+        check(subject, obj("droidloom_package_early_unit_file"), "file", ["getattr", "open", "read", "write", "map", "execute"], False)
+        check(subject, obj("droidloom_package_early_unit_file"), "service", ["start", "stop", "reload", "kill", "load", "enable", "disable"], False)
+    check(helper, obj("p4_linux_factory_unit_cgroup_t"), "dir", ["getattr", "search"], True)
+    check(helper, obj("p4_linux_factory_unit_cgroup_t"), "dir", ["open", "read", "write", "add_name", "remove_name", "create", "rmdir"], False)
+    for target in ["p4_linux_factory_membership_t", "p4_linux_unit_cgroup_t"]:
+        check(helper, obj(target), "file", ["getattr", "open", "read", "write", "append"], False)
     check(helper, obj("p4_linux_mac_setup_lock_t"), "file", ["open", "read", "lock"], True)
     check(helper, obj("p4_linux_mac_setup_lock_t"), "file", ["write", "append", "unlink"], False)
     check(broker, obj("p4_linux_mac_setup_lock_t"), "file", ["open", "read", "lock"], True)
@@ -253,6 +265,10 @@ def verify_host_control(library, binary, export):
         '(typetransition droidloom_package_helper droidloom_package_config_dir file "setup.lock" p4_linux_mac_setup_lock_t)',
         '(typetransition droidloom_package_helper droidloom_package_selection_dir file "package-maintenance.json" droidloom_package_fence)',
     ]
+    transitions.extend(
+        f'(genfscon cgroup2 "/system.slice/{unit}/cgroup.events" (u object_r droidloom_package_cgroup_events ((s0) (s0))))'
+        for unit in ["droidloom-instance-factory.service", "droidloom-instance-launcher.service",
+                     "droidloom-early-observer.service"])
     missing = [line for line in transitions if line not in lines]
     if missing:
         raise ValueError("Linked binary lacks exact automatic transitions: " + repr(missing))

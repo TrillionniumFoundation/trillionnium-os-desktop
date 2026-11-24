@@ -15,3 +15,4 @@
 /etc/droidloom/production -d u:object_r:droidloom_package_selection_dir:s0
 /etc/droidloom/production/package-maintenance\.json -- u:object_r:droidloom_package_fence:s0
 /(etc|usr/lib)/systemd/system/(droidloom-manager-label|droidloomd)\.service -- u:object_r:droidloom_package_native_unit_file:s0
+/etc/systemd/system/(droidloom-instance-launcher|droidloom-early-observer)\.service -- u:object_r:droidloom_package_early_unit_file:s0

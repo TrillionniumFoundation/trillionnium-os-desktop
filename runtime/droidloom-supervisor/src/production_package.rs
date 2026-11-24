@@ -489,7 +489,7 @@ impl SocketCustody {
     }
 }
 
-/// Real live resource result only. It does not prove the three native units
+/// Real live resource result only. It does not prove the fixed native units
 /// stopped, authorize package replacement, or permit removal of the deny fence.
 /// Those later gates cannot be replaced by serializing this in-memory value.
 pub struct LivePackageRetirement<'a> {
@@ -501,6 +501,7 @@ pub struct LivePackageRetirement<'a> {
     unit: PackageBrokerUnit,
     mac: PackageMacWitness,
     deadline: Instant,
+    native_deadline: std::cell::Cell<Option<Instant>>,
 }
 impl<'a> LivePackageRetirement<'a> {
     pub fn revalidate(&self) -> io::Result<()> {
@@ -522,13 +523,45 @@ impl<'a> LivePackageRetirement<'a> {
     /// extend the absolute deadline retained from that same transaction.
     pub fn native_stop_deadline(&self) -> io::Result<Instant> {
         self.revalidate()?;
-        bounded_native_stop_deadline(Instant::now(), self.deadline)
+        if let Some(deadline) = self.native_deadline.get() {
+            before(deadline)?;
+            return Ok(deadline);
+        }
+        let deadline = bounded_native_stop_deadline(Instant::now(), self.deadline)?;
+        self.native_deadline.set(Some(deadline));
+        Ok(deadline)
+    }
+
+    fn original_native_deadline(&self) -> io::Result<Instant> {
+        let deadline = self.native_deadline.get()
+            .ok_or_else(|| denied("original native-stop phase has not begun"))?;
+        before(deadline)?;
+        Ok(deadline)
+    }
+
+    /// Complete the three original early actors after the original production
+    /// broker has exited normally. The only stop targets, manager connection,
+    /// invocations, PIDFDs and cgroups were retained before the resource ACK.
+    pub fn stop_early_native_actors(&self) -> io::Result<()> {
+        let deadline = self.original_native_deadline()?;
+        let progress = || -> std::result::Result<(), crate::production_cgroup::CgroupError> {
+            before(deadline)?;
+            self.lock.revalidate_fence(&self.fence)?;
+            self.mac.selection().revalidate()
+                .map_err(|error| crate::production_cgroup::CgroupError::Io(other(error)))?;
+            self.mac.revalidate_after_broker_exit(&self.broker, &self.unit, self.deadline)
+                .map_err(|error| crate::production_cgroup::CgroupError::Io(other(error)))?;
+            self.socket.revalidate_retired()?;
+            before(deadline)?;
+            Ok(())
+        };
+        self.unit.stop_early_actors(deadline, &progress).map_err(other)
     }
 
     /// Consume the original live result only after the native stop operation.
     /// The held PIDFD and original manager invocation must show a clean exit;
     /// no new connection, numeric PID, receipt or caller assertion is accepted.
-    /// The caller must separately retire the other fixed native actors.
+    /// All retained early actors must also have genuine completed stop jobs.
     pub fn complete_native_stop(self) -> io::Result<NativePackageRetirement<'a>> {
         let value = NativePackageRetirement { original: self };
         value.revalidate()?;
@@ -545,12 +578,15 @@ pub struct NativePackageRetirement<'a> {
 impl NativePackageRetirement<'_> {
     pub fn revalidate(&self) -> io::Result<()> {
         let original = &self.original;
+        let native_deadline = original.original_native_deadline()?;
         before(original.deadline)?;
         original.lock.revalidate_fence(&original.fence)?;
         original.mac.selection().revalidate().map_err(other)?;
         original.mac.revalidate_after_broker_exit(&original.broker, &original.unit, original.deadline)
             .map_err(other)?;
         original.socket.revalidate_retired()?;
+        original.unit.revalidate_early_actors_retired(native_deadline).map_err(other)?;
+        before(native_deadline)?;
         before(original.deadline)
     }
 }
@@ -623,6 +659,7 @@ pub fn retire_for_package<'a>(
     seek(lock.as_fd(), confirmation)?;
     socket.revalidate()?;
     unit.revalidate(&broker, deadline).map_err(other)?;
+    unit.revalidate_early_actors_before_commit(deadline).map_err(other)?;
     mac.revalidate(&broker, &unit, socket.stream()?)
         .map_err(other)?;
     lock.require_unfenced()?;
@@ -659,6 +696,7 @@ pub fn retire_for_package<'a>(
         mac,
         socket,
         deadline,
+        native_deadline: std::cell::Cell::new(None),
     };
     value.revalidate()?;
     Ok(value)

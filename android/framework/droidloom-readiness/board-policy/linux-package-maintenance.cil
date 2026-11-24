@@ -126,7 +126,25 @@
 (neverallow droidloom_package_helper droidloom_package_native_units (file (create write append setattr unlink rename relabelto relabelfrom)))
 (neverallow droidloom_package_helper droidloom_manager_private_socket (sock_file (create unlink rename setattr relabelto relabelfrom)))
 
-; Observe only the three fixed cgroup.events inodes. No task membership,
+; The persistent factory retains its existing exact unit label. The two
+; per-generation early actors receive one additional fixed unit-file label.
+; RefUnit is deliberately unused: systemd authorizes it with service start.
+; The helper gains only status/stop, with no direct unit-file body access.
+(type droidloom_package_early_unit_file)
+(roletype object_r droidloom_package_early_unit_file)
+(typeattributeset p4_linux_data (droidloom_package_early_unit_file))
+(allow droidloom_package_early_unit_file labeledfs (filesystem (associate)))
+(typeattribute droidloom_package_early_units)
+(typeattributeset droidloom_package_early_units (p4_linux_factory_unit_file_t droidloom_package_early_unit_file))
+; Preserve the original manager's effective read-only generic-unit access.
+(allow init_t droidloom_package_early_unit_file (file (getattr open read map)))
+(allow droidloom_package_helper droidloom_package_early_units (service (status stop)))
+(neverallow droidloom_package_helper droidloom_package_early_units (service (start reload kill load enable disable)))
+(neverallow droidloom_package_helper droidloom_package_early_units (file (getattr open read write append create setattr unlink link rename relabelto relabelfrom execute execute_no_trans entrypoint map)))
+(neverallow droidloom_broker droidloom_package_early_unit_file (service (start stop reload kill load enable disable)))
+(neverallow p4_instance_host_readers droidloom_package_early_unit_file (service (start stop reload kill load enable disable)))
+
+; Observe only the six fixed cgroup.events inodes. No task membership,
 ; controller changes or foreign native service contents can be opened.
 (type droidloom_package_cgroup_events)
 (roletype object_r droidloom_package_cgroup_events)
@@ -134,6 +152,9 @@
 (genfscon cgroup2 "/system.slice/droidloom-production.service/cgroup.events" (u object_r droidloom_package_cgroup_events ((s0) (s0))))
 (genfscon cgroup2 "/system.slice/droidloom-manager-label.service/cgroup.events" (u object_r droidloom_package_cgroup_events ((s0) (s0))))
 (genfscon cgroup2 "/system.slice/droidloomd.service/cgroup.events" (u object_r droidloom_package_cgroup_events ((s0) (s0))))
+(genfscon cgroup2 "/system.slice/droidloom-instance-factory.service/cgroup.events" (u object_r droidloom_package_cgroup_events ((s0) (s0))))
+(genfscon cgroup2 "/system.slice/droidloom-instance-launcher.service/cgroup.events" (u object_r droidloom_package_cgroup_events ((s0) (s0))))
+(genfscon cgroup2 "/system.slice/droidloom-early-observer.service/cgroup.events" (u object_r droidloom_package_cgroup_events ((s0) (s0))))
 (allow init_t droidloom_package_cgroup_events (file (getattr open read watch)))
 (allow droidloom_broker droidloom_package_cgroup_events (file (getattr open read)))
 (allow droidloom_package_helper cgroup_v2 (filesystem (getattr)))
@@ -142,6 +163,7 @@
 (allow droidloom_package_helper p4_linux_production_unit_cgroup_t (dir (getattr search)))
 (allow droidloom_package_helper p4_linux_production_subtree_t (dir (getattr search)))
 (allow droidloom_package_helper p4_linux_unit_cgroup_t (dir (getattr search)))
+(allow droidloom_package_helper p4_linux_factory_unit_cgroup_t (dir (getattr search)))
 (allow droidloom_package_helper droidloom_package_cgroup_events (file (getattr open read)))
 (neverallow droidloom_package_helper p4_linux_init_cgroup_inodes (file (create write append setattr unlink rename relabelto relabelfrom)))
 (neverallow droidloom_package_helper p4_linux_init_cgroup_inodes (dir (create write add_name remove_name rmdir setattr mounton relabelto relabelfrom)))

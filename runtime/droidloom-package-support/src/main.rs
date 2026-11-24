@@ -1260,6 +1260,14 @@ fn retain_native_retirement(
             )
             .into());
         }
+        if matches!(unit, NativeUnit::Production)
+            && let Some(original) = original_production
+        {
+            // The original broker's PIDFD/normal exit is checked again inside
+            // this opaque phase. Finish its retained observer, launcher and
+            // persistent factory before stopping manager-label or legacy units.
+            original.stop_early_native_actors()?;
+        }
     }
     let proof = NativeRetirement { original };
     proof.revalidate(deadline)?;
