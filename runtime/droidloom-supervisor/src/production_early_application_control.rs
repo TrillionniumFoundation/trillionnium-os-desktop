@@ -165,6 +165,7 @@ impl EarlyApplicationControl {
                         ControlError::Invalid("original APK descriptor missing".into())
                     })?;
                     let bytes = apk::validate(&file)?;
+                    apk_payload::validate(&file, bytes)?;
                     progress.report(
                         "Installing the original APK through Android's atomic package session...",
                     );
@@ -186,7 +187,8 @@ impl EarlyApplicationControl {
                     let file = file.ok_or_else(|| {
                         ControlError::Invalid("original APK set descriptor missing".into())
                     })?;
-                    apk_set::validate(&file, &lengths)?;
+                    let bytes = apk_set::validate(&file, &lengths)?;
+                    apk_payload::validate(&file, bytes)?;
                     progress.report("Installing the complete original APK split set atomically...");
                     let result = crate::production_application::install_early(
                         authority,

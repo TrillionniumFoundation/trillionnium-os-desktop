@@ -20,6 +20,34 @@
 (allow droidloom_public_control_client p4_linux_mac_release_input_t (file (getattr open read)))
 (neverallow p4_linux_user_session_t droidloom_public_control_client_exec (file (execute_no_trans)))
 
+; The client copies caller-readable APKs into one bounded, sealed, non-executable
+; anonymous payload and transfers an O_RDONLY description. The broker never
+; receives the original host input inode or opens a caller pathname.
+(type droidloom_public_apk_payload)
+(roletype object_r droidloom_public_apk_payload)
+(typeattributeset p4_linux_data (droidloom_public_apk_payload))
+(allow droidloom_public_apk_payload tmpfs (filesystem (associate)))
+(typetransition droidloom_public_control_client tmpfs file droidloom_public_apk_payload)
+(typetransition droidloom_public_control_client tmpfs memfd_file droidloom_public_apk_payload)
+(allow droidloom_public_control_client droidloom_public_apk_payload (file (create getattr open read write setattr)))
+(allow droidloom_public_control_client droidloom_public_apk_payload (memfd_file (create getattr open read write setattr)))
+(allow droidloom_broker droidloom_public_control_client (fd (use)))
+(allow droidloom_broker droidloom_public_apk_payload (file (getattr read)))
+(allow droidloom_broker droidloom_public_apk_payload (memfd_file (getattr read)))
+(allow droidloom_broker tmpfs (filesystem (getattr)))
+(neverallow droidloom_broker droidloom_public_apk_payload (file (open write append create setattr map execute execute_no_trans entrypoint link unlink rename relabelto relabelfrom)))
+(neverallow droidloom_broker droidloom_public_apk_payload (memfd_file (open write append create setattr map execute)))
+(neverallow droidloom_public_control_client droidloom_public_apk_payload (file (map execute execute_no_trans entrypoint link unlink rename relabelto relabelfrom)))
+(neverallow droidloom_public_control_client droidloom_public_apk_payload (memfd_file (map execute)))
+; Only /proc/self/fd/<original> is used to downgrade O_RDWR to O_RDONLY. Existing
+; self task permissions suffice; no other process or directory listing is added.
+(allow droidloom_public_control_client proc (dir (getattr search)))
+(allow droidloom_public_control_client proc (lnk_file (getattr read)))
+(typeattribute p4_linux_nontraversing_without_public_payload)
+(typeattributeset p4_linux_nontraversing_without_public_payload
+ (and (p4_linux_nontraversing_without_native_selinux_queries) (not (droidloom_public_control_client))))
+(neverallow droidloom_public_control_client p4_nonboard_except_presenter_proc (dir (search)))
+
 ; The ordinary systemd-tmpfiles-setup unit creates the exact preinstalled
 ; directory entry. The broker owns only control.sock and verifies its labels.
 ; The service executor retains its original no-write rule on the /run root.

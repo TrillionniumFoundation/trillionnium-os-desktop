@@ -38,6 +38,9 @@ mod apk;
 #[path = "apk_set.rs"]
 mod apk_set;
 
+#[path = "apk_payload.rs"]
+mod apk_payload;
+
 #[path = "control_progress.rs"]
 mod progress;
 
@@ -1042,14 +1045,8 @@ fn install_apk_reporting(
     user: u32,
     report: Option<&mut dyn FnMut(&str)>,
 ) -> Result<ControlResponse, ControlError> {
-    use std::os::unix::fs::OpenOptionsExt;
     validate_android_user(user)?;
-    let file = fs::OpenOptions::new()
-        .read(true)
-        .custom_flags(libc::O_NONBLOCK)
-        .open(path)
-        .map_err(|source| io_error(&format!("open APK {}", path.display()), source))?;
-    apk::validate(&file)?;
+    let (file, _) = apk_payload::prepare(&[path.to_path_buf()])?;
     progress::request(
         socket,
         &ControlRequest::Install { user },

@@ -75,6 +75,33 @@ def export_binary_policy(policy, binary, output):
     return {line.strip() for line in output.read_text().splitlines()}
 
 
+def verify_public_apk_payload(check, obj, client, broker):
+    """Observe real linked decisions for the immutable public APK transport."""
+    payload = obj("droidloom_public_apk_payload")
+    for class_name in ("file", "memfd_file"):
+        check(client, payload, class_name,
+              ["create", "getattr", "open", "read", "write", "setattr"], True)
+        check(broker, payload, class_name, ["getattr", "read"], True)
+        check(broker, payload, class_name,
+              ["open", "write", "append", "create", "setattr", "map", "execute"], False)
+        check(client, payload, class_name, ["map", "execute"], False)
+    check(broker, client, "fd", ["use"], True)
+    check(broker, obj("tmpfs"), "filesystem", ["getattr"], True)
+    for subject in (client, broker):
+        for target in ("p4_linux_user_home_t", "p4_linux_tmp_t"):
+            check(subject, obj(target), "file",
+                  ["open", "read", "write", "append", "create"], False)
+            check(subject, obj(target), "dir",
+                  ["search", "open", "read", "write", "add_name"], False)
+    check(client, obj("p4_linux_native_data_t"), "file", ["getattr", "open", "read"], True)
+    check(broker, obj("p4_linux_native_data_t"), "file", ["open", "read", "write"], False)
+    check(client, obj("proc"), "dir", ["getattr", "search"], True)
+    check(client, obj("proc"), "dir", ["open", "read", "write"], False)
+    check(client, obj("proc"), "file", ["open", "read", "write"], False)
+    check(client, "u:system_r:p4_linux_user_session_t:s0", "dir", ["search", "open", "read"], False)
+    check(client, "u:system_r:p4_linux_user_session_t:s0", "lnk_file", ["read"], False)
+
+
 def verify_host_control(library, binary, export):
     """Verify fixed host entrypoints and positive/negative binary AV decisions."""
     policy = Policy(library, binary)
@@ -189,8 +216,11 @@ def verify_host_control(library, binary, export):
         check(subject, obj("p4_linux_product_store_t"), "file", ["open", "read", "write", "append"], False)
     check(helper, kernel, "security", ["load_policy", "setenforce", "setbool"], False)
 
+    verify_public_apk_payload(check, obj, client, broker)
     lines = export_binary_policy(policy, binary, export)
     transitions = [
+        "(typetransition droidloom_public_control_client tmpfs file droidloom_public_apk_payload)",
+        "(typetransition droidloom_public_control_client tmpfs memfd_file droidloom_public_apk_payload)",
         "(roletransition system_r droidloom_package_helper_exec process r)",
         "(typetransition p4_linux_user_session_t droidloom_package_helper_exec process droidloom_package_helper)",
         "(typetransition p4_linux_user_session_t droidloom_public_control_client_exec process droidloom_public_control_client)",

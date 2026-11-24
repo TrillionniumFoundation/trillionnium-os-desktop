@@ -117,7 +117,7 @@
 (typeattributeset p4_linux_other_nontraversing_services (and (p4_other_linux_without_kernel_directory_traversal) (not (p4_linux_journald_t))))
 (typeattribute p4_nonboard_except_journal_proc_directories)
 (typeattributeset p4_nonboard_except_journal_proc_directories (and (p4_all_nonboard) (not (or (proc) (proc_random)))))
-(neverallow p4_linux_nontraversing_without_native_selinux_queries p4_all_nonboard (dir (search)))
+(neverallow p4_linux_nontraversing_without_public_payload p4_all_nonboard (dir (search)))
 (neverallow droidloom_presenter p4_nonboard_except_presenter_proc (dir (search)))
 (neverallow p4_linux_journald_t p4_nonboard_except_journal_proc_directories (dir (search)))
 (allow p4_linux_journald_t proc (dir (search getattr)))

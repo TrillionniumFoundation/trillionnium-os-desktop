@@ -157,6 +157,35 @@ New Main and business qualifications use the v2 protocol and
 `/var/lib/droidloom/qualification/pocket4`; old home-directory receipts cannot
 qualify the new mapped Main or its held guest-entry helper.
 
+## Immutable APK input
+
+The installed `/usr/bin/droidloomctl` public client uses `install APK --user 0`
+or `install-multiple BASE SPLIT... --user 0`. Keep the reviewed source, signer,
+version and complete split-set pins alongside the original APKs. Root-owned
+qualification copies remain below `/var/lib/droidloom-qualification/NAME/inputs`
+and require the existing administrative authorization to read them. The public
+control domain gains no access to home directories or temporary disk files.
+
+Before connecting, the client holds each original regular file, checks its APK
+header and unchanged inode metadata, and copies at most 32 inputs and 2 GiB into
+one anonymous payload within a fixed preparation deadline. It creates the payload
+with `MFD_NOEXEC_SEAL`, fixes its mode to 0400, and seals writes, growth, shrinkage,
+executable-mode changes and further seal changes. It then reopens that same held
+inode read-only and sends only this description through `SCM_RIGHTS`. Both single
+APK and split installation use this path; source files are never passed to or
+opened by the broker. Unsupported kernel APIs fail before a package session.
+
+The early-owner server checks the received inode, exact byte count, anonymous
+`tmpfs` backing, complete seals, read-only access and close-on-exec flag before
+using its existing typed Android package-session authority. The policy permits
+the broker to use the public client's descriptor and read only the dedicated
+payload type; opening, modifying, mapping and executing the payload remain
+denied. Source-copying and immutable transport do not authenticate an APK:
+Android still verifies package signatures and installed signer continuity. The
+normal install sequence retains its owner/epoch checks, complete split writes,
+atomic commit and explicit abandonment on failure. It does not uninstall an old
+package or erase application data to work around an incompatible signature.
+
 ## Explicit launch observations in runtime plans
 
 The existing `droidloom-applications --runtime-plan PLAN
