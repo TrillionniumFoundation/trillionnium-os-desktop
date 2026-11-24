@@ -1236,21 +1236,28 @@ fn retain_native_retirement(
         // new InvocationID. Re-observe before each mutating native call.
         let current = inspect_unit(*unit, deadline)?;
         stable_stop_state(&current)?;
-        if matches!(unit, NativeUnit::Production)
-            && let Some(original) = original_production
-        {
-            // Bind this Stop to the RPC's original broker, in addition to
-            // the native snapshot. An unexpected exit also refuses before
-            // attempting to stop either of the remaining native actors.
-            original.revalidate()?;
-        }
         if matches!(current.active.as_str(), "inactive" | "failed") {
             terminal_unit(before, &current)?;
             group.verify_retired(&current)?;
+            if matches!(unit, NativeUnit::Production)
+                && let Some(original) = original_production
+            {
+                // An already exited broker still owns its original early actors.
+                // This opaque phase verifies its actual clean exit and custody
+                // before stopping or proving retirement of those retained actors.
+                original.stop_early_native_actors()?;
+            }
             continue;
         }
         same_stop_generation(before, &current)?;
         group.revalidate_stop_target(&current)?;
+        if matches!(unit, NativeUnit::Production)
+            && let Some(original) = original_production
+        {
+            // Bind this Stop to the RPC's original live broker, in addition to
+            // the native generation and original cgroup observations.
+            original.revalidate()?;
+        }
         let output = native_command(NativeAction::Stop(*unit), deadline)?;
         if !output.status.success() {
             return Err(format!(

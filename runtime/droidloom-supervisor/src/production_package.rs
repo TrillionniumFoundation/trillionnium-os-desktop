@@ -561,7 +561,8 @@ impl<'a> LivePackageRetirement<'a> {
     /// Consume the original live result only after the native stop operation.
     /// The held PIDFD and original manager invocation must show a clean exit;
     /// no new connection, numeric PID, receipt or caller assertion is accepted.
-    /// All retained early actors must also have genuine completed stop jobs.
+    /// Every retained early actor must have a genuine completed stop job or
+    /// an independently proved clean exit of its original native lifetime.
     pub fn complete_native_stop(self) -> io::Result<NativePackageRetirement<'a>> {
         let value = NativePackageRetirement { original: self };
         value.revalidate()?;
