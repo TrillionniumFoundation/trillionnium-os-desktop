@@ -240,7 +240,7 @@ The kernel-first production broker also exposes a separate, finite qualification
 interface over its existing presenter channel. Start from an actual
 `droidloom-applications --inspect-package PACKAGE --user 0` observation, review
 its PackageManager identity against the selected APK and source/signature pins,
-and save only the response's `inspection` object as a pinned
+and save only that command's `observation` object as a pinned
 `ApplicationInspection` JSON file. The saved file cannot supply authority: the
 broker checks the current installed identity, Android UID/user, runtime epoch,
 enabled launcher catalog and admitted cell selection again.
