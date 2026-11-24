@@ -16,6 +16,15 @@ pub(super) enum WorkflowFramework {
     Early(EarlyFrameworkObservation),
 }
 
+fn namespace_error(error: crate::production_namespace::NamespaceError) -> ApplicationError {
+    match error {
+        crate::production_namespace::NamespaceError::RetirementUnproven => {
+            ApplicationError::RetirementUnproven
+        }
+        error => external(error),
+    }
+}
+
 fn early_effect<T>(
     authority: &EarlyApplicationAuthority<'_>,
     deadline: Instant,
@@ -27,9 +36,13 @@ fn early_effect<T>(
     )?;
     authority
         .progress_inherited_native(deadline)
-        .map_err(external)?;
-    authority.ready().map_err(external)?;
-    finish_effect(effect(), || authority.ready().map_err(external), deadline)
+        .map_err(namespace_error)?;
+    authority.ready().map_err(namespace_error)?;
+    finish_effect(
+        effect(),
+        || authority.ready().map_err(namespace_error),
+        deadline,
+    )
 }
 
 /// Always perform the original owner's postcheck, while preserving an actual
@@ -54,25 +67,77 @@ pub(super) fn finish_effect<T>(
 }
 
 impl Workflow<'_, '_> {
+    pub(super) fn observe_gallery_image(
+        &mut self,
+        deadline: Instant,
+    ) -> Result<(
+        crate::production_mounts::custody::ObservedGalleryImage,
+        crate::control::application_custody::CustodyOwner,
+    )> {
+        match self {
+            Self::Legacy(ready) => ready
+                .observe_gallery_image(deadline)
+                .map_err(namespace_error),
+            Self::Early(authority) => early_effect(authority, deadline, || {
+                authority
+                    .observe_gallery_image(deadline)
+                    .map_err(namespace_error)
+            }),
+        }
+    }
+    pub(super) fn complete_gallery_image(
+        &mut self,
+        image: &mut crate::production_mounts::custody::ObservedGalleryImage,
+        owner: &crate::control::application_custody::CustodyOwner,
+        deadline: Instant,
+    ) -> Result<()> {
+        match self {
+            Self::Legacy(ready) => ready
+                .complete_gallery_image(image, owner, deadline)
+                .map_err(namespace_error),
+            Self::Early(authority) => early_effect(authority, deadline, || {
+                authority
+                    .complete_gallery_image(image, owner, deadline)
+                    .map_err(namespace_error)
+            }),
+        }
+    }
+    pub(super) fn revalidate_gallery_image(
+        &mut self,
+        image: &crate::production_mounts::custody::ObservedGalleryImage,
+        owner: &crate::control::application_custody::CustodyOwner,
+        deadline: Instant,
+    ) -> Result<()> {
+        match self {
+            Self::Legacy(ready) => ready
+                .revalidate_gallery_image(image, owner, deadline)
+                .map_err(namespace_error),
+            Self::Early(authority) => early_effect(authority, deadline, || {
+                authority
+                    .revalidate_gallery_image(image, owner, deadline)
+                    .map_err(namespace_error)
+            }),
+        }
+    }
     pub(super) fn observe_application_framework(&mut self) -> Result<WorkflowFramework> {
         match self {
             Self::Legacy(ready) => ready
                 .observe_application_framework()
                 .map(WorkflowFramework::Legacy)
-                .map_err(external),
+                .map_err(namespace_error),
             Self::Early(authority) => authority
                 .observe_framework()
                 .map(WorkflowFramework::Early)
-                .map_err(external),
+                .map_err(namespace_error),
         }
     }
     pub(super) fn application_epoch(&mut self, held: &WorkflowFramework) -> Result<RuntimeEpoch> {
         match (self, held) {
             (Self::Legacy(ready), WorkflowFramework::Legacy(framework)) => {
-                ready.application_epoch(framework).map_err(external)
+                ready.application_epoch(framework).map_err(namespace_error)
             }
             (Self::Early(authority), WorkflowFramework::Early(framework)) => {
-                authority.epoch(framework).map_err(external)
+                authority.epoch(framework).map_err(namespace_error)
             }
             _ => Err(reject(
                 "application framework witness belongs to another owner kind",
@@ -81,8 +146,8 @@ impl Workflow<'_, '_> {
     }
     pub(super) fn revalidate_application(&mut self) -> Result<()> {
         match self {
-            Self::Legacy(ready) => ready.revalidate_application().map_err(external),
-            Self::Early(authority) => authority.ready().map_err(external),
+            Self::Legacy(ready) => ready.revalidate_application().map_err(namespace_error),
+            Self::Early(authority) => authority.ready().map_err(namespace_error),
         }
     }
     pub(super) fn run_application_read_before(
@@ -93,7 +158,7 @@ impl Workflow<'_, '_> {
         match self {
             Self::Legacy(ready) => ready
                 .run_application_read_before(query, deadline)
-                .map_err(external),
+                .map_err(namespace_error),
             Self::Early(authority) => early_effect(authority, deadline, || {
                 run_read_before(*authority, query, deadline)
             }),
@@ -107,7 +172,7 @@ impl Workflow<'_, '_> {
         match self {
             Self::Legacy(ready) => ready
                 .run_application_browser(command, deadline)
-                .map_err(external),
+                .map_err(namespace_error),
             Self::Early(authority) => early_effect(authority, deadline, || {
                 run_browser_command(*authority, command, deadline)
             }),
@@ -121,7 +186,7 @@ impl Workflow<'_, '_> {
         match self {
             Self::Legacy(ready) => ready
                 .run_application_contacts_read(query, deadline)
-                .map_err(external),
+                .map_err(namespace_error),
             Self::Early(authority) => early_effect(authority, deadline, || {
                 run_contacts_read(*authority, query, deadline)
             }),
@@ -135,7 +200,7 @@ impl Workflow<'_, '_> {
         match self {
             Self::Legacy(ready) => ready
                 .run_application_launch(command, deadline)
-                .map_err(external),
+                .map_err(namespace_error),
             Self::Early(authority) => early_effect(authority, deadline, || {
                 run_launch_command(*authority, command, deadline)
             }),
@@ -149,7 +214,7 @@ impl Workflow<'_, '_> {
         match self {
             Self::Legacy(ready) => ready
                 .open_application_task_control(package, deadline)
-                .map_err(external),
+                .map_err(namespace_error),
             Self::Early(authority) => early_effect(authority, deadline, || {
                 task_control::connect_early(authority, package, deadline)
             }),
@@ -163,7 +228,7 @@ impl Workflow<'_, '_> {
         match self {
             Self::Legacy(ready) => ready
                 .revalidate_task_control(connection, deadline)
-                .map_err(external),
+                .map_err(namespace_error),
             Self::Early(authority) => early_effect(authority, deadline, || {
                 connection.revalidate_early(authority, deadline)
             }),
@@ -178,7 +243,7 @@ impl Workflow<'_, '_> {
         match self {
             Self::Legacy(ready) => ready
                 .exchange_task_control(connection, request, deadline)
-                .map_err(external),
+                .map_err(namespace_error),
             Self::Early(authority) => early_effect(authority, deadline, || {
                 connection.exchange_early(authority, request, deadline)
             }),
@@ -189,6 +254,19 @@ impl Workflow<'_, '_> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn actual_namespace_retirement_failure_keeps_its_quarantine_type() {
+        assert!(matches!(
+            namespace_error(crate::production_namespace::NamespaceError::RetirementUnproven),
+            ApplicationError::RetirementUnproven
+        ));
+        assert!(matches!(
+            namespace_error(crate::production_namespace::NamespaceError::Rejected(
+                "changed owner"
+            )),
+            ApplicationError::Rejected(_)
+        ));
+    }
     #[test]
     fn actual_retirement_failure_survives_postcheck_and_deadline_without_skipping_postcheck() {
         use std::cell::Cell;

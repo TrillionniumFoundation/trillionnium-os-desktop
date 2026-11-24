@@ -15,11 +15,12 @@ pub(crate) struct ProductionInspection {
     pub(crate) image_custody: Option<ImageApplicationCustody>,
 }
 
-struct GalleryProbe<'a> {
-    ready: ReadyTreeWitness<'a>,
-    framework: FrameworkObservation,
+struct GalleryProbe<'borrow, 'owner> {
+    ready: Workflow<'borrow, 'owner>,
+    framework: WorkflowFramework,
     reads: Vec<CustodyRead>,
     deadline: Instant,
+    retirement_unproven: bool,
 }
 
 fn retired(read: &ReadReceipt, stdout: &str) -> Result<()> {
@@ -62,14 +63,16 @@ fn gallery_paths(output: &str) -> Result<()> {
     )
 }
 
-impl AndroidProbe for GalleryProbe<'_> {
+impl AndroidProbe for GalleryProbe<'_, '_> {
     fn epoch(&mut self) -> std::result::Result<RuntimeEpoch, String> {
         if Instant::now() >= self.deadline {
             return Err("image custody inspection deadline".into());
         }
-        self.ready
-            .application_epoch(&self.framework)
-            .map_err(|error| error.to_string())
+        let observed = self.ready.application_epoch(&self.framework);
+        observed.map_err(|error| {
+            self.retirement_unproven |= matches!(error, ApplicationError::RetirementUnproven);
+            error.to_string()
+        })
     }
 
     fn command(&mut self, args: &[String]) -> std::result::Result<String, String> {
@@ -82,8 +85,11 @@ impl AndroidProbe for GalleryProbe<'_> {
         // role, stopped-exec observation and actual reap path as normal reads.
         let result = self
             .ready
-            .run_application_read_before(&query, self.deadline)
-            .map_err(|error| error.to_string())?;
+            .run_application_read_before(&query, self.deadline);
+        let result = result.map_err(|error| {
+            self.retirement_unproven |= matches!(error, ApplicationError::RetirementUnproven);
+            error.to_string()
+        })?;
         retired(&result.receipt, &result.output).map_err(|error| error.to_string())?;
         if matches!(query, ApplicationRead::PackagePaths { .. }) {
             gallery_paths(&result.output).map_err(|error| error.to_string())?;
@@ -99,7 +105,7 @@ impl AndroidProbe for GalleryProbe<'_> {
 }
 
 pub(crate) fn inspect_with_custody(
-    mut ready: ReadyTreeWitness<'_>,
+    ready: ReadyTreeWitness<'_>,
     package: &str,
     user: u32,
 ) -> Result<ProductionInspection> {
@@ -109,13 +115,31 @@ pub(crate) fn inspect_with_custody(
             image_custody: None,
         });
     }
+    inspect_gallery(Workflow::Legacy(ready))
+}
+
+pub(crate) fn inspect_with_custody_early(
+    authority: &crate::production_selection::early_generation::EarlyApplicationAuthority<'_>,
+    package: &str,
+    user: u32,
+) -> Result<ProductionInspection> {
+    if package != GALLERY_PACKAGE || user != 0 {
+        return Ok(ProductionInspection {
+            application: super::inspect_early(authority, package, user)?,
+            image_custody: None,
+        });
+    }
+    inspect_gallery(Workflow::Early(authority))
+}
+
+fn inspect_gallery(mut ready: Workflow<'_, '_>) -> Result<ProductionInspection> {
     let started = Instant::now();
     let deadline = started + Duration::from_secs(300);
-    let framework = ready.observe_application_framework().map_err(external)?;
-    let first_epoch = ready.application_epoch(&framework).map_err(external)?;
-    let (mut image, owner) = ready.observe_gallery_image(deadline).map_err(external)?;
+    let framework = ready.observe_application_framework()?;
+    let first_epoch = ready.application_epoch(&framework)?;
+    let (mut image, owner) = ready.observe_gallery_image(deadline)?;
     require(
-        ready.application_epoch(&framework).map_err(external)? == first_epoch,
+        ready.application_epoch(&framework)? == first_epoch,
         "framework changed during whole-image observation",
     )?;
     let mut probe = GalleryProbe {
@@ -123,9 +147,17 @@ pub(crate) fn inspect_with_custody(
         framework,
         reads: Vec::new(),
         deadline,
+        retirement_unproven: false,
     };
-    let application =
-        crate::control::application_probe::inspect(&mut probe, package, user).map_err(external)?;
+    let observed = crate::control::application_probe::inspect(&mut probe, GALLERY_PACKAGE, 0);
+    // A string-valued probe failure must not erase an actual failed retirement.
+    // Check the original owner even when one of the seven reads failed.
+    let after = probe.ready.revalidate_application();
+    if probe.retirement_unproven || matches!(&after, Err(ApplicationError::RetirementUnproven)) {
+        return Err(ApplicationError::RetirementUnproven);
+    }
+    after?;
+    let application = observed.map_err(external)?;
     require(
         application.epoch == first_epoch,
         "Gallery inspection crossed a framework epoch",
@@ -134,10 +166,9 @@ pub(crate) fn inspect_with_custody(
     // after-byte read remains inside the original 300-second absolute limit.
     probe
         .ready
-        .complete_gallery_image(&mut image, &owner, deadline)
-        .map_err(external)?;
+        .complete_gallery_image(&mut image, &owner, deadline)?;
     require(
-        probe.epoch().map_err(external)? == first_epoch,
+        probe.ready.application_epoch(&probe.framework)? == first_epoch,
         "final Gallery epoch changed",
     )?;
     let (cohort, original_apk, after_cohort, after_original_apk) =
@@ -170,14 +201,9 @@ pub(crate) fn inspect_with_custody(
     // the transcript has been checked. This performs no second command run.
     probe
         .ready
-        .revalidate_gallery_image(&image, &observed.owner, deadline)
-        .map_err(external)?;
+        .revalidate_gallery_image(&image, &observed.owner, deadline)?;
     require(
-        probe
-            .ready
-            .application_epoch(&probe.framework)
-            .map_err(external)?
-            == first_epoch
+        probe.ready.application_epoch(&probe.framework)? == first_epoch
             && Instant::now() < deadline,
         "Gallery source observation expired before return",
     )?;

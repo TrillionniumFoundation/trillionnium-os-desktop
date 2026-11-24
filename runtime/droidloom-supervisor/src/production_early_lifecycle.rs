@@ -412,7 +412,7 @@ pub fn complete_early_resources() -> io::Result<()> {
                     board.selection().spec().host_uid,
                     || {
                         super::EarlyApplicationAuthority::acquire(
-                            &base, &group, &owner, root, query, &progress,
+                            &base, &group, &owner, root, query, system, &progress,
                         )
                     },
                 )
