@@ -389,6 +389,10 @@ pub fn install(
             "usr/lib/udev/rules.d/00-droidloom-native-hardware.rules",
             include_bytes!("../../../android/framework/droidloom-readiness/board-policy/00-droidloom-native-hardware.rules").as_slice(),
         ),
+        (
+            "usr/lib/systemd/system/systemd-udevd.service.d/50-droidloom-hardware-label.conf",
+            include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-udev-hardware-label.conf").as_slice(),
+        ),
     ] {
         let entry = manifest
             .files

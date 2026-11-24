@@ -121,7 +121,7 @@ def verify_native_hardware(policy, lines, check, obj):
 
     native = lambda name: "u:system_r:" + name + ":s0"
     labeler = native("p4_linux_hardware_label_t")
-    dirs = {"p4_linux_drm_dir_t", "p4_linux_input_dir_t"}
+    dirs = {"p4_linux_drm_dir_t", "p4_linux_input_dir_t", "p4_linux_native_dev_root_t"}
     nodes = {"p4_linux_drm_card_t", "p4_linux_drm_render_t", "p4_linux_input_event_t"}
     for target in sorted(types):
         check(labeler, obj(target), "dir", ["relabelto"], target in dirs)
@@ -170,6 +170,17 @@ def verify_native_hardware(policy, lines, check, obj):
     body = {"open", "read", "write", "append", "ioctl", "map"}
     role_types = sorted({(form[1], form[2]) for form in forms
                          if form[0] == "roletype" and form[1] in {"r", "system_r"}})
+    for role, actor in role_types:
+        context = f"u:{role}:{actor}:s0"
+        own = actor == "p4_linux_hardware_label_t"
+        check(labeler, context, "dir", ["getattr", "search"], own)
+        check(labeler, context, "dir", ["open", "read"], False)
+        check(labeler, context, "lnk_file", ["getattr", "read"], own)
+        check(labeler, context, "file", ["open", "read"], False)
+    check(labeler, obj("proc"), "dir", ["getattr", "search"], True)
+    check(labeler, obj("proc"), "dir", ["open", "read"], False)
+    check(labeler, obj("proc"), "lnk_file", ["getattr", "read"], True)
+    check(labeler, obj("proc"), "file", ["open", "read", "write"], False)
     decisions = 0
     for role, actor in role_types:
         context = f"u:{role}:{actor}:s0"
@@ -189,7 +200,7 @@ def verify_native_hardware(policy, lines, check, obj):
                 check(context, obj(target), "chr_file", sorted(wanted), True)
             check(context, obj(target), "chr_file", sorted(body - wanted), False)
             decisions += len(body)
-    return {"concrete_types": len(types), "relabel_scope_decisions": len(types)*7,
+    return {"concrete_types": len(types), "self_fd_metadata_decisions": len(role_types)*8+9, "relabel_scope_decisions": len(types)*7,
             "hardware_body_decisions": decisions, "original_and_native_role_types": len(role_types),
             "ioctl_u16_decisions": 65536*len(ioctl_sets),
             "ioctl_sets_sha256": hashlib.sha256(json.dumps(actual_sets, separators=(",", ":")).encode()).hexdigest()}

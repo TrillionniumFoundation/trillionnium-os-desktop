@@ -268,6 +268,12 @@ fn root_without_capabilities() -> io::Result<()> {
     {
         return Err(reject("hardware helper capabilities did not retire"));
     }
+    // This one-shot branch has no worker threads. Other same-UID tasks must
+    // not inspect its held descriptors, even if they entered the same role.
+    syscall_ok(unsafe { libc::prctl(libc::PR_SET_DUMPABLE, 0, 0, 0, 0) } as _)?;
+    if unsafe { libc::prctl(libc::PR_GET_DUMPABLE, 0, 0, 0, 0) } != 0 {
+        return Err(reject("hardware helper remained dumpable"));
+    }
     Ok(())
 }
 
@@ -318,6 +324,63 @@ struct XattrArgs {
     flags: u32,
 }
 
+// In the target 6.18 kernel, xattrat's empty-path branch uses fdget(),
+// which deliberately excludes O_PATH. The pathname branch accepts the
+// original held inode through this task's fixed proc-FD link. No caller
+// chooses the pathname, another PID, an fd number, or an xattr key.
+fn held_xattr(
+    file: &File,
+    operation: libc::c_long,
+    key: &CStr,
+    args: &XattrArgs,
+) -> io::Result<libc::c_long> {
+    if operation != SYS_GETXATTRAT && operation != SYS_SETXATTRAT {
+        return Err(reject("not a held-inode xattr operation"));
+    }
+    let flags = syscall_ok(unsafe { libc::fcntl(file.as_raw_fd(), libc::F_GETFL) } as _)?;
+    if flags as i32 & libc::O_PATH == 0 {
+        return Err(reject("hardware xattr requires the original O_PATH handle"));
+    }
+    let before = metadata(file)?;
+    let mount = mount_id(file)?;
+    let path = CString::new(format!("/proc/self/fd/{}", file.as_raw_fd()))
+        .expect("fixed ASCII and the held nonnegative descriptor");
+    let verify = || -> io::Result<()> {
+        // Follow only the self-constructed proc magic link. This second
+        // O_PATH handle also cannot read or write the device body.
+        let fd = syscall_ok(unsafe {
+            libc::openat(
+                libc::AT_FDCWD,
+                path.as_ptr(),
+                libc::O_PATH | libc::O_CLOEXEC,
+            )
+        } as _)?;
+        let observed = unsafe { File::from_raw_fd(fd as RawFd) };
+        if !same_inode(&before, &metadata(file)?)
+            || !same_inode(&before, &metadata(&observed)?)
+            || mount_id(file)? != mount
+            || mount_id(&observed)? != mount
+        {
+            return Err(reject("self-FD link no longer identifies the held inode"));
+        }
+        Ok(())
+    };
+    verify()?;
+    let result = syscall_ok(unsafe {
+        libc::syscall(
+            operation,
+            libc::AT_FDCWD,
+            path.as_ptr(),
+            0u32,
+            key.as_ptr(),
+            args,
+            size_of::<XattrArgs>(),
+        )
+    })?;
+    verify()?;
+    Ok(result)
+}
+
 fn label(file: &File) -> io::Result<Vec<u8>> {
     let mut buffer = [0u8; 256];
     let args = XattrArgs {
@@ -325,17 +388,7 @@ fn label(file: &File) -> io::Result<Vec<u8>> {
         size: buffer.len() as u32,
         flags: 0,
     };
-    let len = syscall_ok(unsafe {
-        libc::syscall(
-            SYS_GETXATTRAT,
-            file.as_raw_fd(),
-            c"".as_ptr(),
-            libc::AT_EMPTY_PATH,
-            c"security.selinux".as_ptr(),
-            &args,
-            size_of::<XattrArgs>(),
-        )
-    })? as usize;
+    let len = held_xattr(file, SYS_GETXATTRAT, c"security.selinux", &args)? as usize;
     if len == 0 || len > buffer.len() {
         return Err(reject("invalid held-inode SELinux label"));
     }
@@ -361,17 +414,7 @@ fn label_fixed(file: &File, wanted: &[u8]) -> io::Result<()> {
         size: wanted.len() as u32,
         flags: 0,
     };
-    syscall_ok(unsafe {
-        libc::syscall(
-            SYS_SETXATTRAT,
-            file.as_raw_fd(),
-            c"".as_ptr(),
-            libc::AT_EMPTY_PATH,
-            c"security.selinux".as_ptr(),
-            &args,
-            size_of::<XattrArgs>(),
-        )
-    })?;
+    held_xattr(file, SYS_SETXATTRAT, c"security.selinux", &args)?;
     if label(file)? != wanted {
         return Err(reject("native hardware label readback differs"));
     }
@@ -450,8 +493,13 @@ fn namespaces(root: &File) -> io::Result<()> {
         (c"host-userns", 0xff09u64, libc::CLONE_NEWUSER),
         (c"host-pidns", 0xff05u64, libc::CLONE_NEWPID),
     ] {
-        let actual =
-            syscall_ok(unsafe { libc::ioctl(pidfd.as_raw_fd(), request as libc::c_ulong) } as _)?;
+        let actual = syscall_ok(unsafe {
+            libc::ioctl(
+                pidfd.as_raw_fd(),
+                request as libc::c_ulong,
+                0 as libc::c_ulong,
+            )
+        } as _)?;
         let actual = unsafe { File::from_raw_fd(actual as RawFd) };
         let original = path_at(handoff.as_raw_fd(), leaf)?;
         let a = metadata(&actual)?;
@@ -463,7 +511,13 @@ fn namespaces(root: &File) -> io::Result<()> {
             || a.st_ino != b.st_ino
             || label(&original)? != NS_CONTEXT
             || mount_identity(&original)?.1 & 1 == 0
-            || unsafe { libc::ioctl(actual.as_raw_fd(), 0xb703u64 as libc::c_ulong) } != kind
+            || unsafe {
+                libc::ioctl(
+                    actual.as_raw_fd(),
+                    0xb703u64 as libc::c_ulong,
+                    0 as libc::c_ulong,
+                )
+            } != kind
         {
             return Err(reject(
                 "hardware entry is outside the boot-held initial namespace",
@@ -480,7 +534,8 @@ fn apply(name: &DeviceName) -> io::Result<()> {
     let dev = path_at(root.as_raw_fd(), c"dev")?;
     let dev_stat = directory(&dev)?;
     let (dev_mount, _, fs_type) = mount_identity(&dev)?;
-    if fs_type != b"devtmpfs" || label(&dev)? != DEV_ROOT {
+    let dev_label = label(&dev)?;
+    if fs_type != b"devtmpfs" || ![ORIGINAL_DEVICE, DEV_ROOT].contains(&dev_label.as_slice()) {
         return Err(reject(
             "hardware label entry requires the native devtmpfs root",
         ));
@@ -504,7 +559,7 @@ fn apply(name: &DeviceName) -> io::Result<()> {
             "native hardware node does not match its original kernel identity",
         ));
     }
-    // Resolve the complete fixed chain before mutating either held inode.
+    // Resolve the entire fixed chain before mutating any held inode.
     let parent_label = label(&parent)?;
     let leaf_label = label(&leaf)?;
     if ![ORIGINAL_DEVICE, name.parent_context()].contains(&parent_label.as_slice())
@@ -512,9 +567,18 @@ fn apply(name: &DeviceName) -> io::Result<()> {
     {
         return Err(reject("native hardware source labels are not admissible"));
     }
+    // devtmpfs shadows the offline /dev directory; its first real root
+    // label must be established here, not assumed from file_contexts.
+    label_fixed(&dev, DEV_ROOT)?;
     label_fixed(&parent, name.parent_context())?;
     label_fixed(&leaf, name.context())?;
     if !same_inode(&before, &metadata(&leaf)?)
+        || !same_inode(&dev_stat, &metadata(&dev)?)
+        || !same_inode(&dev_stat, &metadata(&path_at(root.as_raw_fd(), c"dev")?)?)
+        || mount_id(&dev)? != dev_mount
+        || label(&dev)? != DEV_ROOT
+        || label(&parent)? != name.parent_context()
+        || label(&leaf)? != name.context()
         || !same_inode(&parent_stat, &metadata(&parent)?)
         || !same_inode(
             &before,
@@ -653,13 +717,23 @@ mod tests {
             (0xff09u64, libc::CLONE_NEWUSER, "user"),
             (0xff05u64, libc::CLONE_NEWPID, "pid"),
         ] {
-            let raw = syscall_ok(
-                unsafe { libc::ioctl(pidfd.as_raw_fd(), request as libc::c_ulong) } as _,
-            )
+            let raw = syscall_ok(unsafe {
+                libc::ioctl(
+                    pidfd.as_raw_fd(),
+                    request as libc::c_ulong,
+                    0 as libc::c_ulong,
+                )
+            } as _)
             .unwrap();
             let actual = unsafe { File::from_raw_fd(raw as RawFd) };
             assert_eq!(
-                unsafe { libc::ioctl(actual.as_raw_fd(), 0xb703u64 as libc::c_ulong) },
+                unsafe {
+                    libc::ioctl(
+                        actual.as_raw_fd(),
+                        0xb703u64 as libc::c_ulong,
+                        0 as libc::c_ulong,
+                    )
+                },
                 kind
             );
             let expected = File::open(format!("/proc/self/ns/{name}")).unwrap();
@@ -685,17 +759,12 @@ mod tests {
             size: data.len() as u32,
             flags: 0,
         };
-        syscall_ok(unsafe {
-            libc::syscall(
-                SYS_SETXATTRAT,
-                held.as_raw_fd(),
-                c"".as_ptr(),
-                libc::AT_EMPTY_PATH,
-                c"user.droidloom_hardware_probe".as_ptr(),
-                &args,
-                size_of::<XattrArgs>(),
-            )
-        })
+        held_xattr(
+            &held,
+            SYS_SETXATTRAT,
+            c"user.droidloom_hardware_probe",
+            &args,
+        )
         .unwrap();
         std::fs::rename(&path, dir.path().join("retired")).unwrap();
         std::fs::write(&path, b"new inode").unwrap();
@@ -705,17 +774,12 @@ mod tests {
             size: buffer.len() as u32,
             flags: 0,
         };
-        let length = syscall_ok(unsafe {
-            libc::syscall(
-                SYS_GETXATTRAT,
-                held.as_raw_fd(),
-                c"".as_ptr(),
-                libc::AT_EMPTY_PATH,
-                c"user.droidloom_hardware_probe".as_ptr(),
-                &args,
-                size_of::<XattrArgs>(),
-            )
-        })
+        let length = held_xattr(
+            &held,
+            SYS_GETXATTRAT,
+            c"user.droidloom_hardware_probe",
+            &args,
+        )
         .unwrap() as usize;
         assert_eq!(&buffer[..length], data);
         let new = path_at(
@@ -723,22 +787,14 @@ mod tests {
             &CString::new(path.as_os_str().as_bytes()).unwrap(),
         )
         .unwrap();
-        let rc = unsafe {
-            libc::syscall(
-                SYS_GETXATTRAT,
-                new.as_raw_fd(),
-                c"".as_ptr(),
-                libc::AT_EMPTY_PATH,
-                c"user.droidloom_hardware_probe".as_ptr(),
-                &args,
-                size_of::<XattrArgs>(),
-            )
-        };
-        assert_eq!(rc, -1);
-        assert_eq!(
-            io::Error::last_os_error().raw_os_error(),
-            Some(libc::ENODATA)
-        );
+        let error = held_xattr(
+            &new,
+            SYS_GETXATTRAT,
+            c"user.droidloom_hardware_probe",
+            &args,
+        )
+        .unwrap_err();
+        assert_eq!(error.raw_os_error(), Some(libc::ENODATA));
     }
 
     #[test]

@@ -948,6 +948,7 @@ pub fn make_root_image(
         "/etc/systemd/system/user-runtime-dir@.service.d/50-droidloom-native-session.conf",
         "/usr/bin/setfacl",
         "/usr/lib/udev/rules.d/00-droidloom-native-hardware.rules",
+        "/usr/lib/systemd/system/systemd-udevd.service.d/50-droidloom-hardware-label.conf",
         "/var/lib/droidloom-mac-calibration",
         "/var/lib/droidloom-public-apks",
         "/var/lib/droidloom/users/1000/data/data.img",

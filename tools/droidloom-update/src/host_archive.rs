@@ -319,6 +319,40 @@ mod tests {
         assert!(listing.lines().any(|l| l == format!("{STATE}/")));
     }
     #[test]
+    fn normal_native_configuration_and_hardware_entries_survive_real_archive_roundtrip() {
+        let (temp, stage) = fixture();
+        crate::early_boot_package::stage_native_configuration(&stage).unwrap();
+        let output_root = temp.path().join("normal-native");
+        export(&stage, &output_root, &identity()).unwrap();
+        let manifest: Value =
+            serde_json::from_slice(&fs::read(output_root.join(MANIFEST)).unwrap()).unwrap();
+        let files = manifest["files"].as_array().unwrap();
+        for (relative, expected) in [
+            (
+                "usr/lib/udev/rules.d/00-droidloom-native-hardware.rules",
+                include_bytes!("../../../android/framework/droidloom-readiness/board-policy/00-droidloom-native-hardware.rules").as_slice(),
+            ),
+            (
+                "usr/lib/systemd/system/systemd-udevd.service.d/50-droidloom-hardware-label.conf",
+                include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-udev-hardware-label.conf").as_slice(),
+            ),
+            (
+                "etc/systemd/system/user-runtime-dir@.service.d/50-droidloom-native-session.conf",
+                include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-user-runtime-dir.conf").as_slice(),
+            ),
+        ] {
+            let member = files.iter().find(|entry| entry["path"] == relative).unwrap();
+            assert_eq!(member["mode"], 0o444);
+            assert_eq!(member["size"], expected.len());
+            assert_eq!(member["sha256"], hash(&stage.join(relative)).unwrap());
+            let extracted = tar().arg("--extract").arg("--to-stdout").arg("--xz")
+                .arg("--file").arg(output_root.join(ARCHIVE)).arg(relative).output().unwrap();
+            assert!(extracted.status.success());
+            assert_eq!(extracted.stdout, expected);
+        }
+        assert_eq!(manifest["directories"].as_array().unwrap().len(), 2);
+    }
+    #[test]
     fn missing_nonempty_or_wrong_mode_state_is_rejected_before_publication() {
         for case in 0..3 {
             let (temp, stage) = fixture();
