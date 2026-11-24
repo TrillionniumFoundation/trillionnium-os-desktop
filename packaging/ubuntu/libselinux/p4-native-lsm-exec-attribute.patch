@@ -1,0 +1,101 @@
+--- a/src/procattr.c
++++ b/src/procattr.c
+@@ -10,6 +10,12 @@
+ #include <errno.h>
+ #include "selinux_internal.h"
+ #include "policy.h"
++
++#if defined(__has_include)
++# if __has_include(<linux/lsm.h>)
++#  include <linux/lsm.h>
++# endif
++#endif
+ 
+ #define UNSET (char *) -1
+ 
+@@ -191,6 +197,50 @@
+ 	return ret;
+ }
+ 
++
++/*
++ * Select the SELinux exec attribute explicitly on stacked-LSM kernels.
++ * The native interface performs the same SELinux setexec and exec-transition
++ * checks, without requiring write access to a task's procfs file class.
++ * Only kernels without this operation fall back to the original procattr ABI.
++ */
++static int setexecattr_native(const char *context)
++{
++#if defined(__NR_lsm_set_self_attr) && defined(LSM_ATTR_EXEC) && defined(LSM_ID_SELINUX)
++	struct lsm_ctx *ctx;
++	size_t length = context ? strlen(context) : 0;
++	size_t total;
++	int ret, saved_errno;
++
++	if (length > UINT32_MAX - sizeof(*ctx) - 1) {
++		errno = E2BIG;
++		return -1;
++	}
++	total = sizeof(*ctx) + length + 1;
++	ctx = calloc(1, total);
++	if (!ctx)
++		return -1;
++	ctx->id = LSM_ID_SELINUX;
++	ctx->len = total;
++	ctx->ctx_len = length + 1;
++	if (context)
++		memcpy(ctx->ctx, context, length + 1);
++
++	do {
++		ret = syscall(__NR_lsm_set_self_attr, LSM_ATTR_EXEC, ctx,
++			      (uint32_t)total, 0);
++	} while (ret < 0 && errno == EINTR);
++	saved_errno = errno;
++	free(ctx);
++	errno = saved_errno;
++	return ret;
++#else
++	(void)context;
++	errno = ENOSYS;
++	return -1;
++#endif
++}
++
+ static int setprocattrcon_raw(const char *context, const char *attr,
+ 			      char **prev_context)
+ {
+@@ -207,6 +257,26 @@
+ 	if (context && *prev_context && *prev_context != UNSET
+ 	    && !strcmp(context, *prev_context))
+ 		return 0;
++
++
++	/* Keep the original cache semantics and error propagation. In particular,
++	 * policy denials must never fall back to another attribute interface. */
++	if (!strcmp(attr, "exec")) {
++		if (context) {
++			context2 = strdup(context);
++			if (!context2)
++				return -1;
++		}
++		ret = setexecattr_native(context2);
++		if (ret == 0)
++			goto update_cache;
++		errno_hold = errno;
++		free(context2);
++		context2 = NULL;
++		errno = errno_hold;
++		if (errno != ENOSYS && errno != EOPNOTSUPP)
++			return -1;
++	}
+ 
+ 	fd = openattr(0, attr, O_RDWR | O_CLOEXEC);
+ 	if (fd < 0)
+@@ -228,6 +298,7 @@
+ 	errno_hold = errno;
+ 	close(fd);
+ 	errno = errno_hold;
++update_cache:
+ 	if (ret < 0) {
+ 		free(context2);
+ 		return -1;

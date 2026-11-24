@@ -1,0 +1,8 @@
+libselinux (3.9-4build1+p4lsmexec1) resolute; urgency=medium
+
+  * Use the native stacked-LSM interface for SELinux exec context changes.
+    Preserve existing ABI, cached state and unsupported-kernel fallback.
+    Policy denials do not fall back to procfs writes.
+
+ -- OpenAI Codex <codex@localhost>  Tue, 24 Nov 2026 06:05:49 +0000
+
