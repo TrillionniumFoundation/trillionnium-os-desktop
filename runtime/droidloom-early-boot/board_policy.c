@@ -179,7 +179,7 @@ static int initial_ubuntu_kernel(void)
     struct statfs root;
     if (uname(&kernel) < 0 || statfs("/", &root) < 0)
         return -1;
-    if (getpid() != 1 || geteuid() != 0 || strcmp(kernel.release, "6.18.64-p4ctx6181-fusectl-aafs-r1") ||
+    if (getpid() != 1 || geteuid() != 0 || strcmp(kernel.release, "6.18.64-p4ctx6181-fusectl-aafs-peer-r1") ||
         (unsigned long)root.f_type != EXT4_SUPER_MAGIC)
         return reject(EXDEV);
     const char *namespaces[] = {"user", "pid", "mnt"};
