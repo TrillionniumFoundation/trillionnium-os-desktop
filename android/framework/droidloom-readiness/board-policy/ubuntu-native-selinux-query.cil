@@ -1,0 +1,50 @@
+; The original native manager and two DBus daemons use libselinux's AVC.
+; These are query consumers, separate from the broker/loader MAC roles.
+; selinuxfs access writes are transactions, each checked again by the
+; kernel security class. No mutation or policy-loading authority is granted.
+(typeattribute p4_native_selinux_query_clients)
+(typeattributeset p4_native_selinux_query_clients
+ (init_t p4_linux_dbus_t p4_linux_user_dbus_t))
+
+(typeattribute p4_linux_nonmac_without_native_selinux_queries)
+(typeattributeset p4_linux_nonmac_without_native_selinux_queries
+ (and (p4_linux_other_than_mac) (not (p4_native_selinux_query_clients))))
+(typeattribute p4_linux_nonmac_nonjournal_without_native_selinux_queries)
+(typeattributeset p4_linux_nonmac_nonjournal_without_native_selinux_queries
+ (and (p4_linux_nonmac_other_than_journal) (not (p4_native_selinux_query_clients))))
+(typeattribute p4_linux_nontraversing_without_native_selinux_queries)
+(typeattributeset p4_linux_nontraversing_without_native_selinux_queries
+ (and (p4_linux_nontraversing_except_presenter) (not (p4_native_selinux_query_clients))))
+(typeattribute p4_nonboard_except_native_selinux_queries)
+(typeattributeset p4_nonboard_except_native_selinux_queries
+ (and (p4_all_nonboard) (not (selinuxfs))))
+(typeattribute p4_nonboard_except_native_selinux_read)
+(typeattributeset p4_nonboard_except_native_selinux_read
+ (and (p4_all_nonboard) (not (or (selinuxfs) (or (proc_cmdline) (p4_kernel_ns_handle_t))))))
+(typeattribute p4_nonboard_except_native_selinux_dirs)
+(typeattributeset p4_nonboard_except_native_selinux_dirs
+ (and (p4_all_nonboard) (not (or (proc) (or (sysfs) (selinuxfs))))))
+(typeattribute p4_nonboard_except_native_manager_abi_dirs)
+(typeattributeset p4_nonboard_except_native_manager_abi_dirs
+ (and (p4_nonboard_except_kernel_abi_dirs) (not (selinuxfs))))
+
+(allow p4_native_selinux_query_clients p4_linux_board_selinux_config_t (file (getattr open read)))
+(allow p4_native_selinux_query_clients proc (dir (getattr search)))
+(allow p4_native_selinux_query_clients proc (lnk_file (getattr read)))
+(allow p4_native_selinux_query_clients sysfs (dir (getattr search)))
+(allow p4_native_selinux_query_clients selinuxfs (filesystem (getattr)))
+(allow p4_native_selinux_query_clients selinuxfs (dir (getattr search open read)))
+(allow p4_native_selinux_query_clients selinuxfs (file (getattr open read map write)))
+(allow p4_native_selinux_query_clients kernel (security (compute_av)))
+(allow p4_native_dbus_daemons self (netlink_selinux_socket (create bind read)))
+(neverallow p4_native_selinux_query_clients kernel (security (load_policy setenforce setbool setsecparam setcheckreqprot read_policy)))
+(neverallow p4_native_selinux_query_clients p4_nonboard_except_native_selinux_queries (file (write)))
+(neverallow p4_native_selinux_query_clients p4_nonboard_except_native_selinux_read (file (open read)))
+(neverallow p4_native_selinux_query_clients p4_nonboard_except_native_selinux_queries (dir (open read)))
+; PID 1 separately traverses the already mounted device ABI. DBus needs
+; only the original proc self links and the SELinux filesystem path.
+(typeattribute p4_native_selinux_nonmanager_clients)
+(typeattributeset p4_native_selinux_nonmanager_clients
+ (and (p4_native_selinux_query_clients) (not (init_t))))
+(neverallow p4_native_selinux_nonmanager_clients p4_nonboard_except_native_selinux_dirs (dir (search)))
+(neverallow p4_native_dbus_daemons self (netlink_selinux_socket (write sendto connect)))

@@ -72,6 +72,7 @@ def main():
         "linux-query-owner.cil", "linux-fixed-metadata-observer.cil",
         "instance-factory-cgroup.cil", "ubuntu-systemd-unit-status.cil",
         "linux-application-roles.cil",
+        "ubuntu-dbus.cil", "ubuntu-native-selinux-query.cil",
     )
     components = [here / name for name in component_names]
     sources = [compiler, library, args.linux_board_cil, *args.android_cil, *components,
