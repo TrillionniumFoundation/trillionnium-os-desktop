@@ -76,7 +76,7 @@ def export_binary_policy(policy, binary, output):
     return {line.strip() for line in output.read_text().splitlines()}
 
 
-def verify_host_control(library, binary, export):
+def verify_host_control(library, binary, export, original_contract):
     """Verify fixed host entrypoints and positive/negative binary AV decisions."""
     policy = Policy(library, binary)
     sids = {}
@@ -261,8 +261,8 @@ def verify_host_control(library, binary, export):
     check(executor, executor, "process", ["setfscreate"], True)
     check(manager, manager, "capability", ["dac_override"], False)
     check(executor, executor, "capability", ["chown", "fowner", "setuid", "setgid", "setpcap"], True)
-    check(manager, manager, "capability", ["chown", "fowner", "setuid", "setgid", "sys_admin", "sys_ptrace"], False)
-    check(executor, executor, "capability", ["dac_override", "dac_read_search", "sys_admin", "sys_ptrace"], False)
+    check(manager, manager, "capability", ["chown", "fowner", "setuid", "setgid", "sys_ptrace"], False)
+    check(executor, executor, "capability", ["dac_override", "dac_read_search", "sys_ptrace"], False)
 
     check(manager, obj("p4_linux_user_run_t"), "dir",
           ["getattr", "search", "open", "read", "write", "remove_name", "rmdir"], True)
@@ -365,7 +365,147 @@ def verify_host_control(library, binary, export):
     for target in ["p4_linux_user_home_t", "p4_linux_tmp_t"]:
         check(presenter, obj(target), "file", ["open", "read", "write", "create", "map", "execute"], False)
 
+    # Native namespace authority is paired with the actual bounded filesystems.
+    journal = "u:system_r:p4_linux_journald_t:s0"
+    udev = "u:system_r:p4_linux_udev_t:s0"
+    module_loader = "u:system_r:p4_linux_module_loader_t:s0"
+    check(executor, executor, "capability", ["sys_admin", "sys_chroot"], True)
+    check(manager, manager, "capability", ["sys_admin"], True)
+    check(executor, executor, "capability", ["mknod"], False)
+    for fs in ["labeledfs", "tmpfs", "device", "proc", "sysfs", "cgroup_v2",
+               "devpts", "mqueue", "selinuxfs", "securityfs", "debugfs",
+               "debugfs_tracing_debug", "fusectlfs", "fs_bpf", "pstorefs",
+               "binfmt_miscfs", "rootfs"]:
+        check(executor, obj(fs), "filesystem", ["getattr", "remount", "unmount"], True)
+        check(executor, obj(fs), "filesystem", ["relabelto", "relabelfrom"], False)
+    check(executor, obj("tmpfs"), "filesystem", ["mount"], True)
+    check(executor, obj("selinuxfs"), "filesystem", ["mount"], False)
+    for fs in ["labeledfs", "tmpfs"]:
+        check(manager, obj(fs), "filesystem", ["getattr", "remount", "unmount"], True)
+    check(manager, obj("selinuxfs"), "filesystem", ["mount", "remount", "unmount"], False)
+    check(executor, obj("p4_linux_cgroup_root_t"), "dir", ["mounton"], True)
+    check(executor, obj("p4_linux_cgroup_init_scope_t"), "dir", ["mounton", "relabelto", "relabelfrom"], False)
+    check(executor, obj("p4_linux_cgroup_init_tasks_t"), "file", ["open", "write", "relabelto", "relabelfrom"], False)
+    check(executor, obj("tmpfs"), "dir", ["relabelfrom"], True)
+    check(executor, obj("tmpfs"), "dir", ["open", "read", "write", "add_name", "remove_name", "relabelto"], False)
+    for private in ["droidloom_public_apk_input", "p4_linux_product_store_t"]:
+        check(executor, obj(private), "file", ["open", "read", "write", "create", "relabelto"], False)
+    for actor in [session, udev, setup]:
+        check(actor, actor, "capability", ["sys_admin"], False)
+        check(actor, obj("tmpfs"), "filesystem", ["mount", "remount", "unmount"], False)
+    # The new socket label is computed by stock PID 1, not permission to bypass
+    # the executor or to connect to arbitrary manager sockets.
+    check(manager, manager, "process", ["setsockcreate", "setfscreate"], True)
+    check(manager, kernel, "security", ["compute_create"], True)
+    check(manager, journal, "process", ["transition", "dyntransition"], False)
+    check(executor, journal, "unix_stream_socket", ["connectto"], True)
+    check(executor, manager, "unix_stream_socket", ["connectto", "accept"], False)
+    check(journal, journal, "capability2", ["syslog"], True)
+    check(journal, kernel, "system", ["syslog_read"], True)
+    check(journal, kernel, "system", ["syslog_mod", "syslog_console"], False)
+    check(journal, journal, "capability", ["sys_ptrace", "audit_control"], False)
+    check(journal, obj("kmsg_device"), "chr_file", ["getattr", "open", "read", "write"], True)
+    for actor in [module_loader, udev]:
+        check(actor, actor, "capability", ["sys_module"], True)
+        check(actor, actor, "system", ["module_load"], False)
+        check(actor, obj("p4_linux_kernel_modules_t"), "system", ["module_load"], False)
+        check(actor, obj("sysfs"), "file", ["getattr", "open", "read"], True)
+        check(actor, obj("sysfs"), "file", ["write", "append", "map", "execute", "setattr"], False)
+        check(actor, executor, "unix_stream_socket", ["getattr", "read", "write"], True)
+        check(actor, executor, "unix_stream_socket", ["create", "connectto", "bind", "listen", "accept"], False)
+    check(kernel, module_loader, "process", ["transition"], True)
+    check(udev, obj("binder_device"), "chr_file", ["read", "write", "open", "setattr"], False)
+
+    # Global native /dev directory semantics apply both before and after normal
+    # path labeling. This adds only two directory metadata bits, never device I/O.
+    native_device_readers = [
+        "p4_linux_setup_t", "p4_linux_generator_t", "p4_linux_dbus_t",
+        "p4_linux_network_manager_t", "p4_linux_wpa_t", "p4_linux_resolved_t",
+        "p4_linux_logind_t", "p4_linux_accounts_t", "p4_linux_polkit_t",
+        "p4_linux_rtkit_t", "p4_linux_bluetooth_t", "p4_linux_gdm_t",
+        "p4_linux_gdm_worker_t", "p4_linux_sshd_t", "p4_linux_snapd_t",
+        "p4_linux_apparmor_updater_t", "p4_linux_module_loader_t",
+        "p4_linux_sysctl_t", "p4_linux_user_session_t", "p4_linux_compositor_t",
+        "p4_linux_audio_t", "p4_linux_desktop_portal_t", "p4_linux_user_manager_t",
+        "p4_linux_user_executor_t", "p4_linux_user_dbus_t", "droidloom_presenter",
+        "p4_linux_udev_t", "p4_linux_journald_t",
+    ]
+    for name in native_device_readers:
+        actor = f"u:system_r:{name}:s0"
+        for directory_type in ["device", "p4_linux_native_dev_root_t"]:
+            check(actor, obj(directory_type), "dir", ["getattr", "search"], True)
+            check(actor, obj(directory_type), "dir",
+                  ["open", "read", "create", "write", "add_name", "remove_name", "mounton"], False)
+    for actor in [manager, broker]:
+        check(actor, obj("p4_linux_native_dev_root_t"), "dir", ["getattr", "search"], True)
+    check(kernel, obj("p4_linux_native_dev_root_t"), "dir", ["getattr", "open", "read", "search"], True)
+    check("u:system_r:p4_linux_early_t:s0", obj("p4_linux_native_dev_root_t"), "dir", ["search"], True)
+    for actor in [session, compositor, presenter, udev]:
+        check(actor, obj("device"), "chr_file", ["open", "read", "write", "ioctl", "map"], False)
+        check(actor, obj("p4_linux_native_dev_root_t"), "dir", ["relabelfrom", "relabelto"], False)
+    # All selected socket units compute the exact native service SID. Actual
+    # service execution remains exclusively through the original executor.
+    activated = ["p4_linux_journald_t", "p4_linux_udev_t", "p4_linux_dbus_t",
+                 "p4_linux_snapd_t", "p4_linux_resolved_t", "p4_linux_logind_t"]
+    for name in activated:
+        actor = f"u:system_r:{name}:s0"
+        check(manager, actor, "process", ["transition", "dyntransition"], False)
+        check(manager, actor, "unix_stream_socket",
+              ["create", "getattr", "bind", "listen", "read", "write", "getopt", "setopt"], True)
+        check(executor, actor, "unix_stream_socket", ["getattr", "read", "write"], True)
+        if name != "p4_linux_journald_t":
+            check(executor, actor, "unix_stream_socket", ["connectto", "accept"], False)
+    sshd = "u:system_r:p4_linux_sshd_t:s0"
+    check(manager, sshd, "process", ["transition", "dyntransition"], False)
+    check(manager, manager, "capability", ["net_bind_service"], True)
+    check(manager, sshd, "tcp_socket", ["create", "bind", "listen", "getattr", "read", "write", "getopt", "setopt"], True)
+    check(manager, obj("port"), "tcp_socket", ["name_bind"], True)
+    check(manager, obj("node"), "tcp_socket", ["node_bind"], True)
+    check(executor, sshd, "tcp_socket", ["getattr", "read", "write"], True)
+    check(executor, sshd, "tcp_socket", ["create", "bind", "listen", "accept", "connect", "name_connect"], False)
+    for actor in [manager, journal]:
+        check(actor, actor, "capability2", ["audit_read"], True)
+    for actor in [manager, executor, journal]:
+        check(actor, journal, "netlink_audit_socket", ["getattr", "read", "write"], True)
+        check(actor, journal, "netlink_audit_socket",
+              ["nlmsg", "nlmsg_read", "nlmsg_write", "nlmsg_relay", "nlmsg_readpriv", "nlmsg_tty_audit", "sendto", "connect"], False)
+    check(journal, journal, "capability", ["audit_control", "audit_write"], False)
+    check(manager, udev, "netlink_kobject_uevent_socket", ["create", "bind", "getattr", "read", "write", "getopt", "setopt"], True)
+    for actor in [executor, udev]:
+        check(actor, udev, "netlink_kobject_uevent_socket", ["getattr", "read", "write"], True)
+    check(executor, udev, "netlink_kobject_uevent_socket", ["create", "bind", "sendto"], False)
+
     lines = export_binary_policy(policy, binary, export)
+    # Read every original Android and every native process-role type back from
+    # the binary. This explicitly accounts for the public module classification:
+    # only original init's existing system_dlkm read set and the two native
+    # file-backed loaders may access these new immutable public leaves.
+    module_context = obj("p4_shared_kernel_module_t")
+    role_types = []
+    for line in sorted(lines):
+        for role in ["r", "system_r"]:
+            prefix = f"(roletype {role} "
+            if line.startswith(prefix):
+                name = line[len(prefix):-1]
+                if not name or any(char.isspace() for char in name) or "(" in name:
+                    raise ValueError("Unexpected binary process-role declaration: " + line)
+                role_types.append((role, name))
+    if not set(original_contract["subjects"]).issubset({name for role, name in role_types if role == "r"}):
+        raise ValueError("Original Android subjects are absent from native module review")
+    file_permissions = original_contract["classes"]["file"]
+    for role, name in role_types:
+        context = f"u:{role}:{name}:s0"
+        if role == "r" and name == "init":
+            allowed = ["ioctl", "read", "getattr", "lock", "map", "open", "watch", "watch_reads"]
+        elif role == "system_r" and name in ["p4_linux_module_loader_t", "p4_linux_udev_t"]:
+            allowed = ["read", "getattr", "map", "open"]
+        else:
+            allowed = []
+        if allowed:
+            check(context, module_context, "file", allowed, True)
+        check(context, module_context, "file", [p for p in file_permissions if p not in allowed], False)
+        check(context, module_context, "system", ["module_load"],
+              role == "system_r" and name in ["p4_linux_module_loader_t", "p4_linux_udev_t"])
     transitions = [
         '(typetransition p4_linux_setup_t droidloom_public_apk_root dir "u1000" droidloom_public_apk_dir)',
         '(typetransition p4_linux_user_session_t droidloom_public_apk_dir file droidloom_public_apk_input)',
@@ -398,11 +538,37 @@ def verify_host_control(library, binary, export):
         "(typetransition p4_linux_service_executor_t p4_linux_runtime_acl_exec_t process p4_linux_runtime_acl_t)",
         "(typetransition p4_linux_user_executor_t p4_linux_runtime_acl_exec_t process p4_linux_user_session_t)",
     ])
+    transitions.extend([
+        "(typetransition init_t p4_linux_journald_exec_t process p4_linux_journald_t)",
+        "(typetransition kernel p4_linux_module_loader_exec_t process p4_linux_module_loader_t)",
+        "(roletransition r p4_linux_module_loader_exec_t process system_r)",
+        '(typetransition init_t p4_linux_systemd_run_t dir "mount-rootfs" p4_linux_sandbox_dir_t)',
+        '(typetransition init_t p4_linux_systemd_run_t dir "inaccessible" p4_linux_inaccessible_t)',
+    ])
+    transitions.extend(
+        f"(typetransition init_t {executable} process {actor})"
+        for executable, actor in [
+            ("p4_linux_udev_exec_t", "p4_linux_udev_t"),
+            ("p4_linux_dbus_exec_t", "p4_linux_dbus_t"),
+            ("p4_linux_sshd_exec_t", "p4_linux_sshd_t"),
+            ("p4_linux_snapd_exec_t", "p4_linux_snapd_t"),
+            ("p4_linux_resolved_exec_t", "p4_linux_resolved_t"),
+            ("p4_linux_logind_exec_t", "p4_linux_logind_t"),
+        ])
+    transitions.extend([
+        '(typetransition init_t p4_linux_run_t sock_file "snapd.socket" p4_linux_snapd_run_t)',
+        '(typetransition init_t p4_linux_run_t sock_file "snapd-snap.socket" p4_linux_snapd_run_t)',
+        '(typetransition init_t p4_linux_systemd_run_t sock_file "io.systemd.Login" p4_linux_logind_run_t)',
+        '(typetransition init_t p4_linux_resolved_run_t sock_file "io.systemd.Resolve" p4_linux_resolved_run_t)',
+        '(typetransition init_t p4_linux_resolved_run_t sock_file "io.systemd.Resolve.Monitor" p4_linux_resolved_run_t)',
+    ])
     missing = [line for line in transitions if line not in lines]
     if missing:
         raise ValueError("Linked binary lacks exact automatic transitions: " + repr(missing))
     return {
         "binary_access_checks": len(checks),
+        "public_module_role_types": len(role_types),
+        "public_module_original_android_subjects": len(original_contract["subjects"]),
         "exact_automatic_transitions": len(transitions),
         "access_matrix_sha256": hashlib.sha256(
             json.dumps(checks, sort_keys=True, separators=(",", ":")).encode()).hexdigest(),
@@ -502,6 +668,7 @@ def main():
         "ubuntu-core-cgroup-ownership.cil", "ubuntu-native-services.cil",
         "ubuntu-native-service-capabilities.cil",
         "ubuntu-native-login-audit.cil",
+        "ubuntu-native-service-runtime.cil", "ubuntu-native-sandbox.cil",
         "frontend-android-interface.cil", "linux-frontend-observer.cil", "instance-launcher.cil",
         "linux-query-owner.cil", "linux-fixed-metadata-observer.cil",
         "instance-factory-cgroup.cil", "ubuntu-systemd-unit-status.cil",
@@ -536,7 +703,7 @@ def main():
         linked = work / "combined.policy"
         compile_policy(compiler, [*args.android_cil, board, *components, shared], linked, contexts, environment)
         shared_access = verify(library, linked, contract)
-        host_control = verify_host_control(library, linked, work / "host-control-binary.cil")
+        host_control = verify_host_control(library, linked, work / "host-control-binary.cil", contract)
         native_capabilities = verify_native_service_capabilities(library, linked)
         login_audit = verify_login_audit(library, linked, work / "login-audit-binary.cil", export_binary_policy)
         result = {

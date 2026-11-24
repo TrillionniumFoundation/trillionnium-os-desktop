@@ -1,0 +1,177 @@
+; Public inputs for the original native kernel module loaders.  Only the
+; admitted kernel cohort's signed .ko leaves receive this public type.  Indexes,
+; configuration and every other release retain p4_linux_kernel_modules_t.
+; system_dlkm_file_type is the original policy's semantic class for public
+; loadable kernel modules.  It is deliberately not Linux private data: original
+; Android init retains its original read-only system_dlkm permissions, while
+; mount namespaces keep the host cohort outside the Android filesystem view.
+(type p4_shared_kernel_module_t)
+(roletype object_r p4_shared_kernel_module_t)
+(typeattributeset file_type (p4_shared_kernel_module_t))
+(typeattributeset system_dlkm_file_type (p4_shared_kernel_module_t))
+(typeattribute p4_native_module_readers)
+(typeattributeset p4_native_module_readers (p4_linux_module_loader_t p4_linux_udev_t))
+(typeattribute p4_linux_without_native_module_readers)
+(typeattributeset p4_linux_without_native_module_readers (and (p4_linux_procs) (not (p4_native_module_readers))))
+(typeattribute p4_android_files_without_shared_kernel_modules)
+(typeattributeset p4_android_files_without_shared_kernel_modules (and (p4_android_only_files) (not (p4_shared_kernel_module_t))))
+(allow p4_native_module_readers self (capability (sys_module)))
+(allow p4_native_module_readers p4_shared_kernel_module_t (file (getattr open read map)))
+(allow p4_native_module_readers p4_shared_kernel_module_t (system (module_load)))
+(allow p4_native_module_readers p4_linux_kernel_modules_t (file (getattr open read map)))
+(neverallow p4_linux_procs p4_shared_kernel_module_t (file (create write append setattr unlink link rename relabelfrom relabelto execute execute_no_trans entrypoint mounton)))
+(neverallow p4_linux_without_native_module_readers p4_shared_kernel_module_t (file (open read map)))
+(neverallow p4_linux_procs self (system (module_load)))
+; Public hardware discovery is a separate read-only partition. The original
+; sysfs inode labels and every Android decision stay unchanged. A native
+; hardware component may add only its source-proven readers to this attribute.
+(typeattribute p4_native_sysfs_readers)
+(typeattributeset p4_native_sysfs_readers (p4_native_module_readers))
+(typeattribute p4_nonboard_without_native_sysfs)
+(typeattributeset p4_nonboard_without_native_sysfs (and (p4_all_nonboard) (not (sysfs_type))))
+(typeattribute p4_nonboard_without_native_sysfs_or_cmdline)
+(typeattributeset p4_nonboard_without_native_sysfs_or_cmdline (and (p4_all_nonboard) (not (or (sysfs_type) (or (proc_cmdline) (p4_kernel_ns_handle_t))))))
+(typeattribute p4_nonboard_without_native_sysfs_or_device)
+(typeattributeset p4_nonboard_without_native_sysfs_or_device (and (p4_nonboard_except_device_directory) (not (sysfs_type))))
+(typeattribute p4_native_sysfs_nonmodule_file_readers)
+(typeattributeset p4_native_sysfs_nonmodule_file_readers (and (and (p4_linux_nonmac_nonjournal_without_native_selinux_queries) (p4_native_sysfs_readers)) (not (p4_native_module_readers))))
+(typeattribute p4_native_sysfs_nonmodule_directory_readers)
+(typeattributeset p4_native_sysfs_nonmodule_directory_readers (and (and (p4_linux_nonmac_without_native_selinux_queries) (p4_native_sysfs_readers)) (not (p4_native_module_readers))))
+(neverallow p4_native_sysfs_nonmodule_file_readers p4_nonboard_without_native_sysfs_or_cmdline (file (open read)))
+(neverallow p4_native_sysfs_nonmodule_directory_readers p4_nonboard_without_native_sysfs (dir (open read)))
+; libkmod first inspects public /sys/module and /proc/modules.  No sysfs store,
+; module parameter mutation or device-body read is granted by these rules.
+(typeattribute p4_native_module_kernel_inputs)
+(typeattributeset p4_native_module_kernel_inputs (sysfs_type proc_modules p4_shared_kernel_module_t))
+(typeattribute p4_nonboard_without_native_module_inputs)
+(typeattributeset p4_nonboard_without_native_module_inputs (and (p4_all_nonboard) (not (p4_native_module_kernel_inputs))))
+(typeattribute p4_nonboard_without_loader_inputs)
+(typeattributeset p4_nonboard_without_loader_inputs (and (p4_nonboard_without_native_module_inputs) (not (proc_cmdline))))
+(typeattribute p4_native_module_kernel_dirs)
+(typeattributeset p4_native_module_kernel_dirs (sysfs_type proc device))
+(typeattribute p4_nonboard_without_native_module_dirs)
+(typeattributeset p4_nonboard_without_native_module_dirs (and (p4_all_nonboard) (not (p4_native_module_kernel_dirs))))
+(typeattribute p4_nonboard_without_udev_kernel_dirs)
+(typeattributeset p4_nonboard_without_udev_kernel_dirs (and (p4_nonboard_without_native_module_dirs) (not (device))))
+(allow p4_native_sysfs_readers sysfs_type (dir (getattr search open read)))
+(allow p4_native_sysfs_readers sysfs_type (file (getattr open read)))
+(allow p4_native_sysfs_readers sysfs_type (lnk_file (getattr read)))
+(allow p4_native_module_readers proc (dir (getattr search)))
+(allow p4_native_module_readers proc_modules (file (getattr open read)))
+(allow p4_linux_module_loader_t proc_cmdline (file (getattr open read)))
+(neverallow p4_linux_udev_t p4_nonboard_without_native_module_inputs (file (open read)))
+(neverallow p4_linux_module_loader_t p4_nonboard_without_loader_inputs (file (open read)))
+(neverallow p4_linux_module_loader_t p4_nonboard_without_native_module_dirs (dir (search open read)))
+(neverallow p4_linux_udev_t p4_nonboard_without_udev_kernel_dirs (dir (search open read)))
+(neverallow p4_native_sysfs_readers sysfs_type (file (write append create setattr unlink link rename relabelfrom relabelto map execute execute_no_trans entrypoint)))
+; udev applies the original rule-selected ownership and mode to device nodes.
+; It still cannot administer a mount namespace or bypass DAC checks.
+(allow p4_linux_udev_t self (capability (chown fowner)))
+; The journal's stock /dev/kmsg reader needs SYSLOG and the read-only syslog
+; decision; opening the original char device O_RDWR also checks inode write.
+; Clearing the ring, console controls and audit policy changes remain denied.
+(allow p4_linux_journald_t self (capability2 (syslog)))
+(allow p4_linux_journald_t kernel (system (syslog_read)))
+(allow p4_linux_journald_t kmsg_device (chr_file (getattr open read write)))
+(neverallow p4_linux_journald_t kernel (system (syslog_mod syslog_console)))
+(neverallow p4_linux_journald_t self (capability (sys_ptrace audit_control)))
+
+; The stock socket unit computes the service label before it creates a socket.
+; This type transition supplies only that computation.  PID 1 still may not
+; execute the journal directly: the actual service transition is executor-only.
+(typetransition init_t p4_linux_journald_exec_t process p4_linux_journald_t)
+(neverallow init_t p4_linux_journald_t (process (transition dyntransition)))
+(allow init_t kernel (security (compute_create)))
+(allow init_t self (process (setsockcreate)))
+(allow init_t p4_linux_journald_t (unix_stream_socket (create getattr bind listen read write getopt setopt shutdown)))
+(allow init_t p4_linux_journald_t (unix_dgram_socket (create getattr bind read write getopt setopt)))
+(allow p4_linux_journald_t self (unix_stream_socket (getattr read write accept listen getopt setopt shutdown)))
+(allow p4_linux_journald_t self (unix_dgram_socket (getattr read write getopt setopt)))
+; Stdout is created by the original executor before the final service exec.
+; The socket-inode and connectto gates remain specific to the journal, while
+; the original prohibition on connecting to manager/init sockets is retained.
+(allow p4_linux_service_executor_t self (unix_stream_socket (create getattr connect read write getopt setopt shutdown)))
+(allow p4_linux_service_executor_t p4_linux_journal_socket_t (sock_file (getattr write)))
+(allow p4_linux_service_executor_t p4_linux_journald_t (unix_stream_socket (connectto read write getattr)))
+(typeattribute p4_native_system_journal_consumers)
+(typeattributeset p4_native_system_journal_consumers (p4_linux_native_system_services p4_linux_user_manager_t p4_linux_journald_t p4_linux_udev_t))
+(allow p4_native_system_journal_consumers p4_linux_service_executor_t (unix_stream_socket (getattr read write)))
+(neverallow p4_native_system_journal_consumers p4_linux_service_executor_t (unix_stream_socket (create connectto bind listen accept)))
+
+; The kernel's original modprobe usermode-helper invokes the same immutable
+; native kmod entrypoint. It receives no module-file or private-data permission
+; in kernel SID; the normal file-backed loading role performs the work.
+(roletransition r p4_linux_module_loader_exec_t process system_r)
+(typetransition kernel p4_linux_module_loader_exec_t process p4_linux_module_loader_t)
+(allow kernel p4_linux_module_loader_exec_t (file (getattr open read map execute)))
+(allow kernel p4_linux_module_loader_t (process (transition)))
+(allow p4_linux_module_loader_t kernel (process (sigchld)))
+; Kernel-created devtmpfs hardware nodes are assigned their rule-selected DAC
+; owner and mode by stock udev. No device-body I/O or private typed node is added.
+(allow p4_linux_udev_t device (chr_file (getattr setattr)))
+(allow p4_linux_udev_t device (blk_file (getattr setattr)))
+
+; These stock socket units are enabled in the normal producer or original
+; sockets.target. Compute the selected service SID before setsockcreate, without
+; authorizing PID 1 to execute any of these services itself.
+(typetransition init_t p4_linux_udev_exec_t process p4_linux_udev_t)
+(neverallow init_t p4_linux_udev_t (process (transition dyntransition)))
+(typetransition init_t p4_linux_dbus_exec_t process p4_linux_dbus_t)
+(neverallow init_t p4_linux_dbus_t (process (transition dyntransition)))
+(typetransition init_t p4_linux_sshd_exec_t process p4_linux_sshd_t)
+(neverallow init_t p4_linux_sshd_t (process (transition dyntransition)))
+(typetransition init_t p4_linux_snapd_exec_t process p4_linux_snapd_t)
+(neverallow init_t p4_linux_snapd_t (process (transition dyntransition)))
+(typetransition init_t p4_linux_resolved_exec_t process p4_linux_resolved_t)
+(neverallow init_t p4_linux_resolved_t (process (transition dyntransition)))
+(typetransition init_t p4_linux_logind_exec_t process p4_linux_logind_t)
+(neverallow init_t p4_linux_logind_t (process (transition dyntransition)))
+
+(typeattribute p4_native_activated_unix_services)
+(typeattributeset p4_native_activated_unix_services (p4_linux_journald_t p4_linux_udev_t p4_linux_dbus_t p4_linux_snapd_t p4_linux_resolved_t p4_linux_logind_t))
+(allow init_t p4_native_activated_unix_services (unix_stream_socket (create getattr bind listen read write getopt setopt shutdown)))
+(allow p4_linux_service_executor_t p4_native_activated_unix_services (unix_stream_socket (getattr read write)))
+(typeattribute p4_native_activated_nonbus_services)
+(typeattributeset p4_native_activated_nonbus_services (and (p4_native_activated_unix_services) (not (p4_linux_dbus_t))))
+(neverallow init_t p4_native_activated_nonbus_services (unix_stream_socket (connectto)))
+(allow p4_linux_udev_t self (unix_stream_socket (getattr read write listen accept getopt setopt shutdown)))
+(allow p4_linux_service_executor_t p4_linux_journald_t (unix_dgram_socket (getattr read write)))
+(allow p4_linux_native_processes p4_linux_journald_t (unix_dgram_socket (sendto)))
+(allow init_t p4_linux_journald_t (unix_dgram_socket (sendto)))
+(allow p4_linux_udev_t p4_linux_journald_t (unix_dgram_socket (sendto)))
+; The audit socket passively subscribes to READLOG. Socket O_RDWR inheritance
+; requires the base read/write bits, but every NLMSG operation remains denied
+; by the original netlink_xperm-aware message gate. No audit control capability
+; or relay/status/set request is added; kernel multicast requires no userspace ACK.
+(allow init_t self (capability2 (audit_read)))
+(allow p4_linux_journald_t self (capability2 (audit_read)))
+(allow init_t p4_linux_journald_t (netlink_audit_socket (create getattr bind read write getopt setopt)))
+(allow p4_linux_service_executor_t p4_linux_journald_t (netlink_audit_socket (getattr read write)))
+(allow p4_linux_journald_t self (netlink_audit_socket (create getattr bind read write getopt setopt)))
+(typeattribute p4_native_passive_audit_consumers)
+(typeattributeset p4_native_passive_audit_consumers (init_t p4_linux_service_executor_t p4_linux_journald_t))
+(neverallow p4_native_passive_audit_consumers p4_linux_journald_t (netlink_audit_socket (nlmsg nlmsg_read nlmsg_write nlmsg_relay nlmsg_readpriv nlmsg_tty_audit sendto connect)))
+(neverallow p4_linux_journald_t self (capability (audit_control audit_write)))
+; The original udev netlink activation socket now uses the correctly computed
+; service SID; its later worker sockets retain their separate existing type.
+(allow init_t p4_linux_udev_t (netlink_kobject_uevent_socket (create getattr bind read write getopt setopt)))
+(allow p4_linux_service_executor_t p4_linux_udev_t (netlink_kobject_uevent_socket (getattr read write)))
+(allow p4_linux_udev_t self (netlink_kobject_uevent_socket (getattr read write getopt setopt)))
+(neverallow p4_linux_service_executor_t p4_linux_udev_t (netlink_kobject_uevent_socket (create bind sendto)))
+; ssh.socket, not the later daemon, binds the original fixed port 22. Preserve
+; Android's original port/node labels; no new portcon or nodecon is introduced.
+; Their original initial SIDs are generic, so the fixed number is enforced by
+; the stock unit/source contract, not falsely claimed as a distinct MAC label.
+(allow init_t self (capability (net_bind_service)))
+(allow init_t p4_linux_sshd_t (tcp_socket (create getattr bind listen read write getopt setopt shutdown)))
+(allow init_t port (tcp_socket (name_bind)))
+(allow init_t node (tcp_socket (node_bind)))
+(allow p4_linux_service_executor_t p4_linux_sshd_t (tcp_socket (getattr read write)))
+(allow p4_linux_sshd_t self (tcp_socket (getattr read write accept listen getopt setopt shutdown)))
+(neverallow p4_linux_service_executor_t p4_linux_sshd_t (tcp_socket (create bind listen accept name_bind node_bind connect name_connect)))
+; Named socket inode labels are independent of the socket's service SID.
+(typetransition init_t p4_linux_run_t sock_file "snapd.socket" p4_linux_snapd_run_t)
+(typetransition init_t p4_linux_run_t sock_file "snapd-snap.socket" p4_linux_snapd_run_t)
+(typetransition init_t p4_linux_systemd_run_t sock_file "io.systemd.Login" p4_linux_logind_run_t)
+(typetransition init_t p4_linux_resolved_run_t sock_file "io.systemd.Resolve" p4_linux_resolved_run_t)
+(typetransition init_t p4_linux_resolved_run_t sock_file "io.systemd.Resolve.Monitor" p4_linux_resolved_run_t)

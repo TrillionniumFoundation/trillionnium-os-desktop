@@ -142,7 +142,8 @@
 ; must receive a distinct, allowed domain before the kernel will execute them.
 (typeattribute p4_nonboard_except_executor_abi_dirs)
 (typeattributeset p4_nonboard_except_executor_abi_dirs (and (p4_all_nonboard) (not (or (proc) (or (sysfs) (device))))))
-(neverallow p4_linux_service_executor_t p4_nonboard_except_executor_abi_dirs (dir (search)))
+; The executor's public mountpoint traversal is defined by the atomic
+; native sandbox component, independently of inode body access.
 (typeattribute p4_not_ubuntu_pid1)
 (typeattributeset p4_not_ubuntu_pid1 (not (init_t)))
 (neverallow p4_not_ubuntu_pid1 p4_linux_service_executor_t (process (transition dyntransition)))
@@ -271,7 +272,7 @@
 (allow p4_linux_service_executor_t p4_linux_systemd_run_t (dir (getattr search)))
 (allow p4_linux_service_executor_t p4_linux_journal_runtime_t (dir (getattr search open read setattr)))
 (allow p4_linux_service_executor_t init_t (unix_stream_socket (read write)))
-(neverallow p4_linux_service_executor_t p4_linux_run_t (dir (write add_name remove_name setattr mounton)))
+(neverallow p4_linux_service_executor_t p4_linux_run_t (dir (write add_name remove_name setattr)))
 
 ; The board holds only the root-owned /run/credentials directory before the
 ; policy is installed. Each service's private inputs keep their own ownership.
@@ -397,7 +398,8 @@
 (allow p4_linux_udev_t self (unix_dgram_socket (sendto)))
 (allow p4_linux_udev_t sysfs (filesystem (getattr)))
 (allow p4_linux_udev_t sysfs (file (getattr)))
-(neverallow p4_linux_udev_t sysfs (file (open read write append map execute)))
+; Public hardware metadata is read through the native module-input partition.
+(neverallow p4_linux_udev_t sysfs (file (write append map execute)))
 (neverallow p4_android_userspace p4_linux_udev_worker_netlink_t (netlink_kobject_uevent_socket (create bind read write sendto)))
 (allow p4_linux_udev_t init_t (unix_stream_socket (getattr getopt setopt read write accept listen)))
 ; Original udev workers register their own abstract notification endpoint.

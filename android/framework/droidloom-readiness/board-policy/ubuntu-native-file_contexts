@@ -106,3 +106,15 @@
 
 # Only original native PID 1 executes the stock final shutdown program.
 /usr/lib/systemd/systemd-shutdown -- u:object_r:p4_linux_systemd_shutdown_exec_t:s0
+
+# Only the admitted shared-kernel module leaves are public module inputs.
+/usr/lib/modules/6\.18\.64-p4ctx6181-fusectl-aafs-peer-r1/kernel/.*\.ko -- u:object_r:p4_shared_kernel_module_t:s0
+
+# Stock systemd namespace workspaces, inert mount sources, and common native /dev.
+/run/systemd/mount-rootfs -d u:object_r:p4_linux_sandbox_dir_t:s0
+/run/systemd/namespace-[^/]+(/.*)? u:object_r:p4_linux_sandbox_dir_t:s0
+/run/systemd/inaccessible(/.*)? u:object_r:p4_linux_inaccessible_t:s0
+/dev -d u:object_r:p4_linux_native_dev_root_t:s0
+
+/run/snapd(-snap)?\.socket -s u:object_r:p4_linux_snapd_run_t:s0
+/run/systemd/io\.systemd\.Login -s u:object_r:p4_linux_logind_run_t:s0

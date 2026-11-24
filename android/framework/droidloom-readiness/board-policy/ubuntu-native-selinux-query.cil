@@ -26,7 +26,7 @@
  (and (p4_all_nonboard) (not (or (selinuxfs) (or (proc_cmdline) (p4_kernel_ns_handle_t))))))
 (typeattribute p4_nonboard_except_native_selinux_dirs)
 (typeattributeset p4_nonboard_except_native_selinux_dirs
- (and (p4_all_nonboard) (not (or (proc) (or (sysfs) (selinuxfs))))))
+ (and (p4_all_nonboard) (not (or (device) (or (proc) (or (sysfs) (selinuxfs)))))))
 (typeattribute p4_nonboard_except_native_manager_abi_dirs)
 (typeattributeset p4_nonboard_except_native_manager_abi_dirs
  (and (p4_nonboard_except_kernel_abi_dirs) (not (selinuxfs))))
@@ -45,7 +45,7 @@
 (neverallow p4_native_selinux_query_clients p4_nonboard_except_native_selinux_read (file (open read)))
 (neverallow p4_native_selinux_query_clients p4_nonboard_except_native_selinux_queries (dir (open read)))
 ; PID 1 separately traverses the already mounted device ABI. DBus needs
-; only the original proc self links and the SELinux filesystem path.
+; the original proc self links, SELinux path and ordinary native /dev parent.
 (typeattribute p4_native_selinux_nonmanager_clients)
 (typeattributeset p4_native_selinux_nonmanager_clients
  (and (p4_native_selinux_query_clients) (not (init_t))))

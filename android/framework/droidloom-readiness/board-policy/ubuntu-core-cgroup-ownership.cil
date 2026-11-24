@@ -27,7 +27,15 @@
 (allow init_t p4_linux_cgroup_root_t (dir (getattr search)))
 (allow init_t p4_linux_cgroup_init_scope_t (dir (getattr search)))
 (allow init_t p4_linux_cgroup_init_tasks_t (file (getattr open write)))
-(neverallow p4_non_kernel_cgroup_actor p4_linux_init_cgroup_inodes (dir (relabelfrom relabelto mounton)))
+(neverallow p4_non_kernel_cgroup_actor p4_linux_init_cgroup_inodes (dir (relabelfrom relabelto)))
+; Stock ProtectControlGroups makes only the native cgroup root read-only in
+; the sealed executor's new mount namespace; no membership or label changes.
+(typeattribute p4_non_kernel_cgroup_nonexecutor)
+(typeattributeset p4_non_kernel_cgroup_nonexecutor (and (p4_non_kernel_cgroup_actor) (not (p4_linux_service_executor_t))))
+(typeattribute p4_native_cgroup_nonroot_inodes)
+(typeattributeset p4_native_cgroup_nonroot_inodes (and (p4_linux_init_cgroup_inodes) (not (p4_linux_cgroup_root_t))))
+(neverallow p4_non_kernel_cgroup_nonexecutor p4_linux_init_cgroup_inodes (dir (mounton)))
+(neverallow p4_linux_service_executor_t p4_native_cgroup_nonroot_inodes (dir (mounton)))
 (neverallow p4_non_kernel_cgroup_actor p4_linux_init_cgroup_inodes (file (relabelfrom relabelto mounton)))
 
 
