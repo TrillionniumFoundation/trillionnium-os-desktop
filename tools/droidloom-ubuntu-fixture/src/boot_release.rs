@@ -438,7 +438,7 @@ pub fn install_android(root: &Path, work: &Path, input: &AndroidInputs) -> Resul
             "calibration unit is not the original normal export",
         )?;
         write(root,"/etc/systemd/system/droidloom-calibration-qualification.target",
-            b"[Unit]\nDescription=Qualify ordinary host MAC calibration\nRequires=droidloom-mac-calibration.service systemd-journal-flush.service\nWants=snapd.apparmor.service\nAfter=droidloom-mac-calibration.service systemd-journal-flush.service\n",0o644)?;
+            b"[Unit]\nDescription=Qualify ordinary host MAC calibration\nRequires=droidloom-mac-calibration.service systemd-journal-flush.service systemd-logind.service\nWants=snapd.apparmor.service\nAfter=droidloom-mac-calibration.service systemd-journal-flush.service systemd-logind.service\n",0o644)?;
     }
     Ok(
         json!({"cohort":input.cohort,"runtime":input.runtime,"device_manifest":input.device_manifest,
