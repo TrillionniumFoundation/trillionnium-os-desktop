@@ -105,6 +105,13 @@ fn known_host(root: &Path, run: &Path, port: u16) -> Result<FilePin> {
     boot_files::pin_file(&path)
 }
 
+fn cpu_budget_allowed(cpus: usize, available: usize) -> bool {
+    // The production guest has the same fixed 24-CPU geometry as the board.
+    // Qualification still leaves at least two actual host CPUs available.
+    (2..=24).contains(&cpus)
+        && cpus.checked_add(2).is_some_and(|required| required <= available)
+}
+
 pub fn run(config: &Path, expected: &str) -> Result<()> {
     let plan: RunPlan = fs::read_json(&fs::absolute_string(config)?, expected)?;
     ensure(
@@ -122,7 +129,7 @@ pub fn run(config: &Path, expected: &str) -> Result<()> {
     )?;
     let available = std::thread::available_parallelism()?.get();
     ensure(
-        (2..=16).contains(&plan.cpus) && plan.cpus + 2 <= available,
+        cpu_budget_allowed(plan.cpus, available),
         "VM must preserve at least two logical CPUs",
     )?;
     ensure(
@@ -382,6 +389,22 @@ pub fn run(config: &Path, expected: &str) -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn cpu_budget_supports_the_production_geometry_and_preserves_host_reservation() {
+        for (cpus, available, allowed) in [
+            (2, 4, true),
+            (4, 6, true),
+            (16, 18, true),
+            (24, 26, true),
+            (24, 25, false),
+            (25, 64, false),
+            (1, 64, false),
+            (usize::MAX, usize::MAX, false),
+        ] {
+            assert_eq!(cpu_budget_allowed(cpus, available), allowed);
+        }
+    }
     #[test]
     fn private_qmp_line_bounds_and_deadline_are_enforced() -> Result<()> {
         let (input, mut output) = UnixStream::pair()?;
