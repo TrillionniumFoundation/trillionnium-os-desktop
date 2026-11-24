@@ -16,7 +16,7 @@ use std::{
 const MEMBER: &str = "usr/lib/x86_64-linux-gnu/libselinux.so.1";
 const PATCH: &str = "debian/patches/p4-native-lsm-exec-attribute.patch";
 const ORIGINAL_VERSION: &str = "3.9-4build1";
-const CANDIDATE_VERSION: &str = "3.9-4build1+p4lsmexec1";
+const CANDIDATE_VERSION: &str = "3.9-4build1+p4lsmexec2";
 const ORIGINAL_SHA: &str = "7538ee77765a27966563c0d22437a3080dcdb346ff76cc16d71a3ce3379a716a";
 
 #[derive(Serialize, Deserialize)]
@@ -28,6 +28,7 @@ pub struct LibselinuxCandidate {
     pub source_dsc: FilePin,
     pub source_debian_archive: FilePin,
     pub source_orig_archive: FilePin,
+    pub source_orig_signature: FilePin,
 }
 
 fn artifact(value: &Value) -> Result<FilePin> {
@@ -216,7 +217,7 @@ fn dsc_sources(text: &str) -> Result<BTreeMap<String, (u64, String)>> {
             "duplicate source archive",
         )?;
     }
-    ensure(found && result.len() == 2, "source archive pair incomplete")?;
+    ensure(found && result.len() == 3, "source archives and signature set incomplete")?;
     Ok(result)
 }
 
@@ -259,19 +260,36 @@ fn verify_sources(input: &LibselinuxCandidate, declaration: &Value, work: &Path)
     }
     let dsc = String::from_utf8(boot_files::read_pin(&input.source_dsc, 65536)?)?;
     let sources = dsc_sources(&dsc)?;
-    for pin in [&input.source_debian_archive, &input.source_orig_archive] {
+    for (pin, expected_name, limit) in [
+        (
+            &input.source_debian_archive,
+            format!("libselinux_{CANDIDATE_VERSION}.debian.tar.xz"),
+            16 * 1024 * 1024,
+        ),
+        (
+            &input.source_orig_archive,
+            "libselinux_3.9.orig.tar.gz".to_owned(),
+            16 * 1024 * 1024,
+        ),
+        (
+            &input.source_orig_signature,
+            "libselinux_3.9.orig.tar.gz.asc".to_owned(),
+            16 * 1024,
+        ),
+    ] {
         let name = pin
             .path
             .file_name()
             .and_then(|s| s.to_str())
             .ok_or("invalid source archive basename")?;
         ensure(
-            sources.get(name) == Some(&(pin.bytes, pin.sha256.clone())),
-            "source archive not bound by .dsc",
+            name == expected_name
+                && sources.get(name) == Some(&(pin.bytes, pin.sha256.clone())),
+            "exact source archive or signature is not bound by .dsc",
         )?;
         ensure(
-            pin.bytes <= 16 * 1024 * 1024,
-            "source archive exceeds reviewed bound",
+            pin.bytes > 0 && pin.bytes <= limit,
+            "source archive or signature exceeds reviewed bound",
         )?;
         boot_files::checked_file(pin)?;
     }
@@ -310,7 +328,8 @@ fn verify_sources(input: &LibselinuxCandidate, declaration: &Value, work: &Path)
     let api = read_json(&api_pin)?;
     ensure(
         api["schema"] == "p4-libselinux-native-exec-public-abi-tests-v1"
-            && api["test_source_sha256"] == source["test_sha256"],
+            && api["test_source_sha256"] == source["test_sha256"]
+            && api["tested_attributes"] == json!(["exec", "keycreate"]),
         "public API test source binding differs",
     )?;
     let library = declaration["candidate_library"]["path"]
@@ -337,28 +356,49 @@ fn verify_sources(input: &LibselinuxCandidate, declaration: &Value, work: &Path)
     {
         ensure(
             test["exit_code"] == 0
-                && cases.insert(test["case"].as_str().ok_or("API test name absent")?),
+                && cases.insert((
+                    test["attribute"].as_str().ok_or("API test attribute absent")?,
+                    test["case"].as_str().ok_or("API test name absent")?,
+                )),
             "failed or repeated actual package API test",
         )?;
     }
+    let mut expected_cases = BTreeSet::new();
+    for attribute in ["exec", "keycreate"] {
+        for case in [
+            "cache-and-clear",
+            "eintr",
+            "enosys",
+            "eopnotsupp",
+            "eacces",
+            "eperm",
+            "einval",
+            "e2big",
+            "efault",
+            "enomem",
+            "null-first",
+            "enosys-null",
+            "eopnotsupp-null",
+            "fallback-failure",
+            "failure-retains-cache",
+            "thread-local",
+            "public-wrapper",
+        ] {
+            expected_cases.insert((attribute, case));
+        }
+    }
+    expected_cases.insert(("exec", "independent-cache"));
+    for attribute in ["current", "fscreate", "sockcreate"] {
+        expected_cases.insert((attribute, "other-attribute"));
+    }
     ensure(
-        cases
-            == BTreeSet::from([
-                "cache-and-clear",
-                "eintr",
-                "enosys",
-                "eopnotsupp",
-                "eacces",
-                "eperm",
-                "einval",
-                "e2big",
-                "other-attribute",
-            ]),
+        cases == expected_cases,
         "actual package API test set differs",
     )?;
     Ok(json!({"source_commit":input.source_commit,"source":source,
         "dsc":input.source_dsc,"debian_archive":input.source_debian_archive,
-        "orig_archive":input.source_orig_archive,"patch_member":PATCH,"patch_sha256":fs::digest(&patch),
+        "orig_archive":input.source_orig_archive,"orig_signature":input.source_orig_signature,
+        "patch_member":PATCH,"patch_sha256":fs::digest(&patch),
         "normal_build":build_pin,"api_tests":api_pin,"package_api_cases":cases.len()}))
 }
 
@@ -520,7 +560,8 @@ pub fn apply(
             && equal_pin(&artifact(&declaration["package"])?, &input.package)
             && declaration["target_kernel_systemd_qualified"] == false
             && declaration["public_versioned_exports_equal"] == true
-            && declaration["public_versioned_exports_count"] == 247,
+            && declaration["public_versioned_exports_count"] == 247
+            && declaration["tested_attributes"] == json!(["exec", "keycreate"]),
         "candidate declaration is outside the reviewed replacement contract",
     )?;
     let layer = boot.join("libselinux-candidate");
@@ -695,13 +736,18 @@ mod tests {
     fn source_checksum_identity_and_duplicate_rows_are_closed() -> Result<()> {
         let row = format!(" {} 42 libselinux_3.9.orig.tar.gz\n", "a".repeat(64));
         let second = format!(
-            " {} 17 libselinux_3.9-4build1+p4lsmexec1.debian.tar.xz\n",
+            " {} 17 libselinux_{CANDIDATE_VERSION}.debian.tar.xz\n",
             "b".repeat(64)
         );
-        let text = format!(
-            "Source: libselinux\nVersion: {CANDIDATE_VERSION}\nChecksums-Sha256:\n{row}{second}Files:\n"
+        let signature = format!(
+            " {} 833 libselinux_3.9.orig.tar.gz.asc\n",
+            "c".repeat(64)
         );
-        assert_eq!(dsc_sources(&text)?.len(), 2);
+        let text = format!(
+            "Source: libselinux\nVersion: {CANDIDATE_VERSION}\nChecksums-Sha256:\n{row}{signature}{second}Files:\n"
+        );
+        assert_eq!(dsc_sources(&text)?.len(), 3);
+        assert!(dsc_sources(&text.replace(&signature, "")).is_err());
         assert!(dsc_sources(&text.replace(CANDIDATE_VERSION, "3.9-other")).is_err());
         assert!(dsc_sources(&text.replace(&second, &row)).is_err());
         Ok(())
