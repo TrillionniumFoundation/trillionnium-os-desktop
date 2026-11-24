@@ -65,6 +65,12 @@
 ; setfscreate selects only a future inode context; normal create/associate
 ; checks below and the existing immutable-store guards still apply.
 (allow p4_linux_service_executor_t self (process (setfscreate)))
+; The original Android DAC-override assertion remains intact for PID 1.
+; The stock executor applies User=/Group= and declared directory ownership
+; before its fixed executable transition. Ordinary session/helper roles gain
+; no credential-changing capabilities from these two manager-only rules.
+(allow p4_linux_service_executor_t self (capability (chown fowner setuid setgid)))
+
 ; Stock PID 1 synchronously retires the declared runtime subtree. It only
 ; enumerates directories and unlinks entries, never reads regular-file data.
 (allow init_t p4_linux_user_run_t (dir (getattr search open read write remove_name rmdir)))

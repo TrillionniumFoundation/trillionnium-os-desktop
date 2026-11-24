@@ -258,6 +258,11 @@ def verify_host_control(library, binary, export):
 
     # Actual RuntimeDirectory prepare/retire actors, with no file-data access.
     check(executor, executor, "process", ["setfscreate"], True)
+    check(manager, manager, "capability", ["dac_override"], False)
+    check(executor, executor, "capability", ["chown", "fowner", "setuid", "setgid", "setpcap"], True)
+    check(manager, manager, "capability", ["chown", "fowner", "setuid", "setgid", "sys_admin", "sys_ptrace"], False)
+    check(executor, executor, "capability", ["dac_override", "dac_read_search", "sys_admin", "sys_ptrace"], False)
+
     check(manager, obj("p4_linux_user_run_t"), "dir",
           ["getattr", "search", "open", "read", "write", "remove_name", "rmdir"], True)
     for kind, permissions in [
@@ -271,6 +276,37 @@ def verify_host_control(library, binary, export):
         check(subject, kernel, "security", ["load_policy", "setenforce", "setbool"], False)
         check(subject, subject, "capability2", ["mac_admin", "mac_override"], False)
     check(manager, obj("p4_linux_user_run_t"), "dir", ["create", "add_name", "setattr", "relabelto", "relabelfrom"], False)
+
+    # Native transport is bound to fixed peers and socket-activation origin.
+    compositor = "u:system_r:p4_linux_compositor_t:s0"
+    audio = "u:system_r:p4_linux_audio_t:s0"
+    portal = "u:system_r:p4_linux_desktop_portal_t:s0"
+    presenter = "u:system_r:droidloom_presenter:s0"
+    user_manager = "u:system_r:p4_linux_user_manager_t:s0"
+    for subject in [session, portal, presenter, compositor]:
+        check(subject, compositor, "unix_stream_socket", ["connectto"], True)
+        check(subject, obj("p4_linux_wayland_socket_t"), "sock_file", ["getattr", "write"], True)
+        check(subject, compositor, "fd", ["use"], True)
+        check(compositor, subject, "fd", ["use"], True)
+    for subject in [session, compositor, portal, audio]:
+        check(subject, audio, "unix_stream_socket", ["connectto"], True)
+        check(subject, user_manager, "unix_stream_socket", ["connectto"], True)
+        check(subject, obj("p4_linux_pipewire_socket_t"), "sock_file", ["getattr", "write"], True)
+        check(subject, audio, "fd", ["use"], True)
+        check(audio, subject, "fd", ["use"], True)
+    check(audio, user_manager, "unix_stream_socket", ["getattr", "read", "write", "listen", "accept", "getopt", "setopt"], True)
+    check(audio, user_manager, "fd", ["use"], True)
+    for subject in [session, portal, presenter]:
+        check(subject, obj("p4_linux_pipewire_manager_socket_t"), "sock_file", ["write"], False)
+    for subject in [broker, client, helper, "u:r:init:s0", "u:r:untrusted_app:s0"]:
+        for target in ["p4_linux_wayland_socket_t", "p4_linux_pipewire_socket_t", "p4_linux_pipewire_manager_socket_t"]:
+            check(subject, obj(target), "sock_file", ["create", "getattr", "write", "unlink", "relabelto"], False)
+        for kind in ["file", "memfd_file"]:
+            check(subject, obj("p4_linux_native_ipc_memfd_t"), kind, ["create", "open", "read", "write", "map", "execute"], False)
+    for subject in [session, compositor, portal, audio, presenter]:
+        for kind in ["file", "memfd_file"]:
+            check(subject, obj("p4_linux_native_ipc_memfd_t"), kind, ["getattr", "read", "write", "map"], True)
+            check(subject, obj("p4_linux_native_ipc_memfd_t"), kind, ["execute", "relabelto", "relabelfrom"], False)
 
     lines = export_binary_policy(policy, binary, export)
     transitions = [
@@ -291,6 +327,13 @@ def verify_host_control(library, binary, export):
         f'(genfscon cgroup2 "/system.slice/{unit}/cgroup.events" (u object_r droidloom_package_cgroup_events ((s0) (s0))))'
         for unit in ["droidloom-instance-factory.service", "droidloom-instance-launcher.service",
                      "droidloom-early-observer.service"])
+    transitions.extend(
+        f'(typetransition p4_linux_compositor_t p4_linux_user_run_t sock_file "wayland-{i}" p4_linux_wayland_socket_t)'
+        for i in range(33))
+    transitions.extend(
+        f'(typetransition {actor} p4_linux_user_run_t sock_file "{name}" {label})'
+        for actor in ["p4_linux_user_manager_t", "p4_linux_audio_t"]
+        for name, label in [("pipewire-0", "p4_linux_pipewire_socket_t"), ("pipewire-0-manager", "p4_linux_pipewire_manager_socket_t")])
     missing = [line for line in transitions if line not in lines]
     if missing:
         raise ValueError("Linked binary lacks exact automatic transitions: " + repr(missing))
@@ -341,7 +384,7 @@ def main():
         "instance-factory-cgroup.cil", "ubuntu-systemd-unit-status.cil",
         "linux-application-roles.cil", "linux-install-catalog.cil",
         "ubuntu-dbus.cil", "ubuntu-native-selinux-query.cil",
-        "ubuntu-native-pam.cil", "ubuntu-native-session-storage.cil",
+        "ubuntu-native-pam.cil", "ubuntu-native-session-storage.cil", "ubuntu-native-session-ipc.cil",
         "linux-package-maintenance.cil", "linux-public-control.cil",
     )
     components = [here / name for name in component_names]

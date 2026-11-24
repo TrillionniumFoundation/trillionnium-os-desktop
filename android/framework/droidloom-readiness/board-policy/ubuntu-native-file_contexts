@@ -92,3 +92,8 @@
 # Fixed native DBus endpoints; clients do not write arbitrary runtime files.
 /run/dbus/system_bus_socket -s u:object_r:p4_linux_system_bus_socket_t:s0
 /run/user/[0-9]+/bus -s u:object_r:p4_linux_session_bus_socket_t:s0
+
+# Fixed native display/audio socket leaves; other user runtime entries keep their data type.
+/run/user/[0-9]+/wayland-([0-9]|[12][0-9]|3[0-2]) -s u:object_r:p4_linux_wayland_socket_t:s0
+/run/user/[0-9]+/pipewire-0 -s u:object_r:p4_linux_pipewire_socket_t:s0
+/run/user/[0-9]+/pipewire-0-manager -s u:object_r:p4_linux_pipewire_manager_socket_t:s0
