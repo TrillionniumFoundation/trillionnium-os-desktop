@@ -12,7 +12,7 @@ use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 
 use android_hardware_graphics_composer3::aidl::android::hardware::graphics::composer3::IComposer::BnComposer;
-use binder::{Binder, Interface, ProcessState};
+use binder::{ProcessState, binder_impl::Binder};
 use droidloom_composer::denial::AppliedDenialEvent;
 use droidloom_composer::hwc3::Session;
 use droidloom_composer_aidl::denial::DenialPresentationSink;
