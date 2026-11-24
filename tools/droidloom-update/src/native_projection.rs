@@ -334,6 +334,37 @@ pub(super) fn project_ordinary_pair_graph_resources(
     Ok(())
 }
 
+// This optional budget belongs only to the ordinary Vendor graph. The Native
+// phase must retain its original exact projection so retained native output is
+// still compared against the same source bytes under the normal source locks.
+pub(super) const VENDOR_GRAPH_PROFILE_ENV: &str = "DROIDLOOM_OFFICIAL_VENDOR_GRAPH_PROFILE";
+pub(super) fn project_official_vendor_graph_profile(
+    source: &Path,
+    projection: &mut Projection,
+    vendor: bool,
+    profile: Option<&str>,
+) -> Result<()> {
+    if !vendor || profile.is_none() {
+        return Ok(());
+    }
+    if profile != Some("4x16g") {
+        return fail("unsupported official Vendor graph resource profile");
+    }
+    let soong = source.join("build/soong/ui/build/soong.go");
+    if hash(&soong)? != "0b855ddee1c4e62203968104f22e949b50bf0ba323f7d2f7335cf84c9f9ec2a8" {
+        return fail("official Vendor graph profile requires the exact ordinary projection");
+    }
+    let prior = fs::read_to_string(&soong)?;
+    let memory = "\tinvocationEnv[\"GOMEMLIMIT\"] = \"5GiB\"\n";
+    let threads = "\tinvocationEnv[\"GOMAXPROCS\"] = \"2\"\n";
+    if prior.matches(memory).count() != 1 || prior.matches(threads).count() != 1 {
+        return fail("official Vendor graph resource settings changed");
+    }
+    projection.put(&soong, prior
+        .replacen(memory, "\tinvocationEnv[\"GOMEMLIMIT\"] = \"16GiB\"\n", 1)
+        .replacen(threads, "\tinvocationEnv[\"GOMAXPROCS\"] = \"4\"\n", 1))
+}
+
 pub(super) fn configure_ordinary_pair_graph_observation(command: &mut Command, ordinary_pair: bool) {
     if ordinary_pair {
         // Console mode exposes GC trace lines before graph generation exits.
@@ -1639,4 +1670,62 @@ license {
         }
     }
 
+}
+
+
+#[cfg(test)]
+mod official_vendor_graph_profile_tests {
+    use super::*;
+
+    #[test]
+    fn official_vendor_graph_profile_changes_only_vendor_and_restores_original_source() {
+        let repo = Path::new(env!("CARGO_MANIFEST_DIR")).parent().unwrap().parent().unwrap();
+        let d = tempfile::tempdir().unwrap();
+        let source = d.path().join("source");
+        let originals = [
+            ("build/blueprint/context.go", include_bytes!("../tests/fixtures/audio-resources/context.go").as_slice()),
+            ("build/soong/ui/build/soong.go", include_bytes!("../tests/fixtures/audio-resources/soong.go").as_slice()),
+            ("build/blueprint/bootstrap/command.go", include_bytes!("../tests/fixtures/audio-resources/bootstrap-command.go").as_slice()),
+        ];
+        let mtime = std::time::UNIX_EPOCH + std::time::Duration::new(1_700_000_000, 123_456_789);
+        for (name, bytes) in originals {
+            write(&source.join(name), bytes).unwrap();
+            fs::File::open(source.join(name)).unwrap().set_modified(mtime).unwrap();
+        }
+        let journal = d.path().join("source-projection.json");
+        let mut p = Projection::new(journal.clone()).unwrap();
+        p.patch(&source, "build/soong", &repo.join(
+            "android/native-generation-pair/0008-soong-leaf-go-memory-budget.patch")).unwrap();
+        p.patch(&source, "build/blueprint", &repo.join(
+            "android/apex-compat/0009-blueprint-stream-uncached-module-actions.patch")).unwrap();
+        project_ordinary_pair_graph_resources(
+            repo, &source, &mut p, true, SoongDependencyMode::Strict,
+        ).unwrap();
+        let soong = source.join("build/soong/ui/build/soong.go");
+        let baseline = fs::read(&soong).unwrap();
+        assert_eq!(hash(&soong).unwrap(), "0b855ddee1c4e62203968104f22e949b50bf0ba323f7d2f7335cf84c9f9ec2a8");
+        project_official_vendor_graph_profile(&source, &mut p, false, Some("4x16g")).unwrap();
+        project_official_vendor_graph_profile(&source, &mut p, true, None).unwrap();
+        assert_eq!(fs::read(&soong).unwrap(), baseline);
+        assert!(project_official_vendor_graph_profile(&source, &mut p, true, Some("8x32g")).is_err());
+        assert_eq!(fs::read(&soong).unwrap(), baseline);
+        project_official_vendor_graph_profile(&source, &mut p, true, Some("4x16g")).unwrap();
+        let actual = fs::read_to_string(&soong).unwrap();
+        for line in [
+            "invocationEnv[\"GOMEMLIMIT\"] = \"16GiB\"",
+            "invocationEnv[\"GOMAXPROCS\"] = \"4\"",
+            "invocationEnv[\"GOGC\"] = \"50\"",
+            "invocationEnv[\"GODEBUG\"] = \"gctrace=1\"",
+        ] { assert!(actual.contains(line), "{line}"); }
+        assert_eq!(p.originals.len(), 3);
+        assert!(project_official_vendor_graph_profile(&source, &mut p, true, Some("4x16g")).is_err());
+        assert_eq!(fs::read_to_string(&soong).unwrap(), actual);
+        p.restore().unwrap();
+        assert!(!journal.exists());
+        for (name, bytes) in originals {
+            let path = source.join(name);
+            assert_eq!(fs::read(&path).unwrap(), bytes);
+            assert_eq!(fs::metadata(path).unwrap().modified().unwrap(), mtime);
+        }
+    }
 }

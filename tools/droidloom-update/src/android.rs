@@ -13195,6 +13195,15 @@ fn build_targets_with_fixed_request_and_native_verification(
         ordinary_pair || production_full,
         dependency_mode,
     )?;
+    let graph_profile = std::env::var(native_projection::VENDOR_GRAPH_PROFILE_ENV).ok();
+    native_projection::project_official_vendor_graph_profile(
+        source,
+        &mut p,
+        matches!(request, FixedProductionRequest::OfficialGsiVendor(official_vendor::Request {
+            phase: official_vendor::Phase::Vendor(_), ..
+        })),
+        graph_profile.as_deref(),
+    )?;
     project_audio_resources(&mut p, repo, source, dependency_mode)?;
     for (cwd, patch) in request.audio_pcm_patches() {
         p.patch(source, cwd, &repo.join(patch))?;
