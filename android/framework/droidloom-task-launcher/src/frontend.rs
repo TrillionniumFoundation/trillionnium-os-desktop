@@ -7,7 +7,9 @@ use std::path::Path;
 
 use binder::{binder_impl::IBinderInternal, Strong};
 use droidloom_denial_ipc::SeqPacket;
-use org_droidloom_frontend::aidl::org::droidloom::frontend::IFrontendChannels::IFrontendChannels;
+use org_droidloom_frontend::aidl::org::droidloom::frontend::IFrontendChannels::{
+    IFrontendChannels, HASH, VERSION,
+};
 
 use super::{DEFAULT_CONTROL_SOCKET, LaunchError};
 
@@ -30,14 +32,14 @@ pub(super) fn connect(path: &Path) -> Result<(SeqPacket, SeqPacket), LaunchError
         })?;
     let channel: Strong<dyn IFrontendChannels> =
         extension.into_interface().map_err(|e| failure(&e))?;
-    if channel.getInterfaceVersion().map_err(|e| failure(&e))? != 1 {
+    if channel.getInterfaceVersion().map_err(|e| failure(&e))? != VERSION {
         return Err(LaunchError::Control(
             "incompatible Composer frontend version".into(),
         ));
     }
-    let expected =
-        include_str!("../../droidloom-input-bridge/aidl_api/org.droidloom.frontend/1/.hash").trim();
-    if channel.getInterfaceHash().map_err(|e| failure(&e))? != expected {
+    // The declared frozen V1 Rust dependency owns both generated constants.
+    // Reading its .hash again would be an undeclared Soong compilation input.
+    if channel.getInterfaceHash().map_err(|e| failure(&e))? != HASH {
         return Err(LaunchError::Control(
             "incompatible Composer frontend hash".into(),
         ));
