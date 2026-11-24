@@ -77,6 +77,32 @@ pub(super) fn prepare(work: &Path, system: &FileRef, reader: &FileRef) -> Result
     Ok(Prepared { declaration, files, installation })
 }
 
+
+fn exact_members(directory: &Path, expected: &[(&str, bool)]) -> Result<()> {
+    ordinary_absolute(directory, true)?;
+    let mut seen = BTreeSet::new();
+    for entry in fs::read_dir(directory)? {
+        let entry = entry?;
+        let name = entry.file_name();
+        let (fixed, is_directory) = expected.iter().find(|(fixed, _)| name == *fixed)
+            .ok_or("unexpected member in immutable kernel-first query directory")?;
+        if !seen.insert(*fixed) || seen.len() > expected.len() {
+            return fail("duplicate or excessive kernel-first query directory members");
+        }
+        let metadata = fs::symlink_metadata(entry.path())?;
+        require(!metadata.file_type().is_symlink()
+            && if *is_directory { metadata.is_dir() } else { metadata.is_file() && metadata.nlink() == 1 },
+            "kernel-first query member must be its fixed directory or single-link regular file")?;
+    }
+    require(seen.len() == expected.len(), "incomplete kernel-first query directory")
+}
+
+fn exact_inventory(directory: &Path) -> Result<()> {
+    exact_members(directory, &[("images", true), ("QUERY-INSTALL-REQUIREMENTS.json", false)])?;
+    let roles: Vec<_> = fixed::INPUTS.iter().map(|role| (role.output_name, false)).collect();
+    exact_members(&directory.join("images"), &roles)
+}
+
 impl Prepared {
     pub(super) fn publish(&self, root: &Path, runtime: &str) -> Result<Value> {
         require(runtime.len() == 64 && runtime.bytes().all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b)),
@@ -97,6 +123,7 @@ impl Prepared {
         save_new(&stage.join("QUERY-INSTALL-REQUIREMENTS.json"), &self.installation)?;
         File::open(stage.join("images"))?.sync_all()?;
         File::open(stage)?.sync_all()?;
+        exact_inventory(stage)?;
         let directory = parent.join(runtime);
         match official_base::rename_new(stage, &directory) {
             Ok(()) => { let _published_path = temporary.keep(); }
@@ -108,6 +135,7 @@ impl Prepared {
             }
             Err(error) => return Err(error),
         }
+        exact_inventory(&directory)?;
         for (role, body) in &self.files {
             recheck(body, role.bytes)?;
             let actual = pin(&directory.join("images").join(role.output_name), role.bytes)?;
@@ -117,6 +145,7 @@ impl Prepared {
         }
         let (requirements, actual) = read_json(&directory.join("QUERY-INSTALL-REQUIREMENTS.json"))?;
         require(actual == self.installation, "published query installation requirements changed")?;
+        exact_inventory(&directory)?;
         File::open(&parent)?.sync_all()?;
         Ok(json!({"images_directory":directory.strip_prefix(root)?,
             "installation_requirements":requirements.path.strip_prefix(root)?,
@@ -128,6 +157,31 @@ impl Prepared {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+
+    #[test]
+    fn kernel_query_inventory_rejects_extra_roles_directories_aliases_and_links() {
+        let temp = tempfile::tempdir().unwrap();
+        let directory = temp.path().join("runtime");
+        fs::create_dir(&directory).unwrap();
+        fs::create_dir(directory.join("images")).unwrap();
+        fs::write(directory.join("QUERY-INSTALL-REQUIREMENTS.json"), b"{}").unwrap();
+        for role in fixed::INPUTS { fs::write(directory.join("images").join(role.output_name), b"fixture").unwrap(); }
+        exact_inventory(&directory).unwrap();
+        fs::write(directory.join("extra"), b"extra").unwrap();
+        assert!(exact_inventory(&directory).is_err());
+        fs::remove_file(directory.join("extra")).unwrap();
+        fs::create_dir(directory.join("images/unselected")).unwrap();
+        assert!(exact_inventory(&directory).is_err());
+        fs::remove_dir(directory.join("images/unselected")).unwrap();
+        let member = directory.join("images/cmd-original");
+        fs::hard_link(&member, temp.path().join("forwarded")).unwrap();
+        assert!(exact_inventory(&directory).is_err());
+        fs::remove_file(temp.path().join("forwarded")).unwrap();
+        fs::rename(&member, temp.path().join("original")).unwrap();
+        std::os::unix::fs::symlink(temp.path().join("original"), &member).unwrap();
+        assert!(exact_inventory(&directory).is_err());
+    }
 
     #[test]
     #[ignore = "requires DROIDLOOM_TEST_CP3A_SYSTEM pointing at the complete original CP3A image"]
