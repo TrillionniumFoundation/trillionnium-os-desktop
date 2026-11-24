@@ -260,16 +260,35 @@ static void outer_denial(void)
 		require(aa_current(&label, &mode) > 0 && label && mode &&
 			!strcmp(label, "p4-peer-deny") && !strcmp(mode, "enforce"),
 			"actual enforced AppArmor test label");
+		dprintf(STDERR_FILENO, "P4_PEER_RUNTIME_DENIAL_LABEL before=%s mode=%s\n",
+			label, mode);
 		free(label);
+		int results[3], errors[3];
+		static const char *const names[] = {
+			"legacy-selinux", "selected-selinux", "selected-apparmor"
+		};
 		for (unsigned int i = 0; i < 3; i++) {
 			union packet p;
-			struct peer_header *h = request(&p, i == 0 ? SE_ID : AA_ID);
+			struct peer_header *h = request(&p, i == 1 ? SE_ID : AA_ID);
 			socklen_t n = sizeof(p.bytes);
 			errno = 0;
-			int option = i == 2 ? SO_PEERSEC : PEER_OPTION;
-			int rc = getsockopt(peer_fd, SOL_SOCKET, option, h, &n);
-			require_errno(rc, errno, EACCES, "outer AA gate preserves denial");
+			int option = i == 0 ? SO_PEERSEC : PEER_OPTION;
+			results[i] = getsockopt(peer_fd, SOL_SOCKET, option, h, &n);
+			errors[i] = errno;
+			dprintf(STDERR_FILENO,
+				"P4_PEER_RUNTIME_DENIAL api=%s rc=%d errno=%d len=%u\n",
+				names[i], results[i], errors[i], (unsigned int)n);
 		}
+		label = mode = NULL;
+		require(aa_current(&label, &mode) > 0 && label && mode &&
+			!strcmp(label, "p4-peer-deny") && !strcmp(mode, "enforce"),
+			"unchanged enforced AppArmor test label");
+		dprintf(STDERR_FILENO, "P4_PEER_RUNTIME_DENIAL_LABEL after=%s mode=%s\n",
+			label, mode);
+		free(label);
+		for (unsigned int i = 0; i < 3; i++)
+			require_errno(results[i], errors[i], EACCES,
+				"outer AA gate preserves denial");
 		_exit(0);
 	}
 	int status = 0;
