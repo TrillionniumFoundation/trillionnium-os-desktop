@@ -13,7 +13,7 @@ use std::path::Path;
 
 #[path = "boot_native_public_source.rs"]
 mod public_source;
-pub use public_source::{ImportedPublicInputs, PublicInputCustody};
+pub use public_source::{ImportedPublicInputs, PublicImportRoot, PublicInputCustody};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]

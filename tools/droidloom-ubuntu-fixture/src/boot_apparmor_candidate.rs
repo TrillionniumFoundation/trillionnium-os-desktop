@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use std::{
     collections::{BTreeMap, BTreeSet},
-    path::Path,
+    path::{Path, PathBuf},
 };
 
 const MEMBER: &str = "usr/lib/x86_64-linux-gnu/libapparmor.so.1.30.7";
@@ -43,9 +43,12 @@ pub struct LibapparmorCandidate {
     pub source_dsc: FilePin,
     pub source_debian_archive: FilePin,
     pub source_orig_archive: FilePin,
+    /// Producer pins retain their original names inside this protected import root.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub public_inputs: Option<PathBuf>,
 }
 
-use crate::boot_candidate::{artifact, dpkg_status, equal_pin, read_json, safe_member};
+use crate::boot_candidate::{CandidateInputs, artifact, dpkg_status, equal_pin, safe_member};
 
 /// Read one regular member, never extract an archive namespace. The reviewed
 /// source archive contains ordinary files and directories; the binary archive
@@ -237,8 +240,13 @@ fn dsc_sources(text: &str) -> Result<BTreeMap<String, (u64, String)>> {
     Ok(result)
 }
 
-fn verify_sources(input: &LibapparmorCandidate, declaration: &Value, work: &Path) -> Result<Value> {
-    let source = read_json(&input.source_commit)?;
+fn verify_sources(
+    input: &LibapparmorCandidate,
+    declaration: &Value,
+    work: &Path,
+    inputs: &CandidateInputs,
+) -> Result<Value> {
+    let source = inputs.read_json(&input.source_commit)?;
     let git = |v: &Value| {
         v.as_str().is_some_and(|s| {
             s.len() == 40
@@ -278,7 +286,7 @@ fn verify_sources(input: &LibapparmorCandidate, declaration: &Value, work: &Path
             "candidate package is not bound by its build declaration",
         )?;
     }
-    let dsc = String::from_utf8(boot_files::read_pin(&input.source_dsc, 65536)?)?;
+    let dsc = String::from_utf8(inputs.read_pin(&input.source_dsc, 65536)?)?;
     let sources = dsc_sources(&dsc)?;
     for pin in [&input.source_debian_archive, &input.source_orig_archive] {
         let name = pin
@@ -294,7 +302,7 @@ fn verify_sources(input: &LibapparmorCandidate, declaration: &Value, work: &Path
             pin.bytes <= 16 * 1024 * 1024,
             "source archive exceeds reviewed bound",
         )?;
-        boot_files::checked_file(pin)?;
+        inputs.read_pin(pin, 16 * 1024 * 1024)?;
     }
     ensure(
         input.source_orig_archive.sha256 == ORIGINAL_ARCHIVE_SHA
@@ -302,7 +310,7 @@ fn verify_sources(input: &LibapparmorCandidate, declaration: &Value, work: &Path
         "candidate upstream archive is not the original admitted Ubuntu source",
     )?;
     let source_archive = work.join("source.debian.tar.xz");
-    boot_files::copy_pin(&input.source_debian_archive, &source_archive, 0o400)?;
+    let source_archive_input = inputs.copy_pin(&input.source_debian_archive, &source_archive)?;
     let tar = crate::boot_runtime::redirected(
         work,
         "source-xz",
@@ -331,7 +339,7 @@ fn verify_sources(input: &LibapparmorCandidate, declaration: &Value, work: &Path
         "normal source package patch differs from maintained Git patch",
     )?;
     let build_pin = artifact(&declaration["normal_build"])?;
-    let build = read_json(&build_pin)?;
+    let build = inputs.read_json(&build_pin)?;
     ensure(
         build["schema"] == "p4-libapparmor-readonly-peer-build-v1"
             && build["exit_code"] == 0
@@ -340,7 +348,7 @@ fn verify_sources(input: &LibapparmorCandidate, declaration: &Value, work: &Path
         "candidate did not come from its declared successful normal Debian build",
     )?;
     let api_pin = artifact(&declaration["public_api_unit_tests"])?;
-    let api = read_json(&api_pin)?;
+    let api = inputs.read_json(&api_pin)?;
     ensure(
         api["schema"] == "p4-libapparmor-readonly-peer-public-abi-tests-v1"
             && api["test_source_sha256"] == source["test_sha256"]
@@ -407,6 +415,7 @@ fn verify_sources(input: &LibapparmorCandidate, declaration: &Value, work: &Path
     )?;
     Ok(json!({"source_commit":input.source_commit,"source":source,
         "dsc":input.source_dsc,"debian_archive":input.source_debian_archive,
+        "debian_archive_actual_input":source_archive_input,
         "orig_archive":input.source_orig_archive,"patch_member":PATCH,"patch_sha256":fs::digest(&patch),
         "test_fixture_patch_member":FIXTURE_PATCH,"test_fixture_patch_sha256":fs::digest(&fixture_patch),
         "normal_build":build_pin,"api_tests":api_pin,"package_api_cases":cases.len()}))
@@ -561,7 +570,8 @@ pub fn apply(
         original_pin.sha256 == ORIGINAL_SHA,
         "original fixture library bytes differ",
     )?;
-    let declaration = read_json(&input.declaration)?;
+    let inputs = CandidateInputs::open(input.public_inputs.as_deref())?;
+    let declaration = inputs.read_json(&input.declaration)?;
     ensure(
         declaration["schema"] == "p4-libapparmor-readonly-peer-candidate-v1"
             && declaration["package_name"] == "libapparmor1"
@@ -578,9 +588,9 @@ pub fn apply(
     )?;
     let layer = boot.join("libapparmor-candidate");
     boot_files::private_dir(&layer)?;
-    let sources = verify_sources(input, &declaration, &layer)?;
+    let sources = verify_sources(input, &declaration, &layer, &inputs)?;
     let deb = layer.join("candidate.deb");
-    boot_files::copy_pin(&input.package, &deb, 0o400)?;
+    let package_actual_input = inputs.copy_pin(&input.package, &deb)?;
     for (field, want) in [
         ("Package", "libapparmor1"),
         ("Version", CANDIDATE_VERSION),
@@ -675,6 +685,7 @@ pub fn apply(
         "fixture dpkg state changed",
     )?;
     let result = json!({"schema":"droidloom.fixture-libapparmor-candidate.v1","input":input,
+        "package_actual_input":package_actual_input,
         "sources":sources,"original":original_pin,"preserved_original":boot_files::pin_file(&before)?,
         "installed_candidate":installed,"original_elf":original_elf,"candidate_elf":candidate_elf,
         "dependencies":dependencies,"soname_resolution":alias_resolution,"original_soname_identity":original_link,

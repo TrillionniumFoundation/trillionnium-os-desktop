@@ -18,6 +18,52 @@ use std::{
 
 const QUALIFICATION: &str = "/var/lib/droidloom-qualification";
 
+/// A held directory containing byte-identical public producer inputs at their
+/// original absolute names below a fixed qualification import root. This is
+/// filesystem custody only; consumers still validate their original schemas,
+/// producer identities and complete declarations.
+pub struct PublicImportRoot {
+    directory: PathBuf,
+    tree: fs::Tree,
+}
+
+impl PublicImportRoot {
+    pub fn open(directory: &Path) -> Result<Self> {
+        let parent = import_parent(directory)?;
+        fs::Tree::open(QUALIFICATION, 0)?;
+        let parent_tree = fs::Tree::open(&fs::absolute_string(parent)?, 0)?;
+        ensure(
+            fs::stat(&parent_tree.root)?.mode & 0o7777 == 0o700,
+            "public import work is not private",
+        )?;
+        let tree = fs::Tree::open(&fs::absolute_string(directory)?, 0)?;
+        ensure(
+            fs::stat(&tree.root)?.mode & 0o7777 == 0o700,
+            "public input directory is not private",
+        )?;
+        Ok(Self {
+            directory: directory.to_owned(),
+            tree,
+        })
+    }
+
+    pub fn read_original(&self, original: &FilePin, limit: u64) -> Result<Vec<u8>> {
+        ensure(
+            limit <= 128 * 1024 * 1024,
+            "public producer read exceeds its fixed bound",
+        )?;
+        let actual = relocated_pin(original, &self.directory, limit)?;
+        read_imported(&self.tree, &self.directory, &actual, limit)
+    }
+
+    pub fn copy_original(&self, original: &FilePin, destination: &Path) -> Result<FilePin> {
+        let actual = relocated_pin(original, &self.directory, 128 * 1024 * 1024)?;
+        let bytes = self.read_original(original, 128 * 1024 * 1024)?;
+        boot_files::write_new(destination, &bytes, 0o400)?;
+        Ok(actual)
+    }
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct ImportedPublicInputs {
@@ -295,7 +341,7 @@ impl PublicInputCustody {
         let Some(declaration) = &plan.imported_public_inputs else {
             return Ok(Self { imported: None });
         };
-        let parent = import_parent(&declaration.directory)?;
+        import_parent(&declaration.directory)?;
         ensure(
             !declaration.directory.starts_with(&plan.work_directory)
                 && !plan.work_directory.starts_with(&declaration.directory)
@@ -303,13 +349,7 @@ impl PublicInputCustody {
                 && !plan.fixture_root.starts_with(&declaration.directory),
             "public inputs must be independent of native work and the materialized root",
         )?;
-        fs::Tree::open(QUALIFICATION, 0)?;
-        let parent_tree = fs::Tree::open(&fs::absolute_string(parent)?, 0)?;
-        ensure(
-            fs::stat(&parent_tree.root)?.mode & 0o7777 == 0o700,
-            "public import work is not private",
-        )?;
-        let tree = fs::Tree::open(&fs::absolute_string(&declaration.directory)?, 0)?;
+        let PublicImportRoot { tree, .. } = PublicImportRoot::open(&declaration.directory)?;
         let bytes = read_imported(
             &tree,
             &declaration.directory,
@@ -591,6 +631,42 @@ mod tests {
         std::fs::set_permissions(&directory, std::fs::Permissions::from_mode(0o700))?;
         std::fs::write(directory.join("public"), b"public")?;
         assert!(read_imported(&tree, &directory, &pin, 1024).is_err());
+        Ok(())
+    }
+
+    #[test]
+    fn public_import_reader_copies_original_names_and_rejects_escape_and_excess() -> Result<()> {
+        let temp = tempfile::tempdir()?;
+        let directory = temp.path().join("inputs");
+        std::fs::create_dir(&directory)?;
+        std::fs::set_permissions(&directory, std::fs::Permissions::from_mode(0o700))?;
+        std::fs::create_dir(directory.join("producer"))?;
+        std::fs::write(directory.join("producer/public"), b"public")?;
+        let tree = fs::Tree::open(
+            &fs::absolute_string(&directory)?,
+            rustix::process::geteuid().as_raw(),
+        )?;
+        let imported = PublicImportRoot {
+            directory: directory.clone(),
+            tree,
+        };
+        let original = pin("/producer/public");
+        assert_eq!(imported.read_original(&original, 1024)?, b"public");
+        let actual = imported.copy_original(&original, &temp.path().join("copied"))?;
+        assert_eq!(actual.path, directory.join("producer/public"));
+        assert_eq!(std::fs::read(temp.path().join("copied"))?, b"public");
+        assert!(
+            imported
+                .read_original(&original, 128 * 1024 * 1024 + 1)
+                .is_err()
+        );
+        assert!(
+            imported
+                .read_original(&pin("/producer/../public"), 1024)
+                .is_err()
+        );
+        assert!(imported.read_original(&pin("/etc/passwd"), 1024).is_err());
+        assert!(PublicImportRoot::open(Path::new("/")).is_err());
         Ok(())
     }
 

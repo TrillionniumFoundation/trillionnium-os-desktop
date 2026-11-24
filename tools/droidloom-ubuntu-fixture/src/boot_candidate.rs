@@ -16,8 +16,12 @@ use std::{
 const MEMBER: &str = "usr/lib/x86_64-linux-gnu/libselinux.so.1";
 const PATCH: &str = "debian/patches/p4-native-lsm-exec-attribute.patch";
 const ORIGINAL_VERSION: &str = "3.9-4build1";
-const CANDIDATE_VERSION: &str = "3.9-4build1+p4lsmexec2";
+const CANDIDATE_VERSION: &str = "3.9-4build1+p4lsmexec3";
 const ORIGINAL_SHA: &str = "7538ee77765a27966563c0d22437a3080dcdb346ff76cc16d71a3ce3379a716a";
+const SOURCE_PATCH: &[u8] =
+    include_bytes!("../../../packaging/ubuntu/libselinux/p4-native-lsm-exec-attribute.patch");
+const API_TEST_SOURCE: &[u8] =
+    include_bytes!("../../../packaging/ubuntu/libselinux/native-exec-api-test.c");
 
 #[derive(Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -29,6 +33,9 @@ pub struct LibselinuxCandidate {
     pub source_debian_archive: FilePin,
     pub source_orig_archive: FilePin,
     pub source_orig_signature: FilePin,
+    /// A fixed protected import root; all producer FilePin paths stay unchanged.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub public_inputs: Option<PathBuf>,
 }
 
 pub(super) fn artifact(value: &Value) -> Result<FilePin> {
@@ -50,6 +57,50 @@ pub(super) fn read_json(pin: &FilePin) -> Result<Value> {
         1024 * 1024,
     )?)?)
 }
+/// Byte custody for producer inputs. A relocated copy never changes a producer
+/// pin or weakens exact-path comparisons in the candidate declaration.
+pub(super) struct CandidateInputs {
+    imported: Option<crate::boot_native::PublicImportRoot>,
+}
+
+impl CandidateInputs {
+    pub(super) fn open(directory: Option<&Path>) -> Result<Self> {
+        Ok(Self {
+            imported: directory
+                .map(crate::boot_native::PublicImportRoot::open)
+                .transpose()?,
+        })
+    }
+
+    pub(super) fn read_pin(&self, pin: &FilePin, limit: u64) -> Result<Vec<u8>> {
+        match &self.imported {
+            Some(root) => root.read_original(pin, limit),
+            None => boot_files::read_pin(pin, limit),
+        }
+    }
+
+    pub(super) fn read_json(&self, pin: &FilePin) -> Result<Value> {
+        match &self.imported {
+            Some(_) => Ok(serde_json::from_slice(&self.read_pin(pin, 1024 * 1024)?)?),
+            None => read_json(pin),
+        }
+    }
+
+    pub(super) fn copy_pin(&self, pin: &FilePin, destination: &Path) -> Result<FilePin> {
+        match &self.imported {
+            Some(root) => root.copy_original(pin, destination),
+            None => {
+                boot_files::copy_pin(pin, destination, 0o400)?;
+                Ok(FilePin {
+                    path: pin.path.clone(),
+                    bytes: pin.bytes,
+                    sha256: pin.sha256.clone(),
+                })
+            }
+        }
+    }
+}
+
 pub(super) fn safe_member(path: &str) -> bool {
     !path.is_empty()
         && !path.starts_with('/')
@@ -217,12 +268,193 @@ fn dsc_sources(text: &str) -> Result<BTreeMap<String, (u64, String)>> {
             "duplicate source archive",
         )?;
     }
-    ensure(found && result.len() == 3, "source archives and signature set incomplete")?;
+    ensure(
+        found && result.len() == 3,
+        "source archives and signature set incomplete",
+    )?;
     Ok(result)
 }
 
-fn verify_sources(input: &LibselinuxCandidate, declaration: &Value, work: &Path) -> Result<Value> {
-    let source = read_json(&input.source_commit)?;
+fn verify_normal_build(build: &Value, declaration: &Value) -> Result<()> {
+    ensure(
+        build["success"] == true
+            && build["candidate_version"] == CANDIDATE_VERSION
+            && build["installed"] == false
+            && build["runtime_qualified"] == false
+            && equal_pin(
+                &artifact(&build["deb"])?,
+                &artifact(&declaration["package"])?,
+            )
+            && equal_pin(
+                &artifact(&build["library"])?,
+                &artifact(&declaration["candidate_library"])?,
+            ),
+        "candidate normal Debian build identity or scope differs",
+    )?;
+    let mut names = BTreeSet::new();
+    for command in build["commands"]
+        .as_array()
+        .ok_or("normal build commands absent")?
+    {
+        ensure(
+            command["exit_code"] == 0
+                && names.insert(
+                    command["name"]
+                        .as_str()
+                        .ok_or("build command name absent")?,
+                ),
+            "normal build command failed or repeated",
+        )?;
+        if command["name"] == "build" {
+            ensure(
+                command["argv"]
+                    == json!([
+                        "dpkg-buildpackage",
+                        "-F",
+                        "-us",
+                        "-uc",
+                        "--build-profiles=nopython,noruby,noudeb",
+                        "-j1"
+                    ]),
+                "candidate was not built by the reviewed normal Debian command",
+            )?;
+        }
+    }
+    ensure(
+        names
+            == BTreeSet::from([
+                "source-extract",
+                "source-before-build",
+                "dependency-check",
+                "test-compile",
+                "build",
+                "extract-library",
+            ]),
+        "normal build command set differs",
+    )
+}
+
+fn expected_api_cases() -> BTreeSet<(&'static str, &'static str)> {
+    let mut cases = BTreeSet::new();
+    for attribute in ["exec", "keycreate", "fscreate"] {
+        for case in [
+            "cache-and-clear",
+            "eintr",
+            "enosys",
+            "eopnotsupp",
+            "eacces",
+            "eperm",
+            "einval",
+            "e2big",
+            "efault",
+            "enomem",
+            "null-first",
+            "enosys-null",
+            "eopnotsupp-null",
+            "fallback-failure",
+            "failure-retains-cache",
+            "thread-local",
+            "public-wrapper",
+            "positive-result",
+            "positive-result-null",
+        ] {
+            cases.insert((attribute, case));
+        }
+    }
+    cases.insert(("exec", "independent-cache"));
+    for attribute in ["current", "sockcreate"] {
+        cases.insert((attribute, "other-attribute"));
+    }
+    for case in [
+        "get-value",
+        "get-unset",
+        "get-cleared",
+        "get-public-wrapper",
+        "get-eintr",
+        "get-enosys",
+        "get-eopnotsupp",
+        "get-enosys-unset",
+        "get-eopnotsupp-unset",
+        "get-eacces",
+        "get-eperm",
+        "get-einval",
+        "get-e2big",
+        "get-efault",
+        "get-enomem",
+        "get-bad-id",
+        "get-bad-flags",
+        "get-bad-count",
+        "get-bad-short",
+        "get-bad-size",
+        "get-bad-length",
+        "get-bad-context-length",
+        "get-bad-nul",
+        "get-bad-embedded-nul",
+        "get-bad-unset-alignment",
+        "get-bad-padding",
+    ] {
+        cases.insert(("fscreate", case));
+    }
+    cases
+}
+
+fn verify_packaged_api(api: &Value, source: &Value, declaration: &Value) -> Result<usize> {
+    let dynamic = json!([
+        "libpcre2-8.so.0",
+        "libc.so.6",
+        "ld-linux-x86-64.so.2",
+        "libselinux.so.1"
+    ]);
+    ensure(
+        api["schema"] == "droidloom-native-fscreate-packaged-abi-test-v1"
+            && api["candidate_version"] == CANDIDATE_VERSION
+            && api["test_sha256"] == source["test_sha256"]
+            && api["test_sha256"] == fs::digest(API_TEST_SOURCE)
+            && equal_pin(
+                &artifact(&api["tested_library"])?,
+                &artifact(&declaration["candidate_library"])?,
+            )
+            && api["original_library"]["sha256"] == ORIGINAL_SHA
+            && api["exports_equal"] == true
+            && api["exports_count"] == 247
+            && api["missing_exports"] == json!([])
+            && api["extra_exports"] == json!([])
+            && api["dynamic"]["original"] == dynamic
+            && api["dynamic"]["candidate"] == dynamic
+            && api["dependencies_and_soname_equal"] == true
+            && api["installed"] == false
+            && api["real_kernel_qualified"] == false,
+        "packaged exec/keycreate/fscreate public API binding or scope differs",
+    )?;
+    let mut cases = BTreeSet::new();
+    for test in api["tests"].as_array().ok_or("API tests absent")? {
+        ensure(
+            test["exit"] == 0
+                && cases.insert((
+                    test["attribute"]
+                        .as_str()
+                        .ok_or("API test attribute absent")?,
+                    test["case"].as_str().ok_or("API test name absent")?,
+                )),
+            "failed or repeated actual package API test",
+        )?;
+    }
+    ensure(
+        cases == expected_api_cases()
+            && api["total"] == cases.len()
+            && api["passed"] == cases.len(),
+        "actual packaged exec/keycreate/fscreate API test set differs",
+    )?;
+    Ok(cases.len())
+}
+
+fn verify_sources(
+    input: &LibselinuxCandidate,
+    declaration: &Value,
+    work: &Path,
+    inputs: &CandidateInputs,
+) -> Result<Value> {
+    let source = inputs.read_json(&input.source_commit)?;
     let git = |v: &Value| {
         v.as_str().is_some_and(|s| {
             s.len() == 40
@@ -237,7 +469,9 @@ fn verify_sources(input: &LibselinuxCandidate, declaration: &Value, work: &Path)
             && git(&source["tree"])
             && source["original_source_version"] == ORIGINAL_VERSION
             && source["candidate_version"] == CANDIDATE_VERSION
-            && source["patch_sha256"] == declaration["source"]["patch_sha256"],
+            && source["patch_sha256"] == declaration["source"]["patch_sha256"]
+            && source["patch_sha256"] == fs::digest(SOURCE_PATCH)
+            && source["test_sha256"] == fs::digest(API_TEST_SOURCE),
         "candidate maintained-source proof differs",
     )?;
     let packages = declaration["source_and_binary_packages"]
@@ -258,7 +492,7 @@ fn verify_sources(input: &LibselinuxCandidate, declaration: &Value, work: &Path)
             "candidate package is not bound by its build declaration",
         )?;
     }
-    let dsc = String::from_utf8(boot_files::read_pin(&input.source_dsc, 65536)?)?;
+    let dsc = String::from_utf8(inputs.read_pin(&input.source_dsc, 65536)?)?;
     let sources = dsc_sources(&dsc)?;
     for (pin, expected_name, limit) in [
         (
@@ -283,18 +517,17 @@ fn verify_sources(input: &LibselinuxCandidate, declaration: &Value, work: &Path)
             .and_then(|s| s.to_str())
             .ok_or("invalid source archive basename")?;
         ensure(
-            name == expected_name
-                && sources.get(name) == Some(&(pin.bytes, pin.sha256.clone())),
+            name == expected_name && sources.get(name) == Some(&(pin.bytes, pin.sha256.clone())),
             "exact source archive or signature is not bound by .dsc",
         )?;
         ensure(
             pin.bytes > 0 && pin.bytes <= limit,
             "source archive or signature exceeds reviewed bound",
         )?;
-        boot_files::checked_file(pin)?;
+        inputs.read_pin(pin, limit)?;
     }
     let source_archive = work.join("source.debian.tar.xz");
-    boot_files::copy_pin(&input.source_debian_archive, &source_archive, 0o400)?;
+    let source_archive_input = inputs.copy_pin(&input.source_debian_archive, &source_archive)?;
     let tar = crate::boot_runtime::redirected(
         work,
         "source-xz",
@@ -316,90 +549,17 @@ fn verify_sources(input: &LibselinuxCandidate, declaration: &Value, work: &Path)
         "normal source package patch differs from maintained Git patch",
     )?;
     let build_pin = artifact(&declaration["normal_build"])?;
-    let build = read_json(&build_pin)?;
-    ensure(
-        build["schema"] == "p4-libselinux-debian-normal-build-v1"
-            && build["exit_code"] == 0
-            && build["candidate_version"] == CANDIDATE_VERSION
-            && build["production_qualified"] == false,
-        "candidate did not come from its declared successful normal Debian build",
-    )?;
+    let build = inputs.read_json(&build_pin)?;
+    verify_normal_build(&build, declaration)?;
     let api_pin = artifact(&declaration["public_api_unit_tests"])?;
-    let api = read_json(&api_pin)?;
-    ensure(
-        api["schema"] == "p4-libselinux-native-exec-public-abi-tests-v1"
-            && api["test_source_sha256"] == source["test_sha256"]
-            && api["tested_attributes"] == json!(["exec", "keycreate"]),
-        "public API test source binding differs",
-    )?;
-    let library = declaration["candidate_library"]["path"]
-        .as_str()
-        .ok_or("test library identity absent")?;
-    ensure(
-        api["libraries"]
-            .as_array()
-            .ok_or("tested libraries absent")?
-            .iter()
-            .filter(|v| {
-                v["path"] == library && v["sha256"] == declaration["candidate_library"]["sha256"]
-            })
-            .count()
-            == 1,
-        "API tests did not use the actual stripped package library",
-    )?;
-    let mut cases = BTreeSet::new();
-    for test in api["tests"]
-        .as_array()
-        .ok_or("API tests absent")?
-        .iter()
-        .filter(|v| v["library"] == library)
-    {
-        ensure(
-            test["exit_code"] == 0
-                && cases.insert((
-                    test["attribute"].as_str().ok_or("API test attribute absent")?,
-                    test["case"].as_str().ok_or("API test name absent")?,
-                )),
-            "failed or repeated actual package API test",
-        )?;
-    }
-    let mut expected_cases = BTreeSet::new();
-    for attribute in ["exec", "keycreate"] {
-        for case in [
-            "cache-and-clear",
-            "eintr",
-            "enosys",
-            "eopnotsupp",
-            "eacces",
-            "eperm",
-            "einval",
-            "e2big",
-            "efault",
-            "enomem",
-            "null-first",
-            "enosys-null",
-            "eopnotsupp-null",
-            "fallback-failure",
-            "failure-retains-cache",
-            "thread-local",
-            "public-wrapper",
-        ] {
-            expected_cases.insert((attribute, case));
-        }
-    }
-    expected_cases.insert(("exec", "independent-cache"));
-    for attribute in ["current", "fscreate", "sockcreate"] {
-        expected_cases.insert((attribute, "other-attribute"));
-    }
-    ensure(
-        cases == expected_cases,
-        "actual package API test set differs",
-    )?;
+    let api = inputs.read_json(&api_pin)?;
+    let package_api_cases = verify_packaged_api(&api, &source, declaration)?;
     Ok(json!({"source_commit":input.source_commit,"source":source,
         "dsc":input.source_dsc,"debian_archive":input.source_debian_archive,
+        "debian_archive_actual_input":source_archive_input,
         "orig_archive":input.source_orig_archive,"orig_signature":input.source_orig_signature,
         "patch_member":PATCH,"patch_sha256":fs::digest(&patch),
-        "normal_build":build_pin,"api_tests":api_pin,"package_api_cases":cases.len()}))
+        "normal_build":build_pin,"api_tests":api_pin,"package_api_cases":package_api_cases}))
 }
 
 fn exports(text: &str) -> Result<BTreeSet<String>> {
@@ -548,7 +708,8 @@ pub fn apply(
         original_pin.sha256 == ORIGINAL_SHA,
         "original fixture library bytes differ",
     )?;
-    let declaration = read_json(&input.declaration)?;
+    let inputs = CandidateInputs::open(input.public_inputs.as_deref())?;
+    let declaration = inputs.read_json(&input.declaration)?;
     ensure(
         declaration["schema"] == "p4-libselinux-native-exec-candidate-v1"
             && declaration["package_name"] == "libselinux1"
@@ -561,14 +722,14 @@ pub fn apply(
             && declaration["target_kernel_systemd_qualified"] == false
             && declaration["public_versioned_exports_equal"] == true
             && declaration["public_versioned_exports_count"] == 247
-            && declaration["tested_attributes"] == json!(["exec", "keycreate"]),
+            && declaration["tested_attributes"] == json!(["exec", "keycreate", "fscreate"]),
         "candidate declaration is outside the reviewed replacement contract",
     )?;
     let layer = boot.join("libselinux-candidate");
     boot_files::private_dir(&layer)?;
-    let sources = verify_sources(input, &declaration, &layer)?;
+    let sources = verify_sources(input, &declaration, &layer, &inputs)?;
     let deb = layer.join("candidate.deb");
-    boot_files::copy_pin(&input.package, &deb, 0o400)?;
+    let package_actual_input = inputs.copy_pin(&input.package, &deb)?;
     for (field, want) in [
         ("Package", "libselinux1"),
         ("Version", CANDIDATE_VERSION),
@@ -665,6 +826,7 @@ pub fn apply(
         "fixture dpkg state changed",
     )?;
     let result = json!({"schema":"droidloom.fixture-libselinux-candidate.v1","input":input,
+        "package_actual_input":package_actual_input,
         "sources":sources,"original":original_pin,"preserved_original":boot_files::pin_file(&before)?,
         "installed_candidate":installed,"original_elf":original_elf,"candidate_elf":candidate_elf,
         "dependencies":dependencies,"soname_resolution":alias_resolution,"dpkg_status":status_after,
@@ -739,10 +901,7 @@ mod tests {
             " {} 17 libselinux_{CANDIDATE_VERSION}.debian.tar.xz\n",
             "b".repeat(64)
         );
-        let signature = format!(
-            " {} 833 libselinux_3.9.orig.tar.gz.asc\n",
-            "c".repeat(64)
-        );
+        let signature = format!(" {} 833 libselinux_3.9.orig.tar.gz.asc\n", "c".repeat(64));
         let text = format!(
             "Source: libselinux\nVersion: {CANDIDATE_VERSION}\nChecksums-Sha256:\n{row}{signature}{second}Files:\n"
         );
@@ -750,6 +909,140 @@ mod tests {
         assert!(dsc_sources(&text.replace(&signature, "")).is_err());
         assert!(dsc_sources(&text.replace(CANDIDATE_VERSION, "3.9-other")).is_err());
         assert!(dsc_sources(&text.replace(&second, &row)).is_err());
+        Ok(())
+    }
+
+    fn test_declaration() -> Value {
+        json!({
+            "package":{"path":"/producer/libselinux1.deb","bytes":91320,"sha256":"a".repeat(64)},
+            "candidate_library":{"path":"/producer/unpacked/libselinux.so.1",
+                "bytes":199120,"sha256":"b".repeat(64)}
+        })
+    }
+
+    fn api_fixture() -> (Value, Value, Value) {
+        let declaration = test_declaration();
+        let source = json!({"test_sha256":fs::digest(API_TEST_SOURCE)});
+        let tests: Vec<_> = expected_api_cases()
+            .into_iter()
+            .map(|(attribute, case)| json!({"attribute":attribute,"case":case,"exit":0}))
+            .collect();
+        let dynamic = json!([
+            "libpcre2-8.so.0",
+            "libc.so.6",
+            "ld-linux-x86-64.so.2",
+            "libselinux.so.1"
+        ]);
+        let api = json!({
+            "schema":"droidloom-native-fscreate-packaged-abi-test-v1",
+            "candidate_version":CANDIDATE_VERSION,
+            "test_sha256":fs::digest(API_TEST_SOURCE),
+            "tested_library":declaration["candidate_library"],
+            "original_library":{"sha256":ORIGINAL_SHA},
+            "tests":tests,"total":86,"passed":86,
+            "exports_equal":true,"exports_count":247,"missing_exports":[],"extra_exports":[],
+            "dynamic":{"original":dynamic,"candidate":dynamic},
+            "dependencies_and_soname_equal":true,"installed":false,"real_kernel_qualified":false
+        });
+        (api, source, declaration)
+    }
+
+    #[test]
+    fn packaged_fscreate_receipt_requires_complete_native_cases() -> Result<()> {
+        let (api, source, declaration) = api_fixture();
+        assert_eq!(verify_packaged_api(&api, &source, &declaration)?, 86);
+        for (attribute, case) in [
+            ("fscreate", "get-bad-unset-alignment"),
+            ("fscreate", "get-bad-padding"),
+            ("exec", "positive-result"),
+            ("keycreate", "positive-result-null"),
+            ("fscreate", "positive-result"),
+        ] {
+            let mut missing = api.clone();
+            missing["tests"]
+                .as_array_mut()
+                .unwrap()
+                .retain(|t| t["attribute"] != attribute || t["case"] != case);
+            missing["total"] = json!(85);
+            missing["passed"] = json!(85);
+            assert!(verify_packaged_api(&missing, &source, &declaration).is_err());
+        }
+        let mut duplicate = api.clone();
+        let first = duplicate["tests"][0].clone();
+        duplicate["tests"].as_array_mut().unwrap().push(first);
+        assert!(verify_packaged_api(&duplicate, &source, &declaration).is_err());
+        let mut failed = api.clone();
+        failed["tests"][0]["exit"] = json!(1);
+        assert!(verify_packaged_api(&failed, &source, &declaration).is_err());
+        Ok(())
+    }
+
+    #[test]
+    fn packaged_api_receipt_binds_actual_library_source_and_scope() -> Result<()> {
+        let (api, source, declaration) = api_fixture();
+        for (field, value) in [
+            ("candidate_version", json!("3.9-4build1+p4lsmexec2")),
+            ("test_sha256", json!("c".repeat(64))),
+            ("passed", json!(85)),
+            ("installed", json!(true)),
+            ("real_kernel_qualified", json!(true)),
+            ("exports_equal", json!(false)),
+        ] {
+            let mut changed = api.clone();
+            changed[field] = value;
+            assert!(verify_packaged_api(&changed, &source, &declaration).is_err());
+        }
+        let mut different_path = api.clone();
+        different_path["tested_library"]["path"] = json!("/different/libselinux.so.1");
+        assert!(verify_packaged_api(&different_path, &source, &declaration).is_err());
+        let mut different_bytes = api.clone();
+        different_bytes["tested_library"]["sha256"] = json!("d".repeat(64));
+        assert!(verify_packaged_api(&different_bytes, &source, &declaration).is_err());
+        let mut different_dynamic = api.clone();
+        different_dynamic["dynamic"]["candidate"] = json!(["libc.so.6"]);
+        assert!(verify_packaged_api(&different_dynamic, &source, &declaration).is_err());
+        Ok(())
+    }
+
+    #[test]
+    fn normal_build_receipt_requires_successful_commands_and_original_pins() -> Result<()> {
+        let declaration = test_declaration();
+        let commands: Vec<_> = [
+            "source-extract",
+            "source-before-build",
+            "dependency-check",
+            "test-compile",
+            "build",
+            "extract-library",
+        ]
+        .into_iter()
+        .map(|name| {
+            json!({
+                "name":name,"exit_code":0,
+                "argv":if name == "build" {
+                    json!(["dpkg-buildpackage","-F","-us","-uc",
+                        "--build-profiles=nopython,noruby,noudeb","-j1"])
+                } else { json!([]) }
+            })
+        })
+        .collect();
+        let build = json!({"success":true,"candidate_version":CANDIDATE_VERSION,
+            "installed":false,"runtime_qualified":false,
+            "deb":declaration["package"],"library":declaration["candidate_library"],
+            "commands":commands});
+        verify_normal_build(&build, &declaration)?;
+        let mut failed = build.clone();
+        failed["commands"][4]["exit_code"] = json!(1);
+        assert!(verify_normal_build(&failed, &declaration).is_err());
+        let mut missing = build.clone();
+        missing["commands"].as_array_mut().unwrap().remove(4);
+        assert!(verify_normal_build(&missing, &declaration).is_err());
+        let mut relocated = build.clone();
+        relocated["deb"]["path"] = json!("/imported/libselinux1.deb");
+        assert!(verify_normal_build(&relocated, &declaration).is_err());
+        let mut wrong_version = build.clone();
+        wrong_version["candidate_version"] = json!("3.9-4build1+p4lsmexec2");
+        assert!(verify_normal_build(&wrong_version, &declaration).is_err());
         Ok(())
     }
 }
