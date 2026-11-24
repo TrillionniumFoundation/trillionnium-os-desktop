@@ -62,10 +62,11 @@ impl Drop for Message {
         }
     }
 }
-pub(super) struct UnitReferences {
+/// Held systemd unit references for an exact early shutdown transaction.
+pub struct EarlyUnitReferences {
     bus: NonNull<SdBus>,
 }
-impl Drop for UnitReferences {
+impl Drop for EarlyUnitReferences {
     fn drop(&mut self) {
         // The manager releases all references owned by this connection when it
         // disconnects. No unit start, stop, reset-failed or signal is sent here.
@@ -74,7 +75,7 @@ impl Drop for UnitReferences {
         }
     }
 }
-impl UnitReferences {
+impl EarlyUnitReferences {
     fn connect(address: &CStr) -> io::Result<Self> {
         let mut raw = ptr::null_mut();
         status(unsafe { sd_bus_new(&mut raw) })?;
@@ -126,11 +127,12 @@ impl UnitReferences {
         }
         Ok(())
     }
-    pub(super) fn early() -> io::Result<Self> {
+    /// Pin the fixed original production owner and observer on the system bus.
+    pub fn early() -> io::Result<Self> {
         // Never take a bus address or unit name from the environment, selected
         // release, command line or an Android reply.
         let held = Self::connect(c"unix:path=/run/dbus/system_bus_socket")?;
-        for name in [super::EARLY_OWNER, super::EARLY] {
+        for name in ["droidloom-production.service", "droidloom-early-observer.service"] {
             let name = CString::new(name).map_err(io::Error::other)?;
             held.reference(&name)?;
         }
@@ -216,7 +218,7 @@ mod tests {
         }
         let runtime = std::env::var("XDG_RUNTIME_DIR").unwrap();
         let address = CString::new(format!("unix:path={runtime}/bus")).unwrap();
-        let held = UnitReferences::connect(&address).unwrap();
+        let held = EarlyUnitReferences::connect(&address).unwrap();
         held.reference(&CString::new(service.name.clone()).unwrap())
             .unwrap();
         let before = properties(&service.name);

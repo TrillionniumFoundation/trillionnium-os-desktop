@@ -39,8 +39,7 @@ pub(super) fn requires_production_control() -> io::Result<bool> {
     }
 }
 
-#[path = "container_service_pin.rs"]
-mod service_pin;
+use droidloom_supervisor::control::EarlyUnitReferences;
 
 type Properties = BTreeMap<String, String>;
 
@@ -465,7 +464,7 @@ fn public_readiness_absent() -> io::Result<bool> {
 }
 
 fn stop_early() -> io::Result<()> {
-    let _references = service_pin::UnitReferences::early()?;
+    let _references = EarlyUnitReferences::early()?;
     let owner = show(EARLY_OWNER, EARLY_OWNER_FIELDS)?;
     verify_early_owner(&owner)?;
     let invocation = early_owner_invocation(&owner)?;
