@@ -1348,6 +1348,41 @@ A nondumpable or MAC-denied peer remains denied. The two exact AppArmor
 read/readby peer rules require the normal protected-profile pack and hashes to
 be regenerated from the final integrated source.
 
+The joined `linux-frontend-observer.cil` keeps that observer in the broker's
+existing Linux role. Its fork, child retirement, capability-set replacement
+and filesystem-ID operations are local to the broker. Only Composer,
+InputBridge and the dedicated presenter supply readable proc task inodes;
+process ptrace, target signals, process-memory writes and directory enumeration
+remain prohibited. AppArmor, the fixed reader and its seccomp filter narrow the
+task-SID file permissions to the admitted metadata operations.
+
+The selected-image check uses O_PATH and metadata only. It traverses the
+original `rootfs`, `system_file` and `vendor_file` directories, then checks
+only `hal_graphics_composer_default_exec`, `zygote_exec` and
+`droidloom_input_bridge_jar` file inodes. It cannot read Android file contents
+or enumerate their directories. Normal image generation must give Composer and
+the new JAR these exact labels; an older image with a generic Composer label is
+not an alternative permission baseline. Verify the final same-generation images,
+rather than treating an older vendor image's metadata as final acceptance.
+
+The presenter alone receives the broker-created accepted socket and PIDFD through
+the fixed frontend control directory. The accepted socket retains the broker
+SID even though SO_PEERSEC identifies its remote Composer or InputBridge.
+The presenter's permission to use these descriptions does not authorize Android
+Binder calls, namespace-file access or arbitrary Android-created graphics FDs.
+Actual frame-resource FD creators and import permissions require separate runtime
+verification before graphics acceptance.
+
+On the selected 6.18 kernel, pidfs inodes have S_PRIVATE. SELinux still checks
+the creator's fd:use when such a description is transferred, but skips its inode
+permissions and ioctl extended-permission check. Do not describe a PIDFD
+allowx/neverallowx declaration as an enforced ioctl boundary on this kernel.
+The maintained registration code invokes only PIDFD_GET_INFO and retains and
+revalidates the original objects and credentials; it accepts no caller-selected
+ioctl. No presenter membership in the namespace-handle owner attribute, PIDFD
+filesystem permission, or PIDFD read/write grant is required by registration.
+Target-kernel positive and object/namespace negative cases remain necessary.
+
 The existing native task-control listener is retained for production
 application launches. Its namespace connector is deliberately reaped before
 the original owner sends requests, so that connector's lifetime is not the
