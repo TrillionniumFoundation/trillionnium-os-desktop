@@ -74,7 +74,47 @@ pub const SHUTDOWN_PROPERTY_TARGET: &str =
     "/system/system_ext/etc/selinux/system_ext_property_contexts";
 
 pub const READINESS_FILE: &str = "system_ext_readiness.img";
-pub const READINESS_TARGETS: [&str; 2] = ["/system/system_ext/bin", "/system/system_ext/etc/init"];
+pub const READINESS_TARGETS: [&str; 3] = [
+    "/system/system_ext/bin",
+    "/system/system_ext/etc/init",
+    "/system/system_ext/framework",
+];
+pub const READINESS_SOURCES: [&str; 3] = ["/bin", "/etc/init", "/framework"];
+pub const SHUTDOWN_PROPERTY_SOURCE: &str = "/etc/selinux/system_ext_property_contexts";
+
+/// Source path inside the one carrier and whether this mount must be noexec.
+pub fn readiness_mount_source(index: usize, shutdown_property: bool) -> Option<(&'static str, bool)> {
+    if let Some(source) = READINESS_SOURCES.get(index) {
+        Some((source, false))
+    } else if index == READINESS_TARGETS.len() && shutdown_property {
+        Some((SHUTDOWN_PROPERTY_SOURCE, true))
+    } else {
+        None
+    }
+}
+
+/// All four members come from the same normal Soong installation as the observer.
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
+pub struct FrontendDeclaration {
+    pub input_bridge_wrapper_sha256: String,
+    pub input_bridge_jar_sha256: String,
+    pub input_bridge_init_rc_sha256: String,
+    pub task_launcher_sha256: String,
+}
+
+impl FrontendDeclaration {
+    pub fn valid(&self) -> bool {
+        [
+            self.input_bridge_wrapper_sha256.as_str(),
+            self.input_bridge_jar_sha256.as_str(),
+            self.input_bridge_init_rc_sha256.as_str(),
+            self.task_launcher_sha256.as_str(),
+        ]
+        .iter()
+        .all(|value| sha256(value))
+    }
+}
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
@@ -82,12 +122,13 @@ pub struct ReadinessDeclaration {
     pub file: String,
     pub bytes: u64,
     pub sha256: String,
-    pub targets: [String; 2],
+    pub targets: [String; 3],
     pub source_system_sha256: String,
     pub source_vendor_sha256: String,
     pub source_system_ext_lib64_sha256: String,
     pub observer_sha256: String,
     pub init_rc_sha256: String,
+    pub frontend: FrontendDeclaration,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub shutdown_property_contexts_sha256: Option<String>,
 }
@@ -99,7 +140,7 @@ fn sha256(value: &str) -> bool {
             .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
 }
 
-/// Admit an exact two-, three-, or four-image raw release. The two readiness
+/// Admit an exact two-, three-, or four-image raw release. The three readiness
 /// subtrees always come from a single fourth filesystem.
 pub fn accepts_base(
     schema: u32,
@@ -119,6 +160,7 @@ pub fn accepts_base(
         && accepts(2, "android_base_images_v2", Some(lib), system, vendor)
         && ready.file == READINESS_FILE
         && ready.targets == READINESS_TARGETS
+        && ready.frontend.valid()
         && ready.shutdown_property_contexts_sha256.as_deref()
             == shutdown_property_for_rc(&ready.init_rc_sha256)
         && (4096..=16 * 1024 * 1024).contains(&ready.bytes)
@@ -178,7 +220,18 @@ mod tests {
     }
 
     #[test]
-    fn fourth_image_binds_all_three_parents_and_both_install_paths() {
+    fn framework_mount_preserves_execution_and_property_is_separate_noexec() {
+        assert_eq!(READINESS_TARGETS.len(), READINESS_SOURCES.len());
+        assert_eq!(readiness_mount_source(0, false), Some(("/bin", false)));
+        assert_eq!(readiness_mount_source(1, true), Some(("/etc/init", false)));
+        assert_eq!(readiness_mount_source(2, false), Some(("/framework", false)));
+        assert_eq!(readiness_mount_source(3, false), None);
+        assert_eq!(readiness_mount_source(3, true), Some((SHUTDOWN_PROPERTY_SOURCE, true)));
+        assert_eq!(readiness_mount_source(4, true), None);
+    }
+
+    #[test]
+    fn fourth_image_binds_all_three_parents_and_all_install_paths() {
         let lib = candidate();
         let ready = ReadinessDeclaration {
             file: READINESS_FILE.into(),
@@ -190,6 +243,12 @@ mod tests {
             source_system_ext_lib64_sha256: lib.sha256.clone(),
             observer_sha256: "c".repeat(64),
             init_rc_sha256: "d".repeat(64),
+            frontend: FrontendDeclaration {
+                input_bridge_wrapper_sha256: "3".repeat(64),
+                input_bridge_jar_sha256: "4".repeat(64),
+                input_bridge_init_rc_sha256: "5".repeat(64),
+                task_launcher_sha256: "6".repeat(64),
+            },
             shutdown_property_contexts_sha256: None,
         };
         let admit = |d: &ReadinessDeclaration| {
@@ -217,14 +276,19 @@ mod tests {
         shutdown.init_rc_sha256 = SHUTDOWN_RC_SHA256.into();
         shutdown.shutdown_property_contexts_sha256 = Some(FACTORY_PROPERTY_CONTEXTS_SHA256.into());
         assert!(!admit(&shutdown));
-        for i in 0..5 {
+        for i in 0..10 {
             let mut other = ready.clone();
             match i {
                 0 => other.source_system_sha256 = "0".repeat(64),
                 1 => other.source_vendor_sha256 = "0".repeat(64),
                 2 => other.source_system_ext_lib64_sha256 = "0".repeat(64),
                 3 => other.targets.swap(0, 1),
-                _ => other.init_rc_sha256 = other.observer_sha256.clone(),
+                4 => other.init_rc_sha256 = other.observer_sha256.clone(),
+                5 => other.targets[2] = "/system/framework".into(),
+                6 => other.frontend.input_bridge_wrapper_sha256.clear(),
+                7 => other.frontend.input_bridge_jar_sha256 = "g".repeat(64),
+                8 => other.frontend.input_bridge_init_rc_sha256 = "A".repeat(64),
+                _ => other.frontend.task_launcher_sha256 = "0".repeat(63),
             };
             assert!(!admit(&other));
         }
@@ -236,6 +300,15 @@ mod tests {
             SYSTEM_SHA256,
             &lib.source_vendor_sha256
         ));
+        let mut legacy = serde_json::to_value(&ready).unwrap();
+        legacy["targets"] = serde_json::json!(&READINESS_TARGETS[..2]);
+        assert!(serde_json::from_value::<ReadinessDeclaration>(legacy).is_err());
+        let mut missing = serde_json::to_value(&ready).unwrap();
+        missing.as_object_mut().unwrap().remove("frontend");
+        assert!(serde_json::from_value::<ReadinessDeclaration>(missing).is_err());
+        let mut extra = serde_json::to_value(&ready).unwrap();
+        extra["frontend"]["unreviewed_file_sha256"] = serde_json::json!("7".repeat(64));
+        assert!(serde_json::from_value::<ReadinessDeclaration>(extra).is_err());
     }
 
     #[test]

@@ -20,6 +20,7 @@ mod keymint_test;
 pub(super) const NATIVE_TARGETS: &[&str] = &["droidloom_cp3a_native_bridge_package"];
 pub(super) const VENDOR_TARGETS: &[&str] = &[
     "vendorimage", "secilc", "checkvintf", "host_init_verifier", "droidloom-readiness",
+    "droidloom-input-bridge", "droidloom-task-launcher",
     keymint_test::TARGET,
 ];
 const HOST_DIRECTORY: &str = "lib64/droidloom/nativebridge";

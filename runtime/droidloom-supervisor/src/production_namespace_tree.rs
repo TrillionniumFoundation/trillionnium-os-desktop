@@ -2524,11 +2524,13 @@ impl TreeChild {
             let property = fields[4] == droidloom_contracts::system_ext::SHUTDOWN_PROPERTY_TARGET;
             if targets.contains(&fields[4]) || property || self.readiness_device == Some(device) {
                 let index = targets.iter().position(|path| *path == fields[4])
-                    .or_else(|| (self.shutdown_property_mount && property).then_some(2))
+                    .or_else(|| (self.shutdown_property_mount && property).then_some(targets.len()))
                     .ok_or(NamespaceError::Rejected("fourth image mounted outside its selected targets"))?;
+                let (source, noexec) = droidloom_contracts::system_ext::readiness_mount_source(index, self.shutdown_property_mount)
+                    .ok_or(NamespaceError::Rejected("unknown selected fourth-image mount"))?;
                 let flags:Vec<_>=fields[5].split(',').collect();
-                if self.readiness_device!=Some(device) || fields[3]!=["/bin","/etc/init","/etc/selinux/system_ext_property_contexts"][index] || right[0]!="ext4" ||
-                   !["ro","nosuid","nodev"].iter().all(|f|flags.contains(f)) || flags.contains(&"noexec") != (index == 2) ||
+                if self.readiness_device!=Some(device) || fields[3]!=source || right[0]!="ext4" ||
+                   !["ro","nosuid","nodev"].iter().all(|f|flags.contains(f)) || flags.contains(&"noexec") != noexec ||
                    !right[2].split(',').any(|v|v=="ro") || !readiness_seen.insert(index) {
                     return Err(NamespaceError::Rejected("incorrect fourth-image device, subtree or mount protection"));
                 }
@@ -2623,7 +2625,7 @@ impl TreeChild {
                 ));
             }
         }
-        if readiness_seen.len()!=2*usize::from(self.readiness_device.is_some()) + usize::from(self.shutdown_property_mount) {return Err(NamespaceError::Rejected("incomplete selected system_ext mounts"));}
+        if readiness_seen.len()!=droidloom_contracts::system_ext::READINESS_TARGETS.len()*usize::from(self.readiness_device.is_some()) + usize::from(self.shutdown_property_mount) {return Err(NamespaceError::Rejected("incomplete selected system_ext mounts"));}
         if observed_system_ext != self.system_ext_device.is_some() {
             return Err(NamespaceError::Rejected("selected system_ext library mount missing"));
         }

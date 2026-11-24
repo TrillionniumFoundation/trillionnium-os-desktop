@@ -836,6 +836,56 @@ wrong preimages, interrupted recovery, and the unchanged complete target
 contract. These source tests do not constitute a completed vendor build or
 Android runtime qualification.
 
+## Normal GSI system_ext carrier
+
+The `official-gsi-vendor-build` route builds `droidloom-readiness`,
+`droidloom-input-bridge` and `droidloom-task-launcher` in its normal vendor
+phase. The fourth raw image contains three complete subtrees:
+`/system/system_ext/bin`, `/system/system_ext/etc/init` and
+`/system/system_ext/framework`. Every original GSI member in these trees,
+including existing framework JAR, ODEX and VDEX files, retains its content,
+owner, mode and extended attributes.
+
+The frontend additions come from that same normal Soong product installation:
+
+| Installed path below system_ext | Mode and owner | SELinux type |
+| --- | --- | --- |
+| bin/droidloom-input-bridge | 0755, 0:0 | droidloom_input_bridge_exec |
+| bin/droidloom-task-launcher | 0755, 0:0 | droidloom_task_launcher_exec |
+| framework/droidloom-input-bridge.jar | 0644, 0:0 | droidloom_input_bridge_jar |
+| etc/init/droidloom-input-bridge.rc | 0644, 0:0 | system_file |
+
+The JAR must contain its own `classes.dex`. The normal product wrapper and
+init script must match the maintained sources, and the normal
+`host_init_verifier` must accept both init scripts. The normal receipt binds
+all four installed files by size, identity and full SHA-256. The release
+declaration requires the four corresponding digests in `frontend` and all
+three mount targets. Earlier two-target declarations fail admission.
+
+Packaging compares every image member and label with the original GSI or its
+selected normal addition. The runtime independently repeats that comparison
+using held filesystem descriptors before attaching the three subtrees. They
+remain read-only, nosuid and nodev; the framework tree preserves execution for
+its original ODEX files. The optional shutdown property file is a separate,
+noexec mount. The mount inventory checks each source, target, device and
+protection against the same contract.
+
+Focused checks are:
+
+~~~console
+cargo test --locked -j 1 -p droidloom-contracts system_ext::tests -- --test-threads=1
+cargo test --locked -j 1 -p droidloom-update --bin droidloom-update \
+  coherent_images::readiness::tests -- --test-threads=1
+~~~
+
+The carrier regression uses real `mke2fs`, `debugfs`, `e2fsck` and Python
+with synthetic image and archive fixtures. It verifies preservation and
+rejects missing or modified members, wrong labels or owners, unexpected
+framework additions, a wrong JAR digest and a JAR without DEX. A successful
+test does not establish a completed normal Soong build, real guest mounts,
+service execution or application acceptance. Adopt the new carrier together
+with the matching normal modules, Android policy and rebuilt host consumers.
+
 ## Software KeyMint and existing KMR keys
 
 The x86_64 product selects the process-local Rust KeyMint service. Its patched

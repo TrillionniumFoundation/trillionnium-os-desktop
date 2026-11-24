@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Build the two immutable system_ext subtrees used by the readiness service."""
+"""Build the three immutable system_ext subtrees from normal installed components."""
 import hashlib
+import io
 import json
 import os
 from pathlib import Path
@@ -11,6 +12,7 @@ import subprocess
 import sys
 import tempfile
 import uuid
+import zipfile
 
 
 def digest(path):
@@ -34,6 +36,55 @@ SHUTDOWN_RC_CONTEXTS = {
     "ae320041a5d3f2d7c3f2a1689ffbdc17028f272cc81c5ee25757abe17e366b2c": CONTROL_CONTEXT,
 }
 SHUTDOWN_LABEL = b"u:object_r:droidloom_shutdown_exec:s0\0"
+ROOTS = ("bin", "etc/init", "framework")
+FRONTEND = {
+    "input_bridge_wrapper": ("bin/droidloom-input-bridge", 0o100755, 4096,
+                             b"u:object_r:droidloom_input_bridge_exec:s0\0"),
+    "input_bridge_jar": ("framework/droidloom-input-bridge.jar", 0o100644, 8 * 1024 * 1024,
+                         b"u:object_r:droidloom_input_bridge_jar:s0\0"),
+    "input_bridge_init_rc": ("etc/init/droidloom-input-bridge.rc", 0o100644, 4096,
+                             b"u:object_r:system_file:s0\0"),
+    "task_launcher": ("bin/droidloom-task-launcher", 0o100755, 8 * 1024 * 1024,
+                      b"u:object_r:droidloom_task_launcher_exec:s0\0"),
+}
+
+
+def frontend_members(expected):
+    values = expected.get("frontend")
+    check(isinstance(values, dict) and set(values) == {name + "_sha256" for name in FRONTEND},
+          "incomplete normal frontend digests")
+    check(all(isinstance(value, str) and re.fullmatch("[0-9a-f]{64}", value)
+              for value in values.values()), "invalid normal frontend digest")
+    return {relative: (mode, 0, 0, label, values[name + "_sha256"])
+            for name, (relative, mode, _limit, label) in FRONTEND.items()}
+
+
+def verify_frontend_body(relative, body):
+    for role, (path, _mode, limit, _label) in FRONTEND.items():
+        if relative != path:
+            continue
+        check(0 < len(body) <= limit, "normal frontend size: " + relative)
+        if role == "task_launcher":
+            check(body[:7] == b"\x7fELF\x02\x01\x01" and body[16:20] == b"\x03\x00\x3e\x00",
+                  "expected a little-endian x86_64 task launcher PIE")
+        elif role == "input_bridge_wrapper":
+            check(body.startswith(b"#!/system/bin/sh\n"), "expected the Android frontend wrapper")
+        elif role == "input_bridge_jar":
+            with zipfile.ZipFile(io.BytesIO(body)) as archive:
+                entries = archive.infolist()
+                names = [entry.filename for entry in entries]
+                check(len(names) == len(set(names)) and "classes.dex" in names,
+                      "frontend JAR must carry its own DEX without duplicate members")
+                check(all(not entry.flag_bits & 1 for entry in entries)
+                      and sum(entry.file_size for entry in entries) <= 32 * 1024 * 1024,
+                      "unbounded or encrypted frontend JAR")
+                dex = archive.getinfo("classes.dex")
+                check(8 <= dex.file_size <= 8 * 1024 * 1024, "invalid frontend DEX size")
+                with archive.open(dex) as stream:
+                    header = stream.read(8)
+                check(re.fullmatch(b"dex\\n[0-9]{3}\\x00", header), "frontend JAR lacks Android DEX")
+                check(archive.testzip() is None, "frontend JAR failed its complete CRC readback")
+        return
 
 
 def shutdown_context(system, expected):
@@ -93,10 +144,10 @@ def attrs(image, name, temp):
 
 
 def verify(system, image, expected, work):
-    """Compare both mounted subtrees against CP3A and the two normal installed files."""
+    """Compare all mounted subtrees against CP3A and the normal installed additions."""
     check(digest(system) == expected["system"], "original system digest changed")
     run(["e2fsck", "-fn", image])
-    check(set(names(image, "/")) == {"bin", "etc"}, "unexpected readiness filesystem root")
+    check(set(names(image, "/")) == {"bin", "etc", "framework"}, "unexpected readiness filesystem root")
     shutdown = expected.get("shutdown_property_contexts")
     check(shutdown == SHUTDOWN_RC_CONTEXTS.get(expected["rc"]), "shutdown init and property declarations differ")
     check(set(names(image, "/etc")) == ({"init", "selinux"} if shutdown else {"init"}),
@@ -106,6 +157,7 @@ def verify(system, image, expected, work):
         "bin/droidloom-readiness": (0o100755, 0, 2000, b"u:object_r:droidloom_readiness_exec:s0\0", expected["elf"]),
         "etc/init/droidloom-readiness.rc": (0o100644, 0, 0, b"u:object_r:system_file:s0\0", expected["rc"]),
     }
+    new_files.update(frontend_members(expected))
     if shutdown:
         new_files["bin/droidloom-shutdown"] = (0o100755, 0, 2000, SHUTDOWN_LABEL, expected["elf"])
     result = {}
@@ -142,9 +194,10 @@ def verify(system, image, expected, work):
             if relative == "bin/droidloom-readiness":
                 check(contents[:7] == b"\x7fELF\x02\x01\x01" and contents[16:20] == b"\x03\x00\x3e\x00",
                       "expected a little-endian x86_64 PIE")
+            verify_frontend_body(relative, contents)
         result[relative] = {"mode": oct(mode), "uid": uid, "gid": gid, "sha256": wanted,
                             "xattrs_hex": {key: v.hex() for key, v in attributes.items()}}
-    for relative in ("bin", "etc/init"):
+    for relative in ROOTS:
         parent, leaf = os.path.split(relative)
         visit(relative, names(system, "/system/system_ext/" + parent)[leaf], names(image, "/" + parent)[leaf])
     if shutdown:
@@ -161,25 +214,35 @@ def verify(system, image, expected, work):
               attrs(image, "/" + CONTEXT_MEMBER, attr_tmp) == metadata, "changed original property file attributes")
         result[CONTEXT_MEMBER] = {"mode": oct(0o100644), "uid": 0, "gid": 0, "sha256": shutdown,
                                   "xattrs_hex": {key: value.hex() for key, value in metadata.items()}}
-        inodes = []
-        for path in ("/bin/droidloom-readiness", "/bin/droidloom-shutdown"):
-            info = inspect(image, "stat " + path).decode()
-            inode = re.search(r"^Inode: (\d+)\s+Type: regular", info)
-            check(inode and re.search(r"^Links: 1\b", info, re.MULTILINE), "shutdown executables need independent inodes")
-            inodes.append(inode[1])
-        check(inodes[0] != inodes[1], "differently labeled executables share an inode")
-    check(new_files.keys() <= result.keys(), "missing selected observer or init script")
+    inodes = set()
+    for relative in new_files:
+        info = inspect(image, "stat /" + relative).decode()
+        inode = re.search(r"^Inode: (\d+)\s+Type: regular", info)
+        check(inode and re.search(r"^Links: 1\b", info, re.MULTILINE),
+              "normal installed additions need independent single-link inodes")
+        check(inode[1] not in inodes, "normal installed roles share an inode")
+        inodes.add(inode[1])
+    check(new_files.keys() <= result.keys(), "missing selected observer or frontend member")
     return result
 
 
-def build(system, service, rc, out, expected):
+def build(system, service, rc, out, expected, frontend):
     for name, path in (("system", system), ("elf", service), ("rc", rc)):
         check(digest(path) == expected[name], name + " input changed")
     check(service.read_bytes()[:7] == b"\x7fELF\x02\x01\x01", "wrong selected ELF")
     check(not out.exists(), "output already exists")
-    roots = ("bin", "etc/init")
+    roots = ROOTS
     new_files = {"bin/droidloom-readiness": (service, 0o100755, 0, 2000, b"u:object_r:droidloom_readiness_exec:s0\0"),
                  "etc/init/droidloom-readiness.rc": (rc, 0o100644, 0, 0, b"u:object_r:system_file:s0\0")}
+    frontend_members(expected)
+    check(set(frontend) == set(FRONTEND), "incomplete normal installed frontend paths")
+    for name, (relative, mode, limit, label) in FRONTEND.items():
+        path = Path(frontend[name])
+        check(path.is_file() and 0 < path.stat().st_size <= limit
+              and digest(path) == expected["frontend"][name + "_sha256"],
+              "normal frontend input changed: " + name)
+        verify_frontend_body(relative, path.read_bytes())
+        new_files[relative] = (path, mode, 0, 0, label)
     shutdown = expected.get("shutdown_property_contexts")
     check(shutdown == SHUTDOWN_RC_CONTEXTS.get(expected["rc"]), "shutdown init and property declarations differ")
     if shutdown:
@@ -225,8 +288,14 @@ def build(system, service, rc, out, expected):
         # /etc remains private. The shutdown variant projects one verified property file.
         (material/"etc").mkdir(exist_ok=True)
         image = tmp/"carrier.img"
+        payload_bytes = sum((material / name).stat().st_size
+                            for name, row in rows.items() if stat.S_ISREG(row[0]))
+        required_bytes = payload_bytes + max(2 * 1024 * 1024, len(rows) * 8192)
+        image_bytes = max(8 * 1024 * 1024, ((required_bytes + 4 * 1024 * 1024 - 1)
+                                          // (4 * 1024 * 1024)) * 4 * 1024 * 1024)
+        check(image_bytes <= 16 * 1024 * 1024, "normal three-subtree carrier exceeds its bound")
         with image.open("xb") as stream:
-            stream.truncate(8 * 1024 * 1024)
+            stream.truncate(image_bytes)
         identifier = str(uuid.uuid5(uuid.NAMESPACE_DNS, "pocket4.trusted.system-ext-readiness.v1"))
         fs_config = tmp/"mke2fs.conf"
         inspect(system, f"dump /system/etc/mke2fs.conf {fs_config}")
@@ -270,5 +339,6 @@ if __name__ == "__main__":
             checked = verify(Path(config["system"]), image, config["sha256"], Path(temp))
         result = {"members": checked, "bytes": image.stat().st_size, "sha256": digest(image)}
     else:
-        result = build(*(Path(config[key]) for key in ("system", "elf", "rc", "output")), config["sha256"])
+        result = build(*(Path(config[key]) for key in ("system", "elf", "rc", "output")),
+                       config["sha256"], config["frontend"])
     print(json.dumps(result, sort_keys=True, indent=2))
