@@ -1,8 +1,9 @@
-libselinux (3.9-4build1+p4lsmexec1) resolute; urgency=medium
+libselinux (3.9-4build1+p4lsmexec2) resolute; urgency=medium
 
-  * Use the native stacked-LSM interface for SELinux exec context changes.
-    Preserve existing ABI, cached state and unsupported-kernel fallback.
-    Policy denials do not fall back to procfs writes.
+  * Use the explicit SELinux native LSM API for exec and keycreate setters.
+    Preserve per-thread cached state, NULL reset and original public ABI.
+    Fall back only for ENOSYS/EOPNOTSUPP, never policy denials or bad input.
+    Cover both raw and PAM-facing public setters in packaged-library tests.
 
- -- OpenAI Codex <codex@localhost>  Tue, 24 Nov 2026 06:05:49 +0000
+ -- OpenAI Codex <codex@localhost>  Tue, 24 Nov 2026 14:00:00 +0000
 

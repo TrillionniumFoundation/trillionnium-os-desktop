@@ -2,7 +2,7 @@
   "schema": "droidloom-ubuntu-libselinux-source-v1",
   "package": "libselinux",
   "original_version": "3.9-4build1",
-  "candidate_version": "3.9-4build1+p4lsmexec1",
+  "candidate_version": "3.9-4build1+p4lsmexec2",
   "distribution": "resolute",
   "architecture": "amd64",
   "acquisition": "apt-get source --download-only libselinux=3.9-4build1 using the signed Ubuntu source index",
@@ -31,13 +31,13 @@
   "source_file": {
     "path": "src/procattr.c",
     "original_sha256": "444c85a927453a9a03131b00970d5707461e28da5e6546448dff7139bdd38083",
-    "patched_sha256": "1b203892548da0b3dac7e39b54a6db0602097e9ed933d6ba805e7ffca56b10b5"
+    "patched_sha256": "5713a246ee12d1d4ccc607f8bb3a01830994085d646a2cfd659d431f4b3f0481"
   },
   "patch": {
     "path": "p4-native-lsm-exec-attribute.patch",
-    "sha256": "98bed8a387a656d8634ce45224a40d85a34a0581631126ae8e1bd67474008d73"
+    "sha256": "22cc7bac26fe18376a072f71af4e5fe2f0a7000c815b7fe32fe91dccc8db6223"
   },
-  "source_date_epoch": 1795500349,
+  "source_date_epoch": 1795528800,
   "build_profiles": [
     "nopython",
     "noruby",
@@ -48,8 +48,7 @@
     "-F",
     "-us",
     "-uc",
-    "-P",
-    "nopython,noruby,noudeb",
+    "--build-profiles=nopython,noruby,noudeb",
     "-j1"
   ],
   "original_runtime": {
@@ -61,6 +60,6 @@
   },
   "public_abi_test": {
     "path": "native-exec-api-test.c",
-    "sha256": "d4fc1c5bcbd504b51890b73c0a297c2b796c77a1eccfefe455f0e990bb67ab06"
+    "sha256": "26e6985f9516d738d4d75b434714d258ea9a39bf037855355d3163aa5d5f4c65"
   }
 }

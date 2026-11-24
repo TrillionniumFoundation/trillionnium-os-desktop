@@ -13,24 +13,35 @@
  
  #define UNSET (char *) -1
  
-@@ -191,6 +197,50 @@
+@@ -191,6 +197,62 @@
  	return ret;
  }
  
 +
 +/*
-+ * Select the SELinux exec attribute explicitly on stacked-LSM kernels.
-+ * The native interface performs the same SELinux setexec and exec-transition
-+ * checks, without requiring write access to a task's procfs file class.
++ * Select only SELinux exec and keycreate on stacked-LSM kernels. The native
++ * interface performs the same SELinux setexec/setkeycreate and target checks,
++ * without requiring write access to a task's procfs file class.
 + * Only kernels without this operation fall back to the original procattr ABI.
 + */
-+static int setexecattr_native(const char *context)
++static int setprocattr_native(const char *context, const char *attr)
 +{
-+#if defined(__NR_lsm_set_self_attr) && defined(LSM_ATTR_EXEC) && defined(LSM_ID_SELINUX)
++#if defined(__NR_lsm_set_self_attr) && defined(LSM_ATTR_EXEC) && \
++    defined(LSM_ATTR_KEYCREATE) && defined(LSM_ID_SELINUX)
 +	struct lsm_ctx *ctx;
++	unsigned int native_attr;
 +	size_t length = context ? strlen(context) : 0;
 +	size_t total;
 +	int ret, saved_errno;
++
++	if (!strcmp(attr, "exec"))
++		native_attr = LSM_ATTR_EXEC;
++	else if (!strcmp(attr, "keycreate"))
++		native_attr = LSM_ATTR_KEYCREATE;
++	else {
++		errno = EINVAL;
++		return -1;
++	}
 +
 +	if (length > UINT32_MAX - sizeof(*ctx) - 1) {
 +		errno = E2BIG;
@@ -47,7 +58,7 @@
 +		memcpy(ctx->ctx, context, length + 1);
 +
 +	do {
-+		ret = syscall(__NR_lsm_set_self_attr, LSM_ATTR_EXEC, ctx,
++		ret = syscall(__NR_lsm_set_self_attr, native_attr, ctx,
 +			      (uint32_t)total, 0);
 +	} while (ret < 0 && errno == EINTR);
 +	saved_errno = errno;
@@ -56,6 +67,7 @@
 +	return ret;
 +#else
 +	(void)context;
++	(void)attr;
 +	errno = ENOSYS;
 +	return -1;
 +#endif
@@ -64,7 +76,7 @@
  static int setprocattrcon_raw(const char *context, const char *attr,
  			      char **prev_context)
  {
-@@ -207,6 +257,26 @@
+@@ -207,6 +269,26 @@
  	if (context && *prev_context && *prev_context != UNSET
  	    && !strcmp(context, *prev_context))
  		return 0;
@@ -72,13 +84,13 @@
 +
 +	/* Keep the original cache semantics and error propagation. In particular,
 +	 * policy denials must never fall back to another attribute interface. */
-+	if (!strcmp(attr, "exec")) {
++	if (!strcmp(attr, "exec") || !strcmp(attr, "keycreate")) {
 +		if (context) {
 +			context2 = strdup(context);
 +			if (!context2)
 +				return -1;
 +		}
-+		ret = setexecattr_native(context2);
++		ret = setprocattr_native(context2, attr);
 +		if (ret == 0)
 +			goto update_cache;
 +		errno_hold = errno;
@@ -91,7 +103,7 @@
  
  	fd = openattr(0, attr, O_RDWR | O_CLOEXEC);
  	if (fd < 0)
-@@ -228,6 +298,7 @@
+@@ -228,6 +310,7 @@
  	errno_hold = errno;
  	close(fd);
  	errno = errno_hold;

@@ -1,23 +1,23 @@
-# Ubuntu libselinux native exec attribute
+# Ubuntu libselinux native exec and keycreate attributes
 
 The shared Linux/Android policy keeps systemd executors from writing files with
-their own process label. This also protects process memory. Ubuntu's
-libselinux 3.9-4build1 sets an exec context through a procfs file with that label.
-This component changes the library's exec setter to use the Linux
-`lsm_set_self_attr(LSM_ATTR_EXEC)` interface with `LSM_ID_SELINUX`.
+their own process label. This also protects process memory. Ubuntu's libselinux
+3.9-4build1 sets exec and keycreate contexts through procfs files with that label.
+Systemd sets exec contexts; Ubuntu PAM also sets and restores the key creation
+context. This component maps only these two fixed setters to the native
+lsm_set_self_attr API: LSM_ATTR_EXEC and LSM_ATTR_KEYCREATE, both explicitly
+selecting LSM_ID_SELINUX.
 
-The target kernel routes that call through the same SELinux setexec and exec
-transition checks as procattr. The change preserves the public ABI, thread-local
-cache, other attributes, and original procattr implementation for kernels that
-return ENOSYS or EOPNOTSUPP. EACCES, EPERM and other real errors are returned
-without falling back. A null context is encoded as the native interface's
-single NUL and clears the pending exec label. EINTR is retried.
+The target kernel runs the same SELinux setexec/setkeycreate, target key creation
+and exec transition checks as procattr. The change preserves the public ABI,
+per-thread cache, other attributes and the original procattr implementation for
+kernels returning ENOSYS or EOPNOTSUPP. EACCES, EPERM and every other real error
+return without fallback. A NULL context is encoded as one NUL and clears the
+pending exec or key creation label. EINTR is retried.
 
-Ubuntu libapparmor 5.0.2 already uses the native interface before its procattr
-fallback. Neither libapparmor nor systemd is replaced by this component.
-SELinux permissions for self:file write are not required by the patched exec
-setter. This does not grant policy load, dyntransition, ptrace or proc-memory
-write permission.
+This component replaces neither libapparmor nor systemd. Neither patched setter
+requires self:file write permission. No policy load, dyntransition, ptrace or
+proc-memory write permission is granted.
 
 ## Build with the original Debian packaging
 
@@ -43,13 +43,13 @@ actually installed and checked:
 dpkg-source --before-build libselinux-3.9
 cd libselinux-3.9
 dpkg-checkbuilddeps -P nopython,noruby,noudeb
-SOURCE_DATE_EPOCH=1795500349 dpkg-buildpackage -F -us -uc -P nopython,noruby,noudeb -j1
+SOURCE_DATE_EPOCH=1795528800 dpkg-buildpackage -F -us -uc --build-profiles=nopython,noruby,noudeb -j1
 ```
 
 The profiles omit Python, Ruby and installer bindings; they do not disable the
 library build or compiler hardening. The original Debian rules select PCRE2,
 large-file support, hardening and LTO. The output has a distinct version:
-`libselinux1_3.9-4build1+p4lsmexec1_amd64.deb`, with normal source, changes and
+`libselinux1_3.9-4build1+p4lsmexec2_amd64.deb`, with normal source, changes and
 buildinfo files. Record the real command, tool packages, compiler flags, exit,
 logs, archive hashes and extracted library hash outside Git. Do not replace the
 host library during construction.
@@ -64,12 +64,20 @@ with the pinned original library, and inspect its actual DT_NEEDED dependencies.
 `native-exec-api-test.c` calls the public APIs of that actual shared library.
 It interposes syscall and procattr operations only inside its disposable test
 process to verify cache/reset handling, EINTR, the two unsupported-kernel
-fallbacks, denial/error propagation, and unchanged fscreate handling:
+fallbacks including NULL clear, denial/error propagation without cache damage,
+separate exec/keycreate caches, actual thread-local isolation, both PAM-facing
+public setters and unchanged current/fscreate/sockcreate handling:
 
 ```sh
-cc -std=c11 -O2 -Wall -Wextra -Werror -rdynamic native-exec-api-test.c -ldl -o native-exec-api-test
-for case_name in cache-and-clear eintr enosys eopnotsupp eacces eperm einval e2big other-attribute; do
-    ./native-exec-api-test /absolute/extracted/usr/lib/x86_64-linux-gnu/libselinux.so.1 "$case_name" || exit
+cc -std=c11 -O2 -Wall -Wextra -Werror -rdynamic -pthread native-exec-api-test.c -ldl -o native-exec-api-test
+for attribute in exec keycreate; do
+    for case_name in cache-and-clear eintr enosys eopnotsupp eacces eperm einval e2big efault enomem null-first enosys-null eopnotsupp-null fallback-failure failure-retains-cache thread-local public-wrapper; do
+        ./native-exec-api-test /absolute/extracted/usr/lib/x86_64-linux-gnu/libselinux.so.1 "$attribute" "$case_name" || exit
+    done
+done
+./native-exec-api-test /absolute/extracted/usr/lib/x86_64-linux-gnu/libselinux.so.1 exec independent-cache
+for attribute in current fscreate sockcreate; do
+    ./native-exec-api-test /absolute/extracted/usr/lib/x86_64-linux-gnu/libselinux.so.1 "$attribute" other-attribute || exit
 done
 ```
 
