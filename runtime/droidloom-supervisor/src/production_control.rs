@@ -605,6 +605,8 @@ impl ProductionDaemon {
             application_icon: None,
             diagnostics: None,
             inspection: None,
+            window: None,
+            window_image: None,
             image_custody: None,
         }
     }
@@ -1114,6 +1116,8 @@ impl ProductionDaemon {
     ) -> ControlResponse {
         self.poll();
         let result = match request {
+            ControlRequest::LaunchOwned { .. } | ControlRequest::Window { .. } =>
+                Err(ControlError::Invalid("owned window operations require the original early production frontend".into())),
             ControlRequest::Start { spec } => self.start(peer_uid, &spec),
             ControlRequest::Stop => self.stop(peer_uid),
             ControlRequest::Restart { spec } => self.restart(peer_uid, &spec),

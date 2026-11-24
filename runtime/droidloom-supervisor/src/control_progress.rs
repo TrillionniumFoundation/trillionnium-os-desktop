@@ -125,12 +125,15 @@ pub(super) fn request_on(
         .write_all(remaining)
         .and_then(|()| stream.shutdown(std::net::Shutdown::Write))
         .map_err(|e| io_error("send lifecycle request", e))?;
-    read_response(
+    let response_limit=if matches!(request,ControlRequest::Window{
+        action:super::window::Action::Capture,..}) {52*1024*1024} else {MAX_RESPONSE_BYTES};
+    read_response_with_limit(
         &mut stream,
         started,
         response_timeout(request),
         UPDATE_INTERVAL,
         progress,
+        response_limit,
     )
 }
 
@@ -192,12 +195,27 @@ pub(super) fn connect(path: &Path) -> io::Result<UnixStream> {
     Ok(stream)
 }
 
+#[cfg(test)]
 fn read_response(
+    stream:&mut UnixStream,started:Instant,timeout:Duration,update_interval:Duration,
+    progress:Option<&mut dyn FnMut(&str)>,
+)->Result<ControlResponse,ControlError>{
+    read_response_with_limit(stream,started,timeout,update_interval,progress,MAX_RESPONSE_BYTES)
+}
+fn response_deadline_error(timeout: Duration, last_progress: &str) -> ControlError {
+    ControlError::Invalid(format!(
+        "Droidloom did not finish within {} seconds. Android or the lifecycle service may be stuck.\nLast progress: {last_progress}.\n{LOG_HINT}\nThe operation may still finish in the background; check its result before retrying.",
+        timeout.as_secs()
+    ))
+}
+
+fn read_response_with_limit(
     stream: &mut UnixStream,
     started: Instant,
     timeout: Duration,
     update_interval: Duration,
     mut progress: Option<&mut dyn FnMut(&str)>,
+    response_limit: u64,
 ) -> Result<ControlResponse, ControlError> {
     let mut last_progress =
         "Waiting for Droidloom to respond; another request may be in progress".to_owned();
@@ -211,14 +229,12 @@ fn read_response(
     let deadline = started + timeout;
     let mut pending = Vec::new();
     let mut total_bytes = 0_u64;
+    let mut scanned = 0;
     let mut buffer = [0; 8192];
     loop {
         let now = Instant::now();
         if now >= deadline {
-            return Err(ControlError::Invalid(format!(
-                "Droidloom did not finish within {} seconds. Android or the lifecycle service may be stuck.\nLast progress: {last_progress}.\n{LOG_HINT}\nThe operation may still finish in the background; check its result before retrying.",
-                timeout.as_secs()
-            )));
+            return Err(response_deadline_error(timeout, &last_progress));
         }
         if now >= next_update {
             if let Some(report) = progress.as_mut() {
@@ -250,17 +266,22 @@ fn read_response(
             Err(e) => return Err(io_error("read lifecycle response", e)),
         };
         total_bytes += count as u64;
-        if total_bytes > MAX_RESPONSE_BYTES {
+        if total_bytes > response_limit {
             return Err(ControlError::Invalid(
                 "lifecycle response is too large".into(),
             ));
         }
         pending.extend_from_slice(&buffer[..count]);
-        while let Some(end) = pending
+        while let Some(end) = pending[scanned..]
             .iter()
             .position(|byte| *byte == b'\n')
+            .map(|offset|scanned+offset)
             .or_else(|| (count == 0 && !pending.is_empty()).then_some(pending.len()))
         {
+            scanned=0;
+            if Instant::now() >= deadline {
+                return Err(response_deadline_error(timeout, &last_progress));
+            }
             let frame: Vec<_> = pending.drain(..end).collect();
             if pending.first() == Some(&b'\n') {
                 pending.remove(0);
@@ -276,9 +297,13 @@ fn read_response(
                 if !response.ok && response.message.contains("missing field `command`") {
                     return Err(ControlError::Invalid("The running Droidloom daemon does not support boot progress. Update the runtime package and run `droidloomctl restart` to load the matching daemon.".into()));
                 }
+                if Instant::now() >= deadline {
+                    return Err(response_deadline_error(timeout, &last_progress));
+                }
                 return Ok(response);
             }
         }
+        scanned=pending.len();
         if count == 0 {
             return Err(ControlError::Invalid(format!(
                 "Droidloom disconnected before reporting a result.\n{LOG_HINT}"
@@ -326,6 +351,35 @@ mod tests {
         writer.join().unwrap().unwrap();
         assert_eq!(observed.unwrap().message, expected);
     }
+    #[test]
+    fn only_capture_accepts_a_response_larger_than_the_normal_limit() {
+        for capture in [false, true] {
+            let (client, mut server) = UnixStream::pair().unwrap();
+            let expected = "x".repeat(5 * 1024 * 1024);
+            let mut raw = serde_json::to_vec(&serde_json::json!({
+                "ok": true, "state": "running", "message": &expected,
+            })).unwrap();
+            raw.push(b'\n');
+            let worker = std::thread::spawn(move || {
+                let mut request = Vec::new();
+                server.read_to_end(&mut request).unwrap();
+                let _: ControlRequest = serde_json::from_slice(&request).unwrap();
+                server.write_all(&raw)
+            });
+            let action = if capture { super::super::window::Action::Capture }
+                else { super::super::window::Action::Observe };
+            let request = ControlRequest::Window { lease: [1; 16], action };
+            let observed = request_on(client, Instant::now(), &request, None, None);
+            let written = worker.join().unwrap();
+            if capture {
+                written.unwrap();
+                assert_eq!(observed.unwrap().message, expected);
+            } else {
+                assert!(observed.unwrap_err().to_string().contains("response is too large"));
+            }
+        }
+    }
+
     use std::os::unix::net::UnixListener;
     use std::thread;
 

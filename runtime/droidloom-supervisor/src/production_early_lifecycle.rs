@@ -462,6 +462,7 @@ pub fn complete_early_resources() -> io::Result<()> {
                 .poll(
                     board.host_pid() as u32,
                     board.selection().spec().host_uid,
+                    &|command, session, until| frontend.borrow_mut().window(command, session, until),
                     || {
                         super::EarlyApplicationAuthority::acquire(
                             &base, &group, &owner, root, query, system, &progress,

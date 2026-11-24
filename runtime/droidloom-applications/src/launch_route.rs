@@ -305,6 +305,8 @@ mod tests {
             application_icon: None,
             diagnostics: None,
             inspection: Some(expected.clone()),
+            window: None,
+            window_image: None,
             image_custody: None,
         }
     }

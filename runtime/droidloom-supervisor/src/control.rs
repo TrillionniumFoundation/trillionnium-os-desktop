@@ -133,11 +133,30 @@ const ANDROID_PER_USER_UID_RANGE: u32 = 100_000;
 const APPLICATION_CATALOG_CLASS: &str = "com.android.droidloom.catalog.ApplicationCatalog";
 const APPLICATION_CATALOG_ENV: &str = "CLASSPATH=/system_ext/framework/droidloom-input-bridge.jar";
 
+#[path = "production_window_protocol.rs"]
+pub mod window;
+
 /// One control request. The externally tagged encoding is stable and easy to
 /// inspect in traces without a bespoke binary parser.
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "command", rename_all = "snake_case", deny_unknown_fields)]
 pub enum ControlRequest {
+    /// Launch and bind a fresh native window under the original presenter.
+    LaunchOwned {
+        /// Current immutable PM/APK/epoch observation, rechecked by the broker.
+        expected: application_probe::ApplicationInspection,
+        /// Exact enabled launcher component.
+        component: String,
+        /// Current admitted cell specification.
+        spec: PathBuf,
+    },
+    /// Operate only on the broker-held original window lease.
+    Window {
+        /// Opaque random token issued by LaunchOwned, not a task identifier.
+        lease: [u8; 16],
+        /// Finite application-local observation/input/normal-close operation.
+        action: window::Action,
+    },
     /// Install a standalone APK supplied as a file descriptor on this connection.
     Install {
         /// Android user identifier.
@@ -271,6 +290,12 @@ pub struct AndroidApplication {
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct ControlResponse {
+    /// Original presenter window observation; never whole-app acceptance.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub window: Option<window::Observation>,
+    /// Actual original composed-frame PNG, only for an explicit window capture.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub window_image: Option<window::Image>,
     /// Whether the requested operation completed successfully.
     pub ok: bool,
     /// Cell state after the operation.
@@ -382,6 +407,8 @@ impl Daemon {
             return self.failure(error.to_string());
         }
         let result = match request {
+            ControlRequest::LaunchOwned { .. } | ControlRequest::Window { .. } =>
+                Err(ControlError::Invalid("owned window operations require the original early production frontend".into())),
             ControlRequest::Install { user } => self.install(peer_uid, user, file),
             ControlRequest::InstallMultiple { user, lengths } => {
                 self.install_multiple(peer_uid, user, &lengths, file)
@@ -470,6 +497,8 @@ impl Daemon {
             application_icon: None,
             diagnostics: None,
             inspection: None,
+            window: None,
+            window_image: None,
             image_custody: None,
         })
     }
@@ -574,6 +603,8 @@ impl Daemon {
             application_icon: None,
             diagnostics: None,
             inspection: None,
+            window: None,
+            window_image: None,
             image_custody: None,
         })
     }
@@ -643,6 +674,8 @@ impl Daemon {
             application_icon: None,
             diagnostics: None,
             inspection: None,
+            window: None,
+            window_image: None,
             image_custody: None,
         })
     }
@@ -743,6 +776,8 @@ impl Daemon {
             application_icon: Some(icon),
             diagnostics: None,
             inspection: None,
+            window: None,
+            window_image: None,
             image_custody: None,
         })
     }
@@ -773,6 +808,8 @@ impl Daemon {
             application_icon: None,
             diagnostics: None,
             inspection: None,
+            window: None,
+            window_image: None,
             image_custody: None,
         })
     }
@@ -863,6 +900,8 @@ impl Daemon {
             application_icon: None,
             diagnostics: None,
             inspection: None,
+            window: None,
+            window_image: None,
             image_custody: None,
         }
     }
@@ -1900,6 +1939,8 @@ mod tests {
                         application_icon: None,
                         diagnostics: None,
                         inspection: None,
+                        window: None,
+                        window_image: None,
                         image_custody: None,
                     },
                 )
@@ -1964,6 +2005,8 @@ mod tests {
                         application_icon: None,
                         diagnostics: None,
                         inspection: None,
+                        window: None,
+                        window_image: None,
                         image_custody: None,
                     },
                 )

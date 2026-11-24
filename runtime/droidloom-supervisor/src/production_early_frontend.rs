@@ -3,6 +3,7 @@
 //! ReadyTree (Composer cannot publish Binder until that handshake completes).
 use super::{EarlyBoardResources, invalid};
 use crate::production_execution::RuntimeMacOwner;
+use crate::control::window;
 #[path = "production_frontend_observation.rs"]
 mod observation;
 pub(crate) use observation::{QueryObservation, observe_query};
@@ -460,6 +461,8 @@ struct Presenter {
     nonce: Option<[u8; 16]>,
     grant_sent: bool,
     bound: bool,
+    window_pending: bool,
+    window_serial: u64,
     deadline: Instant,
 }
 struct Lane {
@@ -593,7 +596,11 @@ impl Lane {
                 )?;
             }
             if p.bound {
-                wire::control_live(&p.connection.socket)?;
+                if self.role == Role::Composer && p.window_pending {
+                    wire::endpoint_live(&p.connection.socket)?;
+                } else {
+                    wire::control_live(&p.connection.socket)?;
+                }
             }
         }
         Ok(())
@@ -638,6 +645,8 @@ impl Lane {
                     nonce: None,
                     grant_sent: false,
                     bound: false,
+                    window_pending: false,
+                    window_serial: 0,
                     deadline: Instant::now() + Duration::from_secs(5),
                 })
             })();
@@ -909,6 +918,64 @@ impl<'a> Frontend<'a> {
         }
         self.programs.observer.borrow().clean()?;
         self.board.revalidate()
+    }
+    pub(super) fn window(
+        &mut self,
+        command: &window::Command,
+        expected: Option<&window::Session>,
+        until: Instant,
+    ) -> io::Result<(window::Reply, window::Session)> {
+        check(Instant::now() < until, "original window deadline expired")?;
+        self.progress()?;
+        let p = self.lanes[0].presenter.as_mut().filter(|p| p.bound)
+            .ok_or_else(|| invalid("original production presenter is not registered"))?;
+        check(!p.window_pending, "another original window operation is pending")?;
+        let nonce = p.nonce.ok_or_else(|| invalid("original presenter nonce absent"))?;
+        if let Some(expected) = expected {
+            expected.revalidate(&p.connection.peer.peer.pidfd, nonce)?;
+        }
+        let session = window::Session::acquire(&p.connection.peer.peer.pidfd, nonce)?;
+        let serial = p.window_serial.checked_add(1).ok_or_else(|| invalid("window request serial exhausted"))?;
+        p.window_serial = serial;
+        p.window_pending = true;
+        let request = window::Request { nonce, serial, command: command.clone() };
+        let result = (|| {
+            let mut sent = false;
+            loop {
+                check(Instant::now() < until, "original window deadline expired")?;
+                self.progress()?;
+                let p = self.lanes[0].presenter.as_ref().filter(|p| p.bound)
+                    .ok_or_else(|| invalid("original presenter registration was revoked"))?;
+                session.revalidate(&p.connection.peer.peer.pidfd,
+                    p.nonce.ok_or_else(|| invalid("original presenter nonce disappeared"))?)?;
+                if !sent {
+                    match window::send_request(&p.connection.socket, &request) {
+                        Ok(()) => sent = true,
+                        Err(e) if matches!(e.kind(), io::ErrorKind::WouldBlock | io::ErrorKind::Interrupted) => {},
+                        Err(e) => return Err(e),
+                    }
+                }
+                if sent {
+                    if let Some(reply) = window::receive_reply(&p.connection.socket)? {
+                        check(Instant::now() < until, "original window reply arrived after its deadline")?;
+                        check(reply.nonce == nonce && reply.serial == serial
+                            && reply.observation.as_ref().is_none_or(|o| o.lease == command.lease()),
+                            "window reply does not belong to the original request")?;
+                        session.revalidate(&p.connection.peer.peer.pidfd, nonce)?;
+                        self.projection()?;
+                        check(Instant::now() < until, "original window validation exceeded deadline")?;
+                        return Ok(reply);
+                    }
+                }
+                std::thread::sleep(Duration::from_millis(5));
+            }
+        })();
+        if let Some(p) = self.lanes[0].presenter.as_mut() { p.window_pending = false; }
+        if result.is_err() {
+            // A late/uncertain input reply may never be rebound to a replacement.
+            for lane in &mut self.lanes { lane.revoke(); }
+        }
+        result.map(|reply| (reply, session))
     }
     pub(super) fn retire(&mut self) -> io::Result<()> {
         if self.retired {

@@ -285,6 +285,12 @@ struct App {
     touch_contacts: BTreeMap<i32, Contact>,
     next_buffer_id: u64,
     next_input_serial: u64,
+    owned_windows: owned_window::Tracker,
+    window_reply: Option<(production::window::Reply, std::time::Instant)>,
+    owned_native: Option<owned_window_app::NativeWindow>,
+    window_frames: BTreeMap<u64,owned_window_app::SavedFrame>,
+    window_capture_errors: BTreeMap<u64,String>,
+    window_snapshot: Option<owned_window_app::Snapshot>,
     socket_path: PathBuf,
     fatal: Option<String>,
 }
@@ -824,6 +830,7 @@ impl App {
         acquire_fence: &OwnedFd,
     ) -> Result<(), PresenterError> {
         let object = frame.object;
+        let capture_owned = self.owned_windows.capture_candidate(object.0);
         let mut frame_trace = presentation_audit::FrameTrace::new(
             object.0, frame.frame.0, frame.buffer.0, acquire_fence.as_fd());
         if !self
@@ -919,6 +926,19 @@ impl App {
                 "presented buffer is unavailable",
             ));
         }
+        if capture_owned {
+            // Capture borrows this exact unreleased target and original acquire
+            // fence. Only copied PNG bytes survive; no later plane reopening.
+            if self.window_frames.len()<4 || self.window_frames.contains_key(&object.0) {
+                match owned_window_capture::capture(target,frame,acquire_fence.as_fd()) {
+                    Ok(frame)=>{self.window_frames.insert(object.0,owned_window_app::SavedFrame{
+                        frame:std::sync::Arc::new(frame),input:self.next_input_serial});
+                        self.window_capture_errors.remove(&object.0);}
+                    Err(e)=>{self.window_frames.remove(&object.0);
+                        self.window_capture_errors.insert(object.0,e.to_string());}
+                }
+            }
+        }
         let sync = target.sync.as_mut()
             .ok_or(PresenterError::Configuration("buffer timeline is absent"))?;
         let acquire_point =
@@ -991,6 +1011,7 @@ impl App {
                 submitted_nanos,
             });
         }
+        self.owned_windows.presented(object.0)?;
         Ok(())
     }
 
@@ -1150,7 +1171,18 @@ impl App {
         if let Some(window) = task.window.as_ref() {
             window.xdg_toplevel().destroy();
         }
+        let retire_owned = self.owned_native.as_ref().is_some_and(|held| {
+            task.window.as_ref().is_some_and(|window| {
+                held.object == object && held.surface == surface
+                    && held.toplevel == *window.xdg_toplevel()
+            })
+        });
         task.window.take();
+        if retire_owned {
+            if let Some(held) = self.owned_native.as_mut() {
+                held.retired = true;
+            }
+        }
         task.unmap_requested = false;
 
         if self.focused == Some(object) {
@@ -1224,13 +1256,20 @@ impl App {
                 if let Some(window) = self.tasks.get_mut(&object) {
                     window.android_task = Some(task.0);
                 }
+                self.owned_windows.bound(object.0, task.0)?;
             }
             EndpointAction::CreateTask {
                 object,
                 display: _,
                 package,
-            } => self.create_task(qh, object, &package)?,
-            EndpointAction::DestroyTask { object } => self.destroy_task(object)?,
+            } => {
+                self.create_task(qh, object, &package)?;
+                self.owned_windows.created(object.0, &package)?;
+            }
+            EndpointAction::DestroyTask { object } => {
+                self.destroy_task(object)?;
+                self.owned_windows.destroyed(object.0)?;
+            }
             EndpointAction::RegisterBuffer {
                 object,
                 buffer,
@@ -1251,7 +1290,9 @@ impl App {
             EndpointAction::Present {
                 frame,
                 acquire_fence,
-            } => self.present(qh, &frame, &acquire_fence)?,
+            } => {
+                self.present(qh, &frame, &acquire_fence)?;
+            }
         }
         Ok(())
     }
@@ -2240,6 +2281,9 @@ fn main() {
 }
 
 mod production;
+mod owned_window;
+mod owned_window_app;
+mod owned_window_capture;
 mod bridge_transport;
 
 fn run() -> Result<(), PresenterError> {
@@ -2357,6 +2401,12 @@ fn run() -> Result<(), PresenterError> {
         touch_contacts: BTreeMap::new(),
         next_buffer_id: 0,
         next_input_serial: 0,
+        owned_windows: owned_window::Tracker::default(),
+        window_reply: None,
+        owned_native: None,
+        window_frames: BTreeMap::new(),
+        window_capture_errors: BTreeMap::new(),
+        window_snapshot: None,
         socket_path,
         fatal: None,
     };
@@ -2388,6 +2438,7 @@ fn run_presenter_loop(
         app.accept_endpoint()?;
         app.drain_endpoint(&qh)?;
         app.drain_layers(&qh, &mut layer_tasks)?;
+        app.pump_owned_window()?;
         app.pump_text_input();
         app.clipboard.pump(&qh);
         if !app.clipboard.blocked() {
@@ -2397,6 +2448,7 @@ fn run_presenter_loop(
         }
         app.unmap_requested_tasks()?;
         app.release_ready_frames()?;
+        if app.window_reply.is_some() { std::thread::sleep(Duration::from_millis(1)); continue; }
         poll_sources(conn, &mut event_queue, &mut app, &mut poll_descriptors)?;
     }
 }

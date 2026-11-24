@@ -234,6 +234,75 @@ owned launch does not establish application production readiness. A failure afte
 a launch preserves any observed binding for reconciliation and must not trigger
 an automatic replay.
 
+## Original-window observation and interaction
+
+The kernel-first production broker also exposes a separate, finite qualification
+interface over its existing presenter channel. Start from an actual
+`droidloom-applications --inspect-package PACKAGE --user 0` observation, review
+its PackageManager identity against the selected APK and source/signature pins,
+and save only the response's `inspection` object as a pinned
+`ApplicationInspection` JSON file. The saved file cannot supply authority: the
+broker checks the current installed identity, Android UID/user, runtime epoch,
+enabled launcher catalog and admitted cell selection again.
+
+```sh
+droidloomctl --json launch-owned PACKAGE/ACTIVITY \
+  --expected /absolute/reviewed/inspection.json --expect-sha256 SHA256 \
+  --spec /etc/droidloom/cell.json
+droidloomctl --json window LEASE_HEX observe
+droidloomctl --json window LEASE_HEX capture
+droidloomctl --json window LEASE_HEX tap X Y
+droidloomctl --json window LEASE_HEX back
+droidloomctl --json window LEASE_HEX stop-capture
+droidloomctl --json window LEASE_HEX close
+```
+
+`LEASE_HEX` encodes the returned `window.lease` byte array as exactly 32
+lowercase hexadecimal digits. It selects an already retained original lease;
+it is not a task identifier or a transferable process capability. The broker
+holds the original presenter's live PIDFD and registration nonce before issuing
+the normal typed launch. Binding requires a new real `CreateTask` event after
+arming and the matching real `BindTask` event for that package. The presenter
+also holds the original Wayland surface and toplevel objects and rejects
+replacement objects even if they reuse a numeric task/object value.
+
+`capture` copies pixels from an actual composed submitted frame after waiting
+for its original acquire fence and using normal DMA-BUF CPU synchronization.
+The response's `window_image` contains the complete bounded PNG as base64, its
+SHA-256 and the original frame metadata. Bounded parts must agree on the same
+snapshot, object, task birth and live presenter session; mixed or incomplete
+parts fail. Inspect the decoded image to determine what the application
+actually displayed. Frame counts and `host_last_input_serial` describe host
+submission/transmission; they do not acknowledge Android input processing or
+prove a business result. Active direct-layer streams are explicitly unsupported
+by this capture path and cannot be represented by an old composed frame.
+
+Tap and the finite text/navigation key operations require the original focused,
+mapped window, valid bounds, and no conflicting physical input. They use the
+existing input transport. They neither authorize transactions or communications
+nor establish that an application completed an action. Stop capture before
+ordinary stability or performance measurements: the explicit qualification
+lease initially captures composed frames and therefore adds fence waits and PNG
+encoding. `stop-capture` releases copied image state and disables further
+acquisition while retaining the same lease for observation, input and normal
+close. Ordinary production launches do not enable this qualification capture.
+
+Close uses the normal task-close path and waits for both the real original
+`DestroyTask` event and removal of the original native window. Closing a control
+socket or merely requesting a close is not completion. A reopen requires a
+separate successful `launch-owned` with fresh current inspection after the prior
+original task was destroyed. If a launch or bind fails or times out, the broker
+keeps its armed original lease: it does not replay the launch, clear ownership
+or infer destruction from elapsed time. Reconcile the real task/owner state;
+when the task cannot be reconciled, retire and restart through the normal
+original-owner lifecycle and obtain a new inspection and runtime epoch.
+
+This interface adds execution and observation primitives. It does not change
+the schema-3 launch-only report, grant any common or business gate, or accept
+an application. All six common gates and the complete application's business
+profile still require actual runtime evidence, including data continuity and
+authorized account/dependency coverage.
+
 ## Build and installation ownership
 
 The Rust package builder produces `droidloom-runtime` and `droidloom-image`.

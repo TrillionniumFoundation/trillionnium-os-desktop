@@ -108,6 +108,7 @@ pub(super) struct Stream {
     configuration: wire::ConfigPublisher,
 }
 impl Stream {
+    pub(super) fn active(&self)->bool { self.active }
     pub fn busy(&self) -> bool {
         !self.reads.is_empty()
     }

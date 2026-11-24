@@ -4,7 +4,7 @@
 
 use std::{
     env, fs,
-    io::Write,
+    io::{Read, Write},
     os::unix::fs::{DirBuilderExt, MetadataExt, OpenOptionsExt, PermissionsExt},
     path::PathBuf,
     thread,
@@ -40,6 +40,27 @@ struct Cli {
 
 #[derive(Debug, Subcommand)]
 enum Command {
+    /// Launch a fresh original window from independently pinned current PM inspection.
+    LaunchOwned {
+        /// Exact enabled PACKAGE/ACTIVITY launcher component.
+        component: String,
+        /// Current ApplicationInspection JSON, containing actual UID/APKs/epoch.
+        #[arg(long)]
+        expected: PathBuf,
+        /// Independent SHA-256 of the complete inspection JSON.
+        #[arg(long)]
+        expect_sha256: String,
+        /// Current admitted cell specification.
+        #[arg(long, default_value = DEFAULT_CELL_SPEC)]
+        spec: PathBuf,
+    },
+    /// Observe/input/close one broker-held original window; never accepts numeric task IDs.
+    Window {
+        /// Opaque 32-hex lease returned by launch-owned.
+        lease: String,
+        #[command(subcommand)]
+        operation: WindowOperation,
+    },
     /// Install a standalone APK, updating an existing app while retaining its data.
     Install {
         /// Host path to a standalone APK (split APK bundles are unsupported).
@@ -172,6 +193,54 @@ enum Command {
     },
 }
 
+#[derive(Debug, Subcommand)]
+enum WindowOperation {
+    /// Observe the actual original window; does not qualify rendered content.
+    Observe,
+    /// Capture actual pixels of the original composed application window.
+    Capture,
+    /// Stop pixel acquisition before ordinary stability/performance measurement.
+    StopCapture,
+    /// Send one bounded contact to the original focused mapped window.
+    Tap { x: u32, y: u32 },
+    /// Send application-local Android Back.
+    Back,
+    /// Send a permitted Linux text/navigation key press and release.
+    Key { keycode: u32 },
+    /// Request normal task removal and wait for DestroyTask plus native unmap.
+    Close,
+}
+fn window_token(value:&str)->Result<[u8;16],Box<dyn std::error::Error>>{
+    if value.len()!=32 || !value.bytes().all(|b|b.is_ascii_digit() || (b'a'..=b'f').contains(&b)){
+        return Err("window lease must be exactly 32 lowercase hexadecimal digits".into());
+    }
+    let mut token=[0u8;16];
+    for (i,v) in token.iter_mut().enumerate(){*v=u8::from_str_radix(&value[i*2..i*2+2],16)?;}
+    if token==[0;16]{return Err("empty window lease".into());}
+    Ok(token)
+}
+fn pinned_inspection(path:&std::path::Path,pin:&str)
+    ->Result<droidloom_supervisor::control::application_probe::ApplicationInspection,Box<dyn std::error::Error>>{
+    use sha2::Digest;
+    if pin.len()!=64 || !pin.bytes().all(|b|b.is_ascii_digit() || (b'a'..=b'f').contains(&b)){
+        return Err("inspection pin must be a lowercase SHA-256".into());
+    }
+    let mut file=fs::OpenOptions::new().read(true)
+        .custom_flags(libc::O_CLOEXEC|libc::O_NOFOLLOW|libc::O_NONBLOCK).open(path)?;
+    let before=file.metadata()?;
+    if !before.is_file() || before.nlink()!=1 || before.len()==0 || before.len()>1024*1024 {
+        return Err("inspection must be one bounded ordinary original file".into());
+    }
+    let mut bytes=Vec::new();(&mut file).take(1024*1024+1).read_to_end(&mut bytes)?;
+    let after=file.metadata()?;
+    let identity=|m:&fs::Metadata|(m.dev(),m.ino(),m.mode(),m.uid(),m.gid(),m.nlink(),m.len(),
+        m.mtime(),m.mtime_nsec(),m.ctime(),m.ctime_nsec());
+    if identity(&before)!=identity(&after) || bytes.len() as u64!=before.len()
+        || format!("{:x}",sha2::Sha256::digest(&bytes))!=pin {
+        return Err("inspection bytes or held file identity changed".into());
+    }
+    Ok(serde_json::from_slice(&bytes)?)
+}
 #[derive(Clone, Copy, Debug, Eq, PartialEq, ValueEnum)]
 enum WindowMode {
     /// Fill the standard XDG bounds or logical output extent.
@@ -303,6 +372,20 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         )?
     } else {
         let control_request = match cli.command {
+            Command::LaunchOwned { component, expected, expect_sha256, spec } =>
+                ControlRequest::LaunchOwned { expected:pinned_inspection(&expected,&expect_sha256)?,component,spec },
+            Command::Window { lease,operation } => {
+                use droidloom_supervisor::control::window::Action;
+                ControlRequest::Window{lease:window_token(&lease)?,action:match operation {
+                    WindowOperation::Observe=>Action::Observe,
+                    WindowOperation::Capture=>Action::Capture,
+                    WindowOperation::StopCapture=>Action::StopCapture,
+                    WindowOperation::Tap{x,y}=>Action::Tap{x,y},
+                    WindowOperation::Back=>Action::Back,
+                    WindowOperation::Key{keycode}=>Action::Key{keycode},
+                    WindowOperation::Close=>Action::Close,
+                }}
+            }
             Command::Install { .. } | Command::InstallMultiple { .. } => {
                 unreachable!("handled with its APK file descriptor")
             }

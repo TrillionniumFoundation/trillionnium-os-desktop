@@ -3,6 +3,9 @@
 #[path = "../../../runtime/droidloom-supervisor/src/production_frontend_protocol.rs"]
 #[allow(dead_code)]
 pub(crate) mod wire;
+#[path = "../../../runtime/droidloom-supervisor/src/production_window_protocol.rs"]
+#[allow(dead_code)]
+pub(crate) mod window;
 use std::fs::{self, File};
 use std::io;
 use std::os::fd::{AsRawFd, OwnedFd, RawFd};
@@ -16,6 +19,8 @@ use wire::{Node, Role, check};
 
 pub(crate) struct Registration {
     role: Role,
+    nonce: [u8; 16],
+    window_serial: std::sync::atomic::AtomicU64,
     socket_seal: SocketSeal,
     channel: OwnedFd,
     owner: wire::Peer,
@@ -203,6 +208,8 @@ impl Registration {
         let composer_socket = grant.fds.pop().unwrap();
         let value = Self {
             role,
+            nonce,
+            window_serial: std::sync::atomic::AtomicU64::new(0),
             socket_seal: SocketSeal::of(&socket_node)?,
             parent_node: Node::of(&parent)?,
             socket_identity: Node::of(&socket_node)?,
@@ -280,12 +287,34 @@ impl Registration {
     pub(crate) fn check(&self) -> io::Result<()> {
         let result = self
             .validate_resources()
-            .and_then(|()| wire::control_live(&self.channel));
+            .and_then(|()| if self.role == Role::Composer {
+                wire::endpoint_live(&self.channel)
+            } else { wire::control_live(&self.channel) });
         if result.is_err() {
             wire::shutdown(&self.composer_socket);
             wire::shutdown(&self.channel);
         }
         result
+    }
+    pub(crate) fn window_request(&self) -> io::Result<Option<window::Request>> {
+        self.check()?;
+        check(self.role == Role::Composer, "window command used a companion channel")?;
+        let Some(request) = window::receive_request(&self.channel)? else { return Ok(None); };
+        let previous = self.window_serial.load(Ordering::Acquire);
+        check(request.nonce == self.nonce && previous.checked_add(1) == Some(request.serial),
+            "stale or out-of-order original window request")?;
+        self.window_serial.compare_exchange(previous, request.serial, Ordering::AcqRel, Ordering::Acquire)
+            .map_err(|_| window::invalid("concurrent original window request"))?;
+        self.validate_resources()?;
+        Ok(Some(request))
+    }
+    pub(crate) fn window_reply(&self, reply: &window::Reply) -> io::Result<()> {
+        self.check()?;
+        check(self.role == Role::Composer && reply.nonce == self.nonce
+            && reply.serial == self.window_serial.load(Ordering::Acquire),
+            "window reply does not match the original request")?;
+        window::send_reply(&self.channel, reply)?;
+        self.validate_resources()
     }
     pub(crate) fn revoke(&self) {
         wire::shutdown(&self.composer_socket);

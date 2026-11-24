@@ -1,9 +1,12 @@
 //! The fixed public application transport borrowed by the early resource owner.
 //! Every request is dispatched against that owner's live capabilities.
 use super::*;
+#[path = "production_early_window_control.rs"]
+mod window_control;
 
 pub(crate) struct EarlyApplicationControl {
     listener: OwnedListener,
+    window_lease: std::cell::RefCell<Option<window_control::Lease>>,
 }
 impl EarlyApplicationControl {
     pub(crate) fn bind(
@@ -24,12 +27,13 @@ impl EarlyApplicationControl {
         owner
             .objects()
             .map_err(|e| ControlError::Invalid(e.to_string()))?;
-        Ok(Self { listener })
+        Ok(Self { listener, window_lease: std::cell::RefCell::new(None) })
     }
     pub(crate) fn poll<'owner>(
         &self,
         host_pid: u32,
         host_uid: u32,
+        window: &window_control::WindowCall<'_>,
         acquire: impl FnOnce() -> std::result::Result<
             crate::production_selection::early_generation::EarlyApplicationAuthority<'owner>,
             crate::production_namespace::NamespaceError,
@@ -76,6 +80,8 @@ impl EarlyApplicationControl {
             application_icon: None,
             diagnostics: None,
             inspection: None,
+            window: None,
+            window_image: None,
             image_custody: None,
         };
         let mut authority = None;
@@ -113,6 +119,14 @@ impl EarlyApplicationControl {
                 .expect("acquired original application owner");
             let progress = Reporter::new(stream, streaming)?;
             match request {
+                ControlRequest::LaunchOwned { expected, component, spec } => {
+                    self.launch_owned(authority, peer, expected, component, spec, window,
+                        launch_deadline, &mut response, &mut acquisition_quarantined)?;
+                }
+                ControlRequest::Window { lease, action } => {
+                    self.window_action(authority, lease, action, window, launch_deadline,
+                        &mut response, &mut acquisition_quarantined)?;
+                }
                 ControlRequest::ListApplications { user } => {
                     validate_android_user(user)?;
                     progress.report("Reading the current Android launcher catalog...");

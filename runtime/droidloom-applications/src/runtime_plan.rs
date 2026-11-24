@@ -596,7 +596,7 @@ mod image_custody_consumer_tests {
         control::ControlResponse {
             ok: true, state: control::CellState::Running, message: "unit metadata model".into(),
             host_pid: Some(321), launch: None, applications: None, application_icon: None,
-            diagnostics: None, image_custody: None,
+            diagnostics: None, image_custody: None, window: None, window_image: None,
             inspection: Some(ApplicationInspection {
                 package: package.into(), user: 0, uid: 10064, version_code: 40030,
                 epoch: RuntimeEpoch {
