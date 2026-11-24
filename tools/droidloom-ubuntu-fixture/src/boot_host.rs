@@ -41,16 +41,21 @@ pub struct HostManifest {
 }
 const STATE: &str = "var/lib/droidloom-mac-calibration";
 const PUBLIC_APKS: &str = "var/lib/droidloom-public-apks";
+const NATIVE_RUNTIME_DROPIN: &str =
+    "etc/systemd/system/user-runtime-dir@.service.d/50-droidloom-native-session.conf";
 fn valid_path(path: &str) -> bool {
-    !path.is_empty()
-        && !path.starts_with('/')
-        && path.split('/').all(|p| {
-            !p.is_empty()
-                && p != "."
-                && p != ".."
-                && p.bytes()
-                    .all(|b| b.is_ascii_alphanumeric() || b"._-".contains(&b))
-        })
+    // Admit only the exact installed template path containing @. All other
+    // archive paths retain the original character and traversal restrictions.
+    path == NATIVE_RUNTIME_DROPIN
+        || (!path.is_empty()
+            && !path.starts_with('/')
+            && path.split('/').all(|p| {
+                !p.is_empty()
+                    && p != "."
+                    && p != ".."
+                    && p.bytes()
+                        .all(|b| b.is_ascii_alphanumeric() || b"._-".contains(&b))
+            }))
 }
 pub fn validate_manifest(m: &HostManifest) -> Result<()> {
     let git_id = |s: &str| {
@@ -71,7 +76,9 @@ pub fn validate_manifest(m: &HostManifest) -> Result<()> {
     for f in &m.files {
         ensure(
             valid_path(&f.path)
-                && (f.path.starts_with("usr/") || f.path.starts_with("etc/selinux/"))
+                && (f.path == NATIVE_RUNTIME_DROPIN
+                    || f.path.starts_with("usr/")
+                    || f.path.starts_with("etc/selinux/"))
                 && paths.insert(f.path.clone()),
             "host file outside normal export or duplicate",
         )?;
@@ -212,10 +219,11 @@ fn decode(input: &mut File, m: &HostManifest, root: &Path) -> Result<usize> {
         let h = header(&block)?;
         ensure(seen.insert(h.path.clone()), "duplicate archive path")?;
         let guest = format!("/{}", h.path);
-        if h.path == STATE {
+        if h.path == STATE || h.path == PUBLIC_APKS {
+            let mode = if h.path == STATE { 0o700 } else { 0o755 };
             ensure(
-                h.kind == b'5' && h.size == 0 && h.mode == 0o700,
-                "calibration directory entry differs",
+                h.kind == b'5' && h.size == 0 && h.mode == mode,
+                "fixed host directory entry differs",
             )?;
             let parent = Path::new(&guest)
                 .parent()
@@ -224,9 +232,10 @@ fn decode(input: &mut File, m: &HostManifest, root: &Path) -> Result<usize> {
             boot_files::ensure_dir(root, parent, 0o755)?;
             let tree = fs::Tree::open(&fs::absolute_string(root)?, 0)?;
             tree.mkdir(&guest)?;
+            rustix::fs::fchmod(&tree.dir(&guest)?, rustix::fs::Mode::from_raw_mode(mode))?;
             ensure(
                 tree.list(&guest)?.is_empty(),
-                "calibration directory was not freshly empty",
+                "fixed host directory was not freshly empty",
             )?;
             continue;
         }
@@ -255,8 +264,9 @@ fn decode(input: &mut File, m: &HostManifest, root: &Path) -> Result<usize> {
         boot_files::write_new(&boot_files::guest_path(root, &guest)?, &bytes, h.mode)?;
     }
     ensure(
-        seen.len() == m.files.len() + 1
+        seen.len() == m.files.len() + 2
             && seen.contains(STATE)
+            && seen.contains(PUBLIC_APKS)
             && m.files.iter().all(|f| seen.contains(&f.path)),
         "normal archive member set incomplete",
     )?;
@@ -333,14 +343,16 @@ pub fn install(
             "normal host installed file readback differs",
         )?;
     }
-    let state = installed.identity(&format!("/{STATE}"))?;
-    ensure(
-        state.uid == 0
-            && state.gid == 0
-            && state.mode & 0o7777 == 0o700
-            && installed.list(&format!("/{STATE}"))?.is_empty(),
-        "normal empty StateDirectory readback differs",
-    )?;
+    for (relative, mode) in [(STATE, 0o700), (PUBLIC_APKS, 0o755)] {
+        let directory = installed.identity(&format!("/{relative}"))?;
+        ensure(
+            directory.uid == 0
+                && directory.gid == 0
+                && directory.mode & 0o7777 == mode
+                && installed.list(&format!("/{relative}"))?.is_empty(),
+            "normal fixed empty directory readback differs",
+        )?;
+    }
     let policy = root.join("etc/selinux/droidloom/policy/policy.30");
     let early = root.join("usr/lib/droidloom/production/current/board-policy/joint.policy");
     ensure(
@@ -370,7 +382,7 @@ pub fn install(
             include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-default_contexts").as_slice(),
         ),
         (
-            "etc/systemd/system/user-runtime-dir@.service.d/50-droidloom-native-session.conf",
+            NATIVE_RUNTIME_DROPIN,
             include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-user-runtime-dir.conf").as_slice(),
         ),
     ] {
@@ -391,6 +403,7 @@ pub fn install(
         serde_json::json!({"normal_host_manifest":manifest_pin,"normal_host_archive":archive_pin,
         "source_commit":manifest.commit,"source_tree":manifest.tree,"entries":entries,
         "decompressed_tar":tar_pin,"full_file_readback":true,"empty_state_readback":true,
+        "empty_public_input_root_readback":true,
         "guest_qualified":false}),
     )
 }
