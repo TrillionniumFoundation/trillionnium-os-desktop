@@ -18,6 +18,20 @@ use std::{
     time::{Duration, Instant},
 };
 
+mod activation;
+mod activation_android;
+mod activation_boot;
+mod activation_commit;
+mod activation_files;
+mod activation_host;
+mod activation_identity;
+mod activation_labels;
+mod activation_mac;
+mod activation_native;
+mod activation_owner;
+mod activation_platform;
+mod activation_query;
+mod activation_userdata;
 mod production_retirement;
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
@@ -162,6 +176,18 @@ struct Cli {
 }
 #[derive(Subcommand)]
 enum Action {
+    /// Inspect the existing fixed userdata identities without changing services or files.
+    InspectFirstOriginal,
+    /// Prepare and preflight a normal first shared-kernel release in its private generation.
+    StageFirst {
+        #[arg(long)]
+        plan: PathBuf,
+    },
+    /// Install the verified staged first generation and arm a one-shot boot; does not reboot.
+    ActivateFirst {
+        #[arg(long)]
+        generation: String,
+    },
     /// Perform missing setup as the calling desktop user, explaining authentication.
     Prepare,
     #[command(hide = true)]
@@ -535,6 +561,10 @@ enum NativeUnit {
     Production,
     ManagerLabel,
     Legacy,
+    Factory,
+    Launcher,
+    Observer,
+    Calibration,
 }
 const NATIVE_UNITS: [NativeUnit; 3] = [
     NativeUnit::Production,
@@ -547,6 +577,10 @@ impl NativeUnit {
             Self::Production => "droidloom-production.service",
             Self::ManagerLabel => "droidloom-manager-label.service",
             Self::Legacy => "droidloomd.service",
+            Self::Factory => "droidloom-instance-factory.service",
+            Self::Launcher => "droidloom-instance-launcher.service",
+            Self::Observer => "droidloom-early-observer.service",
+            Self::Calibration => "droidloom-mac-calibration.service",
         }
     }
     fn c_name(self) -> &'static CStr {
@@ -554,6 +588,10 @@ impl NativeUnit {
             Self::Production => c"droidloom-production.service",
             Self::ManagerLabel => c"droidloom-manager-label.service",
             Self::Legacy => c"droidloomd.service",
+            Self::Factory => c"droidloom-instance-factory.service",
+            Self::Launcher => c"droidloom-instance-launcher.service",
+            Self::Observer => c"droidloom-early-observer.service",
+            Self::Calibration => c"droidloom-mac-calibration.service",
         }
     }
     fn group(self) -> String {
@@ -1085,22 +1123,115 @@ impl HeldCgroup {
     }
 }
 
+// Original actors and cgroups stay held across first-install publication.
+// A terminal property snapshot alone cannot construct this witness.
+struct NativeRetirement {
+    original: Vec<(NativeUnit, UnitState, HeldCgroup, Option<fs::File>)>,
+}
+fn pidfd_exited(file: &fs::File) -> Result<bool> {
+    let mut p = libc::pollfd {
+        fd: file.as_raw_fd(),
+        events: libc::POLLIN,
+        revents: 0,
+    };
+    let result = unsafe { libc::poll(&mut p, 1, 0) };
+    if result < 0 {
+        return Err(std::io::Error::last_os_error().into());
+    }
+    if p.revents & (libc::POLLERR | libc::POLLNVAL) != 0 {
+        return Err("original process descriptor became invalid".into());
+    }
+    Ok(result > 0 && p.revents & (libc::POLLIN | libc::POLLHUP) != 0)
+}
+fn original_actor(pid: u32) -> Result<Option<fs::File>> {
+    if pid == 0 {
+        return Ok(None);
+    }
+    let fd = unsafe { libc::syscall(libc::SYS_pidfd_open, pid, 0) };
+    if fd < 0 {
+        return Err(std::io::Error::last_os_error().into());
+    }
+    let file = unsafe { fs::File::from_raw_fd(fd as i32) };
+    if pidfd_exited(&file)? {
+        return Err("original native actor exited during capture".into());
+    }
+    Ok(Some(file))
+}
+impl NativeRetirement {
+    fn revalidate(&self, deadline: Instant) -> Result<()> {
+        for (unit, before, group, actor) in &self.original {
+            let after = inspect_unit(*unit, deadline)?;
+            terminal_unit(before, &after)?;
+            group.verify_retired(&after)?;
+            if let Some(actor) = actor {
+                if !pidfd_exited(actor)? {
+                    return Err("original native actor did not exit".into());
+                }
+            }
+        }
+        Ok(())
+    }
+    fn observation(&self) -> Value {
+        json!(self.original.iter().map(|(unit,state,_,actor)|
+            json!({"unit":unit.name(),"original_invocation_id":state.invocation,
+                "original_main_pid":state.main,"original_control_group":state.group,
+                "original_actor_pidfd_retained":actor.is_some()})).collect::<Vec<_>>())
+    }
+}
 fn stop_native_units(
     deadline: Instant,
     original_production: Option<&LivePackageRetirement<'_>>,
 ) -> Result<()> {
+    retain_native_retirement(deadline, original_production, false).map(|_| ())
+}
+fn retain_native_retirement(
+    deadline: Instant,
+    original_production: Option<&LivePackageRetirement<'_>>,
+    first_activation: bool,
+) -> Result<NativeRetirement> {
     if let Some(original) = original_production {
         original.revalidate()?;
     }
     let root = cgroup_root()?;
     let mut original = Vec::new();
-    for unit in NATIVE_UNITS {
+    let mut units = NATIVE_UNITS.to_vec();
+    if first_activation {
+        units.extend([
+            NativeUnit::Factory,
+            NativeUnit::Launcher,
+            NativeUnit::Observer,
+            NativeUnit::Calibration,
+        ]);
+    }
+    for unit in units {
         let state = inspect_unit(unit, deadline)?;
         stable_stop_state(&state)?;
         let group = HeldCgroup::capture(&root, unit, &state)?;
-        original.push((unit, state, group));
+        if first_activation
+            && matches!(
+                unit,
+                NativeUnit::Production
+                    | NativeUnit::Factory
+                    | NativeUnit::Launcher
+                    | NativeUnit::Observer
+                    | NativeUnit::Calibration
+            )
+            && !matches!(
+                (state.active.as_str(), state.sub.as_str()),
+                ("inactive", "dead") | ("failed", "failed")
+            )
+        {
+            return Err(
+                "first activation cannot stop an unidentified production resource owner".into(),
+            );
+        }
+        let actor = original_actor(state.main)?;
+        let current = inspect_unit(unit, deadline)?;
+        same_stop_generation(&state, &current)?;
+        group.revalidate_stop_target(&current)?;
+        original.push((unit, state, group, actor));
     }
-    for (unit, before, group) in &original {
+    for (unit, before, group, _) in &original {
         // Stopping another unit may let this original retire or acquire a
         // new InvocationID. Re-observe before each mutating native call.
         let current = inspect_unit(*unit, deadline)?;
@@ -1130,15 +1261,10 @@ fn stop_native_units(
             .into());
         }
     }
-    for (unit, before, group) in &original {
-        let after = inspect_unit(*unit, deadline)?;
-        terminal_unit(before, &after)?;
-        group.verify_retired(&after)?;
-        let final_state = inspect_unit(*unit, deadline)?;
-        terminal_unit(before, &final_state)?;
-        group.verify_retired(&final_state)?;
-    }
-    Ok(())
+    let proof = NativeRetirement { original };
+    proof.revalidate(deadline)?;
+    proof.revalidate(deadline)?;
+    Ok(proof)
 }
 fn system_manager_present() -> Result<bool> {
     let mut directory = host_root()?;
@@ -1258,6 +1384,27 @@ fn after_install() -> Result<()> {
 }
 fn execute() -> Result<()> {
     match Cli::parse().action {
+        Action::InspectFirstOriginal => {
+            println!(
+                "{}",
+                serde_json::to_string_pretty(&activation_identity::inspect_original()?)?
+            );
+            Ok(())
+        }
+        Action::StageFirst { plan } => {
+            println!(
+                "{}",
+                serde_json::to_string_pretty(&activation::stage(&plan)?)?
+            );
+            Ok(())
+        }
+        Action::ActivateFirst { generation } => {
+            println!(
+                "{}",
+                serde_json::to_string_pretty(&activation::activate(&generation)?)?
+            );
+            Ok(())
+        }
         Action::Prepare => prepare(),
         Action::Setup {
             uid,

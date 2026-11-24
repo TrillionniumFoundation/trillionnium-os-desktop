@@ -367,6 +367,189 @@ impl PackageConfigurationLock {
     }
 }
 
+const FIRST_SETUP_CONTEXT: &[u8] = b"u:object_r:p4_linux_mac_setup_lock_t:s0\0";
+
+#[derive(serde::Deserialize)]
+#[serde(deny_unknown_fields)]
+struct FirstActivationFenceBody {
+    schema: String,
+    plan_sha256: String,
+    operation: String,
+    production_admission: String,
+}
+fn first_activation_body(body: &[u8]) -> io::Result<()> {
+    let row: FirstActivationFenceBody = serde_json::from_slice(body)
+        .map_err(|_| rejected("invalid first activation fence body"))?;
+    if row.schema != "droidloom-first-activation-maintenance-v1"
+        || row.operation != "first_shared_kernel_activation"
+        || row.production_admission != "denied_until_original_transaction_commits"
+        || row.plan_sha256.len() != 64
+        || !row
+            .plan_sha256
+            .bytes()
+            .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
+    {
+        return Err(rejected(
+            "fence is not the fixed first activation transaction",
+        ));
+    }
+    Ok(())
+}
+fn initial_setup_label(value: Option<&[u8]>) -> io::Result<bool> {
+    match value {
+        None => Ok(false),
+        Some(FIRST_SETUP_CONTEXT) => Ok(true),
+        Some(_) => Err(rejected(
+            "original setup lock already has a different SELinux context",
+        )),
+    }
+}
+fn setup_context(file: &File) -> io::Result<Option<Vec<u8>>> {
+    let mut raw = [0u8; 256];
+    let count = unsafe {
+        libc::fgetxattr(
+            file.as_raw_fd(),
+            c"security.selinux".as_ptr(),
+            raw.as_mut_ptr().cast(),
+            raw.len(),
+        )
+    };
+    if count < 0 {
+        let error = io::Error::last_os_error();
+        return if error.raw_os_error() == Some(libc::ENODATA) {
+            Ok(None)
+        } else {
+            Err(error)
+        };
+    }
+    Ok(Some(raw[..count as usize].to_vec()))
+}
+impl DirectorySetupLock {
+    fn require_original_exclusive(&self) -> io::Result<()> {
+        self.revalidate()?;
+        // A separate description can acquire SH when this OFD is unlocked or
+        // merely SH. Never convert a shared observation into EX authority.
+        let probe = open_at(&self.directory, LOCK, libc::O_RDONLY | libc::O_NONBLOCK, 0)?;
+        if LockIdentity::read(probe.metadata()?, self.custody)? != self.identity {
+            return Err(rejected("setup lock probe is not the held original inode"));
+        }
+        if unsafe { libc::flock(probe.as_raw_fd(), libc::LOCK_SH | libc::LOCK_NB) } == 0 {
+            return Err(rejected(
+                "original setup description is not exclusively locked",
+            ));
+        }
+        if io::Error::last_os_error().raw_os_error() != Some(libc::EWOULDBLOCK) {
+            return Err(io::Error::last_os_error());
+        }
+        // If the probe was excluded by another description after ours lost its
+        // lock, this operation fails. On our existing EX OFD it changes nothing.
+        if unsafe { libc::flock(self.file.as_raw_fd(), libc::LOCK_EX | libc::LOCK_NB) } != 0 {
+            return Err(io::Error::last_os_error());
+        }
+        self.revalidate()
+    }
+}
+impl FixedConfigurationLock {
+    fn no_first_selection(&self) -> io::Result<()> {
+        let directory = directory_at(&self.base, c"production", self.custody)?;
+        let mut stat: libc::stat = unsafe { std::mem::zeroed() };
+        if unsafe {
+            libc::fstatat(
+                directory.as_raw_fd(),
+                c"selected.json".as_ptr(),
+                &mut stat,
+                libc::AT_SYMLINK_NOFOLLOW,
+            )
+        } == 0
+        {
+            return Err(rejected(
+                "setup label sealing is only for an unselected first activation",
+            ));
+        }
+        let error = io::Error::last_os_error();
+        if error.kind() != io::ErrorKind::NotFound {
+            return Err(error);
+        }
+        self.revalidate()
+    }
+    fn first_label_preflight(&self, body: &[u8]) -> io::Result<MaintenanceFence> {
+        self.revalidate()?;
+        first_activation_body(body)?;
+        self.lock.require_original_exclusive()?;
+        self.no_first_selection()?;
+        let fence = MaintenanceFence::read(self, body)?;
+        initial_setup_label(setup_context(&self.lock.file)?.as_deref())?;
+        fence.revalidate(self)?;
+        Ok(fence)
+    }
+}
+impl PackageConfigurationLock {
+    /// Set the one initial setup-lock label on this same original EX OFD.
+    ///
+    /// This is deliberately unavailable to received/shared guards. A selected
+    /// installation, a different prior label, or a mismatched held first fence
+    /// is refused. Only the ctime caused by this observed fixed xattr operation
+    /// is transferred into the same lock object; no file or lock is reopened.
+    pub fn seal_first_activation_label(&mut self, expected_fence_body: &[u8]) -> io::Result<()> {
+        if self.0.root_path != Path::new("/") || self.0.custody.uid != 0 || self.0.custody.gid != 0
+        {
+            return Err(rejected(
+                "initial setup label requires the fixed root package guard",
+            ));
+        }
+        let fence = self.0.first_label_preflight(expected_fence_body)?;
+        let before = self.0.lock.identity.clone();
+        if before.bytes > 4096 {
+            return Err(rejected(
+                "original setup lock content exceeds first activation bound",
+            ));
+        }
+        let mut bytes = vec![0; before.bytes as usize];
+        self.0.lock.file.read_exact_at(&mut bytes, 0)?;
+        let was_labelled = initial_setup_label(setup_context(&self.0.lock.file)?.as_deref())?;
+        if !was_labelled
+            && unsafe {
+                libc::fsetxattr(
+                    self.0.lock.file.as_raw_fd(),
+                    c"security.selinux".as_ptr(),
+                    FIRST_SETUP_CONTEXT.as_ptr().cast(),
+                    FIRST_SETUP_CONTEXT.len(),
+                    libc::XATTR_CREATE,
+                )
+            } != 0
+        {
+            return Err(io::Error::last_os_error());
+        }
+        self.0.lock.file.sync_all()?;
+        if !initial_setup_label(setup_context(&self.0.lock.file)?.as_deref())? {
+            return Err(rejected(
+                "fixed setup lock label was not observed after creation",
+            ));
+        }
+        let observed = LockIdentity::read(self.0.lock.file.metadata()?, self.0.custody)?;
+        let mut compare = observed.clone();
+        compare.changed = before.changed;
+        let mut after = vec![0; before.bytes as usize];
+        self.0.lock.file.read_exact_at(&mut after, 0)?;
+        let named = open_at(&self.0.base, LOCK, libc::O_PATH | libc::O_NONBLOCK, 0)?;
+        if compare != before
+            || after != bytes
+            || LockIdentity::read(named.metadata()?, self.0.custody)? != observed
+        {
+            return Err(rejected(
+                "setup lock changed beyond the observed initial security label",
+            ));
+        }
+        // The original File remains in place; all other observed identity
+        // fields and the full bytes were compared before this one assignment.
+        self.0.lock.identity = observed;
+        self.0.revalidate()?;
+        self.0.lock.require_original_exclusive()?;
+        self.0.no_first_selection()?;
+        fence.revalidate(&self.0)
+    }
+}
+
 impl AsFd for PackageConfigurationLock {
     fn as_fd(&self) -> BorrowedFd<'_> {
         self.0.lock.as_fd()
@@ -571,12 +754,12 @@ impl ConfigurationReadGuard {
 
     pub(crate) fn acquire() -> io::Result<Self> {
         match Self::inspect_existing() {
-            Err(error) if error.kind()==io::ErrorKind::NotFound => {
-                let held=Self(FixedConfigurationLock::fixed(Access::Shared)?);
+            Err(error) if error.kind() == io::ErrorKind::NotFound => {
+                let held = Self(FixedConfigurationLock::fixed(Access::Shared)?);
                 held.revalidate()?;
                 Ok(held)
             }
-            result=>result,
+            result => result,
         }
     }
 
@@ -592,6 +775,85 @@ mod tests {
     use std::os::unix::fs::{OpenOptionsExt, PermissionsExt};
     use std::process::{Command, Stdio};
 
+    fn first_body() -> Vec<u8> {
+        serde_json::to_vec(
+            &serde_json::json!({"schema":"droidloom-first-activation-maintenance-v1",
+            "plan_sha256":"a".repeat(64),"operation":"first_shared_kernel_activation",
+            "production_admission":"denied_until_original_transaction_commits"}),
+        )
+        .unwrap()
+    }
+    fn first_fence_file(root: &Path, body: &[u8]) {
+        let path = root.join("etc/droidloom/production/package-maintenance.json");
+        fs::write(&path, body).unwrap();
+        fs::set_permissions(path, fs::Permissions::from_mode(0o400)).unwrap();
+    }
+    #[test]
+    fn first_label_preflight_rejects_shared_unlocked_and_other_description_owners() {
+        let (root, custody) = fixture();
+        let body = first_body();
+        first_fence_file(root.path(), &body);
+        let shared = FixedConfigurationLock::at(root.path(), custody, Access::Shared).unwrap();
+        assert!(shared.first_label_preflight(&body).is_err());
+        drop(shared);
+        let original = FixedConfigurationLock::at(root.path(), custody, Access::Exclusive).unwrap();
+        assert!(original.lock.require_original_exclusive().is_ok());
+        assert_eq!(
+            unsafe { libc::flock(original.lock.file.as_raw_fd(), libc::LOCK_UN) },
+            0
+        );
+        assert!(original.lock.require_original_exclusive().is_err());
+        let other = FixedConfigurationLock::at(root.path(), custody, Access::Exclusive).unwrap();
+        assert!(original.lock.require_original_exclusive().is_err());
+        other.revalidate().unwrap();
+    }
+    #[test]
+    fn first_label_preflight_rejects_selected_or_wrong_original_fence() {
+        let (root, custody) = fixture();
+        let body = first_body();
+        first_fence_file(root.path(), &body);
+        let guard = FixedConfigurationLock::at(root.path(), custody, Access::Exclusive).unwrap();
+        let mut wrong: serde_json::Value = serde_json::from_slice(&body).unwrap();
+        wrong["plan_sha256"] = serde_json::json!("b".repeat(64));
+        let wrong = serde_json::to_vec_pretty(&wrong).unwrap();
+        assert!(first_activation_body(&wrong).is_ok());
+        assert!(guard.first_label_preflight(&wrong).is_err());
+        fs::write(
+            root.path().join("etc/droidloom/production/selected.json"),
+            b"{}",
+        )
+        .unwrap();
+        assert!(guard.first_label_preflight(&body).is_err());
+        guard.revalidate().unwrap();
+        assert_eq!(
+            fs::read(
+                root.path()
+                    .join("etc/droidloom/production/package-maintenance.json")
+            )
+            .unwrap(),
+            body
+        );
+    }
+    #[test]
+    fn first_label_refuses_foreign_prior_context_and_fence_scope() {
+        assert!(!initial_setup_label(None).unwrap());
+        assert!(initial_setup_label(Some(FIRST_SETUP_CONTEXT)).unwrap());
+        for raw in [
+            b"".as_slice(),
+            b"u:object_r:unlabeled:s0\0",
+            b"u:object_r:p4_linux_mac_setup_lock_t:s0",
+            b"u:object_r:p4_linux_mac_setup_lock_t:s0\0\0",
+        ] {
+            assert!(initial_setup_label(Some(raw)).is_err());
+        }
+        let mut body: serde_json::Value = serde_json::from_slice(&first_body()).unwrap();
+        body["operation"] = serde_json::json!("upgrade");
+        assert!(first_activation_body(&serde_json::to_vec(&body).unwrap()).is_err());
+        body["operation"] = serde_json::json!("first_shared_kernel_activation");
+        body["extra"] = serde_json::json!(true);
+        assert!(first_activation_body(&serde_json::to_vec(&body).unwrap()).is_err());
+    }
+
     fn fixture() -> (tempfile::TempDir, Custody) {
         let directory = tempfile::tempdir().unwrap();
         fs::create_dir_all(directory.path().join("etc/droidloom/production")).unwrap();
@@ -604,17 +866,22 @@ mod tests {
 
     #[test]
     fn existing_calibration_reader_never_creates_or_writes_the_setup_lock() {
-        let (root,custody)=fixture();
-        let lock=root.path().join("etc/droidloom/setup.lock");
-        assert!(FixedConfigurationLock::at(root.path(),custody,Access::InspectExisting).is_err());
+        let (root, custody) = fixture();
+        let lock = root.path().join("etc/droidloom/setup.lock");
+        assert!(FixedConfigurationLock::at(root.path(), custody, Access::InspectExisting).is_err());
         assert!(!lock.exists());
-        drop(FixedConfigurationLock::at(root.path(),custody,Access::Exclusive).unwrap());
-        let reader=FixedConfigurationLock::at(root.path(),custody,Access::InspectExisting).unwrap();
-        assert_eq!(unsafe{libc::fcntl(reader.lock.as_fd().as_raw_fd(),libc::F_GETFL)} & libc::O_ACCMODE,libc::O_RDONLY);
-        assert!(FixedConfigurationLock::at(root.path(),custody,Access::Exclusive).is_err());
+        drop(FixedConfigurationLock::at(root.path(), custody, Access::Exclusive).unwrap());
+        let reader =
+            FixedConfigurationLock::at(root.path(), custody, Access::InspectExisting).unwrap();
+        assert_eq!(
+            unsafe { libc::fcntl(reader.lock.as_fd().as_raw_fd(), libc::F_GETFL) }
+                & libc::O_ACCMODE,
+            libc::O_RDONLY
+        );
+        assert!(FixedConfigurationLock::at(root.path(), custody, Access::Exclusive).is_err());
         reader.activation_allowed().unwrap();
         drop(reader);
-        assert!(FixedConfigurationLock::at(root.path(),custody,Access::Exclusive).is_ok());
+        assert!(FixedConfigurationLock::at(root.path(), custody, Access::Exclusive).is_ok());
     }
 
     #[test]
@@ -712,8 +979,20 @@ mod tests {
         )
         .unwrap();
         received.revalidate().unwrap();
-        assert_eq!(unsafe { libc::fcntl(received.lock.as_fd().as_raw_fd(), libc::F_GETFL) } & libc::O_ACCMODE, libc::O_RDONLY);
-        assert_eq!(received.lock.file.write_at(b"not permitted", 0).unwrap_err().raw_os_error(), Some(libc::EBADF));
+        assert_eq!(
+            unsafe { libc::fcntl(received.lock.as_fd().as_raw_fd(), libc::F_GETFL) }
+                & libc::O_ACCMODE,
+            libc::O_RDONLY
+        );
+        assert_eq!(
+            received
+                .lock
+                .file
+                .write_at(b"not permitted", 0)
+                .unwrap_err()
+                .raw_os_error(),
+            Some(libc::EBADF)
+        );
         let readonly = File::open(base.join("setup.lock")).unwrap();
         assert!(
             FixedConfigurationLock::at_with_received(
