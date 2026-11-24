@@ -1195,3 +1195,38 @@ notification alone is not successful service custody. The source unit's exact
 bytes, fragment path, absence of drop-ins, current loaded state, fixed ExecStart,
 and enforced adopter roles are checked; no nonexistent output-path D-Bus
 property or caller-selected unit/path is used.
+
+
+### Original init placement from the permanent factory
+
+Each original init is born inside the permanent factory unit. The production
+owner prepares its normal empty payload budget, validates the init's original
+metadata and namespace custody, and requests only `MoveOriginalInit` on the
+authenticated factory channel. The request binds the already-held original
+PIDFD and PID-namespace inodes plus the already-owned payload directory. It
+contains no caller-selected PID, unit name, pathname, program, or arguments.
+
+The actual retained factory parent opens the one fixed payload `cgroup.procs`
+itself and verifies its empty, root-owned original cgroup2 directory. A direct
+`clone3(CLONE_PIDFD)` helper enters only the original PID namespace, retains the
+initial user namespace and kernel MAC role, closes every descriptor except the
+fixed membership file, and writes literal `1`. A fixed native filter admits
+only that descriptor's write and process exit. The original namespace's PID 1
+cannot be recycled; no host numeric PID is used to authorize a move.
+
+Before cloning, native `capget` proves that the factory's permitted set contains
+the complete current kernel capability set. Neither cloning nor the raw helper
+changes user namespace or permitted credentials. This preserves the commoncap
+subset condition if cpuset migration checks the target scheduler permission;
+SELinux's separate process permission remains enforced. The factory's original
+PID-for-children namespace and signal mask are restored and checked.
+
+Only the original factory consumes the helper's actual PIDFD wait event. A
+normal zero exit, unchanged original init liveness, exact payload member
+readback, removal from the permanent factory's member list, and the same live
+production owner are required before a nonce-bound response. The broker then
+independently rechecks init metadata and cgroup membership before continuing
+normal payload delegation. Its later payload-to-init-leaf operation stays
+within the already-owned production subtree. Timeout, signal death, lost
+custody, context restoration failure, or a failed membership readback cannot
+be reported as successful placement or successful Android shutdown.

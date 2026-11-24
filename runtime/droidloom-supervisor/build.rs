@@ -41,6 +41,7 @@ fn main() {
         "device_template",
         "instance_context",
         "instance_query",
+        "instance_placement",
     ] {
         let source = format!("../droidloom-early-boot/{stem}.c");
         let object = out.join(format!("{stem}.o"));

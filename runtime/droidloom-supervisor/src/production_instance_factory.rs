@@ -11,6 +11,10 @@ mod adoption;
 #[path = "production_instance_identity.rs"]
 mod boot_identity;
 pub use adoption::run_instance_adopter;
+#[path = "production_instance_placement.rs"]
+mod placement;
+pub(crate) use placement::move_original_init_from_factory;
+pub(crate) const FACTORY_CGROUP: &str = adoption::FACTORY_CGROUP;
 
 const SOCKET: &str = "/run/droidloom-early/instance-factory.sock";
 const START: &[u8; 8] = b"DLSTART1";
@@ -73,9 +77,15 @@ fn socket() -> io::Result<File> {
     Ok(unsafe { File::from_raw_fd(fd) })
 }
 fn send(socket: &File, tag: &[u8; 8], descriptors: &[&File]) -> io::Result<()> {
+    send_bytes(socket, tag, descriptors)
+}
+fn send_bytes(socket: &File, tag: &[u8], descriptors: &[&File]) -> io::Result<()> {
+    if tag.len() < 8 || tag.len() > 256 {
+        return Err(invalid("fixed factory packet size differs"));
+    }
     if descriptors.len() > 1 {
         return Err(invalid(
-            "one original birth descriptor is the entire protocol",
+            "one original descriptor is the entire fixed protocol",
         ));
     }
     let mut io = libc::iovec {
@@ -120,10 +130,19 @@ fn send(socket: &File, tag: &[u8; 8], descriptors: &[&File]) -> io::Result<()> {
     Ok(())
 }
 fn receive(socket: &File, timeout: Duration) -> io::Result<Option<([u8; 8], Vec<File>)>> {
+    receive_bytes::<8>(socket, timeout)
+}
+fn receive_bytes<const N: usize>(
+    socket: &File,
+    timeout: Duration,
+) -> io::Result<Option<([u8; N], Vec<File>)>> {
+    if !(8..=256).contains(&N) {
+        return Err(invalid("fixed factory packet size differs"));
+    }
     if !wait(socket, libc::POLLIN, timeout)? {
         return Ok(None);
     }
-    let mut data = [0; 8];
+    let mut data = [0; N];
     let mut io = libc::iovec {
         iov_base: data.as_mut_ptr().cast(),
         iov_len: data.len(),
@@ -171,7 +190,7 @@ fn receive(socket: &File, timeout: Duration) -> io::Result<Option<([u8; 8], Vec<
             header = libc::CMSG_NXTHDR(&msg, header);
         }
     }
-    if n != 8
+    if n != N as isize
         || msg.msg_flags & (libc::MSG_TRUNC | libc::MSG_CTRUNC) != 0
         || malformed
         || descriptors.len() > 1
@@ -527,6 +546,7 @@ fn serve_generation(
     send(channel, BIRTH, &[&child.pidfd])?;
     let begin = Instant::now();
     let mut owner: Option<([u8; 16], u32, File)> = None;
+    let mut original_init_placed = false;
     loop {
         cv(unsafe { droidloom_factory_context() })?;
         configuration.revalidate()?;
@@ -594,6 +614,7 @@ fn serve_generation(
                     continue;
                 }
                 let validate = || -> io::Result<()> {
+                    adoption.revalidate()?;
                     cv(unsafe { droidloom_factory_context() })?;
                     query_peer.revalidate()?;
                     child.revalidate()?;
@@ -611,6 +632,31 @@ fn serve_generation(
                     }
                     Ok(())
                 };
+                let placement_request = match placement::requested(&query_channel) {
+                    Ok(value) => value,
+                    Err(error) => {
+                        eprintln!("fixed factory operation rejected before birth: {error}");
+                        continue;
+                    }
+                };
+                if placement_request {
+                    if original_init_placed {
+                        let _ = send(&query_channel, FAILED, &[]);
+                        continue;
+                    }
+                    match placement::serve(&query_channel, &child, &validate) {
+                        Ok(()) => original_init_placed = true,
+                        Err(error) if error.fatal() => {
+                            return Err(io::Error::other(error.to_string()));
+                        }
+                        Err(error) => eprintln!("{error}"),
+                    }
+                    continue;
+                }
+                if !original_init_placed {
+                    let _ = send(&query_channel, FAILED, &[]);
+                    continue;
+                }
                 let authority = crate::production_application::factory_query::FactoryAuthority {
                     init: &child.pidfd,
                     owner: owner_process,

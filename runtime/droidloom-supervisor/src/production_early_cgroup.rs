@@ -154,7 +154,7 @@ impl PreparedCgroup {
                 && list_directories(payload)?.is_empty(),
             "fresh empty budget required",
         )?;
-        check_early_task_cgroup(child, "/")?;
+        check_early_task_cgroup(child, crate::production_selection::EARLY_FACTORY_CGROUP)?;
         let binding = EarlyPlacement {
             pidfd: child.board().pidfd().try_clone()?,
             proc_identity: child.observe_init_metadata()?.host.proc_identity(),
@@ -163,7 +163,11 @@ impl PreparedCgroup {
         };
         *r.early.borrow_mut() = Some(binding);
         r.placement.set(Placement::MigrationInProgress);
-        move_original_init(child.board().pid_namespace(), payload)?;
+        crate::production_selection::move_original_init_from_factory(
+            child.board().pidfd(),
+            child.board().pid_namespace(),
+            payload,
+        )?;
         child.board().revalidate()?;
         check_early_task_cgroup(child, &format!("{UNIT_CGROUP}/cell-u1000/payload"))?;
         require(

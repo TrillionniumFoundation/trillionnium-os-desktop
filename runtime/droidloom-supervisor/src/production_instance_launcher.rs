@@ -12,7 +12,7 @@ use std::time::{Duration, Instant};
 mod factory;
 #[path = "production_instance_manager.rs"]
 mod manager;
-pub(crate) use factory::QueryEndpoint;
+pub(crate) use factory::{QueryEndpoint, FACTORY_CGROUP, move_original_init_from_factory};
 pub use factory::{run_instance_factory, run_instance_adopter};
 
 const HANDOFF: &str = "/run/droidloom-early";
