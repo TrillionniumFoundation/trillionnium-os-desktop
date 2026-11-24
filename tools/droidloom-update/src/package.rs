@@ -549,18 +549,30 @@ mod tests {
                 .join("usr/lib/systemd/system/droidloom-production.service")
                 .exists()
         );
-        // The board-policy staging path must also supply the mandatory native
-        // SELinux discovery files consumed by the unchanged distribution buses.
+        // The normal publisher supplies stock D-Bus discovery and the fixed
+        // account/caller context maps consumed by unmodified pam_selinux.
         early_boot_package::stage_native_configuration(&runtime).unwrap();
-        let dbus = runtime.join("etc/selinux/droidloom/contexts/dbus_contexts");
-        let metadata = fs::symlink_metadata(&dbus).unwrap();
-        assert!(metadata.is_file());
-        assert_eq!(metadata.permissions().mode() & 0o7777, 0o444);
-        assert_eq!(metadata.nlink(), 1);
-        assert_eq!(
-            fs::read(dbus).unwrap(),
-            include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-dbus_contexts")
-        );
+        for (relative, expected) in [
+            (
+                "etc/selinux/droidloom/contexts/dbus_contexts",
+                include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-dbus_contexts").as_slice(),
+            ),
+            (
+                "etc/selinux/droidloom/seusers",
+                include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-seusers").as_slice(),
+            ),
+            (
+                "etc/selinux/droidloom/contexts/default_contexts",
+                include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-default_contexts").as_slice(),
+            ),
+        ] {
+            let path = runtime.join(relative);
+            let metadata = fs::symlink_metadata(&path).unwrap();
+            assert!(metadata.is_file());
+            assert_eq!(metadata.permissions().mode() & 0o7777, 0o444);
+            assert_eq!(metadata.nlink(), 1);
+            assert_eq!(fs::read(path).unwrap(), expected);
+        }
     }
 
     #[test]

@@ -346,20 +346,33 @@ pub fn install(
             .eq(["SELINUX=enforcing", "SELINUXTYPE=droidloom"]),
         "native enforcement configuration differs",
     )?;
-    let dbus_path = "etc/selinux/droidloom/contexts/dbus_contexts";
-    let dbus_expected = include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-dbus_contexts");
-    let dbus = manifest
-        .files
-        .iter()
-        .find(|f| f.path == dbus_path)
-        .ok_or("normal host archive lacks the stock D-Bus SELinux configuration")?;
-    ensure(
-        dbus.mode == 0o444
-            && dbus.size == dbus_expected.len() as u64
-            && dbus.sha256 == fs::digest(dbus_expected)
-            && std::fs::read(root.join(dbus_path))? == dbus_expected,
-        "native D-Bus SELinux configuration differs from the normal publisher",
-    )?;
+    for (relative, expected) in [
+        (
+            "etc/selinux/droidloom/contexts/dbus_contexts",
+            include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-dbus_contexts").as_slice(),
+        ),
+        (
+            "etc/selinux/droidloom/seusers",
+            include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-seusers").as_slice(),
+        ),
+        (
+            "etc/selinux/droidloom/contexts/default_contexts",
+            include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-default_contexts").as_slice(),
+        ),
+    ] {
+        let entry = manifest
+            .files
+            .iter()
+            .find(|f| f.path == relative)
+            .ok_or("normal host archive lacks required native SELinux configuration")?;
+        ensure(
+            entry.mode == 0o444
+                && entry.size == expected.len() as u64
+                && entry.sha256 == fs::digest(expected)
+                && std::fs::read(root.join(relative))? == expected,
+            "native SELinux configuration differs from the normal publisher",
+        )?;
+    }
     Ok(
         serde_json::json!({"normal_host_manifest":manifest_pin,"normal_host_archive":archive_pin,
         "source_commit":manifest.commit,"source_tree":manifest.tree,"entries":entries,
