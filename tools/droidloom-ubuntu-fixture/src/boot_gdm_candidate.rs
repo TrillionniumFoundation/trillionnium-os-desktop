@@ -26,13 +26,17 @@ const LIFECYCLE_PATCH: &[u8] =
     include_bytes!("../../../packaging/ubuntu/gdm/p4-dynamic-directory-lifecycle.patch");
 const LIFECYCLE_TEST_SOURCE: &[u8] =
     include_bytes!("../../../packaging/ubuntu/gdm/tests/dynamic-files.c");
+const PUBLICATION_PATCH: &[u8] =
+    include_bytes!("../../../packaging/ubuntu/gdm/p4-persistent-inode-publication.patch");
+const PUBLICATION_PATCH_PATH: &str = "debian/patches/p4-persistent-inode-publication.patch";
+const PUBLICATION_PATCH_NAME: &str = "p4-persistent-inode-publication.patch";
 const MEMBER: &str = "usr/sbin/gdm3";
 const PATCH: &str = "debian/patches/p4-dynamic-environment-credentials.patch";
 const PATCH_NAME: &str = "p4-dynamic-environment-credentials.patch";
 const LIFECYCLE_PATCH_PATH: &str = "debian/patches/p4-dynamic-directory-lifecycle.patch";
 const LIFECYCLE_PATCH_NAME: &str = "p4-dynamic-directory-lifecycle.patch";
 const ORIGINAL_VERSION: &str = "50.1-0ubuntu0.1";
-const VERSION: &str = "50.1-0ubuntu0.1+p4fsuser2";
+const VERSION: &str = "50.1-0ubuntu0.1+p4fsuser3";
 
 #[derive(Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -44,13 +48,15 @@ pub struct GdmCandidate {
 fn source_lock() -> Result<Value> {
     let lock: Value = serde_json::from_slice(SOURCE_LOCK)?;
     ensure(
-        lock["schema"] == "p4-gdm-fs-user-source-lock-v2"
+        lock["schema"] == "p4-gdm-fs-user-source-lock-v3"
             && lock["original_version"] == ORIGINAL_VERSION
             && lock["candidate_version"] == VERSION
             && lock["source_files"][PATCH]["sha256"] == fs::digest(SOURCE_PATCH)
             && lock["source_files"]["common/test-environment-file.c"]["sha256"]
                 == fs::digest(TEST_SOURCE)
             && lock["source_files"][LIFECYCLE_PATCH_PATH]["sha256"] == fs::digest(LIFECYCLE_PATCH)
+            && lock["source_files"][PUBLICATION_PATCH_PATH]["sha256"]
+                == fs::digest(PUBLICATION_PATCH)
             && lock["source_files"]["common/test-dynamic-files.c"]["sha256"]
                 == fs::digest(LIFECYCLE_TEST_SOURCE),
         "compiled GDM source contract differs",
@@ -169,13 +175,20 @@ fn verify_regression(tests: &Value, log: &str, lock: &Value, lifecycle: bool) ->
         (
             "lifecycle",
             &[
-                "ok 1 /dynamic-files/private-000-transfer-no-follow",
+                "ok 1 /dynamic-files/private-000-copy-refused-unchanged",
                 "ok 2 /dynamic-files/write-retire-exclusive-recreate",
                 "ok 3 /dynamic-files/foreign-owner-fails-and-restores",
                 "ok 4 /dynamic-files/hard-link-transfer-rejected",
                 "ok 5 /dynamic-files/root-alias-rejected",
                 "ok 6 /dynamic-files/original-gdm-data-owner",
                 "ok 7 /dynamic-files/denied-fsuid-restores-without-dac",
+                "ok 8 /dynamic-files/private-000-retirement-refused",
+                "ok 9 /dynamic-files/retained-handoff-refused",
+                "ok 10 /dynamic-files/old-writer-fd-cannot-change-new-inode",
+                "ok 11 /dynamic-files/concurrent-hardlink-preserves-original-owner",
+                "ok 12 /dynamic-files/concurrent-rename-preserves-original-owner",
+                "ok 13 /dynamic-files/concurrent-write-refuses-publication",
+                "ok 14 /dynamic-files/new-inodes-private-until-publication",
             ],
         )
     } else {
@@ -256,10 +269,11 @@ fn verify_sources(pins: &BTreeMap<String, FilePin>, lock: &Value, work: &Path) -
         &pins["original_debian_archive"],
         100,
     )?;
-    let updated = unpack_source(work, "updated-source", &pins["source_debian_archive"], 102)?;
+    let updated = unpack_source(work, "updated-source", &pins["source_debian_archive"], 103)?;
     let mut keys: BTreeSet<_> = original.keys().map(String::as_str).collect();
     keys.insert(PATCH);
     keys.insert(LIFECYCLE_PATCH_PATH);
+    keys.insert(PUBLICATION_PATCH_PATH);
     ensure(
         keys == updated.keys().map(String::as_str).collect(),
         "GDM Debian source member set changed unexpectedly",
@@ -277,6 +291,7 @@ fn verify_sources(pins: &BTreeMap<String, FilePin>, lock: &Value, work: &Path) -
     ensure(
         archive::regular(&updated, PATCH, None)? == SOURCE_PATCH
             && archive::regular(&updated, LIFECYCLE_PATCH_PATH, None)? == LIFECYCLE_PATCH
+            && archive::regular(&updated, PUBLICATION_PATCH_PATH, None)? == PUBLICATION_PATCH
             && fs::digest(archive::regular(&updated, "debian/rules", None)?)
                 == lock["debian_rules_sha256"],
         "GDM quilt patch/rules differ from maintained source",
@@ -288,9 +303,9 @@ fn verify_sources(pins: &BTreeMap<String, FilePin>, lock: &Value, work: &Path) -
         series.lines().collect::<Vec<_>>()
             == old_series
                 .lines()
-                .chain([PATCH_NAME, LIFECYCLE_PATCH_NAME])
+                .chain([PATCH_NAME, LIFECYCLE_PATCH_NAME, PUBLICATION_PATCH_NAME])
                 .collect::<Vec<_>>(),
-        "GDM quilt series did not append only the two maintained patches",
+        "GDM quilt series did not append only the three maintained patches",
     )?;
     ensure(
         std::str::from_utf8(archive::regular(&updated, "debian/changelog", None)?)?
@@ -330,7 +345,7 @@ fn verify_sources(pins: &BTreeMap<String, FilePin>, lock: &Value, work: &Path) -
         .as_object()
         .ok_or("GDM normal source round-trip absent")?;
     ensure(
-        files.len() == 14 && files.keys().collect::<BTreeSet<_>>() == roundtrip.keys().collect(),
+        files.len() == 15 && files.keys().collect::<BTreeSet<_>>() == roundtrip.keys().collect(),
         "GDM normal source round-trip file set differs",
     )?;
     for (path, wanted) in files {
@@ -370,8 +385,8 @@ fn verify_sources(pins: &BTreeMap<String, FilePin>, lock: &Value, work: &Path) -
         json!({"source_commit":lock["source_commit"], "source_tree":lock["source_tree"],
         "source_lock_sha256":fs::digest(SOURCE_LOCK), "normal_debian_build_exit_code":0,
         "unchanged_original_debian_rules":true,"only_quilt_patch_series_and_changelog_changed":true,
-        "actual_root_tests":10,"unprivileged_meson_root_tests_skipped":10,
-        "normal_dsc_source_roundtrip_files_verified":14,
+        "actual_root_tests":17,"unprivileged_meson_root_tests_skipped":17,
+        "normal_dsc_source_roundtrip_files_verified":15,
         "test_host_kernel":tests["host_kernel"],"target_gdm_runtime_qualified":false}),
     )
 }
@@ -1066,19 +1081,26 @@ mod tests {
         let lock = source_lock()?;
         let mut report = json!({"schema":1,"source_commit":lock["source_commit"],"exit_code":0,
             "actual_root_subprocess_tests":true,"enforcing_target_gdm_runtime_qualified":false,
-            "normal_debian_build_test_artifact":true,"cases_passed":7,
+            "normal_debian_build_test_artifact":true,"cases_passed":14,
             "test_elf":lock["artifacts"]["lifecycle_test_executable"],"test_log":lock["artifacts"]["lifecycle_test_log"]});
         let names = [
-            "private-000-transfer-no-follow",
+            "private-000-copy-refused-unchanged",
             "write-retire-exclusive-recreate",
             "foreign-owner-fails-and-restores",
             "hard-link-transfer-rejected",
             "root-alias-rejected",
             "original-gdm-data-owner",
             "denied-fsuid-restores-without-dac",
+            "private-000-retirement-refused",
+            "retained-handoff-refused",
+            "old-writer-fd-cannot-change-new-inode",
+            "concurrent-hardlink-preserves-original-owner",
+            "concurrent-rename-preserves-original-owner",
+            "concurrent-write-refuses-publication",
+            "new-inodes-private-until-publication",
         ];
         let log = format!(
-            "1..7\n{}",
+            "1..14\n{}",
             names
                 .iter()
                 .enumerate()

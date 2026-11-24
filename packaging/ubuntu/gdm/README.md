@@ -5,27 +5,25 @@ owned by UID 60578..60705 and filesystem GID 65534, with mode 0700. The
 session's primary GDM group is separately the selected `gdm` group, GID 121.
 The original root manager cannot write, enumerate or retire those private
 objects while the original Android DAC_OVERRIDE assertions remain enforced.
-The first local candidate corrected the environment-file writer. This second
-normal candidate also closes creation, persistent-data handover, failure
-handling, cleanup and exclusive reuse of the dynamic home.
+The first local candidate corrected the environment-file writer. The third normal candidate replaces persistent in-place ownership transfer
+with copying into new inodes. It also keeps the existing creation, failure,
+cleanup and exclusive-home-reuse checks.
 
 ## Maintained normal source
 
-Version `50.1-0ubuntu0.1+p4fsuser2` is normal source commit
-`783240ad9e96283364278e7594d4be986fddbf17`, tree
-`5d97a87b0ec2e5d12bfc547b22af23fb30d3109e`.
-`source.lock` binds the unchanged original Ubuntu source archives, the two
-exact quilt patches, all 14 maintained source files, normal Debian build,
+Version `50.1-0ubuntu0.1+p4fsuser3` is normal source commit
+`762ea3ef217af34eb31a1f8ea773c2d543e6653a`, tree
+`a355eda626ec5a0f78faa51e7078aeb522608433`.
+`source.lock` binds the unchanged original Ubuntu source archives, the three
+exact quilt patches, all 15 maintained source files, normal Debian build,
 emitted `.deb/.dsc/.buildinfo/.changes`, and both normally produced root-test
 ELFs with their complete TAP logs. All original Debian archive members
-except the appended patches, series and changelog retain their exact bytes.
+except the three appended patches, series and changelog retain their exact bytes.
 The normal `dpkg-buildpackage -F -j2 -us -uc` uses the original Debian rules
 and test runner. No test is disabled and no physical package is installed.
 These local modified packages are unsigned, not Ubuntu-signed releases.
 
-Normal `dpkg-source --after-build` unapplies quilt. The initial controller
-recorded that expected build-directory change; that record is retained.
-Independent extraction of the new normal `.dsc` then reproduced all 14
+Normal `dpkg-source --after-build` unapplies quilt. Independent extraction of the new normal `.dsc` reproduced all 15
 maintained source files byte for byte, and the canonical Git source stayed
 unchanged. Admission requires that complete round-trip table, not just a
 successful build status.
@@ -40,35 +38,64 @@ change, directory permission relaxation for other users, DAC capability or
 CAP_SETPCAP is introduced. The GDM process retains only its required
 CHOWN/FOWNER/SETGID/SETUID capability set.
 
-The new internal lifecycle helper opens fixed parent directories and holds
-no-follow inode descriptors. `openat2` rejects aliases and mount crossings.
-Private child traversal occurs under that object's actual filesystem owner;
-root only performs permitted CHOWN/FOWNER metadata work on held inodes.
-Mode-000 directories temporarily gain owner traversal only, then recover
-their exact original mode on every return path. Symlink contents are never
-followed. Metadata handover rejects hard-linked regular files, devices,
-privilege bits and unrelated account owners. Only root, the reserved dynamic
-UID range and the fixed original Ubuntu `gdm` account may supply previous
-GDM settings. The account name is source-owned, not caller supplied.
+Persistent `config` and `state` handovers first acquire the fixed root-owned
+seat parent. Each source inode is held through a no-follow descriptor; source
+body reads run under its actual old filesystem UID. All source entries must
+have that same owner/group, ordinary kinds, no privilege bits, and one link
+for nondirectories. Every regular file is copied into an exclusive new inode,
+then fully reread and compared by SHA256. Symlinks are copied as link text;
+the copier never follows them. Source ownership, permissions and bytes are
+never changed to make copying succeed. Unreadable mode-000 data is refused.
 
-Home creation is exclusive and refuses existing entries. Cleanup removes
-children as their owner and restores root filesystem identity before
-unlinking the top-level home from the root-owned anchor. Traversal is bounded
-by depth, entry count and a 30-second monotonic deadline. A failed cleanup
-retains both dynamic-user indexes and does not report successful retirement
-or release the UID. Persistent config/state handover remains incremental as
-in the original recursive metadata operation; failure does not claim a full
-rollback. Directory modes and calling-thread credentials are restored.
+The fixed `.config-handoff` or `.state-handoff` root is initially root:root
+0700. Its children are new inodes and receive their final UID while the root
+remains inaccessible to that UID. The held source inode/name/metadata checks
+run after copying, before publication and again after the atomic exchange.
+Publication uses `RENAME_EXCHANGE` within the same root-owned seat directory.
+This avoids the moved-directory write check needed to update `..` across
+parents, which the deliberately unprivileged root manager cannot bypass.
+Only after verification does the manager hand the newly created top inode
+to the next UID. There is no privileged chown or chmod of any old settings
+inode, so an old owner's late hardlink or rename cannot transfer authority
+to a new user. An old writable FD still refers exclusively to the old inode.
 
-The normally produced test ELFs pass ten real root subprocess cases with
-only the required four capabilities. The original three cases exercise
-private writer replacement, I/O-error restoration and fatal denied
-restoration. Seven new cases exercise mode-000 trees, write/retire/recreate,
-foreign-owner rejection, hard-link rejection, root aliases, original GDM
-settings handover and failure without DAC bypass. Another thread checks that
-its credentials remain unchanged. The normal unprivileged test skips are
-not counted as positive evidence. These tests run on host 7.0.14-p4cred1;
-they do not qualify the final 6.18 kernel or enforcing desktop session.
+On a detected source change after exchange, rollback is attempted only when
+both paths still name the exact two held roots; neither root is guessed or
+deleted. The failed handoff remains visible to the operator and is refused
+on a later attempt. Before any exchange, cleanup can adjust only new,
+unpublished inodes under its still-private root. Old-snapshot retirement
+uses only the old filesystem owner's normal unlink permissions. A refusal
+preserves the incomplete handoff and causes launch failure. It never adds
+permissions to an old mode-000 directory. Copying is bounded by 64 levels,
+32768 entries, 16 MiB per file, 64 MiB total and a 30-second monotonic deadline.
+
+Home creation remains exclusive. Home cleanup removes children as their
+owner and unlinks the top directory through its held root-owned parent.
+Failed cleanup retains the dynamic-user indexes and UID. Environment
+preparation failure now stops the actual session conversation; a later
+session-opened callback cannot start a greeter without a successfully
+prepared environment. It no longer silently falls back to ephemeral state.
+The stock migration of the fixed pre-dynamic GDM state remains distinct;
+a migration error is propagated rather than ignored.
+
+The normal test ELFs must pass seventeen real root subprocess cases with
+only CHOWN/FOWNER/SETGID/SETUID. The original three cover private writer
+replacement and credential restoration. Fourteen lifecycle cases include
+real synchronized old-UID hardlink, rename and write attempts; failure must
+occur at the source-validation gate and retain original ownership. A live
+old writable FD must be unable to modify the new inode, and the old UID must
+fail to traverse the private staging root. Test-only linker wrappers cover
+the normal Ubuntu large-file/FORTIFY entry points without disabling FORTIFY,
+LTO, the original rules, or the production code. Normal unprivileged test
+skips are not counted as positive evidence. These tests run on host
+7.0.14-p4cred1; they do not qualify the final enforcing 6.18 desktop session.
+
+The original GDM close path waits for its direct worker. That is not evidence
+that every descendant or old writable FD is gone. This copy design therefore
+does not depend on whole-session quiescence, and does not claim that a worker
+wait proved it. Metadata bookends describe the observed copy interval;
+subsequent writes through retained old FDs belong to the retired inode and
+cannot modify the published snapshot.
 
 ## Fresh fixture admission and actual replacement
 
@@ -77,8 +104,8 @@ There are eighteen source-owned FilePin entries. Input paths may relocate
 only while preserving each fixed basename, size and complete SHA256.
 Admission uses held no-follow descriptors, copies to a private root, and
 checks full bytes. Missing, extra, substituted, truncated and alias inputs
-fail. Both source packages, exact archive membership, two quilt patches,
-normal rules, source round-trip, build outputs and ten root cases are
+fail. Both source packages, exact archive membership, three quilt patches,
+normal rules, source round-trip, build outputs and seventeen root cases are
 required.
 
 Only `usr/sbin/gdm3` is selected from the normal package. Both original and
