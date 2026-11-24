@@ -19,7 +19,8 @@ def held_bytes(path):
         after = os.fstat(handle.fileno())
         assert (before.st_dev, before.st_ino, before.st_size, before.st_mode, before.st_nlink, before.st_mtime_ns, before.st_ctime_ns) == (after.st_dev, after.st_ino, after.st_size, after.st_mode, after.st_nlink, after.st_mtime_ns, after.st_ctime_ns)
     return body, {"path": str(path), "bytes": len(body),
-                  "sha256": hashlib.sha256(body).hexdigest()}
+                  "sha256": hashlib.sha256(body).hexdigest(),
+                  "mode": stat.S_IMODE(after.st_mode)}
 
 def readelf(path, option):
     proc = subprocess.run(["/usr/bin/readelf", option, "--wide", str(path)],
@@ -44,8 +45,10 @@ def add(path, mode, body=b"", major=0, minor=0):
         parent = "/".join(parts[:i])
         entries.setdefault(parent, (stat.S_IFDIR | 0o755, b"", 0, 0))
 
-def regular(path, source, mode):
+def regular(path, source, mode, preserve_source_mode=False):
     body, pin = held_bytes(source)
+    if preserve_source_mode:
+        assert pin["mode"] == mode, "interpreter source mode changed"
     add(path, stat.S_IFREG | mode, body)
     sources.append({"guest_path": "/" + path, "source": pin})
     return body
@@ -62,6 +65,8 @@ interpreter = re.findall(r"\[Requesting program interpreter: ([^]]+)\]",
 assert interpreter == ["/lib64/ld-linux-x86-64.so.2"]
 
 library_directory = pathlib.Path("/usr/lib/x86_64-linux-gnu")
+interpreter_source = pathlib.Path(interpreter[0]).resolve(strict=True)
+assert interpreter_source == library_directory / "ld-linux-x86-64.so.2"
 aa = args.candidate_library
 assert aa.name == "libapparmor.so.1.30.7"
 assert "Library soname: [libapparmor.so.1]" in readelf(aa, "--dynamic")
@@ -81,7 +86,9 @@ while queue:
     assert source.parent == library_directory
     guest_leaf = "usr/lib/x86_64-linux-gnu/" + source.name
     if guest_leaf not in entries:
-        regular(guest_leaf, source, 0o644)
+        is_interpreter = source == interpreter_source
+        regular(guest_leaf, source, 0o755 if is_interpreter else 0o644,
+                preserve_source_mode=is_interpreter)
     guest_alias = "usr/lib/x86_64-linux-gnu/" + soname
     if guest_alias != guest_leaf:
         link(guest_alias, source.name)
@@ -116,6 +123,9 @@ record = {
     "sources": sources,
     "initrd": held_bytes(archive)[1],
     "entry_count": len(entries),
+    "interpreter": {"requested_path": interpreter[0],
+                    "guest_leaf": "/usr/lib/x86_64-linux-gnu/" + interpreter_source.name,
+                    "source_mode": 0o755},
     "entries": [{"path": "/" + name, "mode": mode,
                  "bytes": len(body), "sha256": hashlib.sha256(body).hexdigest(),
                  "device_major": major, "device_minor": minor}
