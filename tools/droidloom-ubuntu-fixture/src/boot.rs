@@ -43,6 +43,121 @@ pub fn create_work(path: &Path) -> Result<()> {
     )
 }
 
+#[derive(Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct HostImportPlan {
+    schema: String,
+    work_directory: PathBuf,
+    host_manifest: FilePin,
+    host_archive: FilePin,
+}
+
+pub fn verify_host_import(config: &Path, expected: &str) -> Result<()> {
+    let plan: HostImportPlan = fs::read_json(&fs::absolute_string(config)?, expected)?;
+    ensure(
+        plan.schema == "droidloom.normal-host-import-smoke.v1",
+        "unsupported import plan",
+    )?;
+    create_work(&plan.work_directory)?;
+    let root = plan.work_directory.join("root");
+    boot_files::private_dir(&root)?;
+    fs::write_json(
+        &fs::absolute_string(&plan.work_directory.join("INPUTS.json"))?,
+        &plan,
+        0,
+    )?;
+    let imported = crate::boot_host::install(
+        &root,
+        &plan.work_directory,
+        &plan.host_manifest,
+        &plan.host_archive,
+    )?;
+    let path = plan.work_directory.join("HOST-IMPORT-VERIFIED.json");
+    let result = serde_json::json!({"schema":"droidloom.normal-host-import-verified.v1",
+        "input_sha256":expected,"root":root,"import":imported,
+        "parser_and_copy_only":true,"guest_started":false,
+        "guest_qualified":false,"production_ready":false});
+    let sha = fs::write_json(&fs::absolute_string(&path)?, &result, 0)?;
+    println!(
+        "{}",
+        serde_json::json!({"receipt":path,"sha256":sha,
+        "guest_qualified":false,"production_ready":false})
+    );
+    Ok(())
+}
+
+#[derive(Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct MaterialSmokePlan {
+    schema: String,
+    work_directory: PathBuf,
+    fixture_manifest: FilePin,
+    fixture_root: PathBuf,
+    host_manifest: FilePin,
+    host_archive: FilePin,
+    base_initrd: FilePin,
+    initrd_tools: crate::boot_runtime::InitrdTools,
+    libselinux_candidate: crate::boot_candidate::LibselinuxCandidate,
+}
+
+/// Exercise normal archive, candidate and initrd code on an independent copy of
+/// the public root. This deliberately does not prepare accounts, Android data,
+/// a bootable root disk, or a guest runtime acceptance receipt.
+pub fn verify_boot_materials(config: &Path, expected: &str) -> Result<()> {
+    let plan: MaterialSmokePlan = fs::read_json(&fs::absolute_string(config)?, expected)?;
+    ensure(
+        plan.schema == "droidloom.boot-material-smoke-plan.v1",
+        "unsupported material smoke plan",
+    )?;
+    create_work(&plan.work_directory)?;
+    fs::write_json(
+        &fs::absolute_string(&plan.work_directory.join("INPUTS.json"))?,
+        &plan,
+        0,
+    )?;
+    let root = plan.work_directory.join("root");
+    let clone = boot_files::clone_materialized(&plan.fixture_manifest, &plan.fixture_root, &root)?;
+    let manifest: crate::model::Manifest = serde_json::from_slice(&boot_files::read_pin(
+        &plan.fixture_manifest,
+        128 * 1024 * 1024,
+    )?)?;
+    // Explicit construction-only layout: these are the ordinary usrmerge
+    // aliases, not substitutes for any native executable or service.
+    let tree = fs::Tree::open(&fs::absolute_string(&root)?, 0)?;
+    let aliases = [
+        ("/bin", "usr/bin"),
+        ("/sbin", "usr/sbin"),
+        ("/lib", "usr/lib"),
+        ("/lib64", "usr/lib64"),
+    ];
+    for (path, target) in aliases {
+        tree.symlink(path, target, &boot_files::clean_metadata(0o120777))?;
+    }
+    for path in ["/dev", "/proc", "/sys", "/run"] {
+        boot_files::ensure_dir(&root, path, 0o755)?;
+    }
+    let boot = plan.work_directory.join("boot");
+    boot_files::private_dir(&boot)?;
+    let host = crate::boot_host::install(&root, &boot, &plan.host_manifest, &plan.host_archive)?;
+    let candidate =
+        crate::boot_candidate::apply(&root, &boot, &manifest, &plan.libselinux_candidate)?;
+    let initrd =
+        crate::boot_runtime::build_initrd(&root, &boot, &plan.base_initrd, &plan.initrd_tools)?;
+    let result = serde_json::json!({"schema":"droidloom.boot-material-smoke-verified.v1",
+        "input_sha256":expected,"public_clone":clone,"root":root,"host_import":host,
+        "candidate":candidate,"initrd":initrd,"construction_only_aliases":aliases,
+        "construction_only_runtime_directories":["/dev","/proc","/sys","/run"],
+        "accounts_initialized":false,"android_userdata_copied":false,"guest_started":false,
+        "materials_only":true,"guest_qualified":false,"production_ready":false});
+    let output = plan.work_directory.join("MATERIALS-VERIFIED.json");
+    let sha = fs::write_json(&fs::absolute_string(&output)?, &result, 0)?;
+    println!(
+        "{}",
+        serde_json::json!({"receipt":output,"sha256":sha,"guest_qualified":false})
+    );
+    Ok(())
+}
+
 pub fn prepare_native(config: &Path, expected_sha: &str) -> Result<()> {
     let plan: NativePlan = fs::read_json(&fs::absolute_string(config)?, expected_sha)?;
     ensure(
@@ -102,6 +217,8 @@ pub struct BootPlan {
     pub replacement_kernel: Option<crate::boot_kernel::KernelMaterial>,
     pub android: crate::boot_release::AndroidInputs,
     pub label_tools: crate::boot_runtime::LabelTools,
+    pub initrd_tools: crate::boot_runtime::InitrdTools,
+    pub libselinux_candidate: Option<crate::boot_candidate::LibselinuxCandidate>,
     pub root_image_gib: u64,
 }
 
@@ -265,10 +382,15 @@ pub fn prepare_boot(config: &Path, expected: &str) -> Result<()> {
         )?;
         (
             serde_json::json!({"original_kernel_binding":old_kernel}),
-            original.target_kernel_release,
+            original.target_kernel_release.clone(),
         )
     };
     let host = crate::boot_host::install(&root, &boot, &plan.host_manifest, &plan.host_archive)?;
+    let candidate = plan
+        .libselinux_candidate
+        .as_ref()
+        .map(|input| crate::boot_candidate::apply(&root, &boot, &original, input))
+        .transpose()?;
     for path in [
         "usr/bin/droidloomctl",
         "usr/bin/droidloom-wayland",
@@ -300,7 +422,8 @@ pub fn prepare_boot(config: &Path, expected: &str) -> Result<()> {
         boot_files::ensure_dir(&root, "/usr/lib/systemd/user", 0o755)?;
         boot_files::copy_pin(&pin, &installed, 0o644)?;
     }
-    boot_files::run_logged(
+    let desktop_unit = boot_files::pin_file(&installed)?;
+    let desktop_enable = boot_files::run_logged(
         &boot,
         "enable-production-desktop",
         "/usr/bin/systemctl",
@@ -313,6 +436,18 @@ pub fn prepare_boot(config: &Path, expected: &str) -> Result<()> {
         ],
         30,
     )?;
+    let desktop_wants =
+        "/etc/systemd/user/graphical-session.target.wants/droidloom-production-desktop.service";
+    let tree = fs::Tree::open(&fs::absolute_string(&root)?, 0)?;
+    let (desktop_link, desktop_target) = tree.read_link(desktop_wants)?;
+    ensure(
+        desktop_link.uid == 0
+            && desktop_link.gid == 0
+            && crate::paths::normalize_link(desktop_wants, &desktop_target)?
+                == "/usr/lib/systemd/user/droidloom-production-desktop.service"
+            && boot_files::pin_file(&installed)?.sha256 == desktop_unit.sha256,
+        "stock global enable did not retain the admitted desktop unit and target link",
+    )?;
     let journal_gid = native["native_initialization"]["accounts"]["groups"]["systemd-journal"]
         .as_u64()
         .ok_or("native journal group missing")?;
@@ -320,7 +455,8 @@ pub fn prepare_boot(config: &Path, expected: &str) -> Result<()> {
     board_devices(&root)?;
     let kernel = boot.join("vmlinuz");
     boot_files::copy_pin(&plan.kernel, &kernel, 0o400)?;
-    let initrd = crate::boot_runtime::build_initrd(&root, &boot, &plan.base_initrd)?;
+    let initrd =
+        crate::boot_runtime::build_initrd(&root, &boot, &plan.base_initrd, &plan.initrd_tools)?;
     let labels = crate::boot_runtime::label_root(&root, &boot, &plan.label_tools)?;
     let uuid = native["root_filesystem_uuid"]
         .as_str()
@@ -332,6 +468,9 @@ pub fn prepare_boot(config: &Path, expected: &str) -> Result<()> {
         "boot_directory":boot,"root_filesystem_uuid":uuid,"target_kernel_release":release,
         "kernel":boot_files::pin_file(&kernel)?,"initrd":initrd,"root_image":disk,
         "kernel_admission":kernel_report,"host_release":host,"android_release":android,
+        "libselinux_candidate":candidate,
+        "desktop_enable":{"command":desktop_enable,"unit":desktop_unit,
+            "wants_path":desktop_wants,"target":desktop_target,"identity":desktop_link},
         "labels":boot_files::pin_file(&boot.join("ROOT-LABELS.json"))?,
         "calibration_requested":plan.android.calibrate,"guest_qualified":false,"production_ready":false});
     let path = boot.join("BOOT-PREPARED.json");

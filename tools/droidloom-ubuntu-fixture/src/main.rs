@@ -1,6 +1,8 @@
 #![forbid(unsafe_code)]
 
 mod boot;
+mod boot_candidate;
+mod boot_child;
 mod boot_files;
 mod boot_host;
 mod boot_kernel;
@@ -40,6 +42,18 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Command {
+    VerifyBootMaterials {
+        #[arg(long)]
+        config: PathBuf,
+        #[arg(long)]
+        config_sha256: String,
+    },
+    VerifyHostImport {
+        #[arg(long)]
+        config: PathBuf,
+        #[arg(long)]
+        config_sha256: String,
+    },
     Boot {
         #[arg(long)]
         config: PathBuf,
@@ -98,6 +112,14 @@ fn run() -> Result<()> {
         "real source capture/copy requires existing root rights; no privilege helper is installed",
     )?;
     match cli.command {
+        Command::VerifyBootMaterials {
+            config,
+            config_sha256,
+        } => boot::verify_boot_materials(&config, &config_sha256)?,
+        Command::VerifyHostImport {
+            config,
+            config_sha256,
+        } => boot::verify_host_import(&config, &config_sha256)?,
         Command::Boot {
             config,
             config_sha256,

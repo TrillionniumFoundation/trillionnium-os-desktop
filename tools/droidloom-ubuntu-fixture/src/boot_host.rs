@@ -98,7 +98,7 @@ pub fn validate_manifest(m: &HostManifest) -> Result<()> {
         "calibration directory contract differs",
     )
 }
-fn octal(field: &[u8]) -> Result<u64> {
+pub(crate) fn octal(field: &[u8]) -> Result<u64> {
     ensure(
         field
             .iter()
@@ -112,7 +112,7 @@ fn octal(field: &[u8]) -> Result<u64> {
         Ok(u64::from_str_radix(value, 8)?)
     }
 }
-fn text_field(field: &[u8]) -> Result<&str> {
+pub(crate) fn text_field(field: &[u8]) -> Result<&str> {
     let end = field.iter().position(|b| *b == 0).unwrap_or(field.len());
     ensure(
         field[end..].iter().all(|b| *b == 0),
@@ -272,14 +272,15 @@ pub fn install(
     let out = boot_files::new_file(&tar_path, 0o600)?;
     let err_path = work.join("host-xz.log");
     let err = boot_files::new_file(&err_path, 0o600)?;
-    let mut child = Command::new("/usr/bin/xz")
+    let mut command = Command::new("/usr/bin/xz");
+    command
         .args(["--decompress", "--stdout"])
         .env_clear()
         .env("LC_ALL", "C")
         .stdin(Stdio::from(input.try_clone()?))
         .stdout(Stdio::from(out))
-        .stderr(Stdio::from(err))
-        .spawn()?;
+        .stderr(Stdio::from(err));
+    let mut child = crate::boot_child::OwnedChild::spawn(&mut command)?;
     let began = Instant::now();
     let limit = manifest
         .files
@@ -293,8 +294,7 @@ pub fn install(
         }
         if began.elapsed() > Duration::from_secs(120) || std::fs::metadata(&tar_path)?.len() > limit
         {
-            child.kill()?;
-            child.wait()?;
+            child.stop_and_reap()?;
             return Err("bounded normal archive decompression failed".into());
         }
         std::thread::sleep(Duration::from_millis(50));
@@ -308,6 +308,29 @@ pub fn install(
     let tar_pin = boot_files::pin_file(&tar_path)?;
     let mut tar = boot_files::checked_file(&tar_pin)?;
     let entries = decode(&mut tar, &manifest, root)?;
+    let installed = fs::Tree::open(&fs::absolute_string(root)?, 0)?;
+    for f in &manifest.files {
+        let guest = format!("/{}", f.path);
+        let id = installed.identity(&guest)?;
+        let actual = boot_files::pin_file(&root.join(&f.path))?;
+        ensure(
+            id.uid == 0
+                && id.gid == 0
+                && id.nlink == 1
+                && id.mode & 0o7777 == f.mode
+                && actual.bytes == f.size
+                && actual.sha256 == f.sha256,
+            "normal host installed file readback differs",
+        )?;
+    }
+    let state = installed.identity(&format!("/{STATE}"))?;
+    ensure(
+        state.uid == 0
+            && state.gid == 0
+            && state.mode & 0o7777 == 0o700
+            && installed.list(&format!("/{STATE}"))?.is_empty(),
+        "normal empty StateDirectory readback differs",
+    )?;
     let policy = root.join("etc/selinux/droidloom/policy/policy.30");
     let early = root.join("usr/lib/droidloom/production/current/board-policy/joint.policy");
     ensure(
@@ -326,7 +349,8 @@ pub fn install(
     Ok(
         serde_json::json!({"normal_host_manifest":manifest_pin,"normal_host_archive":archive_pin,
         "source_commit":manifest.commit,"source_tree":manifest.tree,"entries":entries,
-        "decompressed_tar":tar_pin,"guest_qualified":false}),
+        "decompressed_tar":tar_pin,"full_file_readback":true,"empty_state_readback":true,
+        "guest_qualified":false}),
     )
 }
 
