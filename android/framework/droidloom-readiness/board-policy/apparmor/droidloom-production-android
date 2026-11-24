@@ -1,8 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 abi <abi/4.0>,
 #include <tunables/global>
-# The fixed application worker stacks this profile over the existing broker.
-# The kernel-created Android init uses its original Android SELinux transition.
+# Factory-owned queries enter this exact profile before no-new-privileges.
+# The legacy application worker retains its existing broker stack.
+# Kernel-created Android init keeps its original Android SELinux transition.
 profile droidloom-production-android {
   /{,system/,system/bin/,system/lib64/,apex/} r,
   /system/bin/{linker64,app_process64} mrix,
@@ -15,6 +16,8 @@ profile droidloom-production-android {
   @{PROC}/[0-9]*/{status,attr/current,attr/apparmor/current,attr/selinux/current} r,
   signal (receive) peer=droidloom-production-broker,
   ptrace (readby, tracedby) peer=droidloom-production-broker,
+  ptrace (readby, tracedby) peer=droidloom-instance-factory,
+  signal (receive) set=(kill) peer=droidloom-instance-factory,
   /dev/socket/droidloom/shutdown-request r,
   # The four selected immutable roles and their ordinary Android loader inputs.
   /{dev/droidloom-query,.droidloom-query}/ r,
