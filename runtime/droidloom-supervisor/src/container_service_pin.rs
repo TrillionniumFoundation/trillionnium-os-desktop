@@ -1,4 +1,4 @@
-//! Keep the two original systemd unit objects alive while a stop transaction
+//! Keep all three original systemd unit objects alive while a stop transaction
 //! completes. Without RefUnit, successful inactive services may be collected
 //! before the caller can read their original InvocationID and exit status.
 use std::ffi::{CStr, CString, c_char, c_int, c_void};
@@ -127,12 +127,16 @@ impl EarlyUnitReferences {
         }
         Ok(())
     }
-    /// Pin the fixed original production owner and observer on the system bus.
+    /// Pin the fixed original launcher, production owner and observer on the system bus.
     pub fn early() -> io::Result<Self> {
         // Never take a bus address or unit name from the environment, selected
         // release, command line or an Android reply.
         let held = Self::connect(c"unix:path=/run/dbus/system_bus_socket")?;
-        for name in ["droidloom-production.service", "droidloom-early-observer.service"] {
+        for name in [
+            "droidloom-instance-launcher.service",
+            "droidloom-production.service",
+            "droidloom-early-observer.service",
+        ] {
             let name = CString::new(name).map_err(io::Error::other)?;
             held.reference(&name)?;
         }
@@ -255,5 +259,134 @@ mod tests {
             std::thread::sleep(Duration::from_millis(20));
         }
         println!("released own connection and observed disposable unit collection");
+    }
+    #[test]
+    #[ignore = "requires a real user systemd manager and creates three bounded disposable services"]
+    fn actual_manager_restarts_three_retained_service_generations() {
+        let stamp = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let prefix = format!("droidloom-instance-ref-{}-{stamp}", std::process::id());
+        let services: Vec<_> = ["launcher", "owner", "observer"]
+            .into_iter()
+            .map(|role| {
+                let directory = std::env::temp_dir().join(format!("{prefix}-{role}"));
+                fs::create_dir(&directory).unwrap();
+                fs::set_permissions(&directory, fs::Permissions::from_mode(0o700)).unwrap();
+                PrivateService {
+                    name: format!("{prefix}-{role}.service"),
+                    directory,
+                }
+            })
+            .collect();
+        let script = "import signal,sys,time;from pathlib import Path;signal.signal(signal.SIGTERM,lambda *_:sys.exit(0));Path(sys.argv[1]).write_text('ready');\nwhile True:time.sleep(1)";
+        for (index, service) in services.iter().enumerate() {
+            let mut command = Command::new("/usr/bin/systemd-run");
+            command.args([
+                "--user",
+                &format!("--unit={}", service.name),
+                "--property=Type=exec",
+                "--property=KillMode=process",
+                "--property=Restart=no",
+                "--property=TimeoutStopSec=3s",
+                "--property=RuntimeMaxSec=30s",
+                "--property=SendSIGKILL=no",
+            ]);
+            match index {
+                0 => {
+                    command.arg(format!("--property=PartOf={}", services[1].name));
+                }
+                1 => {
+                    command.arg(format!("--property=Requires={}", services[0].name));
+                    command.arg(format!("--property=After={}", services[0].name));
+                    command.arg(format!("--property=BindsTo={}", services[0].name));
+                }
+                2 => {
+                    command.arg(format!("--property=Requires={}", services[1].name));
+                    command.arg(format!("--property=After={}", services[1].name));
+                    command.arg(format!("--property=BindsTo={}", services[1].name));
+                }
+                _ => unreachable!(),
+            }
+            checked(
+                command
+                    .args(["/usr/bin/python3", "-c", script])
+                    .arg(service.directory.join("ready")),
+            );
+        }
+        let wait_ready = || {
+            let until = Instant::now() + Duration::from_secs(5);
+            while services.iter().any(|s| !s.directory.join("ready").exists()) {
+                assert!(
+                    Instant::now() < until,
+                    "test service group did not become ready"
+                );
+                std::thread::sleep(Duration::from_millis(20));
+            }
+        };
+        wait_ready();
+        let runtime = std::env::var("XDG_RUNTIME_DIR").unwrap();
+        let address = CString::new(format!("unix:path={runtime}/bus")).unwrap();
+        let held = EarlyUnitReferences::connect(&address).unwrap();
+        for service in &services {
+            held.reference(&CString::new(service.name.clone()).unwrap())
+                .unwrap();
+        }
+        let before: Vec<_> = services.iter().map(|s| properties(&s.name)).collect();
+        for unit in &before {
+            assert_eq!(unit["ActiveState"], "active");
+            assert_eq!(unit["InvocationID"].len(), 32);
+            assert!(unit["ExecMainPID"].parse::<u32>().unwrap() > 1);
+        }
+        let stop_and_check = |original: &[BTreeMap<String, String>]| {
+            checked(Command::new("/usr/bin/systemctl").args([
+                "--user",
+                "--job-mode=fail",
+                "stop",
+                &services[1].name,
+            ]));
+            let until = Instant::now() + Duration::from_secs(5);
+            loop {
+                let stopped: Vec<_> = services.iter().map(|s| properties(&s.name)).collect();
+                if stopped.iter().all(|s| s["ActiveState"] == "inactive") {
+                    for (unit, old) in stopped.iter().zip(original) {
+                        assert_eq!(unit["LoadState"], "loaded");
+                        assert_eq!(unit["InvocationID"], old["InvocationID"]);
+                        assert_eq!(unit["ExecMainPID"], old["ExecMainPID"]);
+                        assert_eq!(unit["ExecMainCode"], "1");
+                        assert_eq!(unit["ExecMainStatus"], "0");
+                        assert_eq!(unit["Result"], "success");
+                    }
+                    break;
+                }
+                assert!(
+                    Instant::now() < until,
+                    "complete service group did not retire"
+                );
+                std::thread::sleep(Duration::from_millis(20));
+            }
+        };
+        stop_and_check(&before);
+        for service in &services {
+            fs::remove_file(service.directory.join("ready")).unwrap();
+        }
+        checked(Command::new("/usr/bin/systemctl").args([
+            "--user",
+            "--job-mode=fail",
+            "start",
+            &services[2].name,
+        ]));
+        wait_ready();
+        let after: Vec<_> = services.iter().map(|s| properties(&s.name)).collect();
+        for (unit, old) in after.iter().zip(&before) {
+            assert_eq!(unit["ActiveState"], "active");
+            assert_eq!(unit["InvocationID"].len(), 32);
+            assert_ne!(unit["InvocationID"], old["InvocationID"]);
+            assert!(unit["ExecMainPID"].parse::<u32>().unwrap() > 1);
+        }
+        stop_and_check(&after);
+        println!("observed two complete normal retirements and three fresh invocation IDs");
+        drop(held);
     }
 }

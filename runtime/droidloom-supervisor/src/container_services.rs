@@ -13,7 +13,9 @@ const OCI: &str = "droidloom-container-oci.service";
 const ENTRY: &str = "droidloom-container-entry.service";
 const EARLY: &str = "droidloom-early-observer.service";
 const EARLY_OWNER: &str = "droidloom-production.service";
-const EARLY_OWNER_FIELDS: &str = "Id,LoadState,ActiveState,SubState,Type,KillMode,Restart,RemainAfterExit,User,Group,ExecStart,ExecStop,ExecStopPost,Requires,After,MainPID,InvocationID,Result,ExecMainPID,ExecMainCode,ExecMainStatus,SELinuxContext,AppArmorProfile,NoNewPrivileges";
+const EARLY_LAUNCHER: &str = "droidloom-instance-launcher.service";
+const EARLY_LAUNCHER_FIELDS: &str = "Id,LoadState,ActiveState,SubState,Type,NotifyAccess,KillMode,Restart,RemainAfterExit,User,Group,ExecStart,ExecStop,ExecStopPost,Requires,After,PartOf,MainPID,InvocationID,Result,ExecMainPID,ExecMainCode,ExecMainStatus,SELinuxContext,AppArmorProfile,NoNewPrivileges,SendSIGKILL,PrivateMounts";
+const EARLY_OWNER_FIELDS: &str = "Id,LoadState,ActiveState,SubState,Type,KillMode,Restart,RemainAfterExit,User,Group,ExecStart,ExecStop,ExecStopPost,Requires,After,BindsTo,MainPID,InvocationID,Result,ExecMainPID,ExecMainCode,ExecMainStatus,SELinuxContext,AppArmorProfile,NoNewPrivileges";
 const EARLY_OBSERVER_FIELDS: &str = "Id,LoadState,ActiveState,SubState,Type,NotifyAccess,KillMode,Restart,RemainAfterExit,ExecStart,BindsTo,After,Requires,MainPID,InvocationID,Result,ExecMainPID,ExecMainCode,ExecMainStatus";
 const PROGRAM: &str = "/usr/lib/droidloom/production/current/droidloomd";
 /// Layout detection only prevents desktop fallback. The original production
@@ -187,7 +189,7 @@ fn snapshot() -> io::Result<(Properties, Properties)> {
 pub(super) struct Generation {
     pub(super) pid: u32,
     invocation: String,
-    early: bool,
+    early: Option<EarlyInstance>,
 }
 
 impl Generation {
@@ -198,17 +200,17 @@ impl Generation {
         Some(Self {
             pid: property(entry, "MainPID").parse().ok()?,
             invocation: property(entry, "InvocationID").to_owned(),
-            early: false,
+            early: None,
         })
     }
 
     pub(super) fn verify_current(&self) -> io::Result<()> {
-        if self.early {
+        if self.early.is_some() {
             return if early_generation()?.as_ref() == Some(self) {
                 Ok(())
             } else {
                 Err(io::Error::other(
-                    "early Android observer changed during the request",
+                    "early Android launcher, owner or observer changed during the request",
                 ))
             };
         }
@@ -310,45 +312,193 @@ fn verify_early_observer(s: &Properties) -> io::Result<()> {
     Ok(())
 }
 
-fn early_generation() -> io::Result<Option<Generation>> {
-    let s = show(EARLY, EARLY_OBSERVER_FIELDS)?;
-    verify_early_observer(&s)?;
-    if matches(
-        &s,
-        &[
-            ("ActiveState", "inactive"),
-            ("MainPID", "0"),
-            ("Result", "success"),
-        ],
-    ) {
-        return Ok(None);
-    }
-    let id = property(&s, "InvocationID");
-    let pid = property(&s, "MainPID").parse::<u32>().unwrap_or(0);
+fn verify_early_launcher(launcher: &Properties) -> io::Result<()> {
     if !matches(
-        &s,
+        launcher,
         &[
-            ("ActiveState", "active"),
-            ("SubState", "running"),
-            ("Result", "success"),
+            ("Id", EARLY_LAUNCHER),
+            ("LoadState", "loaded"),
+            ("Type", "notify"),
+            ("NotifyAccess", "main"),
+            ("User", "root"),
+            ("Group", "root"),
+            ("KillMode", "process"),
+            ("Restart", "no"),
+            ("RemainAfterExit", "no"),
+            ("SendSIGKILL", "no"),
+            ("PrivateMounts", "no"),
+            ("SELinuxContext", "u:r:droidloom_instance_launcher:s0"),
+            ("AppArmorProfile", "droidloom-instance-launcher"),
+            ("NoNewPrivileges", "yes"),
         ],
-    ) || pid < 2
-        || id.len() != 32
-        || !id.bytes().all(|v| v.is_ascii_hexdigit())
-        || !id.bytes().any(|v| v != b'0')
+    ) || !["Requires", "After"]
+        .iter()
+        .all(|key| members(launcher, key).any(|unit| unit == "droidloom-manager-label.service"))
+        || !members(launcher, "PartOf").any(|unit| unit == EARLY_OWNER)
+        || !fixed_command(property(launcher, "ExecStart"), "--launch-early-instance")
+        || !property(launcher, "ExecStop").is_empty()
+        || !property(launcher, "ExecStopPost").is_empty()
     {
-        return Err(io::Error::other(format!(
-            "kernel-booted Android observer is {}/{} ({})",
-            property(&s, "ActiveState"),
-            property(&s, "SubState"),
-            property(&s, "Result")
-        )));
+        return Err(io::Error::other(
+            "early Android original-instance launcher has an incorrect service contract",
+        ));
     }
-    Ok(Some(Generation {
-        pid,
-        invocation: id.to_owned(),
-        early: true,
-    }))
+    Ok(())
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+struct EarlyIdentity {
+    pid: u32,
+    invocation: String,
+}
+
+impl EarlyIdentity {
+    fn retained(unit: &Properties, allow_unstarted: bool) -> io::Result<Option<Self>> {
+        let id = property(unit, "InvocationID");
+        // The observer need not have been attached before an orderly stop.
+        // This is the only accepted absence of a previous service invocation.
+        if allow_unstarted
+            && (id.is_empty() || id == "00000000000000000000000000000000")
+            && matches(
+                unit,
+                &[
+                    ("ActiveState", "inactive"),
+                    ("SubState", "dead"),
+                    ("MainPID", "0"),
+                    ("ExecMainPID", "0"),
+                    ("ExecMainCode", "0"),
+                    ("ExecMainStatus", "0"),
+                    ("Result", "success"),
+                ],
+            )
+        {
+            return Ok(None);
+        }
+        let pid = property(unit, "ExecMainPID").parse::<u32>().unwrap_or(0);
+        let main = property(unit, "MainPID")
+            .parse::<u32>()
+            .map_err(io::Error::other)?;
+        if pid < 2
+            || main != 0 && main != pid
+            || id.len() != 32
+            || !id.bytes().all(|v| v.is_ascii_hexdigit())
+            || !id.bytes().any(|v| v != b'0')
+        {
+            return Err(io::Error::other(format!(
+                "{} has no consistent original process and invocation",
+                property(unit, "Id")
+            )));
+        }
+        Ok(Some(Self {
+            pid,
+            invocation: id.to_owned(),
+        }))
+    }
+
+    fn required(unit: &Properties) -> io::Result<Self> {
+        Self::retained(unit, false)?.ok_or_else(|| io::Error::other("missing early unit identity"))
+    }
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+struct EarlyInstance {
+    launcher: EarlyIdentity,
+    owner: EarlyIdentity,
+    observer: Option<EarlyIdentity>,
+}
+
+struct EarlySnapshot {
+    launcher: Properties,
+    owner: Properties,
+    observer: Properties,
+}
+
+impl EarlySnapshot {
+    fn read() -> io::Result<Self> {
+        Ok(Self {
+            launcher: show(EARLY_LAUNCHER, EARLY_LAUNCHER_FIELDS)?,
+            owner: show(EARLY_OWNER, EARLY_OWNER_FIELDS)?,
+            observer: show(EARLY, EARLY_OBSERVER_FIELDS)?,
+        })
+    }
+
+    fn verify_contracts(&self) -> io::Result<()> {
+        verify_early_launcher(&self.launcher)?;
+        verify_early_owner(&self.owner)?;
+        verify_early_observer(&self.observer)
+    }
+
+    fn identity(&self) -> io::Result<EarlyInstance> {
+        self.verify_contracts()?;
+        Ok(EarlyInstance {
+            launcher: EarlyIdentity::required(&self.launcher)?,
+            owner: EarlyIdentity::required(&self.owner)?,
+            observer: EarlyIdentity::retained(&self.observer, true)?,
+        })
+    }
+
+    fn running(&self) -> io::Result<Option<(Generation, EarlyInstance)>> {
+        self.verify_contracts()?;
+        for unit in [&self.launcher, &self.owner, &self.observer] {
+            if property(unit, "ActiveState") == "failed" {
+                return Err(io::Error::other(format!(
+                    "{} failed: {}",
+                    property(unit, "Id"),
+                    property(unit, "Result")
+                )));
+            }
+        }
+        if matches(
+            &self.observer,
+            &[
+                ("ActiveState", "inactive"),
+                ("MainPID", "0"),
+                ("Result", "success"),
+            ],
+        ) {
+            return Ok(None);
+        }
+        for unit in [&self.launcher, &self.owner, &self.observer] {
+            if !matches(
+                unit,
+                &[
+                    ("ActiveState", "active"),
+                    ("SubState", "running"),
+                    ("Result", "success"),
+                ],
+            ) || !property(unit, "MainPID")
+                .parse::<u32>()
+                .is_ok_and(|pid| pid > 1)
+            {
+                return Err(io::Error::other(format!(
+                    "{} is {}/{} ({})",
+                    property(unit, "Id"),
+                    property(unit, "ActiveState"),
+                    property(unit, "SubState"),
+                    property(unit, "Result")
+                )));
+            }
+        }
+        let identity = self.identity()?;
+        let observer = identity
+            .observer
+            .as_ref()
+            .ok_or_else(|| io::Error::other("running early observer has no invocation"))?;
+        Ok(Some((
+            Generation {
+                pid: observer.pid,
+                invocation: observer.invocation.clone(),
+                early: Some(identity.clone()),
+            },
+            identity,
+        )))
+    }
+}
+
+fn early_generation() -> io::Result<Option<Generation>> {
+    Ok(EarlySnapshot::read()?
+        .running()?
+        .map(|(generation, _)| generation))
 }
 
 // Only the production owner can request Android shutdown and verify retirement
@@ -373,6 +523,9 @@ fn verify_early_owner(owner: &Properties) -> io::Result<()> {
     ) || !["Requires", "After"]
         .iter()
         .all(|key| members(owner, key).any(|unit| unit == "droidloom-manager-label.service"))
+        || !["Requires", "After", "BindsTo"]
+            .iter()
+            .all(|key| members(owner, key).any(|unit| unit == EARLY_LAUNCHER))
         || !fixed_command(
             property(owner, "ExecStart"),
             "--socket /run/droidloom/control.sock",
@@ -387,72 +540,56 @@ fn verify_early_owner(owner: &Properties) -> io::Result<()> {
     Ok(())
 }
 
-fn early_owner_invocation(owner: &Properties) -> io::Result<String> {
-    let id = property(owner, "InvocationID");
-    if id.len() != 32
-        || !id.bytes().all(|v| v.is_ascii_hexdigit())
-        || !id.bytes().any(|v| v != b'0')
-    {
-        return Err(io::Error::other(
-            "early Android has no retained production owner invocation",
-        ));
-    }
-    Ok(id.to_owned())
-}
-
 fn early_retired(
-    owner: &Properties,
-    observer: &Properties,
-    invocation: &str,
+    snapshot: &EarlySnapshot,
+    original: &EarlyInstance,
     public_absent: bool,
 ) -> io::Result<bool> {
-    verify_early_owner(owner)?;
-    verify_early_observer(observer)?;
-    if early_owner_invocation(owner)? != invocation {
+    if snapshot.identity()? != *original {
         return Err(io::Error::other(
-            "early Android production owner changed during shutdown",
+            "early Android launcher, owner or observer changed during shutdown",
         ));
     }
-    for (s, id) in [(owner, EARLY_OWNER), (observer, EARLY)] {
-        if property(s, "ActiveState") == "failed"
-            || property(s, "ActiveState") == "inactive" && property(s, "Result") != "success"
+    let mut complete = true;
+    for (unit, identity) in [
+        (&snapshot.launcher, Some(&original.launcher)),
+        (&snapshot.owner, Some(&original.owner)),
+        (&snapshot.observer, original.observer.as_ref()),
+    ] {
+        if property(unit, "ActiveState") == "failed"
+            || property(unit, "ActiveState") == "inactive" && property(unit, "Result") != "success"
         {
             return Err(io::Error::other(format!(
-                "{id} failed to retire cleanly: {}",
-                property(s, "Result")
+                "{} failed to retire cleanly: {}",
+                property(unit, "Id"),
+                property(unit, "Result")
+            )));
+        }
+        if property(unit, "ActiveState") != "inactive" || property(unit, "MainPID") != "0" {
+            complete = false;
+            continue;
+        }
+        // The identities above bind ExecMainPID to each originally held MainPID.
+        // The launcher's ordinary exit(0) follows the factory's DLDONE01, after
+        // actual owner/init retirement and waitid. A signal or reset-failed is
+        // never evidence of that complete transaction.
+        if identity.is_some()
+            && !matches(
+                unit,
+                &[
+                    ("SubState", "dead"),
+                    ("ExecMainCode", "1"),
+                    ("ExecMainStatus", "0"),
+                ],
+            )
+        {
+            return Err(io::Error::other(format!(
+                "{} did not complete its original orderly shutdown",
+                property(unit, "Id")
             )));
         }
     }
-    if property(owner, "ActiveState") != "inactive" || property(owner, "MainPID") != "0" {
-        return Ok(false);
-    }
-    // systemd treats some signal deaths as success. Only the owner's ordinary
-    // exit(0) follows the successful orderly request AND actual resource cleanup.
-    // Never accept reset-failed, an unstarted unit, SIGTERM or SIGKILL as that exit.
-    if property(owner, "ExecMainCode") != "1"
-        || property(owner, "ExecMainStatus") != "0"
-        || !property(owner, "ExecMainPID")
-            .parse::<u32>()
-            .is_ok_and(|pid| pid > 1)
-    {
-        return Err(io::Error::other(
-            "early Android owner did not complete its orderly shutdown and retirement",
-        ));
-    }
-    if property(observer, "ActiveState") != "inactive" || property(observer, "MainPID") != "0" {
-        return Ok(false);
-    }
-    if property(observer, "ExecMainPID")
-        .parse::<u32>()
-        .is_ok_and(|pid| pid > 1)
-        && (property(observer, "ExecMainCode") != "1"
-            || property(observer, "ExecMainStatus") != "0")
-    {
-        return Err(io::Error::other(
-            "early Android observer exited without completing its shutdown",
-        ));
-    }
-    Ok(public_absent)
+    Ok(complete && public_absent)
 }
 
 fn public_readiness_absent() -> io::Result<bool> {
@@ -463,34 +600,38 @@ fn public_readiness_absent() -> io::Result<bool> {
     }
 }
 
-fn stop_early() -> io::Result<()> {
-    let _references = EarlyUnitReferences::early()?;
-    let owner = show(EARLY_OWNER, EARLY_OWNER_FIELDS)?;
-    verify_early_owner(&owner)?;
-    let invocation = early_owner_invocation(&owner)?;
-    let observer = show(EARLY, EARLY_OBSERVER_FIELDS)?;
-    if early_retired(&owner, &observer, &invocation, public_readiness_absent()?)? {
-        return Ok(());
+// The caller keeps all three RefUnit references through stop and any subsequent
+// start, so systemd cannot discard the original exit records in between.
+fn stop_early() -> io::Result<EarlyInstance> {
+    let snapshot = EarlySnapshot::read()?;
+    let original = snapshot.identity()?;
+    if early_retired(&snapshot, &original, public_readiness_absent()?)? {
+        return Ok(original);
     }
-    if !matches(
-        &owner,
-        &[
-            ("ActiveState", "active"),
-            ("SubState", "running"),
-            ("Result", "success"),
-        ],
-    ) || !property(&owner, "MainPID")
-        .parse::<u32>()
-        .is_ok_and(|pid| pid > 1)
-    {
+    for unit in [&snapshot.launcher, &snapshot.owner] {
+        if !matches(
+            unit,
+            &[
+                ("ActiveState", "active"),
+                ("SubState", "running"),
+                ("Result", "success"),
+            ],
+        ) || !property(unit, "MainPID")
+            .parse::<u32>()
+            .is_ok_and(|pid| pid > 1)
+        {
+            return Err(io::Error::other(
+                "early Android launcher and owner are not ready for an orderly stop",
+            ));
+        }
+    }
+    // Recheck the same original generations before submitting the one normal
+    // manager transaction. --no-block acknowledges only that job, not retirement.
+    if EarlySnapshot::read()?.identity()? != original {
         return Err(io::Error::other(
-            "early Android production owner is not ready for an orderly stop",
+            "early Android changed before orderly shutdown",
         ));
     }
-    // Submit the normal manager transaction once. It signals the real owner's
-    // signalfd; StopRequest and mount retirement remain inside that owner.
-    // --no-block acknowledges only the job. The observations below establish
-    // completion and never convert that acknowledgement into a success result.
     let status = systemctl()
         .args(["--job-mode=fail", "--no-block", "stop", EARLY_OWNER])
         .status()?;
@@ -501,47 +642,75 @@ fn stop_early() -> io::Result<()> {
     }
     let end = std::time::Instant::now() + std::time::Duration::from_secs(180);
     loop {
-        let owner = show(EARLY_OWNER, EARLY_OWNER_FIELDS)?;
-        let observer = show(EARLY, EARLY_OBSERVER_FIELDS)?;
-        if early_retired(&owner, &observer, &invocation, public_readiness_absent()?)? {
-            return Ok(());
+        let snapshot = EarlySnapshot::read()?;
+        if early_retired(&snapshot, &original, public_readiness_absent()?)? {
+            return Ok(original);
         }
         if std::time::Instant::now() >= end {
             return Err(io::Error::other(
-                "early Android orderly shutdown or observer retirement exceeded its deadline",
+                "early Android owner, observer or original launcher retirement exceeded its deadline",
             ));
         }
         std::thread::sleep(std::time::Duration::from_millis(100));
     }
 }
 
+fn fresh_early(previous: &EarlyInstance, current: &EarlyInstance) -> io::Result<()> {
+    if previous.launcher.invocation == current.launcher.invocation
+        || previous.owner.invocation == current.owner.invocation
+        || current.observer.is_none()
+        || previous.observer.as_ref().is_some_and(|old| {
+            current
+                .observer
+                .as_ref()
+                .is_some_and(|new| old.invocation == new.invocation)
+        })
+    {
+        return Err(io::Error::other(
+            "early Android restart did not replace all three original service invocations",
+        ));
+    }
+    Ok(())
+}
+
+fn start_early() -> io::Result<(Generation, EarlyInstance)> {
+    let status = systemctl()
+        .args(["--job-mode=fail", "start", EARLY])
+        .status()?;
+    if !status.success() {
+        return Err(io::Error::other(
+            "could not start the original Android instance and its trusted observer",
+        ));
+    }
+    EarlySnapshot::read()?.running()?.ok_or_else(|| {
+        io::Error::other("early Android launcher, owner and observer did not remain running")
+    })
+}
+
 pub(super) fn early_lifecycle(operation: &str) -> io::Result<Option<Generation>> {
     match operation {
         "status" => early_generation(),
         "start" => {
+            let _references = EarlyUnitReferences::early()?;
             if let Some(current) = early_generation()? {
                 return Ok(Some(current));
             }
-            let status = systemctl()
-                .args(["--job-mode=fail", "start", EARLY])
-                .status()?;
-            if !status.success() {
-                return Err(io::Error::other(
-                    "could not attach the trusted observer to the kernel-booted Android instance",
-                ));
-            }
-            early_generation()?.map(Some).ok_or_else(|| {
-                io::Error::other("kernel-booted Android observer did not remain attached")
-            })
+            Ok(Some(start_early()?.0))
         }
         "stop" => {
+            let _references = EarlyUnitReferences::early()?;
             stop_early()?;
             Ok(None)
         }
-        "restart" => Err(io::Error::new(
-            io::ErrorKind::Unsupported,
-            "the selected early Android instance is created once during kernel boot; a same-boot relaunch endpoint is not available",
-        )),
+        "restart" => {
+            let _references = EarlyUnitReferences::early()?;
+            let previous = stop_early()?;
+            let (generation, current) = start_early()?;
+            fresh_early(&previous, &current)?;
+            // Native readiness is still authenticated by the caller's existing
+            // production control protocol, including its final generation check.
+            Ok(Some(generation))
+        }
         _ => Err(io::Error::other(
             "invalid early Android lifecycle operation",
         )),
@@ -756,7 +925,7 @@ mod tests {
         inactive.insert("ActiveState".into(), "inactive".into());
         assert!(!running(&inactive, &entry));
     }
-    fn early_contract() -> (Properties, Properties) {
+    fn early_contract() -> EarlySnapshot {
         let mut owner = props(&[
             ("Id", EARLY_OWNER),
             ("LoadState", "loaded"),
@@ -769,8 +938,15 @@ mod tests {
             ("SELinuxContext", "u:r:droidloom_broker:s0"),
             ("AppArmorProfile", "droidloom-production-broker"),
             ("NoNewPrivileges", "yes"),
-            ("Requires", "droidloom-manager-label.service"),
-            ("After", "local-fs.target droidloom-manager-label.service"),
+            (
+                "Requires",
+                "droidloom-manager-label.service droidloom-instance-launcher.service",
+            ),
+            (
+                "After",
+                "local-fs.target droidloom-manager-label.service droidloom-instance-launcher.service",
+            ),
+            ("BindsTo", EARLY_LAUNCHER),
             ("ActiveState", "inactive"),
             ("SubState", "dead"),
             ("MainPID", "0"),
@@ -797,7 +973,9 @@ mod tests {
             ),
             ("BindsTo", EARLY_OWNER),
             ("ActiveState", "inactive"),
+            ("SubState", "dead"),
             ("MainPID", "0"),
+            ("InvocationID", "223456789abcdef0123456789abcdef0"),
             ("Result", "success"),
             ("ExecMainPID", "4632"),
             ("ExecMainCode", "1"),
@@ -805,77 +983,225 @@ mod tests {
         ]);
         observer.insert("ExecStart".into(), format!(
             "{{ path={PROGRAM} ; argv[]={PROGRAM} --observe-early-container ; ignore_errors=no ; pid=4632 }}"));
-        (owner, observer)
+        let mut launcher = props(&[
+            ("Id", EARLY_LAUNCHER),
+            ("LoadState", "loaded"),
+            ("Type", "notify"),
+            ("NotifyAccess", "main"),
+            ("User", "root"),
+            ("Group", "root"),
+            ("KillMode", "process"),
+            ("Restart", "no"),
+            ("RemainAfterExit", "no"),
+            ("SendSIGKILL", "no"),
+            ("PrivateMounts", "no"),
+            ("SELinuxContext", "u:r:droidloom_instance_launcher:s0"),
+            ("AppArmorProfile", "droidloom-instance-launcher"),
+            ("NoNewPrivileges", "yes"),
+            ("Requires", "droidloom-manager-label.service"),
+            ("After", "local-fs.target droidloom-manager-label.service"),
+            ("PartOf", EARLY_OWNER),
+            ("ActiveState", "inactive"),
+            ("SubState", "dead"),
+            ("MainPID", "0"),
+            ("InvocationID", "323456789abcdef0123456789abcdef0"),
+            ("Result", "success"),
+            ("ExecMainPID", "4630"),
+            ("ExecMainCode", "1"),
+            ("ExecMainStatus", "0"),
+        ]);
+        launcher.insert("ExecStart".into(), format!(
+            "{{ path={PROGRAM} ; argv[]={PROGRAM} --launch-early-instance ; ignore_errors=no ; pid=4630 }}"));
+        EarlySnapshot {
+            launcher,
+            owner,
+            observer,
+        }
+    }
+
+    fn early_unit(snapshot: &mut EarlySnapshot, index: usize) -> &mut Properties {
+        match index {
+            0 => &mut snapshot.launcher,
+            1 => &mut snapshot.owner,
+            2 => &mut snapshot.observer,
+            _ => panic!("invalid test unit"),
+        }
+    }
+
+    fn running_early_contract() -> EarlySnapshot {
+        let mut snapshot = early_contract();
+        for unit in [
+            &mut snapshot.launcher,
+            &mut snapshot.owner,
+            &mut snapshot.observer,
+        ] {
+            unit.insert("ActiveState".into(), "active".into());
+            unit.insert("SubState".into(), "running".into());
+            unit.insert("MainPID".into(), unit["ExecMainPID"].clone());
+            unit.insert("ExecMainCode".into(), "0".into());
+        }
+        snapshot
     }
 
     #[test]
-    fn early_stop_requires_the_original_owners_normal_exit_and_withdrawn_readiness() {
-        let (owner, observer) = early_contract();
-        let invocation = early_owner_invocation(&owner).unwrap();
-        assert!(early_retired(&owner, &observer, &invocation, true).unwrap());
-        assert!(!early_retired(&owner, &observer, &invocation, false).unwrap());
-        let mut running = owner.clone();
-        running.insert("ActiveState".into(), "deactivating".into());
-        running.insert("MainPID".into(), "4631".into());
-        assert!(!early_retired(&running, &observer, &invocation, true).unwrap());
+    fn early_stop_requires_all_original_normal_exits_and_withdrawn_readiness() {
+        let snapshot = early_contract();
+        let original = snapshot.identity().unwrap();
+        assert!(early_retired(&snapshot, &original, true).unwrap());
+        assert!(!early_retired(&snapshot, &original, false).unwrap());
+        for index in 0..3 {
+            let mut pending = early_contract();
+            let unit = early_unit(&mut pending, index);
+            unit.insert("ActiveState".into(), "deactivating".into());
+            unit.insert("SubState".into(), "stop-sigterm".into());
+            unit.insert("MainPID".into(), unit["ExecMainPID"].clone());
+            unit.insert("ExecMainCode".into(), "0".into());
+            assert!(
+                !early_retired(&pending, &original, true).unwrap(),
+                "unit {index}"
+            );
+            for (key, value) in [
+                ("Result", "timeout"),
+                ("Result", "exit-code"),
+                ("ExecMainCode", "2"),
+                ("ExecMainCode", "3"),
+                ("ExecMainCode", "0"),
+                ("ExecMainStatus", "1"),
+                ("ExecMainPID", "0"),
+                ("ExecMainPID", "94631"),
+                ("MainPID", "94631"),
+                ("InvocationID", "423456789abcdef0123456789abcdef0"),
+            ] {
+                let mut changed = early_contract();
+                early_unit(&mut changed, index).insert(key.into(), value.into());
+                assert!(
+                    early_retired(&changed, &original, true).is_err(),
+                    "unit {index}: {key}={value}"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn early_stop_cannot_replace_the_orderly_owner_or_original_launcher_with_a_kill_command() {
+        let original = early_contract().identity().unwrap();
+        for (index, key, value) in [
+            (1, "KillMode", "control-group"),
+            (1, "Restart", "always"),
+            (1, "SELinuxContext", "-u:r:droidloom_broker:s0"),
+            (1, "AppArmorProfile", "-droidloom-production-broker"),
+            (1, "NoNewPrivileges", "no"),
+            (1, "ExecStart", "/bin/true"),
+            (1, "ExecStop", "/bin/kill"),
+            (1, "ExecStopPost", "/bin/true"),
+            (1, "Requires", ""),
+            (1, "User", "qq"),
+            (1, "BindsTo", ""),
+            (0, "KillMode", "control-group"),
+            (0, "SendSIGKILL", "yes"),
+            (0, "PrivateMounts", "yes"),
+            (0, "PartOf", ""),
+            (0, "NotifyAccess", "all"),
+            (0, "SELinuxContext", "u:r:kernel:s0"),
+            (0, "AppArmorProfile", ""),
+            (0, "NoNewPrivileges", "no"),
+            (0, "ExecStart", "/bin/true"),
+            (0, "ExecStop", "/bin/kill"),
+            (0, "ExecStopPost", "/bin/true"),
+            (0, "Requires", ""),
+            (0, "User", "qq"),
+            (2, "BindsTo", ""),
+        ] {
+            let mut changed = early_contract();
+            early_unit(&mut changed, index).insert(key.into(), value.into());
+            assert!(
+                early_retired(&changed, &original, true).is_err(),
+                "unit {index}: {key}={value}"
+            );
+        }
+    }
+
+    #[test]
+    fn an_unattached_observer_is_allowed_only_with_a_complete_unstarted_record() {
+        let mut snapshot = early_contract();
         for (key, value) in [
-            ("Result", "timeout"),
-            ("Result", "exit-code"),
-            ("ExecMainCode", "2"),
-            ("ExecMainCode", "3"),
-            ("ExecMainCode", "0"),
-            ("ExecMainStatus", "1"),
+            ("InvocationID", ""),
             ("ExecMainPID", "0"),
-            ("InvocationID", "223456789abcdef0123456789abcdef0"),
+            ("ExecMainCode", "0"),
         ] {
-            let mut changed = owner.clone();
-            changed.insert(key.into(), value.into());
-            assert!(
-                early_retired(&changed, &observer, &invocation, true).is_err(),
-                "{key}={value}"
-            );
+            snapshot.observer.insert(key.into(), value.into());
         }
-        let mut signaled = observer.clone();
-        signaled.insert("ExecMainCode".into(), "2".into());
-        assert!(early_retired(&owner, &signaled, &invocation, true).is_err());
-        let mut active_observer = observer.clone();
-        active_observer.insert("ActiveState".into(), "active".into());
-        active_observer.insert("MainPID".into(), "4632".into());
-        assert!(!early_retired(&owner, &active_observer, &invocation, true).unwrap());
+        let original = snapshot.identity().unwrap();
+        assert!(original.observer.is_none());
+        assert!(early_retired(&snapshot, &original, true).unwrap());
+        snapshot
+            .observer
+            .insert("ExecMainPID".into(), "4632".into());
+        assert!(early_retired(&snapshot, &original, true).is_err());
     }
 
     #[test]
-    fn early_stop_cannot_replace_the_orderly_owner_with_an_unconfined_or_kill_command() {
-        let (owner, observer) = early_contract();
-        let invocation = early_owner_invocation(&owner).unwrap();
-        for (key, value) in [
-            ("KillMode", "control-group"),
-            ("Restart", "always"),
-            ("SELinuxContext", "-u:r:droidloom_broker:s0"),
-            ("AppArmorProfile", "-droidloom-production-broker"),
-            ("NoNewPrivileges", "no"),
-            ("ExecStart", "/bin/true"),
-            ("ExecStop", "/bin/kill"),
-            ("ExecStopPost", "/bin/true"),
-            ("Requires", ""),
-            ("User", "qq"),
-        ] {
-            let mut changed = owner.clone();
-            changed.insert(key.into(), value.into());
-            assert!(
-                early_retired(&changed, &observer, &invocation, true).is_err(),
-                "{key}={value}"
-            );
+    fn early_running_needs_all_three_original_processes_not_observer_activity_alone() {
+        let snapshot = running_early_contract();
+        let (generation, identity) = snapshot.running().unwrap().unwrap();
+        assert_eq!(generation.pid, 4632);
+        assert_eq!(generation.invocation, identity.observer.unwrap().invocation);
+        for index in 0..3 {
+            for (key, value) in [
+                ("MainPID", "0"),
+                ("ExecMainPID", "94631"),
+                ("InvocationID", ""),
+                ("ActiveState", "failed"),
+                ("SubState", "exited"),
+            ] {
+                let mut changed = running_early_contract();
+                early_unit(&mut changed, index).insert(key.into(), value.into());
+                assert!(changed.running().is_err(), "unit {index}: {key}={value}");
+            }
         }
-        let mut detached = observer.clone();
-        detached.remove("BindsTo");
-        assert!(early_retired(&owner, &detached, &invocation, true).is_err());
     }
 
     #[test]
-    fn early_restart_refuses_before_any_service_or_runtime_operation() {
-        let error = early_lifecycle("restart").unwrap_err();
-        assert_eq!(error.kind(), io::ErrorKind::Unsupported);
-        assert!(error.to_string().contains("once during kernel boot"));
+    fn early_restart_requires_three_new_invocations_even_if_a_numeric_pid_is_reused() {
+        let previous = running_early_contract().identity().unwrap();
+        let mut snapshot = running_early_contract();
+        for (index, id) in [
+            (0, "423456789abcdef0123456789abcdef0"),
+            (1, "523456789abcdef0123456789abcdef0"),
+            (2, "623456789abcdef0123456789abcdef0"),
+        ] {
+            early_unit(&mut snapshot, index).insert("InvocationID".into(), id.into());
+        }
+        let (_, current) = snapshot.running().unwrap().unwrap();
+        assert_eq!(previous.owner.pid, current.owner.pid);
+        assert!(fresh_early(&previous, &current).is_ok());
+        for index in 0..3 {
+            let mut reused = current.clone();
+            match index {
+                0 => reused.launcher = previous.launcher.clone(),
+                1 => reused.owner = previous.owner.clone(),
+                2 => reused.observer = previous.observer.clone(),
+                _ => unreachable!(),
+            }
+            assert!(fresh_early(&previous, &reused).is_err(), "unit {index}");
+        }
+        let mut absent = current;
+        absent.observer = None;
+        assert!(fresh_early(&previous, &absent).is_err());
+    }
+    #[test]
+    fn readiness_cannot_survive_a_launcher_or_owner_generation_replacement() {
+        let (original, _) = running_early_contract().running().unwrap().unwrap();
+        for index in 0..2 {
+            let mut snapshot = running_early_contract();
+            early_unit(&mut snapshot, index).insert(
+                "InvocationID".into(),
+                "423456789abcdef0123456789abcdef0".into(),
+            );
+            let (changed, _) = snapshot.running().unwrap().unwrap();
+            assert_eq!(original.pid, changed.pid);
+            assert_eq!(original.invocation, changed.invocation);
+            assert_ne!(original, changed, "unit {index}");
+        }
     }
 }
