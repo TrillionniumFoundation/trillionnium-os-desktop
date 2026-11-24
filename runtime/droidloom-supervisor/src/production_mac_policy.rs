@@ -379,7 +379,7 @@ impl LoadedPolicyWitness {
     pub(super) fn stable_epoch(&self) -> Result<()> {
         require(
             self.status.read()? == self.epoch
-                && aa_revision(&self.apparmor.security)? == self.apparmor.revision,
+                && aa_revision(&self.apparmor.security)? == self.apparmor.operation_revision.get(),
             "loaded SELinux or AppArmor epoch changed during observation",
         )
     }

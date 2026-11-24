@@ -1,7 +1,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 abi <abi/5.0>,
 #include <tunables/global>
-profile droidloom-production-broker {
+profile droidloom-production-broker flags=(attach_disconnected.path=/.droidloom-kernel-apparmorfs) {
+  # The consumer authenticates the sealed original AAFS objects before reading.
+  # Only three synthetic paths gain read access; the object gate rejects aliases.
+  /.droidloom-kernel-apparmorfs/raw_data/{164,165,166}/revision r,
   # Dynamic loader and NSS inputs used by the packaged Ubuntu executables.
   /etc/ld.so.cache r,
   /{,usr/}lib{,64}/ld-linux-x86-64.so.2 mr,

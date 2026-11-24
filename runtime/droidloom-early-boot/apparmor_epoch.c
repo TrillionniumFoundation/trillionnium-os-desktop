@@ -26,7 +26,7 @@ static const char *const names[] = {
 };
 struct role {
     char directory[128], digest[68];
-    uint64_t inode[4], raw_inode[2];
+    uint64_t inode[4], raw_inode[2], revision_inode, initial_revision;
     char birth[32], raw_digest[68];
 };
 struct epoch {
@@ -122,6 +122,53 @@ static int capture_raw_profile(int dir, struct role *role, uint64_t mount,
     return 0;
 }
 
+
+static int capture_raw_revision(const struct epoch *epoch, size_t index, struct role *role)
+{
+    static const char *const births[] = {"164", "165", "166"};
+    if (index >= 3 || strcmp(role->birth, births[index])) return reject(ESTALE);
+    int root = open(AA_DIR "/policy", O_PATH | O_DIRECTORY | O_CLOEXEC);
+    if (root < 0) return -1;
+    int store = -1, birth = -1, fd = -1, error = 0;
+    uint64_t mount, ino;
+    if (identity(root, &mount, &ino) < 0) error = errno;
+    else if (mount != epoch->mount || ino != epoch->ns) error = ESTALE;
+    if (!error && (store = openat(root, "raw_data", O_PATH | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC)) < 0)
+        error = errno;
+    if (!error && (birth = openat(store, births[index], O_PATH | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC)) < 0)
+        error = errno;
+    if (!error && (fd = openat(birth, "revision", O_RDONLY | O_NONBLOCK | O_NOFOLLOW | O_CLOEXEC)) < 0)
+        error = errno;
+    struct stat st;
+    if (!error && (identity(fd, &mount, &role->revision_inode) < 0 || fstat(fd, &st) < 0))
+        error = errno;
+    if (!error && (mount != epoch->mount || !S_ISREG(st.st_mode) || st.st_uid || st.st_gid ||
+                   st.st_nlink != 1 || (st.st_mode & 07777) != 0444)) error = ESTALE;
+    char value[32];
+    ssize_t count = -1;
+    if (!error) {
+        do { count = read(fd, value, sizeof(value) - 1); } while (count < 0 && errno == EINTR);
+        if (count < 0) error = errno;
+        else if (count < 2 || (size_t)count >= sizeof(value) - 1 || value[count-1] != '\n' ||
+                 value[0] == '0' || memchr(value, 0, count)) error = EBADMSG;
+        else {
+            value[count-1] = 0;
+            if (strspn(value, "0123456789") != (size_t)count - 1) error = EBADMSG;
+            else {
+                char *end;
+                errno = 0;
+                role->initial_revision = strtoull(value, &end, 10);
+                if (errno || *end || role->initial_revision != 165U + index) error = ESTALE;
+            }
+        }
+    }
+    if (fd >= 0) close(fd);
+    if (birth >= 0) close(birth);
+    if (store >= 0) close(store);
+    close(root);
+    return error ? reject(error) : 0;
+}
+
 static int read_role(int parent, const char *base, size_t index, struct epoch *epoch,
                      const struct droidloom_raw_profile *input)
 {
@@ -151,6 +198,7 @@ static int read_role(int parent, const char *base, size_t index, struct epoch *e
     if (!error && (strcmp(name,names[index]) || strcmp(mode,"enforce") || strlen(role->digest) != 64 ||
                    strspn(role->digest, "0123456789abcdef") != 64)) error = EBADMSG;
     if (!error && capture_raw_profile(dir,role,epoch->mount,input) < 0) error = errno;
+    if (!error && capture_raw_revision(epoch,index,role) < 0) error = errno;
     close(dir);
     return error ? reject(error) : 0;
 }
@@ -262,15 +310,16 @@ int droidloom_capture_apparmor_epoch(struct droidloom_apparmor_measurement *save
     FILE *text = fmemopen(saved->bytes, sizeof(saved->bytes), "w");
     if (!text) return -1;
     int error = 0;
-    if (fprintf(text, "DLAAREV2\n%s %s %" PRIu64 " %" PRIu64 " %" PRIu64 "\n",
+    if (fprintf(text, "DLAAREV3\n%s %s %" PRIu64 " %" PRIu64 " %" PRIu64 "\n",
                 epoch.boot, epoch.revision, epoch.mount, epoch.ns, epoch.profiles) < 0)
         error = errno;
     for (size_t i = 0; !error && i < 3; i++) {
         struct role *r = &epoch.roles[i];
         if (fprintf(text, "%s %s %" PRIu64 " %" PRIu64 " %" PRIu64 " %" PRIu64
-                    " %s %s %" PRIu64 " %" PRIu64 "\n",
+                    " %s %s %" PRIu64 " %" PRIu64 " %" PRIu64 " %" PRIu64 "\n",
                     r->directory,r->digest,r->inode[0],r->inode[1],r->inode[2],r->inode[3],
-                    r->birth,r->raw_digest,r->raw_inode[0],r->raw_inode[1]) < 0)
+                    r->birth,r->raw_digest,r->raw_inode[0],r->raw_inode[1],
+                    r->revision_inode,r->initial_revision) < 0)
             error = errno;
     }
     if (fflush(text) < 0 && !error) error = errno;

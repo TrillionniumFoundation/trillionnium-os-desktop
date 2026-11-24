@@ -78,6 +78,9 @@
 ; result via read(2). The kernel checks the security class for each operation.
 ; The selected AppArmor profiles further restrict each role to fixed ABI paths.
 (allow p4_linux_mac_roles proc (dir (getattr search)))
+; Current-task proc magic links retain the stock filesystem symlink type.
+; This resolves the link only; target object and ptrace checks remain required.
+(allow p4_linux_mac_roles proc (lnk_file (read)))
 (allow p4_linux_mac_roles sysfs (dir (getattr search)))
 (allow p4_linux_mac_roles selinuxfs (dir (getattr search read open)))
 (allow p4_linux_mac_roles selinuxfs (file (getattr read open map write)))
@@ -122,6 +125,8 @@
 (allow p4_linux_mac_roles p4_linux_mac_fixed_kernel_read (file (getattr open read)))
 (allow p4_linux_mac_roles proc_random (dir (getattr search)))
 (allow p4_linux_mac_roles securityfs (dir (getattr search)))
+; The original AppArmor namespace magic link keeps the stock securityfs type.
+(allow p4_linux_mac_roles securityfs (lnk_file (read)))
 (allow p4_linux_mac_roles securityfs (filesystem (getattr)))
 (allow p4_linux_mac_roles proc (filesystem (getattr)))
 (allow p4_linux_mac_roles sysfs (filesystem (getattr)))
@@ -130,13 +135,25 @@
 (allow droidloom_broker self (dir (open read)))
 
 ; The AppArmor namespace magic link selects a kernel-internal superblock.
-; Late roles inspect only its identities. They read no disconnected file data.
+; Late roles inspect original object identities. Only the three fixed root-namespace
+; raw-load revision counters have a separate read-only type. Their birth paths
+; follow the admitted empty-namespace 165 Ubuntu + four board-profile load order.
 (type p4_linux_apparmor_handle_t)
 (type p4_linux_apparmor_state_t)
 (roletype object_r p4_linux_apparmor_handle_t)
 (roletype object_r p4_linux_apparmor_state_t)
 (typeattributeset p4_linux_data (p4_linux_apparmor_handle_t p4_linux_apparmor_state_t))
 (genfscon apparmorfs "/" (u object_r p4_linux_apparmor_handle_t ((s0) (s0))))
+(type p4_linux_apparmor_revision_t)
+(roletype object_r p4_linux_apparmor_revision_t)
+(typeattributeset p4_linux_data (p4_linux_apparmor_revision_t))
+(genfscon apparmorfs "/raw_data/164/revision" (u object_r p4_linux_apparmor_revision_t ((s0) (s0))))
+(genfscon apparmorfs "/raw_data/165/revision" (u object_r p4_linux_apparmor_revision_t ((s0) (s0))))
+(genfscon apparmorfs "/raw_data/166/revision" (u object_r p4_linux_apparmor_revision_t ((s0) (s0))))
+(allow p4_linux_mac_roles p4_linux_apparmor_revision_t (file (getattr open read)))
+(neverallow p4_linux_other_than_mac p4_linux_apparmor_revision_t (file (open read)))
+(neverallow p4_nonboard_user p4_linux_apparmor_revision_t (file (open read)))
+(neverallow p4_linux_procs p4_linux_apparmor_revision_t (file (create append write link unlink rename setattr relabelto relabelfrom map execute execute_no_trans entrypoint mounton)))
 (genfscon securityfs "/apparmor" (u object_r p4_linux_apparmor_state_t ((s0) (s0))))
 ; The distribution executor uses a separate read-only type for the sysfs enabled bit.
 (allow p4_linux_mac_roles p4_linux_apparmor_handle_t (filesystem (getattr)))

@@ -179,7 +179,7 @@ static int initial_ubuntu_kernel(void)
     struct statfs root;
     if (uname(&kernel) < 0 || statfs("/", &root) < 0)
         return -1;
-    if (getpid() != 1 || geteuid() != 0 || strcmp(kernel.release, "6.18.64-p4ctx6181-fusectl-r1") ||
+    if (getpid() != 1 || geteuid() != 0 || strcmp(kernel.release, "6.18.64-p4ctx6181-fusectl-aafs-r1") ||
         (unsigned long)root.f_type != EXT4_SUPER_MAGIC)
         return reject(EXDEV);
     const char *namespaces[] = {"user", "pid", "mnt"};
@@ -250,8 +250,8 @@ static int apparmor_profiles(const struct input *pack, int activate,
 
 int droidloom_board_activate_policy(gid_t observer_gid, const char *cohort)
 {
-    struct input policy = {944433, "aaa9043aa1be1d589b8117a26f6970a326224cedae659951862e5b0a06ec28ba", POLICY_DIR "/joint.policy", NULL};
-    struct input aa = {5795693, "4b1d14661725ab515ce1db60a164eb53650df34115d371a3d294071636dbe9d1", POLICY_DIR "/ubuntu-apparmor.profiles", NULL};
+    struct input policy = {944759, "b0e69b137cb2dc393695954436de092141f5ddaea90334fc9df06988a8b44868", POLICY_DIR "/joint.policy", NULL};
+    struct input aa = {5797221, "0de44977973e5cd70d513e1009149eaf0e3c6e15e58c07453efe1886031010c0", POLICY_DIR "/ubuntu-apparmor.profiles", NULL};
     struct droidloom_apparmor_measurement observation = {0};
     struct droidloom_raw_profile selected_profiles[3] = {0};
     int status = -1, epoch_directory = -1;

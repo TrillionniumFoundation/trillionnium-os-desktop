@@ -37,3 +37,11 @@ must_use_candidate = "allow"
 [[bin]]
 name = "droidloom-host-mac"
 path = "src/bin/droidloom-host-mac.rs"
+
+# This target invokes the maintained kernel gate on its main thread.
+# The confined loader does not gain process fork merely for libtest.
+[[test]]
+name = "actual-board-epoch"
+path = "src/lib.rs"
+harness = false
+test = false

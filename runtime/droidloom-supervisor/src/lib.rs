@@ -6,6 +6,11 @@
 
 #![deny(unsafe_op_in_unsafe_fn)]
 
+#[cfg(test)]
+fn main() {
+    production_mac::run_actual_board_epoch_fixture();
+}
+
 pub mod control;
 mod cpu_placement;
 pub mod development;

@@ -11,6 +11,9 @@ const ROLES: [&str; 3] = [
 ];
 const CONTEXT: &str = "u:object_r:p4_linux_apparmor_epoch_t:s0";
 
+const REVISION_CONTEXT: &str = "u:object_r:p4_linux_apparmor_revision_t:s0";
+const BIRTHS: [u64; 3] = [164, 165, 166];
+
 struct Role {
     directory: CString,
     inode: [u64; 4],
@@ -20,18 +23,29 @@ struct RawProfile {
     generation: CString,
     bytes_inode: u64,
     hash_inode: u64,
+    counter: Option<Counter>,
+}
+struct Counter {
+    inode: u64,
+    initial: u64,
 }
 
 pub(super) struct BoardEpoch {
     seal: Sealed,
     pub(super) boot: String,
+    // The acquisition's operation epoch remains immutable for release capture.
     pub(super) revision: i64,
+    boot_revision: i64,
     pub(super) selinux_sequence: u32,
     pub(super) policyload: u32,
     mount: u64,
     root: u64,
     profiles: u64,
     roles: [Role; 3],
+    root_handle: File,
+    // O_PATH descriptors retain original dentries/inodes for the authority's life.
+    // Fresh READ descriptors are used for every seq_file counter observation.
+    held: Vec<File>,
 }
 
 fn number(text: &str) -> Result<u64> {
@@ -86,9 +100,9 @@ fn packet_file(file: &File) -> Result<()> {
     )
 }
 
-// AppArmor's kernel-internal filesystem is outside the process mount namespace.
-// Only fixed links produced by the kernel are followed. Child names have no slashes and come
-// from the fixed schema. No file data is read from any disconnected object.
+// AppArmor's internal filesystem is outside the process mount namespace.
+// Only fixed kernel links are followed. File data is read exclusively from
+// authenticated original revision objects, under the narrow joint MAC rules.
 fn aa_handle(
     parent: &File,
     name: &CStr,
@@ -144,6 +158,75 @@ fn object(file: &File, mount: u64, inode: u64) -> Result<()> {
     Ok(())
 }
 
+fn counter_identity(file: &File, mount: u64, inode: u64) -> Result<()> {
+    require(
+        kind(file)? == AAFS_MAGIC,
+        "revision must be the original AppArmor filesystem",
+    )?;
+    object(file, mount, inode)?;
+    let stat = file.metadata()?;
+    require(
+        stat.is_file()
+            && stat.uid() == 0
+            && stat.gid() == 0
+            && stat.mode() & 0o7777 == 0o444
+            && stat.nlink() == 1,
+        "original root-owned read-only AppArmor revision inode",
+    )?;
+    let mut label = [0_u8; 128];
+    let count = unsafe {
+        libc::fgetxattr(
+            file.as_raw_fd(),
+            c"security.selinux".as_ptr(),
+            label.as_mut_ptr().cast(),
+            label.len(),
+        )
+    };
+    if count < 0 {
+        return Err(io::Error::last_os_error().into());
+    }
+    require(
+        context_matches(&label[..count as usize], REVISION_CONTEXT),
+        "only the dedicated original AppArmor revision type is evidence",
+    )
+}
+
+fn counter_value(bytes: &[u8], expected: u64) -> Result<()> {
+    let body = bytes
+        .strip_suffix(b"\n")
+        .ok_or(MacError::Rejected("complete AppArmor load revision line"))?;
+    let text = std::str::from_utf8(body)
+        .map_err(|_| MacError::Rejected("AppArmor load revision UTF-8"))?;
+    require(
+        number(text)? == expected && expected > 0,
+        "protected AppArmor raw policy was resubmitted or replaced",
+    )
+}
+
+fn read_counter(parent: &File, mount: u64, counter: &Counter) -> Result<File> {
+    // Pin first. This fixed name is reached only from the original AAFS root
+    // through the sealed birth directory, never from a caller's pathname.
+    let held = aa_handle(parent, c"revision", false, false)?;
+    object(&held, mount, counter.inode)?;
+    let file = open_at(parent.as_raw_fd(), c"revision", libc::O_RDONLY)?;
+    // An open is not evidence. Authenticate this very READ descriptor before
+    // its first data read; a readable-label alias is still rejected here.
+    counter_identity(&file, mount, counter.inode)?;
+    counter_value(&bounded(&file, 32)?, counter.initial)?;
+    counter_identity(&file, mount, counter.inode)?;
+    object(&held, mount, counter.inode)?;
+    Ok(held)
+}
+
+fn revision_allowed(has_counters: bool, original: i64, observed: i64) -> bool {
+    original > 0
+        && if has_counters {
+            observed >= original
+        } else {
+            observed == original
+        }
+}
+
 impl BoardEpoch {
     pub(super) fn acquire(input_sha256: &str, hashes: [&str; 3]) -> Result<Self> {
         let (seal, data) = Sealed::read(PATH, 4096)?;
@@ -155,9 +238,10 @@ impl BoardEpoch {
             "complete Linux boot measurement",
         )?;
         let mut lines = body.split_terminator('\n');
-        let raw_objects = match lines.next() {
-            Some("DLAAREV1") => false,
-            Some("DLAAREV2") => true,
+        let version = match lines.next() {
+            Some("DLAAREV1") => 1,
+            Some("DLAAREV2") => 2,
+            Some("DLAAREV3") => 3,
             _ => return Err(MacError::Rejected("unsupported boot measurement version")),
         };
         let board_lock: serde_json::Value = serde_json::from_slice(include_bytes!(
@@ -165,22 +249,24 @@ impl BoardEpoch {
         ))?;
         let [boot, revision, mount, root, profiles] = row(lines.next())?;
         require(valid_boot(boot), "valid original Linux boot identity")?;
+        let original = i64::try_from(number(revision)?)
+            .map_err(|_| MacError::Rejected("AppArmor revision overflow"))?;
         let mut roles = Vec::with_capacity(3);
-        for (name, expected) in ROLES.iter().zip(hashes) {
-            let text = lines.next();
-            let ([directory, hash, dir, key, mode, sum], raw) = if raw_objects {
-                let [
-                    directory,
-                    hash,
-                    dir,
-                    key,
-                    mode,
-                    sum,
-                    birth,
-                    compiled,
-                    raw_bytes,
-                    raw_hash,
-                ] = row(text)?;
+        for (index, (name, expected)) in ROLES.iter().zip(hashes).enumerate() {
+            let line = lines
+                .next()
+                .ok_or(MacError::Rejected("missing original role"))?;
+            let fields: Vec<_> = line.split(' ').collect();
+            let width = match version {
+                1 => 6,
+                2 => 10,
+                _ => 12,
+            };
+            require(fields.len() == width, "exact boot role measurement width")?;
+            let [directory, hash, dir, key, mode, sum]: [&str; 6] = fields[..6].try_into().unwrap();
+            let raw = if version >= 2 {
+                let [birth, compiled, raw_bytes, raw_hash]: [&str; 4] =
+                    fields[6..10].try_into().unwrap();
                 let expected_raw = &board_lock["files"]["ubuntu-apparmor.profiles"]["board_profiles"]
                     [*name]["compiled_sha256"];
                 require(
@@ -189,15 +275,30 @@ impl BoardEpoch {
                         && number(birth)? <= number(revision)?,
                     "selected original kernel-exported profile bytes",
                 )?;
-                let value = RawProfile {
+                let counter = if version == 3 {
+                    let birth_number = number(birth)?;
+                    let initial = number(fields[11])?;
+                    require(
+                        birth_number == BIRTHS[index]
+                            && initial == birth_number + 1
+                            && initial <= number(revision)?,
+                        "original fixed early profile load counter",
+                    )?;
+                    let inode = number(fields[10])?;
+                    require(inode != 0, "nonzero original counter inode")?;
+                    Some(Counter { inode, initial })
+                } else {
+                    None
+                };
+                Some(RawProfile {
                     generation: CString::new(birth)
                         .map_err(|_| MacError::Rejected("invalid raw policy generation"))?,
                     bytes_inode: number(raw_bytes)?,
                     hash_inode: number(raw_hash)?,
-                };
-                ([directory, hash, dir, key, mode, sum], Some(value))
+                    counter,
+                })
             } else {
-                (row(text)?, None)
+                None
             };
             let suffix = directory
                 .strip_prefix(name)
@@ -228,29 +329,22 @@ impl BoardEpoch {
                 && lines.next().is_none(),
             "first joint SELinux input and enforcement",
         )?;
-        let original = i64::try_from(number(revision)?)
-            .map_err(|_| MacError::Rejected("AppArmor revision overflow"))?;
         let security = open_absolute(
             "/sys/kernel/security/apparmor",
             libc::O_RDONLY | libc::O_DIRECTORY,
         )?;
         let current = aa_revision(&security)?;
-        // A new admission may span unrelated Ubuntu reloads only when both
-        // original raw profile objects are provably still selected. Existing
-        // authorities keep their own stable operation generation.
         require(
-            original > 0
-                && if raw_objects {
-                    current >= original
-                } else {
-                    current == original
-                },
-            "original AppArmor revision or its complete raw object evidence is required",
+            revision_allowed(version == 3, original, current),
+            "AppArmor advance requires sealed original raw-load counters",
         )?;
-        let entry = Self {
+        let root_handle = aa_handle(&security, c"policy", true, true)?;
+        object(&root_handle, number(mount)?, number(root)?)?;
+        let mut entry = Self {
             seal,
             boot: boot.to_owned(),
             revision: current,
+            boot_revision: original,
             selinux_sequence: u32::try_from(number(sequence)?)
                 .map_err(|_| MacError::Rejected("SELinux sequence overflow"))?,
             policyload: 1,
@@ -260,12 +354,34 @@ impl BoardEpoch {
             roles: roles
                 .try_into()
                 .map_err(|_| MacError::Rejected("three original profiles required"))?,
+            root_handle,
+            held: Vec::new(),
         };
+        entry.held = entry.observe(current)?;
         entry.revalidate()?;
         Ok(entry)
     }
 
+    pub(super) fn has_counters(&self) -> bool {
+        self.roles
+            .iter()
+            .all(|r| r.raw.as_ref().is_some_and(|raw| raw.counter.is_some()))
+    }
+
     pub(super) fn revalidate(&self) -> Result<()> {
+        self.revalidate_at(self.revision)
+    }
+
+    pub(super) fn revalidate_at(&self, current: i64) -> Result<()> {
+        self.observe(current).map(|_| ())
+    }
+
+    fn observe(&self, current: i64) -> Result<Vec<File>> {
+        require(
+            revision_allowed(self.has_counters(), self.boot_revision, current)
+                && current >= self.revision,
+            "original monotonic AppArmor operation epoch",
+        )?;
         self.seal.revalidate()?;
         let path = open_absolute(PATH, libc::O_RDONLY)?;
         packet_file(&path)?;
@@ -282,8 +398,8 @@ impl BoardEpoch {
             kind(&security)? == SECURITYFS_MAGIC
                 && aa_read(&security, c".ns_level", SECURITYFS_MAGIC, 16)? == b"0\n"
                 && aa_read(&security, c".ns_stacked", SECURITYFS_MAGIC, 16)? == b"no\n"
-                && aa_revision(&security)? == self.revision,
-            "initial AppArmor namespace and captured revision",
+                && aa_revision(&security)? == current,
+            "initial AppArmor namespace and current operation revision",
         )?;
         let selinux = open_absolute(SELINUX_ROOT, libc::O_RDONLY | libc::O_DIRECTORY)?;
         require(
@@ -298,11 +414,15 @@ impl BoardEpoch {
         )?;
         let ns = aa_handle(&security, c"policy", true, true)?;
         object(&ns, self.mount, self.root)?;
-        let profiles = aa_handle(&ns, c"profiles", true, false)?;
+        object(&self.root_handle, self.mount, self.root)?;
+        // Every member walk starts from the held initial namespace, even after
+        // checking that the caller's fixed kernel magic link still names it.
+        let profiles = aa_handle(&self.root_handle, c"profiles", true, false)?;
         object(&profiles, self.mount, self.profiles)?;
         let modes = aa_read(&security, c"profiles", SECURITYFS_MAGIC, 1024 * 1024)?;
         let modes = std::str::from_utf8(&modes)
             .map_err(|_| MacError::Rejected("invalid active AppArmor list"))?;
+        let mut held = Vec::new();
         for (role, name) in self.roles.iter().zip(ROLES) {
             let line = format!("{name} (enforce)");
             require(
@@ -312,38 +432,186 @@ impl BoardEpoch {
             let directory = aa_handle(&profiles, &role.directory, true, false)?;
             object(&directory, self.mount, role.inode[0])?;
             if let Some(raw) = &role.raw {
-                let store = aa_handle(&ns, c"raw_data", true, false)?;
+                let store = aa_handle(&self.root_handle, c"raw_data", true, false)?;
                 let birth = aa_handle(&store, &raw.generation, true, false)?;
                 for (link, member, inode) in [
                     (c"raw_data", c"raw_data", raw.bytes_inode),
                     (c"raw_sha256", c"sha256", raw.hash_inode),
                 ] {
-                    // The first lookup follows the live kernel profile proxy.
-                    // The second completes a no-symlink walk to its unique
-                    // original generation. Both must identify the same node.
-                    object(
-                        &aa_handle(&directory, link, false, true)?,
-                        self.mount,
-                        inode,
-                    )?;
-                    object(&aa_handle(&birth, member, false, false)?, self.mount, inode)?;
+                    let live = aa_handle(&directory, link, false, true)?;
+                    let original = aa_handle(&birth, member, false, false)?;
+                    object(&live, self.mount, inode)?;
+                    object(&original, self.mount, inode)?;
+                    held.push(live);
+                    held.push(original);
                 }
+                if let Some(counter) = &raw.counter {
+                    held.push(read_counter(&birth, self.mount, counter)?);
+                }
+                held.push(birth);
+                held.push(store);
             }
             for (field, ino) in [c"name", c"mode", c"sha256"]
                 .into_iter()
                 .zip(&role.inode[1..])
             {
-                object(
-                    &aa_handle(&directory, field, false, false)?,
-                    self.mount,
-                    *ino,
-                )?;
+                let file = aa_handle(&directory, field, false, false)?;
+                object(&file, self.mount, *ino)?;
+                held.push(file);
             }
+            held.push(directory);
         }
+        held.push(profiles);
+        held.push(ns);
         self.seal.revalidate()?;
         require(
-            status.read()? == first && aa_revision(&security)? == self.revision,
+            status.read()? == first && aa_revision(&security)? == current,
             "security policy changed during boot measurement verification",
-        )
+        )?;
+        Ok(held)
+    }
+}
+
+#[cfg(test)]
+pub(super) mod tests {
+    use super::*;
+    #[test]
+    fn only_counter_sealed_epochs_accept_unrelated_monotonic_changes() {
+        assert!(revision_allowed(true, 167, 200));
+        assert!(revision_allowed(true, 167, 167));
+        for legacy in [false] {
+            assert!(revision_allowed(legacy, 167, 167));
+            assert!(!revision_allowed(legacy, 167, 168));
+        }
+        assert!(!revision_allowed(true, 167, 166));
+        assert!(!revision_allowed(true, 0, 0));
+    }
+    #[test]
+    fn raw_counter_rejects_reloads_aba_and_noncanonical_lines() {
+        assert!(counter_value(b"165\n", 165).is_ok());
+        for bytes in [
+            b"169\n".as_slice(),
+            b"171\n",
+            b"164\n",
+            b"0165\n",
+            b"165",
+            b" 165\n",
+            b"+165\n",
+            b"-165\n",
+            b"165\n165\n",
+            b"18446744073709551616\n",
+            b"\n",
+        ] {
+            assert!(counter_value(bytes, 165).is_err());
+        }
+    }
+
+    #[test]
+    fn readable_non_apparmor_descriptor_is_rejected_before_data_read() {
+        use std::io::{Seek, Write};
+        let mut file = tempfile::tempfile().unwrap();
+        file.write_all(b"165\n").unwrap();
+        file.rewind().unwrap();
+        assert!(counter_identity(&file, 1, file.metadata().unwrap().ino()).is_err());
+        assert_eq!(file.stream_position().unwrap(), 0);
+    }
+
+    /// Runs only in an isolated selected kernel with the real admitted joint
+    /// policy, the real enforcing loader/broker profile, and an early V3 seal.
+    #[test]
+    #[ignore = "requires the isolated Pocket4 target-kernel epoch fixture"]
+    fn actual_joint_kernel_counter_evidence_and_aliases() {
+        check_actual_joint_kernel_counter_evidence_and_aliases();
+    }
+
+    pub(crate) fn check_actual_joint_kernel_counter_evidence_and_aliases() {
+        use std::io::Seek;
+        let lock: serde_json::Value = serde_json::from_slice(include_bytes!(
+            "../../../android/framework/droidloom-readiness/board-policy/pocket4-board-inputs.lock.json"
+        )).unwrap();
+        let mut uts = std::mem::MaybeUninit::<libc::utsname>::uninit();
+        assert_eq!(unsafe { libc::uname(uts.as_mut_ptr()) }, 0);
+        let uts = unsafe { uts.assume_init() };
+        assert_eq!(
+            unsafe { CStr::from_ptr(uts.release.as_ptr()) }.to_bytes(),
+            lock["kernel"]["release"].as_str().unwrap().as_bytes()
+        );
+        let selected_case = std::env::var("DROIDLOOM_EPOCH_FIXTURE_CASE").unwrap();
+        let case = selected_case.as_str();
+        assert!(["unrelated", "samebytes", "aba", "nested"].contains(&case));
+        let hashes = ROLES.map(|name| {
+            lock["files"]["ubuntu-apparmor.profiles"]["board_profiles"]
+            [name]["kernel_profile_sha256"].as_str().unwrap()
+        });
+        let result = BoardEpoch::acquire(
+            lock["files"]["joint.policy"]["sha256"].as_str().unwrap(),
+            hashes,
+        );
+        if case != "unrelated" {
+            let rejection = match result {
+                Err(error) => error,
+                Ok(_) => panic!("changed protected policy or namespace became authority"),
+            };
+            let expected = match (case, &rejection) {
+                (
+                    "samebytes" | "aba",
+                    MacError::Rejected("protected AppArmor raw policy was resubmitted or replaced"),
+                ) => true,
+                (
+                    "aba" | "nested",
+                    MacError::Rejected(
+                        "original AppArmor mount and inode must match the boot measurement",
+                    ),
+                ) => true,
+                // An A→B→A replacement may retire the original raw birth inode
+                // before the second A is submitted. Its absence is rejection.
+                ("aba", MacError::Io(error)) => error.raw_os_error() == Some(libc::ENOENT),
+                _ => false,
+            };
+            assert!(expected, "unrelated failure is not a valid negative result: {rejection}");
+            return;
+        }
+        let epoch = result.unwrap();
+        // The initial PID remains the kernel bootstrap role in this fixture.
+        // A proc link read grant must not expose that foreign task's executable.
+        let foreign = std::fs::read_link("/proc/1/exe").unwrap_err();
+        assert!(matches!(foreign.raw_os_error(), Some(libc::EACCES | libc::EPERM)));
+        assert!(epoch.has_counters());
+        assert!(epoch.revision > epoch.boot_revision);
+        epoch.revalidate().unwrap();
+        // These regular files deliberately have the same synthetic names as
+        // authorized counters. One carries an already-readable library type.
+        // Rejecting that alias is an object check, not a claimed MAC denial.
+        let mut readable =
+            File::open("/.droidloom-kernel-apparmorfs/raw_data/165/revision").unwrap();
+        let raw = epoch.roles[1].raw.as_ref().unwrap();
+        assert!(
+            counter_identity(&readable, epoch.mount, raw.counter.as_ref().unwrap().inode).is_err()
+        );
+        assert_eq!(readable.stream_position().unwrap(), 0);
+        match File::open("/.droidloom-kernel-apparmorfs/raw_data/164/revision") {
+            Ok(mut default_label) => {
+                assert!(
+                    counter_identity(
+                        &default_label,
+                        epoch.mount,
+                        epoch.roles[0]
+                            .raw
+                            .as_ref()
+                            .unwrap()
+                            .counter
+                            .as_ref()
+                            .unwrap()
+                            .inode
+                    )
+                    .is_err()
+                );
+                assert_eq!(default_label.stream_position().unwrap(), 0);
+            }
+            Err(error) => assert_eq!(error.raw_os_error(), Some(libc::EACCES)),
+        }
+        // Reopening the actual object still succeeds; an alias never updates
+        // the seal, the held authority, or the next counter expectation.
+        epoch.revalidate().unwrap();
     }
 }
