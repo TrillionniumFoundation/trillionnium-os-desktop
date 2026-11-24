@@ -947,3 +947,145 @@ metadata images. Verify keystore and vold startup, representative existing key
 operations and app data, new keys, honest KeyInfo security levels, and restart
 continuity. Do not reset credentials, change the original boot root, write the
 original userdata, export keys or delete the rollback copy to force a pass.
+
+### Offline Keystore metadata audit and clone experiments
+
+The host tool in tools/droidloom-keystore-metadata is an independent Rust
+workspace with its own committed Cargo.lock. Its bundled SQLite dependency
+does not change the normal image builder's workspace dependency graph. Build
+and test it explicitly:
+
+~~~console
+cargo test --locked -j 1 \
+  --manifest-path tools/droidloom-keystore-metadata/Cargo.toml \
+  -- --test-threads=1
+cargo build --locked --release -j 1 \
+  --manifest-path tools/droidloom-keystore-metadata/Cargo.toml
+~~~
+
+Use a stopped, detached, independently verified copy of the userdata filesystem
+to obtain persistent.sqlite in a new private directory. Preserve the cold image,
+its copy receipt, the database extraction receipt and the original userdata.
+A database hash alone does not prove that a live SQLite database was quiescent.
+This tool refuses any -wal, -shm or -journal file, including an empty file; it
+does not attempt a blind multi-file snapshot or checkpoint an input database.
+See SQLite's [WAL file semantics](https://www.sqlite.org/wal.html#the_wal_file)
+and [online backup interface](https://www.sqlite.org/backup.html) for the
+separate consistency requirements of a live database.
+
+~~~console
+droidloom-keystore-metadata audit \
+  --input /absolute/private-cold-copy/input/persistent.sqlite \
+  --workspace /absolute/private-cold-copy/audit-work
+~~~
+
+The input must be a regular, singly linked file with absolute, unaliased
+ancestors. The workspace must already exist outside the input directory.
+The tool opens the input only for ordinary read-only, no-follow, no-atime I/O;
+it checks its identity and complete SHA-256 before and after copying and again
+after analysis. SQLite only opens a new mode-0700 private child with an
+independent mode-0600 database. Audits discard that child. There is no
+in-place/output-database option, and existing output directories are never
+selected for mutation.
+
+The supported schema is the exact version-2 persistent schema in
+system/security commit cbb2ef1617a94d6cdf2dc2ccb7a545575dbb20cb.
+Unknown versions, tables, indexes, triggers, views and changed table constraints
+are refused. Reports contain counts, schema identity and logical table hashes;
+they contain no aliases, key IDs, authorization values, certificates or blobs.
+The certificate summary locates the X.509 extension with Android attestation
+OID 1.3.6.1.4.1.11129.2.1.17 and counts its two historical security-level
+declarations. It validates the enclosing DER structure and reports malformed
+or unsupported data separately. It does not validate certificate signatures or
+equate an old signed declaration with the current HAL's protection level.
+The [official attestation schema](https://source.android.com/docs/security/features/keystore/attestation)
+defines those public fields. Existing certificates are preserved byte for byte.
+
+Candidate selection is deliberately separate from backend identity. Only live
+client keys in APP/SELINUX domains, routed through the default UUID, with one
+current nonempty key blob and consistent optional blob UUID can be considered.
+Pure certificate entries, super keys, unreferenced entries, other UUIDs and
+ambiguous StrongBox/unknown authorization buckets are excluded. Only existing
+TrustedEnvironment authorization cells are candidates for Software; parameter
+values, existing Software/Keystore rows and their order remain intact. A UUID
+is only the big-endian integer form of the routing security level in the
+[pinned database source](https://android.googlesource.com/platform/system/security/+/cbb2ef1617a94d6cdf2dc2ccb7a545575dbb20cb/keystore2/src/database.rs#319).
+It is neither a provider identity nor proof that a key blob authenticates.
+
+A separate prepare-clone command can retain a new private experiment:
+
+~~~console
+droidloom-keystore-metadata prepare-clone \
+  --input /absolute/private-cold-copy/input/persistent.sqlite \
+  --workspace /absolute/private-cold-copy/clone-work \
+  --evidence /absolute/reviewed-evidence/envelope.json
+~~~
+
+The exact version-1 evidence structures are in src/evidence.rs. The envelope
+contains schema, input_sha256 and three objects named snapshot_receipt,
+legacy_provenance and replacement_observation. Each object is an absolute
+regular file path plus its SHA-256. The snapshot receipt must bind the same
+database to an isolated-offline-filesystem-copy receipt with no SQLite
+sidecars. Legacy provenance must name aosp-rust-keymint-nonsecure, the exact
+pinned KeyMint/interface source commits, its actual default-service executable
+and its custody receipt. Replacement observation must identify the real
+IKeyMintDevice/default Binder getHardwareInfo call, security_level 0, exact
+implementation name "Droidloom software KeyMint (KMR legacy v1)", source commit,
+actual executable, vendor image and runtime receipt. Those artifact paths and
+digests are checked. Decoded JSON and its digest come from the same read buffer.
+These are externally reviewed observations: matching file bytes is not an
+independent attestation of their assertions. Never manufacture a replacement
+runtime observation from a source selection or from the default UUID.
+
+Preparation updates only the selected security_level cells within one private
+SQLite transaction. Before commit, it verifies the exact expected row count,
+integrity_check and a typed, rowid-ordered hash of every value in all seven
+persistent tables plus sqlite_schema. Its expected hash differs only at those
+selected cells. Alias, namespace, UUID, grants, usage counts, key metadata,
+blob metadata, encrypted key blobs and certificates must all remain identical.
+A failed postcondition rolls back the whole transaction. Successful output is
+a fresh private directory containing persistent.sqlite and CLONE-EXPERIMENT.json;
+the input remains untouched. Repeating the correction with properly rebound
+snapshot evidence changes zero cells. The tool does not install that clone.
+
+#### Authorization-consumer review and runtime boundary
+
+The following review is scoped to the pinned source, not an assertion that a
+different prebuilt system has already been runtime-qualified.
+
+| Concern | Pinned implementation and implication |
+| --- | --- |
+| Stored security level | [KeyParameter](https://android.googlesource.com/platform/system/security/+/cbb2ef1617a94d6cdf2dc2ccb7a545575dbb20cb/keystore2/src/key_parameter.rs#1058) keeps the field private. Its accessor is used for DB storage; into_authorization exposes it to clients, while into_key_parameter returns the original parameter value. |
+| Authentication, purpose and lock state | [authorize_create](https://android.googlesource.com/platform/system/security/+/cbb2ef1617a94d6cdf2dc2ccb7a545575dbb20cb/keystore2/src/enforcements.rs#488) inspects parameter values, including USER_SECURE_ID, auth type, timeout, purpose and unlocked-device requirements. HAT matching does not branch on the stored security-level column. |
+| Super encryption | [super_encryption_required](https://android.googlesource.com/platform/system/security/+/cbb2ef1617a94d6cdf2dc2ccb7a545575dbb20cb/keystore2/src/enforcements.rs#743) uses parameter values, domain and flags; [unwrap and begin](https://android.googlesource.com/platform/system/security/+/cbb2ef1617a94d6cdf2dc2ccb7a545575dbb20cb/keystore2/src/security_level.rs#342) still require the actual super key and KeyMint operation. |
+| Persistent usage count | [check_and_update_key_usage_count](https://android.googlesource.com/platform/system/security/+/cbb2ef1617a94d6cdf2dc2ccb7a545575dbb20cb/keystore2/src/database.rs#2299) selects and decrements data by key/tag and deletes an exhausted key. The level column does not select or reset the counter. |
+| Permissions and grants | [check_key_permission](https://android.googlesource.com/platform/system/security/+/cbb2ef1617a94d6cdf2dc2ccb7a545575dbb20cb/keystore2/src/permission.rs#340) uses caller UID, descriptor domain/namespace, grant access vector and SELinux. These values are preserved. |
+| Credential invalidation | [auth-bound deletion](https://android.googlesource.com/platform/system/security/+/cbb2ef1617a94d6cdf2dc2ccb7a545575dbb20cb/keystore2/src/database.rs#2748) and [SID-dependent app selection](https://android.googlesource.com/platform/system/security/+/cbb2ef1617a94d6cdf2dc2ccb7a545575dbb20cb/keystore2/src/database.rs#3095) inspect USER_SECURE_ID values, not the level column. |
+| Blob upgrade | [store_upgraded_keyblob](https://android.googlesource.com/platform/system/security/+/cbb2ef1617a94d6cdf2dc2ccb7a545575dbb20cb/keystore2/src/security_level.rs#1003) re-super-encrypts when required and replaces the encrypted blob, without refreshing SQL authorizations. |
+
+The production-consumer scan also covered the parameter type's derived Eq/Ord
+and serialization uses. The DB-loaded enforcement paths inspect tags/values;
+changing this column does not replace those parameter values or relax those
+checks. This source review and the clone's content invariants do not constitute
+an actual CP3A permission or authentication test.
+
+MaxUsesPerBoot is checked by the actual KMR
+[operation begin path](https://android.googlesource.com/platform/system/keymint/+/cfeefc94bf8c4f19d19dca193d376a1fc05e8e3e/ta/src/operation/begin.rs).
+The upstream TA derives its per-boot counter key ID from the entire encrypted
+blob in [key_id/update_use_count](https://android.googlesource.com/platform/system/keymint/+/cfeefc94bf8c4f19d19dca193d376a1fc05e8e3e/ta/src/lib.rs).
+An ordinary re-encryption upgrade therefore changes that identity. This
+migration targets a cold-start data-copy qualification and makes no claim of
+preserving a prior count identity across upgrade in one already-running TA.
+The metadata tool itself preserves every blob byte and existing SQL count.
+The hardware usage-limit feature remains disabled for the software provider.
+
+No offline blob authentication is performed, even for apparently unwrapped
+blobs. In particular, outer super encryption cannot be authenticated without
+the proper live Keystore context. Existing keys must still authenticate their
+original KMR blob through the actual HAL upgrade; the metadata operation cannot
+make a bad key usable. Before any adoption, a separate isolated Android run must
+verify stock Keystore/vold startup, honest KeyInfo, representative existing key
+operations, credential/lock-state and HAT refusals, purpose and usage/max-use
+refusals, caller/grant refusals, app data continuity and restart/idempotence.
+The tool always reports production_approved=false and never writes the original
+userdata or turns source/host tests into runtime evidence.
