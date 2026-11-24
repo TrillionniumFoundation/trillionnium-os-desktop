@@ -11,6 +11,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/statfs.h>
+#include <sys/statvfs.h>
 #include <sys/syscall.h>
 #include <sys/xattr.h>
 #include <unistd.h>
@@ -201,11 +202,31 @@ static int frontend_projection(int dev,int frontend,uint32_t uid,uint32_t gid) {
     close(sock);
     return error?fail(error):0;
 }
-int droidloom_board_assemble(int root,int dev,int data,int metadata,int payload,int generation,int frontend,
+/* This exact read-only mount contains only the selected byte-identical query
+ * roles. Moving its original mount preserves its identity for the Rust owner. */
+static int query_projection(int dev,int query,uint32_t uid,uint32_t gid) {
+    if(fs_is(dev,TMPFS_MAGIC)||fs_is(query,TMPFS_MAGIC))return -1;
+    struct stat source, target_info; struct statvfs flags;
+    if(fstat(query,&source)||fstatvfs(query,&flags))return -1;
+    if(!S_ISDIR(source.st_mode)||source.st_uid!=uid||source.st_gid!=gid||
+       (source.st_mode&07777)!=0555||(flags.f_flag&7)!=7||(flags.f_flag&8)!=0||
+       directory_label(query,"u:object_r:droidloom_query_exec:s0"))return fail(ESTALE);
+    int target=beneath(dev,"droidloom-query");
+    if(target<0)return -1;
+    int error=0;
+    if(fstat(target,&target_info))error=errno;
+    else if(target_info.st_uid!=uid||target_info.st_gid!=gid||
+            (target_info.st_mode&07777)!=0755)error=ESTALE;
+    if(!error&&directory_label(target,"u:object_r:p4_linux_query_mount_t:s0"))error=errno;
+    if(!error&&attach_held(dev,"droidloom-query",target,query))error=errno;
+    close(target);
+    return error?fail(error):0;
+}
+int droidloom_board_assemble(int root,int dev,int data,int metadata,int payload,int generation,int frontend,int query,
                              uint32_t uid,uint32_t gid,uint32_t observer_gid) {
     if(geteuid()!=0)return fail(EPERM);
     if(fs_is(root,EXT4_SUPER_MAGIC)||fs_is(data,EXT4_SUPER_MAGIC)||fs_is(metadata,EXT4_SUPER_MAGIC)||
-       ready_projection(dev,generation,observer_gid,uid,gid)||frontend_projection(dev,frontend,uid,gid)||attach(root,"dev",dev)||
+       ready_projection(dev,generation,observer_gid,uid,gid)||frontend_projection(dev,frontend,uid,gid)||query_projection(dev,query,uid,gid)||attach(root,"dev",dev)||
        attach(root,"data",data)||attach(root,"metadata",metadata)||attach_guest_cgroup(root,payload))return -1;
     /* These writable early-boot directories precede the stock second-stage
      * actions, which create their own additional layers. */

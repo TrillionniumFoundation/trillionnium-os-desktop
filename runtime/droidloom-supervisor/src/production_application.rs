@@ -495,6 +495,59 @@ pub(crate) fn inspect(
     Ok(inspection)
 }
 
+
+/// The same four finite reads, current framework identity and real retirement
+/// checks are available to the kernel-first owner without a legacy ReadyTree.
+pub(crate) fn inspect_early(
+    authority: &crate::production_selection::early_generation::EarlyApplicationAuthority<'_>,
+    package: &str,
+    user: u32,
+) -> Result<ApplicationInspection> {
+    require(package_valid(package) && user <= 21_474, "invalid package inspection")?;
+    struct Probe<'a, 'owner> {
+        authority: &'a crate::production_selection::early_generation::EarlyApplicationAuthority<'owner>,
+        framework: crate::production_selection::early_generation::EarlyFrameworkObservation,
+        reads: Vec<ReadReceipt>,
+        deadline: std::time::Instant,
+    }
+    impl AndroidProbe for Probe<'_, '_> {
+        fn epoch(&mut self) -> std::result::Result<RuntimeEpoch, String> {
+            if std::time::Instant::now() >= self.deadline {
+                return Err("early application inspection deadline".into());
+            }
+            self.authority.progress_inherited_native(self.deadline).map_err(|e| e.to_string())?;
+            self.authority.epoch(&self.framework).map_err(|e| e.to_string())
+        }
+        fn command(&mut self, args: &[String]) -> std::result::Result<String, String> {
+            if std::time::Instant::now() >= self.deadline || self.reads.len() >= 200 {
+                return Err("early application inspection query bound".into());
+            }
+            self.authority.progress_inherited_native(self.deadline).map_err(|e| e.to_string())?;
+            self.authority.epoch(&self.framework).map_err(|e| e.to_string())?;
+            let query = ApplicationRead::from_command(args).map_err(|e| e.to_string())?;
+            let result = run_read_before(self.authority, &query, self.deadline).map_err(|e| e.to_string())?;
+            self.authority.epoch(&self.framework).map_err(|e| e.to_string())?;
+            self.reads.push(result.receipt);
+            Ok(result.output)
+        }
+    }
+    let deadline = std::time::Instant::now() + std::time::Duration::from_secs(240);
+    let framework = authority.observe_framework().map_err(external)?;
+    let mut probe = Probe { authority, framework, reads: Vec::new(), deadline };
+    let inspection = crate::control::application_probe::inspect(&mut probe, package, user).map_err(external);
+    // Includes the same application leaf quarantine, even on a rejected read.
+    authority.revalidate().map_err(external)?;
+    let inspection = inspection?;
+    require(!probe.reads.is_empty() && probe.reads.iter().all(|row| {
+        row.cgroup_removed && row.worker_waitid_code == libc::CLD_EXITED
+            && row.worker_waitid_status == 0 && row.query_waitid_code == libc::CLD_EXITED
+            && row.query_waitid_status == 0
+    }), "early inspection has incomplete real read retirement")?;
+    authority.epoch(&probe.framework).map_err(external)?;
+    require(std::time::Instant::now() < deadline, "early inspection workflow deadline")?;
+    Ok(inspection)
+}
+
 /// Internal fresh-image dispatch. It accepts only authenticated inherited
 /// descriptor custody from the original broker, never command-line inputs.
 ///

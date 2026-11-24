@@ -142,6 +142,7 @@ fn named_destinations(root: &File) -> Result<()> {
     const RUNDIR: &str = "u:object_r:p4_linux_readiness_dir_t:s0";
     const SIGNAL: &str = "u:object_r:droidloom_readiness_socket:s0";
     named(root, BROKER, DEV, "dir", "socket", SOCKET)?;
+    named(root, BROKER, DEV, "dir", "droidloom-query", "u:object_r:p4_linux_query_mount_t:s0")?;
     named(root, BROKER, DEV, "dir", "unexpected_name", DEV)?;
     named(root, BROKER, SOCKET, "dir", "droidloom", MOUNT)?;
     named(root, BROKER, SOCKET, "dir", "unexpected_name", SOCKET)?;

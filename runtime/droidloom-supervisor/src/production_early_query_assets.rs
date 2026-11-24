@@ -42,16 +42,16 @@ impl EarlyQueryResources {
         require(manifest.identity.mode & 0o7777 == 0o400, "early query root-sealed runtime manifest mode")?;
         let raw = manifest.bounded_bytes(MAX_RUNTIME_MANIFEST)?;
         require(format!("{:x}", Sha256::digest(&raw)) == runtime, "early query selected runtime manifest body")?;
-        let declaration: RuntimeDeclaration = serde_json::from_slice(&raw)?;
-        declaration.validate(&cohort, &base)?;
-        let declared = declaration.query.as_ref().ok_or(MountError::Rejected(
-            "early application control requires the fixed query roles",
-        ))?;
+        let selected = crate::production_selection::kernel_first_query_inputs(
+            &raw, &cohort, &base.system.sha256,
+        ).map_err(|e| MountError::Io(io::Error::other(e)))?;
+        let declared: QueryDeclaration = serde_json::from_value(selected)?;
+        declared.validate_kernel_first(&base.system.sha256)?;
         let userns = admission.user_namespace().try_clone()?;
         let (uids, gids) = lease.broker_ranges();
         let check = || -> Result<()> { admission.revalidate()?; Ok(()) };
         let query = QueryResources::prepare_admitted(
-            declared, &Path::new(RUNTIME_IMAGE_ROOT).join(&runtime),
+            &declared, &Path::new(RUNTIME_IMAGE_ROOT).join(&runtime).join("images"),
             &userns, uids, gids, &admit, &check,
         )?;
         let value = Self { base_manifest, manifest, cohort, runtime, userns, uids, gids, query };

@@ -57,6 +57,14 @@ mod native;
 use native::{NativeDeclaration, NativeResources};
 pub(crate) use query::{EarlyQueryResources, QueryLayout, QueryRole, RuntimeQueryData, RuntimeQueryExecutable};
 
+
+/// Pure declaration validation shared by early boot intake and the actual
+/// resource owner. It creates no namespace, query process or readiness value.
+pub(crate) fn validate_early_query_inputs(value: &serde_json::Value, system: &str) -> Result<()> {
+    let declared: QueryDeclaration = serde_json::from_value(value.clone())?;
+    declared.validate_kernel_first(system)
+}
+
 const RUNTIME_MANIFEST_ROOT: &str = "/etc/droidloom/runtime-cohorts";
 const RUNTIME_IMAGE_ROOT: &str = "/var/lib/droidloom/runtime-cohorts";
 const MAX_RUNTIME_MANIFEST: u64 = 256 * 1024;

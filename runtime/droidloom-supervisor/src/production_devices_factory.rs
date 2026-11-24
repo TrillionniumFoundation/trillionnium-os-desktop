@@ -171,6 +171,7 @@ impl FactoryDevices {
         names.push(b"__properties__".to_vec());
         if has_socket {
             names.push(b"socket".to_vec());
+            names.push(b"droidloom-query".to_vec());
         }
         names.sort();
         need(

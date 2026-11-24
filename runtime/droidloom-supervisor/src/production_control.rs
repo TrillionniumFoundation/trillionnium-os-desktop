@@ -463,6 +463,10 @@ fn bind_production_listener(socket: &Path) -> Result<OwnedListener, ControlError
     Ok(owned)
 }
 
+#[path = "production_early_application_control.rs"]
+mod early_application;
+pub(crate) use early_application::EarlyApplicationControl;
+
 struct ProductionDaemon {
     active: Option<ProductionCell>,
     // Kept only by this original daemon. Neither ControlResponse nor an on-disk

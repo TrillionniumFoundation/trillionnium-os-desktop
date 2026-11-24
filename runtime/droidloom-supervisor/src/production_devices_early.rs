@@ -134,6 +134,8 @@ pub(super) fn create_socket_directories(root: &File) -> Result<()> {
         Ok(child)
     }
     private_directory_role(root, c"u:object_r:p4_linux_private_dev_root_t:s0")?;
+    let query = create(root, c"droidloom-query")?;
+    private_directory_role(&query, c"u:object_r:p4_linux_query_mount_t:s0")?;
     let socket = create(root, c"socket")?;
     private_directory_role(&socket, c"u:object_r:p4_linux_private_socket_parent_t:s0")?;
     let target = create(&socket, c"droidloom")?;
@@ -147,6 +149,7 @@ pub(super) fn create_socket_directories(root: &File) -> Result<()> {
 fn verify_readiness_directories(root: &File, uid: u32, gid: u32, nodes: &[DeviceIdentity]) -> Result<()> {
     let mut expected: Vec<_> = DEVICES.iter().map(|spec| spec.name.to_bytes().to_vec()).collect();
     expected.push(b"socket".to_vec());
+    expected.push(b"droidloom-query".to_vec());
     expected.sort();
     need(directory_names_bounded(root, expected.len())? == expected, "only seven fixed devices and the readiness parent")?;
     verify_device_nodes(root, uid, gid, nodes)?;
@@ -154,6 +157,9 @@ fn verify_readiness_directories(root: &File, uid: u32, gid: u32, nodes: &[Device
 }
 
 pub(super) fn verify_socket_directories(root: &File, uid: u32, gid: u32) -> Result<()> {
+    let query = directory(root, c"droidloom-query")?;
+    private_directory_role(&query, c"u:object_r:p4_linux_query_mount_t:s0")?;
+    need(directory_names_bounded(&query, 0)?.is_empty(), "query mount target must be empty before transfer")?;
     let socket = directory(root, c"socket")?;
     let target = directory(&socket, c"droidloom")?;
     let frontend = directory(&socket, c"droidloom-frontend")?;
@@ -163,7 +169,7 @@ pub(super) fn verify_socket_directories(root: &File, uid: u32, gid: u32) -> Resu
     private_directory_role(&frontend, c"u:object_r:droidloom_frontend_mount:s0")?;
     let filesystem = root.metadata()?.dev();
     let original_mount = mount_id(root)?;
-    for dir in [&socket, &target, &frontend] {
+    for dir in [&socket, &target, &frontend, &query] {
         let m = dir.metadata()?;
         need(m.dev() == filesystem && m.uid() == uid && m.gid() == gid
             && m.mode() == libc::S_IFDIR | 0o755 && mount_id(dir)? == original_mount,

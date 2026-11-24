@@ -28,6 +28,7 @@ unsafe extern "C" {
         payload: i32,
         generation: i32,
         frontend: i32,
+        query: i32,
         uid: u32,
         gid: u32,
         observer_gid: u32,
@@ -46,6 +47,7 @@ mod frontend;
 struct ServiceSignals {
     events: File,
     previous: libc::sigset_t,
+    stopping: std::cell::Cell<bool>,
 }
 impl ServiceSignals {
     fn acquire() -> io::Result<Self> {
@@ -75,7 +77,33 @@ impl ServiceSignals {
         Ok(Self {
             events: unsafe { File::from_raw_fd(fd) },
             previous: old,
+            stopping: std::cell::Cell::new(false),
         })
+    }
+    fn stop_requested(&self) -> io::Result<bool> {
+        if self.stopping.get() { return Ok(true); }
+        loop {
+            let mut event: libc::signalfd_siginfo = unsafe { std::mem::zeroed() };
+            let count = unsafe {
+                libc::read(self.events.as_raw_fd(),
+                    (&mut event as *mut libc::signalfd_siginfo).cast(),
+                    std::mem::size_of_val(&event))
+            };
+            if count < 0 {
+                let error = io::Error::last_os_error();
+                if error.kind() == io::ErrorKind::Interrupted { continue; }
+                return if error.kind() == io::ErrorKind::WouldBlock { Ok(false) } else { Err(error) };
+            }
+            if count != std::mem::size_of_val(&event) as isize
+                || !matches!(event.ssi_signo as i32, libc::SIGTERM | libc::SIGINT)
+            {
+                return Err(invalid("incomplete or unexpected owner stop signal"));
+            }
+            // The same owner remembers the kernel event when a nested query
+            // consumes it. Its outer loop still performs orderly Android stop.
+            self.stopping.set(true);
+            return Ok(true);
+        }
     }
     fn await_child(&self, pidfd: &File, mut progress: impl FnMut() -> io::Result<()>) -> io::Result<()> {
         let mut fds = [
@@ -91,7 +119,10 @@ impl ServiceSignals {
             },
         ];
         loop {
-            progress()?;
+            if self.stop_requested()? { return Ok(()); }
+            let progressed = progress();
+            if self.stop_requested()? { return Ok(()); }
+            progressed?;
             if unsafe { libc::poll(fds.as_mut_ptr(), 2, 100) } < 0 {
                 let e = io::Error::last_os_error();
                 if e.kind() == io::ErrorKind::Interrupted {
@@ -106,18 +137,7 @@ impl ServiceSignals {
                 return Err(invalid("lost Android lifetime monitor"));
             }
             if fds[1].revents & libc::POLLIN != 0 {
-                let mut event: libc::signalfd_siginfo = unsafe { std::mem::zeroed() };
-                if unsafe {
-                    libc::read(
-                        self.events.as_raw_fd(),
-                        (&mut event as *mut libc::signalfd_siginfo).cast(),
-                        std::mem::size_of_val(&event),
-                    )
-                } != std::mem::size_of_val(&event) as isize
-                {
-                    return Err(invalid("incomplete service stop signal"));
-                }
-                return Ok(());
+                if self.stop_requested()? { return Ok(()); }
             }
             if fds[0].revents & libc::POLLIN != 0 {
                 return Err(invalid("original Android init exited before service stop"));
@@ -250,6 +270,7 @@ pub fn complete_early_resources() -> io::Result<()> {
     let mut data: Option<PreparedPersistentData> = None;
     let mut devices: Option<PreparedDevices> = None;
     let mut original_root: Option<File> = None;
+    let mut query_resources = None;
     let mut root_delivery_attempted = false;
     let work = (|| -> io::Result<()> {
         let cg_ns = board.root_cgroup_namespace()?;
@@ -293,7 +314,8 @@ pub fn complete_early_resources() -> io::Result<()> {
             .start
             .checked_add(9999)
             .ok_or_else(|| invalid("observer gid overflow"))?;
-        let mut frontend = frontend::Frontend::prepare(&board, &owner, root)?;
+        let frontend = frontend::Frontend::prepare(&board, &owner, root)?;
+        let query = query_resources.insert(crate::production_runtime_assets::EarlyQueryResources::prepare(&base).map_err(io::Error::other)?);
         owner.objects().map_err(io::Error::other)?;
         if unsafe {
             droidloom_board_assemble(
@@ -304,6 +326,7 @@ pub fn complete_early_resources() -> io::Result<()> {
                 payload.as_raw_fd(),
                 generation.as_raw_fd(),
                 frontend.projection()?.as_raw_fd(),
+                query.mount(&base).map_err(io::Error::other)?.as_raw_fd(),
                 u.start,
                 g.start,
                 obs,
@@ -346,9 +369,24 @@ pub fn complete_early_resources() -> io::Result<()> {
         drop(userdata);
         drop(metadata);
         board.release_prepared_root()?;
-        let waiting = signals.await_child(board.pidfd(), || frontend.progress());
-        let presentation_retired = frontend.retire();
-        waiting.and(presentation_retired)?;
+        let frontend = std::cell::RefCell::new(frontend);
+        let progress = || {
+            if signals.stop_requested()? {
+                return Err(io::Error::new(io::ErrorKind::Interrupted, "original service stop requested"));
+            }
+            frontend.borrow_mut().progress()
+        };
+        let application = super::EarlyApplicationAuthority::acquire(
+            &base, &group, &owner, root, query, &progress,
+        ).map_err(io::Error::other)?;
+        let mut control = crate::control::EarlyApplicationControl::bind(&owner).map_err(io::Error::other)?;
+        let waiting = signals.await_child(board.pidfd(), || {
+            progress()?;
+            control.poll(&application).map_err(io::Error::other)
+        });
+        let control_retired = control.retire().map_err(io::Error::other);
+        let presentation_retired = frontend.borrow_mut().retire();
+        waiting.and(control_retired).and(presentation_retired)?;
         stop.deliver(&board)?;
         if !wait_ended(board.pidfd(), Duration::from_secs(75))? {
             return Err(invalid("Android did not finish its requested orderly shutdown"));
@@ -398,6 +436,40 @@ pub fn complete_early_resources() -> io::Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn nested_query_stop_observation_is_retained_for_orderly_outer_loop() {
+        let signals = ServiceSignals::acquire().unwrap();
+        assert!(!signals.stop_requested().unwrap());
+        let mut child = std::process::Command::new("/bin/sleep").arg("20").spawn().unwrap();
+        let raw = unsafe { libc::syscall(libc::SYS_pidfd_open, child.id(), 0) };
+        assert!(raw >= 0);
+        let held = unsafe { File::from_raw_fd(raw as i32) };
+        assert_eq!(unsafe { libc::pthread_kill(libc::pthread_self(), libc::SIGTERM) }, 0);
+        // A nested application wait observes this original thread's event.
+        assert!(signals.stop_requested().unwrap());
+        assert!(signals.stop_requested().unwrap());
+        signals.await_child(&held, || panic!("must not begin another application after stop")).unwrap();
+        child.kill().unwrap();
+        child.wait().unwrap();
+    }
+    #[test]
+    fn stop_arriving_inside_progress_returns_to_orderly_lifecycle() {
+        let signals = ServiceSignals::acquire().unwrap();
+        let mut child = std::process::Command::new("/bin/sleep").arg("20").spawn().unwrap();
+        let raw = unsafe { libc::syscall(libc::SYS_pidfd_open, child.id(), 0) };
+        assert!(raw >= 0);
+        let held = unsafe { File::from_raw_fd(raw as i32) };
+        let mut entered = false;
+        signals.await_child(&held, || {
+            entered = true;
+            assert_eq!(unsafe { libc::pthread_kill(libc::pthread_self(), libc::SIGTERM) }, 0);
+            assert!(signals.stop_requested().unwrap());
+            Err(io::Error::new(io::ErrorKind::Interrupted, "query cancelled"))
+        }).unwrap();
+        assert!(entered);
+        child.kill().unwrap();
+        child.wait().unwrap();
+    }
     #[test]
     fn original_process_receives_stop_and_pidfd_confirms_exit() {
         let mut child = std::process::Command::new("/bin/sleep")

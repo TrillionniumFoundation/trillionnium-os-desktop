@@ -50,14 +50,15 @@ struct KernelFirstEntry {
     init_bytes: u64,
     init_sha256: String,
     argv: Vec<String>,
+    #[serde(default)]
+    query_inputs: Option<serde_json::Value>,
 }
 
 fn validate_runtime_entry(bytes: &[u8], base: &str, system: &str) -> Result<()> {
     let doc: serde_json::Value = serde_json::from_slice(bytes)?;
-    if doc["scope"] == "android_kernel_first_stage_v1" {
+    if matches!(doc["scope"].as_str(), Some("android_kernel_first_stage_v1" | "android_kernel_first_stage_v2")) {
         let row: KernelFirstEntry = serde_json::from_slice(bytes)?;
-        if row.schema != 1
-            || row.scope != "android_kernel_first_stage_v1"
+        if !matches!((row.schema, row.scope.as_str()), (1, "android_kernel_first_stage_v1") | (2, "android_kernel_first_stage_v2"))
             || row.base_cohort_sha256 != base
             || row.source_system_sha256 != system
             || row.init_path != "/system/bin/init"
@@ -69,6 +70,17 @@ fn validate_runtime_entry(bytes: &[u8], base: &str, system: &str) -> Result<()> 
                 "kernel-first runtime does not select the original init from this release",
             ));
         }
+        match row.schema {
+            1 if doc.get("query_inputs").is_none() => {}
+            2 => {
+                let query = row.query_inputs.as_ref().ok_or(SelectionError::Rejected(
+                    "kernel-first v2 requires its complete fixed query inputs",
+                ))?;
+                crate::production_runtime_assets::validate_early_query_inputs(query, system)
+                    .map_err(io::Error::other)?;
+            }
+            _ => return Err(SelectionError::Rejected("kernel-first v1 cannot declare query authority")),
+        }
         return Ok(());
     }
     crate::production_runtime_assets::declared_boot_entry(bytes, base).map_err(io::Error::other)?;
@@ -78,6 +90,18 @@ fn validate_runtime_entry(bytes: &[u8], base: &str, system: &str) -> Result<()> 
         ));
     }
     Ok(())
+}
+
+
+/// Return only the fixed v2 query declaration after validating the same original
+/// init, base and system binding used by the kernel-first boot verifier.
+pub(crate) fn kernel_first_query_inputs(bytes: &[u8], base: &str, system: &str) -> Result<serde_json::Value> {
+    validate_runtime_entry(bytes, base, system)?;
+    let row: KernelFirstEntry = serde_json::from_slice(bytes)?;
+    if row.schema != 2 || row.scope != "android_kernel_first_stage_v2" {
+        return Err(SelectionError::Rejected("early application control requires the kernel-first v2 manifest"));
+    }
+    row.query_inputs.ok_or(SelectionError::Rejected("kernel-first fixed query roles are absent"))
 }
 
 /// Check the original ELF on the very open descriptor that the board child will execute.
@@ -383,6 +407,71 @@ pub fn verify_post_switch_board_plan() -> io::Result<Option<String>> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    fn kernel_first_v2_fixture() -> (String, String, serde_json::Value) {
+        use crate::production_execution_profile::query_inputs as fixed;
+        let role = |index: usize| {
+            let input = fixed::INPUTS[index];
+            serde_json::json!({
+                "original": {"file": input.output_name, "bytes": input.bytes, "sha256": input.sha256},
+                "source_path": input.source_path, "interpreter": input.interpreter,
+            })
+        };
+        let base = "1".repeat(64);
+        let system = fixed::SYSTEM_SHA256.to_owned();
+        let value = serde_json::json!({
+            "schema": 2, "scope": "android_kernel_first_stage_v2",
+            "base_cohort_sha256": base, "source_system_sha256": system,
+            "init_path": "/system/bin/init",
+            "init_bytes": crate::production_cp3a_init_identity::INIT_BYTES,
+            "init_sha256": crate::production_cp3a_init_identity::INIT_SHA256,
+            "argv": ["/system/bin/init", "second_stage"],
+            "query_inputs": {
+                "scope":"fixed_application_query_v1", "source_system_sha256":system,
+                "cmd":role(0), "toybox":role(1),
+                "contacts": {"scope":"fixed_contacts_content_query_v1",
+                             "app_process64":role(2), "content_jar":role(3)},
+            },
+        });
+        (base, system, value)
+    }
+    #[test]
+    fn kernel_first_v2_binds_all_query_roles_to_original_system() {
+        let (base, system, value) = kernel_first_v2_fixture();
+        let raw = serde_json::to_vec(&value).unwrap();
+        validate_runtime_entry(&raw, &base, &system).unwrap();
+        assert_eq!(kernel_first_query_inputs(&raw, &base, &system).unwrap(), value["query_inputs"]);
+        for path in [
+            "/query_inputs/cmd/original/sha256",
+            "/query_inputs/toybox/source_path",
+            "/query_inputs/contacts/app_process64/original/file",
+            "/query_inputs/contacts/content_jar/interpreter",
+        ] {
+            let mut changed = value.clone();
+            *changed.pointer_mut(path).unwrap() = serde_json::json!("foreign");
+            assert!(validate_runtime_entry(&serde_json::to_vec(&changed).unwrap(), &base, &system).is_err(), "{path}");
+        }
+        for query in [serde_json::Value::Null, serde_json::json!({}), {
+            let mut missing = value["query_inputs"].clone();
+            missing.as_object_mut().unwrap().remove("contacts");
+            missing
+        }] {
+            let mut changed = value.clone();
+            changed["query_inputs"] = query;
+            assert!(validate_runtime_entry(&serde_json::to_vec(&changed).unwrap(), &base, &system).is_err());
+        }
+    }
+    #[test]
+    fn kernel_first_v1_never_grants_v2_query_authority() {
+        let (base, system, mut value) = kernel_first_v2_fixture();
+        value["schema"] = serde_json::json!(1);
+        value["scope"] = serde_json::json!("android_kernel_first_stage_v1");
+        assert!(validate_runtime_entry(&serde_json::to_vec(&value).unwrap(), &base, &system).is_err());
+        value.as_object_mut().unwrap().remove("query_inputs");
+        let raw = serde_json::to_vec(&value).unwrap();
+        validate_runtime_entry(&raw, &base, &system).unwrap();
+        assert!(kernel_first_query_inputs(&raw, &base, &system).is_err());
+    }
+
     #[test]
     fn kernel_first_manifest_rejects_changed_parent_command_and_body() {
         let base = "1".repeat(64);

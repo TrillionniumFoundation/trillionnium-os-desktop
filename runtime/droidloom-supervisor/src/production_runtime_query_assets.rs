@@ -215,6 +215,20 @@ impl QueryDeclaration {
         }
         sources
     }
+    pub(super) fn validate_kernel_first(&self, system: &str) -> Result<()> {
+        require(self.scope == "fixed_application_query_v1"
+            && self.source_system_sha256 == system && system == fixed::SYSTEM_SHA256,
+            "kernel-first query roles must come from the selected original CP3A system")?;
+        let contacts = self.contacts.as_ref().ok_or(MountError::Rejected(
+            "kernel-first v2 requires all four fixed query roles",
+        ))?;
+        require(contacts.scope == "fixed_contacts_content_query_v1"
+            && contacts.content_jar.interpreter.is_none()
+            && self.layout() == QueryLayout::Contacts && self.sources().len() == 4,
+            "kernel-first query layout must contain the exact commands and Contacts roles")?;
+        self.validate_cp3a()
+    }
+
     pub(super) fn validate(&self, runtime: &RuntimeDeclaration) -> Result<()> {
         require(
             self.scope == "fixed_application_query_v1"

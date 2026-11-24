@@ -1,8 +1,12 @@
 ; The early board owns the empty original tmpfs root. The Linux resource service
-; creates only the two named mountpoint directories there.
+; creates only the fixed socket and private query mountpoint directories there.
 (type p4_linux_private_dev_root_t)
 (type p4_linux_private_socket_parent_t)
 (type p4_linux_readiness_mount_t)
+(type p4_linux_query_mount_t)
+(roletype object_r p4_linux_query_mount_t)
+(typeattributeset p4_linux_data (p4_linux_query_mount_t))
+(allow p4_linux_query_mount_t tmpfs (filesystem (associate)))
 (roletype object_r p4_linux_private_dev_root_t)
 (roletype object_r p4_linux_private_socket_parent_t)
 (roletype object_r p4_linux_readiness_mount_t)
@@ -14,6 +18,10 @@
 (allow p4_linux_readiness_mount_t tmpfs (filesystem (associate)))
 
 (typetransition droidloom_broker p4_linux_private_dev_root_t dir "socket" p4_linux_private_socket_parent_t)
+(typetransition droidloom_broker p4_linux_private_dev_root_t dir "droidloom-query" p4_linux_query_mount_t)
+(allow droidloom_broker p4_linux_query_mount_t (dir (create open getattr read search setattr mounton)))
+(neverallow domain p4_linux_query_mount_t (dir (mounton relabelfrom relabelto write add_name remove_name)))
+(neverallow droidloom_broker p4_linux_query_mount_t (dir (relabelfrom relabelto)))
 (typetransition droidloom_broker p4_linux_private_socket_parent_t dir "droidloom" p4_linux_readiness_mount_t)
 (allow droidloom_broker p4_linux_run_t (dir (getattr search)))
 (allow droidloom_broker p4_linux_early_handoff_dir_t (dir (getattr search)))

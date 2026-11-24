@@ -44,6 +44,8 @@ pub mod package;
 #[cfg(target_os = "linux")]
 #[path = "production_control.rs"]
 mod production;
+#[cfg(target_os = "linux")]
+pub(crate) use production::EarlyApplicationControl;
 
 use progress::{LOG_HINT, Reporter};
 
