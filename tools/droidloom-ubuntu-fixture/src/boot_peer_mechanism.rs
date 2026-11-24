@@ -18,8 +18,8 @@ use std::{
 
 const RELEASE: &str = "6.18.64-p4ctx6181-fusectl-aafs-peer-r1";
 const KERNEL_SHA: &str = "19052ac77e40a86147f6bc186739763628916033f7c36f3448b4a872914090df";
-const INITRD_SHA: &str = "419d00489d5239e9bea5e86d5cbdca393f4a0b784e8f05c331595d7528b2c89d";
-const MATERIALS_SHA: &str = "4b639b59c937ebe14d4e30597e837c523185c97a318f84c31097f6a52db87726";
+const INITRD_SHA: &str = "247fa80b51853c7bbf02adb778907d52a2ff8085ffbc8e72ee0baad599afc35d";
+const MATERIALS_SHA: &str = "42422c3f08320aad92f7dd7a8f4535abcab981da85eff938937da0d68b9ebcc1";
 const COMMAND_LINE: &str = "console=ttyS0 rdinit=/peer-runtime loglevel=5 panic=-1 selinux=1 enforcing=1 apparmor=1 lsm=lockdown,capability,landlock,yama,selinux,apparmor,bpf,ima,evm p4_peer_mechanism=1";
 const SERIAL_LIMIT: usize = 4 * 1024 * 1024;
 const MARKER: &str = "P4_PEER_RUNTIME_RESULT ";
@@ -122,9 +122,9 @@ fn validate_plan(plan: &Plan) -> Result<Value> {
     ensure(
         plan.kernel.bytes == 16855552
             && plan.kernel.sha256 == KERNEL_SHA
-            && plan.initrd.bytes == 1519403
+            && plan.initrd.bytes == 1519207
             && plan.initrd.sha256 == INITRD_SHA
-            && plan.materials.bytes == 7459
+            && plan.materials.bytes == 7535
             && plan.materials.sha256 == MATERIALS_SHA,
         "peer VM inputs differ from this fixed complete kernel and test batch",
     )?;
