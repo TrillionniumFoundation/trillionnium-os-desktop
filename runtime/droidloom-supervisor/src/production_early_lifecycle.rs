@@ -410,15 +410,21 @@ pub fn complete_early_resources() -> io::Result<()> {
             }
             frontend.borrow_mut().progress()
         };
-        let application = super::EarlyApplicationAuthority::acquire(
-            &base, &group, &owner, root, query, &progress,
-        )
-        .map_err(io::Error::other)?;
         let mut control =
             crate::control::EarlyApplicationControl::bind(&owner).map_err(io::Error::other)?;
         let waiting = signals.await_child(board.pidfd(), || {
             progress()?;
-            control.poll(&application).map_err(io::Error::other)
+            control
+                .poll(
+                    board.host_pid() as u32,
+                    board.selection().spec().host_uid,
+                    || {
+                        super::EarlyApplicationAuthority::acquire(
+                            &base, &group, &owner, root, query, &progress,
+                        )
+                    },
+                )
+                .map_err(io::Error::other)
         });
         let control_retired = control.retire().map_err(io::Error::other);
         let presentation_retired = frontend.borrow_mut().retire();

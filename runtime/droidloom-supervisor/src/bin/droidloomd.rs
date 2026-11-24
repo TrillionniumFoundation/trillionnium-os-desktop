@@ -54,9 +54,14 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
                 return Err("service ELF inspection reads only standard input".into());
             }
             let mut bytes = Vec::new();
-            std::io::stdin().lock().take(64 * 1024 * 1024 + 1).read_to_end(&mut bytes)?;
+            std::io::stdin()
+                .lock()
+                .take(64 * 1024 * 1024 + 1)
+                .read_to_end(&mut bytes)?;
             droidloom_supervisor::control::inspect_container_service_elf(&bytes)?;
-            println!("Service ELF structure verified; publication and runtime policy are separate checks");
+            println!(
+                "Service ELF structure verified; publication and runtime policy are separate checks"
+            );
             return Ok(());
         }
         if action.as_deref() == Some(std::ffi::OsStr::new("--complete-early-boot")) {
@@ -70,46 +75,67 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             return Ok(());
         }
         if action.as_deref() == Some(std::ffi::OsStr::new("--manage-container")) {
-            if arguments.next().is_some() { return Err("container management accepts no arguments".into()); }
+            if arguments.next().is_some() {
+                return Err("container management accepts no arguments".into());
+            }
             install_signal_handlers()?;
             container_oci_owner::run(&SHUTDOWN)?;
             return Ok(());
         }
         if action.as_deref() == Some(std::ffi::OsStr::new("--observe-early-container")) {
-            if arguments.next().is_some() {return Err("early Android observation accepts no arguments".into());}
+            if arguments.next().is_some() {
+                return Err("early Android observation accepts no arguments".into());
+            }
             install_signal_handlers()?;
             container_oci_owner::early::run(&SHUTDOWN)?;
             return Ok(());
         }
         if action.as_deref() == Some(std::ffi::OsStr::new("--post-switch-board-plan")) {
-            if arguments.next().is_some() { return Err("post-switch board verification accepts no arguments".into()); }
+            if arguments.next().is_some() {
+                return Err("post-switch board verification accepts no arguments".into());
+            }
             if let Some(plan) = droidloom_supervisor::control::verify_post_switch_board_plan()? {
                 println!("{plan}");
             }
             return Ok(());
         }
-        if let Some(action) = action.as_ref().and_then(|arg| arg.to_str()).filter(|name|
-            matches!(*name, "--initramfs-selected-generation" | "--initramfs-pre-switch-root" | "--initramfs-board-plan")) {
+        if let Some(action) = action.as_ref().and_then(|arg| arg.to_str()).filter(|name| {
+            matches!(
+                *name,
+                "--initramfs-selected-generation"
+                    | "--initramfs-pre-switch-root"
+                    | "--initramfs-board-plan"
+            )
+        }) {
             if arguments.next().is_some() {
                 return Err("early boot release verification accepts no arguments".into());
             }
             let switch_root = action == "--initramfs-pre-switch-root";
-            if let Some(digest)=droidloom_supervisor::control::verify_initramfs_release(switch_root,action=="--initramfs-board-plan")? {
+            if let Some(digest) = droidloom_supervisor::control::verify_initramfs_release(
+                switch_root,
+                action == "--initramfs-board-plan",
+            )? {
                 println!("{digest}");
             }
             return Ok(());
         }
         if action.as_deref() == Some(std::ffi::OsStr::new("--initramfs-verify-stock-init")) {
             use std::os::fd::AsFd;
-            if arguments.next().is_some(){return Err("the original init is supplied only on a held descriptor".into());}
-            let descriptor=std::io::stdin().as_fd().try_clone_to_owned()?;
-            droidloom_supervisor::control::verify_original_init_for_boot(&std::fs::File::from(descriptor))?;
+            if arguments.next().is_some() {
+                return Err("the original init is supplied only on a held descriptor".into());
+            }
+            let descriptor = std::io::stdin().as_fd().try_clone_to_owned()?;
+            droidloom_supervisor::control::verify_original_init_for_boot(&std::fs::File::from(
+                descriptor,
+            ))?;
             return Ok(());
         }
         if action.as_deref() == Some(std::ffi::OsStr::new("--inspect-early-generation")) {
-            if arguments.next().is_some() {return Err("early generation inspection accepts no arguments".into());}
-            let mac=droidloom_supervisor::control::ContainerManagerMac::acquire()?;
-            let generation=droidloom_supervisor::control::EarlyAndroidGeneration::acquire()?;
+            if arguments.next().is_some() {
+                return Err("early generation inspection accepts no arguments".into());
+            }
+            let mac = droidloom_supervisor::control::ContainerManagerMac::acquire()?;
+            let generation = droidloom_supervisor::control::EarlyAndroidGeneration::acquire()?;
             generation.revalidate()?;
             mac.revalidate()?;
             println!("Selected Android namespace PID 1 is live");
@@ -138,6 +164,20 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             let selected = droidloom_supervisor::control::PreparedContainerSelection::acquire()?;
             selected.revalidate()?;
             println!("Shared-kernel launch selection verified");
+            return Ok(());
+        }
+        if action.as_deref() == Some(std::ffi::OsStr::new("__production-metadata-observer")) {
+            if arguments.next().is_some() {
+                return Err("private metadata observer accepts no parameters".into());
+            }
+            droidloom_supervisor::production_application::run_metadata_observer()?;
+            return Ok(());
+        }
+        if action.as_deref() == Some(std::ffi::OsStr::new("__production-query-io")) {
+            if arguments.next().is_some() {
+                return Err("private query I/O creator accepts no parameters".into());
+            }
+            droidloom_supervisor::production_application::run_query_io_creator()?;
             return Ok(());
         }
         if action.as_deref() == Some(std::ffi::OsStr::new("__production-application-read")) {

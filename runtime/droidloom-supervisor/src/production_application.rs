@@ -38,6 +38,12 @@ pub(crate) use launch_command::LaunchCommand;
 use operation::ApplicationOperation;
 pub(crate) use operation::{BrowserCommand, OperationDomain};
 
+#[path = "production_metadata_observer.rs"]
+mod metadata_observer;
+pub(crate) use metadata_observer::{
+    MetadataObservation, MetadataRole, observe as observe_metadata,
+};
+
 #[path = "production_application_query_io.rs"]
 pub(crate) mod query_io;
 
@@ -73,12 +79,31 @@ impl QueryProjection {
 pub(crate) trait ApplicationWorkerAuthority {
     fn query_projection(&self) -> QueryProjection;
     fn revalidate(&self) -> std::result::Result<(), crate::production_namespace::NamespaceError>;
-    fn descriptors(&self, binary: &CStr) -> std::result::Result<Vec<File>, crate::production_namespace::NamespaceError>;
-    fn contacts_content_descriptors(&self) -> std::result::Result<[File; 2], crate::production_namespace::NamespaceError>;
-    fn mapped_root(&self) -> std::result::Result<(u32, u32), crate::production_namespace::NamespaceError>;
-    fn leaf(&self) -> std::result::Result<crate::production_cgroup::ApplicationLeaf<'_>, crate::production_namespace::NamespaceError>;
-    fn bind_created_process(&self, pidfd: &std::os::fd::OwnedFd, query: bool) -> std::result::Result<(File, u32), crate::production_namespace::NamespaceError>;
-    fn progress_inherited_native(&self, deadline: std::time::Instant) -> std::result::Result<(), crate::production_namespace::NamespaceError>;
+    fn descriptors(
+        &self,
+        binary: &CStr,
+    ) -> std::result::Result<Vec<File>, crate::production_namespace::NamespaceError>;
+    fn contacts_content_descriptors(
+        &self,
+    ) -> std::result::Result<[File; 2], crate::production_namespace::NamespaceError>;
+    fn mapped_root(
+        &self,
+    ) -> std::result::Result<(u32, u32), crate::production_namespace::NamespaceError>;
+    fn leaf(
+        &self,
+    ) -> std::result::Result<
+        crate::production_cgroup::ApplicationLeaf<'_>,
+        crate::production_namespace::NamespaceError,
+    >;
+    fn bind_created_process(
+        &self,
+        pidfd: &std::os::fd::OwnedFd,
+        query: bool,
+    ) -> std::result::Result<(File, u32), crate::production_namespace::NamespaceError>;
+    fn progress_inherited_native(
+        &self,
+        deadline: std::time::Instant,
+    ) -> std::result::Result<(), crate::production_namespace::NamespaceError>;
 }
 
 pub(crate) const WORKER_ARGUMENT: &str = "__production-application-read";
@@ -498,7 +523,6 @@ pub(crate) fn inspect(
     Ok(inspection)
 }
 
-
 /// The same four finite reads, current framework identity and real retirement
 /// checks are available to the kernel-first owner without a legacy ReadyTree.
 pub(crate) fn inspect_early(
@@ -506,9 +530,13 @@ pub(crate) fn inspect_early(
     package: &str,
     user: u32,
 ) -> Result<ApplicationInspection> {
-    require(package_valid(package) && user <= 21_474, "invalid package inspection")?;
+    require(
+        package_valid(package) && user <= 21_474,
+        "invalid package inspection",
+    )?;
     struct Probe<'a, 'owner> {
-        authority: &'a crate::production_selection::early_generation::EarlyApplicationAuthority<'owner>,
+        authority:
+            &'a crate::production_selection::early_generation::EarlyApplicationAuthority<'owner>,
         framework: crate::production_selection::early_generation::EarlyFrameworkObservation,
         reads: Vec<ReadReceipt>,
         deadline: std::time::Instant,
@@ -518,36 +546,62 @@ pub(crate) fn inspect_early(
             if std::time::Instant::now() >= self.deadline {
                 return Err("early application inspection deadline".into());
             }
-            self.authority.progress_inherited_native(self.deadline).map_err(|e| e.to_string())?;
-            self.authority.epoch(&self.framework).map_err(|e| e.to_string())
+            self.authority
+                .progress_inherited_native(self.deadline)
+                .map_err(|e| e.to_string())?;
+            self.authority
+                .epoch(&self.framework)
+                .map_err(|e| e.to_string())
         }
         fn command(&mut self, args: &[String]) -> std::result::Result<String, String> {
             if std::time::Instant::now() >= self.deadline || self.reads.len() >= 200 {
                 return Err("early application inspection query bound".into());
             }
-            self.authority.progress_inherited_native(self.deadline).map_err(|e| e.to_string())?;
-            self.authority.epoch(&self.framework).map_err(|e| e.to_string())?;
+            self.authority
+                .progress_inherited_native(self.deadline)
+                .map_err(|e| e.to_string())?;
+            self.authority
+                .epoch(&self.framework)
+                .map_err(|e| e.to_string())?;
             let query = ApplicationRead::from_command(args).map_err(|e| e.to_string())?;
-            let result = run_read_before(self.authority, &query, self.deadline).map_err(|e| e.to_string())?;
-            self.authority.epoch(&self.framework).map_err(|e| e.to_string())?;
+            let result = run_read_before(self.authority, &query, self.deadline)
+                .map_err(|e| e.to_string())?;
+            self.authority
+                .epoch(&self.framework)
+                .map_err(|e| e.to_string())?;
             self.reads.push(result.receipt);
             Ok(result.output)
         }
     }
     let deadline = std::time::Instant::now() + std::time::Duration::from_secs(240);
     let framework = authority.observe_framework().map_err(external)?;
-    let mut probe = Probe { authority, framework, reads: Vec::new(), deadline };
-    let inspection = crate::control::application_probe::inspect(&mut probe, package, user).map_err(external);
+    let mut probe = Probe {
+        authority,
+        framework,
+        reads: Vec::new(),
+        deadline,
+    };
+    let inspection =
+        crate::control::application_probe::inspect(&mut probe, package, user).map_err(external);
     // Includes the same application leaf quarantine, even on a rejected read.
     authority.revalidate().map_err(external)?;
     let inspection = inspection?;
-    require(!probe.reads.is_empty() && probe.reads.iter().all(|row| {
-        row.cgroup_removed && row.worker_waitid_code == libc::CLD_EXITED
-            && row.worker_waitid_status == 0 && row.query_waitid_code == libc::CLD_EXITED
-            && row.query_waitid_status == 0
-    }), "early inspection has incomplete real read retirement")?;
+    require(
+        !probe.reads.is_empty()
+            && probe.reads.iter().all(|row| {
+                row.cgroup_removed
+                    && row.worker_waitid_code == libc::CLD_EXITED
+                    && row.worker_waitid_status == 0
+                    && row.query_waitid_code == libc::CLD_EXITED
+                    && row.query_waitid_status == 0
+            }),
+        "early inspection has incomplete real read retirement",
+    )?;
     authority.epoch(&probe.framework).map_err(external)?;
-    require(std::time::Instant::now() < deadline, "early inspection workflow deadline")?;
+    require(
+        std::time::Instant::now() < deadline,
+        "early inspection workflow deadline",
+    )?;
     Ok(inspection)
 }
 
@@ -566,6 +620,11 @@ pub fn run_query_io_creator() -> Result<()> {
 /// # Errors
 /// Rejects an ordinary caller, missing original descriptors, a changed owner,
 /// or any failed namespace, clone, or fixed-query preparation operation.
+pub fn run_metadata_observer() -> Result<()> {
+    metadata_observer::entry()
+}
+
+/// Runs the fixed original application worker after private entry admission.
 pub fn run_application_read_worker() -> Result<()> {
     worker::entry()
 }

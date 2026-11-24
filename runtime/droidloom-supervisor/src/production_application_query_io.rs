@@ -246,7 +246,7 @@ fn receive(socket: RawFd, expected_files: usize, deadline: Instant) -> Result<Re
     }
 }
 
-fn own_root_credentials() -> Result<()> {
+pub(super) fn own_root_credentials() -> Result<()> {
     require(
         unsafe {
             libc::getuid() == 0
@@ -281,7 +281,7 @@ fn proc_value(path: &CStr) -> Result<Vec<u8>> {
     require(value.len() <= 256, "query I/O attribute is oversized")?;
     Ok(value)
 }
-fn mac_context(selinux: &[u8]) -> Result<()> {
+pub(super) fn mac_context(selinux: &[u8]) -> Result<()> {
     let actual = proc_value(c"/proc/thread-self/attr/current")?;
     require(
         actual == selinux || actual.strip_suffix(b"\0") == Some(selinux),
@@ -292,7 +292,7 @@ fn mac_context(selinux: &[u8]) -> Result<()> {
         "query I/O AppArmor broker profile differs",
     )
 }
-fn channel_kind(socket: RawFd) -> Result<()> {
+pub(super) fn channel_kind(socket: RawFd) -> Result<()> {
     let mut kind = 0_i32;
     let mut length = mem::size_of_val(&kind) as libc::socklen_t;
     if unsafe {
@@ -353,27 +353,27 @@ fn channel_kind(socket: RawFd) -> Result<()> {
 
 #[repr(C)]
 #[derive(Default)]
-struct PidfdInfo {
-    mask: u64,
-    cgroup_id: u64,
-    pid: u32,
-    tgid: u32,
-    ppid: u32,
-    ruid: u32,
-    rgid: u32,
-    euid: u32,
-    egid: u32,
-    suid: u32,
-    sgid: u32,
-    fsuid: u32,
-    fsgid: u32,
-    exit_code: i32,
-    coredump_mask: u32,
-    coredump_signal: u32,
-    supported_mask: u64,
+pub(super) struct PidfdInfo {
+    pub(super) mask: u64,
+    pub(super) cgroup_id: u64,
+    pub(super) pid: u32,
+    pub(super) tgid: u32,
+    pub(super) ppid: u32,
+    pub(super) ruid: u32,
+    pub(super) rgid: u32,
+    pub(super) euid: u32,
+    pub(super) egid: u32,
+    pub(super) suid: u32,
+    pub(super) sgid: u32,
+    pub(super) fsuid: u32,
+    pub(super) fsgid: u32,
+    pub(super) exit_code: i32,
+    pub(super) coredump_mask: u32,
+    pub(super) coredump_signal: u32,
+    pub(super) supported_mask: u64,
 }
 const _: () = assert!(mem::size_of::<PidfdInfo>() == 80);
-fn pidfd_info(file: &File) -> Result<PidfdInfo> {
+pub(super) fn pidfd_info(file: &File) -> Result<PidfdInfo> {
     let mut value = PidfdInfo {
         mask: 3,
         ..PidfdInfo::default()
@@ -387,7 +387,7 @@ fn pidfd_info(file: &File) -> Result<PidfdInfo> {
     )?;
     Ok(value)
 }
-fn alive(file: &File) -> Result<()> {
+pub(super) fn alive(file: &File) -> Result<()> {
     let mut poll = libc::pollfd {
         fd: file.as_raw_fd(),
         events: libc::POLLIN,
@@ -402,7 +402,7 @@ fn alive(file: &File) -> Result<()> {
         "query I/O original parent has exited",
     )
 }
-fn parent_identity(pidfd: &File, peer: libc::ucred, parent: libc::pid_t) -> Result<()> {
+pub(super) fn parent_identity(pidfd: &File, peer: libc::ucred, parent: libc::pid_t) -> Result<()> {
     alive(pidfd)?;
     let value = pidfd_info(pidfd)?;
     require(
@@ -441,7 +441,7 @@ struct CapData {
     permitted: u32,
     inheritable: u32,
 }
-fn empty_capabilities() -> Result<()> {
+pub(super) fn empty_capabilities() -> Result<()> {
     let mut header = CapHeader {
         version: 0x2008_0522,
         pid: 0,
@@ -618,7 +618,7 @@ fn guest_null(root: &File) -> Result<File> {
 // These syscall filters support only the reviewed native x86_64 host ABI.
 // Arguments can narrow the one preexec execveat and the sole permitted pidfd
 // ioctl. The creator has no process/namespace/pidfd/socket creation operation.
-fn filter(executable: Option<RawFd>) -> Vec<libc::sock_filter> {
+pub(super) fn filter(executable: Option<RawFd>, metadata: bool) -> Vec<libc::sock_filter> {
     let ins = |code, jt, jf, k| libc::sock_filter { code, jt, jf, k };
     let deny = 0x0005_0000 | libc::EPERM as u32;
     let allow = 0x7fff_0000;
@@ -630,6 +630,23 @@ fn filter(executable: Option<RawFd>) -> Vec<libc::sock_filter> {
         ins(0x35, 0, 1, 0x4000_0000),
         ins(0x06, 0, 0, deny),
     ];
+    if metadata {
+        // Before fixed entry consumes its held namespace, allow only the two
+        // read-only identity ioctls it needs. The final filter binds PIDFD_INFO
+        // to the exact original target descriptor.
+        f.extend([
+            ins(0x15, 0, 8, libc::SYS_ioctl as u32),
+            ins(0x20, 0, 0, 28),
+            ins(0x15, 1, 0, 0),
+            ins(0x06, 0, 0, deny),
+            ins(0x20, 0, 0, 24),
+            ins(0x15, 2, 0, PIDFD_GET_INFO as u32),
+            ins(0x15, 1, 0, 0xb703),
+            ins(0x06, 0, 0, deny),
+            ins(0x06, 0, 0, allow),
+            ins(0x20, 0, 0, 0),
+        ]);
+    }
     let mut narrow = |syscall: libc::c_long, arguments: &[(u32, u64)]| {
         let mut body = Vec::new();
         for &(index, value) in arguments {
@@ -649,10 +666,15 @@ fn filter(executable: Option<RawFd>) -> Vec<libc::sock_filter> {
         f.extend(body);
         f.push(ins(0x20, 0, 0, 0));
     };
-    narrow(libc::SYS_ioctl, &[(1, PIDFD_GET_INFO)]);
+    if !metadata {
+        narrow(libc::SYS_ioctl, &[(1, PIDFD_GET_INFO)]);
+    }
     narrow(libc::SYS_recvmsg, &[(0, 3)]);
     narrow(libc::SYS_sendmsg, &[(0, 3)]);
     narrow(libc::SYS_pipe2, &[(1, libc::O_CLOEXEC as u64)]);
+    if metadata {
+        narrow(libc::SYS_setns, &[(0, 4), (1, libc::CLONE_NEWUSER as u64)]);
+    }
     if let Some(fd) = executable {
         narrow(
             libc::SYS_execveat,
@@ -714,10 +736,15 @@ fn filter(executable: Option<RawFd>) -> Vec<libc::sock_filter> {
     ] {
         f.extend([ins(0x15, 0, 1, syscall as u32), ins(0x06, 0, 0, allow)]);
     }
+    if metadata {
+        for syscall in [libc::SYS_capset, libc::SYS_dup3] {
+            f.extend([ins(0x15, 0, 1, syscall as u32), ins(0x06, 0, 0, allow)]);
+        }
+    }
     f.push(ins(0x06, 0, 0, deny));
     f
 }
-fn install_filter(program: &[libc::sock_filter]) -> Result<()> {
+pub(super) fn install_filter(program: &[libc::sock_filter]) -> Result<()> {
     let f = libc::sock_fprog {
         len: program.len() as u16,
         filter: program.as_ptr().cast_mut(),
@@ -737,7 +764,7 @@ pub(super) fn entry() -> Result<()> {
     own_root_credentials()?;
     mac_context(CREATOR)?;
     // Stacking this filter removes even the single preexec execveat exception.
-    install_filter(&filter(None))?;
+    install_filter(&filter(None, false))?;
     // exec may reset dumpability. This only restricts the current creator and
     // is rechecked with the remaining fixed privilege state.
     if unsafe { libc::prctl(libc::PR_SET_DUMPABLE, 0, 0, 0, 0) } != 0 {
@@ -804,7 +831,7 @@ pub(super) fn entry() -> Result<()> {
     Ok(())
 }
 
-fn above_reserved(file: &File) -> Result<File> {
+pub(super) fn above_reserved(file: &File) -> Result<File> {
     let raw = unsafe { libc::fcntl(file.as_raw_fd(), libc::F_DUPFD_CLOEXEC, 64) };
     if raw < 0 {
         return Err(io::Error::last_os_error().into());
@@ -862,7 +889,28 @@ unsafe fn raw_attribute(path: &CStr, expected: &[u8], write: bool) -> bool {
         valid && good && tail == 0 && closed == 0
     }
 }
-unsafe fn bootstrap(
+/// Both private helpers use the same reviewed no-argument fresh image gate.
+#[derive(Clone, Copy)]
+pub(super) enum HelperRole {
+    QueryIo,
+    MetadataObserver,
+}
+impl HelperRole {
+    fn terminated(self) -> &'static [u8] {
+        match self {
+            Self::QueryIo => b"u:r:droidloom_query_io:s0\0",
+            Self::MetadataObserver => b"u:r:droidloom_metadata_observer:s0\0",
+        }
+    }
+    fn context(self) -> &'static [u8] {
+        match self {
+            Self::QueryIo => CREATOR,
+            Self::MetadataObserver => b"u:r:droidloom_metadata_observer:s0",
+        }
+    }
+}
+pub(super) unsafe fn bootstrap(
+    role: HelperRole,
     parent: libc::pid_t,
     executable: RawFd,
     socket: RawFd,
@@ -880,12 +928,8 @@ unsafe fn bootstrap(
         if !raw_attribute(c"/proc/thread-self/attr/current", BROKER, false)
             || !raw_attribute(c"/proc/thread-self/attr/apparmor/current", AA_BROKER, false)
             || !raw_attribute(c"/proc/thread-self/attr/exec", b"", false)
-            || !raw_attribute(
-                c"/proc/thread-self/attr/exec",
-                b"u:r:droidloom_query_io:s0\0",
-                true,
-            )
-            || !raw_attribute(c"/proc/thread-self/attr/exec", CREATOR, false)
+            || !raw_attribute(c"/proc/thread-self/attr/exec", role.terminated(), true)
+            || !raw_attribute(c"/proc/thread-self/attr/exec", role.context(), false)
             || !raw_attribute(c"/proc/thread-self/attr/current", BROKER, false)
             || !raw_attribute(c"/proc/thread-self/attr/apparmor/current", AA_BROKER, false)
         {
@@ -955,10 +999,10 @@ unsafe fn bootstrap(
     }
 }
 
-struct Child {
-    pid: u32,
-    pidfd: Option<File>,
-    terminal: Option<(i32, i32)>,
+pub(super) struct Child {
+    pub(super) pid: u32,
+    pub(super) pidfd: Option<File>,
+    pub(super) terminal: Option<(i32, i32)>,
 }
 impl Child {
     fn observe(&mut self) -> Result<bool> {
@@ -1000,7 +1044,7 @@ impl Child {
         self.terminal = Some((status.si_code, unsafe { status.si_status() }));
         Ok(true)
     }
-    fn finish(&mut self, deadline: Instant) -> Result<()> {
+    pub(super) fn finish(&mut self, deadline: Instant) -> Result<()> {
         while !self.observe()? {
             wait(
                 self.pidfd.as_ref().unwrap().as_raw_fd(),
@@ -1013,7 +1057,7 @@ impl Child {
             "query I/O creator did not exit successfully",
         )
     }
-    fn retire(&mut self) -> Result<()> {
+    pub(super) fn retire(&mut self) -> Result<()> {
         if self.terminal.is_some() {
             return Ok(());
         }
@@ -1120,7 +1164,7 @@ pub(crate) fn create(root: &File, deadline: Instant) -> Result<QueryIo> {
             .checked_add(left.as_nanos() as u64)
             .ok_or_else(|| reject("query I/O deadline overflow"))?,
     };
-    let program = filter(Some(executable.as_raw_fd()));
+    let program = filter(Some(executable.as_raw_fd()), false);
     let fprog = libc::sock_fprog {
         len: program.len() as u16,
         filter: program.as_ptr().cast_mut(),
@@ -1147,6 +1191,7 @@ pub(crate) fn create(root: &File, deadline: Instant) -> Result<QueryIo> {
     if pid == 0 {
         unsafe {
             bootstrap(
+                HelperRole::QueryIo,
                 parent,
                 executable.as_raw_fd(),
                 child_channel.as_raw_fd(),
@@ -1265,7 +1310,7 @@ mod tests {
     }
     #[test]
     fn query_io_real_filter_denies_process_namespace_pidfd_and_exec() {
-        let program = filter(None);
+        let program = filter(None, false);
         let fprog = libc::sock_fprog {
             len: program.len() as u16,
             filter: program.as_ptr().cast_mut(),

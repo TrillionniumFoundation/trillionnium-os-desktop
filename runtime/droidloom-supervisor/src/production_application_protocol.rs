@@ -18,6 +18,19 @@ const MESSAGE_LIMIT: usize = 8192;
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(tag = "phase", deny_unknown_fields)]
 pub(super) enum Message {
+    MetadataRequest {
+        nonce: [u8; 16],
+        role: super::metadata_observer::MetadataRole,
+        deadline_ns: u64,
+    },
+    MetadataObserved {
+        nonce: [u8; 16],
+        role: super::metadata_observer::MetadataRole,
+        selinux: String,
+        apparmor: String,
+        stat: String,
+        status: String,
+    },
     Request {
         nonce: [u8; 16],
         query: ApplicationOperation,

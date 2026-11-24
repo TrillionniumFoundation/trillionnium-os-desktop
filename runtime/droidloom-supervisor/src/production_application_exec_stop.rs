@@ -224,10 +224,13 @@ impl ExecutableBinding {
                 && mount_id(file)? == self.mount_id,
             "actual stopped executable is not the original private query inode",
         )?;
+        // The separately confined observer returns only O_PATH identity. The
+        // original read-only owner still holds the same inode and mount, so
+        // recheck its exact label and complete body without broadening the
+        // observer into an executable-content reader.
         query_executable_security(&self.file, self.label)?;
-        query_executable_security(file, self.label)?;
         require(
-            digest(file, self.node, deadline)? == self.sha256,
+            digest(&self.file, self.node, deadline)? == self.sha256,
             "actual stopped executable bytes differ from the held query role",
         )
     }
@@ -357,10 +360,7 @@ impl NamespaceBinding {
             ],
         })
     }
-    fn verify(
-        &self,
-        actual: &crate::production_selection::early_generation::QueryObservation,
-    ) -> Result<()> {
+    fn verify(&self, actual: &crate::production_application::MetadataObservation) -> Result<()> {
         let same = |left: &File, right: &File| -> Result<bool> {
             let a = left.metadata()?;
             let b = right.metadata()?;
@@ -551,15 +551,18 @@ impl<'a> ExecTrace<'a> {
             "operation domain does not match its private executable role",
         )?;
         let previous_tid = self.actual_exec_stop(deadline)?;
-        // At this actual kernel exec stop, a fixed zero-capability reader can
-        // match the query filesystem IDs without changing the original owner.
-        // The reader has no SYS_PTRACE and cannot bypass a nondumpable target.
-        // Its returned bodies/namespaces become usable only after real waitid.
+        // At the actual kernel exec stop, the fixed metadata role reads only
+        // identities under the held Android user namespace. It has no initial
+        // namespace capability and no ptrace/signal syscall. Its O_PATH results
+        // are usable only after the original helper's actual successful waitid.
         let (actual, selinux, apparmor) = if let Some(expected) = namespaces {
-            let observed = crate::production_selection::early_generation::observe_query(
+            let target = File::from(self.child.pidfd.try_clone()?);
+            let observed = crate::production_application::observe_metadata(
+                crate::production_application::MetadataRole::for_operation(domain),
                 &self.proc,
-                &self.child.pidfd,
+                &target,
                 &expected.namespaces[0],
+                deadline,
             )
             .map_err(external)?;
             expected.verify(&observed)?;

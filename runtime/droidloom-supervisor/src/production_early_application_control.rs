@@ -27,13 +27,15 @@ impl EarlyApplicationControl {
             .map_err(|e| ControlError::Invalid(e.to_string()))?;
         Ok(Self { listener })
     }
-    pub(crate) fn poll(
+    pub(crate) fn poll<'owner>(
         &mut self,
-        authority: &crate::production_selection::early_generation::EarlyApplicationAuthority<'_>,
+        host_pid: u32,
+        host_uid: u32,
+        acquire: impl FnOnce() -> std::result::Result<
+            crate::production_selection::early_generation::EarlyApplicationAuthority<'owner>,
+            crate::production_namespace::NamespaceError,
+        >,
     ) -> Result<(), ControlError> {
-        authority
-            .revalidate()
-            .map_err(|e| ControlError::Invalid(e.to_string()))?;
         let mut accepted = match self.listener.accept() {
             Ok(value) => value,
             Err(e)
@@ -53,7 +55,7 @@ impl EarlyApplicationControl {
             ok: false,
             state: CellState::Starting,
             message: String::new(),
-            host_pid: Some(authority.host_pid()),
+            host_pid: Some(host_pid),
             launch: None,
             applications: None,
             application_icon: None,
@@ -61,14 +63,32 @@ impl EarlyApplicationControl {
             inspection: None,
             image_custody: None,
         };
+        let mut authority = None;
+        let mut acquisition_quarantined = false;
         let handled = (|| -> Result<(), ControlError> {
             let (peer, request, file, streaming) = receive_request(stream)?;
-            authorize_uid(peer, authority.host_uid())?;
+            authorize_uid(peer, host_uid)?;
             if file.is_some() {
                 return Err(ControlError::Invalid(
                     "early application control does not accept a descriptor".into(),
                 ));
             }
+            // Request-local acquisition starts only after transport admission.
+            // While original init is crossing stock exec, report Starting to
+            // the caller and keep the actual boot owner/frontend loop alive.
+            authority = Some(match acquire() {
+                Ok(value) => value,
+                Err(error) => {
+                    acquisition_quarantined = matches!(
+                        error,
+                        crate::production_namespace::NamespaceError::RetirementUnproven,
+                    );
+                    return Err(ControlError::Invalid(error.to_string()));
+                }
+            });
+            let authority = authority
+                .as_ref()
+                .expect("acquired original application owner");
             let progress = Reporter::new(stream, streaming)?;
             match request {
                 ControlRequest::InspectApplication { package, user } => {
@@ -111,9 +131,17 @@ impl EarlyApplicationControl {
         }
         // A command that could not retire its real children quarantines the
         // original cgroup. That failure must leave the main service loop.
-        let original = authority
-            .revalidate()
-            .map_err(|e| ControlError::Invalid(e.to_string()));
+        let original = if acquisition_quarantined {
+            Err(ControlError::Invalid(
+                "original metadata helper retirement remains quarantined".into(),
+            ))
+        } else {
+            authority.as_ref().map_or(Ok(()), |authority| {
+                authority
+                    .revalidate()
+                    .map_err(|e| ControlError::Invalid(e.to_string()))
+            })
+        };
         if original.is_err() {
             response.ok = false;
             response.state = CellState::Quarantined;

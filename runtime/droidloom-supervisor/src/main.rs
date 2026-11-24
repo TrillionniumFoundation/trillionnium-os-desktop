@@ -87,9 +87,17 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
                 return Err(std::io::Error::new(
                     std::io::ErrorKind::InvalidInput,
                     "private query I/O creator accepts no parameters",
-                ).into());
+                )
+                .into());
             }
             droidloom_supervisor::production_application::run_query_io_creator()?;
+            return Ok(());
+        }
+        if action.as_deref() == Some(std::ffi::OsStr::new("__production-metadata-observer")) {
+            if arguments.next().is_some() {
+                return Err("private metadata observer accepts no parameters".into());
+            }
+            droidloom_supervisor::production_application::run_metadata_observer()?;
             return Ok(());
         }
         if action.as_deref() == Some(std::ffi::OsStr::new("__production-application-read")) {

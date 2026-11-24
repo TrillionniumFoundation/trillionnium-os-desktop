@@ -3,7 +3,9 @@
 //! lineage; no request may supply a namespace, executable, root or command.
 use super::{EarlyBaseAdmission, identity, info, live, pidfd};
 use crate::control::application_probe::RuntimeEpoch;
-use crate::production_application::{ApplicationWorkerAuthority, QueryProjection};
+use crate::production_application::{
+    ApplicationWorkerAuthority, MetadataObservation, MetadataRole, QueryProjection,
+};
 use crate::production_cgroup::{ApplicationLeaf, PreparedCgroup};
 use crate::production_execution::RuntimeMacOwner;
 use crate::production_namespace::NamespaceError;
@@ -14,7 +16,7 @@ use std::fs::File;
 use std::io::{self, Read};
 use std::os::fd::{AsFd, AsRawFd, FromRawFd, OwnedFd};
 use std::os::unix::fs::MetadataExt;
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 type Result<T> = std::result::Result<T, NamespaceError>;
 fn external(e: impl std::fmt::Display) -> NamespaceError {
@@ -32,11 +34,13 @@ fn open(parent: &File, name: &CStr, directory: bool) -> io::Result<File> {
         libc::openat(
             parent.as_raw_fd(),
             name.as_ptr(),
-            libc::O_RDONLY
-                | libc::O_NOFOLLOW
+            (if directory {
+                libc::O_PATH | libc::O_DIRECTORY
+            } else {
+                libc::O_RDONLY
+            }) | libc::O_NOFOLLOW
                 | libc::O_CLOEXEC
-                | libc::O_NONBLOCK
-                | if directory { libc::O_DIRECTORY } else { 0 },
+                | libc::O_NONBLOCK,
         )
     };
     if raw < 0 {
@@ -107,6 +111,28 @@ fn ns_owner(file: &File, userns: &File) -> Result<()> {
         "early application namespace has another owner",
     )
 }
+fn metadata(
+    directory: &File,
+    target: &File,
+    userns: &File,
+    role: MetadataRole,
+) -> Result<MetadataObservation> {
+    crate::production_application::observe_metadata(
+        role,
+        directory,
+        target,
+        userns,
+        Instant::now() + Duration::from_secs(5),
+    )
+    .map_err(|error| match error {
+        crate::production_application::ApplicationError::RetirementUnproven => {
+            NamespaceError::RetirementUnproven
+        }
+        crate::production_application::ApplicationError::Io(error) => NamespaceError::Io(error),
+        error => external(error),
+    })
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 struct Process {
     pid: u32,
@@ -227,9 +253,15 @@ impl<'a> EarlyApplicationAuthority<'a> {
             .map_err(external)?;
         let proc_root = File::open("/proc")?;
         fs_kind(&proc_root, libc::PROC_SUPER_MAGIC)?;
+        let actual = metadata(
+            base.proc_directory(),
+            base.board().pidfd(),
+            base.user_namespace(),
+            MetadataRole::Init,
+        )?;
         let mut namespaces = Vec::new();
-        for (name, kind) in NS_NAMES {
-            let held = proc_link(base.proc_directory(), name)?;
+        for ((_, kind), index) in NS_NAMES.into_iter().zip([2, 1, 3, 4, 5, 6]) {
+            let held = actual.namespaces[index].try_clone()?;
             ns_type(&held, kind)?;
             ns_owner(&held, base.user_namespace())?;
             namespaces.push(held);
@@ -258,9 +290,9 @@ impl<'a> EarlyApplicationAuthority<'a> {
             device,
             progress,
         };
-        // Original init may still be crossing exec. Construction binds the
-        // selected image; an actual command additionally requires current exec
-        // identity, boot property and original framework lineage below.
+        // This request-local authority is acquired only after the original
+        // init has actually reached its stock role. An earlier request reports
+        // Starting while the main boot/frontend owner continues progressing.
         this.revalidate()?;
         Ok(this)
     }
@@ -274,14 +306,28 @@ impl<'a> EarlyApplicationAuthority<'a> {
             process(self.base.proc_directory(), self.init.pid)? == self.init,
             "early application original init birth changed",
         )?;
-        for ((name, kind), held) in NS_NAMES.into_iter().zip(&self.namespaces) {
-            let actual = proc_link(self.base.proc_directory(), name)?;
+        let actual = metadata(
+            self.base.proc_directory(),
+            self.base.board().pidfd(),
+            self.base.user_namespace(),
+            MetadataRole::Init,
+        )?;
+        for (((_, kind), held), index) in NS_NAMES
+            .into_iter()
+            .zip(&self.namespaces)
+            .zip([2, 1, 3, 4, 5, 6])
+        {
             ns_type(held, kind)?;
             require(
-                identity(&actual)? == identity(held)?,
+                identity(&actual.namespaces[index])? == identity(held)?,
                 "original application namespace changed",
             )?;
         }
+        require(
+            identity(&actual.executable)? == identity(&self.init_program)?
+                && identity(&actual.root)? == identity(self.root)?,
+            "early application requires the actual original init executable and root",
+        )?;
         require(
             identity(&self.device)? == identity(&open(self.root, c"dev", true)?)?,
             "early application private device mount changed",
@@ -296,14 +342,6 @@ impl<'a> EarlyApplicationAuthority<'a> {
         self.base.board().selection().spec().host_uid
     }
     fn executed(&self) -> Result<()> {
-        self.revalidate()?;
-        let actual = proc_link(self.base.proc_directory(), c"exe")?;
-        let root = proc_link(self.base.proc_directory(), c"root")?;
-        require(
-            identity(&actual)? == identity(&self.init_program)?
-                && identity(&root)? == identity(self.root)?,
-            "early application requires the actual original init executable and root",
-        )?;
         self.revalidate()
     }
     pub(crate) fn ready(&self) -> Result<()> {
@@ -324,18 +362,12 @@ impl<'a> EarlyApplicationAuthority<'a> {
         )?;
         self.executed()
     }
-    fn same_guest(&self, directory: &File) -> Result<bool> {
-        for (name, held) in [
-            (c"ns/user", self.base.user_namespace()),
-            (c"ns/pid", self.base.board().pid_namespace()),
-        ] {
-            let actual = proc_link(directory, name)?;
-            fs_kind(&actual, 0x6e736673)?;
-            if identity(&actual)? != identity(held)? {
-                return Ok(false);
-            }
-        }
-        Ok(true)
+    fn same_guest(&self, directory: &File, pidfd: &File, role: MetadataRole) -> Result<bool> {
+        let actual = metadata(directory, pidfd, self.base.user_namespace(), role)?;
+        Ok(
+            identity(&actual.namespaces[0])? == identity(self.base.user_namespace())?
+                && identity(&actual.namespaces[1])? == identity(self.base.board().pid_namespace())?,
+        )
     }
     fn process_dir(&self, pid: u32) -> Result<File> {
         let name = CString::new(pid.to_string()).map_err(external)?;
@@ -373,8 +405,16 @@ impl<'a> EarlyApplicationAuthority<'a> {
                     proc_bytes(&held.zygote_directory, c"comm")?.as_slice(),
                     b"zygote\n" | b"zygote64\n"
                 )
-                && self.same_guest(&held.directory)?
-                && self.same_guest(&held.zygote_directory)?,
+                && self.same_guest(
+                    &held.directory,
+                    &held.framework_pidfd,
+                    MetadataRole::Framework,
+                )?
+                && self.same_guest(
+                    &held.zygote_directory,
+                    &held.zygote_pidfd,
+                    MetadataRole::Zygote,
+                )?,
             "original early init/zygote/system_server lineage changed",
         )?;
         credentials(
@@ -424,8 +464,20 @@ impl<'a> EarlyApplicationAuthority<'a> {
             let pid = name.parse::<u32>().map_err(external)?;
             let observed = (|| -> Result<Option<EarlyFrameworkObservation>> {
                 let directory = self.process_dir(pid)?;
-                if proc_bytes(&directory, c"comm")? != b"system_server\n"
-                    || !self.same_guest(&directory)?
+                if proc_bytes(&directory, c"comm")? != b"system_server\n" {
+                    return Ok(None);
+                }
+                let framework_pidfd = pidfd(pid as i32)?;
+                let ids = info(framework_pidfd.as_fd(), true)?;
+                let (uid, gid) = self.mapped_root()?;
+                let wanted_uid = uid
+                    .checked_add(1000)
+                    .ok_or(NamespaceError::Rejected("framework UID overflow"))?;
+                let wanted_gid = gid
+                    .checked_add(1000)
+                    .ok_or(NamespaceError::Rejected("framework GID overflow"))?;
+                if [ids.ruid, ids.euid, ids.suid, ids.fsuid] != [wanted_uid; 4]
+                    || [ids.rgid, ids.egid, ids.sgid, ids.fsgid] != [wanted_gid; 4]
                 {
                     return Ok(None);
                 }
@@ -433,13 +485,11 @@ impl<'a> EarlyApplicationAuthority<'a> {
                 let zygote_directory = self.process_dir(framework.parent)?;
                 let zygote = process(&zygote_directory, framework.parent)?;
                 require(
-                    valid_chain(self.init, zygote, framework)
-                        && self.same_guest(&zygote_directory)?,
+                    valid_chain(self.init, zygote, framework),
                     "framework observation is outside the original early lineage",
                 )?;
                 // These are liveness observations of the lineage already bound
                 // above. They never become signal or execution capabilities.
-                let framework_pidfd = pidfd(framework.pid as i32)?;
                 let zygote_pidfd = pidfd(zygote.pid as i32)?;
                 let held = EarlyFrameworkObservation {
                     node: identity(&directory)?,
