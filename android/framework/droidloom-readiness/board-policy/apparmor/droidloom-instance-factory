@@ -44,7 +44,7 @@ profile droidloom-instance-factory /usr/lib/droidloom/production/current/droidlo
   capability mknod,
   userns,
   ptrace (read, readby) peer=droidloom-instance-factory,
-  ptrace (read) peer=droidloom-production-broker,
+  ptrace (read, readby) peer=droidloom-production-broker,
   ptrace (read, readby) peer=droidloom-instance-launcher,
   ptrace (read) peer=unconfined,
   signal (receive) peer=unconfined,
