@@ -1,0 +1,39 @@
+; manager_check_ask_password creates and watches this one native directory.
+; It must not fall through to the immutable generic root-directory type.
+(type p4_linux_ask_password_directory_t)
+(roletype object_r p4_linux_ask_password_directory_t)
+(typeattributeset p4_linux_data (p4_linux_ask_password_directory_t))
+(allow p4_linux_ask_password_directory_t tmpfs (filesystem (associate)))
+(typetransition init_t p4_linux_systemd_run_t dir "ask-password" p4_linux_ask_password_directory_t)
+(allow init_t p4_linux_ask_password_directory_t (dir (create getattr search open read watch)))
+(neverallow p4_linux_procs p4_linux_ask_password_directory_t (dir (write add_name remove_name setattr rename reparent relabelto relabelfrom mounton)))
+(neverallow p4_linux_procs p4_linux_ask_password_directory_t (file (create open read write append execute)))
+
+; unit_export_invocation_id uses symlinkat_atomic_full(SYMLINK_LABEL): the
+; immutable file_contexts entry for the final name selects the label before
+; creating its .#invocation temporary and renaming it. Do not make usrmerge
+; symlinks writable or add an unscoped systemd-run symlink transition.
+(type p4_linux_unit_invocation_t)
+(roletype object_r p4_linux_unit_invocation_t)
+(typeattributeset p4_linux_data (p4_linux_unit_invocation_t))
+(allow p4_linux_unit_invocation_t tmpfs (filesystem (associate)))
+(allow init_t p4_linux_unit_invocation_t (lnk_file (create getattr read rename unlink)))
+(typeattribute p4_linux_other_than_invocation_owner)
+(typeattributeset p4_linux_other_than_invocation_owner (and (p4_linux_procs) (not (init_t))))
+(neverallow p4_linux_other_than_invocation_owner p4_linux_unit_invocation_t (lnk_file (create write setattr rename unlink)))
+(neverallow p4_linux_procs p4_linux_unit_invocation_t (lnk_file (relabelfrom relabelto)))
+(neverallow p4_linux_procs p4_linux_unit_invocation_t (file (open read write create execute)))
+
+; Normal PIDFD inode-number verification calls fstatfs on the held kernel
+; description. This adds no proc PID directory, PIDFD payload or ioctl access.
+(allow init_t p4_kernel_pid_handle_t (filesystem (getattr)))
+(allow p4_linux_service_executor_t p4_kernel_pid_handle_t (filesystem (getattr)))
+(neverallow init_t p4_kernel_pid_handle_t (filesystem (mount remount unmount relabelto relabelfrom)))
+(neverallow p4_linux_service_executor_t p4_kernel_pid_handle_t (filesystem (mount remount unmount relabelto relabelfrom)))
+
+; The real manager must identify its already-mounted Ubuntu root. Failure of
+; fstatfs/open changes -.mount from mounted to dead and breaks socket ordering.
+; These are metadata reads only, not permission to mount or remount a filesystem.
+(allow init_t labeledfs (filesystem (getattr)))
+(allow init_t p4_linux_rootdir_t (dir (open read)))
+(neverallow init_t labeledfs (filesystem (mount remount unmount relabelto relabelfrom)))

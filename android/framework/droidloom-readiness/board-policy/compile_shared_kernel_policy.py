@@ -286,6 +286,47 @@ def verify_host_control(library, binary, export):
         check(subject, output, "lnk_file", ["create", "write", "setattr", "rename", "unlink"], False)
         check(subject, status, "file", ["open", "read", "write", "create", "setattr", "unlink"], False)
 
+    # Original native service credentials and typed manager metadata.
+    check(manager, obj("labeledfs"), "filesystem", ["getattr"], True)
+    check(manager, obj("labeledfs"), "filesystem", ["mount", "remount", "unmount", "relabelfrom", "relabelto"], False)
+    check(manager, obj("p4_linux_rootdir_t"), "dir", ["getattr", "search", "open", "read"], True)
+    check(executor, executor, "process", ["setfscreate"], True)
+    check(executor, executor, "process", ["setcurrent", "dyntransition"], False)
+    check(executor, executor, "file", ["write", "append"], False)
+    check(executor, kernel, "security", ["load_policy", "setenforce", "setbool"], False)
+    credentials = [
+        (setup, obj("p4_linux_setup_credentials_t")),
+        ("u:system_r:p4_linux_sysctl_t:s0", obj("p4_linux_sysctl_credentials_t")),
+        ("u:system_r:p4_linux_udev_t:s0", obj("p4_linux_udev_credentials_t")),
+    ]
+    for consumer, directory in credentials:
+        check(executor, directory, "dir",
+              ["getattr", "search", "open", "read", "create", "write", "setattr", "rename", "reparent", "rmdir"], True)
+        check(consumer, directory, "dir", ["getattr", "search", "open", "read"], True)
+        check(consumer, directory, "dir", ["create", "write", "add_name", "remove_name", "setattr"], False)
+        check(executor, directory, "dir", ["add_name", "remove_name", "relabelfrom", "relabelto", "mounton"], False)
+        check(executor, directory, "file", ["create", "open", "read", "write", "execute"], False)
+        for other, _ in credentials:
+            if consumer != other:
+                check(other, directory, "dir", ["open", "read", "write", "create"], False)
+        for subject in [helper, client, broker, loader, "u:r:init:s0", "u:r:untrusted_app:s0"]:
+            check(subject, directory, "dir", ["open", "read", "write", "create", "setattr"], False)
+    ask_directory = obj("p4_linux_ask_password_directory_t")
+    invocation = obj("p4_linux_unit_invocation_t")
+    check(manager, ask_directory, "dir", ["create", "getattr", "search", "open", "read", "watch"], True)
+    check(manager, ask_directory, "dir", ["write", "add_name", "remove_name", "relabelfrom", "relabelto"], False)
+    check(manager, invocation, "lnk_file", ["create", "getattr", "read", "rename", "unlink"], True)
+    check(manager, invocation, "file", ["create", "open", "read", "write", "execute"], False)
+    for subject in [helper, client, broker, loader, setup, executor, "u:r:init:s0", "u:r:untrusted_app:s0"]:
+        check(subject, ask_directory, "dir", ["open", "read", "write", "create", "setattr"], False)
+        check(subject, invocation, "lnk_file", ["create", "write", "rename", "unlink", "setattr"], False)
+    for subject in [manager, executor]:
+        check(subject, obj("p4_kernel_pid_handle_t"), "filesystem", ["getattr"], True)
+        check(subject, obj("p4_kernel_ns_handle_t"), "filesystem", ["getattr"], False)
+        check(subject, obj("p4_kernel_ns_handle_t"), "file", ["open", "read", "ioctl"], False)
+        check(subject, obj("p4_kernel_pid_handle_t"), "file", ["open", "read", "ioctl"], False)
+        check(subject, obj("p4_kernel_pid_handle_t"), "filesystem", ["mount", "remount", "unmount", "relabelfrom", "relabelto"], False)
+
     lines = export_binary_policy(policy, binary, export)
     transitions = [
         "(typetransition droidloom_public_control_client tmpfs file droidloom_public_apk_payload)",
@@ -310,6 +351,15 @@ def verify_host_control(library, binary, export):
         '(typetransition init_t p4_linux_systemd_run_t file "show-status" p4_linux_systemd_status_t)',
         '(typetransition init_t p4_linux_generator_exec_t process p4_linux_generator_t)',
     ])
+    transitions.append('(typetransition init_t p4_linux_systemd_run_t dir "ask-password" p4_linux_ask_password_directory_t)')
+    for directory, units in [
+        ("p4_linux_setup_credentials_t", ["systemd-tmpfiles-setup-dev-early.service", "systemd-tmpfiles-setup-dev.service", "systemd-tmpfiles-setup.service", "systemd-sysusers.service"]),
+        ("p4_linux_sysctl_credentials_t", ["systemd-sysctl.service"]),
+        ("p4_linux_udev_credentials_t", ["systemd-udev-load-credentials.service"]),
+    ]:
+        for unit in units:
+            for parent in ["p4_linux_credentials_root_t", "p4_linux_credential_staging_t"]:
+                transitions.append(f'(typetransition p4_linux_service_executor_t {parent} dir "{unit}" {directory})')
     missing = [line for line in transitions if line not in lines]
     if missing:
         raise ValueError("Linked binary lacks exact automatic transitions: " + repr(missing))
@@ -355,6 +405,7 @@ def main():
         "linux-initial-calibration.cil", "protected-device-readiness-target.cil", "orderly-android-shutdown.cil",
         "ubuntu-real-root-interpreter.cil", "ubuntu-mounted-api-metadata.cil",
         "ubuntu-native-pid1-startup.cil", "ubuntu-native-generators.cil",
+        "ubuntu-native-credential-directories.cil", "ubuntu-native-unit-metadata.cil",
         "ubuntu-core-cgroup-ownership.cil", "ubuntu-native-services.cil",
         "frontend-android-interface.cil", "linux-frontend-observer.cil", "instance-launcher.cil",
         "linux-query-owner.cil", "linux-fixed-metadata-observer.cil",
