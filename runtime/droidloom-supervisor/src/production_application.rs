@@ -38,6 +38,9 @@ pub(crate) use launch_command::LaunchCommand;
 use operation::ApplicationOperation;
 pub(crate) use operation::{BrowserCommand, OperationDomain};
 
+#[path = "production_application_query_io.rs"]
+pub(crate) mod query_io;
+
 #[path = "production_application_process.rs"]
 mod process;
 #[path = "production_application_protocol.rs"]
@@ -546,6 +549,15 @@ pub(crate) fn inspect_early(
     authority.epoch(&probe.framework).map_err(external)?;
     require(std::time::Instant::now() < deadline, "early inspection workflow deadline")?;
     Ok(inspection)
+}
+
+/// Fixed private query I/O creator entry; no command-line authority is accepted.
+///
+/// # Errors
+/// Rejects a changed MAC role, nonzero capability, unauthenticated original
+/// parent, altered fixed descriptors, or an expired creation deadline.
+pub fn run_query_io_creator() -> Result<()> {
+    query_io::entry()
 }
 
 /// Internal fresh-image dispatch. It accepts only authenticated inherited
