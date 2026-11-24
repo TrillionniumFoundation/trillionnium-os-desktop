@@ -114,14 +114,14 @@
  	}
  
  	fd = openattr(pid, attr, O_RDONLY | O_CLOEXEC);
-@@ -191,6 +284,69 @@
+@@ -191,6 +284,71 @@
  	return ret;
  }
  
 +
 +/*
-+ * Select only SELinux exec, keycreate and fscreate on stacked-LSM kernels. The native
-+ * interface performs the same SELinux setexec/setkeycreate/setfscreate and target checks,
++ * Select only SELinux exec, keycreate, fscreate and sockcreate on stacked-LSM
++ * kernels. The native interface performs the same per-attribute and target checks,
 + * without requiring write access to a task's procfs file class.
 + * Only kernels without this operation fall back to the original procattr ABI.
 + */
@@ -129,7 +129,7 @@
 +{
 +#if defined(__NR_lsm_set_self_attr) && defined(LSM_ATTR_EXEC) && \
 +    defined(LSM_ATTR_KEYCREATE) && defined(LSM_ATTR_FSCREATE) && \
-+    defined(LSM_ID_SELINUX)
++    defined(LSM_ATTR_SOCKCREATE) && defined(LSM_ID_SELINUX)
 +	struct lsm_ctx *ctx;
 +	unsigned int native_attr;
 +	size_t length = context ? strlen(context) : 0;
@@ -142,6 +142,8 @@
 +		native_attr = LSM_ATTR_KEYCREATE;
 +	else if (!strcmp(attr, "fscreate"))
 +		native_attr = LSM_ATTR_FSCREATE;
++	else if (!strcmp(attr, "sockcreate"))
++		native_attr = LSM_ATTR_SOCKCREATE;
 +	else {
 +		errno = EINVAL;
 +		return -1;
@@ -184,7 +186,7 @@
  static int setprocattrcon_raw(const char *context, const char *attr,
  			      char **prev_context)
  {
-@@ -207,6 +363,27 @@
+@@ -207,6 +365,27 @@
  	if (context && *prev_context && *prev_context != UNSET
  	    && !strcmp(context, *prev_context))
  		return 0;
@@ -193,7 +195,7 @@
 +	/* Keep the original cache semantics and error propagation. In particular,
 +	 * policy denials must never fall back to another attribute interface. */
 +	if (!strcmp(attr, "exec") || !strcmp(attr, "keycreate") ||
-+	    !strcmp(attr, "fscreate")) {
++	    !strcmp(attr, "fscreate") || !strcmp(attr, "sockcreate")) {
 +		if (context) {
 +			context2 = strdup(context);
 +			if (!context2)
@@ -212,7 +214,7 @@
  
  	fd = openattr(0, attr, O_RDWR | O_CLOEXEC);
  	if (fd < 0)
-@@ -228,6 +405,7 @@
+@@ -228,6 +407,7 @@
  	errno_hold = errno;
  	close(fd);
  	errno = errno_hold;

@@ -1,4 +1,4 @@
-//! Evidence for the fixed exec/keycreate/fscreate Debian candidate.
+//! Evidence for the fixed exec/keycreate/fscreate/sockcreate Debian candidate.
 //! Consume the producer's actual receipt formats without rewriting them.
 use super::{
     CANDIDATE_VERSION, LibselinuxCandidate, MEMBER, ORIGINAL_SHA, ORIGINAL_VERSION, artifact,
@@ -215,7 +215,7 @@ pub(super) fn normal_build(value: &Value, declaration: &Value) -> Result<()> {
     let test_output = input
         .parent()
         .ok_or("test source parent absent")?
-        .join("native-exec-api-test-r3");
+        .join("native-exec-api-test-r4");
     let lock = source_lock()?;
     ensure(
         build.success
@@ -348,7 +348,7 @@ pub(super) fn public_api(value: &Value, source: &Value, declaration: &Value) -> 
         "libselinux.so.1",
     ];
     ensure(
-        api.schema == "droidloom-native-fscreate-packaged-abi-test-v1"
+        api.schema == "droidloom-native-sockcreate-packaged-abi-test-v1"
             && api.candidate_version == CANDIDATE_VERSION
             && source["test_sha256"] == api.test_sha256
             && api.test_sha256 == fs::digest(SOURCE_FILES[2].1)
@@ -358,9 +358,9 @@ pub(super) fn public_api(value: &Value, source: &Value, declaration: &Value) -> 
             )
             && api.original_library.path == Path::new("/").join(MEMBER)
             && api.original_library.sha256 == ORIGINAL_SHA
-            && api.passed == 86
-            && api.total == 86
-            && api.tests.len() == 86
+            && api.passed == 104
+            && api.total == 104
+            && api.tests.len() == 104
             && api.exports_equal
             && api.exports_count == 247
             && api.missing_exports.is_empty()
@@ -380,7 +380,7 @@ pub(super) fn public_api(value: &Value, source: &Value, declaration: &Value) -> 
         )?;
     }
     let mut expected = BTreeSet::new();
-    for attribute in ["exec", "keycreate", "fscreate"] {
+    for attribute in ["exec", "keycreate", "fscreate", "sockcreate"] {
         for case in [
             "cache-and-clear",
             "eintr",
@@ -436,11 +436,9 @@ pub(super) fn public_api(value: &Value, source: &Value, declaration: &Value) -> 
         expected.insert(("fscreate".into(), case.into()));
     }
     expected.insert(("exec".into(), "independent-cache".into()));
-    for attribute in ["current", "sockcreate"] {
-        expected.insert((attribute.into(), "other-attribute".into()));
-    }
+    expected.insert(("current".into(), "other-attribute".into()));
     ensure(
-        cases == expected && expected.len() == 86,
+        cases == expected && expected.len() == 104,
         "actual package API case set differs",
     )?;
     Ok(cases.len())

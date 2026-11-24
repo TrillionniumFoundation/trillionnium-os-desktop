@@ -2,7 +2,7 @@
   "schema": "droidloom-ubuntu-libselinux-source-v1",
   "package": "libselinux",
   "original_version": "3.9-4build1",
-  "candidate_version": "3.9-4build1+p4lsmexec3",
+  "candidate_version": "3.9-4build1+p4lsmexec4",
   "distribution": "resolute",
   "architecture": "amd64",
   "acquisition": "apt-get source --download-only libselinux=3.9-4build1 using the signed Ubuntu source index",
@@ -31,13 +31,13 @@
   "source_file": {
     "path": "src/procattr.c",
     "original_sha256": "444c85a927453a9a03131b00970d5707461e28da5e6546448dff7139bdd38083",
-    "patched_sha256": "6fd43a4558f46a95b81a6c51a7bb4aa3b7c771cb57e7b54e34ff2077d4c24972"
+    "patched_sha256": "b135fe619e7eaa4d68ee48c190b8ec00d27763b42604be65667b63f9dba294d4"
   },
   "patch": {
     "path": "p4-native-lsm-exec-attribute.patch",
-    "sha256": "ae23f259772ac573fca1ff3c965003d2fa4a49ca60925725be7aed2da4523128"
+    "sha256": "a6218f989b03744ec1bf249be29de59201bf61efc4ec5007a6d4ab1846511116"
   },
-  "source_date_epoch": 1795546800,
+  "source_date_epoch": 1795553700,
   "build_profiles": [
     "nopython",
     "noruby",
@@ -60,6 +60,6 @@
   },
   "public_abi_test": {
     "path": "native-exec-api-test.c",
-    "sha256": "c462108befa61881ee43fddb1c29201cf409f7bf54263db8624d0269203840fd"
+    "sha256": "cda75d2f1f1c0770dfc50e8d714f4b0a614dfdc7d9d8926fa566b20b6d230c31"
   }
 }

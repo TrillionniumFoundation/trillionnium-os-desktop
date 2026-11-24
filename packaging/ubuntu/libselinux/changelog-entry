@@ -1,10 +1,11 @@
-libselinux (3.9-4build1+p4lsmexec3) resolute; urgency=medium
+libselinux (3.9-4build1+p4lsmexec4) resolute; urgency=medium
 
-  * Use the explicit SELinux native LSM API for exec, keycreate and fscreate.
-    Preserve per-thread cached state, NULL reset and the original public ABI.
+  * Use the explicit SELinux native LSM API for exec, keycreate, fscreate
+    and sockcreate, including the original systemd socket activation path.
+    Preserve per-thread caches, NULL reset and the original public ABI.
     Read fscreate with LSM_FLAG_SINGLE and accept the kernel's empty unset SID.
     Reject malformed native records and policy denials without proc fallback.
     Keep ENOSYS/EOPNOTSUPP compatibility and test the packaged public APIs.
 
- -- OpenAI Codex <codex@localhost>  Tue, 24 Nov 2026 19:00:00 +0000
+ -- OpenAI Codex <codex@localhost>  Tue, 24 Nov 2026 20:55:00 +0000
 

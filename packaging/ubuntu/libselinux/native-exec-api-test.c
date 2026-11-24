@@ -229,7 +229,8 @@ int main(int argc, char **argv)
     const char *name = argv[2];
     unsigned id = !strcmp(name, "exec") ? LSM_ATTR_EXEC :
                   !strcmp(name, "keycreate") ? LSM_ATTR_KEYCREATE :
-                  !strcmp(name, "fscreate") ? LSM_ATTR_FSCREATE : 0;
+                  !strcmp(name, "fscreate") ? LSM_ATTR_FSCREATE :
+                  !strcmp(name, "sockcreate") ? LSM_ATTR_SOCKCREATE : 0;
     expected_attr = id;
     char symbol[64], attr_path[128];
     assert(snprintf(symbol, sizeof(symbol), "set%scon_raw",
@@ -287,7 +288,7 @@ int main(int argc, char **argv)
         assert(native_get_calls == (!strcmp(scenario, "get-eintr") ? 2u : 1u));
         assert(attr_writes == 0);
     } else if (!strcmp(scenario, "other-attribute")) {
-        assert(!id && (!strcmp(name, "sockcreate") || !strcmp(name, "current")));
+        assert(!id && !strcmp(name, "current"));
         assert(api.set(expected) == 0);
         assert(native_calls == 0 && attr_opens == 1 && attr_writes == 1 && attr_closes == 1);
         assert(!strcmp(last_path, attr_path));
@@ -344,6 +345,23 @@ int main(int argc, char **argv)
         cached_equals(fs.get, original);
         cached_equals(key.get, original);
         cached_equals(api.get, "u:r:droidloom_query_io:s0");
+        struct api sock = { .attr = LSM_ATTR_SOCKCREATE };
+        *(void **)(&sock.set) = dlsym(library, "setsockcreatecon_raw");
+        *(void **)(&sock.get) = dlsym(library, "getsockcreatecon_raw");
+        assert(sock.set && sock.get);
+        expected_attr = sock.attr;
+        assert(sock.set(expected) == 0 && native_calls == 5);
+        assert(sock.set(expected) == 0 && native_calls == 5);
+        cached_equals(sock.get, original);
+        expected = "";
+        assert(sock.set(NULL) == 0 && native_calls == 6);
+        assert(sock.set(NULL) == 0 && native_calls == 6);
+        cached_equals(fs.get, original);
+        cached_equals(key.get, original);
+        cached_equals(api.get, "u:r:droidloom_query_io:s0");
+        expected = original;
+        assert(sock.set(expected) == 0 && native_calls == 7);
+        cached_equals(sock.get, original);
         assert(native_get_calls == 0 && attr_opens == 0);
     } else if (!strcmp(scenario, "public-wrapper")) {
         assert(id);

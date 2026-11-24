@@ -16,7 +16,7 @@ use std::{
 const MEMBER: &str = "usr/lib/x86_64-linux-gnu/libselinux.so.1";
 const PATCH: &str = "debian/patches/p4-native-lsm-exec-attribute.patch";
 const ORIGINAL_VERSION: &str = "3.9-4build1";
-const CANDIDATE_VERSION: &str = "3.9-4build1+p4lsmexec3";
+const CANDIDATE_VERSION: &str = "3.9-4build1+p4lsmexec4";
 const ORIGINAL_SHA: &str = "7538ee77765a27966563c0d22437a3080dcdb346ff76cc16d71a3ce3379a716a";
 
 #[path = "boot_candidate_evidence.rs"]
@@ -449,7 +449,7 @@ fn verify_declaration(input: &LibselinuxCandidate, declaration: &Value) -> Resul
             && declaration["target_kernel_systemd_qualified"] == false
             && declaration["public_versioned_exports_equal"] == true
             && declaration["public_versioned_exports_count"] == 247
-            && declaration["tested_attributes"] == json!(["exec", "keycreate", "fscreate"]),
+            && declaration["tested_attributes"] == json!(["exec", "keycreate", "fscreate", "sockcreate"]),
         "candidate declaration is outside the reviewed replacement contract",
     )?;
     Ok(())
@@ -697,13 +697,13 @@ mod tests {
         Ok(())
     }
     #[test]
-    #[ignore = "requires the explicitly pinned original exec3 Debian materials on pocket4"]
-    fn actual_exec3_normal_package_evidence_and_negative_gates() -> Result<()> {
+    #[ignore = "requires the explicitly pinned original exec4 Debian materials on pocket4"]
+    fn actual_exec4_normal_package_evidence_and_negative_gates() -> Result<()> {
         ensure(
             rustix::process::geteuid().as_raw() == 0,
             "actual candidate proof requires root",
         )?;
-        let path = PathBuf::from(std::env::var("DROIDLOOM_EXEC3_INPUTS")?);
+        let path = PathBuf::from(std::env::var("DROIDLOOM_EXEC4_INPUTS")?);
         ensure(
             path.starts_with("/var/lib/droidloom-qualification")
                 && path.file_name().and_then(|n| n.to_str()) == Some("INPUTS.json"),
@@ -711,7 +711,7 @@ mod tests {
         )?;
         let pin = boot_files::pin_file(&path)?;
         ensure(
-            pin.bytes < 16384 && pin.sha256 == std::env::var("DROIDLOOM_EXEC3_INPUTS_SHA256")?,
+            pin.bytes < 16384 && pin.sha256 == std::env::var("DROIDLOOM_EXEC4_INPUTS_SHA256")?,
             "actual candidate proof plan pin differs",
         )?;
         let held = boot_files::checked_file(&pin)?;
@@ -816,9 +816,9 @@ mod tests {
         ] {
             assert!(evidence::normal_build(&invalid, &declaration).is_err());
         }
-        let result = json!({"schema":"droidloom.exec3-actual-source-and-package-admission.v1",
+        let result = json!({"schema":"droidloom.exec4-actual-source-and-package-admission.v1",
             "input":pin,"sources":sources,"candidate_library":library,"original_library":original,
-            "original_elf":old_elf,"candidate_elf":new_elf,"actual_package_api_cases":86,
+            "original_elf":old_elf,"candidate_elf":new_elf,"actual_package_api_cases":104,
             "negative_gate_cases":11,"host_library_opened_for_write":false,
             "guest_qualified":false,"production_qualified":false});
         fs::write_json(
