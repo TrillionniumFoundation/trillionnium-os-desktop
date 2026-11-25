@@ -417,6 +417,9 @@ static const struct console_node board_nodes[] = {
     { "/dev/console", "/usr/lib/droidloom/production/current/board-devices/console", 5, 1, 0600 },
     { "/dev/null", "/usr/lib/droidloom/production/current/board-devices/null", 1, 3, 0666 },
     { "/dev/full", "/usr/lib/droidloom/production/current/board-devices/full", 1, 7, 0666 },
+    /* Native services open this fixed path after the initial policy load.
+     * Project the admitted kmsg inode instead of relabeling generic devtmpfs. */
+    { "/dev/kmsg", "/usr/lib/droidloom/production/current/board-devices/kmsg", 1, 11, 0600 },
 };
 
 static int open_standard_node(const struct console_node *spec, bool backing, struct stat *st)

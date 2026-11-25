@@ -313,7 +313,7 @@ int droidloom_board_activate_policy(gid_t observer_gid, const char *cohort)
     /* Per-generation device sources are prepared only by the dedicated
      * launcher after this boot-wide policy epoch has been sealed. */
     (void)cohort;
-    if (rc == 0) { stage = "project the exact Ubuntu console, null and full device nodes"; rc = droidloom_project_linux_standard_devices(); }
+    if (rc == 0) { stage = "project the exact Ubuntu console, null, full and kernel-log device nodes"; rc = droidloom_project_linux_standard_devices(); }
     if (rc == 0) {
         stage = "prepare the protected read-only kernel measurement directory";
         epoch_directory = droidloom_prepare_epoch_directory(paths.handoff.fd);
