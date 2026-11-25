@@ -860,6 +860,45 @@ fn readback_metadata(root: &Path, work: &Path, disk: &Path, paths: &[String]) ->
     Ok(json!({"command":result,"inodes":rows,"all_matched":true}))
 }
 
+// Linux fs/posix_acl.c consumes e_id only for ACL_USER and ACL_GROUP;
+// its userspace serializer emits ACL_UNDEFINED_ID for the other four tags.
+// debugfs 1.47.2 emits zero in those unused slots. Preserve every effective
+// field, entry order and entry count while accepting only these two encodings.
+fn canonical_native_privilege(name: &str, value: &[u8]) -> Result<Vec<u8>> {
+    if name == "security.capability" {
+        return Ok(value.to_vec());
+    }
+    ensure(
+        matches!(name, "system.posix_acl_access" | "system.posix_acl_default"),
+        "unsupported native privilege attribute",
+    )?;
+    ensure(
+        (28..=65536).contains(&value.len())
+            && (value.len() - 4) % 8 == 0
+            && value[..4] == 2u32.to_le_bytes(),
+        "invalid native POSIX ACL version or entry length",
+    )?;
+    let mut normalized = value.to_vec();
+    for entry in normalized[4..].chunks_exact_mut(8) {
+        let tag = u16::from_le_bytes(entry[..2].try_into()?);
+        let permission = u16::from_le_bytes(entry[2..4].try_into()?);
+        let id = u32::from_le_bytes(entry[4..8].try_into()?);
+        ensure(permission & !7 == 0, "invalid native POSIX ACL permission")?;
+        match tag {
+            0x02 | 0x08 => ensure(id != u32::MAX, "undefined named POSIX ACL identity")?,
+            0x01 | 0x04 | 0x10 | 0x20 => {
+                ensure(
+                    id == 0 || id == u32::MAX,
+                    "unexpected unused POSIX ACL identity encoding",
+                )?;
+                entry[4..8].copy_from_slice(&u32::MAX.to_le_bytes());
+            }
+            _ => return Err("invalid native POSIX ACL tag".into()),
+        }
+    }
+    Ok(normalized)
+}
+
 pub fn make_root_image(
     root: &Path,
     work: &Path,
@@ -1064,6 +1103,7 @@ pub fn make_root_image(
         &disk,
         &metadata_paths.into_iter().collect::<Vec<_>>(),
     )?;
+    let mut privilege_readback = Vec::new();
     if !attrs.is_empty() {
         let cmd = work.join("ext4-privilege-readback.commands");
         boot_files::write_new(&cmd, attr_commands.as_bytes(), 0o600)?;
@@ -1078,11 +1118,20 @@ pub fn make_root_image(
             ],
             120,
         )?;
-        for (path, value, _, _) in &attrs {
+        for (path, value, guest, name) in &attrs {
+            let observed = std::fs::read(path)?;
             ensure(
-                std::fs::read(path)? == *value,
-                "ext4 native capability/ACL differs",
+                canonical_native_privilege(name, &observed)?
+                    == canonical_native_privilege(name, value)?,
+                &format!("ext4 native privilege differs for {guest}: {name}"),
             )?;
+            privilege_readback.push(json!({
+                "path":guest,"attribute":name,"source_hex":hex::encode(value),
+                "debugfs_hex":hex::encode(&observed),
+                "exact_bytes":observed == *value,
+                "effective_fields_equal":true,
+                "actual_readback":boot_files::pin_file(path)?
+            }));
         }
     }
     let query_readback = query_runtime
@@ -1096,7 +1145,7 @@ pub fn make_root_image(
         &fs::absolute_string(&work.join("ROOT-IMAGE.json"))?,
         &json!({
         "image":record,"root_filesystem_uuid":uuid,"critical_label_paths":selected,
-        "privilege_attributes_verified":attrs.len(),"inode_metadata_readback":metadata,
+        "privilege_attributes_verified":attrs.len(),"native_privilege_readback":privilege_readback,"inode_metadata_readback":metadata,
         "fixed_query_input_readback":query_readback,"apparmor_library_readback":apparmor_readback,"gdm_executable_readback":gdm_readback,"greeter_proof_readback":greeter_proof_readback,"guest_qualified":false}),
         0,
     )?;
@@ -1212,4 +1261,99 @@ mod tests {
         assert_eq!(stat_fields(&text)?.0, "character");
         Ok(())
     }
+    #[test]
+    fn native_acl_readback_normalizes_only_unused_ids() -> Result<()> {
+        // Exact source and debugfs values observed in Cal13, independently
+        // confirmed equal through a read-only ext4 kernel mount.
+        let source = hex::decode(
+            "0200000001000700ffffffff04000500ffffffff080005000400000010000500ffffffff20000500ffffffff",
+        )?;
+        let observed = hex::decode(
+            "0200000001000700000000000400050000000000080005000400000010000500000000002000050000000000",
+        )?;
+        for name in ["system.posix_acl_access", "system.posix_acl_default"] {
+            let expected = canonical_native_privilege(name, &source)?;
+            assert_eq!(canonical_native_privilege(name, &observed)?, expected);
+            for (offset, value) in [(24, 5), (22, 4), (4, 4)] {
+                let mut changed = observed.clone();
+                changed[offset] = value;
+                assert_ne!(canonical_native_privilege(name, &changed)?, expected);
+            }
+            for (offset, value) in [(0, 1), (4, 0x40), (6, 8), (8, 1)] {
+                let mut invalid = observed.clone();
+                invalid[offset] = value;
+                assert!(canonical_native_privilege(name, &invalid).is_err());
+            }
+            let mut undefined = observed.clone();
+            undefined[24..28].fill(0xff);
+            assert!(canonical_native_privilege(name, &undefined).is_err());
+            assert!(canonical_native_privilege(name, &observed[..43]).is_err());
+            let mut trailing = observed.clone();
+            trailing.push(0);
+            assert!(canonical_native_privilege(name, &trailing).is_err());
+            let mut reordered = observed.clone();
+            reordered[12..20].copy_from_slice(&observed[28..36]);
+            reordered[28..36].copy_from_slice(&observed[12..20]);
+            assert_ne!(canonical_native_privilege(name, &reordered)?, expected);
+        }
+        assert_ne!(
+            canonical_native_privilege("security.capability", &source)?,
+            canonical_native_privilege("security.capability", &observed)?,
+        );
+        assert!(canonical_native_privilege("user.other", &source).is_err());
+        Ok(())
+    }
+
+    #[test]
+    fn actual_ext4_acl_readback_preserves_named_identity_and_permissions() -> Result<()> {
+        let temp = tempfile::tempdir()?;
+        let root = temp.path().join("root");
+        let journal = root.join("journal");
+        std::fs::create_dir_all(&journal)?;
+        let source = hex::decode(
+            "0200000001000700ffffffff04000500ffffffff080005000400000010000500ffffffff20000500ffffffff",
+        )?;
+        let directory = std::fs::File::open(&journal)?;
+        for name in ["system.posix_acl_access", "system.posix_acl_default"] {
+            rustix::fs::fsetxattr(&directory, name, &source, XattrFlags::empty())?;
+            assert_eq!(xattr(&journal, name)?.ok_or("test ACL absent")?, source);
+        }
+        let disk = temp.path().join("acl.ext4");
+        let image = boot_files::new_file(&disk, 0o600)?;
+        image.set_len(16 * 1024 * 1024)?;
+        boot_files::run_logged(
+            temp.path(), "acl-mkfs", "/usr/sbin/mke2fs",
+            &[
+                "-q".into(), "-F".into(), "-t".into(), "ext4".into(),
+                "-d".into(), root.to_string_lossy().into(),
+                disk.to_string_lossy().into(),
+            ], 30,
+        )?;
+        for (i, name) in ["system.posix_acl_access", "system.posix_acl_default"]
+            .iter().enumerate()
+        {
+            let output = temp.path().join(format!("acl-{i}"));
+            boot_files::run_logged(
+                temp.path(), &format!("acl-debugfs-{i}"), "/usr/sbin/debugfs",
+                &[
+                    "-R".into(),
+                    format!("ea_get -f {} /journal {name}", output.to_string_lossy()),
+                    disk.to_string_lossy().into(),
+                ], 30,
+            )?;
+            let observed = std::fs::read(output)?;
+            assert_eq!(
+                canonical_native_privilege(name, &observed)?,
+                canonical_native_privilege(name, &source)?,
+            );
+            let mut wrong_group = observed.clone();
+            wrong_group[24..28].copy_from_slice(&5u32.to_le_bytes());
+            assert_ne!(
+                canonical_native_privilege(name, &wrong_group)?,
+                canonical_native_privilege(name, &source)?,
+            );
+        }
+        Ok(())
+    }
+
 }
