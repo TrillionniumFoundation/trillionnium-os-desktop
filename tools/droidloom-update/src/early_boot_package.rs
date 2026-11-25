@@ -33,7 +33,7 @@ struct ReleaseInput {
 
 // Preserve the original first six roles and append only the selected hardware
 // helper. The committed lock owns the serialized order; this is its closed set.
-const APPARMOR_BOARD_ROLES: [&str; 7] = [
+const APPARMOR_BOARD_ROLES: [&str; 8] = [
     "droidloom-ubuntu-journald",
     "droidloom-policy-loader",
     "droidloom-production-android",
@@ -41,6 +41,7 @@ const APPARMOR_BOARD_ROLES: [&str; 7] = [
     "droidloom-instance-launcher",
     "droidloom-instance-factory",
     "droidloom-native-hardware-label",
+    "droidloom-camera-capture",
 ];
 
 fn sha256_text(value: &str) -> bool {
@@ -106,7 +107,7 @@ fn parse_board_inputs(bytes: &[u8]) -> Result<BoardInputs> {
         || aa.board_profiles.len() != APPARMOR_BOARD_ROLES.len()
     {
         return fail(
-            "AppArmor lock must preserve the bounded Ubuntu prefix and seven ordered board roles",
+            "AppArmor lock must preserve the bounded Ubuntu prefix and eight ordered board roles",
         );
     }
     for name in &aa.board_profile_order {
@@ -157,6 +158,7 @@ fn board_policy_header(lock: &BoardInputs) -> String {
         ("LOADER", "droidloom-policy-loader"),
         ("ANDROID", "droidloom-production-android"),
         ("BROKER", "droidloom-production-broker"),
+        ("CAMERA", "droidloom-camera-capture"),
     ] {
         let index = aa
             .board_profile_order
@@ -168,6 +170,12 @@ fn board_policy_header(lock: &BoardInputs) -> String {
             ubuntu as usize + index,
         ));
     }
+    let loader = aa.board_profile_order.iter().position(|r| r == "droidloom-policy-loader").unwrap();
+    let camera = aa.board_profile_order.iter().position(|r| r == "droidloom-camera-capture").unwrap();
+    // Original independently admitted loader birth 164 anchors the same ordered
+    // raw loads. The camera generation is derived rather than another index list.
+    let birth = 164usize.checked_sub(loader).and_then(|v| v.checked_add(camera)).unwrap();
+    header.push_str(&format!("#define DROIDLOOM_BOARD_APPARMOR_CAMERA_RAW_BIRTH {birth}U\n"));
     header.push_str(concat!(
         "struct droidloom_board_apparmor_profile {\n",
         "    const char *name; unsigned long long size;\n",

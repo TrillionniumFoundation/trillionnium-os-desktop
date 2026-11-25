@@ -42,6 +42,7 @@ fn main() {
         "instance_context",
         "instance_query",
         "instance_placement",
+        "native_camera_capture",
     ] {
         let source = format!("../droidloom-early-boot/{stem}.c");
         let object = out.join(format!("{stem}.o"));

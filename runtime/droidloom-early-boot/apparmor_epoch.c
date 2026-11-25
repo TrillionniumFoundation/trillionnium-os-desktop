@@ -23,7 +23,8 @@
 #define EPOCH_DIR "kernel-policy"
 
 static const char *const names[] = {
-    "droidloom-policy-loader", "droidloom-production-android", "droidloom-production-broker"
+    "droidloom-policy-loader", "droidloom-production-android", "droidloom-production-broker",
+    "droidloom-camera-capture"
 };
 struct role {
     char directory[128], digest[68];
@@ -33,7 +34,7 @@ struct role {
 struct epoch {
     char boot[40], revision[32];
     uint64_t mount, ns, profiles;
-    struct role roles[3];
+    struct role roles[4];
 };
 
 static int reject(int e) { errno = e; return -1; }
@@ -126,8 +127,11 @@ static int capture_raw_profile(int dir, struct role *role, uint64_t mount,
 
 static int capture_raw_revision(const struct epoch *epoch, size_t index, struct role *role)
 {
-    static const char *const births[] = {"164", "165", "166"};
-    if (index >= 3 || strcmp(role->birth, births[index])) return reject(ESTALE);
+    if (index >= 4) return reject(ESTALE);
+    const uint64_t expected = index < 3 ? 164U + index : DROIDLOOM_BOARD_APPARMOR_CAMERA_RAW_BIRTH;
+    char birth_name[32];
+    if (snprintf(birth_name, sizeof(birth_name), "%" PRIu64, expected) < 1 ||
+        strcmp(role->birth, birth_name)) return reject(ESTALE);
     int root = open(AA_DIR "/policy", O_PATH | O_DIRECTORY | O_CLOEXEC);
     if (root < 0) return -1;
     int store = -1, birth = -1, fd = -1, error = 0;
@@ -136,7 +140,7 @@ static int capture_raw_revision(const struct epoch *epoch, size_t index, struct 
     else if (mount != epoch->mount || ino != epoch->ns) error = ESTALE;
     if (!error && (store = openat(root, "raw_data", O_PATH | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC)) < 0)
         error = errno;
-    if (!error && (birth = openat(store, births[index], O_PATH | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC)) < 0)
+    if (!error && (birth = openat(store, birth_name, O_PATH | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC)) < 0)
         error = errno;
     if (!error && (fd = openat(birth, "revision", O_RDONLY | O_NONBLOCK | O_NOFOLLOW | O_CLOEXEC)) < 0)
         error = errno;
@@ -159,7 +163,7 @@ static int capture_raw_revision(const struct epoch *epoch, size_t index, struct 
                 char *end;
                 errno = 0;
                 role->initial_revision = strtoull(value, &end, 10);
-                if (errno || *end || role->initial_revision != 165U + index) error = ESTALE;
+                if (errno || *end || role->initial_revision != expected + 1U) error = ESTALE;
             }
         }
     }
@@ -238,7 +242,7 @@ static int read_board_profile(int parent, const char *base, size_t index,
     return error ? reject(error) : 0;
 }
 
-static int capture(struct epoch *epoch, const struct droidloom_raw_profile inputs[3])
+static int capture(struct epoch *epoch, const struct droidloom_raw_profile inputs[4])
 {
     if (kernel_line(AT_FDCWD, "/proc/sys/kernel/random/boot_id", PROC_SUPER_MAGIC,
                     epoch->boot, sizeof(epoch->boot)) < 0 ||
@@ -287,7 +291,7 @@ static int capture(struct epoch *epoch, const struct droidloom_raw_profile input
             seen[i] = true;
         }
         if (error) break;
-        for (size_t i = 0; i < 3; i++) {
+        for (size_t i = 0; i < 4; i++) {
             size_t n = strlen(names[i]);
             if (strncmp(entry->d_name, names[i], n) || entry->d_name[n] != '.') continue;
             const char *suffix = entry->d_name + n + 1;
@@ -299,7 +303,7 @@ static int capture(struct epoch *epoch, const struct droidloom_raw_profile input
     if (error) return reject(error);
     for (size_t i = 0; i < DROIDLOOM_BOARD_APPARMOR_BOARD_ENTRIES; ++i)
         if (!seen[i]) return reject(ENOENT);
-    for (size_t i = 0; i < 3; i++) if (!epoch->roles[i].directory[0]) return reject(ENOENT);
+    for (size_t i = 0; i < 4; i++) if (!epoch->roles[i].directory[0]) return reject(ENOENT);
     char last[32];
     if (kernel_line(AT_FDCWD, AA_DIR "/revision", SECURITYFS_MAGIC, last, sizeof(last)) < 0) return -1;
     return strcmp(last, epoch->revision) ? reject(ESTALE) : 0;
@@ -357,7 +361,7 @@ static int label_epoch_directory(int fd)
 }
 
 int droidloom_capture_apparmor_epoch(struct droidloom_apparmor_measurement *saved,
-                                    const struct droidloom_raw_profile inputs[3])
+                                    const struct droidloom_raw_profile inputs[4])
 {
     struct epoch epoch = {0};
     if (capture(&epoch,inputs) < 0) return -1;
@@ -382,6 +386,23 @@ int droidloom_capture_apparmor_epoch(struct droidloom_apparmor_measurement *save
     if (error) return reject(error);
     if (length < 1 || (size_t)length >= sizeof(saved->bytes)) return reject(EOVERFLOW);
     saved->size = (size_t)length;
+    text = fmemopen(saved->camera, sizeof(saved->camera), "w");
+    if (!text) return -1;
+    struct role *r = &epoch.roles[3];
+    if (fprintf(text, "DLAACAM1\n%s %s %" PRIu64 " %" PRIu64 " %" PRIu64 "\n",
+                epoch.boot, epoch.revision, epoch.mount, epoch.ns, epoch.profiles) < 0 ||
+        fprintf(text, "%s %s %" PRIu64 " %" PRIu64 " %" PRIu64 " %" PRIu64
+                " %s %s %" PRIu64 " %" PRIu64 " %" PRIu64 " %" PRIu64 "\n",
+                r->directory,r->digest,r->inode[0],r->inode[1],r->inode[2],r->inode[3],
+                r->birth,r->raw_digest,r->raw_inode[0],r->raw_inode[1],
+                r->revision_inode,r->initial_revision) < 0)
+        error = errno;
+    if (fflush(text) < 0 && !error) error = errno;
+    length = ftell(text);
+    if (fclose(text) < 0 && !error) error = errno;
+    if (error) return reject(error);
+    if (length < 1 || (size_t)length >= sizeof(saved->camera)) return reject(EOVERFLOW);
+    saved->camera_size = (size_t)length;
     return 0;
 }
 
@@ -419,13 +440,11 @@ static int record_selinux_load(int output, int fd, const char *input_sha256)
     return 0;
 }
 
-int droidloom_publish_apparmor_epoch(int handoff, int status, const char *input_sha256,
-                                      const struct droidloom_apparmor_measurement *saved)
+static int publish_packet(int handoff, int status, const char *input_sha256,
+                          const char *name, const char *bytes, size_t size)
 {
     static const char label[] = "u:object_r:p4_linux_apparmor_epoch_t:s0";
-    if (!saved->size || saved->size >= sizeof(saved->bytes)) return reject(EINVAL);
-    if (label_epoch_directory(handoff) < 0) return -1;
-    int fd = openat(handoff, EPOCH, O_CREAT | O_EXCL | O_RDWR | O_CLOEXEC | O_NOFOLLOW, 0400);
+    int fd = openat(handoff, name, O_CREAT | O_EXCL | O_RDWR | O_CLOEXEC | O_NOFOLLOW, 0400);
     if (fd < 0) return -1;
     char value[128];
     int error = 0;
@@ -433,7 +452,7 @@ int droidloom_publish_apparmor_epoch(int handoff, int status, const char *input_
     if (n < 0) error = errno;
     else if (!((n == (ssize_t)sizeof(label) || n == (ssize_t)sizeof(label)-1) &&
                !memcmp(value, label, n))) error = EACCES;
-    if (!error && write(fd, saved->bytes, saved->size) != (ssize_t)saved->size) error = EIO;
+    if (!error && write(fd, bytes, size) != (ssize_t)size) error = EIO;
     if (!error && record_selinux_load(fd,status,input_sha256) < 0) error = errno;
     struct stat final;
     if (!error && (fsync(handoff) < 0 || fstat(fd,&final) < 0)) error = errno;
@@ -441,4 +460,15 @@ int droidloom_publish_apparmor_epoch(int handoff, int status, const char *input_
                    final.st_uid || final.st_gid || final.st_nlink != 1)) error = EACCES;
     close(fd);
     return error ? reject(error) : 0;
+}
+
+int droidloom_publish_apparmor_epoch(int handoff, int status, const char *input_sha256,
+                                      const struct droidloom_apparmor_measurement *saved)
+{
+    if (!saved->size || saved->size >= sizeof(saved->bytes) ||
+        !saved->camera_size || saved->camera_size >= sizeof(saved->camera)) return reject(EINVAL);
+    if (label_epoch_directory(handoff) < 0) return -1;
+    if (publish_packet(handoff,status,input_sha256,EPOCH,saved->bytes,saved->size) < 0) return -1;
+    return publish_packet(handoff,status,input_sha256,"camera-apparmor-epoch",
+                          saved->camera,saved->camera_size);
 }

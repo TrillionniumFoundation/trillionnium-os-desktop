@@ -10,7 +10,7 @@ static void put32(unsigned char *p, uint32_t value)
 static void denied(unsigned char *data, size_t size)
 {
     struct input pack = {.data = data, .size = size};
-    struct droidloom_raw_profile selected[3] = {0};
+    struct droidloom_raw_profile selected[4] = {0};
     errno = 0;
     assert(apparmor_profiles(&pack, 0, selected) == -1);
     assert(errno == EBADMSG);
@@ -29,12 +29,12 @@ int main(int argc, char **argv)
     assert(body && bad && fread(body, 1, size, source) == size);
     assert(fclose(source) == 0);
     struct input pack = {.data = body, .size = size};
-    struct droidloom_raw_profile selected[3] = {0};
+    struct droidloom_raw_profile selected[4] = {0};
     assert(apparmor_profiles(&pack, 0, selected) == 0);
-    const char *wanted[3] = {
-        "droidloom-policy-loader", "droidloom-production-android", "droidloom-production-broker"
+    const char *wanted[4] = {
+        "droidloom-policy-loader", "droidloom-production-android", "droidloom-production-broker", "droidloom-camera-capture"
     };
-    for (size_t i = 0; i < 3; ++i) {
+    for (size_t i = 0; i < 4; ++i) {
         size_t match = DROIDLOOM_BOARD_APPARMOR_BOARD_ENTRIES;
         for (size_t j = 0; j < DROIDLOOM_BOARD_APPARMOR_BOARD_ENTRIES; ++j)
             if (!strcmp(wanted[i], droidloom_board_apparmor_profiles[j].name)) match = j;
@@ -75,7 +75,7 @@ int main(int argc, char **argv)
         memcpy(bad + pos, body + offset[from], length[from]); pos += length[from];
     }
     assert(pos == size); denied(bad, size); ++negative;
-    printf("real archive: %u entries, %u board digests, 3 original epoch roles; %u malformed inputs rejected\n",
+    printf("real archive: %u entries, %u board digests, 3 original epoch roles plus independent camera; %u malformed inputs rejected\n",
            DROIDLOOM_BOARD_APPARMOR_PROFILE_ENTRIES, DROIDLOOM_BOARD_APPARMOR_BOARD_ENTRIES, negative);
     free(body); free(bad);
     return 0;

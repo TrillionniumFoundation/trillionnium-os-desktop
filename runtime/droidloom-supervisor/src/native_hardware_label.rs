@@ -47,6 +47,7 @@ enum Kind {
     Card,
     Render,
     Event,
+    Video,
 }
 
 #[derive(Debug, Eq, PartialEq)]
@@ -64,8 +65,10 @@ impl DeviceName {
             (Kind::Render, n)
         } else if let Some(n) = bytes.strip_prefix(b"/dev/input/event") {
             (Kind::Event, n)
+        } else if let Some(n) = bytes.strip_prefix(b"/dev/video") {
+            (Kind::Video, n)
         } else {
-            return Err(reject("not a fixed native DRM or evdev node"));
+            return Err(reject("not a fixed native DRM, evdev or video node"));
         };
         if digits.is_empty()
             || digits.len() > 7
@@ -85,6 +88,7 @@ impl DeviceName {
             Kind::Card => number <= 63 || (192..=MAX_MINOR).contains(&number),
             Kind::Render => (128..=MAX_MINOR).contains(&number),
             Kind::Event => number <= 31 || (256..1024).contains(&number),
+            Kind::Video => number < 256,
         };
         if !valid {
             return Err(reject("number is outside the kernel allocation grammar"));
@@ -96,6 +100,7 @@ impl DeviceName {
         match self.kind {
             Kind::Card | Kind::Render => c"dri",
             Kind::Event => c"input",
+            Kind::Video => c".",
         }
     }
     fn leaf(&self) -> CString {
@@ -105,6 +110,7 @@ impl DeviceName {
                 Kind::Card => "card",
                 Kind::Render => "renderD",
                 Kind::Event => "event",
+                Kind::Video => "video",
             },
             self.number
         ))
@@ -115,17 +121,30 @@ impl DeviceName {
             Kind::Card => b"u:object_r:p4_linux_drm_card_t:s0",
             Kind::Render => b"u:object_r:p4_linux_drm_render_t:s0",
             Kind::Event => b"u:object_r:p4_linux_input_event_t:s0",
+            Kind::Video => b"u:object_r:p4_linux_uvc_device_t:s0",
         }
     }
     fn parent_context(&self) -> &'static [u8] {
         match self.kind {
             Kind::Card | Kind::Render => b"u:object_r:p4_linux_drm_dir_t:s0",
             Kind::Event => b"u:object_r:p4_linux_input_dir_t:s0",
+            Kind::Video => DEV_ROOT,
         }
+    }
+    fn matches_rdev(&self, value: libc::dev_t) -> bool {
+        let (major, minor) = self.rdev();
+        libc::major(value) == major
+            && if self.kind == Kind::Video {
+                // videoN and minor are independently allocated in the target kernel.
+                libc::minor(value) < 256
+            } else {
+                libc::minor(value) == minor
+            }
     }
     fn rdev(&self) -> (u32, u32) {
         match self.kind {
             Kind::Card | Kind::Render => (226, self.number),
+            Kind::Video => (81, self.number),
             Kind::Event => (
                 13,
                 if self.number < 32 {
@@ -277,7 +296,7 @@ fn root_without_capabilities() -> io::Result<()> {
     Ok(())
 }
 
-fn path_at(parent: RawFd, name: &CStr) -> io::Result<File> {
+pub(crate) fn path_at(parent: RawFd, name: &CStr) -> io::Result<File> {
     let fd = syscall_ok(unsafe {
         libc::openat(
             parent,
@@ -288,13 +307,13 @@ fn path_at(parent: RawFd, name: &CStr) -> io::Result<File> {
     Ok(unsafe { File::from_raw_fd(fd as RawFd) })
 }
 
-fn metadata(file: &File) -> io::Result<libc::stat> {
+pub(crate) fn metadata(file: &File) -> io::Result<libc::stat> {
     let mut st = unsafe { zeroed::<libc::stat>() };
     syscall_ok(unsafe { libc::fstat(file.as_raw_fd(), &mut st) } as _)?;
     Ok(st)
 }
 
-fn directory(file: &File) -> io::Result<libc::stat> {
+pub(crate) fn directory(file: &File) -> io::Result<libc::stat> {
     let st = metadata(file)?;
     if st.st_mode & libc::S_IFMT != libc::S_IFDIR
         || st.st_uid != 0
@@ -308,7 +327,7 @@ fn directory(file: &File) -> io::Result<libc::stat> {
     Ok(st)
 }
 
-fn same_inode(a: &libc::stat, b: &libc::stat) -> bool {
+pub(crate) fn same_inode(a: &libc::stat, b: &libc::stat) -> bool {
     a.st_dev == b.st_dev
         && a.st_ino == b.st_ino
         && a.st_rdev == b.st_rdev
@@ -381,7 +400,7 @@ fn held_xattr(
     Ok(result)
 }
 
-fn label(file: &File) -> io::Result<Vec<u8>> {
+pub(crate) fn label(file: &File) -> io::Result<Vec<u8>> {
     let mut buffer = [0u8; 256];
     let args = XattrArgs {
         value: buffer.as_mut_ptr() as u64,
@@ -421,7 +440,7 @@ fn label_fixed(file: &File, wanted: &[u8]) -> io::Result<()> {
     Ok(())
 }
 
-fn mount_id(file: &File) -> io::Result<u64> {
+pub(crate) fn mount_id(file: &File) -> io::Result<u64> {
     let mut st = unsafe { zeroed::<libc::statx>() };
     syscall_ok(unsafe {
         libc::statx(
@@ -438,7 +457,7 @@ fn mount_id(file: &File) -> io::Result<u64> {
     Ok(st.stx_mnt_id)
 }
 
-fn mount_identity(file: &File) -> io::Result<(u64, u64, Vec<u8>)> {
+pub(crate) fn mount_identity(file: &File) -> io::Result<(u64, u64, Vec<u8>)> {
     let id = mount_id(file)?;
     // Ver0 request selects this caller's mount namespace; never another PID.
     let request = [24u64, id, 0x22u64]; // MNT_BASIC | FS_TYPE
@@ -479,7 +498,7 @@ fn mount_identity(file: &File) -> io::Result<(u64, u64, Vec<u8>)> {
     Ok((id, u64_at(64), tail[..end].to_vec()))
 }
 
-fn namespaces(root: &File) -> io::Result<()> {
+pub(crate) fn namespaces(root: &File) -> io::Result<()> {
     let run = path_at(root.as_raw_fd(), c"run")?;
     directory(&run)?;
     let handoff = path_at(run.as_raw_fd(), c"droidloom-early")?;
@@ -544,12 +563,10 @@ fn apply(name: &DeviceName) -> io::Result<()> {
     let parent_stat = directory(&parent)?;
     let leaf = path_at(parent.as_raw_fd(), &name.leaf())?;
     let before = metadata(&leaf)?;
-    let (major, minor) = name.rdev();
     if before.st_mode & libc::S_IFMT != libc::S_IFCHR
         || before.st_uid != 0
         || before.st_nlink != 1
-        || libc::major(before.st_rdev) != major
-        || libc::minor(before.st_rdev) != minor
+        || !name.matches_rdev(before.st_rdev)
         || before.st_dev != dev_stat.st_dev
         || parent_stat.st_dev != dev_stat.st_dev
         || mount_id(&parent)? != dev_mount
@@ -649,7 +666,9 @@ mod tests {
             "/dev/dri/card01",
             "/dev/input/event-1",
             "/dev/input/event0/../event1",
-            "/dev/video0",
+            "/dev/video256",
+            "/dev/video00",
+            "/dev/video-1",
             "/dev/dri/controlD64",
             "/dev/input/mouse0",
             "card0",
@@ -658,6 +677,20 @@ mod tests {
             "/dev/dri/card0\n",
         ] {
             assert!(DeviceName::parse(OsStr::new(path)).is_err(), "{path:?}");
+        }
+    }
+
+    #[test]
+    fn video_name_and_minor_have_independent_closed_kernel_ranges() {
+        let first = DeviceName::parse(OsStr::new("/dev/video0")).unwrap();
+        let last = DeviceName::parse(OsStr::new("/dev/video255")).unwrap();
+        for name in [first, last] {
+            assert!(name.matches_rdev(libc::makedev(81, 0)));
+            assert!(name.matches_rdev(libc::makedev(81, 255)));
+            assert!(!name.matches_rdev(libc::makedev(81, 256)));
+            assert!(!name.matches_rdev(libc::makedev(82, 0)));
+            assert_eq!(name.parent(), c".");
+            assert_eq!(name.context(), b"u:object_r:p4_linux_uvc_device_t:s0");
         }
     }
 

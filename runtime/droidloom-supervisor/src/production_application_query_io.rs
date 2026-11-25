@@ -1040,23 +1040,26 @@ unsafe fn raw_attribute(path: &CStr, expected: &[u8], write: bool) -> bool {
         valid && good && tail == 0 && closed == 0
     }
 }
-/// Both private helpers use the same reviewed no-argument fresh image gate.
+/// Fixed private helpers use the same reviewed no-argument fresh image gate.
 #[derive(Clone, Copy)]
 pub(super) enum HelperRole {
     QueryIo,
     MetadataObserver,
+    NativeCamera,
 }
 impl HelperRole {
     fn terminated(self) -> &'static [u8] {
         match self {
             Self::QueryIo => b"u:r:droidloom_query_io:s0\0",
             Self::MetadataObserver => b"u:r:droidloom_metadata_observer:s0\0",
+            Self::NativeCamera => b"u:r:droidloom_camera_capture:s0\0",
         }
     }
     fn context(self) -> &'static [u8] {
         match self {
             Self::QueryIo => CREATOR,
             Self::MetadataObserver => b"u:r:droidloom_metadata_observer:s0",
+            Self::NativeCamera => b"u:r:droidloom_camera_capture:s0",
         }
     }
 }
@@ -1084,6 +1087,17 @@ pub(super) unsafe fn bootstrap(
             || !raw_attribute(c"/proc/thread-self/attr/exec", role.context(), false)
             || !raw_attribute(c"/proc/thread-self/attr/current", BROKER, false)
             || !raw_attribute(c"/proc/thread-self/attr/apparmor/current", AA_BROKER, false)
+        {
+            libc::_exit(125);
+        }
+        // NNP is retained: the camera adds a fixed AppArmor intersection.
+        // It never replaces or escapes the production broker profile.
+        if matches!(role, HelperRole::NativeCamera)
+            && !raw_attribute(
+                c"/proc/thread-self/attr/apparmor/exec",
+                b"exec &droidloom-camera-capture\0",
+                true,
+            )
         {
             libc::_exit(125);
         }
@@ -1116,7 +1130,8 @@ pub(super) unsafe fn bootstrap(
         if libc::setrlimit(libc::RLIMIT_CORE, &zero) != 0
             || libc::setrlimit(libc::RLIMIT_FSIZE, &zero) != 0
             || libc::setrlimit(libc::RLIMIT_AS, &memory) != 0
-            || libc::setrlimit(libc::RLIMIT_CPU, &cpu) != 0
+            || (!matches!(role, HelperRole::NativeCamera)
+                && libc::setrlimit(libc::RLIMIT_CPU, &cpu) != 0)
             || libc::syscall(libc::SYS_setgroups, 0_usize, std::ptr::null::<u32>()) != 0
             || libc::prctl(libc::PR_CAP_AMBIENT, 4, 0, 0, 0) != 0
         {
@@ -1162,7 +1177,7 @@ pub(super) struct Child {
     pub(super) terminal: Option<(i32, i32)>,
 }
 impl Child {
-    fn observe(&mut self) -> Result<bool> {
+    pub(super) fn observe(&mut self) -> Result<bool> {
         if self.terminal.is_some() {
             return Ok(true);
         }

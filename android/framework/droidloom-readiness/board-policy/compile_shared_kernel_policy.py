@@ -14,6 +14,7 @@ from verify_native_login_audit import verify_login_audit
 from verify_native_journal_storage import verify_journal_storage
 from verify_greeter_home import verify_greeter_home
 from verify_native_maintenance import verify_native_maintenance
+from verify_native_camera import verify_camera
 
 
 def sha256(path):
@@ -329,7 +330,7 @@ def verify_native_hardware(policy, lines, check, obj):
     native = lambda name: "u:system_r:" + name + ":s0"
     labeler = native("p4_linux_hardware_label_t")
     dirs = {"p4_linux_drm_dir_t", "p4_linux_input_dir_t", "p4_linux_native_dev_root_t"}
-    nodes = {"p4_linux_drm_card_t", "p4_linux_drm_render_t", "p4_linux_input_event_t"}
+    nodes = {"p4_linux_drm_card_t", "p4_linux_drm_render_t", "p4_linux_input_event_t", "p4_linux_uvc_device_t"}
     for target in sorted(types):
         check(labeler, obj(target), "dir", ["relabelto"], target in dirs)
         check(labeler, obj(target), "chr_file", ["relabelto"], target in nodes)
@@ -360,6 +361,9 @@ def verify_native_hardware(policy, lines, check, obj):
         ("p4_linux_compositor_t", "p4_linux_input_event_t", "chr_file", input_read),
         ("p4_linux_udev_t", "p4_linux_input_event_t", "chr_file", input_udev),
         ("p4_linux_hardware_label_t", "p4_kernel_ns_handle_t", "file", {0xb703}),
+        ("droidloom_camera_capture", "p4_kernel_ns_handle_t", "file", {0xb703}),
+        ("p4_linux_udev_t", "p4_linux_uvc_device_t", "chr_file", {0x5600}),
+        ("droidloom_camera_capture", "p4_linux_uvc_device_t", "chr_file", {0x5600, 0x5602, 0x564a, 0x564b, 0x5605, 0x5616, 0x5608, 0x5609, 0x560f, 0x5611, 0x5612, 0x5613}),
     ])
     actual_sets = []
     for actor, target, kind, wanted in ioctl_sets:
@@ -395,14 +399,18 @@ def verify_native_hardware(policy, lines, check, obj):
             wanted = set()
             if actor in {"p4_linux_compositor_t", "p4_linux_user_session_t", "droidloom_presenter"} and target == "p4_linux_drm_render_t":
                 wanted = {"open", "read", "write", "ioctl", "map"}
-            elif actor == "p4_linux_compositor_t":
+            elif actor == "p4_linux_compositor_t" and target in {"p4_linux_drm_card_t", "p4_linux_input_event_t"}:
                 wanted = {"read", "write", "ioctl"} | ({"map"} if target == "p4_linux_drm_card_t" else set())
-            elif actor == "p4_linux_logind_t" and target != "p4_linux_drm_render_t":
+            elif actor == "p4_linux_logind_t" and target in {"p4_linux_drm_card_t", "p4_linux_input_event_t"}:
                 wanted = {"open", "read", "write", "ioctl"}
-            elif actor == "p4_linux_dbus_t" and target != "p4_linux_drm_render_t":
+            elif actor == "p4_linux_dbus_t" and target in {"p4_linux_drm_card_t", "p4_linux_input_event_t"}:
                 wanted = {"read", "write"}
             elif actor == "p4_linux_udev_t" and target == "p4_linux_input_event_t":
                 wanted = {"open", "read", "write", "ioctl"}
+            elif actor == "p4_linux_udev_t" and target == "p4_linux_uvc_device_t":
+                wanted = {"open", "read", "ioctl"}
+            elif actor == "droidloom_camera_capture" and target == "p4_linux_uvc_device_t":
+                wanted = {"open", "read", "write", "ioctl", "map"}
             if wanted:
                 check(context, obj(target), "chr_file", sorted(wanted), True)
             check(context, obj(target), "chr_file", sorted(body - wanted), False)
@@ -902,6 +910,7 @@ def verify_host_control(library, binary, export, original_contract):
     transitions.append("(typetransition p4_linux_udev_t droidloom_container_entry_exec_t process p4_linux_hardware_label_t)")
     hardware = verify_native_hardware(policy, lines, check, obj)
     manager_startup = verify_manager_startup(lines, check, obj, role_types)
+    camera = verify_camera(policy, lines, check, obj, Path(__file__).resolve().parent)
     # The exact timezone symlink retains the prior read-only public-link
     # contract, while only PID 1 may place its stock IN_DONT_FOLLOW watch.
     timezone_decisions = 0
@@ -929,6 +938,7 @@ def verify_host_control(library, binary, export, original_contract):
     return {
         "native_hardware": hardware,
         "native_manager_startup": manager_startup,
+        "native_camera": camera,
         "timezone_link_decisions": timezone_decisions + 9,
         "binary_access_checks": len(checks),
         "public_module_role_types": len(role_types),
@@ -1115,7 +1125,7 @@ def main():
         "ubuntu-native-login-audit.cil",
         "ubuntu-native-service-runtime.cil", "ubuntu-native-sandbox.cil",
         "ubuntu-native-maintenance.cil",
-        "frontend-android-interface.cil", "linux-frontend-observer.cil", "instance-launcher.cil",
+        "frontend-android-interface.cil", "native-camera-interface.cil", "linux-frontend-observer.cil", "instance-launcher.cil",
         "linux-query-owner.cil", "linux-fixed-metadata-observer.cil",
         "instance-factory-cgroup.cil", "ubuntu-systemd-unit-status.cil",
         "linux-application-roles.cil", "linux-install-catalog.cil",

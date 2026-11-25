@@ -5,6 +5,7 @@ profile droidloom-production-broker flags=(attach_disconnected.path=/.droidloom-
   # The consumer authenticates the sealed original AAFS objects before reading.
   # Only three synthetic paths gain read access; the object gate rejects aliases.
   /.droidloom-kernel-apparmorfs/raw_data/{164,165,166}/revision r,
+  /.droidloom-kernel-apparmorfs/raw_data/170/revision r,
   # Dynamic loader and NSS inputs used by the packaged Ubuntu executables.
   /etc/ld.so.cache r,
   /{,usr/}lib{,64}/ld-linux-x86-64.so.2 mr,
@@ -16,7 +17,7 @@ profile droidloom-production-broker flags=(attach_disconnected.path=/.droidloom-
   /{etc,proc,sys,run,usr,usr/lib,sys/fs,sys/kernel,sys/kernel/security}/ r,
   /etc/droidloom/{,host-mac/} r,
   /etc/droidloom/host-mac/{contract.json,derivation.json,policy.bin,policy-export.bin,manager-label.json} r,
-  /run/droidloom-early/{,kernel-policy/,kernel-policy/apparmor-epoch} r,
+  /run/droidloom-early/{,kernel-policy/,kernel-policy/apparmor-epoch,kernel-policy/camera-apparmor-epoch} r,
   /sys/kernel/notes r,
   /sys/module/apparmor/parameters/enabled r,
   @{PROC}/sys/kernel/{osrelease,random/boot_id} r,
@@ -70,6 +71,18 @@ profile droidloom-production-broker flags=(attach_disconnected.path=/.droidloom-
   signal (send, receive) peer=droidloom-production-broker,
   signal (send) set=(term,kill,cont) peer=unconfined,
   change_profile -> &droidloom-production-android,
+  change_profile -> &droidloom-camera-capture,
+  # Camera child keeps this profile as an NNP-enforced intersection.
+  # Broker SELinux still forbids every native video body operation.
+  /run/droidloom-early/host-{userns,pidns} r,
+  /{user,pid}:[0-9]* r,
+  /dev/v4l/{,by-id/} r,
+  /dev/v4l/by-id/usb-SunplusIT_Inc_Integrated_Camera_JX20250923V2-video-index0 rw,
+  /dev/video{[0-9],[0-9][0-9],[0-9][0-9][0-9]} rw,
+  /run/droidloom-frontend/android/camera rw,
+  unix (send, receive) type=stream peer=(label=droidloom-production-android),
+  signal (send) set=(kill) peer=droidloom-camera-capture//&droidloom-production-broker,
+  signal (send) set=(kill) peer=droidloom-production-broker//&droidloom-camera-capture,
   @{PROC}/[0-9]*/attr/{exec,apparmor/exec,apparmor/current,selinux/exec} w,
   @{PROC}/[0-9]*/attr/{exec,apparmor/exec} r,
   owner @{PROC}/[0-9]*/task/[0-9]*/attr/{exec,apparmor/exec} rw,
@@ -163,5 +176,8 @@ profile droidloom-production-broker flags=(attach_disconnected.path=/.droidloom-
   /{system,product,system_ext,vendor}/{app,priv-app}/**.apk r,
   /run/droidloom-early/factory.json r,
   /run/droidloom-early/instance-factory.sock rw,
+  /{system,run/droidloom-early-slot/rootfs/system,.droidloom-kernel-apparmorfs/system}/system_ext/framework/droidloom-camera-producer.jar r,
+  /{system,run/droidloom-early-slot/rootfs/system,.droidloom-kernel-apparmorfs/system}/system_ext/etc/init/droidloom-{camera-producer,virtual-camera}.rc r,
+  /{system,run/droidloom-early-slot/rootfs/system,.droidloom-kernel-apparmorfs/system}/system_ext/bin/droidloom-virtual-camera r,
 
 }

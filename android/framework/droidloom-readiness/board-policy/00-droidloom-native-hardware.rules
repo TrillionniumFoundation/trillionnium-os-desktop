@@ -3,3 +3,4 @@
 ACTION=="add|change|bind", SUBSYSTEM=="drm", KERNEL=="card[0-9]*", ENV{MAJOR}=="226", PROGRAM=="/usr/lib/droidloom/production/current/droidloomd __native-hardware-label %N", ENV{DROIDLOOM_NATIVE_LABEL}="1"
 ACTION=="add|change|bind", SUBSYSTEM=="drm", KERNEL=="renderD[0-9]*", ENV{MAJOR}=="226", PROGRAM=="/usr/lib/droidloom/production/current/droidloomd __native-hardware-label %N", ENV{DROIDLOOM_NATIVE_LABEL}="1"
 ACTION=="add|change|bind", SUBSYSTEM=="input", KERNEL=="event[0-9]*", ENV{MAJOR}=="13", PROGRAM=="/usr/lib/droidloom/production/current/droidloomd __native-hardware-label %N", ENV{DROIDLOOM_NATIVE_LABEL}="1"
+ACTION=="add|change|bind", SUBSYSTEM=="video4linux", KERNEL=="video[0-9]*", ENV{MAJOR}=="81", PROGRAM=="/usr/lib/droidloom/production/current/droidloomd __native-hardware-label %N", ENV{DROIDLOOM_NATIVE_LABEL}="1"
