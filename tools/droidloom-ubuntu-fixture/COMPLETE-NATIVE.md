@@ -39,3 +39,15 @@ module release. A later normal boot consumes the separately published shared
 kernel, its full modules and matching initrd. No machine/user credentials are
 copied from Pocket4, no process is started inside the captured root, and no
 physical package or service is changed by these three material commands.
+
+## Initialize the complete clone
+
+The boot consumer calls `boot_native::initialize_complete(root, work, inputs, manifest)` only after full verification and independent materialization of the installed complete manifest. `CompleteNativeInputs` contains `hostname`, distinct `root_filesystem_uuid` and `network_connection_uuid`, and `generate_fixture_ssh`. The destination is exactly the new private qualification `work/root`; the source root and its file inodes are rejected as mutation destinations.
+
+This path retains the distribution's real service accounts and numeric groups. It admits only locked, consistent passwd/group/shadow/gshadow files without existing regular-user state. Normal `systemd-sysusers` adds `alex` 1000:1000 and `droidloom-cell-u1000` 976:976; the cell's established public home is `/nonexistent`. Existing account rows and memberships must survive, apart from the five explicitly added alex device memberships. The actual GDM group is recorded at `accounts.groups.gdm` in schema `droidloom.complete-native-ubuntu-initialization.v1`; consumers must bind it to that receipt, rather than using the historical public-root group number.
+
+Every identity/configuration replacement is checked against the complete manifest and preserved in the private `work/complete-native-preimages` directory before a new file is created. Only the explicit identity/GDM/SSH allowlist can use this operation. Account files are updated by normal sysusers; the package database is never rebuilt. Fresh machine ID and SSH keys come from the cloned normal distribution programs. The normal aliases and eight unmodified public configurations are rechecked, and the dpkg status must remain unchanged.
+
+Exactly seven nonempty public Snap archives must be present in the manifest and root, with no extra archive or existing Snap state. Their pinned contents supply the existing read-only mount template and revision aliases. No Snap assertions, account tokens or runtime acceptance are manufactured. System and user units are enabled offline. The receipt keeps `guest_started=false` and `guest_qualified=false`; actual boot, enforcing policy, GDM, network, Snap registration and Android/application tests remain separate gates.
+
+Focused tests cover account/UID conflicts, unlocked state, old homes, symlink confinement, full preimages, create-only retirement and exact Snap rosters. An explicitly root-only test exercises real normal `systemd-sysusers`, `systemd-firstboot`, preimage retention and independent replacement in a newly created temporary root; unprivileged runs report it as ignored rather than passing it.

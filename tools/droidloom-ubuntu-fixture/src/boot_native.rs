@@ -15,6 +15,10 @@ use std::path::Path;
 mod public_source;
 pub use public_source::{ImportedPublicInputs, PublicInputCustody};
 
+#[path = "boot_native_complete.rs"]
+mod complete;
+pub use complete::{CompleteNativeInputs, initialize_complete};
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct PublicConfigInput {
