@@ -38,6 +38,13 @@ const TOOLS: &[&str] = &[
 ];
 const NATIVE_HOOK: &[u8] = b"#!/bin/sh\nset -eu\ncase \"${1:-}\" in prereqs) exit 0 ;; esac\n. /usr/share/initramfs-tools/hook-functions\ncopy_exec /usr/lib/x86_64-linux-gnu/libselinux.so.1\ncopy_exec /usr/lib/x86_64-linux-gnu/libapparmor.so.1\n";
 const POLICY_RC: &[u8] = b"#!/bin/sh\nexit 101\n";
+const PRIVATE_STATE_PATHS: &[&str] = &[
+    "/home",
+    "/root",
+    "/var/lib/droidloom",
+    "/var/lib/droidloom-maintenance",
+    "/var/lib/droidloom-qualification",
+];
 
 #[derive(Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
@@ -688,19 +695,10 @@ pub fn namespace(path: &Path, expected: &str) -> Result<()> {
             fs::absolute_string(&view)?,
         ],
     )?;
-    for name in [
-        "/build",
-        "/inputs",
-        "/dev",
-        "/proc",
-        "/run",
-        "/tmp",
-        "/home",
-        "/root",
-        "/sys",
-        "/var/lib/droidloom",
-        "/var/lib/droidloom-maintenance",
-    ] {
+    for name in ["/build", "/inputs", "/dev", "/proc", "/run", "/tmp", "/sys"]
+        .into_iter()
+        .chain(PRIVATE_STATE_PATHS.iter().copied())
+    {
         files::ensure_dir(&view, name, if name == "/tmp" { 0o1777 } else { 0o755 })?;
     }
     for (name, source, dest) in [
@@ -729,19 +727,12 @@ pub fn namespace(path: &Path, expected: &str) -> Result<()> {
             )?;
         }
     }
-    for (index, dest) in [
-        "/dev",
-        "/run",
-        "/tmp",
-        "/home",
-        "/root",
-        "/var/lib/droidloom",
-        "/var/lib/droidloom-maintenance",
-    ]
-    .iter()
-    .enumerate()
+    for (index, dest) in ["/dev", "/run", "/tmp"]
+        .into_iter()
+        .chain(PRIVATE_STATE_PATHS.iter().copied())
+        .enumerate()
     {
-        let options = if *dest == "/tmp" {
+        let options = if dest == "/tmp" {
             "nosuid,nodev,mode=1777,size=1G"
         } else {
             "nosuid,nodev,mode=0755,size=64M"
@@ -925,7 +916,40 @@ fn expected_roster(before: &Roster, packages: &[Package]) -> Result<Roster> {
     }
     Ok(expected)
 }
-fn walk(root: &Path, path: &Path, rows: &mut Vec<Value>, total: &mut u64) -> Result<()> {
+fn effective_initrd_path(relative: &str, layered: bool) -> Result<&str> {
+    if !layered {
+        return Ok(relative);
+    }
+    let (section, effective) = relative.split_once('/').unwrap_or((relative, ""));
+    let early = section == "early"
+        || section.strip_prefix("early").is_some_and(|n| {
+            !n.starts_with('0')
+                && n.bytes().all(|b| b.is_ascii_digit())
+                && n.parse::<u32>().is_ok_and(|v| v >= 2)
+        });
+    ensure(
+        section == "main" || early,
+        "unmkinitramfs produced an unknown archive layer",
+    )?;
+    Ok(effective)
+}
+fn public_initrd_path(effective: &str) -> Result<()> {
+    ensure(
+        !PRIVATE_STATE_PATHS
+            .iter()
+            .any(|p| effective.starts_with(&format!("{}/", &p[1..])))
+            && !effective.starts_with("etc/ssh/ssh_host")
+            && !["etc/shadow", "etc/gshadow"].contains(&effective),
+        "private account or Android data appeared in normal initramfs",
+    )
+}
+fn walk(
+    root: &Path,
+    path: &Path,
+    layered: bool,
+    rows: &mut Vec<Value>,
+    total: &mut u64,
+) -> Result<()> {
     let mut paths = std::fs::read_dir(path)?
         .map(|r| r.map(|v| v.path()))
         .collect::<std::io::Result<Vec<_>>>()?;
@@ -934,19 +958,13 @@ fn walk(root: &Path, path: &Path, rows: &mut Vec<Value>, total: &mut u64) -> Res
         ensure(rows.len() < 50000, "normal initramfs has too many members")?;
         let metadata = std::fs::symlink_metadata(&path)?;
         let relative = path.strip_prefix(root)?.to_string_lossy().into_owned();
-        ensure(
-            !relative.starts_with("home/")
-                && !relative.starts_with("root/")
-                && !relative.starts_with("var/lib/droidloom/")
-                && !relative.starts_with("etc/ssh/ssh_host")
-                && !["etc/shadow", "etc/gshadow"].contains(&relative.as_str()),
-            "private account or Android data appeared in normal initramfs",
-        )?;
-        let mut row = json!({"path":relative,"mode":metadata.mode(),"uid":metadata.uid(),"gid":metadata.gid(),"nlink":metadata.nlink()});
+        let effective = effective_initrd_path(&relative, layered)?;
+        public_initrd_path(effective)?;
+        let mut row = json!({"path":relative,"effective_path":effective,"mode":metadata.mode(),"uid":metadata.uid(),"gid":metadata.gid(),"nlink":metadata.nlink()});
         if metadata.is_dir() {
             row["kind"] = json!("directory");
             rows.push(row);
-            walk(root, &path, rows, total)?;
+            walk(root, &path, layered, rows, total)?;
         } else if metadata.is_file() {
             *total = total
                 .checked_add(metadata.len())
@@ -1041,11 +1059,17 @@ fn readback(work: &Path, m: &Materials) -> Result<Value> {
     )?;
     let mut rows = Vec::new();
     let mut total = 0;
-    walk(&unpack, &unpack, &mut rows, &mut total)?;
+    walk(
+        &unpack,
+        &unpack,
+        root == &unpack.join("main"),
+        &mut rows,
+        &mut total,
+    )?;
     let needle = format!("/modules/{KERNEL}/");
     let mut found = 0;
     for row in &rows {
-        let path = string(row, "path")?;
+        let path = string(row, "effective_path")?;
         if row["kind"] == "file" && (path.ends_with(".ko") || path.contains(".ko.")) {
             let (_, relative) = path
                 .split_once(&needle)
@@ -1097,12 +1121,7 @@ pub fn build(path: &Path, expected: &str) -> Result<()> {
             }),
         "normal private build root is not the isolated overlay",
     )?;
-    for path in [
-        "/home",
-        "/root",
-        "/var/lib/droidloom",
-        "/var/lib/droidloom-maintenance",
-    ] {
+    for path in PRIVATE_STATE_PATHS {
         ensure(
             std::fs::read_dir(path)?.next().is_none(),
             "original private state is visible to package scripts",
@@ -1300,6 +1319,49 @@ pub fn build(path: &Path, expected: &str) -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn normal_main_and_early_archive_paths_preserve_public_members() {
+        for (raw, effective) in [
+            ("main/usr/lib/libc.so.6", "usr/lib/libc.so.6"),
+            (
+                "early/kernel/x86/microcode/GenuineIntel.bin",
+                "kernel/x86/microcode/GenuineIntel.bin",
+            ),
+            (
+                "early2/kernel/x86/microcode/AuthenticAMD.bin",
+                "kernel/x86/microcode/AuthenticAMD.bin",
+            ),
+        ] {
+            assert_eq!(effective_initrd_path(raw, true).unwrap(), effective);
+            public_initrd_path(effective).unwrap();
+        }
+        assert_eq!(
+            effective_initrd_path("usr/bin/sh", false).unwrap(),
+            "usr/bin/sh"
+        );
+        for raw in ["unknown/etc/passwd", "early0/a", "early01/a", "earlyx/a"] {
+            assert!(effective_initrd_path(raw, true).is_err(), "{raw}");
+        }
+    }
+    #[test]
+    fn every_normal_archive_layer_rejects_private_payloads() {
+        for prefix in ["", "main/", "early/", "early2/"] {
+            for path in [
+                "etc/shadow",
+                "etc/gshadow",
+                "etc/ssh/ssh_host_ed25519_key",
+                "home/alex/private",
+                "root/private",
+                "var/lib/droidloom/data/user",
+                "var/lib/droidloom-maintenance/private",
+                "var/lib/droidloom-qualification/data-working-copy/private",
+            ] {
+                let raw = format!("{prefix}{path}");
+                let effective = effective_initrd_path(&raw, !prefix.is_empty()).unwrap();
+                assert!(public_initrd_path(effective).is_err(), "{raw}");
+            }
+        }
+    }
     #[test]
     fn only_private_qualification_work_names_are_admitted() {
         assert!(

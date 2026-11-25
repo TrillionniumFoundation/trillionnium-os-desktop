@@ -277,8 +277,9 @@ Package scripts run with UID/GID map `0 0 65536` in private user, mount, network
 IPC and UTS namespaces. A new overlay reads the original host filesystem and
 stores writes in an independent bounded tmpfs. A nested PID namespace places
 the chrooted builder at PID1, preventing `/proc/1/root` from exposing the setup
-process's original root. Home, original Android data and maintenance state are
-hidden; `/run` and `/dev` are private, and hardware `/sys` is readonly. Each of
+process's original root. Home, original Android data, maintenance state and the entire previous
+qualification tree are hidden; only this build's separate `/build` and `/inputs`
+binds remain visible; `/run` and `/dev` are private, and hardware `/sys` is readonly. Each of
 the five admitted character devices is checked by actual type and device number.
 Before any package script executes, setpriv removes mount, raw-device, MAC,
 module, reboot and other global capabilities from the bounding set and enables
@@ -296,7 +297,9 @@ source-owned extra upstream hook uses `copy_exec` for both admitted native LSM
 libraries. Normal `unmkinitramfs` then reads back the whole output. The stock
 `/init`, early-custody order, both host ELFs, both native libraries, and every
 included kernel module must match their actual normal sources. A complete
-bounded member inventory, the private configured dpkg status and original
+bounded member inventory retains both raw archive paths and normalized effective
+paths. Every normal main/early archive layer rejects private account, SSH, home,
+Android-data and qualification-tree contents. The private configured dpkg status and original
 command logs are retained. Private package writes disappear with the namespace.
 
 `ORIGINAL-INITRAMFS-PREPARED.json` has phase `candidate_preparation`. It is real
