@@ -1,3 +1,6 @@
+#[path = "../../../packaging/ubuntu/production/cold_modules.rs"]
+pub(crate) mod cold_modules;
+
 use crate::{
     Result,
     boot_files::{self, FilePin},
@@ -397,18 +400,21 @@ pub fn install(
             "usr/lib/systemd/system/systemd-udevd.service.d/50-droidloom-hardware-label.conf",
             include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-udev-hardware-label.conf").as_slice(),
         ),
-    ] {
+    ]
+    .into_iter()
+    .chain(cold_modules::FILES.iter().copied())
+    {
         let entry = manifest
             .files
             .iter()
             .find(|f| f.path == relative)
-            .ok_or("normal host archive lacks required native SELinux configuration")?;
+            .ok_or("normal host archive lacks required source-owned configuration or module")?;
         ensure(
             entry.mode == 0o444
                 && entry.size == expected.len() as u64
                 && entry.sha256 == fs::digest(expected)
                 && std::fs::read(root.join(relative))? == expected,
-            "native SELinux configuration differs from the normal publisher",
+            "source-owned native configuration or cold module differs from the normal publisher",
         )?;
     }
     let maintenance = manifest.files.iter().find(|entry| {

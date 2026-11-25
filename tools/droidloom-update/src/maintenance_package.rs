@@ -1,5 +1,7 @@
 //! Compile the fixed production maintenance entry from the same normal source.
 use crate::util::*;
+#[path = "../../../packaging/ubuntu/production/cold_modules.rs"]
+mod cold_modules;
 use std::{fs, path::Path, process::Command};
 
 const SOURCE: &[u8] = include_bytes!("../../../packaging/ubuntu/production/maintenance.c");
@@ -48,6 +50,11 @@ pub(super) fn stage(destination: &Path) -> Result<()> {
     let target = prefix.join("droidloom-maintenance.py");
     write(&target, SCRIPT)?;
     mode(&target, 0o444)?;
+    for (relative, bytes) in cold_modules::FILES {
+        let target = destination.join(relative);
+        write(&target, bytes)?;
+        mode(&target, 0o444)?;
+    }
     Ok(())
 }
 
@@ -58,6 +65,15 @@ mod tests {
     fn normal_maintenance_entry_rejects_free_programs_before_authority() {
         let directory = tempfile::tempdir().unwrap();
         stage(directory.path()).unwrap();
+        for (relative, expected) in cold_modules::FILES {
+            let path = directory.path().join(relative);
+            assert_eq!(fs::read(&path).unwrap(), *expected);
+            use std::os::unix::fs::MetadataExt;
+            let metadata = fs::symlink_metadata(&path).unwrap();
+            assert!(metadata.is_file());
+            assert_eq!(metadata.nlink(), 1);
+            assert_eq!(metadata.mode() & 0o7777, 0o444);
+        }
         let binary = directory.path().join(
             "usr/lib/droidloom/production/current/droidloom-maintenance"
         );

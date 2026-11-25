@@ -77,12 +77,27 @@ and original Android data. A fresh qualification root is not a deployment root.
 
 The normal droidloom-update host-stage producer compiles maintenance.c and embeds
 the exact SHA256/length of this script and the admitted original Ubuntu Python
-3.14 interpreter. It adds exactly:
+3.14 interpreter. The fixed production entry remains:
 
 | Normal payload | Mode |
 | --- | --- |
 | usr/lib/droidloom/production/current/droidloom-maintenance | 0755 |
 | usr/lib/droidloom/production/current/droidloom-maintenance.py | 0444 |
+
+The same normal host manifest also contains eight independent, readonly modules
+under /usr/lib/droidloom/production/current/: release.py, cold_publish.py,
+cold_transaction.py, cold_apply.py, native_bundle.py, systemd_bundle.py,
+native_release.py, and cold_native.py. All have root owner/group, mode 0444,
+and one link after normal import. cold_modules.rs is the shared source list
+used by the normal publisher, exact fixture source-byte admission, and final
+ext4 readback. The normal host Debian archive carries these members unchanged;
+no workspace module is copied into an installed system by a separate path.
+
+These modules add no production helper action, executable transition, capability,
+or live package writer. The authenticated production C entry still runs only
+the exact droidloom-maintenance.py script and the five commands above. The cold
+modules are used in the original Ubuntu maintenance boot, where the cold
+authority and actual acceptance records must be verified before any deployment.
 
 The C entry opens the original interpreter and script through root-owned,
 non-writable, non-symlink directory components, verifies complete SHA256 and
