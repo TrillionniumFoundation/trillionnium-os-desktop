@@ -139,11 +139,19 @@ def original_cold_authority():
 
 def actual_acceptance_binding(release_id):
     digest(release_id)
-    # Parent integration must call the actual owned VM and original-device
-    # private-working-copy validators and bind their original file/process
-    # identities to this release. Public fresh-data or caller pass flags never
-    # establish this authority. There is deliberately no accepted placeholder.
-    raise Rejected("physical apply requires the not-yet-integrated actual owned-runtime/private-working-copy verifier")
+    from cold_transaction import owned_runtime_observations
+    materials=candidate_material_binding(release_id)
+    path=STORE/"observations"/materials["deployment_id"]/"RUNTIME-INPUTS.json"
+    try:pin=file_pin(path)
+    except FileNotFoundError:
+        raise Rejected("missing protected original owned-runtime inputs for this deployment") from None
+    observed=owned_runtime_observations(materials,pin)
+    # The existing producers deliberately do not assert business, application
+    # input, latest delivery or original-account continuity. Their false fields
+    # are never converted into permission to install or activate a release.
+    need(not observed["activation_blockers"],"unclosed actual acceptance: "+
+         ", ".join(observed["activation_blockers"]))
+    raise Rejected("no source-owned original-device account/boot-return validator has admitted this deployment")
 
 def load_inputs(bundle,release_id):
     verify(bundle,release_id)
@@ -344,6 +352,201 @@ def candidate_material_binding(release_id,*,state=STORE):
             "android_cohort":COHORT,"android_runtime":RUNTIME,"board_manifest":BOARD,
             "root_uuid":ROOT_UUID,"native_before_public":True,
             "runtime_qualified":False,"private_accounts_qualified":False,"physical_activation":False}
+
+
+SELECTED_PACKAGE_NAMES=('com.Hyatt.hyt', 'com.MobileTicket', 'com.amazon.mShop.android.shopping', 'com.android.calendar', 'com.android.camera2', 'com.android.contacts', 'com.android.deskclock', 'com.android.dialer', 'com.android.documentsui', 'com.android.gallery3d', 'com.android.messaging', 'com.android.quicksearchbox', 'com.android.settings', 'com.bestbuy.android', 'com.ehi.national.mobile', 'com.google.android.gms', 'com.hertz.android.digital', 'com.hilton.android.hhonors', 'com.ihg.apps.android', 'com.jingdong.app.mall', 'com.lianjia.beike', 'com.marriott.mrt', 'com.rytong.airchina', 'com.rytong.ceair', 'com.sankuai.meituan.takeoutnew', 'com.sdu.didi.psnger', 'com.ss.android.ugc.aweme', 'com.szzc', 'com.taobao.taobao', 'com.tencent.mm', 'com.united.mobile.android', 'com.xunmeng.pinduoduo', 'com.zhubajie.client', 'com.zillow.android.streeteasy', 'ctrip.android.view', 'jp.co.ana.android.tabidachi', 'org.fcitx.fcitx5.android', 'org.mozilla.firefox', 'tv.danmaku.bili')
+
+def selected39_observations(materials,config_pin,result_pin,boot_id):
+    """Recheck the original controller exports; Launch is not a frame or account."""
+    from collections import Counter
+    from cold_transaction import (proof_json,proof_file,proof_path,same_bytes,real_epoch,
+                                  actual_launch,public_source,SELECTED_BASE)
+    config,_=proof_json(config_pin,256*1024)
+    result,_=proof_json(result_pin,4*1024*1024)
+    out=proof_path(result_pin["path"]).parent
+    need(Path(config_pin["path"])==out/"CONFIG.json" and Path(result_pin["path"]).name=="RESULT.json",
+         "original selected39 controller directory")
+    need(config.get("schema")=="p4-selected39-controller-config-v1" and
+         result.get("schema")=="p4-selected39-controller-result-v1" and
+         config.get("source_commit")==result.get("source_commit")==materials["source_commit"] and
+         same_bytes(config.get("normal_host_manifest"),materials["host_manifest"]),
+         "selected39 and normal host use one source and manifest")
+    need(type(config.get("budget_seconds")) is int and 0<config["budget_seconds"]<=2700 and
+         isinstance(config.get("machine_id"),str) and re.fullmatch(r"[0-9a-f]{32}",config["machine_id"]) is not None and config["machine_id"]!="0"*32,
+         "bounded original backend and actual guest machine identity")
+    need(result.get("stage_complete") is True and result.get("applications_executed") is True and
+         type(result.get("guest_exit")) is int and result["guest_exit"]==0 and result.get("guest_boot_id")==boot_id and
+         result.get("original_userdata_transferred") is False and
+         result.get("automatic_install_retry") is False and result.get("production_ready") is False,
+         "real completed bounded selected39 attempt")
+    plan,_=public_source(config["execution_plan"],"execution")
+    public_source(config["guest_runner"],"guest_runner")
+    public_source(config["guest_transfer"],"guest_transfer")
+    need(plan.get("schema")=="p4-selected39-execution-v3" and
+         plan.get("scope")=="fresh_isolated_vm_only" and plan.get("guest_stage")==SELECTED_BASE and
+         plan.get("file_count")==65 and len(plan.get("rows",[]))==39,"original selected39 plan")
+    rows={}
+    for row in plan["rows"]:
+        package=row["package"]
+        need(isinstance(package,str) and re.fullmatch(r"[A-Za-z0-9_]+(?:\.[A-Za-z0-9_]+)+",package)
+             and package not in rows and row["role"] in ("system","third_party") and
+             type(row["version_code"]) is int and row["version_code"]>=0,"unique planned package/version")
+        need(isinstance(row["files"],list) and 0<len(row["files"])<=32 and
+             row["signers_sha256"] and len(set(row["signers_sha256"]))==len(row["signers_sha256"]),
+             "planned APK and signing identity")
+        for sha in row["signers_sha256"]:digest(sha)
+        for item in row["files"]:
+            need(type(item["bytes"]) is int and 4<=item["bytes"]<=2**31 and
+                 item["name"]==digest(item["sha256"])+".apk","canonical original APK material")
+        need(isinstance(row["components"],list) and row["components"] and
+             all(isinstance(x,str) and x.startswith(package+"/") for x in row["components"]),
+             "source-declared launch components")
+        rows[package]=row
+    need(tuple(sorted(rows))==SELECTED_PACKAGE_NAMES and
+         Counter(row["role"] for row in rows.values())=={"system":10,"third_party":29} and
+         sum(len(row["files"]) for row in rows.values())==65,"exact selected39 role/APK closure")
+    imported,_=proof_json(config["import_receipt"],2*1024*1024)
+    imported_rows={row["package"]:row for row in imported["packages"]}
+    need(imported.get("schema")=="p4-selected39-public-apk-import-v1" and
+         imported.get("file_count")==65 and imported.get("package_count")==39 and
+         len(imported["packages"])==39 and set(imported_rows)==set(rows),"same protected public import")
+    planned=[(x["bytes"],x["sha256"]) for r in rows.values() for x in r["files"]]
+    need(Counter(planned)==Counter((x["bytes"],x["sha256"]) for x in imported["files"]),
+         "selected39 plan matches all actual imported APK bytes")
+    for package,row in rows.items():
+        original=imported_rows[package]
+        need(row["version_code"]==original["version_code"] and row["version_name"]==original["version_name"]
+             and row["signers_sha256"]==original["signer_certificates_sha256"],
+             "normal import's original package/version/signer identity")
+    exports=result.get("exports");need(isinstance(exports,list) and 1<=len(exports)<=1000,"bounded actual guest export")
+    blobs={};total=0
+    for pin in exports:
+        path=proof_path(pin["path"]);name=path.name
+        need(path.parent==out/"guest-evidence" and name not in blobs and
+             re.fullmatch(r"selected39-r3-[A-Za-z0-9_.-]+",name),"flat unique original evidence export")
+        total+=pin["bytes"];need(total<=256*1024*1024,"total actual guest export bound")
+        raw,_=proof_file(pin,8*1024*1024,contents=True);blobs[name]=(pin,raw)
+    def guest_pin(pin,json_value=True):
+        exact(pin,("path","bytes","sha256"),"original guest evidence pin")
+        path=Path(pin["path"]);need(str(path.parent)==SELECTED_BASE and path.name in blobs,
+                                  "fixed original guest evidence path")
+        local,raw=blobs[path.name];need(same_bytes(pin,local),"same exported original guest bytes")
+        return json_bytes(raw) if json_value else raw
+    summary_name="selected39-r3-RESULT.json"
+    need(summary_name in blobs,"actual guest result export")
+    summary=json_bytes(blobs[summary_name][1])
+    need(summary.get("schema")=="p4-selected39-backend-result-v3" and
+         summary.get("guest_boot_id")==boot_id and summary.get("guest_clock")=="CLOCK_MONOTONIC" and
+         summary.get("aborted") is None and summary.get("original_userdata_transferred") is False and
+         summary.get("automatic_install_retry") is False,"same completed guest backend")
+    # These are explicit limitations of this producer, not flags to promote.
+    need(summary.get("all_business_qualified") is False and
+         summary.get("all_latest_device_delivery_qualified") is False and
+         summary.get("production_ready") is False,"backend result cannot assert business/latest qualification")
+    epoch=real_epoch(summary["original_epoch"],boot_id)
+    start=json_bytes(blobs["selected39-r3-run-start.json"][1])
+    need(start.get("schema")=="p4-selected39-run-start-v1" and
+         start.get("guest_boot_id")==boot_id and start.get("machine_id")==config["machine_id"] and
+         start.get("plan_sha256")==config["execution_plan"]["sha256"] and
+         start.get("automatic_retry") is False and start.get("original_userdata") is False,
+         "guest backend original start and exact plan")
+    commands=summary["commands"];need(isinstance(commands,list) and 1<=len(commands)<=512,"bounded original command list")
+    records={};last_ns=0;failed=[]
+    for number,command in enumerate(commands,1):
+        exact(command,("argv","returncode","guest_clock","guest_monotonic_ns_start",
+              "guest_monotonic_ns_end","stdout","stderr","problem"),"actual normal CLI command")
+        prefix="selected39-r3-%04d"%number
+        need(json_bytes(blobs[prefix+"-command.json"][1])==command,"original command record bytes")
+        a,b=command["guest_monotonic_ns_start"],command["guest_monotonic_ns_end"]
+        need(type(a) is type(b) is int and 0<a<=b and a>=last_ns and
+             command["guest_clock"]=="CLOCK_MONOTONIC","ordered actual guest command clock")
+        last_ns=b
+        need(command["stdout"]["path"]==SELECTED_BASE+"/"+prefix+"-stdout.json" and
+             command["stderr"]["path"]==SELECTED_BASE+"/"+prefix+"-stderr.txt","original sequence stream names")
+        guest_pin(command["stdout"],False);guest_pin(command["stderr"],False)
+        argv=command["argv"]
+        need(isinstance(argv,list) and 1<=len(argv)<=40 and
+             all(isinstance(x,str) and 0<len(x)<=4096 for x in argv) and
+             argv[0] in ("/usr/bin/droidloomctl","/usr/bin/droidloom-applications"),
+             "only original normal application CLI commands")
+        need(type(command["returncode"]) is int and command["problem"] is None,
+             "no abandoned or unretired normal CLI operation")
+        if command["returncode"]!=0:failed.append(number)
+        key=command["stdout"]["sha256"];records.setdefault(key,[]).append(command)
+    def response(pin,argv):
+        matches=[c for c in records.get(pin["sha256"],[]) if c["argv"]==argv and c["stdout"]==pin]
+        need(len(matches)==1 and matches[0]["returncode"]==0,"one actual successful normal CLI response")
+        value=guest_pin(pin)
+        need(isinstance(value,dict) and value.get("ok") is True and value.get("state")=="running",
+             "actual Running response, not command acknowledgement")
+        return value,matches[0]
+    def inspect(value,row):
+        item=value.get("inspection")
+        need(isinstance(item,dict) and item.get("package")==row["package"] and type(item.get("user")) is int and item["user"]==0 and
+             type(item.get("uid")) is int and item["uid"]>=0 and
+             type(item.get("version_code")) is int and item["version_code"]==row["version_code"],"actual installed package/user/version")
+        need(real_epoch(item["epoch"],boot_id)==epoch and value.get("host_pid")==epoch["cell_host_pid"],
+             "unchanged original framework/cell epoch")
+        apks=item.get("apks");need(isinstance(apks,list) and len(apks)==len(row["files"]),"complete installed original APK set")
+        need(Counter((x["bytes"],x["sha256"]) for x in apks)==
+             Counter((x["bytes"],x["sha256"]) for x in row["files"]),"actual installed APK bytes")
+        return item
+    catalog,_=response(summary["catalog_response"],["/usr/bin/droidloomctl","--json","applications","--user","0"])
+    applications=catalog.get("applications");need(isinstance(applications,list) and len(applications)<=10000,"bounded actual catalog")
+    available={(x["package"],x["component"]) for x in applications}
+    need(len(available)==len(applications),"unique catalog entries")
+    results=summary["packages"];need(isinstance(results,dict) and set(results)==set(rows),"all actual selected package records")
+    events=result["launch_events"];need(isinstance(events,list) and len(events)==39,"all original launch observations")
+    event_rows={}
+    for event_number,item in enumerate(events,1):
+        exact(item,("event","response","package","binding","epoch"),"root preserved launch event")
+        need(Path(item["event"]["path"])==out/("launch-%03d-event.json"%event_number) and
+             Path(item["response"]["path"])==out/("launch-%03d-response.json"%event_number),
+             "original controller launch sequence files")
+        # Controller preserves the original event and response as separate pins.
+        event_pin=item["event"];raw,_=proof_file(event_pin,128*1024,contents=True)
+        event=json_bytes(raw);package=event["package"]
+        need(package in rows and package not in event_rows and item["package"]==package and
+             item["binding"]==event["binding"] and item["epoch"]==event["epoch"],"unique observed launch event")
+        event_rows[package]=(event,item)
+    bound={}
+    for package,row in rows.items():
+        record=results[package]
+        need(record["errors"]==[] and record["installed_bytes_and_metadata_verified"] is True and
+             record["catalog_enabled"] is True and record["launch_binding_verified"] is True and
+             record["business_accepted"] is False and record["latest_device_delivery_verified"] is False,
+             "complete backend evidence with explicit business/latest limitations")
+        value,_=response(record["inspection"],["/usr/bin/droidloomctl","--json","inspect",package,"--user","0"])
+        installed=inspect(value,row)
+        need(type(record["observed_uid"]) is int and record["observed_uid"]==installed["uid"] and
+             real_epoch(record["epoch"],boot_id)==epoch,"original package owner/epoch")
+        component=record["component"]
+        need(component in row["components"] and (package,component) in available,"source-declared enabled component")
+        value,command=response(record["launch_response"],["/usr/bin/droidloomctl","--json","launch",
+                                package,"--component",component,"--user","0"])
+        launch_inspection=inspect(value,row)
+        need(launch_inspection["uid"]==installed["uid"],"original app UID across Launch")
+        binding=actual_launch(value.get("launch"));need(binding==record["binding"],"actual owned task binding")
+        event,entry=event_rows[package]
+        need(event.get("schema")=="p4-selected39-launch-event-v1" and event.get("guest_boot_id")==boot_id and
+             event.get("guest_clock")=="CLOCK_MONOTONIC" and event.get("epoch")==epoch and
+             event.get("component")==component and event.get("binding")==binding and
+             event.get("guest_monotonic_ns_start")==command["guest_monotonic_ns_start"] and
+             event.get("guest_monotonic_ns_end")==command["guest_monotonic_ns_end"] and
+             event.get("response")==record["launch_response"],"original event/response/clock/epoch binding")
+        raw,_=proof_file(entry["response"],8*1024*1024,contents=True)
+        need(raw==guest_pin(record["launch_response"],False),"controller preserved original Launch stdout")
+        bound[package]={"version_code":row["version_code"],"uid":installed["uid"],"component":component,
+                        "binding":binding,"inspection":record["inspection"],"launch_response":record["launch_response"]}
+    need(summary["all_installed_bytes_and_metadata_verified"] is True and
+         summary["all_catalog_launch_bindings_verified"] is True,"derived complete backend result")
+    return {"controller_result":result_pin,"controller_config":config_pin,
+            "execution_plan":config["execution_plan"],"guest_result":blobs[summary_name][0],
+            "guest_boot_id":boot_id,"machine_id":config["machine_id"],"epoch":epoch,
+            "packages":bound,"package_count":39,"apk_count":65,"commands":len(commands),
+            "command_failures":failed,"original_backend_bound":True,
+            "business_qualified":False,"latest_delivery_qualified":False,"private_accounts_qualified":False}
+
 
 def require_same_candidate(materials,authority):
     need(isinstance(authority,dict) and all(authority.get(key)==materials[key]
@@ -762,11 +965,19 @@ def rollback(release_id):
 
 def main():
     p=argparse.ArgumentParser(description=__doc__);sub=p.add_subparsers(dest="command",required=True)
-    for name in ("inspect-materials","apply-public","rollback-public"):
+    for name in ("inspect-materials","inspect-runtime","apply-public","rollback-public"):
         q=sub.add_parser(name);q.add_argument("--release",required=True)
+        if name=="inspect-runtime":
+            q.add_argument("--inputs",type=Path,required=True)
+            q.add_argument("--inputs-sha256",required=True)
     a=p.parse_args()
-    result=(candidate_material_binding(a.release) if a.command=="inspect-materials" else
-            apply(a.release) if a.command=="apply-public" else rollback(a.release))
+    if a.command=="inspect-runtime":
+        from cold_transaction import owned_runtime_observations
+        pin=file_pin(a.inputs);need(pin["sha256"]==digest(a.inputs_sha256),"fixed runtime inputs digest")
+        result=owned_runtime_observations(candidate_material_binding(a.release),pin)
+    else:
+        result=(candidate_material_binding(a.release) if a.command=="inspect-materials" else
+                apply(a.release) if a.command=="apply-public" else rollback(a.release))
     sys.stdout.buffer.write(canonical(result));sys.stdout.buffer.flush()
 
 if __name__=="__main__":

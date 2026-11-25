@@ -347,3 +347,63 @@ Both physical installation dispatchers require the actual acceptance validator
 to return the identical public release, derived deployment and native release
 IDs. That validator still rejects absent original-device account acceptance.
 The material inspection command is not an activation or acceptance command.
+
+### Original owned-runtime observations
+
+The read-only `cold_apply inspect-runtime --release RELEASE_ID --inputs INPUTS
+--inputs-sha256 SHA256` command binds the same protected public/native
+candidate to original normal producer outputs. It does not install packages,
+start a VM, execute guest commands, or grant activation.
+
+The small input document has schema
+`droidloom-cold-owned-runtime-inputs-v1` and exactly these fields:
+
+- `public_release_id`, `deployment_id`, `native_release_id`;
+- `normal_build`, `fixture`, `ended`, `collected`,
+  `backend_config`, `backend_result`, each an original
+  `{path, bytes, sha256}` file pin.
+
+The producer outputs, input document and exported observations must remain
+root-owned, without group/other write access, under the protected qualification
+or maintenance tree. The consumer retains real descriptors and checks content
+hashes, named-inode identity and F9 before/after each read. Runtime images use
+their explicit 128 GiB bound and streamed hashing; empty original output files
+are valid evidence. Ordinary package pins retain their separate existing limits.
+
+The normal build must bind the same host commit/tree and manifest, complete all
+three normal build stages and contain a fixture executable with no foreign
+project source paths. The normal prepared image must bind that host, the actual
+Android base/runtime/device manifests, the shared kernel, and the complete
+normally installed native package source. Calibration and single-ELF native
+overlays are rejected. The original source image must remain byte-identical,
+and the ended working disk must be its independently held clone.
+
+RUNNING, paused QEMU admission, RUN-ENDED and COLLECTED must describe one
+original run. The original private QEMU bytes/inode, real unprivileged
+credentials, empty effective/permitted/inheritable/ambient capabilities,
+no-new-privileges and complete sandbox are checked against the recorded
+admission. The collector's original journal files and actual journal-tool
+stdout/stderr are re-read; failed PID1 jobs, MAC denials and high-priority
+messages are derived from the complete original rows, not a selected summary.
+The actual loopback SSH mapping and its fresh known-host pin bind the backend
+to that same guest. Successful QEMU exit alone is insufficient.
+
+The selected39 consumer verifies the original protected import and plan,
+all 65 APK byte/signing/version identities, original command stdout/stderr,
+catalog selections, installed APK inspections, and each four-field Launch
+binding with the unchanged guest epoch and monotonic times. It matches each
+response by its full original pin, because repeated inspections can legitimately
+have identical bytes. The normal controller's public runner/transfer sources
+are only read as data using their reviewed whole hashes and F9. Their public
+build-user ownership is preserved; they are not mistaken for root-owned
+runtime result files. No source script is executed by this consumer.
+
+This command reports observations and explicit remaining blockers. The present
+backend itself marks business/latest delivery false and does not prove a
+presented frame, focus, input consumption, network/media behavior or private
+account continuity. The original-device working-copy receipt proves copying
+only. Missing actual live-MAC/maintenance-return, visual/input, business/latest,
+private-account and original-Ubuntu return evidence therefore still prevents
+activation. The physical dispatchers look only at the fixed
+`observations/DEPLOYMENT_ID/RUNTIME-INPUTS.json` beneath the maintenance store;
+they accept neither an alternate caller-selected store nor a success boolean.

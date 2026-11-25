@@ -367,6 +367,331 @@ def verify(bundle,release_id):
         result["native_release_id"]=native["index"]["native_release_id"]
     return result
 
+
+# Evidence consumers read the original protected producer outputs. No field in
+# these observations can grant physical or private-account qualification.
+QUALIFICATION_ROOT=Path("/var/lib/droidloom-qualification")
+RUNTIME_INPUT_SCHEMA="droidloom-cold-owned-runtime-inputs-v1"
+SELECTED_BASE="/var/lib/droidloom-public-apks/u1000"
+
+def proof_path(path):
+    path=safe_absolute(str(path))
+    need(path.is_relative_to(QUALIFICATION_ROOT) or path.is_relative_to(STORE),
+         "runtime evidence must remain in the protected qualification or maintenance tree")
+    return path
+
+def evidence_pin(pin,maximum):
+    exact(pin,("path","bytes","sha256"),"runtime evidence pin")
+    safe_absolute(pin["path"]);digest(pin["sha256"])
+    need(type(maximum) is int and 0<maximum<=128*1024**3 and
+         type(pin["bytes"]) is int and 0<=pin["bytes"]<=maximum,"bounded runtime evidence file")
+    return pin
+
+def evidence_file(pin,maximum,*,contents=False,protected=True):
+    pin=evidence_pin(pin,maximum)
+    path=proof_path(pin["path"]) if protected else safe_absolute(pin["path"])
+    with held(path,root=protected,maximum=maximum) as (fd,before):
+        need(before.st_size==pin["bytes"] and not (stat.S_IMODE(before.st_mode)&0o022),
+             "runtime evidence metadata")
+        checksum=hashlib.sha256();pieces=[];size=0;deadline=time.monotonic()+900
+        while size<before.st_size:
+            need(time.monotonic()<deadline,"bounded original runtime evidence read")
+            part=os.read(fd,min(1024*1024,before.st_size-size))
+            need(part,"truncated runtime evidence")
+            size+=len(part);checksum.update(part)
+            if contents:pieces.append(part)
+        need(not os.read(fd,1),"trailing runtime evidence bytes")
+        need(checksum.hexdigest()==pin["sha256"],"original runtime evidence bytes")
+        body=b"".join(pieces) if contents else None
+        need(f9(os.fstat(fd))==f9(before)==f9(os.stat(path,follow_symlinks=False)),
+             "runtime evidence changed during read")
+        identity={"dev":before.st_dev,"ino":before.st_ino,"mode":before.st_mode,
+                  "uid":before.st_uid,"gid":before.st_gid,"nlink":before.st_nlink,"size":before.st_size,
+                  "mtime_sec":before.st_mtime_ns//1000000000,"mtime_nsec":before.st_mtime_ns%1000000000,
+                  "ctime_sec":before.st_ctime_ns//1000000000,"ctime_nsec":before.st_ctime_ns%1000000000}
+    return body,identity
+
+def proof_file(pin,maximum,*,contents=False):
+    return evidence_file(pin,maximum,contents=contents,protected=True)
+
+def proof_json(pin,maximum):
+    body,identity=proof_file(pin,maximum,contents=True)
+    return json_bytes(body),identity
+
+def public_source(pin,role):
+    # The original controller pins public source bytes and F9, without requiring
+    # the build user's source checkout to be owned by root. Results remain root
+    # protected. These sources are read as data; no code here executes them.
+    names={"execution":("EXECUTION.json","EXECUTION-CANDIDATE.json"),
+           "guest_runner":("guest_runner.py",),"guest_transfer":("guest_transfer.py",)}
+    need(role in names,"fixed selected39 source role")
+    path=safe_absolute(pin["path"])
+    need(path.name in names[role] and any(path.is_relative_to(p) for p in
+         (QUALIFICATION_ROOT,STORE,Path("/home/alex/work"),Path("/home/qq/work"))),
+         "fixed public selected39 source location")
+    expected={"guest_runner":(26373,"6e9bb3a0c5e3e13af8f66a5dda10c29e3666e30fb63c6b59b9012e7a42f110ce"),
+              "guest_transfer":(7797,"be652417b6d12755a4459c5de89767d589c2d40b5b1aec564632683e3d32401a")}
+    if role in expected:
+        need((pin["bytes"],pin["sha256"])==expected[role],"reviewed original selected39 source bytes")
+    raw,identity=evidence_file(pin,256*1024,contents=True,protected=False)
+    return (json_bytes(raw) if role=="execution" else None),identity
+
+def same_bytes(a,b):
+    return isinstance(a,dict) and isinstance(b,dict) and type(a.get("bytes")) is int and type(b.get("bytes")) is int and (
+        a.get("bytes"),a.get("sha256"))==(b.get("bytes"),b.get("sha256"))
+
+def recorded_source(value,maximum):
+    exact(value,("pin","body"),"recorded complete native source")
+    pin=value["pin"];exact(pin,("path","bytes","sha256","device","inode","mode","uid","gid"),"original source evidence pin")
+    need(isinstance(value["body"],str),"original recorded source body")
+    raw=value["body"].encode("utf-8")
+    need(0<len(raw)<=maximum and len(raw)==pin["bytes"] and
+         hashlib.sha256(raw).hexdigest()==digest(pin["sha256"]) and
+         all(type(pin[k]) is int for k in ("bytes","device","inode","mode","uid","gid")) and
+         pin["device"]>0 and pin["inode"]>0 and pin["uid"]==pin["gid"]==0 and pin["mode"]==0o400,
+         "complete native source original bytes and protected origin")
+    return json_bytes(raw)
+
+def real_epoch(value,boot_id):
+    exact(value,("boot_id","cell_host_pid","framework_host_pid","framework_start_ticks"),"actual runtime epoch")
+    need(isinstance(boot_id,str) and re.fullmatch(r"[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}",boot_id) is not None
+         and value["boot_id"]==boot_id and
+         all(type(value[k]) is int and 0<value[k]<=2**31-1 for k in ("cell_host_pid","framework_host_pid")) and
+         type(value["framework_start_ticks"]) is int and 0<value["framework_start_ticks"]<2**64,
+         "original live runtime epoch")
+    return value
+
+def actual_launch(value):
+    need(isinstance(value,str) and 0<len(value)<=256,"original Launch text")
+    parts=value.split();need(len(parts)==4,"exact Launch fields")
+    result={}
+    for part in parts:
+        need(part.count("=")==1,"Launch field syntax")
+        key,number=part.split("=")
+        need(key not in result and re.fullmatch(r"[0-9]+",number) is not None,"unique numeric Launch field")
+        result[key]=int(number)
+    exact(result,("object","composer_display","android_display","task"),"original owned task")
+    need(0<result["object"]<2**64 and 0<result["composer_display"]<2**64 and
+         result["android_display"]==0 and 0<result["task"]<=2**31-1,"original task/display bounds")
+    return result
+
+
+
+def owned_runtime_observations(materials,inputs_pin):
+    """Bind real owned-run and selected39 outputs without granting acceptance."""
+    from cold_apply import selected39_observations
+    inputs,_=proof_json(inputs_pin,128*1024)
+    exact(inputs,("schema","public_release_id","deployment_id","native_release_id","normal_build",
+                  "fixture","ended","collected","backend_config","backend_result"),"owned runtime inputs")
+    need(inputs["schema"]==RUNTIME_INPUT_SCHEMA and all(inputs[k]==materials[k]
+         for k in ("public_release_id","deployment_id","native_release_id")),
+         "owned observations use this actual public/native candidate")
+    build,_=proof_json(inputs["normal_build"],4*1024*1024)
+    need(build.get("schema") in ("p4-r126-normal-host-source-bound-release-v9",
+         "p4-r126-normal-host-source-bound-release-v10",
+         "p4-r126-normal-host-source-bound-release-v11") and
+         build.get("success") is True and build.get("source_clean") is True and
+         build.get("source_clean_after") is True and
+         build.get("source_commit")==materials["source_commit"] and
+         build.get("source_tree")==materials["source_tree"] and
+         build.get("runtime_qualified") is False and build.get("production_activated") is False,
+         "same completed normal host and fixture source")
+    steps=build["steps"]
+    need(len(steps)==3 and {x["name"] for x in steps}=={"bootstrap","host-stage","fixture"} and
+         all(type(x["exit_code"]) is int and x["exit_code"]==0 for x in steps),
+         "all normal build stages actually completed")
+    fixture=build["fixture_binary"]
+    need(fixture["foreign_project_paths"]==[] and same_bytes(fixture,inputs["fixture"]),
+         "source-bound normal fixture executable")
+    proof_file(inputs["fixture"],32*1024*1024)
+    release=build["release"]
+    need(release["commit"]==materials["source_commit"] and release["tree"]==materials["source_tree"] and
+         (release["manifest"]["size"],release["manifest"]["sha256"])==
+         (materials["host_manifest"]["bytes"],materials["host_manifest"]["sha256"]),
+         "normal source/build manifest is the cold package manifest")
+    ended,ended_id=proof_json(inputs["ended"],256*1024)
+    collected,collected_id=proof_json(inputs["collected"],16*1024*1024)
+    need(ended.get("schema")=="droidloom.full-ubuntu-run-ended.v1" and
+         collected.get("schema")=="droidloom.full-ubuntu-boot-collected.v1",
+         "actual owned runtime/collection producer schemas")
+    run=proof_path(ended["run_directory"])
+    need(Path(inputs["ended"]["path"])==run/"RUN-ENDED.json" and
+         run.parent.name=="boot" and run.parent.parent.parent==QUALIFICATION_ROOT,
+         "original fixed qualification run directory")
+    prepared_pin=ended["prepared"]
+    need(Path(prepared_pin["path"])==run.parent/"BOOT-PREPARED.json" and
+         collected["ended"]==inputs["ended"] and collected["prepared"]==prepared_pin,
+         "one prepared/run-ended/collected chain")
+    prepared,_=proof_json(prepared_pin,2*1024*1024)
+    need(prepared.get("schema")=="droidloom.full-ubuntu-boot-prepared.v1" and
+         prepared.get("work_directory")==str(run.parent.parent) and
+         prepared.get("boot_directory")==str(run.parent) and
+         prepared.get("calibration_requested") is False and
+         prepared.get("target_kernel_release")==materials["kernel_release"],
+         "full normal boot, not calibration or a different shared kernel")
+    for record in (prepared,ended,collected):
+        need(record.get("guest_qualified") is False and record.get("production_ready") is False,
+             "original observational receipt cannot assert qualification")
+    need(type(ended.get("exit_code")) is int and ended["exit_code"]==0 and ended.get("signal") is None and ended.get("forced_stop") is False
+         and ended.get("source_image_preserved") is True,
+         "original QEMU retired normally without a forced stop")
+    need(collected.get("status")=="collected" and collected.get("errors")==[] and
+         collected.get("source_image_preserved") is True,"actual complete collection")
+    collection=proof_path(collected["collection_directory"])
+    need(Path(inputs["collected"]["path"])==collection/"COLLECTED.json" and
+         collection.parent==run,"original ended-run collection directory")
+    host=prepared["host_release"]
+    need(host["source_commit"]==materials["source_commit"] and host["source_tree"]==materials["source_tree"] and
+         same_bytes(host["normal_host_manifest"],materials["host_manifest"]) and
+         (host["normal_host_archive"]["bytes"],host["normal_host_archive"]["sha256"])==
+         (release["archive"]["size"],release["archive"]["sha256"]) and
+         host.get("full_file_readback") is True,"normal host package bytes were prepared")
+    android=prepared["android_release"]
+    need(android["cohort"]["sha256"]==materials["android_cohort"] and
+         android["runtime"]["sha256"]==materials["android_runtime"] and
+         android["device_manifest"]["sha256"]==materials["board_manifest"] and
+         android["selected"]["base_cohort_sha256"]==materials["android_cohort"] and
+         android["selected"]["runtime_manifest_sha256"]==materials["android_runtime"] and
+         android.get("calibration_requested") is False and android.get("working_data_supplied") is False,
+         "same actual normal fresh Android/runtime/board cohort")
+    need(prepared.get("native_source_kind")=="complete-installed","complete normally installed native root required")
+    native=prepared["complete_native_source"]
+    need(native.get("complete_package_database") is True and
+         native.get("normal_package_transaction_verified") is True and
+         native.get("whole_payload_verified") is True and native.get("single_elf_overlays_applied") is False,
+         "complete native preparation, not individual ELF overlays")
+    source=recorded_source(native["source"],128*1024)
+    need(source.get("schema")=="droidloom.complete-ubuntu-native-source.v1" and
+         source.get("stage")=="installed" and source.get("fresh_generated_root") is True and
+         source.get("private_accounts_copied") is False and source.get("configured") is True and
+         same_bytes(source.get("native_release"),materials["native_manifest"]),
+         "same fifteen-package normal installed source")
+    native_manifest,_=proof_json(native["fixture_manifest"],64*1024*1024)
+    need(native_manifest.get("source")==native["source"],"same actual captured complete native source")
+    # Reopen original files, not path strings or caller success booleans.
+    need(ended["preserved_source_image"]==prepared["root_image"]==collected["preserved_source_image"] and
+         Path(ended["working_disk"]["path"])==run/"working.ext4" and
+         Path(ended["serial"]["path"])==run/"serial.log","original disk/serial/source file roles")
+    _,source_id=proof_file(prepared["root_image"],128*1024**3)
+    _,working_id=proof_file(ended["working_disk"],128*1024**3)
+    proof_file(ended["serial"],256*1024*1024)
+    need(source_id==ended["source_identity"] and
+         (source_id["dev"],source_id["ino"])!=(working_id["dev"],working_id["ino"]) and
+         source_id["size"]==working_id["size"],"preserved source and independent actual working clone")
+    need(prepared["kernel"]["sha256"]==materials["kernel_sha256"],"same shared kernel executable")
+    proof_file(prepared["kernel"],64*1024*1024)
+    proof_file(prepared["initrd"],1024*1024*1024)
+    running,_=proof_json(file_pin(run/"RUNNING.json"),256*1024)
+    admitted,_=proof_json(file_pin(run/"QEMU-ADMITTED.json"),256*1024)
+    launch=running["fixed_descriptor_launcher"]
+    need(admitted.get("schema")=="droidloom.qemu-paused-launch-admitted.v1" and
+         admitted.get("guest_cpus_started") is False and admitted["launcher"]==launch and
+         launch.get("schema")=="droidloom.qemu-fixed-descriptor-launch.v1" and
+         running["program"]==ended["qemu"]==launch["qemu_source"] and
+         running["working_disk"]==str(run/"working.ext4") and running["private_qmp"]==str(run/"qmp.sock") and
+         running["preserved_source_image"]==prepared["root_image"] and
+         running["source_identity"]==ended["source_identity"],"one original owned QEMU launch")
+    need(launch["sandbox"]=="on,obsolete=deny,elevateprivileges=deny,spawn=deny,resourcecontrol=deny" and
+         launch["uid"]==launch["gid"]==65534 and launch["supplementary_groups"]==[] and
+         launch["no_new_privileges"] is True and launch["original_prepared_disk_inherited"] is False and
+         admitted["qmp"]["return"]["running"] is False and
+         admitted["qmp"]["return"]["status"] in ("paused","prelaunch"),"unchanged complete pre-vCPU sandbox")
+    need(same_bytes(launch["kernel_readonly"],prepared["kernel"]) and
+         same_bytes(launch["initrd_readonly"],prepared["initrd"]),"same actual held boot descriptors")
+    for private,original in (("private_qemu","qemu_source"),("private_privilege_tool","privilege_tool")):
+        need(same_bytes(launch[private],launch[original]),"original tool bytes in private executable")
+        _,identity=proof_file(launch[private],64*1024*1024)
+        need(identity["mode"]&0o7777==0o511,"original unreadable execution copy")
+        if private=="private_qemu":qemu_id=identity
+    need(qemu_id==launch["private_qemu_identity"],"original private QEMU inode unchanged")
+    process=admitted["actual_process"];status=process["process_status"]
+    need(type(running["pid"]) is int and running["pid"]>1 and status["Pid"]==str(running["pid"]) and
+         process["live_executable_device"]==qemu_id["dev"] and process["live_executable_inode"]==qemu_id["ino"] and
+         process["proc_status_owner_for_non_dumpable_exec"]==[0,0],"original live QEMU identity and dumpability")
+    need(all(status[k].split()==["65534"]*4 for k in ("Uid","Gid")) and status["Groups"]=="" and
+         all(int(status[k],16)==0 for k in ("CapEff","CapPrm","CapInh","CapAmb")) and
+         status["NoNewPrivs"]=="1" and status["Seccomp"]=="2","actual credentials/capabilities/NNP/seccomp admission")
+    detail=collected["details"]
+    need(detail.get("journal_integrity_verified") is True and detail.get("ordinary_guest_shutdown") is True and
+         detail.get("ended_working_disk_preserved") is True,"actual original journal collection integrity")
+    collection_input,_=proof_json(file_pin(collection/"COLLECT-INPUTS.json"),128*1024)
+    need(collection_input.get("schema")=="droidloom.full-ubuntu-boot-collect-plan.v1" and
+         collection_input.get("ended")==inputs["ended"] and
+         collection_input.get("collection_name")==collection.name and
+         collection_input.get("journalctl",{}).get("path")=="/usr/bin/journalctl",
+         "original fixed collection plan and journal tool")
+    journals=detail["journals"];need(isinstance(journals,list) and 1<=len(journals)<=128,"bounded original journal set")
+    rows=[];bytes_total=0
+    seen_journals=set()
+    for index,journal in enumerate(journals):
+        need(journal["journal"]["path"] not in seen_journals and
+             Path(journal["journal"]["path"]).parent==collection,"original unique journal export")
+        seen_journals.add(journal["journal"]["path"])
+        proof_file(journal["journal"],256*1024*1024)
+        for key,argument in (("integrity","--verify"),("json","--output=json")):
+            command=journal[key]
+            need(isinstance(command,dict) and command["tool"]==collection_input["journalctl"] and type(command["exit_code"]) is int and command["exit_code"]==0 and command["signal"] is None and
+                 command["timed_out"] is False and command["output_limited"] is False and
+                 command["child_reaped"] is True and command["tool_identity_preserved"] is True and
+                 command["executed_held_descriptor"] is True and
+                 argument in command["args"] and
+                 "--file="+journal["journal"]["path"] in command["args"],
+                 "actual held-descriptor journal tool completion")
+            for stream in ("stdout","stderr"):
+                need(Path(command[stream]["path"]).parent==collection,"original journal tool streams")
+                maximum=64*1024*1024 if key=="json" and stream=="stdout" else 8*1024*1024
+                raw,_=proof_file(command[stream],maximum,contents=True)
+                bytes_total+=len(raw);need(bytes_total<=512*1024*1024,"aggregate journal evidence bound")
+                if key=="json" and stream=="stdout":
+                    for line in raw.splitlines():
+                        if line:rows.append(json_bytes(line))
+                    need(len(rows)<=200000,"original producer journal row bound")
+    need(rows and len(rows)==detail["journal_entries"],"actual original journal rows")
+    boot_ids=sorted({x["_BOOT_ID"] for x in rows if isinstance(x.get("_BOOT_ID"),str)})
+    need(len(boot_ids)==1 and re.fullmatch(r"[0-9a-f]{32}",boot_ids[0]) and boot_ids==detail["boot_ids"],
+         "one actual journal boot identity")
+    boot_id="-".join((boot_ids[0][:8],boot_ids[0][8:12],boot_ids[0][12:16],boot_ids[0][16:20],boot_ids[0][20:]))
+    failures=[x for x in rows if x.get("_PID")=="1" and x.get("JOB_RESULT") in ("failed","dependency","timeout")]
+    denials=[x for x in rows if isinstance(x.get("MESSAGE"),str) and
+             ("avc:" in x["MESSAGE"] or 'apparmor="DENIED"' in x["MESSAGE"])]
+    errors=[x for x in rows if isinstance(x.get("PRIORITY"),str) and
+            re.fullmatch(r"\+?[0-9]+",x["PRIORITY"]) is not None and 0<=int(x["PRIORITY"])<=3]
+    need(failures==detail["systemd_failed_jobs"] and denials==detail["mac_denials"] and
+         errors==detail["priority_error_records"],"full original failed-job/MAC/error accounting")
+    backend=selected39_observations(materials,inputs["backend_config"],inputs["backend_result"],boot_id)
+    machine_ids={x["_MACHINE_ID"] for x in rows if isinstance(x.get("_MACHINE_ID"),str)}
+    need(machine_ids=={backend["machine_id"]},"backend and original journal belong to the same actual guest")
+    config,_=proof_json(inputs["backend_config"],256*1024)
+    need(config["known_hosts"]==running["known_hosts"] and
+         config["ssh_key"]==running["fresh_client_key"] and
+         type(config["ssh_port"]) is int and 50000<=config["ssh_port"]<=59999 and
+         any(x==f"user,model=virtio-net-pci,hostfwd=tcp:127.0.0.1:{config['ssh_port']}-:22"
+             for x in running["args"]),
+         "same original fresh-SSH guest instance")
+    proof_file(config["known_hosts"],64*1024)
+    blockers=[]
+    if materials["host_missing_required_maintenance"]:blockers.append("normal_host_missing_fixed_maintenance_payload")
+    if failures:blockers.append("actual_systemd_failed_jobs")
+    if denials:blockers.append("actual_mac_denials")
+    if errors:blockers.append("actual_high_priority_journal_errors")
+    if backend["command_failures"]:blockers.append("actual_backend_command_failures")
+    blockers.extend(("actual_live_enforcing_mac_and_maintenance_return",
+                     "actual_frame_and_application_input_acceptance",
+                     "actual_business_and_latest_delivery_acceptance",
+                     "original_device_private_account_continuity",
+                     "original_ubuntu_boot_publication_and_return"))
+    return {"schema":"droidloom-cold-owned-runtime-observation-v1",
+            **{k:materials[k] for k in ("public_release_id","deployment_id","native_release_id","source_commit","source_tree")},
+            "inputs":inputs_pin,"normal_fixture":inputs["fixture"],"prepared":prepared_pin,
+            "ended":inputs["ended"],"collected":inputs["collected"],"boot_id":boot_id,
+            "original_source_image":prepared["root_image"],"original_working_disk":ended["working_disk"],
+            "kernel_sha256":materials["kernel_sha256"],"android_cohort":materials["android_cohort"],
+            "android_runtime":materials["android_runtime"],"normal_native_manifest":materials["native_manifest"],
+            "journal_rows":len(rows),"failed_jobs":len(failures),"mac_denials":len(denials),
+            "priority_errors":len(errors),"selected39":backend,"activation_blockers":blockers,
+            "runtime_qualified":False,"private_accounts_qualified":False,"physical_activation":False}
+
+
 def activate(bundle,release_id):
     verify(bundle,release_id)
     # No invented boolean, caller assertion, or public-fresh-VM result grants
