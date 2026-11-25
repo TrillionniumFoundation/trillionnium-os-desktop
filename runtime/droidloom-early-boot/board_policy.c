@@ -243,15 +243,16 @@ static int apparmor_profile_bytes(const unsigned char *data, size_t length,
 }
 
 static int apparmor_profiles(const struct input *pack, int activate,
-                             struct droidloom_raw_profile selected[3])
+                             struct droidloom_raw_profile selected[4])
 {
     if (pack->size < 12 || memcmp(pack->data, "DLAA0001", 8) ||
         le32(pack->data + 8) != DROIDLOOM_BOARD_APPARMOR_PROFILE_ENTRIES)
         return reject(EBADMSG);
-    static const unsigned int epoch_indexes[3] = {
+    static const unsigned int epoch_indexes[4] = {
         DROIDLOOM_BOARD_APPARMOR_EPOCH_LOADER_INDEX,
         DROIDLOOM_BOARD_APPARMOR_EPOCH_ANDROID_INDEX,
         DROIDLOOM_BOARD_APPARMOR_EPOCH_BROKER_INDEX,
+        DROIDLOOM_BOARD_APPARMOR_EPOCH_CAMERA_INDEX,
     };
     size_t pos = 12;
     for (unsigned int i = 0; i != DROIDLOOM_BOARD_APPARMOR_PROFILE_ENTRIES; ++i) {
@@ -270,7 +271,7 @@ static int apparmor_profiles(const struct input *pack, int activate,
                 return -1;
         }
         if (selected) {
-            for (size_t role = 0; role < 3; ++role) {
+            for (size_t role = 0; role < 4; ++role) {
                 if (i == epoch_indexes[role])
                     selected[role] = (struct droidloom_raw_profile){pack->data + pos, length};
             }
@@ -287,7 +288,7 @@ int droidloom_board_activate_policy(gid_t observer_gid, const char *cohort)
     struct input policy = {DROIDLOOM_BOARD_SELINUX_SIZE, DROIDLOOM_BOARD_SELINUX_SHA256, POLICY_DIR "/joint.policy", NULL};
     struct input aa = {DROIDLOOM_BOARD_APPARMOR_SIZE, DROIDLOOM_BOARD_APPARMOR_SHA256, POLICY_DIR "/ubuntu-apparmor.profiles", NULL};
     struct droidloom_apparmor_measurement observation = {0};
-    struct droidloom_raw_profile selected_profiles[3] = {0};
+    struct droidloom_raw_profile selected_profiles[4] = {0};
     int status = -1, epoch_directory = -1;
     struct droidloom_linux_init_scope scope = { .root.fd = -1, .scope.fd = -1, .procs.fd = -1, .controllers.fd = -1, .system_slice.fd = -1, .root_membership.fd = -1, .root_subtree_control.fd = -1 };
     struct droidloom_linux_run run = {.fd = -1}, shm = {.fd = -1};

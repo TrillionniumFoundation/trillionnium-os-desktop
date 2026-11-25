@@ -19,3 +19,9 @@
 /var/lib/droidloom-public-apks -d u:object_r:droidloom_public_apk_root:s0
 /var/lib/droidloom-public-apks/u1000 -d u:object_r:droidloom_public_apk_dir:s0
 /var/lib/droidloom-public-apks/u1000/[^/]+ -- u:object_r:droidloom_public_apk_input:s0
+
+# Fixed native camera alias and the Android byte-only bridge.
+/dev/video[0-9]+ -c u:object_r:p4_linux_uvc_device_t:s0
+/dev/v4l(/.*)? -d u:object_r:p4_linux_uvc_dir_t:s0
+/dev/v4l/(by-id|by-path)/[^/]+ -l u:object_r:p4_linux_uvc_dir_t:s0
+/run/droidloom-frontend/android/camera -s u:object_r:droidloom_camera_socket:s0

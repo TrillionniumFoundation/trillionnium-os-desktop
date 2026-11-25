@@ -6,6 +6,8 @@ use crate::production_execution::RuntimeMacOwner;
 #[path = "production_frontend_observation.rs"]
 mod observation;
 pub(crate) use observation::{QueryObservation, observe_query};
+#[path = "production_frontend_camera.rs"]
+mod camera;
 #[path = "production_frontend_protocol.rs"]
 mod wire;
 use std::ffi::{CStr, CString};
@@ -760,6 +762,7 @@ pub(super) struct Frontend<'a> {
     owner: &'a RuntimeMacOwner,
     programs: Programs,
     lanes: Vec<Lane>,
+    camera: Option<camera::CameraLane>,
     control_parent: RuntimeDirectory,
     android_parent: RuntimeDirectory,
     retired: bool,
@@ -842,11 +845,13 @@ impl<'a> Frontend<'a> {
                 android: None,
             });
         }
+        let camera = camera::CameraLane::prepare(board, owner, root, &android.directory)?;
         let value = Self {
             board,
             owner,
             programs,
             lanes,
+            camera,
             control_parent: directory,
             android_parent: android,
             retired: false,
@@ -866,6 +871,9 @@ impl<'a> Frontend<'a> {
             lane.control.revalidate()?;
             lane.endpoint.revalidate()?;
         }
+        if let Some(camera) = &self.camera {
+            camera.revalidate(self.board)?;
+        }
         let mut names = fs::read_dir(format!(
             "/proc/self/fd/{}",
             self.android_parent.directory.as_raw_fd()
@@ -876,6 +884,9 @@ impl<'a> Frontend<'a> {
         let mut expected = Role::ALL
             .map(|role| std::ffi::OsString::from(role.endpoint().to_str().unwrap()))
             .to_vec();
+        if self.camera.is_some() {
+            expected.push(std::ffi::OsString::from("camera"));
+        }
         expected.sort();
         check(
             names == expected,
@@ -885,6 +896,9 @@ impl<'a> Frontend<'a> {
     }
     pub(super) fn progress(&mut self) -> io::Result<()> {
         self.projection()?;
+        if let Some(camera) = &mut self.camera {
+            camera.progress(self.board)?;
+        }
         let original_before = self.lanes[0]
             .presenter
             .as_ref()
@@ -913,6 +927,9 @@ impl<'a> Frontend<'a> {
     pub(super) fn retire(&mut self) -> io::Result<()> {
         if self.retired {
             return Ok(());
+        }
+        if let Some(camera) = &mut self.camera {
+            camera.retire()?;
         }
         for lane in &mut self.lanes {
             lane.revoke();

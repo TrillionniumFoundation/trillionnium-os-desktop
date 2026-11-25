@@ -1774,12 +1774,39 @@ fn required_decisions(root: &File, sequence: &mut Option<u32>) -> Result<()> {
 
 /// Fixed broker role over a complete current loaded-policy observation.
 /// No constructor accepts a role string, PID, supplied proc FD or prior result.
+/// Camera-only immutable raw profile counter; original broker/Android/loader
+/// acquisition remains the unchanged three-role DLAAREV3 contract.
+pub(crate) struct CameraMacEpoch(board_epoch::BoardEpoch);
+impl CameraMacEpoch {
+    pub(crate) fn revalidate(&self) -> Result<()> {
+        let security = open_absolute(
+            "/sys/kernel/security/apparmor",
+            libc::O_RDONLY | libc::O_DIRECTORY,
+        )?;
+        let revision = aa_revision(&security)?;
+        self.0.revalidate_at(revision)
+    }
+}
+
 pub(crate) struct MacPreflight {
     loaded: LoadedPolicyWitness,
     host_proc: Option<host_proc::HostProcView>,
     self_socket: Option<self_socket::SelfSocketWitness>,
 }
 impl MacPreflight {
+    pub(crate) fn camera_epoch(&self, selection: &ProductionSelection) -> Result<CameraMacEpoch> {
+        self.revalidate(selection)?;
+        require(
+            self.loaded.declaration.early(),
+            "camera requires the original boot-owned policy",
+        )?;
+        let epoch = CameraMacEpoch(board_epoch::BoardEpoch::acquire_camera(
+            &self.loaded.declaration.policy_input_sha256,
+        )?);
+        epoch.revalidate()?;
+        self.revalidate(selection)?;
+        Ok(epoch)
+    }
     pub(crate) fn acquire(selection: &ProductionSelection) -> Result<Self> {
         let loaded = LoadedPolicyWitness::acquire(selection)?;
         let (host_proc, self_socket) = if loaded.declaration.scoped_contexts()? {

@@ -28,6 +28,7 @@ struct RawProfile {
 struct Counter {
     inode: u64,
     initial: u64,
+    camera: bool,
 }
 
 pub(super) struct BoardEpoch {
@@ -41,7 +42,9 @@ pub(super) struct BoardEpoch {
     mount: u64,
     root: u64,
     profiles: u64,
-    roles: [Role; 3],
+    roles: Vec<Role>,
+    path: &'static str,
+    names: &'static [&'static str],
     root_handle: File,
     // O_PATH descriptors retain original dentries/inodes for the authority's life.
     // Fresh READ descriptors are used for every seq_file counter observation.
@@ -159,6 +162,9 @@ fn object(file: &File, mount: u64, inode: u64) -> Result<()> {
 }
 
 fn counter_identity(file: &File, mount: u64, inode: u64) -> Result<()> {
+    counter_identity_as(file, mount, inode, REVISION_CONTEXT)
+}
+fn counter_identity_as(file: &File, mount: u64, inode: u64, context: &str) -> Result<()> {
     require(
         kind(file)? == AAFS_MAGIC,
         "revision must be the original AppArmor filesystem",
@@ -186,7 +192,7 @@ fn counter_identity(file: &File, mount: u64, inode: u64) -> Result<()> {
         return Err(io::Error::last_os_error().into());
     }
     require(
-        context_matches(&label[..count as usize], REVISION_CONTEXT),
+        context_matches(&label[..count as usize], context),
         "only the dedicated original AppArmor revision type is evidence",
     )
 }
@@ -211,9 +217,27 @@ fn read_counter(parent: &File, mount: u64, counter: &Counter) -> Result<File> {
     let file = open_at(parent.as_raw_fd(), c"revision", libc::O_RDONLY)?;
     // An open is not evidence. Authenticate this very READ descriptor before
     // its first data read; a readable-label alias is still rejected here.
-    counter_identity(&file, mount, counter.inode)?;
+    if counter.camera {
+        counter_identity_as(
+            &file,
+            mount,
+            counter.inode,
+            "u:object_r:p4_linux_camera_apparmor_revision_t:s0",
+        )?;
+    } else {
+        counter_identity(&file, mount, counter.inode)?;
+    }
     counter_value(&bounded(&file, 32)?, counter.initial)?;
-    counter_identity(&file, mount, counter.inode)?;
+    if counter.camera {
+        counter_identity_as(
+            &file,
+            mount,
+            counter.inode,
+            "u:object_r:p4_linux_camera_apparmor_revision_t:s0",
+        )?;
+    } else {
+        counter_identity(&file, mount, counter.inode)?;
+    }
     object(&held, mount, counter.inode)?;
     Ok(held)
 }
@@ -227,9 +251,69 @@ fn revision_allowed(has_counters: bool, original: i64, observed: i64) -> bool {
         }
 }
 
+fn measurement_version(camera: bool, magic: Option<&str>) -> Result<u8> {
+    match (camera, magic) {
+        (false, Some("DLAAREV1")) => Ok(1),
+        (false, Some("DLAAREV2")) => Ok(2),
+        (false, Some("DLAAREV3")) | (true, Some("DLAACAM1")) => Ok(3),
+        _ => Err(MacError::Rejected("unsupported boot measurement version")),
+    }
+}
+
 impl BoardEpoch {
     pub(super) fn acquire(input_sha256: &str, hashes: [&str; 3]) -> Result<Self> {
-        let (seal, data) = Sealed::read(PATH, 4096)?;
+        Self::acquire_selected(input_sha256, &hashes, PATH, &ROLES, &BIRTHS, false)
+    }
+
+    /// A separate one-role packet preserves the original DLAAREV3 contract.
+    pub(super) fn acquire_camera(input_sha256: &str) -> Result<Self> {
+        let lock: serde_json::Value = serde_json::from_slice(include_bytes!(
+            "../../../android/framework/droidloom-readiness/board-policy/pocket4-board-inputs.lock.json"
+        ))?;
+        let aa = &lock["files"]["ubuntu-apparmor.profiles"];
+        let ordered = aa["board_profile_order"]
+            .as_array()
+            .ok_or(MacError::Rejected("ordered camera profile input missing"))?;
+        let position = |name: &str| -> Result<u64> {
+            let slots: Vec<_> = ordered
+                .iter()
+                .enumerate()
+                .filter(|(_, item)| item.as_str() == Some(name))
+                .map(|(i, _)| i as u64)
+                .collect();
+            require(slots.len() == 1, "one selected camera epoch role")?;
+            Ok(slots[0])
+        };
+        let birth = BIRTHS[0]
+            .checked_sub(position(ROLES[0])?)
+            .and_then(|first| first.checked_add(position("droidloom-camera-capture").ok()?))
+            .ok_or(MacError::Rejected("camera raw generation overflow"))?;
+        let hash = aa["board_profiles"]["droidloom-camera-capture"]["kernel_profile_sha256"]
+            .as_str()
+            .ok_or(MacError::Rejected("camera kernel profile digest absent"))?;
+        Self::acquire_selected(
+            input_sha256,
+            &[hash],
+            "/run/droidloom-early/kernel-policy/camera-apparmor-epoch",
+            &["droidloom-camera-capture"],
+            &[birth],
+            true,
+        )
+    }
+
+    fn acquire_selected(
+        input_sha256: &str,
+        hashes: &[&str],
+        path: &'static str,
+        names: &'static [&'static str],
+        births: &[u64],
+        camera: bool,
+    ) -> Result<Self> {
+        require(
+            hashes.len() == names.len() && births.len() == names.len(),
+            "fixed epoch role vectors",
+        )?;
+        let (seal, data) = Sealed::read(path, 4096)?;
         packet_file(&seal.file)?;
         let body = std::str::from_utf8(&data)
             .map_err(|_| MacError::Rejected("invalid boot measurement bytes"))?;
@@ -238,12 +322,7 @@ impl BoardEpoch {
             "complete Linux boot measurement",
         )?;
         let mut lines = body.split_terminator('\n');
-        let version = match lines.next() {
-            Some("DLAAREV1") => 1,
-            Some("DLAAREV2") => 2,
-            Some("DLAAREV3") => 3,
-            _ => return Err(MacError::Rejected("unsupported boot measurement version")),
-        };
+        let version = measurement_version(camera, lines.next())?;
         let board_lock: serde_json::Value = serde_json::from_slice(include_bytes!(
             "../../../android/framework/droidloom-readiness/board-policy/pocket4-board-inputs.lock.json"
         ))?;
@@ -251,8 +330,8 @@ impl BoardEpoch {
         require(valid_boot(boot), "valid original Linux boot identity")?;
         let original = i64::try_from(number(revision)?)
             .map_err(|_| MacError::Rejected("AppArmor revision overflow"))?;
-        let mut roles = Vec::with_capacity(3);
-        for (index, (name, expected)) in ROLES.iter().zip(hashes).enumerate() {
+        let mut roles = Vec::with_capacity(names.len());
+        for (index, (name, expected)) in names.iter().zip(hashes.iter().copied()).enumerate() {
             let line = lines
                 .next()
                 .ok_or(MacError::Rejected("missing original role"))?;
@@ -279,14 +358,18 @@ impl BoardEpoch {
                     let birth_number = number(birth)?;
                     let initial = number(fields[11])?;
                     require(
-                        birth_number == BIRTHS[index]
+                        birth_number == births[index]
                             && initial == birth_number + 1
                             && initial <= number(revision)?,
                         "original fixed early profile load counter",
                     )?;
                     let inode = number(fields[10])?;
                     require(inode != 0, "nonzero original counter inode")?;
-                    Some(Counter { inode, initial })
+                    Some(Counter {
+                        inode,
+                        initial,
+                        camera,
+                    })
                 } else {
                     None
                 };
@@ -351,9 +434,9 @@ impl BoardEpoch {
             mount: number(mount)?,
             root: number(root)?,
             profiles: number(profiles)?,
-            roles: roles
-                .try_into()
-                .map_err(|_| MacError::Rejected("three original profiles required"))?,
+            roles,
+            path,
+            names,
             root_handle,
             held: Vec::new(),
         };
@@ -383,7 +466,7 @@ impl BoardEpoch {
             "original monotonic AppArmor operation epoch",
         )?;
         self.seal.revalidate()?;
-        let path = open_absolute(PATH, libc::O_RDONLY)?;
+        let path = open_absolute(self.path, libc::O_RDONLY)?;
         packet_file(&path)?;
         let boot = kernel_text("/proc/sys/kernel/random/boot_id", PROC_MAGIC, 64)?;
         require(
@@ -423,7 +506,7 @@ impl BoardEpoch {
         let modes = std::str::from_utf8(&modes)
             .map_err(|_| MacError::Rejected("invalid active AppArmor list"))?;
         let mut held = Vec::new();
-        for (role, name) in self.roles.iter().zip(ROLES) {
+        for (role, name) in self.roles.iter().zip(self.names.iter().copied()) {
             let line = format!("{name} (enforce)");
             require(
                 modes.lines().filter(|v| *v == line).count() == 1,
@@ -475,6 +558,24 @@ impl BoardEpoch {
 #[cfg(test)]
 pub(super) mod tests {
     use super::*;
+    #[test]
+    fn camera_and_original_epoch_packets_cannot_substitute_for_each_other() {
+        assert_eq!(measurement_version(true, Some("DLAACAM1")).unwrap(), 3);
+        for (magic, version) in [("DLAAREV1", 1), ("DLAAREV2", 2), ("DLAAREV3", 3)] {
+            assert_eq!(measurement_version(false, Some(magic)).unwrap(), version);
+            assert!(measurement_version(true, Some(magic)).is_err());
+        }
+        assert!(measurement_version(false, Some("DLAACAM1")).is_err());
+        for magic in [
+            None,
+            Some("DLAACAM2"),
+            Some("DLAACAM1 "),
+            Some("DLAAREV3\r"),
+        ] {
+            assert!(measurement_version(true, magic).is_err());
+            assert!(measurement_version(false, magic).is_err());
+        }
+    }
     #[test]
     fn only_counter_sealed_epochs_accept_unrelated_monotonic_changes() {
         assert!(revision_allowed(true, 167, 200));
@@ -568,14 +669,20 @@ pub(super) mod tests {
                 ("aba", MacError::Io(error)) => error.raw_os_error() == Some(libc::ENOENT),
                 _ => false,
             };
-            assert!(expected, "unrelated failure is not a valid negative result: {rejection}");
+            assert!(
+                expected,
+                "unrelated failure is not a valid negative result: {rejection}"
+            );
             return;
         }
         let epoch = result.unwrap();
         // The initial PID remains the kernel bootstrap role in this fixture.
         // A proc link read grant must not expose that foreign task's executable.
         let foreign = std::fs::read_link("/proc/1/exe").unwrap_err();
-        assert!(matches!(foreign.raw_os_error(), Some(libc::EACCES | libc::EPERM)));
+        assert!(matches!(
+            foreign.raw_os_error(),
+            Some(libc::EACCES | libc::EPERM)
+        ));
         assert!(epoch.has_counters());
         assert!(epoch.revision > epoch.boot_revision);
         epoch.revalidate().unwrap();

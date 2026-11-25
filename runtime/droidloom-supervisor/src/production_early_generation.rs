@@ -142,6 +142,7 @@ pub struct EarlyAndroidGeneration {
     selected: ProductionSelection,
     record: SealedFile,
     base_manifest: SealedFile,
+    camera: Option<droidloom_contracts::system_ext::CameraDeclaration>,
     carrier: SealedFile,
     init: File,
     ns: File,
@@ -220,6 +221,7 @@ impl EarlyAndroidGeneration {
             selected,
             record,
             base_manifest,
+            camera: declaration.frontend.camera,
             carrier,
             init,
             ns,
@@ -503,6 +505,13 @@ impl EarlyBoardResources {
     }
     pub(crate) fn selection(&self) -> &ProductionSelection {
         &self.generation.selected
+    }
+    /// Original selected four-image declaration, retained with its sealed manifest.
+    pub(crate) fn camera_declaration(
+        &self,
+    ) -> io::Result<Option<droidloom_contracts::system_ext::CameraDeclaration>> {
+        self.revalidate()?;
+        Ok(self.generation.camera.clone())
     }
     pub(crate) fn observe_init_metadata(
         &self,

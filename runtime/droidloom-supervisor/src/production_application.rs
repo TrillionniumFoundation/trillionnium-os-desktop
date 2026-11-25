@@ -65,6 +65,9 @@ pub(crate) use metadata_observer::{
     retirement_failed as metadata_retirement_failed,
 };
 
+#[path = "production_application_camera.rs"]
+pub(crate) mod camera;
+
 #[path = "production_application_query_io.rs"]
 pub(crate) mod query_io;
 
@@ -720,6 +723,11 @@ pub(crate) fn inspect_early(
         "early inspection workflow deadline",
     )?;
     Ok(inspection)
+}
+
+/// Fixed camera entry. An already transitioned camera role cannot select any other mode.
+pub fn dispatch_camera(arguments: &[std::ffi::OsString]) -> Result<bool> {
+    camera::dispatch(arguments)
 }
 
 /// Fixed private query I/O creator entry; no command-line authority is accepted.

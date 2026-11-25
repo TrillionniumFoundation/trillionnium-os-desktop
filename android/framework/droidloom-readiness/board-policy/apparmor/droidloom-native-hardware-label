@@ -22,6 +22,7 @@ profile droidloom-native-hardware-label flags=(attach_disconnected) {
   owner /proc/{self,[0-9]*}/fd/[0-9]* r,
   /dev/ rw,
   /dev/null rw,
+  /dev/video{[0-9],[0-9][0-9],[0-9][0-9][0-9]} rw,
   /dev/{dri,input}/ rw,
   /dev/dri/{card,renderD}{[0-9],[0-9][0-9],[0-9][0-9][0-9],[0-9][0-9][0-9][0-9],[0-9][0-9][0-9][0-9][0-9],[0-9][0-9][0-9][0-9][0-9][0-9],[0-9][0-9][0-9][0-9][0-9][0-9][0-9]} rw,
   /dev/input/event{[0-9],[0-9][0-9],[0-9][0-9][0-9],[0-9][0-9][0-9][0-9]} rw,
