@@ -130,6 +130,24 @@ pub(super) struct LeafObservation {
     pub remaining_scope: &'static str,
 }
 
+impl LeafObservation {
+    /// Only the Settings terminal contract currently verifies entire named
+    /// registry assertions. Other cases remain narrower observations.
+    pub(super) fn verified_business_gates(&self) -> &'static [&'static str] {
+        if self.route == Route::SettingsSupportedPages
+            && self.state == "SETTINGS_PAGES_ROUNDTRIP_VERIFIED_RESTORED"
+            && self.original_entry_result_verified && self.original_business_success_reported
+            && !self.business_outcome_unknown && self.main_epoch_unchanged
+            && self.owned_host_tree_retired && !self.automatic_retry
+            && !self.whole_app_business_accepted && !self.production_ready
+        {
+            &["settings.pages", "settings.roundtrip"]
+        } else {
+            &[]
+        }
+    }
+}
+
 struct Definition {
     source: usize,
     package: &'static str,

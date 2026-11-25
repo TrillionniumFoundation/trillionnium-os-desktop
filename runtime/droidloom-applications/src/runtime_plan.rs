@@ -30,6 +30,10 @@ use leaf_routes::{LeafObservation, LeafPlan};
 mod launch_route;
 use launch_route::{LaunchObservation, LaunchPlan};
 
+#[path = "runtime_prepare.rs"]
+mod runtime_prepare;
+pub use runtime_prepare::{PreparationReport, prepare_files};
+
 /// Execute only a root content-addressed single-app plan in its fixed installed
 /// unit. This preserves the original dispatcher and never grants acceptance.
 pub fn run_owned_leaf_plan(profile: &str, expected_sha256: &str) -> Result<(), String> {
@@ -85,6 +89,9 @@ struct ApplicationPlan {
     leaf: Option<LeafPlan>,
     #[serde(default)]
     launch: Option<LaunchPlan>,
+    /// A failed read-only binding stays blocked until a new plan is prepared.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    binding_failure: Option<String>,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -134,11 +141,38 @@ struct GateRegistry {
 }
 
 #[derive(Debug, Serialize)]
+struct GateAssertion {
+    id: String,
+    description: String,
+    scope: &'static str,
+    status: &'static str,
+    reason: String,
+    evidence: Option<FilePin>,
+}
+
+fn pending_assertions(gates: &GateRegistry, profile: &str) -> Vec<GateAssertion> {
+    gates.common_gates.iter().map(|(id, description)| (id, description, "common"))
+        .chain(gates.profiles[profile].checks.iter()
+            .map(|(id, description)| (id, description, "business")))
+        .map(|(id, description, scope)| GateAssertion {
+            id: id.clone(), description: description.clone(), scope,
+            status: "pending", reason: "No complete assertion result for this gate in this run".into(),
+            evidence: None,
+        }).collect()
+}
+
+#[derive(Debug, Serialize)]
 struct AppDispatch {
     package: String,
+    application: String,
     profile: String,
     status: &'static str,
     reason: String,
+    expected_input: Option<ExpectedInput>,
+    requested_launch: Option<LaunchPlan>,
+    requested_leaf: Option<LeafPlan>,
+    prerequisites: Vec<String>,
+    gate_assertions: Vec<GateAssertion>,
     inspection: Option<ApplicationInspection>,
     invocation_output: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -156,6 +190,10 @@ struct AppDispatch {
 #[derive(Debug, Serialize)]
 pub struct RuntimeReport {
     schema: u32,
+    runtime_plan: Option<FilePin>,
+    main_qualification: FilePin,
+    expected_epoch: RuntimeEpoch,
+    gate_registry: FilePin,
     selected_applications: usize,
     blocked_applications: usize,
     unsupported_business_flows: usize,
@@ -301,6 +339,11 @@ fn validate(plan: &RuntimePlan, gates: &GateRegistry, expected_count: usize) -> 
         if !seen.insert(&app.package) {
             return Err("runtime selection repeats a package".into());
         }
+        if let Some(error) = &app.binding_failure {
+            if error.trim().is_empty() || error.len() > 4096 || app.launch.is_some() || app.leaf.is_some() {
+                return Err("a failed preparation binding must retain one bounded reason and no executable route".into());
+            }
+        }
         if let Some(launch) = &app.launch {
             launch.validate(&app.package)?;
             if plan.schema != 3 || app.expected_input.is_none() || app.leaf.is_some()
@@ -327,6 +370,7 @@ fn validate(plan: &RuntimePlan, gates: &GateRegistry, expected_count: usize) -> 
         if profile.checks.is_empty()
             || profile.checks.len() > 128
             || profile.checks.values().any(|v| v.trim().is_empty())
+            || profile.checks.keys().any(|id| gates.common_gates.contains_key(id))
         {
             return Err("business gate definitions are empty or unbounded".into());
         }
@@ -406,9 +450,15 @@ fn dispatch(
         pending.sort();
         let mut row = AppDispatch {
             package: app.package.clone(),
+            application: package.app.clone(),
             profile: package.profile.clone(),
             status: "blocked",
             reason: String::new(),
+            expected_input: app.expected_input.clone(),
+            requested_launch: app.launch.clone(),
+            requested_leaf: app.leaf.clone(),
+            prerequisites: package.prerequisites.clone(),
+            gate_assertions: pending_assertions(gates, &package.profile),
             inspection: None,
             invocation_output: None,
             firefox_activity_start: None,
@@ -429,6 +479,8 @@ fn dispatch(
                     || actual.epoch != plan.expected_epoch
                 {
                     row.reason = "current PM observation does not match the selected package/user and independently pinned live Main epoch".into();
+                } else if let Some(reason) = &app.binding_failure {
+                    row.reason = format!("read-only plan preparation remains blocked: {reason}; prepare a new pinned plan after resolution");
                 } else if app.expected_input.is_none() {
                     row.reason = "current package observed, but reviewed current official source/split delivery is missing".into();
                 } else if !source_matches(
@@ -462,6 +514,15 @@ fn dispatch(
                         Ok((after, result)) if after == actual => {
                             row.status = "partial_leaf_observation";
                             row.reason = "The selected original leaf actually completed with its saved result and retired host owner. Its scoped result does not complete all common or application release gates.".into();
+                            for assertion in &mut row.gate_assertions {
+                                if result.verified_business_gates().contains(&assertion.id.as_str())
+                                    && assertion.scope == "business"
+                                {
+                                    assertion.status = "passed";
+                                    assertion.reason = "Verified by the original finite leaf's saved result, cleanup and unchanged installed identity/Main epoch".into();
+                                    assertion.evidence = Some(result.result.clone());
+                                }
+                            }
                             row.leaf_observation = Some(result);
                         }
                         Ok(_) => {
@@ -504,10 +565,30 @@ fn dispatch(
                 row.inspection = Some(actual);
             }
         }
+        for assertion in &mut row.gate_assertions {
+            if assertion.status == "passed" { continue; }
+            if row.status == "blocked" {
+                assertion.status = "blocked";
+                assertion.reason = row.reason.clone();
+            } else if assertion.scope == "business"
+                && matches!(row.status, "unsupported" | "launch_only_business_pending")
+            {
+                assertion.status = "unsupported";
+                assertion.reason = "This plan has no executable assertion for this business gate; an observed launcher task cannot satisfy it".into();
+            }
+        }
+        row.pending_gates = row.gate_assertions.iter()
+            .filter(|gate| gate.status != "passed").map(|gate| gate.id.clone()).collect();
+        row.pending_gates.sort();
+        row.accepted_gates = row.gate_assertions.iter().filter(|gate| gate.status == "passed").count();
         applications.push(row);
     }
     RuntimeReport {
         schema: 1,
+        runtime_plan: None,
+        main_qualification: plan.main_qualification.clone(),
+        expected_epoch: plan.expected_epoch.clone(),
+        gate_registry: plan.gate_registry.clone(),
         selected_applications: applications.len(),
         blocked_applications: applications
             .iter()
@@ -529,12 +610,15 @@ fn dispatch(
             .iter()
             .filter(|r| r.status == "launch_only_business_pending")
             .count(),
-        accepted_applications: 0,
+        accepted_applications: applications.iter().filter(|row| {
+            row.status != "blocked" && !row.gate_assertions.is_empty()
+                && row.gate_assertions.iter().all(|gate| gate.status == "passed")
+        }).count(),
         runtime_qualified: false,
         production_ready: false,
         automatic_retry: false,
         main_qualification_semantics_checked: false,
-        meaning: "Live Package Manager/APK observations and actual bounded entry invocation only. All required gates remain pending; neither Main qualification nor whole-application production readiness is granted.",
+        meaning: "Live Package Manager/APK observations and actual bounded entry results. Only business assertions explicitly verified by the original leaf carry scoped evidence; untested common/business gates remain incomplete. Neither Main qualification nor whole-application production readiness is granted.",
         applications,
     }
 }
@@ -658,7 +742,9 @@ pub fn run_files(
             pinned(&launch.specification)?;
         }
     }
-    let report = dispatch(&plan, &gates, &mut SocketClient { socket });
+    let mut report = dispatch(&plan, &gates, &mut SocketClient { socket });
+    report.runtime_plan = Some(FilePin { path: path.into(), bytes: raw.len() as u64,
+        sha256: expected_sha256.into() });
     pinned(&plan.main_qualification)?;
     pinned(&plan.gate_registry)?;
     for app in &plan.applications {
@@ -692,6 +778,7 @@ mod tests {
         opens: usize,
         browser_output: String,
         leaf_calls: usize,
+        leaf_output: Option<LeafObservation>,
         launch_calls: usize,
     }
     impl RuntimeClient for Fake {
@@ -720,12 +807,13 @@ mod tests {
         }
         fn leaf(
             &mut self,
-            _: &ApplicationInspection,
+            expected: &ApplicationInspection,
             _: &LeafPlan,
             _: &FilePin,
         ) -> Result<(ApplicationInspection, LeafObservation), String> {
             self.leaf_calls += 1;
-            Err("fake fixture does not execute Android leaves".into())
+            self.leaf_output.take().map(|observation| (expected.clone(), observation))
+                .ok_or("fake fixture does not execute Android leaves".into())
         }
     }
     fn fixture() -> (RuntimePlan, GateRegistry, Fake) {
@@ -779,6 +867,7 @@ mod tests {
             opens: 0,
             browser_output: "Status: ok\nActivity: org.mozilla.firefox/.HomeActivity".into(),
             leaf_calls: 0,
+            leaf_output: None,
             launch_calls: 0,
         };
         let mut applications = Vec::new();
@@ -822,6 +911,7 @@ mod tests {
                 expected_input: Some(expected.clone()),
                 leaf: None,
                 launch: None,
+                binding_failure: None,
             });
         }
         (
@@ -1037,6 +1127,75 @@ mod tests {
         validate(&plan, &gates, 42).unwrap();
         plan.applications[0].expected_input = None;
         assert!(validate(&plan, &gates, 42).is_err());
+    }
+
+    #[test]
+    fn preparation_failures_remain_explicit_and_cannot_reach_a_launch() {
+        let (mut plan, gates, mut client) = fixture();
+        plan.schema = 3;
+        plan.execute_public_browser = false;
+        plan.applications[1].binding_failure = Some("selected split does not match live PM bytes".into());
+        validate(&plan, &gates, 42).unwrap();
+        let report = dispatch(&plan, &gates, &mut client);
+        let row = &report.applications[1];
+        assert_eq!(row.status, "blocked");
+        assert!(row.reason.contains("selected split does not match"));
+        assert!(row.expected_input.is_some() && row.inspection.is_some());
+        assert!(row.gate_assertions.iter().all(|gate| gate.status == "blocked" && gate.evidence.is_none()));
+        assert_eq!(client.launch_calls, 0);
+        plan.applications[1].launch = Some(LaunchPlan {
+            specification: plan.main_qualification.clone(), component: "org.example.app1/.Main".into(),
+        });
+        assert!(validate(&plan, &gates, 42).is_err());
+    }
+
+    #[test]
+    fn only_the_verified_settings_assertions_are_credited_and_the_app_remains_incomplete() {
+        for unknown in [false, true] {
+            let (mut plan, mut gates, mut client) = fixture();
+            let old = plan.applications[1].package.clone();
+            let package = "com.android.settings".to_string();
+            let mut actual = client.identities.remove(&old).unwrap();
+            actual.package = package.clone();
+            client.identities.insert(package.clone(), actual);
+            let mut profile = gates.packages.remove(&old).unwrap();
+            profile.profile = "settings".into();
+            gates.packages.insert(package.clone(), profile);
+            gates.profiles.insert("settings".into(), GateProfile { checks: [
+                "settings.pages", "settings.roundtrip", "settings.permissions",
+            ].iter().map(|id| (id.to_string(), format!("Required {id}"))).collect() });
+            let pin = plan.main_qualification.clone();
+            plan.applications[1].package = package;
+            plan.applications[1].leaf = Some(LeafPlan {
+                route: leaf_routes::Route::SettingsSupportedPages, request: pin.clone(), output: None,
+            });
+            plan.schema = 3;
+            plan.preparation_selection = Some(pin.clone());
+            client.leaf_output = Some(LeafObservation {
+                route: leaf_routes::Route::SettingsSupportedPages, request: pin.clone(), preparation: pin.clone(),
+                entry_source: pin.clone(), result: pin.clone(), state: "SETTINGS_PAGES_ROUNDTRIP_VERIFIED_RESTORED".into(),
+                original_entry_result_verified: true, original_business_success_reported: true,
+                business_outcome_unknown: unknown, main_epoch_unchanged: true, owned_host_tree_retired: true,
+                automatic_retry: false, whole_app_business_accepted: false, production_ready: false,
+                remaining_scope: "unit transport model; permissions and common gates remain incomplete",
+            });
+            validate(&plan, &gates, 42).unwrap();
+            let report = dispatch(&plan, &gates, &mut client);
+            let row = &report.applications[1];
+            assert_eq!(row.accepted_gates, if unknown { 0 } else { 2 });
+            assert_eq!(row.pending_gates.len(), if unknown { 9 } else { 7 });
+            for gate in &row.gate_assertions {
+                if !unknown && ["settings.pages", "settings.roundtrip"].contains(&gate.id.as_str()) {
+                    assert_eq!(gate.status, "passed");
+                    assert_eq!(gate.evidence.as_ref(), Some(&pin));
+                } else {
+                    assert_ne!(gate.status, "passed");
+                    assert!(gate.evidence.is_none());
+                }
+            }
+            assert_eq!(report.accepted_applications, 0);
+            assert!(!report.production_ready && !row.production_ready);
+        }
     }
 
     #[test]

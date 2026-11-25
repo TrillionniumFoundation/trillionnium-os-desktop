@@ -74,3 +74,75 @@ production launcher/controller must also be exercised in its final resource
 layout, followed by real Main, business, cleanup and source bookends, before
 these runtime blockers can be called closed. Source/CI success and detached
 adoption confer no whole-application or production-ready status.
+
+## Preparing the selected application runtime plan
+
+The static `p4-selected39-static-launch-inputs-v1` source document is not an
+executable runtime plan. `droidloom-applications --prepare-runtime-plan` binds
+that reviewed document to the current daemon's complete PM identities and
+enabled MAIN/LAUNCHER catalog. The operation only queries metadata. It does not
+install, launch, close, retry or change Android applications or user data.
+
+The deployment owner supplies a separately reviewed JSON intent with `schema:
+1` and all of the following fields. File pins have exactly `path`, `bytes` and
+`sha256`, using bounded canonical absolute files and their actual SHA-256.
+
+| Intent field | Required input |
+| --- | --- |
+| `selection` | Pin of the complete current static launch-input document. |
+| `source_receipt` | Pin of the admitted byte-identical copy of that document's signature/material receipt. Its path may differ from the original work directory; its size and digest must match every selected app's receipt. |
+| `main_qualification` | Pin of the current independently established Main receipt. Preparation checks bytes, not the receipt's qualification semantics. |
+| `expected_epoch` | Actual `boot_id`, `cell_host_pid`, `framework_host_pid`, and `framework_start_ticks` for that Main. Source artifacts cannot supply these observations. |
+| `gate_registry` | Pin of the complete `pocket4-app-release-gates-v1` registry, including each selected app and all six common gates. |
+| `specification` | Pin of the currently admitted cell specification. |
+| `android_user` | Explicit Android user for these observations and subsequent operations. |
+
+Stage reviewed receipts through the normal admitted release-input path. Work
+directory paths in the static document do not authorize reads from the public
+client's domain. Each package's entire installed version/APK byte set must match
+the selected source. The prepared plan uses actual normalized PM filenames;
+downloaded split filenames are never guessed. The preferred manifest component
+must be present exactly once in the current enabled catalog. If that preferred
+alias is disabled, preparation accepts only one unambiguous enabled alternative
+from the reviewed candidate set.
+
+```sh
+droidloom-applications --prepare-runtime-plan "$intent" \
+  --expect-preparation-sha256 "$intent_sha256" --expect-app-count 39 \
+  > preparation-report.json
+```
+
+Exit status zero means only that all 39 launch bindings were prepared. Any
+blocked binding causes a nonzero status while preserving every selected row,
+its source version, source file identities, actual PM observation if available,
+failure reason, business/common assertion text, and external prerequisites.
+Review the complete report, including unresolved source freshness and signer
+or data-migration facts. A newer installed package cannot erase those facts.
+
+The report's `runtime_plan` object is the existing schema-3 execution input.
+Extract it to a new ordinary file, review it, and independently pin the exact
+file that will execute:
+
+```sh
+jq '.runtime_plan' preparation-report.json > runtime-plan.json
+sha256sum runtime-plan.json
+droidloom-applications --runtime-plan "$runtime_plan_absolute_path" \
+  --expect-runtime-plan-sha256 "$runtime_plan_sha256" --expect-app-count 39
+```
+
+Keep the preparation report with the exact executed plan and its runtime
+report. A failed binding is retained inside the plan and cannot turn into a
+launch just because the runtime later changes; resolve it and prepare a new
+reviewed plan. Successful rows use only the existing launch-only route, which
+rechecks Main, PM/APKs, current launcher, source/specification pins and actual
+owned task binding. It does not prove rendering, close/reopen or business gates.
+
+Runtime reports retain the expected source input, requested route, actual
+inspection/launch/leaf observations, required assertion text and failure reason
+for each selected app. Only assertions explicitly verified by an original
+finite leaf receive evidence credit: the current Settings terminal contract
+verifies `settings.pages` and `settings.roundtrip`, while `settings.permissions`
+and all common gates remain pending. Other existing finite cases remain scoped
+observations; in particular IHG's London input/readback is not hotel availability
+or business success. Whole-app counts require every registered assertion to
+pass. Metadata, installation and launch counts cannot increase that total.

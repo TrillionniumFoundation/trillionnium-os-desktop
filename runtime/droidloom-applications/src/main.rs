@@ -18,6 +18,26 @@ mod cli_tests {
     use super::*;
 
     #[test]
+    fn preparation_requires_external_intent_and_count_and_cannot_execute_other_actions() {
+        assert!(Cli::try_parse_from(["apps", "--prepare-runtime-plan", "/intent"]).is_err());
+        assert!(Cli::try_parse_from(["apps", "--expect-preparation-sha256", "pin"]).is_err());
+        let args = ["apps", "--prepare-runtime-plan", "/intent", "--expect-preparation-sha256", "pin", "--expect-app-count", "39"];
+        assert!(Cli::try_parse_from(args).is_ok());
+        let mut socket = args.to_vec(); socket.extend(["--socket", "/socket"]);
+        assert!(Cli::try_parse_from(socket).is_ok());
+        for extra in [vec!["--once"], vec!["--user", "0"], vec!["--refresh-seconds", "30"],
+            vec!["--remove-managed"], vec!["--inspect-package", "org.mozilla.firefox"],
+            vec!["--inspect-contacts-fixture"],
+            vec!["--runtime-plan", "/plan", "--expect-runtime-plan-sha256", "pin"],
+            vec!["--owned-leaf-profile", "gallery", "--owned-leaf-plan-sha256", "pin"],
+            vec!["--adopt-native-leaf-release", "/adoption", "--expect-native-adoption-sha256", "pin"]]
+        {
+            let mut combined = args.to_vec(); combined.extend(extra);
+            assert!(Cli::try_parse_from(combined).is_err());
+        }
+    }
+
+    #[test]
     fn owned_unit_entry_requires_both_fixed_profile_and_content_pin_without_other_actions() {
         assert!(Cli::try_parse_from(["apps","--owned-leaf-profile","gallery"]).is_err());
         assert!(Cli::try_parse_from(["apps","--owned-leaf-plan-sha256","pin"]).is_err());
@@ -142,7 +162,7 @@ mod cli_tests {
 
 #[derive(Debug, Parser)]
 #[command(name = "droidloom-applications", version, about)]
-#[command(group(clap::ArgGroup::new("release_action").args(["release_check", "runtime_plan"])))]
+#[command(group(clap::ArgGroup::new("release_action").args(["release_check", "runtime_plan", "prepare_runtime_plan"])))]
 struct Cli {
     /// Run one content-addressed root plan in its exact installed owned unit.
     #[arg(long, value_parser = ["calendar-reminder", "gallery", "settings-pages"], requires = "owned_leaf_plan_sha256",
@@ -187,6 +207,13 @@ struct Cli {
     /// Independently reviewed complete runtime plan hash.
     #[arg(long, requires = "runtime_plan")]
     expect_runtime_plan_sha256: Option<String>,
+    /// Bind reviewed source materials to live PM/launcher observations without launching apps.
+    #[arg(long, value_name = "INTENT", requires_all = ["expect_preparation_sha256", "expect_app_count"],
+        conflicts_with_all = ["owned_leaf_profile", "adopt_native_leaf_release", "inspect_package", "inspect_contacts_fixture", "remove_managed", "once", "refresh_seconds", "user"])]
+    prepare_runtime_plan: Option<PathBuf>,
+    /// Independently reviewed intent pin, including all source/Main/cell/gate bindings.
+    #[arg(long, requires = "prepare_runtime_plan")]
+    expect_preparation_sha256: Option<String>,
     /// Remove only entries recorded in Droidloom's catalog; Android need not be running.
     #[arg(long)]
     remove_managed: bool,
@@ -223,6 +250,17 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             cli.expect_native_adoption_sha256.as_deref().ok_or("missing explicit native adoption intent pin")?)?;
         println!("{}",serde_json::to_string_pretty(&result)?);
         return Ok(());
+    }
+    if let Some(path) = &cli.prepare_runtime_plan {
+        let report = droidloom_applications::runtime_plan::prepare_files(
+            &cli.socket, path,
+            cli.expect_preparation_sha256.as_deref().ok_or("missing preparation intent pin")?,
+            cli.expect_app_count.ok_or("missing complete selected count")?,
+        )?;
+        println!("{}", serde_json::to_string_pretty(&report)?);
+        return if report.bindings_complete { Ok(()) } else {
+            Err("runtime plan preparation retains blocked bindings; inspect every selected application in the JSON report".into())
+        };
     }
     if cli.inspect_contacts_fixture {
         let contacts = droidloom_applications::runtime_plan::inspect_package(

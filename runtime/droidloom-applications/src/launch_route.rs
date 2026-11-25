@@ -49,7 +49,7 @@ impl LaunchPlan {
     }
 }
 
-fn normalized(component: &str, package: &str) -> Result<String, String> {
+pub(super) fn normalized(component: &str, package: &str) -> Result<String, String> {
     if !crate::valid_component(component, package) {
         return Err(
             "launcher catalog component belongs to a different package or is malformed".into(),
