@@ -27,6 +27,7 @@ mod boot_vm;
 mod capture;
 mod cold_original_data;
 mod cold_original_initramfs;
+mod cold_original_qualification;
 mod complete_native;
 mod complete_snapshot;
 mod fs;
