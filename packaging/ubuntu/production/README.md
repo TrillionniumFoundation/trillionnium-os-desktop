@@ -306,7 +306,13 @@ no-new-privileges. The child verifies actual effective/permitted/bounding masks
 and requires a real permission denial for a harmless readonly-to-readonly `/sys`
 remount. The fixed
 temporary policy-rc.d returns 101 and normal apt uses only the admitted local
-archives with no network or extra package/removal authorization. All original
+archives with no network or extra package/removal authorization. The source-pinned
+archives are copied, create-only, into the private overlay's canonical APT archive
+cache with their real package/version/architecture names, preserving `all` and
+escaping a version epoch as `%3a`. Both simulation and `--no-download --no-remove`
+installation use those absolute cache paths. This follows the complete source
+installer's normal offline path; it neither enables downloading nor changes
+physical cache files. Every copied archive is read back before APT starts. All original
 account bytes and unrelated configured package identities must remain unchanged
 inside the private view too. The roster also retains removed-package config-file
 and purged records, including their exact prior version, architecture and state;

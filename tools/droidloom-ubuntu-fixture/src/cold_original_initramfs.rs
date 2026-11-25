@@ -1142,6 +1142,33 @@ fn expected_roster(before: &Roster, packages: &[Package]) -> Result<Roster> {
     }
     Ok(expected)
 }
+fn apt_archive_path(package: &Package) -> Result<PathBuf> {
+    ensure(
+        !package.name.is_empty()
+            && package.name.len() <= 128
+            && package
+                .name
+                .bytes()
+                .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b"+.-".contains(&b))
+            && !package.version.is_empty()
+            && package.version.len() <= 256
+            && package
+                .version
+                .bytes()
+                .all(|b| b.is_ascii_alphanumeric() || b".+:~-".contains(&b))
+            && matches!(package.architecture.as_str(), "amd64" | "all"),
+        "normal Debian archive cache identity",
+    )?;
+    // The complete source installer's normal offline transaction prepopulates
+    // APT's canonical archive cache. --no-download must not rely on acquiring
+    // and renaming an unrelated /inputs/NN.deb before dpkg sees the archive.
+    Ok(Path::new("/var/cache/apt/archives").join(format!(
+        "{}_{}_{}.deb",
+        package.name,
+        package.version.replace(':', "%3a"),
+        package.architecture
+    )))
+}
 fn effective_initrd_path(relative: &str, layered: bool) -> Result<&str> {
     if !layered {
         return Ok(relative);
@@ -1398,6 +1425,18 @@ pub fn build(path: &Path, expected: &str) -> Result<()> {
     for p in &stage.materials.packages {
         trusted(&p.package)?;
     }
+    let _cache = fs::Tree::open("/", 0)?.dir("/var/cache/apt/archives")?;
+    let mut archives = Vec::new();
+    for package in &stage.materials.packages {
+        let destination = apt_archive_path(package)?;
+        files::copy_pin(&package.package, &destination, 0o444)?;
+        let actual = actual_pin(&destination)?;
+        ensure(
+            actual.bytes == package.package.bytes && actual.sha256 == package.package.sha256,
+            "normal private APT archive cache differs from the admitted source",
+        )?;
+        archives.push(actual);
+    }
     let policy = Path::new("/usr/sbin/policy-rc.d");
     // Only this private overlay is mutable. Preserve any original policy file
     // as an audit pin before replacing the private name with the fixed 101.
@@ -1425,16 +1464,15 @@ pub fn build(path: &Path, expected: &str) -> Result<()> {
         "--yes".into(),
         "--no-download".into(),
         "--no-install-recommends".into(),
+        "--no-remove".into(),
         "--reinstall".into(),
     ];
     let mut simulation = apt.clone();
     simulation.extend(["--simulate".into(), "install".into()]);
     simulation.extend(
-        stage
-            .materials
-            .packages
+        archives
             .iter()
-            .map(|p| p.package.path.to_string_lossy().into_owned()),
+            .map(|p| p.path.to_string_lossy().into_owned()),
     );
     let simulated = run(
         work,
@@ -1472,11 +1510,9 @@ pub fn build(path: &Path, expected: &str) -> Result<()> {
     }
     apt.push("install".into());
     apt.extend(
-        stage
-            .materials
-            .packages
+        archives
             .iter()
-            .map(|p| p.package.path.to_string_lossy().into_owned()),
+            .map(|p| p.path.to_string_lossy().into_owned()),
     );
     let installed = run(work, "normal-apt-install", "/usr/bin/env", apt, 900)?;
     trusted(&policy_pin)?;
@@ -1533,7 +1569,8 @@ pub fn build(path: &Path, expected: &str) -> Result<()> {
     )?;
     let report = json!({"schema":"droidloom.original-host-normal-initramfs-build.v1","stage_sha256":pin.sha256,
         "kernel_release":KERNEL,"package_count":24,"private_namespaces":namespaces()?,"root_identity":[root.dev(),root.ino()],
-        "normal_simulation":simulated,"normal_install":installed,"normal_audit":audit,"constrained_capabilities":capabilities,"actual_remount_denial":probe_pin,
+        "normal_simulation":simulated,"normal_install":installed,"normal_audit":audit,"normal_archive_cache":archives,
+        "constrained_capabilities":capabilities,"actual_remount_denial":probe_pin,
         "status_before":status,"status_after":after,"retained_private_status":actual_pin(&work.join("PRIVATE-DPKG-STATUS"))?,"original_account_files":account_before,
         "policy_rc_101":policy_pin,"previous_private_policy_rc":previous_policy,"normal_native_hook":hook_pin,
         "normal_mkinitramfs":built,"full_readback":observed,"initrd":image,"physical_install":false,
@@ -1545,6 +1582,34 @@ pub fn build(path: &Path, expected: &str) -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn offline_archive_cache_names_preserve_identity_and_reject_path_injection() {
+        let mut package = Package {
+            role: "systemd-dev".into(),
+            name: "systemd-dev".into(),
+            version: "1:259.9-0ubuntu0.1+p4gentmp1".into(),
+            architecture: "all".into(),
+            package: FilePin {
+                path: "/inputs/00.deb".into(),
+                bytes: 1,
+                sha256: "0".repeat(64),
+            },
+        };
+        assert_eq!(
+            apt_archive_path(&package).unwrap(),
+            Path::new("/var/cache/apt/archives/systemd-dev_1%3a259.9-0ubuntu0.1+p4gentmp1_all.deb")
+        );
+        for version in ["../other", "x/y", "x\n", "x%2fy", ""] {
+            package.version = version.into();
+            assert!(apt_archive_path(&package).is_err());
+        }
+        package.version = "1".into();
+        package.name = "../../other".into();
+        assert!(apt_archive_path(&package).is_err());
+        package.name = "systemd-dev".into();
+        package.architecture = "arm64".into();
+        assert!(apt_archive_path(&package).is_err());
+    }
     #[test]
     fn residual_package_records_are_preserved_and_cannot_supply_native_installation() {
         let raw=b"Package: systemd\nStatus: install ok installed\nVersion: old\nArchitecture: amd64\n\nPackage: legacy\nStatus: deinstall ok config-files\nVersion: 1\nArchitecture: all\n\nPackage: purged\nStatus: purge ok not-installed\n";
