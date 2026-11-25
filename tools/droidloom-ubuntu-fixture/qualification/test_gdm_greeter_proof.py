@@ -7,10 +7,34 @@ from pathlib import Path
 import shutil
 import tempfile
 import unittest
+from unittest import mock
+from types import SimpleNamespace
 
 spec = importlib.util.spec_from_file_location("proof", Path(__file__).with_name("gdm_greeter_proof.py"))
 proof = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(proof)
+
+
+class NamedGroupIdentity(unittest.TestCase):
+    def test_primary_gid_comes_from_fixed_named_group_and_matches_credentials(self):
+        name, uid = "gdm-greeter", 60578
+        home = "/run/gdm3/home/" + name
+        invocation = "1234567890abcdef1234567890abcdef"
+        for gid in (121, 981):
+            account = SimpleNamespace(pw_name=name, pw_uid=uid, pw_gid=gid, pw_dir=home)
+            with mock.patch.object(proof.os, "getresuid", return_value=(uid, uid, uid)), \
+                 mock.patch.object(proof.os, "getresgid", return_value=(gid, gid, gid)), \
+                 mock.patch.object(proof.grp, "getgrnam", return_value=SimpleNamespace(gr_gid=gid)) as group, \
+                 mock.patch.object(proof.pwd, "getpwuid", return_value=account), \
+                 mock.patch.dict(proof.os.environ, {"HOME": home, "INVOCATION_ID": invocation}):
+                self.assertEqual(proof.identity(), (uid, gid, name, home, invocation))
+                group.assert_called_with("gdm")
+                with mock.patch.object(proof.os, "getresgid", return_value=(1000, 1000, 1000)):
+                    with self.assertRaises(proof.Rejected):
+                        proof.identity()
+                account.pw_gid = 65534
+                with self.assertRaises(proof.Rejected):
+                    proof.identity()
 
 
 @unittest.skipUnless(os.geteuid() == 0, "requires actual disposable child UID/GID transitions")
@@ -81,6 +105,13 @@ class ActualCredentialTree(unittest.TestCase):
         result = self.child()
         self.assertTrue(result["accepted"], result)
         self.assertEqual((result["actual_uid"], result["actual_gid"]), (60578, 121))
+        self.assertEqual(result["result"]["file_sha256"], proof.hashlib.sha256(self.body).hexdigest())
+        self.assertNotIn("never-print-this-body", json.dumps(result))
+
+    def test_actual_normal_group_reads_private_file_without_body_disclosure(self):
+        result = self.child(gid=981)
+        self.assertTrue(result["accepted"], result)
+        self.assertEqual((result["actual_uid"], result["actual_gid"]), (60578, 981))
         self.assertEqual(result["result"]["file_sha256"], proof.hashlib.sha256(self.body).hexdigest())
         self.assertNotIn("never-print-this-body", json.dumps(result))
 

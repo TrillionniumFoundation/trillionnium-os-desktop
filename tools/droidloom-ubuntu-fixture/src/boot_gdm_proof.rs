@@ -1,8 +1,8 @@
 //! Fresh-fixture-only proof of GDM's dynamic greeter environment writer.
 //! This adds no root runtime observer and does not qualify a visible desktop.
-use crate::{boot_files, ensure, fs, Result};
+use crate::{Result, boot_files, ensure, fs};
 use serde::Deserialize;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use std::collections::BTreeSet;
 use std::path::Path;
 
@@ -59,6 +59,111 @@ pub fn validate_public_group(bytes: &[u8]) -> Result<()> {
         rows.len() == 1 && rows[0].split(':').collect::<Vec<_>>().get(2) == Some(&"121"),
         "selected GDM_GROUPNAME=gdm must retain its original public primary GID 121",
     )
+}
+
+/// This value can only be constructed from a pinned native preparation
+/// receipt. A numeric CLI override cannot select a trusted journal group.
+#[derive(Clone, Debug, serde::Serialize)]
+pub struct GroupBinding {
+    gid: u32,
+    native_schema: String,
+    initialization_schema: String,
+}
+
+pub fn native_group_binding(native: &Value, work: &Path) -> Result<GroupBinding> {
+    let init = &native["native_initialization"];
+    let expected_root = work.join("root");
+    ensure(
+        native["work_directory"].as_str() == work.to_str()
+            && native["root"].as_str() == expected_root.to_str()
+            && init["work"].as_str() == work.to_str()
+            && init["root"].as_str() == expected_root.to_str()
+            && native["guest_qualified"] == false
+            && native["production_ready"] == false
+            && init["native_initialization_complete"] == true
+            && init["guest_started"] == false
+            && init["guest_qualified"] == false
+            && init["host_passwords_keys_homes_imported"] == false,
+        "GDM group authority is not the same completed unbooted native fixture",
+    )?;
+    let gid = init["accounts"]["groups"]["gdm"]
+        .as_u64()
+        .filter(|v| (1..1000).contains(v))
+        .ok_or("native preparation has no valid normal GDM group")? as u32;
+    let native_schema = native["schema"]
+        .as_str()
+        .ok_or("native receipt schema absent")?;
+    let initialization_schema = init["schema"]
+        .as_str()
+        .ok_or("native initialization schema absent")?;
+    match (native_schema, initialization_schema) {
+        ("droidloom.ubuntu-native-prepared.v1", "droidloom.native-ubuntu-initialization.v1") => {
+            ensure(
+                gid == 121,
+                "historical public fixture must retain GDM GID 121",
+            )?;
+        }
+        (
+            "droidloom.complete-ubuntu-native-prepared.v1",
+            "droidloom.complete-native-ubuntu-initialization.v1",
+        ) => {
+            ensure(
+                init["source_stage"] == "installed"
+                    && init["accounts"]["normal_service_accounts_preserved"] == true,
+                "complete GDM group lacks installed native account preservation",
+            )?;
+        }
+        _ => return Err("unrecognized native GDM group authority".into()),
+    }
+    let users = init["accounts"]["users"]
+        .as_array()
+        .ok_or("native account roster absent")?;
+    let gdm: Vec<_> = users.iter().filter(|u| u["name"] == "gdm").collect();
+    ensure(
+        gdm.len() == 1
+            && gdm[0]["gid"].as_u64() == Some(u64::from(gid))
+            && gdm[0]["uid"]
+                .as_u64()
+                .is_some_and(|v| (1..1000).contains(&v)),
+        "prepared GDM user and normal group disagree",
+    )?;
+    Ok(GroupBinding {
+        gid,
+        native_schema: native_schema.into(),
+        initialization_schema: initialization_schema.into(),
+    })
+}
+
+pub fn validate_bound_group(bytes: &[u8], binding: &GroupBinding) -> Result<()> {
+    let mut names = BTreeSet::new();
+    let mut gids = BTreeSet::new();
+    let mut found = false;
+    for line in std::str::from_utf8(bytes)?.lines() {
+        let fields: Vec<_> = line.split(':').collect();
+        ensure(
+            fields.len() == 4
+                && !fields[0].is_empty()
+                && fields[0]
+                    .bytes()
+                    .all(|b| b.is_ascii_alphanumeric() || b"_-".contains(&b))
+                && ["x", "!", "*", ""].contains(&fields[1])
+                && names.insert(fields[0]),
+            "ended native group file has an invalid or duplicate row",
+        )?;
+        let gid: u32 = fields[2].parse()?;
+        ensure(
+            gids.insert(gid),
+            "ended native group file aliases a numeric group",
+        )?;
+        if fields[0] == "gdm" {
+            ensure(
+                gid == binding.gid,
+                "ended GDM group differs from pinned native preparation",
+            )?;
+            found = true;
+        }
+    }
+    ensure(found, "ended native group file has no GDM group")
 }
 
 pub fn original_session(tree: &fs::Tree) -> Result<Value> {
@@ -213,8 +318,9 @@ fn nonzero_id(value: &str) -> bool {
         && value.bytes().any(|b| b != b'0')
 }
 
-fn trusted_record(row: &Value, proof: &Proof, boot: &str) -> bool {
+fn trusted_record(row: &Value, proof: &Proof, boot: &str, expected_gid: u32) -> bool {
     let uid = proof.uid.to_string();
+    let gid = expected_gid.to_string();
     let user_manager = format!("user@{}.service", proof.uid);
     let journal_time = row["__MONOTONIC_TIMESTAMP"]
         .as_str()
@@ -224,7 +330,7 @@ fn trusted_record(row: &Value, proof: &Proof, boot: &str) -> bool {
     proof.schema == "droidloom.fixture-gdm-greeter-proof.v1"
         && proof.result == "passed"
         && (60578..=60705).contains(&proof.uid)
-        && proof.gid == 121
+        && proof.gid == expected_gid
         && proof.pid > 1
         && proof.unit == UNIT
         && nonzero_id(&proof.invocation_id)
@@ -244,7 +350,7 @@ fn trusted_record(row: &Value, proof: &Proof, boot: &str) -> bool {
         && proof.checked_environment_fields == ["USER", "LOGNAME", "HOME", "GDM_SEAT_ID"]
         && !proof.source_body_emitted
         && row["_UID"] == uid
-        && row["_GID"] == "121"
+        && row["_GID"] == gid
         && row["_SYSTEMD_OWNER_UID"] == uid
         && row["_PID"] == proof.pid.to_string()
         && row["_SYSTEMD_UNIT"] == user_manager
@@ -257,10 +363,31 @@ fn trusted_record(row: &Value, proof: &Proof, boot: &str) -> bool {
 
 /// Called only on the original, verified native journals extracted by the
 /// existing ended-VM collector. JSON text and SyslogIdentifier are insufficient.
+#[cfg(test)]
 pub fn journal_evidence(
     rows: &[Value],
     boot_ids: &BTreeSet<String>,
     source_verified: bool,
+) -> Value {
+    journal_evidence_for_gid(rows, boot_ids, source_verified, 121)
+}
+
+pub fn journal_evidence_bound(
+    rows: &[Value],
+    boot_ids: &BTreeSet<String>,
+    source_verified: bool,
+    binding: &GroupBinding,
+) -> Value {
+    let mut evidence = journal_evidence_for_gid(rows, boot_ids, source_verified, binding.gid);
+    evidence["native_group_binding"] = json!(binding);
+    evidence
+}
+
+fn journal_evidence_for_gid(
+    rows: &[Value],
+    boot_ids: &BTreeSet<String>,
+    source_verified: bool,
+    expected_gid: u32,
 ) -> Value {
     let boot = boot_ids.iter().next().map(String::as_str).unwrap_or("");
     let mut observations = Vec::new();
@@ -270,7 +397,7 @@ pub fn journal_evidence(
             .as_str()
             .filter(|s| s.len() <= 4096)
             .and_then(|s| serde_json::from_str::<Proof>(s).ok());
-        if let Some(proof) = proof.filter(|p| trusted_record(row, p, boot)) {
+        if let Some(proof) = proof.filter(|p| trusted_record(row, p, boot, expected_gid)) {
             let uid = proof.uid.to_string();
             let manager = format!("user@{}.service", proof.uid);
             let terminal: Vec<_> = rows
@@ -348,6 +475,93 @@ mod tests {
             ],
             [boot.into()].into_iter().collect(),
         )
+    }
+
+    fn native_receipt(gid: u32, complete: bool) -> Value {
+        let work = "/var/lib/droidloom-qualification/test";
+        json!({
+            "schema":if complete {"droidloom.complete-ubuntu-native-prepared.v1"} else {"droidloom.ubuntu-native-prepared.v1"},
+            "work_directory":work,"root":format!("{work}/root"),"guest_qualified":false,"production_ready":false,
+            "native_initialization":{
+                "schema":if complete {"droidloom.complete-native-ubuntu-initialization.v1"} else {"droidloom.native-ubuntu-initialization.v1"},
+                "root":format!("{work}/root"),"work":work,"source_stage":"installed",
+                "native_initialization_complete":true,"guest_started":false,"guest_qualified":false,
+                "host_passwords_keys_homes_imported":false,
+                "accounts":{"groups":{"gdm":gid},"users":[{"name":"gdm","uid":981,"gid":gid}],
+                    "normal_service_accounts_preserved":true}
+            }
+        })
+    }
+
+    #[test]
+    fn prepared_normal_gdm_group_and_actual_group_file_are_both_required() {
+        let work = Path::new("/var/lib/droidloom-qualification/test");
+        let native = native_receipt(981, true);
+        let binding = native_group_binding(&native, work).unwrap();
+        assert!(validate_bound_group(b"root:x:0:\ngdm:x:981:\n", &binding).is_ok());
+        for bytes in [
+            b"root:x:0:\ngdm:x:121:\n".as_slice(),
+            b"root:x:0:\ngdm:x:981:\nalias:x:981:\n".as_slice(),
+            b"root:x:0:\ngdm:x:981:\ngdm:x:982:\n".as_slice(),
+            b"root:x:0:\n".as_slice(),
+        ] {
+            assert!(validate_bound_group(bytes, &binding).is_err());
+        }
+        assert!(native_group_binding(&native_receipt(121, false), work).is_ok());
+        assert!(native_group_binding(&native_receipt(981, false), work).is_err());
+        assert!(native_group_binding(&native_receipt(0, true), work).is_err());
+        assert!(native_group_binding(&native_receipt(1000, true), work).is_err());
+        assert!(
+            native_group_binding(&native, Path::new("/var/lib/droidloom-qualification/other"))
+                .is_err()
+        );
+        let mut wrong = native.clone();
+        wrong["native_initialization"]["accounts"]["users"][0]["gid"] = json!(121);
+        assert!(native_group_binding(&wrong, work).is_err());
+        let mut unprepared = native;
+        unprepared["native_initialization"]["native_initialization_complete"] = json!(false);
+        assert!(native_group_binding(&unprepared, work).is_err());
+        validate_public_group(b"gdm:x:121:\n").unwrap();
+        assert!(validate_public_group(b"gdm:x:981:\n").is_err());
+    }
+
+    #[test]
+    fn journal_trusted_gid_and_payload_gid_must_match_bound_normal_group() {
+        let (mut rows, boots) = observed();
+        let binding = native_group_binding(
+            &native_receipt(981, true),
+            Path::new("/var/lib/droidloom-qualification/test"),
+        )
+        .unwrap();
+        assert_eq!(
+            journal_evidence_bound(&rows, &boots, true, &binding)["dynamic_environment_writer_proven"],
+            false
+        );
+        rows[0]["_GID"] = json!("981");
+        assert_eq!(
+            journal_evidence_bound(&rows, &boots, true, &binding)["dynamic_environment_writer_proven"],
+            false
+        );
+        let mut body: Value = serde_json::from_str(rows[0]["MESSAGE"].as_str().unwrap()).unwrap();
+        body["gid"] = json!(981);
+        rows[0]["MESSAGE"] = json!(body.to_string());
+        assert_eq!(
+            journal_evidence_bound(&rows, &boots, true, &binding)["dynamic_environment_writer_proven"],
+            true
+        );
+        assert_eq!(
+            journal_evidence_bound(&rows, &boots, false, &binding)["dynamic_environment_writer_proven"],
+            false
+        );
+        assert_eq!(
+            journal_evidence(&rows, &boots, true)["dynamic_environment_writer_proven"],
+            false
+        );
+        rows[0]["_GID"] = json!("121");
+        assert_eq!(
+            journal_evidence_bound(&rows, &boots, true, &binding)["dynamic_environment_writer_proven"],
+            false
+        );
     }
 
     #[test]

@@ -1,14 +1,14 @@
 //! Read original native journals only after the owned VM has been reaped.
 //! Filesystem recovery always acts on a new independent copy of its ended disk.
 use crate::{
+    Result,
     boot_child::OwnedChild,
     boot_files::{self, FilePin},
     ensure, fs,
     model::Identity,
-    Result,
 };
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use std::{
     collections::BTreeSet,
     io::{BufRead, BufReader, Read},
@@ -581,6 +581,7 @@ fn collect(
     prepared: &Value,
     work: &Path,
     disk: &FilePin,
+    group_binding: &crate::boot_gdm_proof::GroupBinding,
 ) -> Result<Value> {
     let source = boot_files::checked_file(disk)?;
     let before = fs::stat(&source)?;
@@ -792,8 +793,36 @@ fn collect(
         false
     };
     greeter_source_verified &= timed_config_verified;
-    let greeter_proof =
-        crate::boot_gdm_proof::journal_evidence(&all_rows, &boot_ids, greeter_source_verified);
+    let native_group = dump_regular(
+        plan,
+        work,
+        &replay,
+        "/etc/group",
+        "native-gdm-group",
+        0o644,
+        1024 * 1024,
+        &mut directory_index,
+    )?;
+    let group_check = native_group
+        .as_ref()
+        .ok_or_else(|| -> Box<dyn std::error::Error + Send + Sync> {
+            "ended native group file absent".into()
+        })
+        .and_then(|pin| {
+            crate::boot_gdm_proof::validate_bound_group(
+                &boot_files::read_pin(pin, 1024 * 1024)?,
+                group_binding,
+            )
+        });
+    let group_verified = group_check.is_ok();
+    let group_error = group_check.err().map(|e| e.to_string());
+    greeter_source_verified &= group_verified;
+    let greeter_proof = crate::boot_gdm_proof::journal_evidence_bound(
+        &all_rows,
+        &boot_ids,
+        greeter_source_verified,
+        group_binding,
+    );
     let ordinary_shutdown =
         ended["exit_code"] == 0 && ended["signal"].is_null() && ended["forced_stop"] == false;
     let calibration_proven = verified
@@ -811,6 +840,8 @@ fn collect(
         "ordinary_guest_shutdown":ordinary_shutdown,"boot_ids":boot_ids,
         "greeter_proof_source_files":greeter_proof_files,"greeter_timed_login_config":timed_config,
         "greeter_timed_login_config_verified":timed_config_verified,"dynamic_greeter_environment":greeter_proof,
+        "native_group_file":native_group,"native_group_binding":group_binding,
+        "native_group_matches_preparation":group_verified,"native_group_binding_error":group_error,
         "systemd_failed_jobs":failures,"mac_denials":denials,"priority_error_records":high_priority,
         "journal_entries":all_rows.len(),"ended_working_disk_preserved":true,
         "guest_qualified":false,"production_ready":false,
@@ -877,6 +908,23 @@ pub fn run(path: &Path, expected: &str) -> Result<()> {
     for dir in [&root, &boot, &run] {
         private_tree(dir)?;
     }
+    let native_pin: FilePin = serde_json::from_value(prepared["native_receipt"].clone())?;
+    ensure(
+        native_pin.path == root.join("NATIVE-PREPARED.json"),
+        "native GDM group authority is not the boot's own preparation receipt",
+    )?;
+    let native_file = boot_files::checked_file(&native_pin)?;
+    let native_identity = fs::stat(&native_file)?;
+    ensure(
+        native_identity.uid == 0
+            && native_identity.gid == 0
+            && native_identity.mode & 0o7777 == 0o600
+            && native_identity.nlink == 1,
+        "native GDM preparation receipt is not root protected and private",
+    )?;
+    let native: Value =
+        serde_json::from_slice(&boot_files::read_pin(&native_pin, 4 * 1024 * 1024)?)?;
+    let group_binding = crate::boot_gdm_proof::native_group_binding(&native, &root)?;
     let disk: FilePin = serde_json::from_value(ended["working_disk"].clone())?;
     let serial: FilePin = serde_json::from_value(ended["serial"].clone())?;
     ensure(
@@ -918,10 +966,12 @@ pub fn run(path: &Path, expected: &str) -> Result<()> {
         &plan,
         0,
     )?;
-    let result = collect(&plan, &ended, &prepared, &work, &disk);
+    let result = collect(&plan, &ended, &prepared, &work, &disk, &group_binding);
     let source_check = preserved(&original, &original_file, &original_identity);
+    let native_check = preserved(&native_pin, &native_file, &native_identity);
     let source_preserved = source_check.is_ok();
-    let status = if result.is_ok() && source_preserved {
+    let native_preserved = native_check.is_ok();
+    let status = if result.is_ok() && source_preserved && native_preserved {
         "collected"
     } else {
         "failed"
@@ -930,12 +980,14 @@ pub fn run(path: &Path, expected: &str) -> Result<()> {
     let errors: Vec<_> = [
         result.as_ref().err().map(ToString::to_string),
         source_check.as_ref().err().map(ToString::to_string),
+        native_check.as_ref().err().map(ToString::to_string),
     ]
     .into_iter()
     .flatten()
     .collect();
     let output = json!({"schema":"droidloom.full-ubuntu-boot-collected.v1",
         "input_sha256":expected,"ended":plan.ended,"prepared":prepared_pin,
+        "native_receipt":native_pin,"native_receipt_identity":native_identity,"native_receipt_preserved":native_preserved,
         "collection_directory":work,"status":status,"errors":errors,"details":details,
         "preserved_source_image":original,"source_image_preserved":source_preserved,
         "guest_qualified":false,"production_ready":false});
@@ -947,6 +999,7 @@ pub fn run(path: &Path, expected: &str) -> Result<()> {
         "guest_qualified":false,"production_ready":false})
     );
     source_check?;
+    native_check?;
     result?;
     Ok(())
 }
@@ -1001,6 +1054,117 @@ mod tests {
         assert!(resolve_inode(&plan, dir.path(), &disk, "/absent", &mut index)?.is_none());
         Ok(())
     }
+    #[test]
+    fn actual_ext4_gdm_group_is_root_owned_and_bound_to_preparation() -> Result<()> {
+        let dir = tempfile::tempdir()?;
+        let layout = dir.path().join("root");
+        std::fs::create_dir(&layout)?;
+        std::fs::create_dir(layout.join("etc"))?;
+        std::fs::write(layout.join("etc/group"), b"root:x:0:\ngdm:x:981:\n")?;
+        let disk = dir.path().join("group.ext4");
+        let file = boot_files::new_file(&disk, 0o600)?;
+        file.set_len(32 * 1024 * 1024)?;
+        file.sync_all()?;
+        let mkfs = boot_files::pin_file(Path::new("/usr/sbin/mke2fs"))?;
+        let made = execute(
+            dir.path(),
+            "group-mkfs",
+            &mkfs,
+            vec![
+                "-q".into(),
+                "-F".into(),
+                "-t".into(),
+                "ext4".into(),
+                "-d".into(),
+                layout.to_string_lossy().into(),
+                disk.to_string_lossy().into(),
+            ],
+            30,
+            1024 * 1024,
+        )?;
+        assert!(success(&made, &[0]));
+        let plan = CollectPlan {
+            schema: String::new(),
+            ended: boot_files::pin_file(&disk)?,
+            collection_name: "group".into(),
+            e2fsck: boot_files::pin_file(Path::new("/usr/sbin/e2fsck"))?,
+            debugfs: boot_files::pin_file(Path::new("/usr/sbin/debugfs"))?,
+            journalctl: boot_files::pin_file(Path::new("/usr/bin/journalctl"))?,
+        };
+        // Only this disposable ext4 image is modified; the host group database
+        // and account identities are never changed by the regression.
+        for (field, value) in [("uid", "0"), ("gid", "0"), ("mode", "0100644")] {
+            let set = execute(
+                dir.path(),
+                &format!("group-set-{field}"),
+                &plan.debugfs,
+                vec![
+                    "-w".into(),
+                    "-R".into(),
+                    format!("sif /etc/group {field} {value}"),
+                    disk.to_string_lossy().into(),
+                ],
+                30,
+                65536,
+            )?;
+            assert!(success(&set, &[0]));
+        }
+        let root = Path::new("/var/lib/droidloom-qualification/group-test");
+        let native = json!({
+            "schema":"droidloom.complete-ubuntu-native-prepared.v1",
+            "work_directory":root,"root":root.join("root"),"guest_qualified":false,"production_ready":false,
+            "native_initialization":{"schema":"droidloom.complete-native-ubuntu-initialization.v1",
+                "root":root.join("root"),"work":root,"source_stage":"installed",
+                "native_initialization_complete":true,"guest_started":false,"guest_qualified":false,
+                "host_passwords_keys_homes_imported":false,
+                "accounts":{"groups":{"gdm":981},"users":[{"name":"gdm","uid":981,"gid":981}],
+                    "normal_service_accounts_preserved":true}}
+        });
+        let binding = crate::boot_gdm_proof::native_group_binding(&native, root)?;
+        let mut index = 0;
+        let group = dump_regular(
+            &plan,
+            dir.path(),
+            &disk,
+            "/etc/group",
+            "group-readback",
+            0o644,
+            1024,
+            &mut index,
+        )?
+        .ok_or("actual group absent")?;
+        let bytes = boot_files::read_pin(&group, 1024)?;
+        crate::boot_gdm_proof::validate_bound_group(&bytes, &binding)?;
+        let changed = execute(
+            dir.path(),
+            "group-change-owner",
+            &plan.debugfs,
+            vec![
+                "-w".into(),
+                "-R".into(),
+                "sif /etc/group uid 1000".into(),
+                disk.to_string_lossy().into(),
+            ],
+            30,
+            65536,
+        )?;
+        assert!(success(&changed, &[0]));
+        assert!(
+            dump_regular(
+                &plan,
+                dir.path(),
+                &disk,
+                "/etc/group",
+                "group-wrong-owner",
+                0o644,
+                1024,
+                &mut index
+            )
+            .is_err()
+        );
+        Ok(())
+    }
+
     #[test]
     fn actual_pid1_identity_and_both_success_events_are_required() {
         let boot = "12345678123412341234123456781234";
