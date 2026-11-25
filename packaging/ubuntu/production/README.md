@@ -282,3 +282,30 @@ Physical activation remains blocked until the cold acceptance validator binds
 the same public/native release, actual owned runtime results and original-device
 private working-copy qualification. Missing evidence is an error, never a
 caller-supplied success flag.
+
+### Native package archive and protected import
+
+The complete normal native release now has a separate material transport. The
+export contains all 109 source, inventory, new package and rollback package files
+in a canonical USTAR archive. Its fixed index and the original native manifest
+are separate pinned files. Both ordinary readback and protected import parse
+every header, body, padding block and the exact archive end before running the
+existing full source/package verifier. They reject aliases, links, special
+members, extensions, extra bytes and unlisted entries.
+
+The build operation is:
+
+    python3.14 -I -B -c 'import sys; sys.path.insert(0, "/usr/lib/droidloom/production/current"); import native_release; native_release.main()' export --bundle NATIVE_BUNDLE --release-id NATIVE_ID --output NEW_OUTPUT
+
+Original-Ubuntu root may import the three protected public material files with
+native_release import-archive, supplying the exact index SHA256 and native ID.
+The only public destination is
+/var/lib/droidloom-maintenance/native-releases/NATIVE_ID. The import creates a
+private pending directory, fully validates it, and publishes it with
+renameat2(RENAME_NOREPLACE). An existing identical release is read back; a foreign
+or altered target is preserved and rejected. Import performs no dpkg action,
+service change, boot selection, account operation, or runtime qualification.
+
+The same source-bound fifteen-package closure and original rollback archives
+remain mandatory after transport. This operation does not satisfy the owned
+runtime or original-device private-account acceptance gates.
