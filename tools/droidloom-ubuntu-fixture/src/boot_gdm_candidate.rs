@@ -548,6 +548,15 @@ fn prepare_candidate(
     Ok((sources, selected, candidate_elf))
 }
 
+/// Reuse the exact normal source, real regression, package and ELF admission
+/// for a complete dpkg-installed root, without applying the legacy ELF overlay.
+pub(super) fn admit_sources(input: &GdmCandidate, layer: &Path) -> Result<Value> {
+    let lock = source_lock()?;
+    let (sources, _, elf) = prepare_candidate(input, &lock, layer)?;
+    Ok(json!({"sources":sources,"candidate_elf":elf,
+        "source_receipts_rewritten":false,"root_files_modified":false}))
+}
+
 pub fn apply(root: &Path, boot: &Path, manifest: &Manifest, input: &GdmCandidate) -> Result<Value> {
     let work = boot.parent().ok_or("GDM candidate work parent absent")?;
     ensure(

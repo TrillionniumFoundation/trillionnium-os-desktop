@@ -34,6 +34,36 @@ pub struct LibselinuxCandidate {
     pub source_orig_signature: FilePin,
 }
 
+/// Original producer paths remain part of the signed/pinned evidence. A normal
+/// build imported from another machine resolves those paths only through an
+/// explicit byte-identical custody map; the producer receipts are not rewritten.
+pub(super) type SourceMap = BTreeMap<PathBuf, FilePin>;
+
+pub(super) fn source_path(path: &Path, imports: Option<&SourceMap>) -> Result<FilePin> {
+    match imports {
+        Some(imports) => imports.get(path).cloned().ok_or_else(|| {
+            format!(
+                "source evidence lacks an imported artifact: {}",
+                path.display()
+            )
+            .into()
+        }),
+        None => boot_files::pin_file(path),
+    }
+}
+
+pub(super) fn source_pin(pin: &FilePin, imports: Option<&SourceMap>) -> Result<FilePin> {
+    let actual = source_path(&pin.path, imports)?;
+    ensure(
+        actual.bytes == pin.bytes
+            && actual.sha256 == pin.sha256
+            && actual.path.file_name() == pin.path.file_name(),
+        "imported source evidence differs from its original producer pin",
+    )?;
+    boot_files::checked_file(&actual)?;
+    Ok(actual)
+}
+
 pub(super) fn artifact(value: &Value) -> Result<FilePin> {
     Ok(FilePin {
         path: PathBuf::from(value["path"].as_str().ok_or("artifact path absent")?),
@@ -227,8 +257,13 @@ fn dsc_sources(text: &str) -> Result<BTreeMap<String, (u64, String)>> {
     Ok(result)
 }
 
-fn verify_sources(input: &LibselinuxCandidate, declaration: &Value, work: &Path) -> Result<Value> {
-    let source = read_json(&input.source_commit)?;
+fn verify_sources(
+    input: &LibselinuxCandidate,
+    declaration: &Value,
+    work: &Path,
+    imports: Option<&SourceMap>,
+) -> Result<Value> {
+    let source = read_json(&source_pin(&input.source_commit, imports)?)?;
     let git = |v: &Value| {
         v.as_str().is_some_and(|s| {
             s.len() == 40
@@ -246,7 +281,7 @@ fn verify_sources(input: &LibselinuxCandidate, declaration: &Value, work: &Path)
             && source["patch_sha256"] == declaration["source"]["patch_sha256"],
         "candidate maintained-source proof differs",
     )?;
-    evidence::maintained_source(&source, declaration, input)?;
+    evidence::maintained_source(&source, declaration, input, imports)?;
     let packages = declaration["source_and_binary_packages"]
         .as_array()
         .ok_or("source package pins absent")?;
@@ -265,7 +300,10 @@ fn verify_sources(input: &LibselinuxCandidate, declaration: &Value, work: &Path)
             "candidate package is not bound by its build declaration",
         )?;
     }
-    let dsc = String::from_utf8(boot_files::read_pin(&input.source_dsc, 65536)?)?;
+    let dsc = String::from_utf8(boot_files::read_pin(
+        &source_pin(&input.source_dsc, imports)?,
+        65536,
+    )?)?;
     let sources = dsc_sources(&dsc)?;
     for (pin, expected_name, limit) in [
         (
@@ -297,10 +335,14 @@ fn verify_sources(input: &LibselinuxCandidate, declaration: &Value, work: &Path)
             pin.bytes > 0 && pin.bytes <= limit,
             "source archive or signature exceeds reviewed bound",
         )?;
-        boot_files::checked_file(pin)?;
+        source_pin(pin, imports)?;
     }
     let source_archive = work.join("source.debian.tar.xz");
-    boot_files::copy_pin(&input.source_debian_archive, &source_archive, 0o400)?;
+    boot_files::copy_pin(
+        &source_pin(&input.source_debian_archive, imports)?,
+        &source_archive,
+        0o400,
+    )?;
     let tar = crate::boot_runtime::redirected(
         work,
         "source-xz",
@@ -322,10 +364,10 @@ fn verify_sources(input: &LibselinuxCandidate, declaration: &Value, work: &Path)
         "normal source package patch differs from maintained Git patch",
     )?;
     let build_pin = artifact(&declaration["normal_build"])?;
-    let build = read_json(&build_pin)?;
+    let build = read_json(&source_pin(&build_pin, imports)?)?;
     evidence::normal_build(&build, declaration)?;
     let api_pin = artifact(&declaration["public_api_unit_tests"])?;
-    let api = read_json(&api_pin)?;
+    let api = read_json(&source_pin(&api_pin, imports)?)?;
     let case_count = evidence::public_api(&api, &source, declaration)?;
     Ok(json!({"source_commit":input.source_commit,"source":source,
         "dsc":input.source_dsc,"debian_archive":input.source_debian_archive,
@@ -449,7 +491,8 @@ fn verify_declaration(input: &LibselinuxCandidate, declaration: &Value) -> Resul
             && declaration["target_kernel_systemd_qualified"] == false
             && declaration["public_versioned_exports_equal"] == true
             && declaration["public_versioned_exports_count"] == 247
-            && declaration["tested_attributes"] == json!(["exec", "keycreate", "fscreate", "sockcreate"]),
+            && declaration["tested_attributes"]
+                == json!(["exec", "keycreate", "fscreate", "sockcreate"]),
         "candidate declaration is outside the reviewed replacement contract",
     )?;
     Ok(())
@@ -459,9 +502,10 @@ fn stage_debian_library(
     input: &LibselinuxCandidate,
     declaration: &Value,
     layer: &Path,
+    imports: Option<&SourceMap>,
 ) -> Result<FilePin> {
     let deb = layer.join("candidate.deb");
-    boot_files::copy_pin(&input.package, &deb, 0o400)?;
+    boot_files::copy_pin(&source_pin(&input.package, imports)?, &deb, 0o400)?;
     for (field, want) in [
         ("Package", "libselinux1"),
         ("Version", CANDIDATE_VERSION),
@@ -503,6 +547,21 @@ fn stage_debian_library(
     let candidate = layer.join("libselinux.so.1");
     boot_files::write_new(&candidate, &bytes, 0o644)?;
     boot_files::pin_file(&candidate)
+}
+
+/// Verify the normal source/build and packaged ABI without replacing any root file.
+pub(super) fn admit_sources(
+    input: &LibselinuxCandidate,
+    imports: &SourceMap,
+    layer: &Path,
+) -> Result<Value> {
+    let declaration = read_json(&source_pin(&input.declaration, Some(imports))?)?;
+    verify_declaration(input, &declaration)?;
+    let sources = verify_sources(input, &declaration, layer, Some(imports))?;
+    let candidate = stage_debian_library(input, &declaration, layer, Some(imports))?;
+    let (_, elf) = elf_report(&candidate.path, layer, "candidate")?;
+    Ok(json!({"sources":sources,"candidate_elf":elf,
+        "source_receipts_rewritten":false,"root_files_modified":false}))
 }
 
 pub fn apply(
@@ -553,8 +612,8 @@ pub fn apply(
     verify_declaration(input, &declaration)?;
     let layer = boot.join("libselinux-candidate");
     boot_files::private_dir(&layer)?;
-    let sources = verify_sources(input, &declaration, &layer)?;
-    let candidate = stage_debian_library(input, &declaration, &layer)?.path;
+    let sources = verify_sources(input, &declaration, &layer, None)?;
+    let candidate = stage_debian_library(input, &declaration, &layer, None)?.path;
     let wanted = artifact(&declaration["candidate_library"])?;
     let before = layer.join("original-libselinux.so.1");
     boot_files::copy_pin(&original_pin, &before, 0o400)?;
@@ -732,8 +791,8 @@ mod tests {
         boot_files::private_dir(&layer)?;
         let declaration = read_json(&input.declaration)?;
         verify_declaration(&input, &declaration)?;
-        let sources = verify_sources(&input, &declaration, &layer)?;
-        let library = stage_debian_library(&input, &declaration, &layer)?;
+        let sources = verify_sources(&input, &declaration, &layer, None)?;
+        let library = stage_debian_library(&input, &declaration, &layer, None)?;
         let original =
             boot_files::pin_file(Path::new("/usr/lib/x86_64-linux-gnu/libselinux.so.1"))?;
         ensure(

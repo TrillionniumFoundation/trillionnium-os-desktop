@@ -1,8 +1,8 @@
 //! Evidence for the fixed exec/keycreate/fscreate/sockcreate Debian candidate.
 //! Consume the producer's actual receipt formats without rewriting them.
 use super::{
-    CANDIDATE_VERSION, LibselinuxCandidate, MEMBER, ORIGINAL_SHA, ORIGINAL_VERSION, artifact,
-    equal_pin,
+    CANDIDATE_VERSION, LibselinuxCandidate, MEMBER, ORIGINAL_SHA, ORIGINAL_VERSION, SourceMap,
+    artifact, equal_pin, source_path, source_pin,
 };
 use crate::{
     Result,
@@ -54,6 +54,7 @@ pub(super) fn maintained_source(
     source: &Value,
     declaration: &Value,
     input: &LibselinuxCandidate,
+    imports: Option<&SourceMap>,
 ) -> Result<()> {
     let lock = source_lock()?;
     let candidate = artifact(&source["candidate"])?;
@@ -109,7 +110,7 @@ pub(super) fn maintained_source(
                 && proof["built_source_input_path"] == expected.path.to_string_lossy().as_ref(),
             "normal build input differs from the compiled maintained source",
         )?;
-        boot_files::checked_file(&expected)?;
+        source_pin(&expected, imports)?;
     }
     ensure(
         source["patch_sha256"] == fs::digest(SOURCE_FILES[3].1)
@@ -149,7 +150,7 @@ pub(super) fn maintained_source(
                 .ok_or("source archive digest absent")?
                 .into(),
         };
-        boot_files::checked_file(&original)?;
+        source_pin(&original, imports)?;
     }
     for pin in [&input.source_orig_archive, &input.source_orig_signature] {
         ensure(
@@ -170,7 +171,8 @@ pub(super) fn maintained_source(
             .as_str()
             .ok_or("normal source package readback path absent")?,
     );
-    let procattr = boot_files::pin_file(&readback_root.join("src/procattr.c"))?;
+    let procattr = source_path(&readback_root.join("src/procattr.c"), imports)?;
+    boot_files::checked_file(&procattr)?;
     ensure(
         procattr.sha256 == lock["source_file"]["patched_sha256"],
         "normal source package procattr differs from its maintained patch",

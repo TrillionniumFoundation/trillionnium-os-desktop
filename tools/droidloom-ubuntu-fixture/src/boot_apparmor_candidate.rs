@@ -45,7 +45,9 @@ pub struct LibapparmorCandidate {
     pub source_orig_archive: FilePin,
 }
 
-use crate::boot_candidate::{artifact, dpkg_status, equal_pin, read_json, safe_member};
+use crate::boot_candidate::{
+    SourceMap, artifact, dpkg_status, equal_pin, read_json, safe_member, source_pin,
+};
 
 /// Read one regular member, never extract an archive namespace. The reviewed
 /// source archive contains ordinary files and directories; the binary archive
@@ -237,8 +239,13 @@ fn dsc_sources(text: &str) -> Result<BTreeMap<String, (u64, String)>> {
     Ok(result)
 }
 
-fn verify_sources(input: &LibapparmorCandidate, declaration: &Value, work: &Path) -> Result<Value> {
-    let source = read_json(&input.source_commit)?;
+fn verify_sources(
+    input: &LibapparmorCandidate,
+    declaration: &Value,
+    work: &Path,
+    imports: Option<&SourceMap>,
+) -> Result<Value> {
+    let source = read_json(&source_pin(&input.source_commit, imports)?)?;
     let git = |v: &Value| {
         v.as_str().is_some_and(|s| {
             s.len() == 40
@@ -278,7 +285,10 @@ fn verify_sources(input: &LibapparmorCandidate, declaration: &Value, work: &Path
             "candidate package is not bound by its build declaration",
         )?;
     }
-    let dsc = String::from_utf8(boot_files::read_pin(&input.source_dsc, 65536)?)?;
+    let dsc = String::from_utf8(boot_files::read_pin(
+        &source_pin(&input.source_dsc, imports)?,
+        65536,
+    )?)?;
     let sources = dsc_sources(&dsc)?;
     for pin in [&input.source_debian_archive, &input.source_orig_archive] {
         let name = pin
@@ -294,7 +304,7 @@ fn verify_sources(input: &LibapparmorCandidate, declaration: &Value, work: &Path
             pin.bytes <= 16 * 1024 * 1024,
             "source archive exceeds reviewed bound",
         )?;
-        boot_files::checked_file(pin)?;
+        source_pin(pin, imports)?;
     }
     ensure(
         input.source_orig_archive.sha256 == ORIGINAL_ARCHIVE_SHA
@@ -302,7 +312,11 @@ fn verify_sources(input: &LibapparmorCandidate, declaration: &Value, work: &Path
         "candidate upstream archive is not the original admitted Ubuntu source",
     )?;
     let source_archive = work.join("source.debian.tar.xz");
-    boot_files::copy_pin(&input.source_debian_archive, &source_archive, 0o400)?;
+    boot_files::copy_pin(
+        &source_pin(&input.source_debian_archive, imports)?,
+        &source_archive,
+        0o400,
+    )?;
     let tar = crate::boot_runtime::redirected(
         work,
         "source-xz",
@@ -331,7 +345,7 @@ fn verify_sources(input: &LibapparmorCandidate, declaration: &Value, work: &Path
         "normal source package patch differs from maintained Git patch",
     )?;
     let build_pin = artifact(&declaration["normal_build"])?;
-    let build = read_json(&build_pin)?;
+    let build = read_json(&source_pin(&build_pin, imports)?)?;
     ensure(
         build["schema"] == "p4-libapparmor-readonly-peer-build-v1"
             && build["exit_code"] == 0
@@ -340,7 +354,7 @@ fn verify_sources(input: &LibapparmorCandidate, declaration: &Value, work: &Path
         "candidate did not come from its declared successful normal Debian build",
     )?;
     let api_pin = artifact(&declaration["public_api_unit_tests"])?;
-    let api = read_json(&api_pin)?;
+    let api = read_json(&source_pin(&api_pin, imports)?)?;
     ensure(
         api["schema"] == "p4-libapparmor-readonly-peer-public-abi-tests-v1"
             && api["test_source_sha256"] == source["test_sha256"]
@@ -499,6 +513,62 @@ fn elf_report(path: &Path, work: &Path, name: &str) -> Result<(BTreeSet<String>,
     ))
 }
 
+/// The existing source/API admission also serves normal dpkg installations.
+/// All writes are bounded evidence files in the caller's new private work area.
+pub(super) fn admit_sources(
+    input: &LibapparmorCandidate,
+    imports: &SourceMap,
+    layer: &Path,
+) -> Result<Value> {
+    let declaration = read_json(&source_pin(&input.declaration, Some(imports))?)?;
+    ensure(
+        declaration["schema"] == "p4-libapparmor-readonly-peer-candidate-v1"
+            && declaration["package_name"] == "libapparmor1"
+            && declaration["architecture"] == "amd64"
+            && declaration["version"] == CANDIDATE_VERSION
+            && declaration["member"] == MEMBER
+            && equal_pin(&artifact(&declaration["package"])?, &input.package)
+            && declaration["original_library"]["sha256"] == ORIGINAL_SHA
+            && declaration["original_library"]["bytes"] == 89056
+            && declaration["public_versioned_exports_equal"] == true
+            && declaration["public_versioned_exports_count"] == 90
+            && declaration["target_kernel_systemd_qualified"] == false,
+        "normal AppArmor candidate declaration differs",
+    )?;
+    let sources = verify_sources(input, &declaration, layer, Some(imports))?;
+    let package = source_pin(&input.package, Some(imports))?;
+    let tar = crate::boot_runtime::redirected(
+        layer,
+        "candidate-data",
+        "/usr/bin/dpkg-deb",
+        &[
+            "--fsys-tarfile".into(),
+            package.path.to_string_lossy().into(),
+        ],
+        None,
+        None,
+        &layer.join("candidate-data.tar"),
+        16 * 1024 * 1024,
+        30,
+    )?;
+    let body = pick_regular(
+        &boot_files::read_pin(&tar, 16 * 1024 * 1024)?,
+        MEMBER,
+        Some(0o644),
+        true,
+    )?;
+    let expected = artifact(&declaration["candidate_library"])?;
+    ensure(
+        body.len() as u64 == expected.bytes && fs::digest(&body) == expected.sha256,
+        "actual normal AppArmor library differs from its source/API candidate",
+    )?;
+    let library = layer.join(LEAF);
+    boot_files::write_new(&library, &body, 0o400)?;
+    let (_, elf) = elf_report(&library, layer, "candidate")?;
+    Ok(json!({"sources":sources,"candidate_elf":elf,
+        "source_receipts_rewritten":false,"root_files_modified":false}))
+}
+
 pub fn apply(
     root: &Path,
     boot: &Path,
@@ -578,7 +648,7 @@ pub fn apply(
     )?;
     let layer = boot.join("libapparmor-candidate");
     boot_files::private_dir(&layer)?;
-    let sources = verify_sources(input, &declaration, &layer)?;
+    let sources = verify_sources(input, &declaration, &layer, None)?;
     let deb = layer.join("candidate.deb");
     boot_files::copy_pin(&input.package, &deb, 0o400)?;
     for (field, want) in [

@@ -17,7 +17,7 @@ use std::{
 };
 
 #[path = "boot_systemd_dependencies.rs"]
-mod dependencies;
+pub(super) mod dependencies;
 use dependencies::{Fields, control, field};
 
 const SOURCE_LOCK: &[u8] = include_bytes!("../../../packaging/ubuntu/systemd/source.lock.json");
@@ -826,6 +826,7 @@ pub(super) fn installed(
     let mut captured = 0;
     let mut source_only = Vec::new();
     let mut directory_transforms = Vec::new();
+    let mut installed_payload = Vec::new();
     for m in members.values() {
         let mut expected = m.clone();
         if ["/etc/credstore", "/etc/credstore.encrypted"].contains(&m.path.as_str()) {
@@ -862,6 +863,7 @@ pub(super) fn installed(
             );
         }
         boot_packages::readback(&tree, &expected)?;
+        installed_payload.push(expected.clone());
         if m.path == "/usr" || m.path.starts_with("/usr/") || paths::public_config(&m.path) {
             if let Some(manifest) = &manifest {
                 capture_member(manifest, &expected)?;
@@ -877,7 +879,8 @@ pub(super) fn installed(
     )?;
     fs::assert_root_namespace(&fs::absolute_string(&source.root)?, &tree)?;
     Ok(
-        json!({"root":source.root,"manifest":source.manifest,"dpkg_status":status,
+        json!({"root":source.root,"root_identity":fs::stat(&tree.root)?,"manifest":source.manifest,"dpkg_status":status,
+        "complete_installed_payload":installed_payload,
         "installed_packages":FAMILY,"candidate_package_payload_members_verified":members.len(),
         "capture_manifest_verified":manifest.is_some(),
         "captured_public_members_verified":manifest.as_ref().map(|_|captured),"source_only_configuration_or_state_members":source_only,
@@ -887,15 +890,22 @@ pub(super) fn installed(
     )
 }
 
-pub fn run(config: &Path, expected: &str) -> Result<()> {
-    let plan: Plan = fs::read_json(&fs::absolute_string(config)?, expected)?;
+fn admit_plan(plan: Plan, input: &FilePin, source_admission: Option<&FilePin>) -> Result<Value> {
     ensure(
         plan.schema == "droidloom.systemd-candidate-admission-plan.v1"
             && (25..=256).contains(&plan.artifacts.len()),
         "unsupported systemd admission plan",
     )?;
     let lock = source_lock()?;
-    crate::boot::create_work(&plan.work_directory)?;
+    admission_work(&plan.work_directory)?;
+    let input_copy = plan.work_directory.join("SOURCE-INPUTS.json");
+    boot_files::copy_pin(input, &input_copy, 0o400)?;
+    let source_input = boot_files::pin_file(&input_copy)?;
+    let receipt_input = if source_admission.is_some() {
+        input.clone()
+    } else {
+        source_input.clone()
+    };
     fs::write_json(
         &fs::absolute_string(&plan.work_directory.join("INPUTS.json"))?,
         &plan,
@@ -1002,16 +1012,79 @@ pub fn run(config: &Path, expected: &str) -> Result<()> {
         .as_ref()
         .map(|s| installed(s, &members, &controls))
         .transpose()?;
-    let receipt = json!({"schema":"droidloom.systemd-candidate-admitted.v1","input_sha256":expected,
+    let receipt = json!({"schema":"droidloom.systemd-candidate-admitted.v1","input_sha256":source_input.sha256,"input":receipt_input,"preserved_input":source_input,"source_admission":source_admission,
         "source":sources,"normal_build":build,"artifacts":pins,"original_status":plan.original_status,
         "packages":reports,"documentation_expansions_verified":expansions,"actual_dependencies_verified":dependency,"complete_selected_payload":members.values().collect::<Vec<_>>(),
         "installed_source":source,"source_files_modified_by_admission":false,"maintainer_scripts_executed_by_admission":false,
         "package_installation_performed_by_admission":false,"guest_qualified":false,"production_ready":false});
     let path = plan.work_directory.join("SYSTEMD-CANDIDATE-VERIFIED.json");
     let sha = fs::write_json(&fs::absolute_string(&path)?, &receipt, 0)?;
+    let _ = sha;
+    Ok(receipt)
+}
+
+/// Create only a new root-owned qualification evidence area. Installed-source
+/// capture may place each verifier one level below its own private admission area.
+pub(super) fn admission_work(work: &Path) -> Result<()> {
+    let base = Path::new("/var/lib/droidloom-qualification");
+    let parent = work.parent().ok_or("admission work parent absent")?;
+    if parent == base {
+        crate::boot::create_work(work)
+    } else {
+        ensure(
+            parent.parent() == Some(base),
+            "admission work is outside qualification custody",
+        )?;
+        let tree = fs::Tree::open(&fs::absolute_string(parent)?, 0)?;
+        ensure(
+            fs::stat(&tree.root)?.mode & 0o7777 == 0o700,
+            "admission work parent is not private",
+        )?;
+        boot_files::private_dir(work)
+    }
+}
+
+pub(super) fn verify_installed_systemd(
+    root: &Path,
+    admission_receipt: &FilePin,
+    work: &Path,
+) -> Result<Value> {
+    let receipt: Value =
+        serde_json::from_slice(&boot_files::read_pin(admission_receipt, 16 * 1024 * 1024)?)?;
+    ensure(
+        receipt["schema"] == "droidloom.systemd-candidate-admitted.v1",
+        "systemd admission receipt schema differs",
+    )?;
+    let input: FilePin = serde_json::from_value(receipt["input"].clone())?;
+    ensure(
+        receipt["input_sha256"] == input.sha256,
+        "systemd admission input binding differs",
+    )?;
+    let mut plan: Plan = serde_json::from_slice(&boot_files::read_pin(&input, 1024 * 1024)?)?;
+    plan.work_directory = work.into();
+    plan.installed_source = Some(InstalledSource {
+        root: root.into(),
+        manifest: None,
+    });
+    // Every source/build pin and every package is decoded again against the
+    // current root. Previous pass flags and old dpkg metadata are not consumed.
+    admit_plan(plan, &input, Some(admission_receipt))
+}
+
+pub fn run(config: &Path, expected: &str) -> Result<()> {
+    let plan: Plan = fs::read_json(&fs::absolute_string(config)?, expected)?;
+    let input = boot_files::pin_file(config)?;
+    ensure(
+        input.sha256 == expected,
+        "systemd admission plan changed before snapshot",
+    )?;
+    let path = plan.work_directory.join("SYSTEMD-CANDIDATE-VERIFIED.json");
+    let installed = plan.installed_source.is_some();
+    admit_plan(plan, &input, None)?;
+    let pin = boot_files::pin_file(&path)?;
     println!(
         "{}",
-        json!({"receipt":path,"sha256":sha,"installed_source_verified":plan.installed_source.is_some(),
+        json!({"receipt":path,"sha256":pin.sha256,"installed_source_verified":installed,
         "guest_qualified":false,"production_ready":false})
     );
     Ok(())

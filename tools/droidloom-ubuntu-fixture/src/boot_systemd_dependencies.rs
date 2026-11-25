@@ -3,9 +3,9 @@
 use crate::{Result, ensure};
 use std::{cmp::Ordering, collections::BTreeMap};
 
-pub(super) type Fields = BTreeMap<String, String>;
+pub(crate) type Fields = BTreeMap<String, String>;
 
-pub(super) fn control(text: &str) -> Result<Vec<Fields>> {
+pub(crate) fn control(text: &str) -> Result<Vec<Fields>> {
     ensure(
         text.len() <= 32 * 1024 * 1024 && !text.contains('\0') && !text.contains('\r'),
         "Debian control input exceeds bounds or contains unsupported bytes",
@@ -52,7 +52,7 @@ pub(super) fn control(text: &str) -> Result<Vec<Fields>> {
     Ok(result)
 }
 
-pub(super) fn field<'a>(fields: &'a Fields, key: &str) -> Result<&'a str> {
+pub(crate) fn field<'a>(fields: &'a Fields, key: &str) -> Result<&'a str> {
     let value = fields
         .get(key)
         .ok_or_else(|| format!("missing Debian field: {key}"))?;
@@ -255,7 +255,7 @@ fn satisfies(want: &Relation, package: &Fields) -> Result<bool> {
 }
 
 /// Evaluate actual package metadata, not a supplied `dependencies_satisfied` flag.
-pub(super) fn closure(installed: &[Fields], candidates: &[Fields]) -> Result<Vec<String>> {
+pub(crate) fn closure(installed: &[Fields], candidates: &[Fields]) -> Result<Vec<String>> {
     let mut state = BTreeMap::<(String, String), Fields>::new();
     for package in installed
         .iter()

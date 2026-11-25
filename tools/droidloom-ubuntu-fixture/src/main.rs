@@ -12,6 +12,7 @@ mod boot_gdm_proof;
 mod boot_host;
 mod boot_kernel;
 mod boot_native;
+mod boot_native_candidates;
 mod boot_packages;
 mod boot_public_apks;
 mod boot_qemu;
@@ -55,6 +56,12 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Command {
+    VerifyNativeCandidates {
+        #[arg(long)]
+        config: PathBuf,
+        #[arg(long)]
+        config_sha256: String,
+    },
     VerifySystemdCandidate {
         #[arg(long)]
         config: PathBuf,
@@ -173,6 +180,10 @@ fn run() -> Result<()> {
         "real source capture/copy requires existing root rights; no privilege helper is installed",
     )?;
     match cli.command {
+        Command::VerifyNativeCandidates {
+            config,
+            config_sha256,
+        } => boot_native_candidates::run(&config, &config_sha256)?,
         Command::VerifySystemdCandidate {
             config,
             config_sha256,
