@@ -324,3 +324,26 @@ public package phase. All eight source modules must be present in the actual
 normal host manifest; an older 46-file diagnostic host is recorded as missing
 those eight modules and remains an unqualified candidate. Preparing or verifying
 these materials still cannot grant runtime or private-account acceptance.
+
+### One candidate for both cold package phases
+
+The native CLI's first positional value is the public RELEASE.json digest. It
+is never the derived deployment digest. The protected dispatcher reads that
+release beneath releases/RELEASE_ID, recomputes the v2 public/native deployment
+identity, and reads the imported native packages beneath
+native-releases/NATIVE_ID. It rejects a different imported native manifest,
+package closure, public control set or production systemctl/journalctl build.
+
+The read-only original-Ubuntu command cold_apply inspect-materials --release
+RELEASE_ID performs the same material binding. It also audits every real Debian
+public data-stream member against the normal inventories, using bounded private
+temporary files. Its result reports material identities and missing host
+modules; runtime_qualified, private_accounts_qualified and physical_activation
+remain false. It neither invokes dpkg installation nor accepts a success flag.
+The protected CLI exposes no alternative store path. Isolated engine checks may
+supply their own private store without acquiring physical authority.
+
+Both physical installation dispatchers require the actual acceptance validator
+to return the identical public release, derived deployment and native release
+IDs. That validator still rejects absent original-device account acceptance.
+The material inspection command is not an activation or acceptance command.

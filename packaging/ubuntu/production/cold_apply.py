@@ -297,6 +297,60 @@ def package_payload(pin,scope,workdir):
                 "directories":len(seen_dirs)-1,"body_bytes":total,
                 "data_stream_bytes":length,"elapsed_seconds":time.monotonic()-started}
 
+
+def candidate_material_binding(release_id,*,state=STORE):
+    """Read actual public/native candidates from one protected material store.
+
+    The optional state path is for isolated engine verification; no command-line
+    option can change the production store. This returns material identity only,
+    never runtime, private-account, or installation authority.
+    """
+    from native_release import verify_bundle,MANIFEST_NAME
+    from cold_transaction import bound_native_inputs
+    digest(release_id);state=safe_absolute(str(state))
+    need(os.getuid()==os.geteuid()==0,"protected cold material inspection requires root")
+    s=state.lstat()
+    need(stat.S_ISDIR(s.st_mode) and s.st_uid==s.st_gid==0 and
+         stat.S_IMODE(s.st_mode)==0o700,"protected cold material store")
+    bundle=state/"releases"/release_id
+    intent,entries,directories,packages,controls,scopes=load_inputs(bundle,release_id)
+    need(intent.get("component_control")==controls,"actual normal public package controls")
+    archive=bound_native_inputs(bundle,intent,root=True)
+    native_id=archive["index"]["native_release_id"]
+    need(native_id==NATIVE_RELEASE_ID,"reviewed complete normal native source cohort")
+    native_bundle=state/"native-releases"/native_id
+    index,_,native_packages,payloads=verify_bundle(native_bundle,native_id,True)
+    manifest=file_pin(native_bundle/MANIFEST_NAME)
+    declared=archive["index"]["manifest"]
+    need((manifest["bytes"],manifest["sha256"])==(declared["bytes"],declared["sha256"])
+         and index==archive["descriptor"],"imported native packages differ from the cold archive")
+    need(len(native_packages)==15,"complete normal native fifteen-package closure")
+    cold_systemctl_pins(payloads)
+    # Results and inventories alone cannot assert Debian content. Reuse the
+    # bounded normal data reader before linking any acceptance to these bytes.
+    with tempfile.TemporaryDirectory(prefix=".material-read-",dir=state) as scratch:
+        audited={role:package_payload(packages[role],scopes[role],scratch) for role in PUBLIC_ORDER}
+    source=intent["component_identity"]["host"]
+    return {"schema":"droidloom-cold-material-binding-v1","public_release_id":release_id,
+            "deployment_id":intent["deployment_id"],"native_release_id":native_id,
+            "native_manifest":manifest,"native_package_roles":index["package_roles"],
+            "native_directory":str(native_bundle),"state_directory":str(state),
+            "public_manifest":file_pin(bundle/"RELEASE.json"),
+            "source_commit":source["source_commit"],"source_tree":source["source_tree"],
+            "host_manifest":file_pin(bundle/"host-manifest.json"),
+            "host_missing_required_maintenance":source["missing_required_maintenance"],
+            "public_packages":packages,"public_controls":controls,"public_payloads":audited,
+            "kernel_release":KERNEL,"kernel_sha256":KERNEL_SHA,
+            "android_cohort":COHORT,"android_runtime":RUNTIME,"board_manifest":BOARD,
+            "root_uuid":ROOT_UUID,"native_before_public":True,
+            "runtime_qualified":False,"private_accounts_qualified":False,"physical_activation":False}
+
+def require_same_candidate(materials,authority):
+    need(isinstance(authority,dict) and all(authority.get(key)==materials[key]
+         for key in ("public_release_id","deployment_id","native_release_id")),
+         "same actual public/native deployment acceptance")
+
+
 class PublicTransaction:
     """Actual dpkg public phase; CLI owns the cold/qualification authority gate.
 
@@ -687,8 +741,9 @@ def protected_bundle(release_id):
 
 def apply(release_id):
     original_cold_authority()
+    materials=candidate_material_binding(release_id)
     binding=actual_acceptance_binding(release_id)
-    need(binding is not None,"actual acceptance did not return owned authority")
+    require_same_candidate(materials,binding)
     tx=PublicTransaction(Path("/"),protected_bundle(release_id),release_id)
     try:
         tx.install()
@@ -707,10 +762,11 @@ def rollback(release_id):
 
 def main():
     p=argparse.ArgumentParser(description=__doc__);sub=p.add_subparsers(dest="command",required=True)
-    for name in ("apply-public","rollback-public"):
+    for name in ("inspect-materials","apply-public","rollback-public"):
         q=sub.add_parser(name);q.add_argument("--release",required=True)
     a=p.parse_args()
-    result=apply(a.release) if a.command=="apply-public" else rollback(a.release)
+    result=(candidate_material_binding(a.release) if a.command=="inspect-materials" else
+            apply(a.release) if a.command=="apply-public" else rollback(a.release))
     sys.stdout.buffer.write(canonical(result));sys.stdout.buffer.flush()
 
 if __name__=="__main__":

@@ -21,7 +21,8 @@ from release import (need,exact,digest,canonical,f9,safe_absolute,held,hash_fd,
                      new_file,read_json_file,bounded_process,Rejected)
 from native_release import verify_bundle
 from systemd_bundle import configured_row
-from cold_apply import original_cold_authority,actual_acceptance_binding
+from cold_apply import (original_cold_authority,actual_acceptance_binding,
+                        candidate_material_binding,require_same_candidate)
 
 POLICY=b"#!/bin/sh\nexit 101\n"
 STATE_REL="var/lib/droidloom-maintenance/native-transactions"
@@ -472,23 +473,23 @@ class NativeTransaction:
             self.unpack("old");self.configure("old");n=self.verify_installed("old")
         self.event("normal-native-rolled-back",members=n,runtime_qualified=False)
 
-def physical_inputs(deployment_id,native_id):
-    digest(deployment_id);digest(native_id)
+def physical_inputs(release_id,native_id):
+    digest(release_id);digest(native_id)
     original_cold_authority()
-    authority=actual_acceptance_binding(deployment_id)
-    need(isinstance(authority,dict) and authority.get("native_release_id")==native_id
-         and authority.get("deployment_id")==deployment_id,"same owned runtime/private/native release authority")
-    bundle=Path("/var/lib/droidloom-maintenance/releases")/deployment_id/"native"
-    verify_bundle(bundle,native_id,True)
-    return bundle
+    materials=candidate_material_binding(release_id)
+    need(materials["native_release_id"]==native_id,"same source-bound native package closure")
+    authority=actual_acceptance_binding(release_id)
+    require_same_candidate(materials,authority)
+    return Path(materials["native_directory"])
 
 def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument("operation",choices=("apply","rollback"))
-    p.add_argument("deployment_id");p.add_argument("native_release_id")
+    p.add_argument("release_id",help="public RELEASE.json digest, not the derived deployment ID")
+    p.add_argument("native_release_id")
     p.add_argument("--attempt")
     args=p.parse_args()
-    bundle=physical_inputs(args.deployment_id,args.native_release_id)
+    bundle=physical_inputs(args.release_id,args.native_release_id)
     need((args.operation=="rollback")==bool(args.attempt),"rollback needs original durable attempt")
     with NativeTransaction(Path("/"),bundle,args.native_release_id,existing=args.attempt) as tx:
         if args.operation=="apply":tx.begin();tx.apply()
