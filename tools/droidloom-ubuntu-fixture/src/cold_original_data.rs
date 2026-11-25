@@ -29,7 +29,8 @@ const COMMITTED: &str = "DATA-EXCHANGED.json";
 const RESTORED: &str = "ORIGINAL-DATA-RESTORED.json";
 const COPY_SHA: &str = "d5864566bd978921b427f2ff70df218214fc512406f8e491d46f3fdd80a39a89";
 const CLONE_SHA: &str = "3eda27b424c264102e609fbb87392b4d34e14ce8440d1ab40ab250131fc92ca0";
-const WORKING_MEMBERS: [&str; 8] = [
+const WORKING_MEMBERS: [&str; 9] = [
+    "COLD-CLONE-VERIFIED.json",
     "INTENT.json",
     "MEITUAN-CE-ALIAS-METADATA.json",
     "MEITUAN-STORAGE-METADATA.json",
@@ -289,7 +290,12 @@ fn initial_pair_sources(cold_clone: &FilePin) -> Result<(FilePin, PairRecord, Pa
     ensure(
         original.members[IMAGES[0]].identity.size == 34_359_738_368
             && original.members[IMAGES[1]].identity.size == 134_217_728
-            && working.members["WORKING-COPY.json"].sha256.as_deref() == Some(COPY_SHA),
+            && working.members["WORKING-COPY.json"].sha256.as_deref() == Some(COPY_SHA)
+            && working.members["COLD-CLONE-VERIFIED.json"].identity.size == cold_clone.bytes
+            && working.members["COLD-CLONE-VERIFIED.json"]
+                .sha256
+                .as_deref()
+                == Some(CLONE_SHA),
         "original Pocket4 backing sizes or copy proof differ",
     )?;
     ensure(
@@ -486,9 +492,25 @@ pub(super) fn inspect(config: &Path, expected: &str) -> Result<Value> {
                 .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-'),
         "data inspection needs a create-only protected qualification child",
     )?;
-    let original_context = crate::cold_original_initramfs::original_context()?;
+    crate::cold_original_initramfs::original_context()?;
     crate::boot_files::private_dir(&plan.work_directory)?;
-    let (working_copy, original, working) = initial_pair_sources(&plan.cold_clone)?;
+    let mut result = inspect_snapshot(&plan.cold_clone)?;
+    ensure(
+        root_pin(&input, 64 * 1024)? == raw,
+        "inspection plan changed during the complete metadata observation",
+    )?;
+    result["input"] = serde_json::to_value(&input)?;
+    let path = plan.work_directory.join("ORIGINAL-DATA-INSPECTED.json");
+    crate::boot_files::write_new(&path, &serde_json::to_vec_pretty(&result)?, 0o400)?;
+    fs::Tree::open("/", 0)?
+        .dir(&fs::absolute_string(&plan.work_directory)?)?
+        .sync_all()?;
+    Ok(result)
+}
+
+fn inspect_snapshot(cold_clone: &FilePin) -> Result<Value> {
+    let original_context = crate::cold_original_initramfs::original_context()?;
+    let (working_copy, original, working) = initial_pair_sources(cold_clone)?;
     let tree = fs::Tree::open("/", 0)?;
     let mut locks = Vec::new();
     for (path, pair) in [(ORIGINAL, &original), (WORKING, &working)] {
@@ -511,24 +533,19 @@ pub(super) fn inspect(config: &Path, expected: &str) -> Result<Value> {
             "image changed during original data inspection",
         )?;
     }
-    let (_, old_after, new_after) = initial_pair_sources(&plan.cold_clone)?;
+    let (_, old_after, new_after) = initial_pair_sources(cold_clone)?;
     ensure(
         old_after == original
             && new_after == working
-            && root_pin(&input, 64 * 1024)? == raw
             && crate::cold_original_initramfs::original_context()? == original_context,
         "original host or complete pair metadata changed across inspection",
     )?;
-    let result = json!({"schema":"droidloom.original-data-inspected.v1","input":input,
+    let result = json!({"schema":"droidloom.original-data-inspected.v1",
         "original_host":original_context,"original":original,"working_copy":working,
-        "working_copy_receipt":working_copy,"cold_clone":plan.cold_clone,"references":references,
+        "working_copy_receipt":working_copy,"cold_clone":cold_clone,"references":references,
         "image_descriptors_opened_readonly":locks.len(),"image_bodies_read":false,"image_bodies_written":false,
         "directories_exchanged":false,"selected_published":false,"qualification_boot_authorized":false,
         "runtime_or_migration_accepted":false,"production_ready":false});
-    let path = plan.work_directory.join("ORIGINAL-DATA-INSPECTED.json");
-    crate::boot_files::write_new(&path, &serde_json::to_vec_pretty(&result)?, 0o400)?;
-    tree.dir(&fs::absolute_string(&plan.work_directory)?)?
-        .sync_all()?;
     Ok(result)
 }
 
@@ -1251,6 +1268,22 @@ impl DataTransaction {
 mod tests {
     use super::*;
     use std::os::unix::fs::PermissionsExt;
+
+    #[test]
+    #[ignore = "requires original Pocket4 and retained private-pair metadata; never writes or reads image bodies"]
+    fn actual_original_device_complete_metadata_readback() {
+        let cold_clone = FilePin {
+            path: "/var/lib/droidloom-qualification/original-data-evidence-4b91-r1/COLD-CLONE-VERIFIED.json".into(),
+            bytes: 2843,
+            sha256: CLONE_SHA.into(),
+        };
+        let value = inspect_snapshot(&cold_clone).unwrap();
+        println!(
+            "{}",
+            json!({"schema":"droidloom.original-data-metadata-readback-test.v1",
+            "snapshot":value,"physical_mutation_executed":false})
+        );
+    }
 
     struct Fixture {
         root: tempfile::TempDir,
