@@ -877,6 +877,7 @@ pub fn make_root_image(
     gib: u64,
     labels: &Value,
     public_apks: Option<&crate::boot_public_apks::Staged>,
+    complete_manifest: Option<&FilePin>,
 ) -> Result<FilePin> {
     ensure(
         (64..=96).contains(&gib),
@@ -1132,7 +1133,8 @@ pub fn make_root_image(
         .map(|runtime| crate::boot_query_image::verify(root, work, &disk, runtime))
         .transpose()?;
     let apparmor_readback = crate::boot_apparmor_candidate::verify_image(root, work, &disk)?;
-    let gdm_readback = crate::boot_gdm_candidate::verify_image(root, work, &disk)?;
+    let gdm_readback =
+        crate::boot_gdm_candidate::verify_image(root, work, &disk, complete_manifest)?;
     let greeter_proof_readback = crate::boot_gdm_proof::verify_image(root, work, &disk)?;
     let public_apk_readback = public_apks.map(|staged| {
         crate::boot_public_apks::verify_image(root, work, &disk, staged)

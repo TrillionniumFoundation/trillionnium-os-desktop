@@ -683,7 +683,85 @@ pub fn apply(root: &Path, boot: &Path, manifest: &Manifest, input: &GdmCandidate
     Ok(result)
 }
 
-pub fn verify_image(root: &Path, work: &Path, image: &Path) -> Result<Value> {
+fn complete_gdm_packages(
+    packages: &[crate::complete_native::Package],
+) -> Result<Vec<crate::complete_native::Package>> {
+    let mut selected = Vec::new();
+    for name in ["gdm3", "libgdm1", "gir1.2-gdm-1.0"] {
+        let rows: Vec<_> = packages.iter().filter(|p| p.package == name).collect();
+        ensure(
+            rows.len() == 1
+                && rows[0].version == VERSION
+                && rows[0].architecture == "amd64"
+                && rows[0].status == "ii ",
+            &format!("complete GDM normal package differs: {name}"),
+        )?;
+        selected.push(rows[0].clone());
+    }
+    Ok(selected)
+}
+
+fn complete_regular_readback(
+    entry: &crate::complete_snapshot::CompleteEntry,
+    actual: &crate::model::Identity,
+    digest: &str,
+) -> Result<()> {
+    ensure(
+        matches!(&entry.content, Content::Regular { sha256 } if sha256 == digest)
+            && actual.mode == entry.source.mode
+            && actual.uid == entry.source.uid
+            && actual.gid == entry.source.gid
+            && actual.nlink == entry.source.nlink
+            && actual.size == entry.source.size,
+        &format!(
+            "complete installed GDM source readback differs: {}",
+            entry.path
+        ),
+    )
+}
+
+/// Reuse the complete source's actual Debian transaction and whole-package
+/// admission. A normal installation has no legacy single-ELF overlay receipt.
+/// The manifest is re-read by its original pin, including all embedded source,
+/// three-package GDM payload, and full dpkg transaction proofs.
+fn complete_image_admission(
+    root: &Path,
+    manifest_pin: &FilePin,
+    expected: &FilePin,
+) -> Result<Value> {
+    let manifest = crate::boot_complete::admitted_manifest(manifest_pin)?;
+    let packages = complete_gdm_packages(&manifest.packages)?;
+    let tree = fs::Tree::open(&fs::absolute_string(root)?, 0)?;
+    let mut files = Vec::new();
+    for path in ["/var/lib/dpkg/status", "/usr/sbin/gdm3"] {
+        let entry = manifest
+            .entries
+            .iter()
+            .find(|entry| entry.path == path)
+            .ok_or("complete installed GDM source member absent")?;
+        let (identity, digest, _) = fs::read_regular(&tree, path)?;
+        complete_regular_readback(entry, &identity, &digest)?;
+        if path == "/usr/sbin/gdm3" {
+            ensure(
+                identity.size == expected.bytes && digest == expected.sha256,
+                "GDM executable changed during complete source admission",
+            )?;
+        }
+        files.push(json!({"path":path,"identity":identity,"sha256":digest}));
+    }
+    Ok(json!({
+        "complete_fixture_manifest":manifest_pin,
+        "normal_packages":packages,
+        "current_root_readback":files
+    }))
+}
+
+pub fn verify_image(
+    root: &Path,
+    work: &Path,
+    image: &Path,
+    complete_manifest: Option<&FilePin>,
+) -> Result<Value> {
     let lock = source_lock()?;
     let expected = boot_files::pin_file(&root.join(MEMBER))?;
     let candidate = expected.sha256 == lock["candidate_executable"]["sha256"]
@@ -694,8 +772,19 @@ pub fn verify_image(root: &Path, work: &Path, image: &Path) -> Result<Value> {
                 && Some(expected.bytes) == lock["original_executable"]["bytes"].as_u64()),
         "GDM image contains an unadmitted ELF",
     )?;
-    if candidate {
-        let overlay = boot_files::pin_file(&work.join("gdm-candidate/OVERLAY.json"))?;
+    let complete_admission = if let Some(manifest) = complete_manifest {
+        ensure(
+            candidate,
+            "complete normal source requires the admitted GDM candidate",
+        )?;
+        Some(complete_image_admission(root, manifest, &expected)?)
+    } else {
+        None
+    };
+    if candidate && complete_manifest.is_none() {
+        let path = work.join("gdm-candidate/OVERLAY.json");
+        let overlay = boot_files::pin_file(&path)
+            .map_err(|error| format!("legacy GDM source admission {}: {error}", path.display()))?;
         let record: Value = serde_json::from_slice(&boot_files::read_pin(&overlay, 1024 * 1024)?)?;
         ensure(
             record["schema"] == "droidloom.fixture-gdm-candidate.v1"
@@ -726,13 +815,176 @@ pub fn verify_image(root: &Path, work: &Path, image: &Path) -> Result<Value> {
     )?;
     Ok(
         json!({"source":expected,"image_executable":actual,"dump":dump,
-        "source_candidate_applied":candidate,"all_matched":true,"runtime_qualified":false}),
+        "source_candidate_applied":candidate,
+        "complete_native_package_admission":complete_admission,
+        "all_matched":true,"runtime_qualified":false}),
     )
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn complete_gdm_normal_family_requires_all_three_exact_installed_packages() -> Result<()> {
+        let good: Vec<_> = ["gdm3", "libgdm1", "gir1.2-gdm-1.0"]
+            .into_iter()
+            .map(|name| crate::complete_native::Package {
+                package: name.into(),
+                version: VERSION.into(),
+                architecture: "amd64".into(),
+                status: "ii ".into(),
+            })
+            .collect();
+        assert_eq!(complete_gdm_packages(&good)?.len(), 3);
+        assert!(complete_gdm_packages(&good[..2]).is_err());
+        let mut duplicate = good.clone();
+        duplicate.push(good[0].clone());
+        assert!(complete_gdm_packages(&duplicate).is_err());
+        for change in 0..3 {
+            let mut bad = good.clone();
+            match change {
+                0 => bad[1].version = ORIGINAL_VERSION.into(),
+                1 => bad[1].architecture = "arm64".into(),
+                _ => bad[1].status = "iU ".into(),
+            }
+            assert!(complete_gdm_packages(&bad).is_err());
+        }
+        Ok(())
+    }
+
+    #[test]
+    fn complete_gdm_source_readback_preserves_bytes_and_metadata() -> Result<()> {
+        let tmp = tempfile::tempdir()?;
+        let path = tmp.path().join("file");
+        std::fs::write(&path, b"normal package bytes")?;
+        let actual = fs::stat(&std::fs::File::open(&path)?)?;
+        let digest = fs::digest(b"normal package bytes");
+        let entry = crate::complete_snapshot::CompleteEntry {
+            path: "/usr/sbin/gdm3".into(),
+            source: actual.clone(),
+            content: Content::Regular {
+                sha256: digest.clone(),
+            },
+            xattrs: BTreeMap::new(),
+        };
+        complete_regular_readback(&entry, &actual, &digest)?;
+        assert!(complete_regular_readback(&entry, &actual, &"0".repeat(64)).is_err());
+        for change in 0..5 {
+            let mut bad = actual.clone();
+            match change {
+                0 => bad.mode ^= 0o100,
+                1 => bad.uid += 1,
+                2 => bad.gid += 1,
+                3 => bad.nlink += 1,
+                _ => bad.size += 1,
+            }
+            assert!(complete_regular_readback(&entry, &bad, &digest).is_err());
+        }
+        let mut bad = entry;
+        bad.content = Content::Symlink {
+            target: "other".into(),
+        };
+        assert!(complete_regular_readback(&bad, &actual, &digest).is_err());
+        Ok(())
+    }
+
+    #[test]
+    #[ignore = "requires a real complete installed prepared root and its ended read-only ext4 image"]
+    fn actual_complete_gdm_image_uses_normal_package_authority() -> Result<()> {
+        ensure(
+            rustix::process::geteuid().as_raw() == 0,
+            "actual GDM image readback requires root",
+        )?;
+        let value = |name| {
+            std::env::var_os(name)
+                .map(PathBuf::from)
+                .ok_or_else(|| std::io::Error::other("actual GDM image input absent"))
+        };
+        let root = value("DROIDLOOM_GDM_IMAGE_ROOT")?;
+        let image = value("DROIDLOOM_GDM_IMAGE_FILE")?;
+        let native_path = value("DROIDLOOM_GDM_IMAGE_NATIVE")?;
+        let work = value("DROIDLOOM_GDM_IMAGE_WORK")?;
+        ensure(
+            work.parent() == Some(Path::new("/var/lib/droidloom-qualification"))
+                && !work.starts_with(&root)
+                && !root.starts_with(&work),
+            "GDM readback work must be a new independent protected directory",
+        )?;
+        boot_files::private_dir(&work)?;
+        let native_pin = boot_files::pin_file(&native_path)?;
+        let native: Value =
+            serde_json::from_slice(&boot_files::read_pin(&native_pin, 4 * 1024 * 1024)?)?;
+        ensure(
+            native["schema"] == crate::boot_complete::PREPARED_SCHEMA
+                && native["root"].as_str() == root.to_str(),
+            "actual complete native authority differs",
+        )?;
+        let manifest: FilePin =
+            serde_json::from_value(native["complete_fixture_manifest"].clone())?;
+        let image_before = fs::stat(&std::fs::File::open(&image)?)?;
+        let gdm_before = boot_files::pin_file(&root.join(MEMBER))?;
+        let status_before = boot_files::pin_file(&root.join("var/lib/dpkg/status"))?;
+        let result = verify_image(&root, &work, &image, Some(&manifest))?;
+        assert_eq!(result["all_matched"], true);
+        assert_eq!(result["runtime_qualified"], false);
+        let legacy_error = verify_image(&root, &work.join("legacy"), &image, None)
+            .expect_err("normal candidate must not bypass missing legacy overlay");
+        assert!(
+            legacy_error
+                .to_string()
+                .contains("legacy GDM source admission")
+        );
+        let mut bad_pin = manifest.clone();
+        bad_pin.sha256 = "0".repeat(64);
+        assert!(verify_image(&root, &work.join("bad-manifest"), &image, Some(&bad_pin)).is_err());
+
+        // Only public package bytes are copied into this small, separate
+        // negative fixture. Never change the actual prepared root or image.
+        let negative = work.join("negative-root");
+        for path in ["usr/sbin", "var/lib/dpkg"] {
+            std::fs::create_dir_all(negative.join(path))?;
+        }
+        boot_files::copy_pin(&gdm_before, &negative.join(MEMBER), 0o755)?;
+        boot_files::copy_pin(&status_before, &negative.join("var/lib/dpkg/status"), 0o644)?;
+        let mut status = boot_files::read_pin(&status_before, 32 * 1024 * 1024)?;
+        status.push(b'\n');
+        std::fs::write(negative.join("var/lib/dpkg/status"), &status)?;
+        let status_error = complete_image_admission(&negative, &manifest, &gdm_before)
+            .expect_err("modified dpkg database must not inherit the complete admission");
+        assert!(status_error.to_string().contains("/var/lib/dpkg/status"));
+        std::fs::write(
+            negative.join("var/lib/dpkg/status"),
+            &status[..status.len() - 1],
+        )?;
+        let mut gdm = boot_files::read_pin(&gdm_before, 1024 * 1024)?;
+        gdm[0] ^= 1;
+        std::fs::write(negative.join(MEMBER), &gdm)?;
+        let elf_error = complete_image_admission(&negative, &manifest, &gdm_before)
+            .expect_err("modified executable must not inherit the complete admission");
+        assert!(elf_error.to_string().contains("/usr/sbin/gdm3"));
+        let image_after = fs::stat(&std::fs::File::open(&image)?)?;
+        ensure(
+            image_before == image_after
+                && boot_files::pin_file(&root.join(MEMBER))?.sha256 == gdm_before.sha256
+                && boot_files::pin_file(&root.join("var/lib/dpkg/status"))?.sha256
+                    == status_before.sha256,
+            "actual GDM readback changed its original source or image",
+        )?;
+        fs::write_json(
+            &fs::absolute_string(&work.join("GDM-IMAGE-VERIFIED.json"))?,
+            &json!({"native_receipt":native_pin,"complete_manifest":manifest,
+                "image_identity_before":image_before,"image_identity_after":image_after,
+                "actual_image_readback":result,
+                "legacy_missing_authority_error":legacy_error.to_string(),
+                "modified_status_error":status_error.to_string(),
+                "modified_executable_error":elf_error.to_string(),
+                "invalid_manifest_pin_rejected":true,
+                "original_root_and_image_unchanged":true,"runtime_qualified":false}),
+            0,
+        )?;
+        Ok(())
+    }
     #[test]
     #[ignore = "requires actual original public fixture files, root-protected candidate inputs, and fresh protected work"]
     fn actual_original_fixture_apply_preserves_optional_status_and_held_elf() -> Result<()> {

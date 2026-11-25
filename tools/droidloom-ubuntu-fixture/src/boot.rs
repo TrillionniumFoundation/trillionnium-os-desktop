@@ -682,6 +682,7 @@ pub fn prepare_boot(config: &Path, expected: &str) -> Result<()> {
         plan.root_image_gib,
         &labels,
         public_apks.as_ref(),
+        complete.as_ref().map(|(pin, _)| pin),
     )?;
     let result = serde_json::json!({"schema":"droidloom.full-ubuntu-boot-prepared.v1",
         "input_sha256":expected,"native_receipt":plan.native_receipt,"work_directory":work,
