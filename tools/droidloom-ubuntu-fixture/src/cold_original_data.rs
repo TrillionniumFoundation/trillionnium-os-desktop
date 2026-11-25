@@ -952,6 +952,119 @@ fn matches_public(actual: Option<&PublicFile>, expected: Option<&PublicFile>) ->
     }
 }
 
+/// The only cross-module data writer. Its constructor and each mutation take
+/// the live once owner; no deserialized receipt or callback grants authority.
+/// The original pair is never opened for writes. Later label/selection stages
+/// must use this same four-descriptor custody after their source admission.
+pub(super) struct OriginalDataTransaction {
+    transaction: DataTransaction,
+}
+impl OriginalDataTransaction {
+    pub(super) fn prepare(
+        authority: &crate::cold_original_qualification::OriginalQualificationAuthority,
+        cold_clone: &FilePin,
+    ) -> Result<Self> {
+        use crate::cold_original_qualification::OriginalDataStep;
+        authority.verify_data_step(OriginalDataStep::Prepare)?;
+        let transaction = prepare_intent(
+            Locations::physical(authority.work())?,
+            authority.candidate_id(),
+            authority.expected_cell(),
+            authority.selection(),
+            cold_clone,
+        )?;
+        let result = Self { transaction };
+        result.binding(authority)?;
+        authority.verify_data_step(OriginalDataStep::Prepare)?;
+        Ok(result)
+    }
+
+    pub(super) fn resume(
+        authority: &crate::cold_original_qualification::OriginalQualificationAuthority,
+    ) -> Result<Self> {
+        authority.verify_current_owner()?;
+        let result = Self {
+            transaction: DataTransaction::reopen(Locations::physical(authority.work())?)?,
+        };
+        result.binding(authority)?;
+        authority.verify_current_owner()?;
+        Ok(result)
+    }
+
+    pub(super) fn intent(&self) -> &FilePin {
+        &self.transaction.intent_pin
+    }
+
+    fn binding(
+        &self,
+        authority: &crate::cold_original_qualification::OriginalQualificationAuthority,
+    ) -> Result<()> {
+        let tx = &self.transaction;
+        tx.require_writer_locks()?;
+        tx.validate_intent()?;
+        ensure(
+            tx.intent.candidate_id == authority.candidate_id()
+                && tx.intent.work == authority.work()
+                && same_pin(&tx.intent.expected_cell, authority.expected_cell())
+                && same_pin(&tx.intent.selection, authority.selection()),
+            "data writer does not belong to the same sealed once owner",
+        )?;
+        // Actual fixed cell and immutable selection bytes are re-read at every
+        // fence, in addition to the owner's held evidence and all four locks.
+        selection_input(authority.expected_cell(), authority.selection())?;
+        Ok(())
+    }
+
+    fn fence(
+        &self,
+        authority: &crate::cold_original_qualification::OriginalQualificationAuthority,
+        step: crate::cold_original_qualification::OriginalDataStep,
+    ) -> Result<()> {
+        authority.verify_data_step(step)?;
+        self.binding(authority)?;
+        Ok(())
+    }
+
+    pub(super) fn exchange(
+        &self,
+        authority: &crate::cold_original_qualification::OriginalQualificationAuthority,
+    ) -> Result<Value> {
+        use crate::cold_original_qualification::OriginalDataStep;
+        let tx = &self.transaction;
+        self.fence(authority, OriginalDataStep::Exchange)?;
+        ensure(
+            named(&tx.locations.work, RESTORED)?.is_none(),
+            "restored data transaction cannot be exchanged again",
+        )?;
+        let (mut layout, selected) = tx.observe(false)?;
+        ensure(
+            selected == SelectionState::Original,
+            "data exchange must precede selection publication",
+        )?;
+        if layout == Layout::Ready {
+            tx.locations.move_pair(Place::Working, Place::Rollback)?;
+            self.fence(authority, OriginalDataStep::Exchange)?;
+            layout = tx.observe(false)?.0;
+        }
+        if layout == Layout::Staged {
+            self.fence(authority, OriginalDataStep::Exchange)?;
+            tx.locations.exchange_pair()?;
+        }
+        self.fence(authority, OriginalDataStep::Exchange)?;
+        ensure(
+            tx.observe(false)? == (Layout::Switched, SelectionState::Original),
+            "atomic pair exchange did not retain the original selection",
+        )?;
+        let (original, working) = tx.current_pairs(Layout::Switched)?;
+        Ok(json!({"schema":"droidloom.original-data-pair-exchanged.v1",
+            "intent":tx.intent_pin,"candidate_id":tx.intent.candidate_id,
+            "original":original,"working_copy":working,
+            "selection_published":false,"labels_applied":false,
+            "original_image_bodies_read":false,"original_image_bodies_written":false,
+            "runtime_or_migration_accepted":false,"production_ready":false}))
+    }
+}
+
 struct DataTransaction {
     locations: Locations,
     intent: Intent,
