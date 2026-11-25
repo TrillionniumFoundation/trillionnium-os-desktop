@@ -549,6 +549,82 @@ fn inspect_snapshot(cold_clone: &FilePin) -> Result<Value> {
     Ok(result)
 }
 
+/// Read-only owner fence. The enclosing controller owns the fixed global
+/// locks; the data adapter retains its image OFDs. Do not reacquire those OFD
+/// flocks here, because a second open in this process must not displace them.
+pub(super) fn assert_initial_pair_retired(cold_clone: &FilePin) -> Result<Value> {
+    let (copy, original, working) = initial_pair_sources(cold_clone)?;
+    let references =
+        reference_scan::require_no_other_references(&reference_targets(&original, &working))?;
+    let (after_copy, after_original, after_working) = initial_pair_sources(cold_clone)?;
+    ensure(
+        same_pin(&copy, &after_copy) && original == after_original && working == after_working,
+        "initial pair changed across its complete retirement observation",
+    )?;
+    Ok(
+        json!({"schema":"droidloom.original-data-initial-retirement.v1",
+        "working_copy_receipt":copy,"cold_clone":cold_clone,"original":original,
+        "working_copy":working,"references":references,"image_bodies_read":false,
+        "physical_mutation_authorized":false,"runtime_or_migration_accepted":false}),
+    )
+}
+
+/// The original source chain stays historical after a working image has run or
+/// received a source-bound host label. This only observes current references;
+/// the sealed controller and data adapter verify the phase/label derivation.
+pub(super) fn assert_prepared_pair_retired(pair_intent: &FilePin) -> Result<Value> {
+    let raw = root_pin(pair_intent, 128 * 1024)?;
+    let intent: Intent = serde_json::from_slice(&raw)?;
+    ensure(
+        pair_intent.path == intent.work.join(INTENT),
+        "pair retirement must bind its actual immutable intent",
+    )?;
+    let tx = DataTransaction::observe_intent(Locations::physical(&intent.work)?)?;
+    ensure(
+        same_pin(pair_intent, &tx.intent_pin)
+            && tx.intent.working_copy.sha256 == COPY_SHA
+            && tx.intent.cold_clone.sha256 == CLONE_SHA,
+        "retirement intent lost its original source pins",
+    )?;
+    let before = tx.observe(true)?;
+    let (original, working) = tx.current_pairs(before.0)?;
+    let new_place = match before.0 {
+        Layout::Ready => Place::Working,
+        Layout::Staged => Place::Rollback,
+        Layout::Switched => Place::Original,
+    };
+    let (parent, name) = tx.locations.at(new_place);
+    let new_dir = open_at(parent, name, true)?;
+    let proof = read_small(&open_at(&new_dir, "WORKING-COPY.json", false)?, 64 * 1024)?;
+    ensure(
+        fs::digest(&proof) == COPY_SHA,
+        "working pair's historical source proof differs",
+    )?;
+    let copy: Value = serde_json::from_slice(&proof)?;
+    let clone: Value = serde_json::from_slice(&root_pin(&tx.intent.cold_clone, 64 * 1024)?)?;
+    lineage(&copy, &clone, &tx.intent.original, &tx.intent.working)?;
+    let references =
+        reference_scan::require_no_other_references(&reference_targets(&original, &working))?;
+    ensure(
+        tx.observe(true)? == before
+            && tx.current_pairs(before.0)? == (original.clone(), working.clone())
+            && root_pin(pair_intent, 128 * 1024)? == raw,
+        "prepared pair or its immutable source evidence changed during retirement readback",
+    )?;
+    let layout = match before.0 {
+        Layout::Ready => "original",
+        Layout::Staged => "working_staged",
+        Layout::Switched => "working_selected",
+    };
+    Ok(
+        json!({"schema":"droidloom.original-data-prepared-retirement.v1",
+        "pair_intent":pair_intent,"candidate_id":tx.intent.candidate_id,"layout":layout,
+        "original":original,"working_copy":working,"references":references,
+        "image_bodies_read":false,"physical_mutation_authorized":false,
+        "working_clock_changes_are_not_admission":true,"runtime_or_migration_accepted":false}),
+    )
+}
+
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
 struct Member {
@@ -885,7 +961,7 @@ struct DataTransaction {
     images: Vec<(File, Identity, bool)>,
 }
 impl DataTransaction {
-    fn reopen(locations: Locations) -> Result<Self> {
+    fn observe_intent(locations: Locations) -> Result<Self> {
         locations.validate()?;
         let f = open_at(&locations.work, INTENT, false)?;
         let id = fs::stat(&f)?;
@@ -948,7 +1024,7 @@ impl DataTransaction {
             bytes: bytes.len() as u64,
             sha256: fs::digest(&bytes),
         };
-        let mut tx = Self {
+        let tx = Self {
             locations,
             intent,
             intent_pin,
@@ -956,6 +1032,11 @@ impl DataTransaction {
             intent_identity: id,
             images: Vec::new(),
         };
+        tx.observe(true)?;
+        Ok(tx)
+    }
+    fn reopen(locations: Locations) -> Result<Self> {
+        let mut tx = Self::observe_intent(locations)?;
         let layout = tx.layout(true)?;
         let old = if layout == Layout::Switched {
             Place::Rollback
@@ -991,6 +1072,28 @@ impl DataTransaction {
         }
         tx.observe(true)?;
         Ok(tx)
+    }
+    fn require_writer_locks(&self) -> Result<()> {
+        ensure(
+            self.images.len() == 4 && self.images.iter().filter(|row| row.2).count() == 2,
+            "read-only data observation cannot perform a directory or selection mutation",
+        )
+    }
+    fn current_pairs(&self, layout: Layout) -> Result<(PairRecord, PairRecord)> {
+        let old = if layout == Layout::Switched {
+            Place::Rollback
+        } else {
+            Place::Original
+        };
+        let new = match layout {
+            Layout::Ready => Place::Working,
+            Layout::Staged => Place::Rollback,
+            Layout::Switched => Place::Original,
+        };
+        Ok((
+            self.locations.pair(old, &self.intent.original, false)?,
+            self.locations.pair(new, &self.intent.working, true)?,
+        ))
     }
     fn validate_intent(&self) -> Result<()> {
         ensure(
@@ -1128,6 +1231,7 @@ impl DataTransaction {
         fence: &mut impl FnMut() -> Result<()>,
         checkpoint: &mut impl FnMut(&str) -> Result<()>,
     ) -> Result<Value> {
+        self.require_writer_locks()?;
         ensure(
             named(&self.locations.work, RESTORED)?.is_none(),
             "restored one-shot data transaction cannot be reapplied",
@@ -1169,6 +1273,7 @@ impl DataTransaction {
         fence: &mut impl FnMut() -> Result<()>,
         checkpoint: &mut impl FnMut(&str) -> Result<()>,
     ) -> Result<Value> {
+        self.require_writer_locks()?;
         fence()?;
         let (mut layout, selected) = self.observe(true)?;
         // The sealed authority must first prove normal owned-runtime, mount
@@ -1580,6 +1685,24 @@ mod tests {
             assert!(f.root.path().join("working-parent/working").is_dir());
             assert!(!f.root.path().join("work").join(ROLLBACK).exists());
         }
+    }
+    #[test]
+    fn retirement_observation_coexists_with_writer_ofds_but_cannot_mutate() {
+        let f = Fixture::new(false);
+        let writer = f.open();
+        let observer = DataTransaction::observe_intent(f.locations()).unwrap();
+        assert_eq!(
+            observer.observe(true).unwrap(),
+            writer.observe(true).unwrap()
+        );
+        assert_eq!(
+            observer.current_pairs(Layout::Ready).unwrap(),
+            writer.current_pairs(Layout::Ready).unwrap()
+        );
+        assert!(observer.apply(&mut okay, &mut point).is_err());
+        assert!(observer.restore(&mut okay, &mut point).is_err());
+        assert!(f.root.path().join("working-parent/working").is_dir());
+        assert!(!f.root.path().join("work").join(ROLLBACK).exists());
     }
     #[test]
     fn unknown_alias_extra_entry_or_replaced_selection_is_never_removed() {
