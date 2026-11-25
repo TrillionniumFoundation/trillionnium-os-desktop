@@ -93,7 +93,24 @@ pub fn readiness_mount_source(index: usize, shutdown_property: bool) -> Option<(
     }
 }
 
-/// All four members come from the same normal Soong installation as the observer.
+/// Optional camera inputs belong to the same normal four-image cohort.
+/// Absence is a historical release without any camera endpoint or producer.
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
+pub struct CameraDeclaration {
+    pub jar_sha256: String,
+    pub init_rc_sha256: String,
+    pub provider_sha256: String,
+    pub provider_init_rc_sha256: String,
+}
+impl CameraDeclaration {
+    pub fn valid(&self) -> bool {
+        [&self.jar_sha256, &self.init_rc_sha256, &self.provider_sha256,
+         &self.provider_init_rc_sha256].iter().all(|value| sha256(value))
+    }
+}
+
+/// All members come from the same normal Soong installation as the observer.
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
 pub struct FrontendDeclaration {
@@ -101,6 +118,8 @@ pub struct FrontendDeclaration {
     pub input_bridge_jar_sha256: String,
     pub input_bridge_init_rc_sha256: String,
     pub task_launcher_sha256: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub camera: Option<CameraDeclaration>,
 }
 
 impl FrontendDeclaration {
@@ -113,6 +132,7 @@ impl FrontendDeclaration {
         ]
         .iter()
         .all(|value| sha256(value))
+            && self.camera.as_ref().is_none_or(CameraDeclaration::valid)
     }
 }
 
@@ -248,6 +268,7 @@ mod tests {
                 input_bridge_jar_sha256: "4".repeat(64),
                 input_bridge_init_rc_sha256: "5".repeat(64),
                 task_launcher_sha256: "6".repeat(64),
+                camera: None,
             },
             shutdown_property_contexts_sha256: None,
         };
