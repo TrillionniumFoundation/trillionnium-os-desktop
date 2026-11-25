@@ -1,0 +1,1543 @@
+//! Cold custody and crash recovery for one entire original data directory.
+//!
+//! There is no mutating physical CLI or caller-supplied acceptance flag. The
+//! qualification controller owns the sealed authority, public cell migration,
+//! configuration/identity locks and boot selection. This module owns only the
+//! two directory moves, atomic exchange, and last publication of selected.json.
+use crate::{Result, boot_files::FilePin, ensure, fs, model::Identity};
+use rustix::fs::{AtFlags, FileType, FlockOperation, Mode, OFlags, RenameFlags};
+use serde::{Deserialize, Serialize};
+use serde_json::{Value, json};
+use std::{
+    collections::BTreeMap,
+    fs::File,
+    io::Write,
+    os::unix::fs::FileExt,
+    path::{Path, PathBuf},
+};
+#[path = "cold_original_data_scan.rs"]
+mod reference_scan;
+
+const IMAGES: [&str; 2] = ["data.img", "metadata.img"];
+const ORIGINAL: &str = "/var/lib/droidloom/users/1000/data";
+const WORKING: &str = "/var/lib/droidloom-qualification/p4-private-account-working-copy-516eec-r1";
+const SELECTED: &str = "/etc/droidloom/production/selected.json";
+const ROLLBACK: &str = "data-pair.rollback";
+const PENDING: &str = "data-selection.pending";
+const INTENT: &str = "DATA-EXCHANGE-INTENT.json";
+const COMMITTED: &str = "DATA-EXCHANGED.json";
+const RESTORED: &str = "ORIGINAL-DATA-RESTORED.json";
+const COPY_SHA: &str = "d5864566bd978921b427f2ff70df218214fc512406f8e491d46f3fdd80a39a89";
+const CLONE_SHA: &str = "3eda27b424c264102e609fbb87392b4d34e14ce8440d1ab40ab250131fc92ca0";
+const WORKING_MEMBERS: [&str; 8] = [
+    "INTENT.json",
+    "MEITUAN-CE-ALIAS-METADATA.json",
+    "MEITUAN-STORAGE-METADATA.json",
+    "WORKING-COPY.json",
+    "data-COPY.json",
+    "data.img",
+    "metadata-COPY.json",
+    "metadata.img",
+];
+
+fn inode(a: &Identity, b: &Identity) -> bool {
+    a.dev == b.dev && a.ino == b.ino
+}
+fn stable(a: &Identity, b: &Identity) -> bool {
+    inode(a, b)
+        && (a.mode, a.uid, a.gid, a.nlink, a.size) == (b.mode, b.uid, b.gid, b.nlink, b.size)
+}
+fn same_pin(a: &FilePin, b: &FilePin) -> bool {
+    a.path == b.path && a.bytes == b.bytes && a.sha256 == b.sha256
+}
+fn image(name: &str) -> bool {
+    IMAGES.contains(&name)
+}
+fn named(parent: &File, name: &str) -> Result<Option<Identity>> {
+    match rustix::fs::statat(parent, name, AtFlags::SYMLINK_NOFOLLOW) {
+        Ok(s) => Ok(Some(fs::identity(&s))),
+        Err(rustix::io::Errno::NOENT) => Ok(None),
+        Err(e) => Err(e.into()),
+    }
+}
+fn open_at(parent: &File, name: &str, directory: bool) -> Result<File> {
+    let mut flags =
+        OFlags::RDONLY | OFlags::CLOEXEC | OFlags::NOFOLLOW | OFlags::NONBLOCK | OFlags::NOATIME;
+    if directory {
+        flags |= OFlags::DIRECTORY;
+    }
+    Ok(File::from(rustix::fs::openat(
+        parent,
+        name,
+        flags,
+        Mode::empty(),
+    )?))
+}
+fn read_small(file: &File, limit: u64) -> Result<Vec<u8>> {
+    let before = fs::stat(file)?;
+    ensure(
+        FileType::from_raw_mode(before.mode) == FileType::RegularFile
+            && before.nlink == 1
+            && before.size > 0
+            && before.size <= limit,
+        "bounded single-link metadata file required",
+    )?;
+    let mut bytes = vec![0; before.size as usize];
+    file.read_exact_at(&mut bytes, 0)?;
+    let mut extra = [0; 1];
+    ensure(
+        file.read_at(&mut extra, before.size)? == 0 && fs::stat(file)? == before,
+        "metadata file changed during descriptor readback",
+    )?;
+    Ok(bytes)
+}
+fn list(directory: &File) -> Result<Vec<String>> {
+    let before = fs::stat(directory)?;
+    let mut result = Vec::new();
+    for entry in rustix::fs::Dir::read_from(directory)? {
+        let entry = entry?;
+        let name = entry.file_name().to_str()?;
+        if name != "." && name != ".." {
+            result.push(name.to_owned());
+        }
+        ensure(result.len() <= 16, "unexpected data directory members")?;
+    }
+    ensure(
+        fs::stat(directory)? == before,
+        "data directory changed during enumeration",
+    )?;
+    result.sort();
+    Ok(result)
+}
+fn no_privilege_attributes(file: &File) -> Result<()> {
+    ensure(
+        fs::xattrs(file)?.is_empty(),
+        "data custody inputs carry an ACL or capability",
+    )
+}
+
+fn root_pin(pin: &FilePin, limit: u64) -> Result<Vec<u8>> {
+    ensure(
+        fs::valid_digest(&pin.sha256) && pin.bytes > 0 && pin.bytes <= limit,
+        "bounded source metadata pin required",
+    )?;
+    let tree = fs::Tree::open("/", 0)?;
+    let path = fs::absolute_string(&pin.path)?;
+    let file = tree.file(&path)?;
+    let before = fs::stat(&file)?;
+    ensure(
+        before.uid == 0 && before.gid == 0 && before.nlink == 1 && before.mode & 0o6022 == 0,
+        "data transaction evidence must retain root custody",
+    )?;
+    no_privilege_attributes(&file)?;
+    let bytes = read_small(&file, limit)?;
+    ensure(
+        bytes.len() as u64 == pin.bytes
+            && fs::digest(&bytes) == pin.sha256
+            && tree.identity(&path)? == before,
+        "data transaction evidence changed or differs from its complete pin",
+    )?;
+    Ok(bytes)
+}
+fn as_f9(node: &Identity) -> Value {
+    json!([
+        node.dev,
+        node.ino,
+        node.mode,
+        node.uid,
+        node.gid,
+        node.nlink,
+        node.size,
+        i128::from(node.mtime_sec) * 1_000_000_000 + i128::from(node.mtime_nsec),
+        i128::from(node.ctime_sec) * 1_000_000_000 + i128::from(node.ctime_nsec)
+    ])
+}
+fn copy_identity(node: &Identity) -> Value {
+    json!({"device":node.dev,"inode":node.ino,"mode":node.mode&0o7777,"uid":node.uid,
+        "gid":node.gid,"nlink":node.nlink,"size":node.size,
+        "mtime_ns":i128::from(node.mtime_sec)*1_000_000_000+i128::from(node.mtime_nsec),
+        "ctime_ns":i128::from(node.ctime_sec)*1_000_000_000+i128::from(node.ctime_nsec)})
+}
+fn capture_pair(parent: &File, name: &str, names: &[&str], owner: u32) -> Result<PairRecord> {
+    let directory = open_at(parent, name, true)?;
+    let id = fs::stat(&directory)?;
+    ensure(
+        id.uid == owner && id.gid == owner && id.mode & 0o7777 == 0o700,
+        "root-private original pair directory required",
+    )?;
+    no_privilege_attributes(&directory)?;
+    ensure(
+        list(&directory)?
+            .iter()
+            .map(String::as_str)
+            .eq(names.iter().copied()),
+        "initial data directory scope differs",
+    )?;
+    let mut members = BTreeMap::new();
+    for name in names {
+        let file = open_at(&directory, name, false)?;
+        let node = fs::stat(&file)?;
+        ensure(
+            FileType::from_raw_mode(node.mode) == FileType::RegularFile
+                && node.uid == owner
+                && node.gid == owner
+                && node.nlink == 1
+                && node.mode & 0o7777 == if image(name) { 0o600 } else { 0o400 },
+            "initial root-private backing or proof member differs",
+        )?;
+        no_privilege_attributes(&file)?;
+        let sha256 = if image(name) {
+            None
+        } else {
+            Some(fs::digest(&read_small(&file, 64 * 1024)?))
+        };
+        ensure(
+            fs::stat(&file)? == node && named(&directory, name)? == Some(node.clone()),
+            "initial data member changed during snapshot",
+        )?;
+        members.insert(
+            (*name).to_owned(),
+            Member {
+                identity: node,
+                sha256,
+            },
+        );
+    }
+    ensure(
+        fs::stat(&directory)? == id && named(parent, name)? == Some(id.clone()),
+        "initial data directory changed during snapshot",
+    )?;
+    Ok(PairRecord {
+        directory: id,
+        members,
+    })
+}
+fn lineage(copy: &Value, clone: &Value, original: &PairRecord, working: &PairRecord) -> Result<()> {
+    ensure(
+        copy["schema"] == "p4-real-userdata-independent-working-copy-v1"
+            && clone["schema"] == "pocket4-original-data-cold-compatibility-clone-v1",
+        "original independent-copy producer schema differs",
+    )?;
+    let rows = copy["images"].as_array().ok_or("copy images missing")?;
+    let cold = clone["rows"]
+        .as_array()
+        .ok_or("cold clone image rows missing")?;
+    ensure(
+        rows.len() == 2 && cold.len() == 2,
+        "exact original data/metadata lineage required",
+    )?;
+    for (index, name) in IMAGES.iter().enumerate() {
+        let row = &rows[index];
+        let prior = &cold[index];
+        let old = &original.members[*name].identity;
+        let new = &working.members[*name].identity;
+        ensure(
+            row["name"] == *name
+                && prior["role"] == if index == 0 { "data" } else { "metadata" }
+                && prior["source_path"] == format!("{ORIGINAL}/{name}")
+                && row["working_path"] == format!("{WORKING}/{name}")
+                && row["source_path"] == prior["clone_path"]
+                && row["source_f9_before"] == prior["clone_f9"]
+                && row["source_f9_after"] == prior["clone_f9"]
+                && row["sha256"] == prior["sha256"]
+                && row["sha256"].as_str().is_some_and(fs::valid_digest)
+                && prior["source_f9_before"] == as_f9(old)
+                && prior["source_f9_after"] == as_f9(old)
+                && row["working_identity"] == copy_identity(new)
+                && prior["bytes"] == old.size
+                && new.size == old.size
+                && !inode(old, new),
+            "actual original/cold-clone/working-copy F9 chain differs",
+        )?;
+    }
+    Ok(())
+}
+fn initial_pair_sources(cold_clone: &FilePin) -> Result<(FilePin, PairRecord, PairRecord)> {
+    ensure(
+        cold_clone.bytes == 2843 && cold_clone.sha256 == CLONE_SHA,
+        "exact retained original cold-clone proof required",
+    )?;
+    let cold_bytes = root_pin(cold_clone, 64 * 1024)?;
+    let cold: Value = serde_json::from_slice(&cold_bytes)?;
+    let working_copy = FilePin {
+        path: Path::new(WORKING).join("WORKING-COPY.json"),
+        bytes: 5217,
+        sha256: COPY_SHA.into(),
+    };
+    let copy_bytes = root_pin(&working_copy, 64 * 1024)?;
+    let copy: Value = serde_json::from_slice(&copy_bytes)?;
+    ensure(
+        copy["source_cold_clone_receipt"]["bytes"] == cold_clone.bytes
+            && copy["source_cold_clone_receipt"]["sha256"] == cold_clone.sha256,
+        "working copy lost its original clone proof",
+    )?;
+    let tree = fs::Tree::open("/", 0)?;
+    let (old_parent, old_name) = tree.parent(ORIGINAL)?;
+    let (new_parent, new_name) = tree.parent(WORKING)?;
+    let original = capture_pair(&old_parent, &old_name, &IMAGES, 0)?;
+    let working = capture_pair(&new_parent, &new_name, &WORKING_MEMBERS, 0)?;
+    lineage(&copy, &cold, &original, &working)?;
+    let new_dir = tree.dir(WORKING)?;
+    for (index, name) in ["data-COPY.json", "metadata-COPY.json"].iter().enumerate() {
+        let file = open_at(&new_dir, name, false)?;
+        let value: Value = serde_json::from_slice(&read_small(&file, 64 * 1024)?)?;
+        ensure(
+            value == copy["images"][index],
+            "individual copy producer receipt differs from its whole-pair record",
+        )?;
+    }
+    ensure(
+        original.members[IMAGES[0]].identity.size == 34_359_738_368
+            && original.members[IMAGES[1]].identity.size == 134_217_728
+            && working.members["WORKING-COPY.json"].sha256.as_deref() == Some(COPY_SHA),
+        "original Pocket4 backing sizes or copy proof differ",
+    )?;
+    ensure(
+        root_pin(&working_copy, 64 * 1024)? == copy_bytes
+            && root_pin(cold_clone, 64 * 1024)? == cold_bytes,
+        "original copy evidence changed during metadata admission",
+    )?;
+    Ok((working_copy, original, working))
+}
+fn selection_input(cell: &FilePin, selection: &FilePin) -> Result<Vec<u8>> {
+    ensure(
+        cell.path == Path::new("/etc/droidloom/cell.json"),
+        "selection must bind the actual fixed cell configuration",
+    )?;
+    let cell_bytes = root_pin(cell, 1024 * 1024)?;
+    let spec: Value = serde_json::from_slice(&cell_bytes)?;
+    let bytes = root_pin(selection, 16 * 1024)?;
+    let selected: Value = serde_json::from_slice(&bytes)?;
+    let object = selected
+        .as_object()
+        .ok_or("candidate selection is not an object")?;
+    let mut fields = object.keys().map(String::as_str).collect::<Vec<_>>();
+    fields.sort();
+    ensure(
+        fields
+            == [
+                "base_cohort_sha256",
+                "cell_spec_bytes",
+                "cell_spec_sha256",
+                "host_uid",
+                "launcher",
+                "persistent_data",
+                "runtime_manifest_sha256",
+                "schema",
+            ]
+            && selected["schema"] == "droidloom-production-selection-v4"
+            && selected["launcher"] == "early_boot_shared_kernel_v1"
+            && selected["host_uid"] == 1000
+            && selected["cell_spec_bytes"] == cell.bytes
+            && selected["cell_spec_sha256"] == cell.sha256,
+        "candidate selection is not the exact normal early-boot cell binding",
+    )?;
+    for field in ["base_cohort_sha256", "runtime_manifest_sha256"] {
+        ensure(
+            selected[field].as_str().is_some_and(fs::valid_digest),
+            "selected normal public digest missing",
+        )?;
+    }
+    let cohort = selected["base_cohort_sha256"].as_str().unwrap();
+    ensure(
+        spec["host_uid"] == 1000
+            && spec["data_dir"] == ORIGINAL
+            && spec["image_dir"] == format!("/var/lib/droidloom/cohorts/{cohort}/images")
+            && spec["vendor_image"]
+                == format!("/var/lib/droidloom/cohorts/{cohort}/images/vendor.img")
+            && spec["android_init"].is_null()
+            && spec["gapps_dir"].is_null(),
+        "new cell must retain original data and normal cohort only",
+    )?;
+    for field in [
+        "android_file_overrides",
+        "android_runtime_directories",
+        "shared_storage_directories",
+    ] {
+        ensure(
+            spec[field].is_null() || spec[field].as_array().is_some_and(Vec::is_empty),
+            "legacy cell overrides cannot authorize selected data",
+        )?;
+    }
+    ensure(
+        selected["persistent_data"]["mode"] == "original-ext4-v1"
+            && selected["persistent_data"]["data"]["image_bytes"] == 34_359_738_368u64
+            && selected["persistent_data"]["metadata"]["image_bytes"] == 134_217_728u64,
+        "selection requires the actual original image pair policy",
+    )?;
+    // The sealed qualification authority verifies the remaining normal source,
+    // ext4 policy and cohort fields. This publication rechecks its exact bytes.
+    ensure(
+        root_pin(cell, 1024 * 1024)? == cell_bytes,
+        "cell changed across selection readback",
+    )?;
+    Ok(bytes)
+}
+
+fn prepare_intent(
+    locations: Locations,
+    candidate_id: &str,
+    cell: &FilePin,
+    selection: &FilePin,
+    cold_clone: &FilePin,
+) -> Result<DataTransaction> {
+    locations.validate()?;
+    ensure(
+        locations.owner == 0 && fs::valid_digest(candidate_id),
+        "physical data preparation requires original root custody",
+    )?;
+    for name in [INTENT, PENDING, ROLLBACK, COMMITTED, RESTORED] {
+        ensure(
+            named(&locations.work, name)?.is_none(),
+            "data transaction work is create-only",
+        )?;
+    }
+    let bytes = selection_input(cell, selection)?;
+    let (working_copy, original, working) = initial_pair_sources(cold_clone)?;
+    let old_selection =
+        locations.public_file(&locations.selected_parent, &locations.selected_name)?;
+    let mut pending = File::from(rustix::fs::openat(
+        &locations.work,
+        PENDING,
+        OFlags::RDWR | OFlags::CREATE | OFlags::EXCL | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+        Mode::from_raw_mode(0o444),
+    )?);
+    pending.write_all(&bytes)?;
+    rustix::fs::fchmod(&pending, Mode::from_raw_mode(0o444))?;
+    pending.sync_all()?;
+    locations.work.sync_all()?;
+    let new_selection = locations
+        .public_file(&locations.work, PENDING)?
+        .ok_or("prepared selected bytes disappeared")?;
+    ensure(
+        new_selection.sha256 == selection.sha256 && new_selection.identity.size == selection.bytes,
+        "private selected-file staging differs from source-bound candidate",
+    )?;
+    let boot = std::fs::read_to_string("/proc/sys/kernel/random/boot_id")?
+        .trim()
+        .to_owned();
+    let intent = Intent {
+        schema: "droidloom.original-data-exchange-intent.v1".into(),
+        candidate_id: candidate_id.into(),
+        original_boot_id: boot,
+        work: locations.work_path.clone(),
+        expected_cell: cell.clone(),
+        selection: selection.clone(),
+        working_copy,
+        cold_clone: cold_clone.clone(),
+        original,
+        working,
+        old_selection,
+        new_selection,
+    };
+    locations.write_json(INTENT, &intent)?;
+    // No original path has changed. Reopen the durable record and acquire the
+    // actual image OFD locks before the authority may request the first move.
+    DataTransaction::reopen(locations)
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct InspectionPlan {
+    schema: String,
+    work_directory: PathBuf,
+    cold_clone: FilePin,
+}
+
+fn reference_targets(original: &PairRecord, working: &PairRecord) -> Vec<Identity> {
+    let mut result = vec![original.directory.clone(), working.directory.clone()];
+    for pair in [original, working] {
+        for name in IMAGES {
+            result.push(pair.members[name].identity.clone());
+        }
+    }
+    result
+}
+pub(super) fn inspect(config: &Path, expected: &str) -> Result<Value> {
+    ensure(
+        fs::valid_digest(expected),
+        "invalid data inspection plan digest",
+    )?;
+    let input_tree = fs::Tree::open("/", 0)?;
+    let input_file = input_tree.file(&fs::absolute_string(config)?)?;
+    let raw = read_small(&input_file, 64 * 1024)?;
+    let input = FilePin {
+        path: config.to_owned(),
+        bytes: raw.len() as u64,
+        sha256: fs::digest(&raw),
+    };
+    ensure(
+        input.sha256 == expected && root_pin(&input, 64 * 1024)? == raw,
+        "original data inspection plan digest differs",
+    )?;
+    let plan: InspectionPlan = serde_json::from_slice(&raw)?;
+    let name = plan
+        .work_directory
+        .file_name()
+        .and_then(|s| s.to_str())
+        .ok_or("inspection work name missing")?;
+    ensure(
+        plan.schema == "droidloom.original-data-inspection-plan.v1"
+            && plan.work_directory.parent() == Some(Path::new("/var/lib/droidloom-qualification"))
+            && name.starts_with("original-data-inspect-")
+            && (24..=80).contains(&name.len())
+            && name
+                .bytes()
+                .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-'),
+        "data inspection needs a create-only protected qualification child",
+    )?;
+    let original_context = crate::cold_original_initramfs::original_context()?;
+    crate::boot_files::private_dir(&plan.work_directory)?;
+    let (working_copy, original, working) = initial_pair_sources(&plan.cold_clone)?;
+    let tree = fs::Tree::open("/", 0)?;
+    let mut locks = Vec::new();
+    for (path, pair) in [(ORIGINAL, &original), (WORKING, &working)] {
+        let directory = tree.dir(path)?;
+        for name in IMAGES {
+            let file = open_at(&directory, name, false)?;
+            ensure(
+                fs::stat(&file)? == pair.members[name].identity,
+                "actual image changed before inspection lock",
+            )?;
+            rustix::fs::flock(&file, FlockOperation::NonBlockingLockExclusive)?;
+            locks.push((file, pair.members[name].identity.clone()));
+        }
+    }
+    let references =
+        reference_scan::require_no_other_references(&reference_targets(&original, &working))?;
+    for (file, old) in &locks {
+        ensure(
+            fs::stat(file)? == *old,
+            "image changed during original data inspection",
+        )?;
+    }
+    let (_, old_after, new_after) = initial_pair_sources(&plan.cold_clone)?;
+    ensure(
+        old_after == original
+            && new_after == working
+            && root_pin(&input, 64 * 1024)? == raw
+            && crate::cold_original_initramfs::original_context()? == original_context,
+        "original host or complete pair metadata changed across inspection",
+    )?;
+    let result = json!({"schema":"droidloom.original-data-inspected.v1","input":input,
+        "original_host":original_context,"original":original,"working_copy":working,
+        "working_copy_receipt":working_copy,"cold_clone":plan.cold_clone,"references":references,
+        "image_descriptors_opened_readonly":locks.len(),"image_bodies_read":false,"image_bodies_written":false,
+        "directories_exchanged":false,"selected_published":false,"qualification_boot_authorized":false,
+        "runtime_or_migration_accepted":false,"production_ready":false});
+    let path = plan.work_directory.join("ORIGINAL-DATA-INSPECTED.json");
+    crate::boot_files::write_new(&path, &serde_json::to_vec_pretty(&result)?, 0o400)?;
+    tree.dir(&fs::absolute_string(&plan.work_directory)?)?
+        .sync_all()?;
+    Ok(result)
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
+struct Member {
+    identity: Identity,
+    sha256: Option<String>,
+}
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
+struct PairRecord {
+    directory: Identity,
+    members: BTreeMap<String, Member>,
+}
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
+struct PublicFile {
+    identity: Identity,
+    sha256: String,
+}
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+struct Intent {
+    schema: String,
+    candidate_id: String,
+    original_boot_id: String,
+    work: PathBuf,
+    expected_cell: FilePin,
+    selection: FilePin,
+    working_copy: FilePin,
+    cold_clone: FilePin,
+    original: PairRecord,
+    working: PairRecord,
+    old_selection: Option<PublicFile>,
+    new_selection: PublicFile,
+}
+
+struct Locations {
+    anchor: fs::Tree,
+    ancestors: BTreeMap<String, Identity>,
+    parent_paths: [String; 4],
+    original_parent: File,
+    working_parent: File,
+    work: File,
+    selected_parent: File,
+    original_name: String,
+    working_name: String,
+    selected_name: String,
+    work_path: PathBuf,
+    owner: u32,
+}
+impl Locations {
+    fn physical(work: &Path) -> Result<Self> {
+        ensure(
+            work.is_absolute()
+                && work != Path::new(WORKING)
+                && !work.starts_with(ORIGINAL)
+                && !work.starts_with(WORKING),
+            "data recovery work cannot be inside either data directory",
+        )?;
+        let tree = fs::Tree::open("/", 0)?;
+        let parent = |path: &str| tree.parent(path);
+        let (original_parent, original_name) = parent(ORIGINAL)?;
+        let (working_parent, working_name) = parent(WORKING)?;
+        let (selected_parent, selected_name) = parent(SELECTED)?;
+        let work_fd = tree.dir(&fs::absolute_string(work)?)?;
+        let parent_paths = [
+            Path::new(ORIGINAL)
+                .parent()
+                .unwrap()
+                .to_str()
+                .unwrap()
+                .to_owned(),
+            Path::new(WORKING)
+                .parent()
+                .unwrap()
+                .to_str()
+                .unwrap()
+                .to_owned(),
+            fs::absolute_string(work)?,
+            Path::new(SELECTED)
+                .parent()
+                .unwrap()
+                .to_str()
+                .unwrap()
+                .to_owned(),
+        ];
+        let ancestors = Self::ancestors(&tree, &parent_paths)?;
+        let value = Self {
+            anchor: tree,
+            ancestors,
+            parent_paths,
+            original_parent,
+            working_parent,
+            work: work_fd,
+            selected_parent,
+            original_name,
+            working_name,
+            selected_name,
+            work_path: work.to_owned(),
+            owner: 0,
+        };
+        value.validate()?;
+        Ok(value)
+    }
+    fn ancestors(tree: &fs::Tree, paths: &[String; 4]) -> Result<BTreeMap<String, Identity>> {
+        let mut result = BTreeMap::new();
+        for path in paths {
+            let mut current = String::new();
+            for name in path.split('/').filter(|p| !p.is_empty()) {
+                current.push('/');
+                current.push_str(name);
+                result.insert(current.clone(), fs::stat(&tree.dir(&current)?)?);
+            }
+        }
+        Ok(result)
+    }
+    fn validate(&self) -> Result<()> {
+        let device = fs::stat(&self.original_parent)?.dev;
+        for fd in [
+            &self.original_parent,
+            &self.working_parent,
+            &self.work,
+            &self.selected_parent,
+        ] {
+            let s = fs::stat(fd)?;
+            ensure(
+                FileType::from_raw_mode(s.mode) == FileType::Directory
+                    && s.dev == device
+                    && s.uid == self.owner
+                    && s.gid == self.owner
+                    && s.mode & 0o022 == 0,
+                "data transaction requires protected same-filesystem parents",
+            )?;
+        }
+        for (path, old) in &self.ancestors {
+            let current = fs::stat(&self.anchor.dir(path)?)?;
+            ensure(
+                inode(&current, old)
+                    && (current.mode, current.uid, current.gid) == (old.mode, old.uid, old.gid),
+                "original data/configuration ancestor was replaced or changed authority",
+            )?;
+        }
+        for (path, held) in self.parent_paths.iter().zip([
+            &self.original_parent,
+            &self.working_parent,
+            &self.work,
+            &self.selected_parent,
+        ]) {
+            ensure(
+                fs::stat(&self.anchor.dir(path)?)? == fs::stat(held)?,
+                "held data transaction parent is no longer its named inode",
+            )?;
+        }
+        ensure(
+            fs::stat(&self.work)?.mode & 0o7777 == 0o700,
+            "data recovery work must be private",
+        )
+    }
+    fn at(&self, place: Place) -> (&File, &str) {
+        match place {
+            Place::Original => (&self.original_parent, &self.original_name),
+            Place::Working => (&self.working_parent, &self.working_name),
+            Place::Rollback => (&self.work, ROLLBACK),
+        }
+    }
+    fn pair(&self, place: Place, expected: &PairRecord, mutable: bool) -> Result<PairRecord> {
+        let (parent, name) = self.at(place);
+        let dir = open_at(parent, name, true)?;
+        let before = fs::stat(&dir)?;
+        ensure(
+            stable(&before, &expected.directory)
+                && before.uid == self.owner
+                && before.gid == self.owner
+                && before.mode & 0o7777 == 0o700,
+            "selected data directory inode or authority changed",
+        )?;
+        let names = list(&dir)?;
+        ensure(
+            names == expected.members.keys().cloned().collect::<Vec<_>>(),
+            "data directory member set changed",
+        )?;
+        no_privilege_attributes(&dir)?;
+        let mut members = BTreeMap::new();
+        for name in names {
+            let file = open_at(&dir, &name, false)?;
+            let id = fs::stat(&file)?;
+            let old = &expected.members[&name];
+            ensure(
+                FileType::from_raw_mode(id.mode) == FileType::RegularFile
+                    && id.uid == self.owner
+                    && id.gid == self.owner
+                    && id.nlink == 1
+                    && id.mode & 0o7777 == if image(&name) { 0o600 } else { 0o400 },
+                "private data member ownership, links or mode changed",
+            )?;
+            ensure(
+                if image(&name) && mutable {
+                    stable(&id, &old.identity)
+                } else {
+                    id == old.identity
+                },
+                "original data member identity changed",
+            )?;
+            no_privilege_attributes(&file)?;
+            let sha256 = if image(&name) {
+                None
+            } else {
+                Some(fs::digest(&read_small(&file, 64 * 1024)?))
+            };
+            ensure(
+                sha256 == old.sha256
+                    && fs::stat(&file)? == id
+                    && named(&dir, &name)? == Some(id.clone()),
+                "data proof member or named backing changed",
+            )?;
+            members.insert(
+                name,
+                Member {
+                    identity: id,
+                    sha256,
+                },
+            );
+        }
+        ensure(
+            fs::stat(&dir)? == before && named(parent, name)? == Some(before.clone()),
+            "held data directory changed across its complete member readback",
+        )?;
+        Ok(PairRecord {
+            directory: before,
+            members,
+        })
+    }
+    fn public_file(&self, parent: &File, name: &str) -> Result<Option<PublicFile>> {
+        if named(parent, name)?.is_none() {
+            return Ok(None);
+        }
+        let file = open_at(parent, name, false)?;
+        let id = fs::stat(&file)?;
+        ensure(
+            id.uid == self.owner && id.gid == self.owner && id.mode & 0o6022 == 0,
+            "selection must be root-protected ordinary public configuration",
+        )?;
+        no_privilege_attributes(&file)?;
+        let bytes = read_small(&file, 16 * 1024)?;
+        ensure(
+            named(parent, name)? == Some(id.clone()),
+            "selection named inode changed",
+        )?;
+        Ok(Some(PublicFile {
+            identity: id,
+            sha256: fs::digest(&bytes),
+        }))
+    }
+    fn write_json(&self, name: &str, value: &impl Serialize) -> Result<FilePin> {
+        let bytes = serde_json::to_vec_pretty(value)?;
+        ensure(
+            !bytes.is_empty() && bytes.len() <= 128 * 1024,
+            "bounded data transaction record",
+        )?;
+        let mut file = File::from(rustix::fs::openat(
+            &self.work,
+            name,
+            OFlags::RDWR | OFlags::CREATE | OFlags::EXCL | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+            Mode::from_raw_mode(0o400),
+        )?);
+        file.write_all(&bytes)?;
+        rustix::fs::fchmod(&file, Mode::from_raw_mode(0o400))?;
+        file.sync_all()?;
+        self.work.sync_all()?;
+        ensure(
+            read_small(&file, 128 * 1024)? == bytes,
+            "durable data transaction record readback differs",
+        )?;
+        Ok(FilePin {
+            path: self.work_path.join(name),
+            bytes: bytes.len() as u64,
+            sha256: fs::digest(&bytes),
+        })
+    }
+    fn move_pair(&self, from: Place, to: Place) -> Result<()> {
+        let (source, old) = self.at(from);
+        let (target, new) = self.at(to);
+        rustix::fs::renameat_with(source, old, target, new, RenameFlags::NOREPLACE)?;
+        source.sync_all()?;
+        target.sync_all()?;
+        Ok(())
+    }
+    fn exchange_pair(&self) -> Result<()> {
+        rustix::fs::renameat_with(
+            &self.original_parent,
+            self.original_name.as_str(),
+            &self.work,
+            ROLLBACK,
+            RenameFlags::EXCHANGE,
+        )?;
+        self.original_parent.sync_all()?;
+        self.work.sync_all()?;
+        Ok(())
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum Place {
+    Original,
+    Working,
+    Rollback,
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum Layout {
+    Ready,
+    Staged,
+    Switched,
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum SelectionState {
+    Original,
+    Candidate,
+}
+fn matches_public(actual: Option<&PublicFile>, expected: Option<&PublicFile>) -> bool {
+    match (actual, expected) {
+        (None, None) => true,
+        (Some(a), Some(b)) => stable(&a.identity, &b.identity) && a.sha256 == b.sha256,
+        _ => false,
+    }
+}
+
+struct DataTransaction {
+    locations: Locations,
+    intent: Intent,
+    intent_pin: FilePin,
+    // Read-only image descriptors carry the same flock protocol as the live
+    // provider. Neither body is read or written by the directory transaction.
+    images: Vec<(File, Identity, bool)>,
+}
+impl DataTransaction {
+    fn reopen(locations: Locations) -> Result<Self> {
+        locations.validate()?;
+        let f = open_at(&locations.work, INTENT, false)?;
+        let id = fs::stat(&f)?;
+        ensure(
+            id.uid == locations.owner && id.gid == locations.owner && id.mode & 0o7777 == 0o400,
+            "original immutable data transaction intent custody",
+        )?;
+        let bytes = read_small(&f, 128 * 1024)?;
+        let intent: Intent = serde_json::from_slice(&bytes)?;
+        ensure(
+            intent.schema == "droidloom.original-data-exchange-intent.v1"
+                && fs::valid_digest(&intent.candidate_id)
+                && intent.work == locations.work_path
+                && intent.original.members.len() == 2
+                && intent
+                    .original
+                    .members
+                    .keys()
+                    .map(String::as_str)
+                    .eq(IMAGES)
+                && intent
+                    .working
+                    .members
+                    .keys()
+                    .map(String::as_str)
+                    .eq(WORKING_MEMBERS)
+                && !inode(&intent.original.directory, &intent.working.directory),
+            "closed original data transaction scope",
+        )?;
+        for record in [&intent.original, &intent.working] {
+            ensure(
+                record.directory.dev == fs::stat(&locations.work)?.dev,
+                "data snapshot filesystem differs",
+            )?;
+            for name in IMAGES {
+                let image = &record.members[name];
+                ensure(
+                    image.sha256.is_none() && image.identity.size > 0,
+                    "data record cannot assert a newly verified image hash",
+                )?;
+            }
+        }
+        let mut distinct = std::collections::BTreeSet::new();
+        for pair in [&intent.original, &intent.working] {
+            for name in IMAGES {
+                let n = &pair.members[name].identity;
+                ensure(
+                    distinct.insert((n.dev, n.ino)),
+                    "all original and working backing roles require independent inodes",
+                )?;
+            }
+        }
+        let intent_pin = FilePin {
+            path: locations.work_path.join(INTENT),
+            bytes: bytes.len() as u64,
+            sha256: fs::digest(&bytes),
+        };
+        let mut tx = Self {
+            locations,
+            intent,
+            intent_pin,
+            images: Vec::new(),
+        };
+        let layout = tx.layout(true)?;
+        let old = if layout == Layout::Switched {
+            Place::Rollback
+        } else {
+            Place::Original
+        };
+        let new = match layout {
+            Layout::Ready => Place::Working,
+            Layout::Staged => Place::Rollback,
+            Layout::Switched => Place::Original,
+        };
+        for (place, record, mutable) in [
+            (old, &tx.intent.original, false),
+            (new, &tx.intent.working, true),
+        ] {
+            let (parent, name) = tx.locations.at(place);
+            let dir = open_at(parent, name, true)?;
+            for name in IMAGES {
+                let file = open_at(&dir, name, false)?;
+                let node = fs::stat(&file)?;
+                ensure(
+                    if mutable {
+                        stable(&node, &record.members[name].identity)
+                    } else {
+                        node == record.members[name].identity
+                    },
+                    "data backing changed before descriptor lock",
+                )?;
+                rustix::fs::flock(&file, FlockOperation::NonBlockingLockExclusive)?;
+                tx.images
+                    .push((file, record.members[name].identity.clone(), mutable));
+            }
+        }
+        tx.observe(true)?;
+        Ok(tx)
+    }
+    fn layout(&self, mutable: bool) -> Result<Layout> {
+        let at = |place| {
+            let (p, n) = self.locations.at(place);
+            named(p, n)
+        };
+        let original = at(Place::Original)?.ok_or("fixed original data directory disappeared")?;
+        let working = at(Place::Working)?;
+        let rollback = at(Place::Rollback)?;
+        let old = &self.intent.original;
+        let new = &self.intent.working;
+        let layout = if inode(&original, &old.directory)
+            && working.as_ref().is_some_and(|i| inode(i, &new.directory))
+            && rollback.is_none()
+        {
+            self.locations.pair(Place::Original, old, false)?;
+            self.locations.pair(Place::Working, new, mutable)?;
+            Layout::Ready
+        } else if inode(&original, &old.directory)
+            && working.is_none()
+            && rollback.as_ref().is_some_and(|i| inode(i, &new.directory))
+        {
+            self.locations.pair(Place::Original, old, false)?;
+            self.locations.pair(Place::Rollback, new, mutable)?;
+            Layout::Staged
+        } else if inode(&original, &new.directory)
+            && working.is_none()
+            && rollback.as_ref().is_some_and(|i| inode(i, &old.directory))
+        {
+            self.locations.pair(Place::Original, new, mutable)?;
+            self.locations.pair(Place::Rollback, old, false)?;
+            Layout::Switched
+        } else {
+            return Err(
+                "unknown directory layout cannot be reconciled as an owned data exchange".into(),
+            );
+        };
+        Ok(layout)
+    }
+    fn selection_state(&self) -> Result<SelectionState> {
+        let current = self.locations.public_file(
+            &self.locations.selected_parent,
+            &self.locations.selected_name,
+        )?;
+        let pending = self.locations.public_file(&self.locations.work, PENDING)?;
+        if matches_public(current.as_ref(), self.intent.old_selection.as_ref())
+            && matches_public(pending.as_ref(), Some(&self.intent.new_selection))
+        {
+            return Ok(SelectionState::Original);
+        }
+        if matches_public(current.as_ref(), Some(&self.intent.new_selection))
+            && matches_public(pending.as_ref(), self.intent.old_selection.as_ref())
+        {
+            return Ok(SelectionState::Candidate);
+        }
+        Err("selection or pending configuration is not an original owned inode".into())
+    }
+    fn observe(&self, mutable: bool) -> Result<(Layout, SelectionState)> {
+        self.locations.validate()?;
+        for (file, old, is_working) in &self.images {
+            let now = fs::stat(file)?;
+            ensure(
+                if mutable && *is_working {
+                    stable(&now, old)
+                } else {
+                    now == *old
+                },
+                "locked original backing changed",
+            )?;
+            rustix::fs::flock(file, FlockOperation::NonBlockingLockExclusive)?;
+        }
+        let layout = self.layout(mutable)?;
+        let selection = self.selection_state()?;
+        ensure(
+            selection == SelectionState::Original || layout == Layout::Switched,
+            "candidate selection cannot precede the atomic data exchange",
+        )?;
+        Ok((layout, selection))
+    }
+    fn publish_selection(&self) -> Result<()> {
+        if self.intent.old_selection.is_some() {
+            rustix::fs::renameat_with(
+                &self.locations.work,
+                PENDING,
+                &self.locations.selected_parent,
+                self.locations.selected_name.as_str(),
+                RenameFlags::EXCHANGE,
+            )?;
+        } else {
+            rustix::fs::renameat_with(
+                &self.locations.work,
+                PENDING,
+                &self.locations.selected_parent,
+                self.locations.selected_name.as_str(),
+                RenameFlags::NOREPLACE,
+            )?;
+        }
+        self.locations.work.sync_all()?;
+        self.locations.selected_parent.sync_all()?;
+        Ok(())
+    }
+    fn restore_selection(&self) -> Result<()> {
+        if self.intent.old_selection.is_some() {
+            self.publish_selection()
+        } else {
+            rustix::fs::renameat_with(
+                &self.locations.selected_parent,
+                self.locations.selected_name.as_str(),
+                &self.locations.work,
+                PENDING,
+                RenameFlags::NOREPLACE,
+            )?;
+            self.locations.selected_parent.sync_all()?;
+            self.locations.work.sync_all()?;
+            Ok(())
+        }
+    }
+    fn apply(
+        &self,
+        fence: &mut impl FnMut() -> Result<()>,
+        checkpoint: &mut impl FnMut(&str) -> Result<()>,
+    ) -> Result<Value> {
+        ensure(
+            named(&self.locations.work, RESTORED)?.is_none(),
+            "restored one-shot data transaction cannot be reapplied",
+        )?;
+        fence()?;
+        let (mut layout, mut selected) = self.observe(false)?;
+        if layout == Layout::Ready {
+            self.locations.move_pair(Place::Working, Place::Rollback)?;
+            checkpoint("working-staged")?;
+            fence()?;
+            (layout, selected) = self.observe(false)?;
+        }
+        if layout == Layout::Staged {
+            self.locations.exchange_pair()?;
+            checkpoint("pair-exchanged")?;
+            fence()?;
+            (layout, selected) = self.observe(false)?;
+        }
+        ensure(layout == Layout::Switched, "working pair was not selected")?;
+        if selected == SelectionState::Original {
+            fence()?;
+            self.observe(false)?;
+            self.publish_selection()?;
+            checkpoint("selection-published")?;
+        }
+        fence()?;
+        ensure(
+            self.observe(false)? == (Layout::Switched, SelectionState::Candidate),
+            "selected data readback differs",
+        )?;
+        let report = self.report(false)?;
+        if named(&self.locations.work, COMMITTED)?.is_none() {
+            self.locations.write_json(COMMITTED, &report)?;
+        }
+        Ok(report)
+    }
+    fn restore(
+        &self,
+        fence: &mut impl FnMut() -> Result<()>,
+        checkpoint: &mut impl FnMut(&str) -> Result<()>,
+    ) -> Result<Value> {
+        fence()?;
+        let (mut layout, selected) = self.observe(true)?;
+        if selected == SelectionState::Candidate {
+            self.restore_selection()?;
+            checkpoint("selection-restored")?;
+            fence()?;
+            ensure(
+                self.observe(true)?.1 == SelectionState::Original,
+                "original selection readback differs",
+            )?;
+        }
+        if layout == Layout::Switched {
+            self.locations.exchange_pair()?;
+            checkpoint("pair-restored")?;
+            fence()?;
+            layout = self.observe(true)?.0;
+        }
+        if layout == Layout::Staged {
+            self.locations.move_pair(Place::Rollback, Place::Working)?;
+            checkpoint("working-returned")?;
+        }
+        fence()?;
+        ensure(
+            self.observe(true)? == (Layout::Ready, SelectionState::Original),
+            "original pair restoration differs",
+        )?;
+        let report = self.report(true)?;
+        if named(&self.locations.work, RESTORED)?.is_none() {
+            self.locations.write_json(RESTORED, &report)?;
+        }
+        Ok(report)
+    }
+    fn report(&self, restored: bool) -> Result<Value> {
+        let old = if restored {
+            Place::Original
+        } else {
+            Place::Rollback
+        };
+        let new = if restored {
+            Place::Working
+        } else {
+            Place::Original
+        };
+        Ok(
+            json!({"schema":"droidloom.original-data-directory-transaction.v1","intent":self.intent_pin,
+            "candidate_id":self.intent.candidate_id,"original":self.locations.pair(old,&self.intent.original,false)?,
+            "working_copy":self.locations.pair(new,&self.intent.working,restored)?,
+            "original_pair_restored":restored,"working_pair_selected":!restored,
+            "original_image_bodies_read":false,"original_image_bodies_written":false,
+            "working_image_bodies_read":false,"working_image_bodies_written":false,
+            "runtime_or_migration_accepted":false,"production_ready":false,
+            "services_enabled":false,"default_boot_changed":false}),
+        )
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::os::unix::fs::PermissionsExt;
+
+    struct Fixture {
+        root: tempfile::TempDir,
+    }
+    fn write(path: &Path, bytes: &[u8], mode: u32) {
+        std::fs::write(path, bytes).unwrap();
+        std::fs::set_permissions(path, std::fs::Permissions::from_mode(mode)).unwrap();
+    }
+    fn record(path: &Path) -> PairRecord {
+        let dir = File::open(path).unwrap();
+        let mut members = BTreeMap::new();
+        for name in list(&dir).unwrap() {
+            let file = File::open(path.join(&name)).unwrap();
+            members.insert(
+                name.clone(),
+                Member {
+                    identity: fs::stat(&file).unwrap(),
+                    sha256: if image(&name) {
+                        None
+                    } else {
+                        Some(fs::digest(&std::fs::read(path.join(&name)).unwrap()))
+                    },
+                },
+            );
+        }
+        PairRecord {
+            directory: fs::stat(&dir).unwrap(),
+            members,
+        }
+    }
+    fn public(path: &Path) -> PublicFile {
+        PublicFile {
+            identity: fs::stat(&File::open(path).unwrap()).unwrap(),
+            sha256: fs::digest(&std::fs::read(path).unwrap()),
+        }
+    }
+    impl Fixture {
+        fn new(old_selection: bool) -> Self {
+            let root = tempfile::tempdir().unwrap();
+            for p in [
+                "original-parent",
+                "working-parent",
+                "work",
+                "config",
+                "original-parent/data",
+                "working-parent/working",
+            ] {
+                let path = root.path().join(p);
+                std::fs::create_dir(&path).unwrap();
+                std::fs::set_permissions(path, std::fs::Permissions::from_mode(0o700)).unwrap();
+            }
+            for (base, byte) in [
+                ("original-parent/data", b'o'),
+                ("working-parent/working", b'w'),
+            ] {
+                for (index, name) in IMAGES.iter().enumerate() {
+                    write(
+                        &root.path().join(base).join(name),
+                        &vec![byte + index as u8; 4096],
+                        0o600,
+                    );
+                }
+            }
+            for name in WORKING_MEMBERS {
+                if !image(name) {
+                    write(
+                        &root.path().join("working-parent/working").join(name),
+                        b"{\"historical_proof\":true}\n",
+                        0o400,
+                    );
+                }
+            }
+            if old_selection {
+                write(
+                    &root.path().join("config/selected.json"),
+                    b"original public selection\n",
+                    0o644,
+                );
+            }
+            write(
+                &root.path().join("work").join(PENDING),
+                b"candidate public selection\n",
+                0o444,
+            );
+            let fixture = Self { root };
+            let l = fixture.locations();
+            let dummy = FilePin {
+                path: "/source-proof".into(),
+                bytes: 1,
+                sha256: "b".repeat(64),
+            };
+            let intent = Intent {
+                schema: "droidloom.original-data-exchange-intent.v1".into(),
+                candidate_id: "a".repeat(64),
+                original_boot_id: "test-original-boot".into(),
+                work: l.work_path.clone(),
+                expected_cell: dummy.clone(),
+                selection: dummy.clone(),
+                working_copy: dummy.clone(),
+                cold_clone: dummy,
+                original: record(&fixture.root.path().join("original-parent/data")),
+                working: record(&fixture.root.path().join("working-parent/working")),
+                old_selection: if old_selection {
+                    Some(public(&fixture.root.path().join("config/selected.json")))
+                } else {
+                    None
+                },
+                new_selection: public(&fixture.root.path().join("work").join(PENDING)),
+            };
+            l.write_json(INTENT, &intent).unwrap();
+            fixture
+        }
+        fn locations(&self) -> Locations {
+            let owner = rustix::process::getuid().as_raw();
+            let anchor = fs::Tree::open(self.root.path().to_str().unwrap(), owner).unwrap();
+            let parent_paths =
+                ["/original-parent", "/working-parent", "/work", "/config"].map(str::to_owned);
+            let ancestors = Locations::ancestors(&anchor, &parent_paths).unwrap();
+            Locations {
+                original_parent: anchor.dir(&parent_paths[0]).unwrap(),
+                working_parent: anchor.dir(&parent_paths[1]).unwrap(),
+                work: anchor.dir(&parent_paths[2]).unwrap(),
+                selected_parent: anchor.dir(&parent_paths[3]).unwrap(),
+                anchor,
+                ancestors,
+                parent_paths,
+                original_name: "data".into(),
+                working_name: "working".into(),
+                selected_name: "selected.json".into(),
+                work_path: self.root.path().join("work"),
+                owner,
+            }
+        }
+        fn open(&self) -> DataTransaction {
+            DataTransaction::reopen(self.locations()).unwrap()
+        }
+        fn restored(&self, old: &PairRecord, new: &PairRecord, old_selection: bool) {
+            let tx = self.open();
+            assert_eq!(
+                tx.observe(true).unwrap(),
+                (Layout::Ready, SelectionState::Original)
+            );
+            let actual = record(&self.root.path().join("original-parent/data"));
+            assert!(stable(&actual.directory, &old.directory));
+            assert_eq!(actual.members, old.members);
+            let actual = record(&self.root.path().join("working-parent/working"));
+            assert!(stable(&actual.directory, &new.directory));
+            for name in WORKING_MEMBERS {
+                assert!(stable(
+                    &actual.members[name].identity,
+                    &new.members[name].identity
+                ));
+            }
+            assert_eq!(
+                self.root.path().join("config/selected.json").exists(),
+                old_selection
+            );
+            for (i, name) in IMAGES.iter().enumerate() {
+                assert_eq!(
+                    std::fs::read(self.root.path().join("original-parent/data").join(name))
+                        .unwrap(),
+                    vec![b'o' + i as u8; 4096]
+                );
+            }
+        }
+    }
+    fn okay() -> Result<()> {
+        Ok(())
+    }
+    fn point(_: &str) -> Result<()> {
+        Ok(())
+    }
+
+    #[test]
+    fn real_directory_exchange_and_selection_restore_preserve_original_images_and_mutated_copy() {
+        for old_selection in [false, true] {
+            let f = Fixture::new(old_selection);
+            let tx = f.open();
+            let old = tx.intent.original.clone();
+            let new = tx.intent.working.clone();
+            let report = tx.apply(&mut okay, &mut point).unwrap();
+            assert_eq!(report["runtime_or_migration_accepted"], false);
+            let path = f.root.path().join("original-parent/data/data.img");
+            write(&path, &vec![b'z'; 4096], 0o600);
+            drop(tx);
+            let tx = f.open();
+            tx.restore(&mut okay, &mut point).unwrap();
+            drop(tx);
+            f.restored(&old, &new, old_selection);
+            assert_eq!(
+                std::fs::read(f.root.path().join("working-parent/working/data.img")).unwrap(),
+                vec![b'z'; 4096]
+            );
+        }
+    }
+    #[test]
+    fn interruption_after_each_forward_atomic_operation_recovers_from_immutable_intent() {
+        for old_selection in [false, true] {
+            for stopped in ["working-staged", "pair-exchanged", "selection-published"] {
+                let f = Fixture::new(old_selection);
+                let tx = f.open();
+                let old = tx.intent.original.clone();
+                let new = tx.intent.working.clone();
+                assert!(
+                    tx.apply(&mut okay, &mut |stage| if stage == stopped {
+                        Err("injected interruption".into())
+                    } else {
+                        Ok(())
+                    })
+                    .is_err()
+                );
+                drop(tx);
+                let tx = f.open();
+                tx.restore(&mut okay, &mut point).unwrap();
+                drop(tx);
+                f.restored(&old, &new, old_selection);
+            }
+        }
+    }
+    #[test]
+    fn interruption_after_each_reverse_atomic_operation_is_resumable() {
+        for old_selection in [false, true] {
+            for stopped in ["selection-restored", "pair-restored", "working-returned"] {
+                let f = Fixture::new(old_selection);
+                let tx = f.open();
+                let old = tx.intent.original.clone();
+                let new = tx.intent.working.clone();
+                tx.apply(&mut okay, &mut point).unwrap();
+                assert!(
+                    tx.restore(&mut okay, &mut |stage| if stage == stopped {
+                        Err("injected interruption".into())
+                    } else {
+                        Ok(())
+                    })
+                    .is_err()
+                );
+                drop(tx);
+                let tx = f.open();
+                tx.restore(&mut okay, &mut point).unwrap();
+                drop(tx);
+                f.restored(&old, &new, old_selection);
+            }
+        }
+    }
+    #[test]
+    fn changed_original_or_same_bytes_replacement_cannot_enter_exchange() {
+        for replace in [false, true] {
+            let f = Fixture::new(false);
+            let path = f.root.path().join("original-parent/data/data.img");
+            if replace {
+                let new = path.with_extension("new");
+                write(&new, &std::fs::read(&path).unwrap(), 0o600);
+                std::fs::rename(new, &path).unwrap();
+            } else {
+                write(&path, &vec![b'x'; 4096], 0o600);
+            }
+            assert!(DataTransaction::reopen(f.locations()).is_err());
+            assert!(f.root.path().join("working-parent/working").is_dir());
+        }
+    }
+    #[test]
+    fn unknown_alias_extra_entry_or_replaced_selection_is_never_removed() {
+        use std::os::unix::fs::symlink;
+        for case in 0..4 {
+            let f = Fixture::new(false);
+            match case {
+                0 => {
+                    let p = f.root.path().join("working-parent/working");
+                    std::fs::rename(&p, p.with_file_name("saved")).unwrap();
+                    symlink("saved", p).unwrap();
+                }
+                1 => write(
+                    &f.root.path().join("working-parent/working/unlisted"),
+                    b"unselected",
+                    0o400,
+                ),
+                2 => {
+                    let p = f.root.path().join("work").join(PENDING);
+                    let q = p.with_extension("new");
+                    write(&q, &std::fs::read(&p).unwrap(), 0o444);
+                    std::fs::rename(q, p).unwrap();
+                }
+                _ => {
+                    std::fs::create_dir(f.root.path().join("work").join(ROLLBACK)).unwrap();
+                }
+            }
+            assert!(DataTransaction::reopen(f.locations()).is_err());
+            assert!(f.root.path().join("original-parent/data").is_dir());
+        }
+    }
+    #[test]
+    fn competing_backing_lock_blocks_the_whole_transaction() {
+        let f = Fixture::new(false);
+        let held = File::open(f.root.path().join("working-parent/working/data.img")).unwrap();
+        rustix::fs::flock(&held, FlockOperation::NonBlockingLockExclusive).unwrap();
+        assert!(DataTransaction::reopen(f.locations()).is_err());
+        assert!(f.root.path().join("working-parent/working").is_dir());
+    }
+    #[test]
+    fn ancestor_replacement_and_failed_authority_fence_prevent_directory_changes() {
+        let f = Fixture::new(false);
+        let tx = f.open();
+        assert!(
+            tx.apply(&mut || Err("authority was revoked".into()), &mut point)
+                .is_err()
+        );
+        let original = f.root.path().join("original-parent");
+        let replacement = original.with_file_name("original-parent-old");
+        std::fs::rename(&original, &replacement).unwrap();
+        std::fs::create_dir(&original).unwrap();
+        assert!(tx.apply(&mut okay, &mut point).is_err());
+        assert!(replacement.join("data").is_dir());
+        assert!(f.root.path().join("working-parent/working").is_dir());
+    }
+
+    #[test]
+    fn source_lineage_checks_both_original_clocks_and_exact_working_inodes() {
+        let f = Fixture::new(false);
+        let tx = f.open();
+        let original = &tx.intent.original;
+        let working = &tx.intent.working;
+        let mut copy = json!({"schema":"p4-real-userdata-independent-working-copy-v1","images":[]});
+        let mut cold =
+            json!({"schema":"pocket4-original-data-cold-compatibility-clone-v1","rows":[]});
+        for (index, name) in IMAGES.iter().enumerate() {
+            let prior = as_f9(&original.members[*name].identity);
+            let clone = json!([10, 20 + index, 33152, 0, 0, 1, 4096, 50, 60]);
+            let source = format!("/retained-clone/{name}");
+            copy["images"].as_array_mut().unwrap().push(json!({"name":name,"working_path":format!("{WORKING}/{name}"),
+                "source_path":source,"source_f9_before":clone,"source_f9_after":clone,
+                "working_identity":copy_identity(&working.members[*name].identity),"sha256":"a".repeat(64)}));
+            cold["rows"].as_array_mut().unwrap().push(json!({"role":if index==0{"data"}else{"metadata"},
+                "source_path":format!("{ORIGINAL}/{name}"),"clone_path":source,"clone_f9":clone,
+                "source_f9_before":prior,"source_f9_after":prior,"bytes":4096,"sha256":"a".repeat(64)}));
+        }
+        lineage(&copy, &cold, original, working).unwrap();
+        for mutation in 0..6 {
+            let mut c = copy.clone();
+            let mut p = cold.clone();
+            match mutation {
+                0 => p["rows"][0]["source_f9_after"][8] = json!(0),
+                1 => c["images"][1]["working_identity"]["inode"] = json!(1),
+                2 => c["images"][0]["source_f9_before"][1] = json!(1),
+                3 => c["images"][0]["sha256"] = json!("b".repeat(64)),
+                4 => p["rows"][1]["source_path"] = json!("/different/data.img"),
+                _ => {
+                    c["images"].as_array_mut().unwrap().reverse();
+                }
+            }
+            assert!(lineage(&c, &p, original, working).is_err());
+        }
+    }
+}

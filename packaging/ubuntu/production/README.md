@@ -524,3 +524,47 @@ complete selected-39 business/common gates and actual maintenance-to-Ubuntu
 return evidence before permanent activation. The owned guest record retains
 those separate outstanding authorities rather than folding them into a passed
 flag or making the first calibration depend on final application acceptance.
+
+## Original data directory custody
+
+The normal fixture tool exposes a metadata-only `inspect-original-data-pair`
+entry point. Its protected plan has schema
+`droidloom.original-data-inspection-plan.v1`, a create-only `work_directory`
+directly below `/var/lib/droidloom-qualification` named
+`original-data-inspect-...`, and `cold_clone`, a FilePin for the retained normal
+cold-clone proof imported byte-for-byte into a root-protected directory.
+
+~~~sh
+droidloom-ubuntu-fixture inspect-original-data-pair \
+  --config /var/lib/droidloom-qualification/INPUTS/DATA-INSPECTION.json \
+  --config-sha256 SOURCE_PLAN_SHA256
+~~~
+
+Inspection binds the two actual original images through the retained cold clone
+to the existing independent working-copy producer. Both sides' complete F9
+identities, sizes, roles and independent inodes must still match; each individual
+copy record must match the whole-pair record. Image descriptors are opened
+read-only for the real backing flock protocol, without reading their bodies.
+Kernel process descriptors, mapped-file identities, bind-mount roots and loop
+backings are checked for those same inodes; a permission error cannot become an
+empty owner set. The original host, proof bytes and pair metadata are read again
+before writing `ORIGINAL-DATA-INSPECTED.json`. That record grants no physical
+exchange, runtime acceptance or production authority.
+
+The private Rust transaction core keeps both images in their original parent
+directory. Its durable intent precedes moving the entire admitted working-copy
+directory into the private recovery work, then `RENAME_EXCHANGE` selects it at
+the fixed `/var/lib/droidloom/users/1000/data` path. The original directory and
+both original image inodes remain together in `data-pair.rollback`. Only after
+both parent directories are durable and the new cell pin is revalidated may the
+normal `selected.json` be published atomically. No per-image move is used.
+
+Recovery first restores the original selection, then reverses the directory
+exchange and returns the whole working-copy directory to its original location.
+It identifies every interrupted phase from the actual directory and selection
+inodes, not a passed flag or a journal phase alone. Original image F9 identities
+remain exact; a working image that has run may retain its changed content clocks,
+while its inode, size, mode and owner must remain the same. Its old copy hash is
+historical evidence and is never asserted as a new runtime or migration result.
+The mutation core has no standalone physical CLI; only the separately verified
+qualification controller's sealed authority may eventually call its adapter.

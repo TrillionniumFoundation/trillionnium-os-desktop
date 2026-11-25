@@ -232,7 +232,7 @@ fn allowed_work(path: &Path) -> Result<()> {
         "original-host work must be a create-only protected qualification child",
     )
 }
-fn original_context() -> Result<Value> {
+pub(super) fn original_context() -> Result<Value> {
     ensure(
         rustix::process::getuid().as_raw() == 0 && rustix::process::geteuid().as_raw() == 0,
         "original host root rights are required",

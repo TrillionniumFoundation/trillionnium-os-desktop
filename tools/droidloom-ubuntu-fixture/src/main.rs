@@ -25,6 +25,7 @@ mod boot_runtime;
 mod boot_systemd_candidate;
 mod boot_vm;
 mod capture;
+mod cold_original_data;
 mod cold_original_initramfs;
 mod complete_native;
 mod complete_snapshot;
@@ -60,6 +61,12 @@ struct Cli {
 #[derive(Subcommand)]
 enum Command {
     VerifyPublicApkInputs {
+        #[arg(long)]
+        config: PathBuf,
+        #[arg(long)]
+        config_sha256: String,
+    },
+    InspectOriginalDataPair {
         #[arg(long)]
         config: PathBuf,
         #[arg(long)]
@@ -219,6 +226,12 @@ fn run() -> Result<()> {
             config,
             config_sha256,
         } => boot_public_apks::verify_inputs(&config, &config_sha256)?,
+        Command::InspectOriginalDataPair {
+            config,
+            config_sha256,
+        } => {
+            cold_original_data::inspect(&config, &config_sha256)?;
+        }
         Command::PrepareOriginalInitramfs {
             config,
             config_sha256,
