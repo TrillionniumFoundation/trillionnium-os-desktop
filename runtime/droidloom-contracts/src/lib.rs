@@ -7,6 +7,7 @@
 
 pub mod gapps;
 pub mod mac_release;
+pub mod native_init;
 
 use std::collections::BTreeSet;
 use std::fmt::Write as _;

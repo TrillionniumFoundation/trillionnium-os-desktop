@@ -407,6 +407,8 @@ pub fn prepare_boot(config: &Path, expected: &str) -> Result<()> {
         let pin: FilePin = serde_json::from_value(value.clone())?;
         crate::boot_packages::verify(&root, &pin)?;
     }
+    // Reject a stale normal manager before creating boot state or changing the root.
+    let native_init = crate::boot_native_init::verify(&root)?;
     let old_kernel = original
         .as_ref()
         .map(|m| {
@@ -637,6 +639,7 @@ pub fn prepare_boot(config: &Path, expected: &str) -> Result<()> {
         "boot_directory":boot,"root_filesystem_uuid":uuid,"target_kernel_release":release,
         "kernel":boot_files::pin_file(&kernel)?,"initrd":initrd,"root_image":disk,
         "kernel_admission":kernel_report,"host_release":host,"android_release":android,
+        "native_init_source_admission":native_init,
         "libselinux_candidate":candidate,
         "libapparmor_candidate":apparmor_candidate,
         "qualification_presenter_trace_environment":presenter_trace_environment,

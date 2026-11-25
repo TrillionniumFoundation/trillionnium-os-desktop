@@ -58,6 +58,7 @@ struct KernelInput {
 
 #[derive(serde::Deserialize)]
 struct BoardInputs {
+    native_init: droidloom_contracts::native_init::NativeInit,
     kernel: KernelInput,
     files: std::collections::BTreeMap<String, ReleaseInput>,
 }
@@ -68,6 +69,7 @@ fn committed_board_inputs() -> Result<BoardInputs> {
 
 fn parse_board_inputs(bytes: &[u8]) -> Result<BoardInputs> {
     let lock: BoardInputs = serde_json::from_slice(bytes)?;
+    lock.native_init.validate()?;
     let release = lock.kernel.release.as_bytes();
     if release.is_empty()
         || release.len() > 64
@@ -154,6 +156,11 @@ fn board_policy_header(lock: &BoardInputs) -> String {
         aa.board_profile_order.len(),
         ubuntu as usize + aa.board_profile_order.len(),
     );
+    header.push_str(&format!(
+        "#define DROIDLOOM_BOARD_NATIVE_INIT_PATH \"{}\"\n#define DROIDLOOM_BOARD_NATIVE_INIT_SIZE {}ULL\n#define DROIDLOOM_BOARD_NATIVE_INIT_SHA256 {}\n",
+        lock.native_init.path, lock.native_init.size,
+        lock.native_init.sha256_c_initializer().expect("validated native manager digest"),
+    ));
     for (symbol, name) in [
         ("LOADER", "droidloom-policy-loader"),
         ("ANDROID", "droidloom-production-android"),
@@ -533,8 +540,11 @@ mod tests {
         .unwrap();
         assert_eq!(&elf[..4], b"\x7fELF");
         let lock = committed_board_inputs().unwrap();
+        let native_digest = hex::decode(&lock.native_init.sha256).unwrap();
+        assert!(elf.windows(32).any(|bytes| bytes == native_digest));
         for value in [
             lock.kernel.release.as_str(),
+            lock.native_init.path.as_str(),
             lock.files["joint.policy"].sha256.as_str(),
             lock.files["ubuntu-apparmor.profiles"].sha256.as_str(),
         ] {

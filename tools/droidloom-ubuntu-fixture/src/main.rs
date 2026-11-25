@@ -11,6 +11,7 @@ mod boot_gdm_proof;
 mod boot_host;
 mod boot_kernel;
 mod boot_native;
+mod boot_native_init;
 mod boot_packages;
 mod boot_qemu;
 mod boot_query;

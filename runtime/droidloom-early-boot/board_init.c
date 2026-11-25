@@ -2,6 +2,7 @@
 #define _GNU_SOURCE
 #include "board.h"
 #include "board_policy.h"
+#include "board_policy_inputs.h"
 #include "boot_diagnostics.h"
 #include "linux_run_label.h"
 
@@ -31,7 +32,7 @@
 #include <unistd.h>
 
 #define BOARD_INIT "/usr/lib/droidloom/production/current/droidloom-board-init"
-#define SYSTEMD "/usr/lib/systemd/systemd"
+#define SYSTEMD DROIDLOOM_BOARD_NATIVE_INIT_PATH
 #define FINISH "--exec-selected-ubuntu-init"
 #define FACTORY "/usr/lib/droidloom/production/current/droidloomd"
 extern char **environ;
@@ -215,11 +216,8 @@ static int current_linux_role(void)
 
 static int verified_systemd(int fd)
 {
-    static const unsigned char selected[32] = {
-        0xa3, 0x7f, 0x48, 0x1d, 0xa2, 0x0c, 0x11, 0xba, 0x2b, 0x5d, 0x06, 0xfc, 0xf5, 0x49, 0xf3, 0xa0,
-        0xaf, 0xdb, 0xfd, 0x90, 0x3c, 0x76, 0x94, 0x41, 0x12, 0x95, 0xe3, 0x9f, 0x11, 0xf3, 0x42, 0x34
-    };
-    return droidloom_verified_elf(fd, 141776, selected);
+    static const unsigned char selected[32] = DROIDLOOM_BOARD_NATIVE_INIT_SHA256;
+    return droidloom_verified_elf(fd, DROIDLOOM_BOARD_NATIVE_INIT_SIZE, selected);
 }
 
 static int finish(int argc, char **argv)

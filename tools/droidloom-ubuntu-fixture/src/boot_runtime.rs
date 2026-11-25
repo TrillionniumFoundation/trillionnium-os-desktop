@@ -741,12 +741,12 @@ pub(super) fn debugfs_command_path(path: &str) -> Result<String> {
     Ok(format!("\"{path}\""))
 }
 
-fn stat_fields(text: &str) -> Result<(String, u32, u32, u32, u64)> {
+fn stat_fields(text: &str) -> Result<(String, u32, u32, u32, u64, u64)> {
     // debugfs also prints a historical Fragment ... Size field. Only its
-    // two canonical inode identity lines contain the metadata being compared.
+    // canonical identity lines contain the metadata being compared.
     let header = text
         .lines()
-        .filter(|line| line.starts_with("Inode:") || line.starts_with("User:"))
+        .filter(|line| line.starts_with("Inode:") || line.starts_with("User:") || line.starts_with("Links:"))
         .collect::<Vec<_>>()
         .join("\n");
     let tokens: Vec<_> = header.split_whitespace().collect();
@@ -771,10 +771,11 @@ fn stat_fields(text: &str) -> Result<(String, u32, u32, u32, u64)> {
         one("User:")?.parse()?,
         one("Group:")?.parse()?,
         one("Size:")?.parse()?,
+        one("Links:")?.parse()?,
     ))
 }
 
-fn readback_metadata(root: &Path, work: &Path, disk: &Path, paths: &[String]) -> Result<Value> {
+pub(super) fn readback_metadata(root: &Path, work: &Path, disk: &Path, paths: &[String]) -> Result<Value> {
     ensure(
         !paths.is_empty() && paths.len() <= 8192,
         "inode readback set outside bound",
@@ -839,7 +840,7 @@ fn readback_metadata(root: &Path, work: &Path, disk: &Path, paths: &[String]) ->
     )?;
     let mut rows = Vec::new();
     for (key, (path, m)) in expected {
-        let (kind, mode, uid, gid, size) = stat_fields(sections.get(&key).ok_or("missing inode")?)?;
+        let (kind, mode, uid, gid, size, nlink) = stat_fields(sections.get(&key).ok_or("missing inode")?)?;
         let wanted = match rustix::fs::FileType::from_raw_mode(m.mode()) {
             rustix::fs::FileType::RegularFile => "regular",
             rustix::fs::FileType::Directory => "directory",
@@ -856,7 +857,7 @@ fn readback_metadata(root: &Path, work: &Path, disk: &Path, paths: &[String]) ->
                 && (!(m.is_file() || m.file_type().is_symlink()) || size == m.len()),
             &format!("actual ext4 inode metadata differs for {path}"),
         )?;
-        rows.push(json!({"path":path,"type":kind,"mode":mode,"uid":uid,"gid":gid,"size":size}));
+        rows.push(json!({"path":path,"type":kind,"mode":mode,"uid":uid,"gid":gid,"size":size,"nlink":nlink}));
     }
     Ok(json!({"command":result,"inodes":rows,"all_matched":true}))
 }
@@ -1040,6 +1041,7 @@ pub fn make_root_image(
             debugfs_command_path(path)?
         ));
         expected.push((
+            path.clone(),
             out,
             row["label_hex"]
                 .as_str()
@@ -1060,11 +1062,15 @@ pub fn make_root_image(
         ],
         120,
     )?;
-    for (path, hex) in expected {
+    let mut native_init_label = None;
+    for (guest, path, hex) in expected {
         ensure(
             std::fs::read(&path)? == hex::decode(hex)?,
             "actual ext4 label differs from admitted source xattr",
         )?;
+        if guest == "/usr/lib/systemd/systemd" {
+            native_init_label = Some(boot_files::pin_file(&path)?);
+        }
     }
     // Preserve native capabilities and ACLs; all nonempty public privilege
     // attributes are checked independently on the generated filesystem.
@@ -1149,10 +1155,15 @@ pub fn make_root_image(
         crate::boot_gdm_candidate::verify_image(root, work, &disk, gdm_admission)?;
     let greeter_proof_readback = crate::boot_gdm_proof::verify_image(root, work, &disk)?;
     let record = boot_files::pin_file(&disk)?;
+    let native_init_readback = crate::boot_native_init::verify_image(
+        root, work, &record, &metadata,
+        &native_init_label.ok_or("native init original inode label readback missing")?,
+    )?;
     fs::write_json(
         &fs::absolute_string(&work.join("ROOT-IMAGE.json"))?,
         &json!({
         "image":record,"root_filesystem_uuid":uuid,"critical_label_paths":selected,
+        "native_init_executable_readback":native_init_readback,
         "privilege_attributes_verified":attrs.len(),"native_privilege_readback":privilege_readback,"inode_metadata_readback":metadata,
         "fixed_query_input_readback":query_readback,"apparmor_library_readback":apparmor_readback,"gdm_executable_readback":gdm_readback,"greeter_proof_readback":greeter_proof_readback,"guest_qualified":false}),
         0,
