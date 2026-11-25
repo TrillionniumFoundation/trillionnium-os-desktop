@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #define _GNU_SOURCE
 #include "linux_run_label.h"
+#include "boot_diagnostics.h"
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -410,17 +411,39 @@ struct console_node {
     const char *source;
     unsigned int major;
     unsigned int minor;
-    mode_t mode;
+    mode_t source_mode;
+    mode_t target_mode;
 };
 
 static const struct console_node board_nodes[] = {
-    { "/dev/console", "/usr/lib/droidloom/production/current/board-devices/console", 5, 1, 0600 },
-    { "/dev/null", "/usr/lib/droidloom/production/current/board-devices/null", 1, 3, 0666 },
-    { "/dev/full", "/usr/lib/droidloom/production/current/board-devices/full", 1, 7, 0666 },
-    /* Native services open this fixed path after the initial policy load.
-     * Project the admitted kmsg inode instead of relabeling generic devtmpfs. */
-    { "/dev/kmsg", "/usr/lib/droidloom/production/current/board-devices/kmsg", 1, 11, 0600 },
+    { "/dev/console", "/usr/lib/droidloom/production/current/board-devices/console", 5, 1, 0600, 0600 },
+    { "/dev/null", "/usr/lib/droidloom/production/current/board-devices/null", 1, 3, 0666, 0666 },
+    { "/dev/full", "/usr/lib/droidloom/production/current/board-devices/full", 1, 7, 0666, 0666 },
+    /* The selected Linux drivers/char/mem.c creates devtmpfs kmsg as 0644.
+     * Its protected ext4 replacement remains 0600. Admit those two exact
+     * metadata contracts independently before attaching the held source. */
+    { "/dev/kmsg", "/usr/lib/droidloom/production/current/board-devices/kmsg", 1, 11, 0600, 0644 },
 };
+
+static void standard_device_failure(const struct console_node *spec, bool backing,
+                                    const char *operation, const struct stat *st,
+                                    const struct statfs *fs, int error)
+{
+    char stage[192];
+    const char *path = backing ? spec->source : spec->path;
+    if (st && fs)
+        (void)snprintf(stage, sizeof(stage),
+                       "%s %s %s uid=%lu gid=%lu mode=%#o dev=%u:%u fs=%#lx",
+                       operation, backing ? "source" : "target", path,
+                       (unsigned long)st->st_uid, (unsigned long)st->st_gid,
+                       (unsigned int)(st->st_mode & 07777),
+                       major(st->st_rdev), minor(st->st_rdev),
+                       (unsigned long)fs->f_type);
+    else
+        (void)snprintf(stage, sizeof(stage), "%s %s %s",
+                       operation, backing ? "source" : "target", path);
+    droidloom_boot_diagnostics_report(DROIDLOOM_DIAGNOSTIC_POLICY, stage, error);
+}
 
 static int open_standard_node(const struct console_node *spec, bool backing, struct stat *st)
 {
@@ -429,18 +452,24 @@ static int open_standard_node(const struct console_node *spec, bool backing, str
         .resolve = RESOLVE_NO_SYMLINKS | RESOLVE_NO_MAGICLINKS,
     };
     int fd = (int)syscall(SYS_openat2, AT_FDCWD, backing ? spec->source : spec->path, &how, sizeof(how));
-    if (fd < 0)
+    if (fd < 0) {
+        standard_device_failure(spec, backing, "open O_PATH", NULL, NULL, errno);
         return -1;
+    }
     struct stat root;
     struct statfs fs;
     int error = 0;
-    if (stat("/", &root) < 0 || fstatfs(fd, &fs) < 0 || fstat(fd, st) < 0)
+    if (stat("/", &root) < 0 || fstatfs(fd, &fs) < 0 || fstat(fd, st) < 0) {
         error = errno;
-    else if (st->st_uid != 0 || st->st_gid != 0 || !S_ISCHR(st->st_mode) ||
-             (st->st_mode & 07777) != spec->mode || major(st->st_rdev) != spec->major ||
-             minor(st->st_rdev) != spec->minor || (backing && root.st_dev != st->st_dev) ||
-             (unsigned long)fs.f_type != (backing ? EXT4_SUPER_MAGIC : TMPFS_MAGIC))
+        standard_device_failure(spec, backing, "read held metadata", NULL, NULL, error);
+    } else if (st->st_uid != 0 || st->st_gid != 0 || !S_ISCHR(st->st_mode) ||
+               (st->st_mode & 07777) != (backing ? spec->source_mode : spec->target_mode) ||
+               major(st->st_rdev) != spec->major || minor(st->st_rdev) != spec->minor ||
+               (backing && root.st_dev != st->st_dev) ||
+               (unsigned long)fs.f_type != (backing ? EXT4_SUPER_MAGIC : TMPFS_MAGIC)) {
         error = EACCES;
+        standard_device_failure(spec, backing, "validate held metadata", st, &fs, error);
+    }
     if (error) {
         close(fd);
         errno = error;
@@ -493,13 +522,17 @@ int droidloom_project_linux_standard_devices(void)
             error = errno;
         if (!error) {
             mount_fd[i] = (int)syscall(SYS_open_tree, fd, "", OPEN_TREE_CLONE | OPEN_TREE_CLOEXEC | AT_EMPTY_PATH);
-            if (mount_fd[i] < 0)
+            if (mount_fd[i] < 0) {
                 error = errno;
+                standard_device_failure(n, true, "clone held mount", NULL, NULL, error);
+            }
         }
         if (!error) {
             struct mount_attr flags = { .attr_set = MOUNT_ATTR_RDONLY | MOUNT_ATTR_NOSUID | MOUNT_ATTR_NOEXEC };
-            if (syscall(SYS_mount_setattr, mount_fd[i], "", AT_EMPTY_PATH, &flags, sizeof(flags)) < 0)
+            if (syscall(SYS_mount_setattr, mount_fd[i], "", AT_EMPTY_PATH, &flags, sizeof(flags)) < 0) {
                 error = errno;
+                standard_device_failure(n, true, "protect held mount", NULL, NULL, error);
+            }
         }
         close(fd);
     }
@@ -507,6 +540,7 @@ int droidloom_project_linux_standard_devices(void)
         if (syscall(SYS_move_mount, mount_fd[i], "", target[i], "",
                     MOVE_MOUNT_F_EMPTY_PATH | MOVE_MOUNT_T_EMPTY_PATH) < 0) {
             error = errno;
+            standard_device_failure(&board_nodes[i], false, "attach held mount", NULL, NULL, error);
             break;
         }
         ++attached;
@@ -516,6 +550,8 @@ int droidloom_project_linux_standard_devices(void)
         else if (now.st_dev != source[i].st_dev || now.st_ino != source[i].st_ino ||
                  now.st_rdev != source[i].st_rdev)
             error = ESTALE;
+        if (error)
+            standard_device_failure(&board_nodes[i], false, "read attached identity", NULL, NULL, error);
     }
     if (!error && droidloom_linux_console_descriptors() < 0)
         error = errno;

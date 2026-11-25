@@ -583,3 +583,22 @@ again before restoring the selection or directory pair. It never synchronizes
 the preserved original images. The recovery receipt records the two actual
 working-backend synchronization results separately from directory rename
 durability and runtime or migration acceptance.
+
+### Early standard-device metadata
+
+The selected kernel creates the original devtmpfs /dev/kmsg as root:root
+0644; its separately prepared ext4 backing node is root:root 0600.
+The early projection admits those exact source and target modes separately.
+Console, null and full keep their existing exact metadata requirements.
+The held source replaces the target through the existing protected mount
+sequence; neither a device-body read nor a generic devtmpfs relabel is needed.
+Failures identify the fixed node and the failed admission or mount operation.
+
+The standard_devices_test.c regression under runtime/droidloom-early-boot/tests
+exercises the production O_PATH admission with real ext4 backing inodes and a
+private tmpfs target filesystem. It requires an empty root-owned 0700 ext4
+directory and root mount-namespace rights, creates its own mount namespace,
+and opens no character-device body. It checks the four source/target pairs
+and rejects wrong modes, owners, device numbers, file kinds, symlinks and
+filesystem roles. This focused check does not replace a normally built
+full-guest boot.
