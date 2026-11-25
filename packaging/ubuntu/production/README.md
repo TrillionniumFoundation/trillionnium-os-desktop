@@ -307,7 +307,10 @@ remount. The fixed
 temporary policy-rc.d returns 101 and normal apt uses only the admitted local
 archives with no network or extra package/removal authorization. All original
 account bytes and unrelated configured package identities must remain unchanged
-inside the private view too. Original GDM and service numbers are preserved.
+inside the private view too. The roster also retains removed-package config-file
+and purged records, including their exact prior version, architecture and state;
+they cannot stand in for an already installed native candidate dependency.
+Original GDM and service numbers are preserved.
 
 The producer calls the original normal `mkinitramfs`, with one-thread gzip,
 the retained shared-kernel release and the original host configuration. Its

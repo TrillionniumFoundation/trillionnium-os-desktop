@@ -1075,26 +1075,34 @@ fn roster(raw: &[u8]) -> Result<Roster> {
     let mut result = BTreeMap::new();
     for row in records {
         let status = dependencies::field(&row, "Status")?;
-        if status == "deinstall ok config-files" || status == "purge ok not-installed" {
-            continue;
-        }
+        let purged = status == "purge ok not-installed";
         ensure(
-            status == "install ok installed" || status == "hold ok installed",
+            status == "install ok installed"
+                || status == "hold ok installed"
+                || status == "deinstall ok config-files"
+                || purged,
             "normal source contains an incomplete package transaction",
         )?;
         let name = dependencies::field(&row, "Package")?.to_owned();
+        let retained = |key: &str| -> Result<String> {
+            if purged && !row.contains_key(key) {
+                Ok(String::new())
+            } else {
+                Ok(dependencies::field(&row, key)?.to_owned())
+            }
+        };
         ensure(
             result
                 .insert(
                     name,
                     (
-                        dependencies::field(&row, "Version")?.to_owned(),
-                        dependencies::field(&row, "Architecture")?.to_owned(),
+                        retained("Version")?,
+                        retained("Architecture")?,
                         status.to_owned(),
                     ),
                 )
                 .is_none(),
-            "duplicate installed package identity",
+            "duplicate original package identity",
         )?;
     }
     ensure(!result.is_empty(), "empty original package database")?;
@@ -1104,8 +1112,12 @@ fn expected_roster(before: &Roster, packages: &[Package]) -> Result<Roster> {
     let mut expected = before.clone();
     for package in packages {
         ensure(
-            package.name.starts_with("droidloom-shared-") || before.contains_key(&package.name),
-            "original native package family is not already installed",
+            package.name.starts_with("droidloom-shared-")
+                || before.get(&package.name).is_some_and(|(_, arch, status)| {
+                    arch == &package.architecture
+                        && (status == "install ok installed" || status == "hold ok installed")
+                }),
+            "original native package family is not already installed with the selected architecture",
         )?;
         expected.insert(
             package.name.clone(),
@@ -1521,6 +1533,81 @@ pub fn build(path: &Path, expected: &str) -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn residual_package_records_are_preserved_and_cannot_supply_native_installation() {
+        let raw=b"Package: systemd\nStatus: install ok installed\nVersion: old\nArchitecture: amd64\n\nPackage: legacy\nStatus: deinstall ok config-files\nVersion: 1\nArchitecture: all\n\nPackage: purged\nStatus: purge ok not-installed\n";
+        let before = roster(raw).unwrap();
+        assert_eq!(before.len(), 3);
+        let package = Package {
+            role: "systemd".into(),
+            name: "systemd".into(),
+            version: "new".into(),
+            architecture: "amd64".into(),
+            package: FilePin {
+                path: "/inputs/0.deb".into(),
+                bytes: 1,
+                sha256: "0".repeat(64),
+            },
+        };
+        let expected = expected_roster(&before, &[package.clone()]).unwrap();
+        assert_eq!(expected["legacy"], before["legacy"]);
+        assert_eq!(expected["purged"], before["purged"]);
+        let mut changed = expected.clone();
+        changed.remove("legacy");
+        assert_ne!(changed, expected);
+        let mut residual_native = before.clone();
+        residual_native.get_mut("systemd").unwrap().2 = "deinstall ok config-files".into();
+        assert!(expected_roster(&residual_native, &[package.clone()]).is_err());
+        let mut other_arch = before;
+        other_arch.get_mut("systemd").unwrap().1 = "i386".into();
+        assert!(expected_roster(&other_arch, &[package]).is_err());
+    }
+    #[test]
+    #[ignore = "requires actual original Pocket4 public package database and admitted materials; read-only"]
+    fn actual_original_package_model_retains_every_status_record() {
+        let context = original_context().unwrap();
+        let locks = original_package_read_locks().unwrap();
+        assert_eq!(original_context().unwrap(), context);
+        let status = actual_pin(Path::new("/var/lib/dpkg/status")).unwrap();
+        let raw = files::read_pin(&status, 32 * 1024 * 1024).unwrap();
+        let records = dependencies::control(std::str::from_utf8(&raw).unwrap()).unwrap();
+        let before = roster(&raw).unwrap();
+        assert_eq!(before.len(), records.len());
+        let materials_pin = FilePin {
+            path:
+                "/var/lib/droidloom-qualification/original-initramfs-normal-4b91-r2/MATERIALS.json"
+                    .into(),
+            bytes: 8381,
+            sha256: "56559487023853db8ed187b89890c534c72e77d15efd9bc04b15a1049dbb56c4".into(),
+        };
+        let materials: Materials = read(&materials_pin, 2 * 1024 * 1024).unwrap();
+        validate_materials(&materials).unwrap();
+        let after = expected_roster(&before, &materials.packages).unwrap();
+        let selected = materials
+            .packages
+            .iter()
+            .map(|r| r.name.as_str())
+            .collect::<BTreeSet<_>>();
+        let mut counts = BTreeMap::new();
+        for (name, row) in &before {
+            *counts.entry(row.2.clone()).or_insert(0usize) += 1;
+            if !selected.contains(name.as_str()) {
+                assert_eq!(after.get(name), Some(row));
+            }
+        }
+        assert_eq!(counts.get("deinstall ok config-files"), Some(&25));
+        assert_eq!(counts.get("install ok installed"), Some(&2366));
+        assert_eq!(original_context().unwrap(), context);
+        trusted(&status).unwrap();
+        println!(
+            "{}",
+            json!({"schema":"droidloom.original-package-model-readback-test.v1",
+            "status":status,"materials":materials_pin,"actual_source_records":records.len(),
+            "retained_source_records":before.len(),"status_counts":counts,"expected_candidate_records":after.len(),
+            "selected_packages":materials.packages.len(),"posix_shared_locks":locks.len(),"physical_install":false})
+        );
+        drop(locks);
+    }
     #[test]
     fn fixed_sticky_tmp_mountpoint_is_preserved_without_opening_descendants() {
         use std::os::unix::fs::PermissionsExt;
