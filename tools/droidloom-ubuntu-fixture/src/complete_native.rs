@@ -89,6 +89,8 @@ pub(super) struct CompleteManifest {
     pub source_root_identity: Identity,
     pub target_kernel_release: String,
     pub packages: Vec<Package>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub package_status: Option<String>,
     pub entries: Vec<CompleteEntry>,
     pub static_devices: Vec<StaticDevice>,
     pub complete_package_database: bool,
@@ -97,7 +99,7 @@ pub(super) struct CompleteManifest {
     pub unresolved_requirements: Vec<String>,
 }
 
-struct HeldInput {
+pub(super) struct HeldInput {
     pin: EvidencePin,
     parent: File,
     name: String,
@@ -106,7 +108,7 @@ struct HeldInput {
 }
 
 impl HeldInput {
-    fn open(pin: EvidencePin, limit: u64) -> Result<Self> {
+    pub(super) fn open(pin: EvidencePin, limit: u64) -> Result<Self> {
         ensure(
             pin.path.is_absolute() && pin.bytes <= limit && fs::valid_digest(&pin.sha256),
             "complete source evidence pin is invalid",
@@ -164,7 +166,7 @@ impl HeldInput {
         )
     }
 
-    fn revalidate(&mut self) -> Result<()> {
+    pub(super) fn revalidate(&mut self) -> Result<()> {
         self.file.seek(SeekFrom::Start(0))?;
         ensure(
             fs::stat(&self.file)? == self.identity
@@ -180,7 +182,7 @@ impl HeldInput {
         Ok(())
     }
 
-    fn json(&mut self) -> Result<RecordedJson> {
+    pub(super) fn json(&mut self) -> Result<RecordedJson> {
         ensure(
             self.pin.bytes <= LIMIT,
             "complete JSON evidence exceeds bound",
@@ -204,7 +206,7 @@ impl HeldInput {
 }
 
 impl RecordedJson {
-    fn validate(&self) -> Result<Value> {
+    pub(super) fn validate(&self) -> Result<Value> {
         ensure(
             self.body.len() as u64 == self.pin.bytes
                 && self.pin.bytes <= LIMIT
@@ -216,7 +218,7 @@ impl RecordedJson {
     }
 }
 
-fn source(document: &RecordedJson) -> Result<SourceReceipt> {
+pub(super) fn source(document: &RecordedJson) -> Result<SourceReceipt> {
     let result: SourceReceipt = serde_json::from_value(document.validate()?)?;
     ensure(
         result.schema == SOURCE_SCHEMA
@@ -225,15 +227,18 @@ fn source(document: &RecordedJson) -> Result<SourceReceipt> {
             && result.configured,
         "complete source was not freshly and normally configured",
     )?;
-    // Baseline capture is useful material, never a final native release.
-    // Installed admission is a distinct normal-transaction contract, added only
-    // when the real upgrade/rollback producer has emitted it.
+    // Final admission has a separate complete normal transaction authority.
+    // Merely changing the baseline stage or booleans cannot produce it.
     ensure(
-        result.stage == "baseline"
+        (result.stage == "baseline"
             && result.baseline_receipt.is_none()
             && result.native_release.is_none()
-            && result.native_transaction.is_none(),
-        "this complete capture requires the original configured baseline",
+            && result.native_transaction.is_none())
+            || (result.stage == "installed"
+                && result.baseline_receipt.is_some()
+                && result.native_release.is_some()
+                && result.native_transaction.is_some()),
+        "complete source stage and normal installation authorities differ",
     )?;
     ensure(
         !result.package_transactions.is_empty() && result.package_transactions.len() <= 32,
@@ -248,7 +253,7 @@ fn source(document: &RecordedJson) -> Result<SourceReceipt> {
     Ok(result)
 }
 
-fn proof<'a>(proofs: &'a [RecordedJson], pin: &EvidencePin) -> Result<&'a RecordedJson> {
+pub(super) fn proof<'a>(proofs: &'a [RecordedJson], pin: &EvidencePin) -> Result<&'a RecordedJson> {
     let matches: Vec<_> = proofs.iter().filter(|p| p.pin == *pin).collect();
     ensure(
         matches.len() == 1,
@@ -277,7 +282,7 @@ fn normalize_package(name: &str, architecture: &str) -> Result<String> {
     Ok(format!("{base}:{architecture}"))
 }
 
-fn package_map(packages: &[Package]) -> Result<BTreeMap<String, String>> {
+pub(super) fn package_map(packages: &[Package]) -> Result<BTreeMap<String, String>> {
     ensure(
         !packages.is_empty() && packages.len() <= 8192,
         "complete package roster count invalid",
@@ -349,6 +354,17 @@ pub(super) fn status_packages(bytes: &[u8]) -> Result<Vec<Package>> {
 }
 
 fn package_proofs(input: &SourceReceipt, proofs: &[RecordedJson]) -> Result<Vec<Package>> {
+    if input.stage == "installed" {
+        crate::complete_installation::packages(input, proofs)
+    } else {
+        baseline_package_proofs(input, proofs)
+    }
+}
+
+pub(super) fn baseline_package_proofs(
+    input: &SourceReceipt,
+    proofs: &[RecordedJson],
+) -> Result<Vec<Package>> {
     let bootstrap = proof(proofs, &input.bootstrap_receipt)?.validate()?;
     ensure(
         bootstrap["schema"] == "p4-normal-complete-ubuntu-bootstrap-v1"
@@ -562,6 +578,18 @@ pub(super) fn validate(manifest: &CompleteManifest) -> Result<SourceReceipt> {
             && matches!(&status.content,Content::Regular{sha256}if sha256==&input.dpkg_status.sha256),
         "whole database entry differs from source receipt",
     )?;
+    if let Some(body) = &manifest.package_status {
+        ensure(
+            body.len() as u64 == input.dpkg_status.bytes
+                && fs::digest(body.as_bytes()) == input.dpkg_status.sha256
+                && package_map(&status_packages(body.as_bytes())?)?
+                    == package_map(&manifest.packages)?,
+            "complete status body is not the original whole database",
+        )?;
+    }
+    if input.stage == "installed" {
+        crate::complete_installation::verify_payload(manifest)?;
+    }
     Ok(input)
 }
 
@@ -585,6 +613,9 @@ pub(super) fn capture(path: &Path, sha: &str, release: &str) -> Result<CompleteM
         proofs.push(file.json()?);
         held.push(file);
     }
+    if input.stage == "installed" {
+        crate::complete_installation::gather(&input, &mut held, &mut proofs)?;
+    }
     let packages = package_proofs(&input, &proofs)?;
     let status = tree.bytes("/var/lib/dpkg/status", LIMIT)?;
     ensure(
@@ -601,6 +632,7 @@ pub(super) fn capture(path: &Path, sha: &str, release: &str) -> Result<CompleteM
         source_root_identity: root,
         target_kernel_release: release.into(),
         packages,
+        package_status: Some(String::from_utf8(status)?),
         entries,
         static_devices,
         complete_package_database: true,
@@ -642,7 +674,7 @@ fn receipt(
         "entries_verified":manifest.entries.len()+manifest.static_devices.len(),
         "regular_paths_verified":regular,"unique_regular_bytes":bytes,
         "complete_package_database":true,"materialization_complete":true,
-        "source_stage":"baseline","kernel_present":false,"guest_qualified":false,
+        "source_stage":source(&manifest.source)?.stage,"kernel_present":false,"guest_qualified":false,
         "unresolved_requirements":manifest.unresolved_requirements}),
     )
 }

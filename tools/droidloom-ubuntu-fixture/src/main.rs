@@ -21,6 +21,7 @@ mod boot_vm;
 mod capture;
 mod complete_boot;
 mod complete_identity;
+mod complete_installation;
 mod complete_native;
 mod complete_snapshot;
 mod fs;
@@ -210,7 +211,7 @@ fn run() -> Result<()> {
                 "{}",
                 serde_json::json!({"manifest_sha256":sha,
                 "entries":result.entries.len()+result.static_devices.len(),
-                "complete_package_database":true,"source_stage":"baseline","guest_qualified":false})
+                "complete_package_database":true,"source_stage":complete_native::source(&result.source)?.stage,"guest_qualified":false})
             );
         }
         Command::MaterializeCompleteNative {

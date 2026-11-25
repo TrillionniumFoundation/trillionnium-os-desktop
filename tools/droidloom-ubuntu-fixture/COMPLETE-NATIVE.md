@@ -28,11 +28,22 @@ whole source after capture. Copying uses new inodes, then complete readback.
 - materialize-complete-native --manifest MANIFEST --manifest-sha256 SHA --destination /var/lib/droidloom-qualification/WORK/root --receipt RECEIPT
 - verify-complete-native --manifest MANIFEST --manifest-sha256 SHA --destination /var/lib/droidloom-qualification/WORK/root --receipt RECEIPT
 
-This initial contract admits the original configured **baseline**. It explicitly
-rejects an installed claim: the final patched native package transaction and
-its whole payload need their separate completed admission contract. Baseline
-capture/copy is neither a final release nor permission to skip normal package
-installation.
+The original configured **baseline** remains useful construction material. Final
+preparation requires the separate installed source: the fixed, normally built
+fifteen-package release, its original baseline, the actual durable dpkg
+transaction and the current whole package database. The consumer checks the
+source-bound two-component release and all 108 original material files, including
+the old and new package archives and full control/payload inventories.
+
+The actual transaction must first unpack and configure the fixed
+libsystemd-shared prerequisite, then normally unpack and configure the remaining
+fourteen packages in their dependency order. All four actual command exits,
+original-root/attempt identities, configuration preservation, original private
+metadata, all fifteen configured versions and the complete final query must
+agree. Failure, rollback and partial histories cannot become a final source.
+Every installed payload member is checked. Only the two fixed credstore
+directories use the original package's proven 0700 tmpfiles result; declared
+conffiles retain their real original contents and selection semantics.
 
 No kernel is fabricated from this root: its /boot is empty and it contains no
 module release. A later normal boot consumes the separately published shared
@@ -66,4 +77,4 @@ the actual sysusers/firstboot/tmpfiles/SSH/systemctl-root initialization in
 unchanged. This was a baseline construction test, not a guest boot or a
 successful final installed release. Five focused journal/source tests passed,
 including a complete-root GID 981 positive and wrong-GID/absent-binding negatives.
-The final installed transaction/whole-payload gate remains a distinct component.
+Actual installed-root capture and complete preparation remain required; source\nand material tests alone do not qualify a guest.
