@@ -1,0 +1,105 @@
+; Cal16 audit 2191 is the stock libmount inotify fallback to /run:
+; without read/watch mount enumeration aborts before /proc/self/mountinfo,
+; making the already-mounted root appear dead. This grants directory events,
+; not access to any /run file, arbitrary root directory creation, or cgroups.
+(allow init_t p4_linux_run_t (dir (read watch)))
+(allow init_t p4_linux_systemd_run_t (dir (watch)))
+(typetransition init_t p4_linux_systemd_run_t dir "ask-password" p4_linux_systemd_run_t)
+
+; unit.c creates its temporary invocation symlink before rename. Only this
+; private metadata family is writable; /bin and other usrmerge links stay
+; immutable. mkdir_label/symlink_label select the fixed file-context paths.
+(type p4_linux_invocation_link_t)
+(roletype object_r p4_linux_invocation_link_t)
+(typeattributeset p4_all_board_owned (p4_linux_invocation_link_t))
+(allow p4_linux_invocation_link_t tmpfs (filesystem (associate)))
+(allow init_t p4_linux_invocation_link_t (lnk_file (create getattr read rename unlink)))
+(typeattribute p4_without_native_invocation_writer)
+(typeattributeset p4_without_native_invocation_writer (and (all) (not (init_t))))
+(neverallow p4_without_native_invocation_writer p4_linux_invocation_link_t (lnk_file (create write setattr rename unlink link relabelto relabelfrom)))
+(neverallow all p4_linux_invocation_link_t (lnk_file (write setattr link relabelto relabelfrom mounton)))
+
+; Stock exec-credential.c creates and seals credentials for a fixed unit.
+; Separate inode types retain the selected service's read boundary. These
+; types deliberately do not join p4_linux_data or native/query read sets.
+(typeattribute p4_native_startup_credential_dirs)
+(typeattribute p4_native_startup_credential_files)
+(typeattribute p4_without_native_credential_writer)
+(typeattributeset p4_without_native_credential_writer (and (all) (not (p4_linux_service_executor_t))))
+(typeattribute p4_without_native_credential_cleanup)
+(typeattributeset p4_without_native_credential_cleanup (and (all) (not (or (init_t) (p4_linux_service_executor_t)))))
+
+(macro p4_startup_credential ((type directory) (type payload) (type reader))
+    (allow directory tmpfs (filesystem (associate)))
+    (allow payload tmpfs (filesystem (associate)))
+    (typetransition p4_linux_service_executor_t directory file payload)
+    (allow p4_linux_service_executor_t directory (dir (getattr search open read create write add_name remove_name setattr rename reparent rmdir mounton relabelto)))
+    (allow p4_linux_service_executor_t payload (file (getattr open read create write setattr rename unlink)))
+    (allow reader p4_linux_credentials_root_t (dir (getattr search)))
+    (allow reader directory (dir (getattr search open read)))
+    (allow reader payload (file (getattr open read)))
+    ; PID 1 removes the unit's existing state at ordinary service retirement,
+    ; but it neither reads payloads nor creates or mutates their contents.
+    (allow init_t directory (dir (getattr search open read write remove_name rmdir)))
+    (allow init_t payload (file (getattr unlink)))
+)
+
+; The root directories are held and labelled by the original board publisher.
+; The executor may hide /run/credentials in its private mount namespace.
+; It cannot create/relabel/replace either public root.
+(allow init_t p4_linux_credentials_root_t (dir (getattr search open read write remove_name)))
+(allow init_t p4_linux_credential_staging_t (dir (getattr search open read write remove_name)))
+(allow p4_linux_service_executor_t p4_linux_credentials_root_t (dir (mounton)))
+
+(type p4_linux_setup_credentials_t)
+(roletype object_r p4_linux_setup_credentials_t)
+(typeattributeset p4_all_board_owned (p4_linux_setup_credentials_t))
+(typeattributeset p4_native_startup_credential_dirs (p4_linux_setup_credentials_t))
+(typeattributeset p4_native_startup_credential_files (p4_linux_setup_credentials_t))
+(call p4_startup_credential (p4_linux_setup_credentials_t p4_linux_setup_credentials_t p4_linux_setup_t))
+(typetransition p4_linux_service_executor_t p4_linux_credentials_root_t dir "systemd-tmpfiles-setup-dev-early.service" p4_linux_setup_credentials_t)
+(typetransition p4_linux_service_executor_t p4_linux_credentials_root_t dir "systemd-tmpfiles-setup-dev.service" p4_linux_setup_credentials_t)
+(typetransition p4_linux_service_executor_t p4_linux_credentials_root_t dir "systemd-tmpfiles-setup.service" p4_linux_setup_credentials_t)
+(typetransition p4_linux_service_executor_t p4_linux_credentials_root_t dir "systemd-tmpfiles-clean.service" p4_linux_setup_credentials_t)
+(typetransition p4_linux_service_executor_t p4_linux_credentials_root_t dir "systemd-sysusers.service" p4_linux_setup_credentials_t)
+(typetransition p4_linux_service_executor_t p4_linux_credential_staging_t dir "systemd-tmpfiles-setup-dev-early.service" p4_linux_setup_credentials_t)
+(typetransition p4_linux_service_executor_t p4_linux_credential_staging_t dir "systemd-tmpfiles-setup-dev.service" p4_linux_setup_credentials_t)
+(typetransition p4_linux_service_executor_t p4_linux_credential_staging_t dir "systemd-tmpfiles-setup.service" p4_linux_setup_credentials_t)
+(typetransition p4_linux_service_executor_t p4_linux_credential_staging_t dir "systemd-tmpfiles-clean.service" p4_linux_setup_credentials_t)
+(typetransition p4_linux_service_executor_t p4_linux_credential_staging_t dir "systemd-sysusers.service" p4_linux_setup_credentials_t)
+(type p4_linux_sysctl_credentials_t)
+(roletype object_r p4_linux_sysctl_credentials_t)
+(typeattributeset p4_all_board_owned (p4_linux_sysctl_credentials_t))
+(typeattributeset p4_native_startup_credential_dirs (p4_linux_sysctl_credentials_t))
+(typeattributeset p4_native_startup_credential_files (p4_linux_sysctl_credentials_t))
+(call p4_startup_credential (p4_linux_sysctl_credentials_t p4_linux_sysctl_credentials_t p4_linux_sysctl_t))
+(typetransition p4_linux_service_executor_t p4_linux_credentials_root_t dir "systemd-sysctl.service" p4_linux_sysctl_credentials_t)
+(typetransition p4_linux_service_executor_t p4_linux_credential_staging_t dir "systemd-sysctl.service" p4_linux_sysctl_credentials_t)
+(type p4_linux_udev_credentials_t)
+(roletype object_r p4_linux_udev_credentials_t)
+(typeattributeset p4_all_board_owned (p4_linux_udev_credentials_t))
+(typeattributeset p4_native_startup_credential_dirs (p4_linux_udev_credentials_t))
+(typeattributeset p4_native_startup_credential_files (p4_linux_udev_credentials_t))
+(call p4_startup_credential (p4_linux_udev_credentials_t p4_linux_udev_credentials_t p4_linux_udev_t))
+(typetransition p4_linux_service_executor_t p4_linux_credentials_root_t dir "systemd-udev-load-credentials.service" p4_linux_udev_credentials_t)
+(typetransition p4_linux_service_executor_t p4_linux_credential_staging_t dir "systemd-udev-load-credentials.service" p4_linux_udev_credentials_t)
+(type p4_linux_resolved_credentials_t)
+(roletype object_r p4_linux_resolved_credentials_t)
+(typeattributeset p4_all_board_owned (p4_linux_resolved_credentials_t))
+(typeattributeset p4_native_startup_credential_dirs (p4_linux_resolved_credentials_t))
+(typeattributeset p4_native_startup_credential_files (p4_linux_resolved_credentials_t))
+(call p4_startup_credential (p4_linux_resolved_credentials_t p4_linux_resolved_credentials_t p4_linux_resolved_t))
+(typetransition p4_linux_service_executor_t p4_linux_credentials_root_t dir "systemd-resolved.service" p4_linux_resolved_credentials_t)
+(typetransition p4_linux_service_executor_t p4_linux_credential_staging_t dir "systemd-resolved.service" p4_linux_resolved_credentials_t)
+; Preserve the pre-existing journal directory while separating its payload.
+(type p4_linux_journal_credential_file_t)
+(roletype object_r p4_linux_journal_credential_file_t)
+(typeattributeset p4_all_board_owned (p4_linux_journal_credential_file_t))
+(typeattributeset p4_native_startup_credential_files (p4_linux_journal_credential_file_t))
+(call p4_startup_credential (p4_linux_journal_credentials_t p4_linux_journal_credential_file_t p4_linux_journald_t))
+(neverallow p4_without_native_credential_writer p4_native_startup_credential_dirs (dir (create add_name setattr rename reparent mounton relabelto)))
+(neverallow p4_without_native_credential_cleanup p4_native_startup_credential_dirs (dir (write remove_name rmdir)))
+(neverallow all p4_native_startup_credential_dirs (dir (relabelfrom)))
+(neverallow p4_without_native_credential_writer p4_native_startup_credential_files (file (create write append setattr rename)))
+(neverallow p4_without_native_credential_cleanup p4_native_startup_credential_files (file (unlink)))
+(neverallow all p4_native_startup_credential_files (file (ioctl lock map execute execute_no_trans entrypoint link relabelfrom relabelto mounton)))

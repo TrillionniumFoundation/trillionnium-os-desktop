@@ -17,6 +17,7 @@ from verify_native_maintenance import verify_native_maintenance
 from verify_native_camera import verify_camera
 from verify_fixed_display import verify_fixed_display
 from verify_fixed_diagnostics import verify_fixed_diagnostics
+from verify_native_startup_paths import startup_file_context_cases, verify_startup_paths
 
 
 def sha256(path):
@@ -249,6 +250,7 @@ def verify_manager_file_contexts(here, work):
         ("/usr/libexec/netplan/generate", stat.S_IFREG, "p4_linux_generator_exec_t"),
         ("/usr/libexec/netplan/unselected-helper", stat.S_IFREG, "p4_linux_native_bin_t"),
     ])
+    cases.extend(startup_file_context_cases(stat))
     actual = []
     try:
         for filename, mode, expected_type in cases:
@@ -901,6 +903,7 @@ def verify_host_control(library, binary, export, original_contract):
     camera = verify_camera(policy, lines, check, obj, Path(__file__).resolve().parent)
     fixed_display = verify_fixed_display(lines, check, obj, role_types)
     fixed_diagnostics = verify_fixed_diagnostics(lines, check, obj, role_types)
+    startup_paths = verify_startup_paths(lines, check, obj, role_types)
     # The exact timezone symlink retains the prior read-only public-link
     # contract, while only PID 1 may place its stock IN_DONT_FOLLOW watch.
     timezone_decisions = 0
@@ -931,6 +934,7 @@ def verify_host_control(library, binary, export, original_contract):
         "native_camera": camera,
         "fixed_display_control": fixed_display,
         "fixed_diagnostics": fixed_diagnostics,
+        "native_startup_paths": startup_paths,
         "timezone_link_decisions": timezone_decisions + 9,
         "binary_access_checks": len(checks),
         "public_module_role_types": len(role_types),
@@ -1126,7 +1130,7 @@ def main():
         "ubuntu-native-runtime-retirement.cil",
         "ubuntu-native-greeter-home.cil",
 
-        "ubuntu-native-manager-lifecycle.cil",
+        "ubuntu-native-manager-lifecycle.cil", "ubuntu-native-startup-paths.cil",
         "ubuntu-native-hardware.cil",
         "ubuntu-presenter-runtime.cil",
         "linux-package-maintenance.cil", "linux-public-control.cil",
@@ -1137,7 +1141,7 @@ def main():
                here / "derive_shared_payload_cgroup_policy.py",
                here / "verify_native_login_audit.py", here / "verify_native_journal_storage.py",
                here / "verify_greeter_home.py", here / "verify_native_maintenance.py",
-               here / "verify_fixed_display.py", here / "verify_fixed_diagnostics.py",
+               here / "verify_fixed_display.py", here / "verify_fixed_diagnostics.py", here / "verify_native_startup_paths.py",
                here / "ubuntu-native-file_contexts", here / "ubuntu-real-root-file_contexts",
                here / "linux-service-file_contexts", here / "linux-initial-calibration-file_contexts"]
     if any(output.resolve() == path.resolve() for path in sources):
