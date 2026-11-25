@@ -136,6 +136,13 @@ fn namespaces() -> Result<BTreeMap<String, String>> {
 fn same_pin(a: &FilePin, b: &FilePin) -> bool {
     a.path == b.path && a.bytes == b.bytes && a.sha256 == b.sha256
 }
+fn held_hash(mut file: &File) -> Result<String> {
+    use std::io::Seek;
+    // These descriptors stay open across both readbacks. The shared hash
+    // helper consumes from the current offset, so restart every full read.
+    file.rewind()?;
+    fs::hash(file)
+}
 fn trusted(pin: &FilePin) -> Result<(File, Identity)> {
     let tree = fs::Tree::open("/", 0)?;
     tree.parent(&fs::absolute_string(&pin.path)?)?;
@@ -145,7 +152,7 @@ fn trusted(pin: &FilePin) -> Result<(File, Identity)> {
         "original-host input is not a protected root-owned regular inode",
     )?;
     ensure(
-        fs::hash(&file)? == pin.sha256 && fs::stat(&file)? == id,
+        held_hash(&file)? == pin.sha256 && fs::stat(&file)? == id,
         "original-host input changed",
     )?;
     Ok((file, id))
@@ -189,7 +196,7 @@ fn original_tool(requested: &str, pin: &FilePin, resolution: &Value) -> Result<(
             && id.gid == 0
             && id.mode == 0o100755
             && id.nlink == 116
-            && fs::hash(&file)? == pin.sha256
+            && held_hash(&file)? == pin.sha256
             && fs::stat(&file)? == id,
         "original uutils hard-linked read-only executable identity differs",
     )?;
@@ -381,13 +388,16 @@ fn guard_readback(guards: &[SourceGuard]) -> Result<Value> {
         let (current, current_aliases) = files::resolve_public_file(Path::new("/"), requested)?;
         ensure(
             same_pin(&current, pin) && current_aliases == *aliases,
-            "original requested tool path or its protected alias chain changed",
+            &format!(
+                "original requested tool path or its protected alias chain changed: {requested}"
+            ),
         )?;
         ensure(
             fs::stat(file)? == *id
                 && root.identity(&fs::absolute_string(&pin.path)?)? == *id
-                && fs::hash(file)? == pin.sha256,
-            "original tool or boot source changed during preparation",
+                && held_hash(file)? == pin.sha256
+                && fs::stat(file)? == *id,
+            &format!("original tool or boot source changed during preparation: {requested}"),
         )?;
         out.push(json!({"requested_path":requested,"aliases":aliases,"pin":pin,"identity":id}));
     }
@@ -481,6 +491,21 @@ fn run(work: &Path, name: &str, program: &str, args: Vec<String>, seconds: u64) 
         work, name, program, &args, seconds,
     )?)?)
 }
+fn original_package_read_locks() -> Result<Vec<File>> {
+    // POSIX read locks conflict with actual dpkg/apt writers, unlike a separate
+    // advisory BSD flock. Keep both original database lock descriptors alive.
+    let mut locks = Vec::new();
+    for path in ["/var/lib/dpkg/lock", "/var/lib/dpkg/lock-frontend"] {
+        let file = File::from(rustix::fs::open(
+            path,
+            OFlags::RDONLY | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+            Mode::empty(),
+        )?);
+        rustix::fs::fcntl_lock(&file, FlockOperation::NonBlockingLockShared)?;
+        locks.push(file);
+    }
+    Ok(locks)
+}
 
 pub fn prepare(path: &Path, expected: &str) -> Result<()> {
     let (plan, input): (Plan, FilePin) = config(path, expected)?;
@@ -501,18 +526,7 @@ pub fn prepare(path: &Path, expected: &str) -> Result<()> {
     let before = original_context()?;
     let preflight: Value = read(&plan.target_preflight, 2 * 1024 * 1024)?;
     let guards = source_guards(&preflight, &before)?;
-    // POSIX read locks conflict with actual dpkg/apt writers, unlike a separate
-    // advisory BSD flock. Keep both original database lock descriptors alive.
-    let mut locks = Vec::new();
-    for path in ["/var/lib/dpkg/lock", "/var/lib/dpkg/lock-frontend"] {
-        let file = File::from(rustix::fs::open(
-            path,
-            OFlags::RDONLY | OFlags::NOFOLLOW | OFlags::CLOEXEC,
-            Mode::empty(),
-        )?);
-        rustix::fs::fcntl_lock(&file, FlockOperation::NonBlockingLockShared)?;
-        locks.push(file);
-    }
+    let locks = original_package_read_locks()?;
     ensure(
         original_context()? == before,
         "original host changed before its package locks",
@@ -1369,6 +1383,55 @@ pub fn build(path: &Path, expected: &str) -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn repeated_held_hash_reads_the_whole_inode_and_detects_changed_bytes() {
+        use std::io::{Seek, SeekFrom, Write};
+        let mut file = tempfile::tempfile().unwrap();
+        file.write_all(b"abc").unwrap();
+        let identity = fs::stat(&file).unwrap();
+        let expected = "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad";
+        assert_eq!(held_hash(&file).unwrap(), expected);
+        assert_eq!(held_hash(&file).unwrap(), expected);
+        file.seek(SeekFrom::Start(1)).unwrap();
+        assert_eq!(held_hash(&file).unwrap(), expected);
+        assert_eq!(fs::stat(&file).unwrap(), identity);
+        file.seek(SeekFrom::Start(2)).unwrap();
+        file.write_all(b"d").unwrap();
+        assert_ne!(held_hash(&file).unwrap(), expected);
+    }
+    #[test]
+    #[ignore = "requires the exact original Pocket4 preflight; read-only, never prepares a root"]
+    fn actual_original_source_guards_survive_locks_and_two_readbacks() {
+        let path = Path::new(
+            "/var/lib/droidloom-qualification/p4-original-initramfs-inputs-4b91-r1/PLAN.json",
+        );
+        let (plan, input): (Plan, FilePin) = config(
+            path,
+            "aeae05b27cd6a7929091be7324a05608dafcaca3dea97bb7cb426bb406502056",
+        )
+        .unwrap();
+        assert_eq!(plan.schema, "droidloom.original-host-initramfs-plan.v1");
+        allowed_work(&plan.work_directory).unwrap();
+        assert!(!plan.work_directory.try_exists().unwrap());
+        let before = original_context().unwrap();
+        let preflight: Value = read(&plan.target_preflight, 2 * 1024 * 1024).unwrap();
+        let guards = source_guards(&preflight, &before).unwrap();
+        let locks = original_package_read_locks().unwrap();
+        assert_eq!(locks.len(), 2);
+        assert_eq!(original_context().unwrap(), before);
+        let first = guard_readback(&guards).unwrap();
+        let second = guard_readback(&guards).unwrap();
+        assert_eq!(first, second);
+        assert_eq!(original_context().unwrap(), before);
+        assert!(!plan.work_directory.try_exists().unwrap());
+        println!(
+            "{}",
+            json!({"schema":"droidloom.original-source-guards-readback-test.v1",
+            "input":input,"guard_count":guards.len(),"posix_shared_lock_count":locks.len(),
+            "readbacks":2,"source_guards":second,"work_created":false,"physical_install":false})
+        );
+        drop(locks);
+    }
     #[test]
     fn original_chroot_uses_the_readers_full_resolution_object() {
         let pin = FilePin {

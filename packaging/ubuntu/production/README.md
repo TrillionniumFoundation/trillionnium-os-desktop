@@ -263,7 +263,8 @@ is the complete v3 sixteen-package release. A fresh original-host preflight must
 match the actual boot ID, original kernel, root UUID, PID1 root and held original
 boot/tool inodes. Original tool paths are resolved through the existing protected
 alias reader and the exact alias inode chain and final ELF are rechecked after
-the package locks and at completion. The original uutils chroot has one fixed
+the package locks and at completion. Each full held-descriptor hash restarts at
+offset zero, including repeated readbacks of the same inode. The original uutils chroot has one fixed
 root-owned symlink and a source-pinned multi-call ELF with exactly 116 hard links;
 this narrow read-only tool exception does not apply to candidate inputs or outputs.
 The producer takes POSIX shared locks on the physical dpkg and
