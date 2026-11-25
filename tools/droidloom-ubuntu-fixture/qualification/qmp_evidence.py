@@ -726,6 +726,49 @@ def wayland_key_pair(before, after, event, key):
 # This is a live exchange only. Saved launch events are never close authority.
 PUBLIC_STAGE = "/var/lib/droidloom-public-apks/u1000"
 REGISTRY_SHA256 = "0b21f963898308b082f3808dd48165c1397badd1fa8a753c3a766e135b3cb3c8"
+SELECTED_PACKAGES = frozenset([
+    "com.Hyatt.hyt",
+    "com.MobileTicket",
+    "com.amazon.mShop.android.shopping",
+    "com.android.calendar",
+    "com.android.camera2",
+    "com.android.contacts",
+    "com.android.deskclock",
+    "com.android.dialer",
+    "com.android.documentsui",
+    "com.android.gallery3d",
+    "com.android.messaging",
+    "com.android.quicksearchbox",
+    "com.android.settings",
+    "com.bestbuy.android",
+    "com.ehi.national.mobile",
+    "com.google.android.gms",
+    "com.hertz.android.digital",
+    "com.hilton.android.hhonors",
+    "com.ihg.apps.android",
+    "com.jingdong.app.mall",
+    "com.lianjia.beike",
+    "com.marriott.mrt",
+    "com.rytong.airchina",
+    "com.rytong.ceair",
+    "com.sankuai.meituan.takeoutnew",
+    "com.sdu.didi.psnger",
+    "com.ss.android.ugc.aweme",
+    "com.szzc",
+    "com.taobao.taobao",
+    "com.tencent.mm",
+    "com.united.mobile.android",
+    "com.xunmeng.pinduoduo",
+    "com.zhubajie.client",
+    "com.zillow.android.streeteasy",
+    "ctrip.android.view",
+    "jp.co.ana.android.tabidachi",
+    "org.fcitx.fcitx5.android",
+    "org.mozilla.firefox",
+    "tv.danmaku.bili",
+])
+MAX_APKS = 39 * 32
+MAX_APP_BYTES = 2 * 1024**3
 LIFECYCLE_SECONDS = 600
 WINDOW_PREFIX = "Droidloom window trace: "
 
@@ -738,18 +781,24 @@ def fresh_lifecycle_inputs(prepared, package):
     staged = prepared["public_apk_import"]
     need(staged["schema"] == "droidloom.public-apks-staged.v1"
          and staged["original_userdata_imported"] is False
-         and staged["package_count"] == 39 and staged["apk_file_count"] == 65
+         and staged["package_count"] == 39
+         and type(staged["apk_file_count"]) is int
+         and 39 <= staged["apk_file_count"] <= MAX_APKS
          and staged["applications_installed"] == 0, "fresh complete public import is required")
     files = staged["files"]
-    need(type(files) is list and len(files) == 69, "complete 65 APK and four JSON import required")
+    need(type(files) is list and len(files) == staged["apk_file_count"] + 4,
+         "complete declared APK set and four JSON inputs required")
     paths = [v["guest_path"] for v in files]
-    need(len(set(paths)) == 69 and all(type(p) is str and str(Path(p).parent) == PUBLIC_STAGE for p in paths),
+    need(all(type(p) is str and str(Path(p).parent) == PUBLIC_STAGE for p in paths)
+         and len(set(paths)) == len(files),
          "public import paths differ")
     expected_json = {"selected39-execution.json", "selected39-source-selection.json",
                      "selected39-signature-receipt.json", "app-release-gates.json"}
     metadata = [v for v in files if v["package"] is None]
     apks = [v for v in files if v["package"] is not None]
-    need(len(apks) == 65 and {Path(v["guest_path"]).name for v in metadata} == expected_json,
+    need(len(apks) == staged["apk_file_count"] and len(metadata) == 4
+         and all(v["split"] is None for v in metadata)
+         and {Path(v["guest_path"]).name for v in metadata} == expected_json,
          "public import membership differs")
     for v in files:
         source = v["source"]
@@ -757,6 +806,17 @@ def fresh_lifecycle_inputs(prepared, package):
              and re.fullmatch("[0-9a-f]{64}", source["sha256"]), "invalid public file pin")
         if v["package"] is not None:
             need(Path(v["guest_path"]).name == source["sha256"] + ".apk", "APK digest filename differs")
+    need({v["package"] for v in apks} == SELECTED_PACKAGES, "imported APK package identities differ")
+    for selected in SELECTED_PACKAGES:
+        parts = [v for v in apks if v["package"] == selected]
+        splits = [v["split"] for v in parts]
+        need(1 <= len(parts) <= 32 and splits.count(None) == 1
+             and all(v is None or (type(v) is str and re.fullmatch(r"[A-Za-z0-9._]{1,255}", v)) for v in splits)
+             and len(set(splits)) == len(parts)
+             and all(4 <= v["source"]["bytes"] <= MAX_APP_BYTES for v in parts)
+             and sum(v["source"]["bytes"] for v in parts) <= MAX_APP_BYTES,
+             "a selected application's full base/split set or byte bound differs")
+    need(sum(v["source"]["bytes"] for v in apks) <= 8 * 1024**3, "public APK total byte bound exceeded")
     prep = staged["runtime_preparation_inputs"]
     for key, name in (("selection", "selected39-source-selection.json"),
                       ("source_receipt", "selected39-signature-receipt.json"),
@@ -770,7 +830,8 @@ def fresh_lifecycle_inputs(prepared, package):
          "canonical full gate registry differs")
     rows = staged["applications"]
     names = [v["package"] for v in rows]
-    need(len(names) == len(set(names)) == 39 and set(prep["required_gates"]) == set(names)
+    need(len(names) == 39 and set(names) == SELECTED_PACKAGES
+         and set(prep["required_gates"]) == SELECTED_PACKAGES
          and package in names, "reviewed selected39 package missing")
     required = prep["required_gates"][package]
     need(type(required) is list and len(required) >= 6 and len(set(required)) == len(required),

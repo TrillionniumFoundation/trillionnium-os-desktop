@@ -2,50 +2,10 @@ use super::*;
 use std::os::unix::fs::PermissionsExt;
 
 const CANONICAL_REGISTRY: &[u8] = include_bytes!("../tests/fixtures/app-release-gates.json");
-const SELECTED: [&str; PACKAGES] = [
-    "com.Hyatt.hyt",
-    "com.MobileTicket",
-    "com.amazon.mShop.android.shopping",
-    "com.android.calendar",
-    "com.android.camera2",
-    "com.android.contacts",
-    "com.android.deskclock",
-    "com.android.dialer",
-    "com.android.documentsui",
-    "com.android.gallery3d",
-    "com.android.messaging",
-    "com.android.quicksearchbox",
-    "com.android.settings",
-    "com.bestbuy.android",
-    "com.ehi.national.mobile",
-    "com.google.android.gms",
-    "com.hertz.android.digital",
-    "com.hilton.android.hhonors",
-    "com.ihg.apps.android",
-    "com.jingdong.app.mall",
-    "com.lianjia.beike",
-    "com.marriott.mrt",
-    "com.rytong.airchina",
-    "com.rytong.ceair",
-    "com.sankuai.meituan.takeoutnew",
-    "com.sdu.didi.psnger",
-    "com.ss.android.ugc.aweme",
-    "com.szzc",
-    "com.taobao.taobao",
-    "com.tencent.mm",
-    "com.united.mobile.android",
-    "com.xunmeng.pinduoduo",
-    "com.zhubajie.client",
-    "com.zillow.android.streeteasy",
-    "ctrip.android.view",
-    "jp.co.ana.android.tabidachi",
-    "org.fcitx.fcitx5.android",
-    "org.mozilla.firefox",
-    "tv.danmaku.bili",
-];
+const TEST_APKS: usize = 65;
 
 fn selected_apps() -> Vec<Value> {
-    SELECTED
+    SELECTED_PACKAGES
         .iter()
         .map(|package| json!({"package":package}))
         .collect()
@@ -59,6 +19,12 @@ fn fake_pin() -> FilePin {
     }
 }
 fn synthetic() -> (ImportPlan, Value, Value, Value) {
+    synthetic_with_splits(26)
+}
+
+fn synthetic_with_splits(two_part_apps: usize) -> (ImportPlan, Value, Value, Value) {
+    assert!(two_part_apps <= PACKAGES);
+    let apk_count = PACKAGES + two_part_apps;
     let receipt_pin = fake_pin();
     let exemptions = json!([
         {"package":"com.enflick.android.TextNow","status":"exempt_unverified"},
@@ -70,11 +36,11 @@ fn synthetic() -> (ImportPlan, Value, Value, Value) {
     let mut signed_rows = Vec::new();
     let mut total = 0;
     for app in 0..PACKAGES {
-        let package = SELECTED[app];
+        let package = SELECTED_PACKAGES[app];
         let signers = vec!["b".repeat(64)];
         let mut parts = Vec::new();
         let mut materials = Vec::new();
-        for part in 0..if app < 26 { 2 } else { 1 } {
+        for part in 0..if app < two_part_apps { 2 } else { 1 } {
             let split = if part == 0 {
                 None
             } else {
@@ -83,7 +49,7 @@ fn synthetic() -> (ImportPlan, Value, Value, Value) {
             let bytes = format!("PK\u{3}\u{4}public-{app}-{part}").into_bytes();
             let sha256 = fs::digest(&bytes);
             total += bytes.len();
-            let metadata = json!({"name":package,"versionCode":"42"});
+            let metadata = json!({"name":package,"versionCode":"42","split":split});
             let path = format!("/home/alex/work/current/{package}/{part}.apk");
             materials.push(json!({
                 "path":path,"bytes":bytes.len(),"sha256":sha256,
@@ -111,18 +77,18 @@ fn synthetic() -> (ImportPlan, Value, Value, Value) {
     }
     let execution = json!({
         "schema":"p4-selected39-execution-v3","scope":"fresh_isolated_vm_only",
-        "guest_stage":STAGE,"package_count":PACKAGES,"file_count":APKS,
+        "guest_stage":STAGE,"package_count":PACKAGES,"file_count":apk_count,
         "source_materials":receipt_pin,"excluded_packages":exemptions,"rows":execution_rows
     });
     let selection = json!({
         "schema":"p4-selected39-static-launch-inputs-v1","package_count":PACKAGES,
-        "apk_file_count":APKS,"apk_total_bytes":total,
+        "apk_file_count":apk_count,"apk_total_bytes":total,
         "all_current_apk_hashes_match_verified_signature_receipt":true,
         "excluded_packages":exemptions,"applications":source_rows
     });
     let receipt = json!({
         "schema":"p4-selected39-materials-and-original-signers-handoff-v1",
-        "all_selected_materials_verified":true,"package_count":PACKAGES,"file_count":APKS,
+        "all_selected_materials_verified":true,"package_count":PACKAGES,"file_count":apk_count,
         "excluded_packages":exemptions,"rows":signed_rows
     });
     (
@@ -143,7 +109,7 @@ fn synthetic() -> (ImportPlan, Value, Value, Value) {
 fn complete_public_split_plan_keeps_all_39_and_blocks_original_account_shortcuts() {
     let (plan, execution, selection, receipt) = synthetic();
     let (files, apps) = validate(&plan, &execution, &selection, &receipt).unwrap();
-    assert_eq!(files.len(), APKS);
+    assert_eq!(files.len(), TEST_APKS);
     assert_eq!(apps.len(), PACKAGES);
     assert_eq!(apps[7]["original_account_install_blocked"], true);
     assert_eq!(apps[0]["install_argv"][2], "install-multiple");
@@ -153,7 +119,7 @@ fn complete_public_split_plan_keeps_all_39_and_blocks_original_account_shortcuts
         && a["runtime_epoch_binding_required"] == true));
     let base = files
         .iter()
-        .find(|f| f.package.as_deref() == Some(SELECTED[0]) && f.split.is_none())
+        .find(|f| f.package.as_deref() == Some(SELECTED_PACKAGES[0]) && f.split.is_none())
         .unwrap();
     assert_eq!(apps[0]["install_argv"][5], base.guest_path);
     assert!(
@@ -245,8 +211,13 @@ fn public_source_preflight_preserves_hardlinks_but_rejects_aliases_non_zip_and_f
 }
 
 fn staged() -> Staged {
-    let (plan, e, s, r) = synthetic();
+    staged_with_split_count(26)
+}
+
+fn staged_with_split_count(two_part_apps: usize) -> Staged {
+    let (plan, e, s, r) = synthetic_with_splits(two_part_apps);
     let (mut files, applications) = validate(&plan, &e, &s, &r).unwrap();
+    let apk_file_count = files.len();
     for name in [
         "selected39-execution.json",
         "selected39-source-selection.json",
@@ -268,7 +239,7 @@ fn staged() -> Staged {
         files,
         applications,
         package_count: PACKAGES,
-        apk_file_count: APKS,
+        apk_file_count,
         runtime_preparation_inputs: None,
         original_userdata_imported: false,
         applications_installed: 0,
@@ -301,7 +272,10 @@ fn public_material_labels_require_exact_uid_boundary_and_input_roles() {
 }
 
 fn staged_with_registry() -> Staged {
-    let mut material = staged();
+    add_registry(staged())
+}
+
+fn add_registry(mut material: Staged) -> Staged {
     let registry = FilePin {
         path: "/reviewed/app-release-gates.json".into(),
         bytes: REGISTRY_BYTES,
@@ -430,14 +404,14 @@ fn optional_registry_rejects_replacement_bytes_missing_coverage_and_weaker_contr
 }
 
 #[test]
-fn public_material_roster_accepts_only_complete_declared_68_or_69_files() {
+fn public_material_roster_accepts_only_complete_declared_apks_and_provenance() {
     assert_eq!(provenance_count(&staged().files).unwrap(), 3);
     assert_eq!(provenance_count(&staged_with_registry().files).unwrap(), 4);
     for case in 0..5 {
         let mut material = staged_with_registry();
         match case {
             0 => {
-                material.files.remove(APKS);
+                material.files.remove(TEST_APKS);
             }
             1 => {
                 let extra = material.files.last().unwrap().clone();
@@ -467,7 +441,7 @@ fn actual_ext4_public_material_readback_detects_tampered_bytes_and_is_create_onl
         let stage = root.join(STAGE.trim_start_matches('/'));
         std::fs::create_dir_all(&stage)?;
         let mut material = if with_registry {
-            staged_with_registry()
+            add_registry(staged_with_split_count(27))
         } else {
             staged()
         };
@@ -476,7 +450,17 @@ fn actual_ext4_public_material_readback_detects_tampered_bytes_and_is_create_onl
             if item.guest_path.ends_with(REGISTRY_NAME) {
                 std::fs::write(&path, CANONICAL_REGISTRY)?;
             } else {
-                std::fs::write(&path, format!("PK\u{3}\u{4}exact original {index}"))?;
+                let bytes = if let Some(package) = item.package.as_deref() {
+                    let app = SELECTED_PACKAGES
+                        .iter()
+                        .position(|v| *v == package)
+                        .unwrap();
+                    let part = usize::from(item.split.is_some());
+                    format!("PK\u{3}\u{4}public-{app}-{part}")
+                } else {
+                    format!("PK\u{3}\u{4}exact original {index}")
+                };
+                std::fs::write(&path, bytes)?;
             }
             item.source = boot_files::pin_file(&path)?;
         }
@@ -504,8 +488,9 @@ fn actual_ext4_public_material_readback_detects_tampered_bytes_and_is_create_onl
         let provenance = if with_registry { 4 } else { 3 };
         assert_eq!(
             receipt["files"].as_array().unwrap().len(),
-            APKS + provenance
+            material.apk_file_count + provenance
         );
+        assert_eq!(receipt["apk_file_count"], material.apk_file_count);
         assert_eq!(receipt["provenance_file_count"], provenance);
         assert_eq!(receipt["gate_registry_imported"], with_registry);
         assert_eq!(receipt["all_original_bytes_matched"], true);
@@ -527,4 +512,39 @@ fn actual_ext4_public_material_readback_detects_tampered_bytes_and_is_create_onl
         assert!(readback_bodies(&bad, &disk, &material.files).is_err());
     }
     Ok(())
+}
+
+#[test]
+fn exact_pinned_sets_allow_changed_split_counts_without_replacing_selected_packages() {
+    for split_apps in [0, 25, 27, 39] {
+        let (plan, e, s, r) = synthetic_with_splits(split_apps);
+        let (files, apps) = validate(&plan, &e, &s, &r).unwrap();
+        assert_eq!(files.len(), PACKAGES + split_apps);
+        assert_eq!(apps.len(), PACKAGES);
+        for (field, value) in [
+            ("file_count", PACKAGES + split_apps + 1),
+            ("file_count", MAX_APKS + 1),
+        ] {
+            let mut bad = e.clone();
+            bad[field] = value.into();
+            assert!(validate(&plan, &bad, &s, &r).is_err());
+        }
+        let mut bad = r.clone();
+        bad["file_count"] = (PACKAGES + split_apps + 1).into();
+        assert!(validate(&plan, &e, &s, &bad).is_err());
+        let mut bad = s.clone();
+        bad["apk_file_count"] = (PACKAGES + split_apps + 1).into();
+        assert!(validate(&plan, &e, &bad, &r).is_err());
+    }
+    let (plan, mut e, mut s, mut r) = synthetic();
+    for (document, key) in [(&mut e, "rows"), (&mut s, "applications"), (&mut r, "rows")] {
+        document[key][0]["package"] = "org.example.replacement".into();
+    }
+    assert!(validate(&plan, &e, &s, &r).is_err());
+    let (plan, e, mut s, mut r) = synthetic();
+    // The independent SDK metadata must agree with the selected manifest split,
+    // even if both metadata copies carry the same erroneous value.
+    r["rows"][0]["files"][0]["metadata"]["split"] = "different".into();
+    s["applications"][0]["material_files"][0]["metadata"]["split"] = "different".into();
+    assert!(validate(&plan, &e, &s, &r).is_err());
 }

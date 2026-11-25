@@ -12,10 +12,14 @@ The existing `bind` action must have admitted the original live QEMU process,
 private QMP socket, root-protected run/prepared receipts, normal host manifest,
 original fixture owner/unit InvocationID, and the fixture's fresh loopback SSH
 key. The running guest must be a normal `android_runtime` boot with the complete
-69-file public import: 39 selected packages, 65 original APKs, the three source
-JSON files, and the exact canonical gate registry. The importer accepts that
-scope only with fresh Android data and no original userdata import. This action
-rejects the older 68-file input and all calibration guests.
+public import: the exact 39 selected package identities, every APK in their
+current signed base/split sets, the three source JSON files, and the exact
+canonical gate registry. The APK count is the actual complete pinned selection;
+65 APKs belonged to the earlier batch and is not a release invariant. Each app
+retains the installer's 32-file and 2 GiB bounds, with an 8 GiB whole-input bound.
+The importer accepts this scope only with fresh Android data and no original
+userdata import. This action rejects inputs without the canonical registry and
+all calibration guests.
 
 Install the public APKs through the existing restricted package helper before
 using this action. The action does not install, downgrade, uninstall, force-stop,

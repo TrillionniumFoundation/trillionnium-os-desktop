@@ -20,7 +20,48 @@ use std::{
 pub const ROOT: &str = "/var/lib/droidloom-public-apks";
 pub const STAGE: &str = "/var/lib/droidloom-public-apks/u1000";
 const PACKAGES: usize = 39;
-const APKS: usize = 65;
+const SELECTED_PACKAGES: [&str; PACKAGES] = [
+    "com.Hyatt.hyt",
+    "com.MobileTicket",
+    "com.amazon.mShop.android.shopping",
+    "com.android.calendar",
+    "com.android.camera2",
+    "com.android.contacts",
+    "com.android.deskclock",
+    "com.android.dialer",
+    "com.android.documentsui",
+    "com.android.gallery3d",
+    "com.android.messaging",
+    "com.android.quicksearchbox",
+    "com.android.settings",
+    "com.bestbuy.android",
+    "com.ehi.national.mobile",
+    "com.google.android.gms",
+    "com.hertz.android.digital",
+    "com.hilton.android.hhonors",
+    "com.ihg.apps.android",
+    "com.jingdong.app.mall",
+    "com.lianjia.beike",
+    "com.marriott.mrt",
+    "com.rytong.airchina",
+    "com.rytong.ceair",
+    "com.sankuai.meituan.takeoutnew",
+    "com.sdu.didi.psnger",
+    "com.ss.android.ugc.aweme",
+    "com.szzc",
+    "com.taobao.taobao",
+    "com.tencent.mm",
+    "com.united.mobile.android",
+    "com.xunmeng.pinduoduo",
+    "com.zhubajie.client",
+    "com.zillow.android.streeteasy",
+    "ctrip.android.view",
+    "jp.co.ana.android.tabidachi",
+    "org.fcitx.fcitx5.android",
+    "org.mozilla.firefox",
+    "tv.danmaku.bili",
+];
+const MAX_APKS: usize = PACKAGES * 32;
 const MAX_APP_BYTES: u64 = 2 * 1024 * 1024 * 1024;
 const REGISTRY_NAME: &str = "app-release-gates.json";
 const REGISTRY_BYTES: u64 = 27_878;
@@ -159,8 +200,8 @@ fn packages<'a>(v: &'a Value, field: &str) -> Result<BTreeMap<&'a str, &'a Value
         )?;
     }
     ensure(
-        result.len() == PACKAGES,
-        "public APK input must contain the complete selected 39",
+        result.keys().copied().collect::<BTreeSet<_>>() == BTreeSet::from(SELECTED_PACKAGES),
+        "public APK input must contain the exact selected 39 package identities",
     )?;
     Ok(result)
 }
@@ -206,6 +247,11 @@ fn validate(
     selection: &Value,
     receipt: &Value,
 ) -> Result<(Vec<Material>, Vec<Value>)> {
+    let apk_file_count = usize::try_from(number(execution, "file_count")?)?;
+    ensure(
+        (PACKAGES..=MAX_APKS).contains(&apk_file_count),
+        "public APK count exceeds the complete selected 39 installer bounds",
+    )?;
     ensure(
         plan.schema == "droidloom.public-apk-import.v1"
             && execution["schema"] == "p4-selected39-execution-v3"
@@ -213,9 +259,8 @@ fn validate(
             && execution["guest_stage"] == STAGE
             && selection["schema"] == "p4-selected39-static-launch-inputs-v1"
             && execution["package_count"] == PACKAGES
-            && execution["file_count"] == APKS
             && selection["package_count"] == PACKAGES
-            && selection["apk_file_count"] == APKS
+            && selection["apk_file_count"] == apk_file_count
             && selection["all_current_apk_hashes_match_verified_signature_receipt"] == true,
         "public APK schemas, fixed scope, stage or complete counts differ",
     )?;
@@ -231,7 +276,7 @@ fn validate(
         receipt["schema"] == "p4-selected39-materials-and-original-signers-handoff-v1"
             && receipt["all_selected_materials_verified"] == true
             && receipt["package_count"] == PACKAGES
-            && receipt["file_count"] == APKS
+            && receipt["file_count"] == apk_file_count
             && exclusions(receipt)? == exclusions(selection)?,
         "admitted signature receipt is not the complete verified selection",
     )?;
@@ -320,7 +365,8 @@ fn validate(
                 signed_matches.len() == 1
                     && signed_matches[0]["sdk37_signature_valid"] == true
                     && names(signed_matches[0], "verified_signer_certificates_sha256")? == signers
-                    && signed_matches[0]["metadata"] == original["metadata"],
+                    && signed_matches[0]["metadata"] == original["metadata"]
+                    && split(&signed_matches[0]["metadata"]["split"])? == part_split,
                 "APK is not the original SDK37-verified receipt member",
             )?;
             let source = pin(original)?;
@@ -385,7 +431,7 @@ fn validate(
         }));
     }
     ensure(
-        files.len() == APKS
+        files.len() == apk_file_count
             && total <= 8 * 1024 * 1024 * 1024
             && selection["apk_total_bytes"] == total,
         "complete selected APK count or byte total differs",
@@ -525,10 +571,10 @@ pub fn admit(input: &FilePin, fresh_normal: bool) -> Result<(Staged, Vec<(FilePi
         Staged {
             schema: "droidloom.public-apks-staged.v1",
             import: input.clone(),
+            apk_file_count: files.len(),
             files,
             applications,
             package_count: PACKAGES,
-            apk_file_count: APKS,
             runtime_preparation_inputs,
             original_userdata_imported: false,
             applications_installed: 0,
@@ -663,6 +709,8 @@ pub fn guest_paths(staged: &Staged) -> Vec<String> {
 fn provenance_count(files: &[Material]) -> Result<usize> {
     let mut paths = BTreeSet::new();
     let mut provenance = BTreeSet::new();
+    let mut packages: BTreeMap<&str, BTreeSet<Option<&str>>> = BTreeMap::new();
+    let mut app_bytes: BTreeMap<&str, u64> = BTreeMap::new();
     for item in files {
         let name = item
             .guest_path
@@ -679,12 +727,33 @@ fn provenance_count(files: &[Material]) -> Result<usize> {
             )?;
             provenance.insert(name);
         } else {
+            let package = item.package.as_deref().unwrap();
             ensure(
-                name.strip_suffix(".apk").is_some_and(fs::valid_digest),
-                "public APK destination is not its fixed digest filename",
+                fs::valid_digest(&item.source.sha256)
+                    && name == format!("{}.apk", item.source.sha256)
+                    && (4..=MAX_APP_BYTES).contains(&item.source.bytes)
+                    && packages
+                        .entry(package)
+                        .or_default()
+                        .insert(item.split.as_deref()),
+                "public APK destination, byte bound or complete split identity differs",
             )?;
+            let count = app_bytes.entry(package).or_default();
+            *count = count
+                .checked_add(item.source.bytes)
+                .ok_or("public APK size overflow")?;
         }
     }
+    ensure(
+        packages.keys().copied().collect::<BTreeSet<_>>() == BTreeSet::from(SELECTED_PACKAGES)
+            && packages
+                .values()
+                .all(|parts| parts.contains(&None) && parts.len() <= 32)
+            && app_bytes.values().all(|bytes| *bytes <= MAX_APP_BYTES)
+            && app_bytes.values().sum::<u64>() <= 8 * 1024 * 1024 * 1024,
+        "public material package roster or bounded complete split set differs",
+    )?;
+    let apk_file_count: usize = packages.values().map(BTreeSet::len).sum();
     let mut expected = BTreeSet::from([
         "selected39-execution.json",
         "selected39-source-selection.json",
@@ -694,8 +763,10 @@ fn provenance_count(files: &[Material]) -> Result<usize> {
         expected.insert(REGISTRY_NAME);
     }
     ensure(
-        provenance == expected && files.len() == APKS + expected.len(),
-        "public material set must be exactly 65 APKs and the three or four declared JSON inputs",
+        provenance == expected
+            && (PACKAGES..=MAX_APKS).contains(&apk_file_count)
+            && files.len() == apk_file_count + expected.len(),
+        "public material set must contain every pinned APK and exactly the declared JSON inputs",
     )?;
     Ok(expected.len())
 }
@@ -703,7 +774,9 @@ fn provenance_count(files: &[Material]) -> Result<usize> {
 fn verify_tree(root: &Path, staged: &Staged) -> Result<()> {
     let provenance = provenance_count(&staged.files)?;
     ensure(
-        (provenance == 4) == staged.runtime_preparation_inputs.is_some(),
+        (provenance == 4) == staged.runtime_preparation_inputs.is_some()
+            && staged.package_count == PACKAGES
+            && staged.apk_file_count == staged.files.len() - provenance,
         "staged runtime preparation inputs differ from the actual registry material",
     )?;
     let stage = boot_files::guest_path(root, STAGE)?;
@@ -719,7 +792,7 @@ fn verify_tree(root: &Path, staged: &Staged) -> Result<()> {
         .map(|f| f.guest_path.rsplit('/').next().unwrap().to_owned())
         .collect();
     ensure(
-        expected.len() == APKS + provenance && list(&directory.root)? == expected,
+        expected.len() == staged.apk_file_count + provenance && list(&directory.root)? == expected,
         "public material directory is incomplete or has extra entries",
     )?;
     for item in &staged.files {
@@ -829,7 +902,7 @@ fn readback_bodies(work: &Path, disk: &Path, files: &[Material]) -> Result<Value
     )?;
     Ok(
         json!({"schema":"droidloom.public-apks-ext4-readback.v1","files":rows,
-        "package_count":PACKAGES,"apk_file_count":APKS,"provenance_file_count":provenance,
+        "package_count":PACKAGES,"apk_file_count":files.len() - provenance,"provenance_file_count":provenance,
         "gate_registry_imported":provenance == 4,
         "all_original_bytes_matched":true,"readonly_ext4_reader":true,
         "applications_installed":0,"application_business_accepted":false,

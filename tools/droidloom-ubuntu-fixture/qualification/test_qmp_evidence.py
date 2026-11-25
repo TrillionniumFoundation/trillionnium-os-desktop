@@ -248,11 +248,11 @@ class EvidenceTests(unittest.TestCase):
 
 
 class LifecycleTests(unittest.TestCase):
-    def fresh(self):
-        names=["org.example.app"+str(i) for i in range(39)]
+    def fresh(self, split_apps=26):
+        names=sorted(q.SELECTED_PACKAGES)
         files=[]
         for i,name in enumerate(names):
-            parts=[None,"config.arm64_v8a"] if i<26 else [None]
+            parts=[None,"config.arm64_v8a"] if i<split_apps else [None]
             for split in parts:
                 sha=q.digest((name+str(split)).encode())
                 files.append({"guest_path":q.PUBLIC_STAGE+"/"+sha+".apk","package":name,"split":split,
@@ -266,7 +266,7 @@ class LifecycleTests(unittest.TestCase):
             files.append({"guest_path":pin["path"],"package":None,"split":None,
                           "source":dict(pin,path="/source/"+name)})
         staged={"schema":"droidloom.public-apks-staged.v1","original_userdata_imported":False,
-                "package_count":39,"apk_file_count":65,"applications_installed":0,"files":files,
+                "package_count":39,"apk_file_count":39+split_apps,"applications_installed":0,"files":files,
                 "applications":[{"package":name,"version_code":7} for name in names],
                 "runtime_preparation_inputs":dict({k:v for k,v in pins.items() if k!="execution"},
                     required_gates={name:["common."+str(i) for i in range(6)] for name in names})}
@@ -288,6 +288,29 @@ class LifecycleTests(unittest.TestCase):
             lambda x:x["public_apk_import"].update(applications_installed=39)]:
             bad=copy.deepcopy(prepared);mutate(bad)
             with self.assertRaises(q.Rejected):q.fresh_lifecycle_inputs(bad,package)
+
+    def test_lifecycle_counts_follow_exact_changed_split_sets(self):
+        import copy
+        for count in [0, 25, 27, 39]:
+            prepared, package = self.fresh(count)
+            inputs = q.fresh_lifecycle_inputs(prepared, package)
+            self.assertEqual(len(inputs["apks"]), 1 if count == 0 else 2)
+            for mutate in [
+                lambda x: x["public_apk_import"].update(apk_file_count=39+count+1),
+                lambda x: x["public_apk_import"].update(apk_file_count=q.MAX_APKS+1),
+                lambda x: x["public_apk_import"]["files"][0].update(package="org.example.replacement"),
+                lambda x: x["public_apk_import"]["files"][0].update(split="missing_base"),
+                lambda x: x["public_apk_import"]["files"][0]["source"].update(bytes=q.MAX_APP_BYTES+1),
+                lambda x: x["public_apk_import"]["applications"][0].update(package="org.example.replacement")]:
+                bad = copy.deepcopy(prepared)
+                mutate(bad)
+                with self.assertRaises(q.Rejected):
+                    q.fresh_lifecycle_inputs(bad, package)
+        # A missing unrelated application's base must also fail this selected app's exchange.
+        prepared, package = self.fresh()
+        prepared["public_apk_import"]["files"][-5]["split"] = "unexpected_split"
+        with self.assertRaises(q.Rejected):
+            q.fresh_lifecycle_inputs(prepared, package)
 
     def facts(self):
         boot="01234567-89ab-cdef-0123-456789abcdef"
