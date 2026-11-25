@@ -31,9 +31,9 @@ struct ReleaseInput {
     board_profiles: std::collections::BTreeMap<String, AppArmorProfileInput>,
 }
 
-// Preserve the original first six roles and append only the selected hardware
-// helper. The committed lock owns the serialized order; this is its closed set.
-const APPARMOR_BOARD_ROLES: [&str; 8] = [
+// Preserve the original eight roles and append the fixed coldplug helper.
+// The committed lock owns the serialized order; this is its closed set.
+const APPARMOR_BOARD_ROLES: [&str; 9] = [
     "droidloom-ubuntu-journald",
     "droidloom-policy-loader",
     "droidloom-production-android",
@@ -42,6 +42,7 @@ const APPARMOR_BOARD_ROLES: [&str; 8] = [
     "droidloom-instance-factory",
     "droidloom-native-hardware-label",
     "droidloom-camera-capture",
+    "droidloom-native-uevent-label",
 ];
 
 fn sha256_text(value: &str) -> bool {
@@ -107,7 +108,7 @@ fn parse_board_inputs(bytes: &[u8]) -> Result<BoardInputs> {
         || aa.board_profiles.len() != APPARMOR_BOARD_ROLES.len()
     {
         return fail(
-            "AppArmor lock must preserve the bounded Ubuntu prefix and eight ordered board roles",
+            "AppArmor lock must preserve the bounded Ubuntu prefix and nine ordered board roles",
         );
     }
     for name in &aa.board_profile_order {
@@ -266,6 +267,10 @@ pub(super) fn stage_native_configuration(destination: &Path) -> Result<()> {
         (
             "usr/lib/systemd/system/systemd-udevd.service.d/50-droidloom-hardware-label.conf",
             include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-udev-hardware-label.conf").as_slice(),
+        ),
+        (
+            "usr/lib/systemd/system/systemd-udev-trigger.service.d/50-droidloom-uevent-label.conf",
+            include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-udev-trigger-label.conf").as_slice(),
         ),
     ] {
         let path = destination.join(relative);

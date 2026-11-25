@@ -1,0 +1,32 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+abi <abi/5.0>,
+#include <tunables/global>
+# Only the distinct package entry can prepare native coldplug attributes.
+# SELinux permits paired label changes but no attribute body access.
+profile droidloom-native-uevent-label /usr/lib/droidloom/production/current/droidloom-native-uevent-label flags=(attach_disconnected) {
+  / r,
+  /{etc,run,usr,usr/lib,proc,dev}/ r,
+  /etc/ld.so.cache r,
+  /{,usr/}lib{,64}/ld-linux-x86-64.so.2 mr,
+  /{,usr/}lib/x86_64-linux-gnu/{ld-linux-x86-64.so.2,lib*.so*} mr,
+  /usr/lib/droidloom/{,production/,production/current/} r,
+  /usr/lib/droidloom/production/current/droidloom-native-uevent-label mr,
+  /run/droidloom-early/ r,
+  /run/droidloom-early/host-{userns,pidns} r,
+  /{user,pid}:[0-9]* r,
+  owner /proc/{self,[0-9]*}/ r,
+  owner /proc/{self,[0-9]*}/fd/ r,
+  owner /proc/{self,[0-9]*}/fd/[0-9]* r,
+  /sys/ r,
+  /sys/{devices,bus,class,module,subsystem}/{,**/} r,
+  /sys/{devices,bus,class,module,subsystem}/{,**/}uevent rw,
+  /dev/null rw,
+  # Exec revalidates both modes of the inherited O_RDWR journal stream.
+  # SELinux permits only the executor-owned FD and denies new connections.
+  /run/systemd/ r,
+  /run/systemd/journal/ r,
+  /run/systemd/journal/stdout rw,
+  unix (send, receive) type=stream peer=(label=unconfined),
+  unix (send, receive) type=stream peer=(label=droidloom-ubuntu-journald),
+  signal (receive) peer=unconfined,
+}

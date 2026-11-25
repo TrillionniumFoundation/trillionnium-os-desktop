@@ -290,6 +290,11 @@ fn production_host_payload(repo: &Path, host: &Path, runtime: &Path) -> Result<(
         copy(&source, &target)?;
         mode(&target, 0o755)?;
     }
+    // A distinct ordinary file selects the coldplug MAC entry without changing
+    // the daemon or factory attachments. It is copied from this same build.
+    let uevent = runtime.join("usr/lib/droidloom/production/current/droidloom-native-uevent-label");
+    copy(&host.join("droidloomd"), &uevent)?;
+    mode(&uevent, 0o755)?;
     // The same release must contain its fixed maintenance peer; an older
     // independently installed helper cannot retire this generation's resources.
     let helper = host.join("droidloom-package-helper");
@@ -530,6 +535,14 @@ mod tests {
         )
         .unwrap();
         production_host_payload(&repo, &host, &runtime).unwrap();
+        let uevent = runtime.join("usr/lib/droidloom/production/current/droidloom-native-uevent-label");
+        let uevent_metadata = fs::symlink_metadata(&uevent).unwrap();
+        assert!(uevent_metadata.is_file());
+        assert_eq!(uevent_metadata.mode() & 0o7777, 0o755);
+        assert_eq!(uevent_metadata.nlink(), 1);
+        assert_ne!(uevent_metadata.ino(), fs::metadata(host.join("droidloomd")).unwrap().ino());
+        assert_ne!(uevent_metadata.ino(), fs::metadata(runtime.join("usr/lib/droidloom/production/current/droidloomd")).unwrap().ino());
+        assert_eq!(fs::read(&uevent).unwrap(), fs::read(host.join("droidloomd")).unwrap());
         let helper = runtime.join("usr/lib/droidloom/droidloom-package-helper");
         assert_eq!(
             fs::read(&helper).unwrap(),
@@ -731,6 +744,10 @@ mod tests {
             (
                 "usr/lib/systemd/system/systemd-udevd.service.d/50-droidloom-hardware-label.conf",
                 include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-udev-hardware-label.conf").as_slice(),
+            ),
+            (
+                "usr/lib/systemd/system/systemd-udev-trigger.service.d/50-droidloom-uevent-label.conf",
+                include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-udev-trigger-label.conf").as_slice(),
             ),
         ] {
             let path = runtime.join(relative);
