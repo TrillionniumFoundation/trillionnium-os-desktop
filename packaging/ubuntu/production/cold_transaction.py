@@ -316,17 +316,86 @@ def activate(bundle,release_id):
     # actual owned-runtime/private-working-copy verifier is integrated.
     raise Rejected("activation unavailable: no admitted owned-runtime and physical private-working-copy acceptance verifier")
 
+def initramfs_materials(bundle,release_id,native_bundle,native_id,output):
+    """Read actual normal public and sixteen-native archives for private staging.
+
+    The Rust original-host producer calls this readonly existing admission
+    code before an isolated normal package installation. This grants neither
+    physical dpkg authority nor a boot/service action.
+    """
+    from cold_apply import load_inputs,package_payload
+    import native_release
+    need(os.getuid()==os.geteuid()==0,"protected original-host staging inputs require root")
+    bundle=safe_absolute(str(bundle));native_bundle=safe_absolute(str(native_bundle))
+    output=safe_absolute(str(output))
+    need(output.parent.parent==Path("/var/lib/droidloom-qualification") and
+         output.parent.name.startswith("original-initramfs-") and output.name=="MATERIALS.json",
+         "fixed create-only original-host material output")
+    intent,entries,_,packages,controls,scopes=load_inputs(bundle,release_id)
+    descriptor,closure,natives,payloads=native_release.verify_bundle(native_bundle,native_id,True)
+    need(descriptor["schema"]==native_release.FULL_SCHEMA and len(natives)==16,
+         "original-host initramfs requires all sixteen normal native packages")
+    rows=[]
+    for role in sorted(natives):
+        control=payloads[role]["new"]["control"]
+        rows.append({"role":role,"package":natives[role]["new"],
+                     "name":control["Package"],"version":control["Version"],
+                     "architecture":control["Architecture"]})
+    for role in ("kernel","host"):
+        package_payload(packages[role],scopes[role],output.parent)
+        rows.append({"role":role,"package":packages[role],"name":controls[role]["package"],
+                     "version":controls[role]["version"],"architecture":controls[role]["architecture"]})
+    required=[]
+    for relative,target in (
+       ("usr/lib/droidloom/production/current/droidloomd","/usr/lib/droidloom/production/current/droidloomd"),
+       ("usr/lib/droidloom/production/current/droidloom-early-firststage","/usr/lib/droidloom/production/current/droidloom-early-firststage"),
+       ("usr/share/initramfs-tools/scripts/init-bottom/droidloom-early-custody","/scripts/init-bottom/droidloom-early-custody")):
+        row=entries[relative];need(row["role"]=="host","normal host owns required initramfs member")
+        required.append({"source_path":"/"+relative,"initrd_path":target,
+                         "bytes":row["bytes"],"sha256":row["sha256"],"mode":row["mode"]})
+    for role,prefix in (("selinux","usr/lib/x86_64-linux-gnu/libselinux.so."),
+                        ("apparmor","usr/lib/x86_64-linux-gnu/libapparmor.so.")):
+        # The package role names differ from the Debian package names. Select
+        # by its already source-verified control, not by a caller pathname.
+        name="libselinux1" if role=="selinux" else "libapparmor1"
+        matches=[v["new"] for v in payloads.values() if v["new"]["control"]["Package"]==name]
+        need(len(matches)==1,"one actual normal native initramfs library")
+        library=[(p,v) for p,v in matches[0]["payload"].items() if p.startswith(prefix) and v["type"]=="0"]
+        need(len(library)==1,"one complete regular native library payload")
+        p,row=library[0];need(row["uid"]==row["gid"]==0,"normal native library owner")
+        required.append({"source_path":"/"+p,"initrd_path":"/"+p,
+                         "bytes":row["bytes"],"sha256":row["sha256"],"mode":row["mode"]})
+    module_path="usr/lib/droidloom/kernels/"+KERNEL+"/MODULES.json"
+    module=entries[module_path]
+    need(module["sha256"]==KERNEL_MODULES_SHA,"same complete shared-kernel modules")
+    result={"schema":"droidloom.original-host-initramfs-materials.v1",
+       "public_release":file_pin(bundle/"RELEASE.json"),"public_release_id":release_id,
+       "deployment_id":intent["deployment_id"],"native_release":file_pin(native_bundle/"NATIVE-RELEASE.json"),
+       "native_release_id":native_id,"native_closure":closure["closure_sha256"],
+       "kernel_release":KERNEL,"kernel_sha256":KERNEL_SHA,"root_uuid":ROOT_UUID,
+       "original_kernel":ORIGINAL_KERNEL,"cohort_sha256":COHORT,"runtime_sha256":RUNTIME,
+       "packages":rows,"required_initrd_members":required,
+       "module_manifest":{"path":"/"+module_path,"bytes":module["bytes"],"sha256":module["sha256"]},
+       "physical_install":False,"qualification_boot_authorized":False,"production_ready":False}
+    new_file(output,canonical(result),0o444)
+    return {"materials":file_pin(output),"physical_install":False}
+
 def main():
     p=argparse.ArgumentParser(description=__doc__)
     sub=p.add_subparsers(dest="command",required=True)
     q=sub.add_parser("preflight");q.add_argument("--output",required=True,type=Path)
     q=sub.add_parser("prepare");q.add_argument("--plan",required=True,type=Path);q.add_argument("--output",required=True,type=Path)
+    q=sub.add_parser("initramfs-materials")
+    q.add_argument("--bundle",required=True,type=Path);q.add_argument("--release",required=True)
+    q.add_argument("--native-bundle",required=True,type=Path);q.add_argument("--native-release",required=True)
+    q.add_argument("--output",required=True,type=Path)
     for name in ("verify","activate"):
         q=sub.add_parser(name);q.add_argument("--bundle",required=True,type=Path);q.add_argument("--release",required=True)
     a=p.parse_args()
     if a.command=="preflight":result=preflight(a.output)
     elif a.command=="prepare":result=prepare(a.plan,a.output)
     elif a.command=="verify":result=verify(a.bundle,a.release)
+    elif a.command=="initramfs-materials":result=initramfs_materials(a.bundle,a.release,a.native_bundle,a.native_release,a.output)
     else:result=activate(a.bundle,a.release)
     sys.stdout.buffer.write(canonical(result));sys.stdout.buffer.flush()
 

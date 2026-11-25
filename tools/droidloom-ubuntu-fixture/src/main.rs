@@ -25,6 +25,7 @@ mod boot_runtime;
 mod boot_systemd_candidate;
 mod boot_vm;
 mod capture;
+mod cold_original_initramfs;
 mod complete_native;
 mod complete_snapshot;
 mod fs;
@@ -58,6 +59,26 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Command {
+    PrepareOriginalInitramfs {
+        #[arg(long)]
+        config: PathBuf,
+        #[arg(long)]
+        config_sha256: String,
+    },
+    #[command(hide = true)]
+    OriginalInitramfsNamespace {
+        #[arg(long)]
+        config: PathBuf,
+        #[arg(long)]
+        config_sha256: String,
+    },
+    #[command(hide = true)]
+    OriginalInitramfsBuild {
+        #[arg(long)]
+        config: PathBuf,
+        #[arg(long)]
+        config_sha256: String,
+    },
     VerifyNativeCandidates {
         #[arg(long)]
         config: PathBuf,
@@ -188,6 +209,18 @@ fn run() -> Result<()> {
         "real source capture/copy requires existing root rights; no privilege helper is installed",
     )?;
     match cli.command {
+        Command::PrepareOriginalInitramfs {
+            config,
+            config_sha256,
+        } => cold_original_initramfs::prepare(&config, &config_sha256)?,
+        Command::OriginalInitramfsNamespace {
+            config,
+            config_sha256,
+        } => cold_original_initramfs::namespace(&config, &config_sha256)?,
+        Command::OriginalInitramfsBuild {
+            config,
+            config_sha256,
+        } => cold_original_initramfs::build(&config, &config_sha256)?,
         Command::VerifyNativeCandidates {
             config,
             config_sha256,

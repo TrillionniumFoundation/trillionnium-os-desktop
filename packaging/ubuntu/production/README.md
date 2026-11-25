@@ -241,6 +241,78 @@ service enable, GRUB update, one-shot boot selection, or reboot action.
 The transaction is reviewable preparation. Physical publication remains blocked
 by the actual acceptance gates and is not claimed complete by these build tests.
 
+### Original-host normal initramfs preparation
+
+`droidloom-ubuntu-fixture prepare-original-initramfs --config PLAN
+--config-sha256 SHA256` runs a separate Rust producer. Its strict plan is:
+
+```json
+{
+  "schema": "droidloom.original-host-initramfs-plan.v1",
+  "work_directory": "/var/lib/droidloom-qualification/original-initramfs-candidate-r1",
+  "public_release": {"path": "/protected/release/RELEASE.json", "bytes": 1, "sha256": "..."},
+  "native_release": {"path": "/protected/native/NATIVE-RELEASE.json", "bytes": 1, "sha256": "..."},
+  "native_release_id": "...",
+  "target_preflight": {"path": "/protected/COLD-PREFLIGHT.json", "bytes": 1, "sha256": "..."}
+}
+```
+
+Replace the example pins with the exact protected normal records. The work name
+uses lowercase letters, digits and hyphens, and must be absent. The native source
+is the complete v3 sixteen-package release. A fresh original-host preflight must
+match the actual boot ID, original kernel, root UUID, PID1 root and held original
+boot/tool inodes. The producer takes POSIX shared locks on the physical dpkg and
+frontend locks. It hashes the actual original passwd/group and dpkg status,
+records metadata of preserved account/SSH/home paths, and verifies them again
+after preparation. Shadow/gshadow and SSH key contents are never captured.
+
+The source-embedded existing cold admission code rereads the complete normal
+native archives and the real host/kernel Debian data streams. Eighteen exact
+archives are copied into the private input directory: native sixteen, public
+host and shared kernel. The Android package is bound to the same release but is
+not installed in this initramfs build. No package is installed in the physical
+root. The source modules, actual commands and source pins remain in the receipt.
+
+Package scripts run with UID/GID map `0 0 65536` in private user, mount, network,
+IPC and UTS namespaces. A new overlay reads the original host filesystem and
+stores writes in an independent bounded tmpfs. A nested PID namespace places
+the chrooted builder at PID1, preventing `/proc/1/root` from exposing the setup
+process's original root. Home, original Android data and maintenance state are
+hidden; `/run` and `/dev` are private, and hardware `/sys` is readonly. Each of
+the five admitted character devices is checked by actual type and device number.
+Before any package script executes, setpriv removes mount, raw-device, MAC,
+module, reboot and other global capabilities from the bounding set and enables
+no-new-privileges. The child verifies actual effective/permitted/bounding masks
+and requires a real permission denial for a harmless readonly-to-readonly `/sys`
+remount. The fixed
+temporary policy-rc.d returns 101 and normal apt uses only the admitted local
+archives with no network or extra package/removal authorization. All original
+account bytes and unrelated configured package identities must remain unchanged
+inside the private view too. Original GDM and service numbers are preserved.
+
+The producer calls the original normal `mkinitramfs`, with one-thread gzip,
+the retained shared-kernel release and the original host configuration. Its
+source-owned extra upstream hook uses `copy_exec` for both admitted native LSM
+libraries. Normal `unmkinitramfs` then reads back the whole output. The stock
+`/init`, early-custody order, both host ELFs, both native libraries, and every
+included kernel module must match their actual normal sources. A complete
+bounded member inventory, the private configured dpkg status and original
+command logs are retained. Private package writes disappear with the namespace.
+
+`ORIGINAL-INITRAMFS-PREPARED.json` has phase `candidate_preparation`. It is real
+build evidence and grants no boot, package installation, permanent default or
+service enable authority. The once-only physical qualification phase still
+requires the same candidate's actual owned calibration/runtime mechanism,
+original account and independent data-working-copy identities, actual physical
+file-context readback, selected-data/five-MAC-file publication, and an atomic
+independent Ubuntu recovery entry plus maintenance configuration. Final permanent
+activation separately requires all selected 39 complete business/common gates,
+private migration acceptance and the actual maintenance return to original
+Ubuntu. Physical camera and maintenance-return results are therefore later
+qualification observations, rather than prerequisites that prevent the first
+controlled qualification boot. A phase name or caller pass flag establishes
+none of these observations.
+
 ## Isolated cold command invocation
 
 The production C entry uses the held interpreter FD with the exact argument
