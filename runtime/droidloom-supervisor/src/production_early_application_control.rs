@@ -47,9 +47,15 @@ impl EarlyApplicationControl {
             }
             Err(e) => return Err(io_error("accept original early application client", e)),
         };
-        match crate::control::package::is_package(accepted.stream().map_err(|e| io_error("observe early package stream", e))?) {
+        match crate::control::package::is_package(
+            accepted
+                .stream()
+                .map_err(|e| io_error("observe early package stream", e))?,
+        ) {
             Ok(true) => {
-                return match crate::control::package::ServerTransaction::receive(accepted.into_package()?) {
+                return match crate::control::package::ServerTransaction::receive(
+                    accepted.into_package()?,
+                ) {
                     Ok(transaction) => Ok(Some(transaction)),
                     Err(error) => {
                         eprintln!("fixed early package transaction refused: {error}");
@@ -112,6 +118,7 @@ impl EarlyApplicationControl {
                 .as_ref()
                 .expect("acquired original application owner");
             let progress = Reporter::new(stream, streaming)?;
+            let diagnostic_request = matches!(&request, ControlRequest::Diagnostics { .. });
             match request {
                 ControlRequest::ListApplications { user } => {
                     validate_android_user(user)?;
@@ -299,16 +306,51 @@ impl EarlyApplicationControl {
                         .map_err(|e| ControlError::Invalid(e.to_string()))?;
                     let selected = ProductionSelection::load(&guard, &spec, peer)
                         .map_err(|e| ControlError::Invalid(e.to_string()))?;
-                    authority.verify_selection(&selected)
+                    authority
+                        .verify_selection(&selected)
                         .map_err(|e| ControlError::Invalid(e.to_string()))?;
-                    progress.report("Persisting and reading back Android's primary display density...");
+                    progress
+                        .report("Persisting and reading back Android's primary display density...");
                     let observed = crate::production_application::set_density_early(
-                        authority, dpi, launch_deadline,
-                    ).map_err(|e| early_application_error(e, &mut acquisition_quarantined))?;
-                    guard.revalidate().map_err(|e| ControlError::Invalid(e.to_string()))?;
-                    authority.verify_selection(&selected)
+                        authority,
+                        dpi,
+                        launch_deadline,
+                    )
+                    .map_err(|e| early_application_error(e, &mut acquisition_quarantined))?;
+                    guard
+                        .revalidate()
                         .map_err(|e| ControlError::Invalid(e.to_string()))?;
-                    response.message = format!("Android primary display density persisted and read back as {observed} dpi");
+                    authority
+                        .verify_selection(&selected)
+                        .map_err(|e| ControlError::Invalid(e.to_string()))?;
+                    response.message = format!(
+                        "Android primary display density persisted and read back as {observed} dpi"
+                    );
+                }
+                ControlRequest::Diagnostics {
+                    package,
+                    user,
+                    lines,
+                    crashes,
+                } => {
+                    if let Some(package) = &package {
+                        validate_package(package)?;
+                    }
+                    validate_android_user(user)?;
+                    progress.report(
+                        "Reading bounded Android diagnostics from the original init generation...",
+                    );
+                    let text = crate::production_application::diagnostics_early(
+                        authority,
+                        package.as_deref(),
+                        user,
+                        lines,
+                        crashes,
+                        launch_deadline,
+                    )
+                    .map_err(|e| early_application_error(e, &mut acquisition_quarantined))?;
+                    response.diagnostics = Some(text);
+                    response.message = "Observed bounded Android diagnostics; report availability does not certify application or boot readiness".into();
                 }
                 ControlRequest::Status | ControlRequest::Readiness => {
                     authority
@@ -326,10 +368,21 @@ impl EarlyApplicationControl {
                     ));
                 }
             }
-            authority
-                .ready()
-                .map_err(|e| ControlError::Invalid(e.to_string()))?;
-            response.state = CellState::Running;
+            if diagnostic_request {
+                response.state = if authority
+                    .boot_completed()
+                    .map_err(|e| ControlError::Invalid(e.to_string()))?
+                {
+                    CellState::Running
+                } else {
+                    CellState::Starting
+                };
+            } else {
+                authority
+                    .ready()
+                    .map_err(|e| ControlError::Invalid(e.to_string()))?;
+                response.state = CellState::Running;
+            }
             response.ok = true;
             Ok(())
         })();

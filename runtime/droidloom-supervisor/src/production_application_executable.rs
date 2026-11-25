@@ -9,6 +9,7 @@ use std::os::unix::fs::FileExt;
 
 const QUERY_LABEL: &[u8] = b"u:object_r:droidloom_query_exec:s0\0";
 const PROVIDER_LABEL: &[u8] = b"u:object_r:droidloom_provider_exec:s0\0";
+const DIAGNOSTIC_LABEL: &[u8] = b"u:object_r:droidloom_diagnostics_exec:s0\0";
 const JAR_LABEL: &[u8] = b"u:object_r:droidloom_provider_jar:s0\0";
 const CATALOG_LABEL: &[u8] = b"u:object_r:droidloom_input_bridge_jar:s0\0";
 const MAXIMUM: u64 = 128 * 1024 * 1024;
@@ -174,15 +175,19 @@ pub(in crate::production_application) fn verify(
     root_gid: u32,
     deadline: Instant,
 ) -> Result<()> {
-    let original_input = fixed::INPUTS[match query.binary().to_bytes() {
+    let original_input = fixed::ALL_INPUTS[match query.binary().to_bytes() {
         b"cmd" => 0,
         b"toybox" => 1,
         b"app_process64" if query.uses_app_process() => 2,
+        b"logcat" if query.uses_diagnostic_executable() => 4,
+        b"dumpsys" if query.uses_diagnostic_executable() => 5,
         _ => return Err(reject("unknown fixed query executable role")),
     }];
     let original_label = original_input.original_label;
     let private_label = if query.uses_app_process() {
         PROVIDER_LABEL
+    } else if query.uses_diagnostic_executable() {
+        DIAGNOSTIC_LABEL
     } else {
         QUERY_LABEL
     };

@@ -102,12 +102,13 @@ fn sealed_xattrs(role: fixed::FixedQueryInput, raw: &str, label: &[u8]) -> Resul
 
 pub fn verify(root: &Path, work: &Path, disk: &Path, runtime: &str) -> Result<Value> {
     boot_query::verify_sealed(root, runtime)?;
-    let paths = boot_query::guest_paths(runtime)?;
+    let roles = boot_query::installed_inputs(root, runtime)?;
+    let paths = boot_query::guest_paths(runtime, roles.len() == 6)?;
     let output = work.join("fixed-query-readback");
     boot_files::private_dir(&output)?;
     let mut rows = Vec::new();
     let mut inodes = BTreeSet::new();
-    for (guest, role) in paths.iter().zip(fixed::INPUTS) {
+    for (guest, role) in paths.iter().zip(roles.iter().copied()) {
         let body = output.join(role.output_name);
         let dumped = boot_files::run_logged(
             &output,
@@ -184,7 +185,8 @@ pub fn verify(root: &Path, work: &Path, disk: &Path, runtime: &str) -> Result<Va
     boot_query::verify_sealed(root, runtime)?;
     Ok(
         json!({"input_scope":fixed::INPUT_SCOPE,"runtime_manifest_sha256":runtime,
-        "files":rows,"all_four_original_inputs_matched":true,"readonly_ext4_reader":true,
+        "files":rows,"input_count":roles.len(),"all_four_original_inputs_matched":true,
+        "diagnostic_inputs_matched":roles.len()==6,"readonly_ext4_reader":true,
         "query_executions":0,"guest_qualified":false}),
     )
 }

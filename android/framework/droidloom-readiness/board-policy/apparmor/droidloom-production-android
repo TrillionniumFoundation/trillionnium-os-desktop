@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-abi <abi/4.0>,
+abi <abi/5.0>,
 #include <tunables/global>
 # Factory-owned queries enter this exact profile before no-new-privileges.
 # The legacy application worker retains its existing broker stack.
@@ -19,11 +19,11 @@ profile droidloom-production-android {
   ptrace (readby, tracedby) peer=droidloom-instance-factory,
   signal (receive) set=(kill) peer=droidloom-instance-factory,
   /dev/socket/droidloom/shutdown-request r,
-  # The four selected immutable roles and their ordinary Android loader inputs.
+  # Selected immutable command, interpreter and diagnostic originals.
   /{dev/droidloom-query,.droidloom-query}/ r,
-  /{dev/droidloom-query,.droidloom-query}/{cmd,toybox,app_process64} mrix,
+  /{dev/droidloom-query,.droidloom-query}/{cmd,toybox,app_process64,logcat,dumpsys} mrix,
   /{dev/droidloom-query,.droidloom-query}/content.jar r,
-  /system/bin/{cmd,toybox,app_process64} r,
+  /system/bin/{cmd,toybox,app_process64,logcat,dumpsys} r,
   /system/framework/content.jar r,
   # Original ART interpreter/boot classpath inputs, without writable code.
   /system/framework/{,**} r,
@@ -43,4 +43,10 @@ profile droidloom-production-android {
   /dev/{binder,hwbinder,vndbinder} rw,
   /data/app/**.apk r,
   /{system,product,system_ext,vendor}/{app,priv-app}/**.apk r,
+  # Read-only log snapshots. Stock Android write_logd inheritance has no matching
+  # datagram or control endpoint here; diagnostic seccomp also denies datagrams.
+  /dev/socket/ r,
+  /dev/socket/logdr rw,
+  unix (create, getattr, getopt, setopt, shutdown) type=seqpacket,
+
 }

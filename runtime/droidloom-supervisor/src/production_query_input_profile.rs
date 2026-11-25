@@ -73,3 +73,88 @@ pub(crate) const INPUTS: [FixedQueryInput; 4] = [
         interpreter: None,
     },
 ];
+
+// These additional original binaries are used only by the explicit kernel-first
+// diagnostics declaration. Legacy runtimes retain the original four inputs.
+pub(crate) const DIAGNOSTIC_INPUTS: [FixedQueryInput; 2] = [
+    FixedQueryInput {
+        source_path: "/system/bin/logcat",
+        output_name: "diagnostics-logcat-original",
+        bytes: 186_488,
+        sha256: "73a4c21d53b9aac14fa07c7ea0bbf92dc56ac180b964d0d42179e0b093cd3203",
+        original_mode: 0o100755,
+        original_gid: 2000,
+        original_label: b"u:object_r:logcat_exec:s0\0",
+        interpreter: Some("/system/bin/linker64"),
+    },
+    FixedQueryInput {
+        source_path: "/system/bin/dumpsys",
+        output_name: "diagnostics-dumpsys-original",
+        bytes: 68_848,
+        sha256: "f2848aeb2dda2bc4fd4fe3d7867d1cdd30b7f36efe8f718f47a48b06dc810a2d",
+        original_mode: 0o100755,
+        original_gid: 2000,
+        original_label: b"u:object_r:system_file:s0\0",
+        interpreter: Some("/system/bin/linker64"),
+    },
+];
+pub(crate) const ALL_INPUTS: [FixedQueryInput; 6] = [
+    INPUTS[0],
+    INPUTS[1],
+    INPUTS[2],
+    INPUTS[3],
+    DIAGNOSTIC_INPUTS[0],
+    DIAGNOSTIC_INPUTS[1],
+];
+pub(crate) fn selected_inputs(diagnostics: bool) -> &'static [FixedQueryInput] {
+    if diagnostics { &ALL_INPUTS } else { &INPUTS }
+}
+
+// The normal producer reads this exact immutable map from the same system image.
+// It is provenance for decoding; it is not a seventh executable/runtime input.
+pub(crate) const EVENT_MAP_PATH: &str = "/system/etc/event-log-tags";
+pub(crate) const EVENT_MAP_BYTES: u64 = 41_316;
+pub(crate) const EVENT_MAP_SHA256: &str =
+    "9bd293d01d01f257a93633d8f2e7cf6dcb812d1cfc7115ace85d8ebdad194091";
+pub(crate) struct LifecycleEventTag {
+    pub(crate) id: u32,
+    pub(crate) name: &'static str,
+    pub(crate) kinds: &'static [u8],
+}
+pub(crate) const LIFECYCLE_EVENT_TAGS: [LifecycleEventTag; 7] = [
+    LifecycleEventTag {
+        id: 30008,
+        name: "am_anr",
+        kinds: b"iisis",
+    },
+    LifecycleEventTag {
+        id: 30010,
+        name: "am_proc_bound",
+        kinds: b"iis",
+    },
+    LifecycleEventTag {
+        id: 30011,
+        name: "am_proc_died",
+        kinds: b"iisii",
+    },
+    LifecycleEventTag {
+        id: 30014,
+        name: "am_proc_start",
+        kinds: b"iiisss",
+    },
+    LifecycleEventTag {
+        id: 30023,
+        name: "am_kill",
+        kinds: b"iisisl",
+    },
+    LifecycleEventTag {
+        id: 30035,
+        name: "am_schedule_service_restart",
+        kinds: b"isl",
+    },
+    LifecycleEventTag {
+        id: 30039,
+        name: "am_crash",
+        kinds: b"iisisssii",
+    },
+];

@@ -13,6 +13,7 @@ pub(crate) enum OperationDomain {
     Install,
     CatalogRead,
     DisplayControl,
+    DiagnosticsRead,
 }
 impl OperationDomain {
     pub(super) const fn context(self) -> &'static str {
@@ -25,6 +26,15 @@ impl OperationDomain {
             Self::Install => "u:r:droidloom_install:s0",
             Self::CatalogRead => "u:r:droidloom_catalog_read:s0",
             Self::DisplayControl => "u:r:droidloom_display_control:s0",
+            Self::DiagnosticsRead => "u:r:droidloom_diagnostics_read:s0",
+        }
+    }
+
+    pub(super) const fn gid(self) -> u32 {
+        if matches!(self, Self::DiagnosticsRead) {
+            1007
+        } else {
+            2000
         }
     }
 
@@ -38,6 +48,7 @@ impl OperationDomain {
             Self::Install => b"u:r:droidloom_install:s0\0",
             Self::CatalogRead => b"u:r:droidloom_catalog_read:s0\0",
             Self::DisplayControl => b"u:r:droidloom_display_control:s0\0",
+            Self::DiagnosticsRead => b"u:r:droidloom_diagnostics_read:s0\0",
         }
     }
 }
@@ -161,6 +172,7 @@ pub(super) enum ApplicationOperation {
     Install { value: InstallCommand },
     Catalog { value: CatalogRequest },
     Display { value: DisplayCommand },
+    Diagnostics { value: DiagnosticCommand },
 }
 
 impl ApplicationOperation {
@@ -173,6 +185,7 @@ impl ApplicationOperation {
             Self::Install { value } => value.validate(),
             Self::Catalog { value } => value.validate(),
             Self::Display { value } => value.validate(),
+            Self::Diagnostics { value } => value.validate(),
         }
     }
 
@@ -188,8 +201,28 @@ impl ApplicationOperation {
     pub(super) const fn output_limit(&self) -> usize {
         match self {
             Self::Catalog { .. } => super::catalog::OUTPUT_BYTES,
+            Self::Diagnostics { .. } => super::diagnostics::TRAFFIC_LIMIT,
             _ => OUTPUT_LIMIT,
         }
+    }
+
+    pub(super) const fn diagnostic_tail(&self) -> Option<(usize, usize)> {
+        if let Self::Diagnostics { value } = self {
+            Some((
+                value.stdout_limit() + 1,
+                super::diagnostics::ERROR_TAIL_BYTES + 1,
+            ))
+        } else {
+            None
+        }
+    }
+    pub(super) fn uses_diagnostic_executable(&self) -> bool {
+        matches!(
+            self,
+            Self::Diagnostics {
+                value: DiagnosticCommand::Log { .. } | DiagnosticCommand::ExitHistory { .. }
+            }
+        )
     }
 
     pub(super) fn install_input_bytes(&self) -> Option<u64> {
@@ -231,6 +264,7 @@ impl ApplicationOperation {
     pub(super) fn binary(&self) -> &'static CStr {
         match self {
             Self::Read { value } => value.binary(),
+            Self::Diagnostics { value } => value.binary(),
             Self::Browser { .. } => c"cmd",
             Self::ContactsRead { .. } | Self::Catalog { .. } => c"app_process64",
             Self::Launch { .. } | Self::Install { .. } | Self::Display { .. } => c"cmd",
@@ -246,6 +280,7 @@ impl ApplicationOperation {
             Self::Install { value } => value.arguments(),
             Self::Catalog { value } => value.arguments(),
             Self::Display { value } => value.arguments(),
+            Self::Diagnostics { value } => value.arguments(),
         }
     }
 
@@ -258,6 +293,7 @@ impl ApplicationOperation {
             Self::Install { .. } => OperationDomain::Install,
             Self::Catalog { .. } => OperationDomain::CatalogRead,
             Self::Display { .. } => OperationDomain::DisplayControl,
+            Self::Diagnostics { .. } => OperationDomain::DiagnosticsRead,
         }
     }
 }

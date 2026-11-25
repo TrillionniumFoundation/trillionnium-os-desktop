@@ -62,6 +62,7 @@ pub(crate) enum MetadataRole {
     Install,
     CatalogRead,
     DisplayControl,
+    DiagnosticsRead,
 }
 impl MetadataRole {
     fn uid(self) -> u32 {
@@ -69,6 +70,13 @@ impl MetadataRole {
             Self::Init | Self::InitLifecycle | Self::Zygote => 0,
             Self::Framework | Self::Composer => 1000,
             _ => 2000,
+        }
+    }
+    fn gid(self) -> u32 {
+        if self == Self::DiagnosticsRead {
+            1007
+        } else {
+            self.uid()
         }
     }
     fn context(self) -> &'static [u8] {
@@ -85,6 +93,7 @@ impl MetadataRole {
             Self::Install => b"u:r:droidloom_install:s0",
             Self::CatalogRead => b"u:r:droidloom_catalog_read:s0",
             Self::DisplayControl => b"u:r:droidloom_display_control:s0",
+            Self::DiagnosticsRead => b"u:r:droidloom_diagnostics_read:s0",
         }
     }
     fn matches_context(self, actual: &[u8]) -> bool {
@@ -101,6 +110,7 @@ impl MetadataRole {
             super::OperationDomain::Install => Self::Install,
             super::OperationDomain::CatalogRead => Self::CatalogRead,
             super::OperationDomain::DisplayControl => Self::DisplayControl,
+            super::OperationDomain::DiagnosticsRead => Self::DiagnosticsRead,
         }
     }
 }
@@ -205,10 +215,8 @@ fn text_at(name: &CStr, limit: u64) -> Result<String> {
 }
 fn exact_scope_ids(info: &helper::PidfdInfo, role: MetadataRole) -> Result<()> {
     require(
-        [
-            info.ruid, info.euid, info.suid, info.fsuid, info.rgid, info.egid, info.sgid,
-            info.fsgid,
-        ] == [role.uid(); 8],
+        [info.ruid, info.euid, info.suid, info.fsuid] == [role.uid(); 4]
+            && [info.rgid, info.egid, info.sgid, info.fsgid] == [role.gid(); 4],
         "metadata target has different Android role credentials",
     )
 }
@@ -1000,5 +1008,39 @@ mod tests {
     #[test]
     fn metadata_observer_rejects_ordinary_unconfined_entry() {
         assert!(entry().is_err());
+    }
+
+    #[test]
+    fn diagnostics_metadata_requires_shell_uid_and_log_primary_gid_exactly() {
+        let mut info = helper::PidfdInfo {
+            ruid: 2000,
+            euid: 2000,
+            suid: 2000,
+            fsuid: 2000,
+            rgid: 1007,
+            egid: 1007,
+            sgid: 1007,
+            fsgid: 1007,
+            ..helper::PidfdInfo::default()
+        };
+        exact_scope_ids(&info, MetadataRole::DiagnosticsRead).unwrap();
+        assert!(exact_scope_ids(&info, MetadataRole::Query).is_err());
+        info.fsgid = 2000;
+        assert!(exact_scope_ids(&info, MetadataRole::DiagnosticsRead).is_err());
+        info.rgid = 2000;
+        info.egid = 2000;
+        info.sgid = 2000;
+        exact_scope_ids(&info, MetadataRole::Query).unwrap();
+        assert!(exact_scope_ids(&info, MetadataRole::DiagnosticsRead).is_err());
+        info.rgid = 1007;
+        info.egid = 1007;
+        info.sgid = 1007;
+        info.fsgid = 1007;
+        info.fsuid = 0;
+        assert!(exact_scope_ids(&info, MetadataRole::DiagnosticsRead).is_err());
+        assert_eq!(
+            MetadataRole::for_operation(crate::production_application::OperationDomain::DiagnosticsRead),
+            MetadataRole::DiagnosticsRead
+        );
     }
 }

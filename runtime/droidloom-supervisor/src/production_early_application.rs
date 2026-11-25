@@ -555,9 +555,16 @@ impl<'a> EarlyApplicationAuthority<'a> {
     fn executed(&self) -> Result<()> {
         self.revalidate()
     }
-    pub(crate) fn ready(&self) -> Result<()> {
+    pub(crate) fn boot_completed(&self) -> Result<bool> {
         self.executed()?;
-        let property_dir = open(&self.device, c"__properties__", true)?;
+        let property_dir = match open(&self.device, c"__properties__", true) {
+            Ok(file) => file,
+            Err(error) if error.kind() == io::ErrorKind::NotFound => {
+                self.executed()?;
+                return Ok(false);
+            }
+            Err(error) => return Err(error.into()),
+        };
         fs_kind(&property_dir, libc::TMPFS_MAGIC)?;
         let (uid, gid) = self.mapped_root()?;
         let m = property_dir.metadata()?;
@@ -565,13 +572,40 @@ impl<'a> EarlyApplicationAuthority<'a> {
             m.uid() == uid && m.gid() == gid && m.mode() & 0o6022 == 0,
             "early private property directory custody differs",
         )?;
-        let file = open(&property_dir, c"u:object_r:boot_status_prop:s0", false)?;
+        let file = match open(&property_dir, c"u:object_r:boot_status_prop:s0", false) {
+            Ok(file) => file,
+            Err(error) if error.kind() == io::ErrorKind::NotFound => {
+                self.executed()?;
+                return Ok(false);
+            }
+            Err(error) => return Err(error.into()),
+        };
         fs_kind(&file, libc::TMPFS_MAGIC)?;
+        let complete =
+            read_boot_complete(&file, uid, gid).map_err(external)? == BootProperty::Complete;
+        self.executed()?;
+        Ok(complete)
+    }
+    pub(crate) fn ready(&self) -> Result<()> {
         require(
-            read_boot_complete(&file, uid, gid).map_err(external)? == BootProperty::Complete,
+            self.boot_completed()?,
             "early application operation requires current Android boot completion",
+        )
+    }
+    pub(crate) fn diagnostic_authority(&self) -> Result<EarlyDiagnosticAuthority<'_, 'a>> {
+        self.revalidate()?;
+        let init = metadata(
+            self.base.board().pidfd(),
+            self.base.user_namespace(),
+            MetadataRole::Init,
         )?;
-        self.executed()
+        let borrowed = EarlyDiagnosticAuthority {
+            original: self,
+            init,
+        };
+        borrowed.verify_sample(&borrowed.init)?;
+        borrowed.revalidate()?;
+        Ok(borrowed)
     }
     fn process_dir(&self, pid: u32) -> Result<File> {
         let name = CString::new(pid.to_string()).map_err(external)?;
@@ -761,6 +795,108 @@ impl<'a> EarlyApplicationAuthority<'a> {
         Ok(held.epoch.clone())
     }
 }
+
+/// This borrowed scope remains bound to stock init's exact original namespaces.
+/// It supports only fixed native diagnostics, including before boot completion;
+/// interpreter-backed application commands still require the framework scope.
+pub(crate) struct EarlyDiagnosticAuthority<'borrow, 'owner> {
+    original: &'borrow EarlyApplicationAuthority<'owner>,
+    init: MetadataObservation,
+}
+impl EarlyDiagnosticAuthority<'_, '_> {
+    fn verify_sample(&self, actual: &MetadataObservation) -> Result<()> {
+        let original = self.original;
+        require(
+            verify_sample(
+                original.base,
+                original.root,
+                actual,
+                original.base.board().pidfd(),
+                MetadataRole::Init,
+                original.init.pid,
+            )? == original.init
+                && actual.host.proc_identity() == original.init_node
+                && identity(&actual.executable)? == identity(&original.init_program)?,
+            "diagnostic scope lost its original stock init identity",
+        )?;
+        for (held, index) in original.namespaces.iter().zip([2, 1, 3, 4, 5, 6]) {
+            require(
+                identity(held)? == identity(&actual.namespaces[index])?,
+                "diagnostic scope left an original init namespace",
+            )?;
+        }
+        Ok(())
+    }
+}
+impl ApplicationWorkerAuthority for EarlyDiagnosticAuthority<'_, '_> {
+    fn query_projection(&self) -> QueryProjection {
+        QueryProjection::EarlyDev
+    }
+    fn revalidate(&self) -> Result<()> {
+        self.original.revalidate()?;
+        let actual = metadata(
+            self.original.base.board().pidfd(),
+            self.original.base.user_namespace(),
+            MetadataRole::Init,
+        )?;
+        self.verify_sample(&actual)?;
+        same_sample(&self.init, &actual)?;
+        self.original.revalidate()
+    }
+    fn descriptors(&self, binary: &CStr) -> Result<Vec<File>> {
+        require(
+            [c"cmd", c"logcat", c"dumpsys"].contains(&binary),
+            "diagnostic scope cannot lend an interpreter or other executable",
+        )?;
+        self.revalidate()?;
+        let [copy, original] = self
+            .original
+            .query
+            .descriptors(self.original.base, &self.init.root, binary)
+            .map_err(external)?;
+        let raw = unsafe { libc::syscall(libc::SYS_pidfd_open, libc::getpid(), 0u32) };
+        if raw < 0 {
+            return Err(io::Error::last_os_error().into());
+        }
+        let mut files = vec![
+            self.original.base.board().pidfd().try_clone()?,
+            unsafe { File::from_raw_fd(raw as i32) },
+            self.init.root.try_clone()?,
+            self.init.namespaces[0].try_clone()?,
+        ];
+        for index in [2, 1, 3, 4, 5, 6] {
+            files.push(self.init.namespaces[index].try_clone()?);
+        }
+        files.extend([copy, original]);
+        self.revalidate()?;
+        Ok(files)
+    }
+    fn contacts_content_descriptors(&self) -> Result<[File; 2]> {
+        Err(NamespaceError::Rejected(
+            "diagnostic authority cannot lend Java content",
+        ))
+    }
+    fn mapped_root(&self) -> Result<(u32, u32)> {
+        self.original.mapped_root()
+    }
+    fn leaf(&self) -> Result<ApplicationLeaf<'_>> {
+        self.revalidate()?;
+        self.original
+            .group
+            .early_application_leaf(self.original.base, self.original.owner)
+            .map_err(external)
+    }
+    fn bind_created_process(&self, _pidfd: &OwnedFd, _query: bool) -> Result<(File, u32)> {
+        Err(NamespaceError::Rejected(
+            "diagnostics require the original factory child owner",
+        ))
+    }
+    fn progress_inherited_native(&self, deadline: Instant) -> Result<()> {
+        self.original.progress_inherited_native(deadline)?;
+        self.revalidate()
+    }
+}
+
 impl ApplicationWorkerAuthority for EarlyApplicationAuthority<'_> {
     fn query_projection(&self) -> QueryProjection {
         QueryProjection::EarlyDev

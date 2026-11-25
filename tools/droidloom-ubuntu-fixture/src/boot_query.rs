@@ -12,6 +12,7 @@ use serde_json::{Value, json};
 use std::{
     collections::{BTreeMap, BTreeSet},
     fs::File,
+    io::Read,
     path::Path,
 };
 
@@ -50,6 +51,20 @@ struct QueryDeclaration {
     cmd: QuerySource,
     toybox: QuerySource,
     contacts: ContactsInputs,
+    #[serde(default, deserialize_with = "present_diagnostics")]
+    diagnostics: Option<DiagnosticInputs>,
+}
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct DiagnosticInputs {
+    scope: String,
+    logcat: QuerySource,
+    dumpsys: QuerySource,
+}
+fn present_diagnostics<'de, D: serde::Deserializer<'de>>(
+    d: D,
+) -> std::result::Result<Option<DiagnosticInputs>, D::Error> {
+    DiagnosticInputs::deserialize(d).map(Some)
 }
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -81,7 +96,8 @@ struct ImageDeclaration {
 
 pub struct QueryPlan {
     runtime: String,
-    pins: [FilePin; 4],
+    pins: Vec<FilePin>,
+    diagnostics: bool,
 }
 
 impl QueryPlan {
@@ -127,26 +143,16 @@ pub fn admit(
             Ok(None)
         }
         (2, "android_kernel_first_stage_v2", Some(query)) => {
-            ensure(
-                query.scope == "fixed_application_query_v1"
-                    && query.source_system_sha256 == fixed::SYSTEM_SHA256
-                    && query.contacts.scope == "fixed_contacts_content_query_v1",
-                "kernel-first query declaration scope or original system differs",
-            )?;
-            let sources = [
-                query.cmd,
-                query.toybox,
-                query.contacts.app_process64,
-                query.contacts.content_jar,
-            ];
-            let pins = pins.ok_or("kernel-first v2 requires all four original query pins")?;
+            let (diagnostics, sources) = selected_sources(query)?;
+            let roles = fixed::selected_inputs(diagnostics);
+            let pins = pins.ok_or("kernel-first v2 requires every declared original query pin")?;
             ensure(
                 pins.keys().map(String::as_str).collect::<BTreeSet<_>>()
-                    == fixed::INPUTS.iter().map(|role| role.output_name).collect(),
-                "kernel-first v2 input set must contain exactly the four fixed query roles",
+                    == roles.iter().map(|role| role.output_name).collect(),
+                "kernel-first v2 input set must match the declared fixed query roles",
             )?;
-            let mut selected = Vec::with_capacity(4);
-            for (source, role) in sources.iter().zip(fixed::INPUTS) {
+            let mut selected = Vec::with_capacity(roles.len());
+            for (source, role) in sources.iter().zip(roles) {
                 ensure(
                     source.original.file == role.output_name
                         && source.original.bytes == role.bytes
@@ -168,21 +174,99 @@ pub fn admit(
             }
             Ok(Some(QueryPlan {
                 runtime: runtime.to_owned(),
-                pins: selected
-                    .try_into()
-                    .map_err(|_| "fixed query role count changed")?,
+                pins: selected,
+                diagnostics,
             }))
         }
         _ => Err("kernel-first runtime schema, scope and query declaration disagree".into()),
     }
 }
 
-pub fn guest_paths(runtime: &str) -> Result<Vec<String>> {
+fn selected_sources(query: QueryDeclaration) -> Result<(bool, Vec<QuerySource>)> {
+    ensure(
+        query.scope == "fixed_application_query_v1"
+            && query.source_system_sha256 == fixed::SYSTEM_SHA256
+            && query.contacts.scope == "fixed_contacts_content_query_v1",
+        "kernel-first query scopes or original system differ",
+    )?;
+    let mut sources = vec![
+        query.cmd,
+        query.toybox,
+        query.contacts.app_process64,
+        query.contacts.content_jar,
+    ];
+    let diagnostics = query.diagnostics.is_some();
+    if let Some(extra) = query.diagnostics {
+        ensure(
+            extra.scope == "fixed_android_diagnostics_v1",
+            "fixed diagnostics input scope differs",
+        )?;
+        sources.extend([extra.logcat, extra.dumpsys]);
+    }
+    for (source, role) in sources.iter().zip(fixed::selected_inputs(diagnostics)) {
+        ensure(
+            source.original.file == role.output_name
+                && source.original.bytes == role.bytes
+                && source.original.sha256 == role.sha256
+                && source.source_path == role.source_path
+                && source.interpreter.as_deref() == role.interpreter,
+            "selected query role differs from the exact original CP3A bytes",
+        )?;
+    }
+    Ok((diagnostics, sources))
+}
+
+/// Re-read the actual sealed manifest to select the complete four/six role set.
+/// Neither absence of a file nor an untrusted count can downgrade diagnostics.
+pub(crate) fn installed_inputs(
+    root: &Path,
+    runtime: &str,
+) -> Result<&'static [fixed::FixedQueryInput]> {
+    ensure(fs::valid_digest(runtime), "invalid query runtime digest")?;
+    let tree = fs::Tree::open(&fs::absolute_string(root)?, 0)?;
+    let path = format!("/etc/droidloom/runtime-cohorts/{runtime}.json");
+    let mut file = tree.file(&path)?;
+    let before = fs::stat(&file)?;
+    ensure(
+        FileType::from_raw_mode(before.mode) == FileType::RegularFile
+            && before.mode & 0o7777 == 0o400
+            && before.uid == 0
+            && before.gid == 0
+            && before.nlink == 1
+            && before.size <= 256 * 1024,
+        "sealed query manifest owner or bounded regular role differs",
+    )?;
+    let mut raw = Vec::new();
+    (&mut file).take(256 * 1024 + 1).read_to_end(&mut raw)?;
+    ensure(
+        raw.len() as u64 == before.size
+            && fs::digest(&raw) == runtime
+            && fs::stat(&file)? == before
+            && tree.identity(&path)? == before,
+        "sealed query manifest changed or differs from the selected digest",
+    )?;
+    let entry: RuntimeEntry = serde_json::from_slice(&raw)?;
+    ensure(
+        entry.schema == 2
+            && entry.scope == "android_kernel_first_stage_v2"
+            && fs::valid_digest(&entry.base_cohort_sha256)
+            && entry.source_system_sha256 == fixed::SYSTEM_SHA256
+            && entry.init_path == "/system/bin/init"
+            && entry.init_bytes == original_init::INIT_BYTES
+            && entry.init_sha256 == original_init::INIT_SHA256
+            && entry.argv == ["/system/bin/init", "second_stage"],
+        "sealed query manifest is not the original kernel-first v2 contract",
+    )?;
+    let (diagnostics, _) = selected_sources(entry.query_inputs.ok_or("query declaration absent")?)?;
+    Ok(fixed::selected_inputs(diagnostics))
+}
+
+pub fn guest_paths(runtime: &str, diagnostics: bool) -> Result<Vec<String>> {
     ensure(
         fs::valid_digest(runtime),
         "invalid fixed-query runtime namespace",
     )?;
-    Ok(fixed::INPUTS
+    Ok(fixed::selected_inputs(diagnostics)
         .iter()
         .map(|role| {
             format!(
@@ -230,7 +314,11 @@ fn sealed_file(
 
 pub fn install(root: &Path, plan: &QueryPlan) -> Result<Value> {
     // All external byte pins are checked before the first query directory write.
-    for (pin, role) in plan.pins.iter().zip(fixed::INPUTS) {
+    for (pin, role) in plan
+        .pins
+        .iter()
+        .zip(fixed::selected_inputs(plan.diagnostics))
+    {
         let file = boot_files::checked_file(pin)?;
         let before = fs::stat(&file)?;
         ensure(
@@ -242,17 +330,22 @@ pub fn install(root: &Path, plan: &QueryPlan) -> Result<Value> {
             "fixed query plan changed",
         )?;
     }
-    let paths = guest_paths(plan.runtime())?;
+    let paths = guest_paths(plan.runtime(), plan.diagnostics)?;
     let parent = format!("/var/lib/droidloom/runtime-cohorts/{}/images", plan.runtime);
     boot_files::ensure_dir(root, &parent, 0o755)?;
     let mut rows = Vec::new();
-    for ((pin, role), guest) in plan.pins.iter().zip(fixed::INPUTS).zip(paths) {
+    for ((pin, role), guest) in plan
+        .pins
+        .iter()
+        .zip(fixed::selected_inputs(plan.diagnostics))
+        .zip(paths)
+    {
         boot_files::copy_pin(
             pin,
             &boot_files::guest_path(root, &guest)?,
             role.installed_mode(),
         )?;
-        let file = sealed_file(root, &guest, role, false)?;
+        let file = sealed_file(root, &guest, *role, false)?;
         rows.push(
             json!({"path":guest,"source":pin,"identity":fs::stat(&file)?,
             "original_source_mode":role.original_mode,"original_source_gid":role.original_gid,
@@ -263,6 +356,7 @@ pub fn install(root: &Path, plan: &QueryPlan) -> Result<Value> {
     Ok(
         json!({"input_scope":fixed::INPUT_SCOPE,"runtime_manifest_sha256":plan.runtime,
         "source_system_sha256":fixed::SYSTEM_SHA256,"files":rows,
+        "input_count":plan.pins.len(),"diagnostic_inputs":plan.diagnostics,
         "query_executions":0,"guest_qualified":false}),
     )
 }
@@ -271,10 +365,12 @@ pub fn install(root: &Path, plan: &QueryPlan) -> Result<Value> {
 /// sealed original Android roles retain their original stock labels, matching
 /// the production consumer; label them before recording the complete inventory.
 pub fn label_inputs(root: &Path, runtime: &str) -> Result<Value> {
-    let paths = guest_paths(runtime)?;
+    let roles = installed_inputs(root, runtime)?;
+    let diagnostics = roles.len() == 6;
+    let paths = guest_paths(runtime, diagnostics)?;
     let mut rows = Vec::new();
-    for (guest, role) in paths.iter().zip(fixed::INPUTS) {
-        let file = sealed_file(root, guest, role, false)?;
+    for (guest, role) in paths.iter().zip(roles) {
+        let file = sealed_file(root, guest, *role, false)?;
         rustix::fs::fsetxattr(
             &file,
             "security.selinux",
@@ -282,7 +378,7 @@ pub fn label_inputs(root: &Path, runtime: &str) -> Result<Value> {
             XattrFlags::empty(),
         )?;
         file.sync_all()?;
-        let observed = sealed_file(root, guest, role, true)?;
+        let observed = sealed_file(root, guest, *role, true)?;
         rows.push(json!({"path":guest,"bytes":role.bytes,"sha256":role.sha256,
             "identity":fs::stat(&observed)?,"label_hex":hex::encode(role.original_label),
             "original_label_observed":true,"privilege_attributes_absent":true}));
@@ -290,13 +386,15 @@ pub fn label_inputs(root: &Path, runtime: &str) -> Result<Value> {
     Ok(
         json!({"input_scope":fixed::INPUT_SCOPE,"runtime_manifest_sha256":runtime,
         "source_system_sha256":fixed::SYSTEM_SHA256,"files":rows,
+        "input_count":roles.len(),"diagnostic_inputs":diagnostics,
         "query_executions":0,"guest_qualified":false}),
     )
 }
 
 pub fn verify_sealed(root: &Path, runtime: &str) -> Result<()> {
-    for (guest, role) in guest_paths(runtime)?.iter().zip(fixed::INPUTS) {
-        sealed_file(root, guest, role, true)?;
+    let roles = installed_inputs(root, runtime)?;
+    for (guest, role) in guest_paths(runtime, roles.len() == 6)?.iter().zip(roles) {
+        sealed_file(root, guest, *role, true)?;
     }
     Ok(())
 }
@@ -352,7 +450,7 @@ mod tests {
     fn complete_v2_admission_is_metadata_only_and_binds_all_four_paths() -> Result<()> {
         let (value, cohort, system, pins) = fixture();
         let plan = check(&value, &cohort, &system, Some(&pins))?.ok_or("query plan missing")?;
-        let paths = guest_paths(plan.runtime())?;
+        let paths = guest_paths(plan.runtime(), plan.diagnostics)?;
         assert_eq!(paths.len(), 4);
         for (path, role) in paths.iter().zip(fixed::INPUTS) {
             assert_eq!(
@@ -360,8 +458,8 @@ mod tests {
                 Some(role.output_name)
             );
         }
-        assert!(guest_paths("../outside").is_err());
-        assert!(guest_paths(&"A".repeat(64)).is_err());
+        assert!(guest_paths("../outside", false).is_err());
+        assert!(guest_paths(&"A".repeat(64), false).is_err());
         Ok(())
     }
     #[test]
@@ -520,5 +618,78 @@ mod tests {
                 .is_err()
             );
         }
+    }
+
+    #[test]
+    fn diagnostics_six_role_admission_requires_the_complete_selected_material() -> Result<()> {
+        let (mut value, cohort, system, mut pins) = fixture();
+        let source = |r: fixed::FixedQueryInput| {
+            json!({"original":{"file":r.output_name,"bytes":r.bytes,"sha256":r.sha256},
+            "source_path":r.source_path,"interpreter":r.interpreter})
+        };
+        value["query_inputs"]["diagnostics"] = json!({"scope":"fixed_android_diagnostics_v1",
+            "logcat":source(fixed::DIAGNOSTIC_INPUTS[0]),"dumpsys":source(fixed::DIAGNOSTIC_INPUTS[1])});
+        assert!(check(&value, &cohort, &system, Some(&pins)).is_err());
+        for r in fixed::DIAGNOSTIC_INPUTS {
+            pins.insert(
+                r.output_name.into(),
+                FilePin {
+                    path: Path::new("/intentionally-absent").join(r.output_name),
+                    bytes: r.bytes,
+                    sha256: r.sha256.into(),
+                },
+            );
+        }
+        let plan = check(&value, &cohort, &system, Some(&pins))?.ok_or("six-role plan absent")?;
+        assert!(plan.diagnostics);
+        assert_eq!(guest_paths(plan.runtime(), plan.diagnostics)?.len(), 6);
+        for r in fixed::DIAGNOSTIC_INPUTS {
+            let mut bad = pins.clone();
+            bad.remove(r.output_name);
+            assert!(check(&value, &cohort, &system, Some(&bad)).is_err());
+            let mut bad = pins.clone();
+            bad.get_mut(r.output_name).unwrap().sha256 = "b".repeat(64);
+            assert!(check(&value, &cohort, &system, Some(&bad)).is_err());
+            let mut bad = pins.clone();
+            bad.get_mut(r.output_name).unwrap().path = "/outside/wrong".into();
+            assert!(check(&value, &cohort, &system, Some(&bad)).is_err());
+        }
+        for (key, bad) in [
+            ("scope", json!("caller_selected")),
+            ("logcat", Value::Null),
+            ("dumpsys", source(fixed::DIAGNOSTIC_INPUTS[0])),
+            ("unselected", json!("/system/bin/sh")),
+        ] {
+            let mut changed = value.clone();
+            changed["query_inputs"]["diagnostics"][key] = bad;
+            assert!(check(&changed, &cohort, &system, Some(&pins)).is_err());
+        }
+        let mut changed = value.clone();
+        changed["query_inputs"]["diagnostics"] = Value::Null;
+        assert!(check(&changed, &cohort, &system, Some(&pins)).is_err());
+        let mut changed = value.clone();
+        changed["query_inputs"]
+            .as_object_mut()
+            .unwrap()
+            .remove("diagnostics");
+        assert!(check(&changed, &cohort, &system, Some(&pins)).is_err());
+        let raw = serde_json::to_string(&value)?;
+        let needle = "\"scope\":\"fixed_android_diagnostics_v1\"";
+        assert!(raw.contains(needle));
+        let duplicate = raw.replace(
+            needle,
+            "\"scope\":\"caller_selected\",\"scope\":\"fixed_android_diagnostics_v1\"",
+        );
+        assert!(
+            admit(
+                duplicate.as_bytes(),
+                &cohort,
+                &fs::digest(duplicate.as_bytes()),
+                &system,
+                Some(&pins)
+            )
+            .is_err()
+        );
+        Ok(())
     }
 }

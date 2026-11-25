@@ -31,7 +31,7 @@ pub(super) fn collect(
     })
 }
 
-fn collect_with(
+pub(crate) fn collect_with(
     package: Option<&str>,
     user: u32,
     lines: u32,

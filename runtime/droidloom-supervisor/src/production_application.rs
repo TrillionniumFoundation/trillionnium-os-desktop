@@ -55,6 +55,13 @@ mod display;
 use display::DisplayCommand;
 pub(crate) use display::set_density_early;
 
+#[path = "production_application_diagnostics.rs"]
+mod diagnostics;
+#[path = "production_application_event_log.rs"]
+mod event_log;
+use diagnostics::DiagnosticCommand;
+pub(crate) use diagnostics::diagnostics_early;
+
 #[path = "production_application_art_profile.rs"]
 mod art_profile;
 #[path = "production_application_operation.rs"]

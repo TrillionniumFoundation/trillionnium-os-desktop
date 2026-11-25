@@ -22,6 +22,8 @@ const TOYBOX_ORIGINAL: &[u8; 27] = b"u:object_r:toolbox_exec:s0\0";
 const APP_PROCESS_ORIGINAL: &[u8; 26] = b"u:object_r:zygote_exec:s0\0";
 const PROVIDER_EXEC: &[u8; 38] = b"u:object_r:droidloom_provider_exec:s0\0";
 const PROVIDER_JAR: &[u8; 37] = b"u:object_r:droidloom_provider_jar:s0\0";
+const DIAGNOSTIC_EXEC: &[u8; 41] = b"u:object_r:droidloom_diagnostics_exec:s0\0";
+const LOGCAT_ORIGINAL: &[u8; 26] = b"u:object_r:logcat_exec:s0\0";
 const TMPFS_MAGIC: libc::c_long = 0x0102_1994;
 const INITIAL_TMPFS: &[u8; 38] = b"u:object_r:droidloom_query_tmpfs_t:s0\0";
 const FSCONFIG_CMD_RECONFIGURE: u32 = 7;
@@ -36,6 +38,20 @@ pub(super) struct QueryDeclaration {
     cmd: QuerySource,
     toybox: QuerySource,
     contacts: Option<ContactsInputs>,
+    #[serde(default, deserialize_with = "present_diagnostics")]
+    diagnostics: Option<DiagnosticInputs>,
+}
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct DiagnosticInputs {
+    scope: String,
+    logcat: QuerySource,
+    dumpsys: QuerySource,
+}
+fn present_diagnostics<'de, D: serde::Deserializer<'de>>(
+    d: D,
+) -> std::result::Result<Option<DiagnosticInputs>, D::Error> {
+    DiagnosticInputs::deserialize(d).map(Some)
 }
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -58,14 +74,18 @@ pub(crate) enum QueryRole {
     Toybox,
     AppProcess64,
     ContentJar,
+    Logcat,
+    Dumpsys,
 }
 impl QueryRole {
     fn fixed_input(self) -> fixed::FixedQueryInput {
-        fixed::INPUTS[match self {
+        fixed::ALL_INPUTS[match self {
             Self::Cmd => 0,
             Self::Toybox => 1,
             Self::AppProcess64 => 2,
             Self::ContentJar => 3,
+            Self::Logcat => 4,
+            Self::Dumpsys => 5,
         }]
     }
 
@@ -84,6 +104,8 @@ impl QueryRole {
             Self::Toybox => c"toybox",
             Self::AppProcess64 => c"app_process64",
             Self::ContentJar => c"content.jar",
+            Self::Logcat => c"logcat",
+            Self::Dumpsys => c"dumpsys",
         }
     }
     fn original_name(self) -> &'static str {
@@ -92,6 +114,8 @@ impl QueryRole {
             Self::Toybox => "toybox-original",
             Self::AppProcess64 => "contacts-app-process64-original",
             Self::ContentJar => "contacts-content-jar-original",
+            Self::Logcat => "diagnostics-logcat-original",
+            Self::Dumpsys => "diagnostics-dumpsys-original",
         }
     }
     fn source_path(self) -> &'static str {
@@ -100,6 +124,8 @@ impl QueryRole {
             Self::Toybox => "/system/bin/toybox",
             Self::AppProcess64 => "/system/bin/app_process64",
             Self::ContentJar => "/system/framework/content.jar",
+            Self::Logcat => "/system/bin/logcat",
+            Self::Dumpsys => "/system/bin/dumpsys",
         }
     }
     fn parse(name: &CStr) -> Result<Self> {
@@ -109,6 +135,10 @@ impl QueryRole {
             Ok(Self::Toybox)
         } else if name == c"app_process64" {
             Ok(Self::AppProcess64)
+        } else if name == c"logcat" {
+            Ok(Self::Logcat)
+        } else if name == c"dumpsys" {
+            Ok(Self::Dumpsys)
         } else {
             Err(MountError::Rejected("query executable role is not fixed"))
         }
@@ -120,7 +150,10 @@ impl QueryRole {
             Self::AppProcess64 => {
                 require_exact_xattr(file, c"security.selinux", APP_PROCESS_ORIGINAL)?
             }
-            Self::ContentJar => require_exact_xattr(file, c"security.selinux", CMD_ORIGINAL)?,
+            Self::ContentJar | Self::Dumpsys => {
+                require_exact_xattr(file, c"security.selinux", CMD_ORIGINAL)?
+            }
+            Self::Logcat => require_exact_xattr(file, c"security.selinux", LOGCAT_ORIGINAL)?,
         }
         require_absent_xattr(file, c"security.capability")
     }
@@ -136,6 +169,7 @@ impl QueryRole {
             Self::Cmd | Self::Toybox => QUERY_EXEC,
             Self::AppProcess64 => PROVIDER_EXEC,
             Self::ContentJar => PROVIDER_JAR,
+            Self::Logcat | Self::Dumpsys => DIAGNOSTIC_EXEC,
         }
     }
     fn verify_format(self, file: &File, bytes: u64, interpreter: &Option<String>) -> Result<()> {
@@ -161,6 +195,7 @@ impl QueryRole {
 pub(crate) enum QueryLayout {
     Commands,
     Contacts,
+    Diagnostics,
 }
 impl QueryLayout {
     pub(crate) fn roles(self) -> &'static [QueryRole] {
@@ -171,6 +206,14 @@ impl QueryLayout {
                 QueryRole::Toybox,
                 QueryRole::AppProcess64,
                 QueryRole::ContentJar,
+            ],
+            Self::Diagnostics => &[
+                QueryRole::Cmd,
+                QueryRole::Toybox,
+                QueryRole::AppProcess64,
+                QueryRole::ContentJar,
+                QueryRole::Logcat,
+                QueryRole::Dumpsys,
             ],
         }
     }
@@ -197,7 +240,9 @@ impl QueryDeclaration {
     }
 
     fn layout(&self) -> QueryLayout {
-        if self.contacts.is_some() {
+        if self.diagnostics.is_some() {
+            QueryLayout::Diagnostics
+        } else if self.contacts.is_some() {
             QueryLayout::Contacts
         } else {
             QueryLayout::Commands
@@ -212,6 +257,10 @@ impl QueryDeclaration {
         if let Some(contacts) = &self.contacts {
             sources.push((QueryRole::AppProcess64, &contacts.app_process64));
             sources.push((QueryRole::ContentJar, &contacts.content_jar));
+        }
+        if let Some(diagnostics) = &self.diagnostics {
+            sources.push((QueryRole::Logcat, &diagnostics.logcat));
+            sources.push((QueryRole::Dumpsys, &diagnostics.dumpsys));
         }
         sources
     }
@@ -228,14 +277,23 @@ impl QueryDeclaration {
         require(
             contacts.scope == "fixed_contacts_content_query_v1"
                 && contacts.content_jar.interpreter.is_none()
-                && self.layout() == QueryLayout::Contacts
-                && self.sources().len() == 4,
+                && if let Some(diagnostics) = &self.diagnostics {
+                    diagnostics.scope == "fixed_android_diagnostics_v1"
+                        && self.layout() == QueryLayout::Diagnostics
+                        && self.sources().len() == 6
+                } else {
+                    self.layout() == QueryLayout::Contacts && self.sources().len() == 4
+                },
             "kernel-first query layout must contain the exact commands and Contacts roles",
         )?;
         self.validate_cp3a()
     }
 
     pub(super) fn validate(&self, runtime: &RuntimeDeclaration) -> Result<()> {
+        require(
+            self.diagnostics.is_none(),
+            "diagnostics roles require the original kernel-first factory",
+        )?;
         require(
             self.scope == "fixed_application_query_v1"
                 && is_digest(&self.source_system_sha256)
@@ -313,6 +371,8 @@ fn require_private_query_label(file: &File, label: &[u8]) -> Result<()> {
         require_exact_xattr(file, c"security.selinux", PROVIDER_EXEC)
     } else if label == PROVIDER_JAR {
         require_exact_xattr(file, c"security.selinux", PROVIDER_JAR)
+    } else if label == DIAGNOSTIC_EXEC {
+        require_exact_xattr(file, c"security.selinux", DIAGNOSTIC_EXEC)
     } else {
         Err(MountError::Rejected(
             "private query label is not a fixed role",
@@ -914,7 +974,7 @@ mod tests {
         let file = tempfile::tempfile().unwrap();
         let root_uid = 200_000;
         let root_gid = 300_000;
-        for role in QueryLayout::Contacts.roles() {
+        for role in QueryLayout::Diagnostics.roles() {
             let fixed = role.fixed_input();
             let mut node = FileIdentity::of(&file.metadata().unwrap());
             node.mode = fixed.original_mode;
@@ -1036,6 +1096,76 @@ mod tests {
         assert!(
             QueryRole::AppProcess64
                 .verify_format(&file, 64, &None)
+                .is_err()
+        );
+    }
+
+    #[test]
+    fn diagnostics_declaration_requires_both_exact_original_roles_and_preserves_old_four() {
+        let source = |role: QueryRole| {
+            let f = role.fixed_input();
+            serde_json::json!({"original":{"file":f.output_name,"bytes":f.bytes,"sha256":f.sha256},
+                "source_path":f.source_path,"interpreter":f.interpreter})
+        };
+        let mut value = serde_json::json!({"scope":"fixed_application_query_v1",
+            "source_system_sha256":fixed::SYSTEM_SHA256,"cmd":source(QueryRole::Cmd),
+            "toybox":source(QueryRole::Toybox),"contacts":{"scope":"fixed_contacts_content_query_v1",
+            "app_process64":source(QueryRole::AppProcess64),"content_jar":source(QueryRole::ContentJar)}});
+        let old: QueryDeclaration = serde_json::from_value(value.clone()).unwrap();
+        old.validate_kernel_first(fixed::SYSTEM_SHA256).unwrap();
+        assert_eq!(old.sources().len(), 4);
+        value["diagnostics"] = serde_json::json!({"scope":"fixed_android_diagnostics_v1",
+            "logcat":source(QueryRole::Logcat),"dumpsys":source(QueryRole::Dumpsys)});
+        let new: QueryDeclaration = serde_json::from_value(value.clone()).unwrap();
+        new.validate_kernel_first(fixed::SYSTEM_SHA256).unwrap();
+        assert_eq!(new.layout(), QueryLayout::Diagnostics);
+        assert_eq!(new.sources().len(), 6);
+        for role in ["logcat", "dumpsys"] {
+            for (key, bad) in [
+                ("source_path", serde_json::json!("/system/bin/sh")),
+                (
+                    "interpreter",
+                    serde_json::json!("/bin/ld-linux-x86-64.so.2"),
+                ),
+            ] {
+                let mut changed = value.clone();
+                changed["diagnostics"][role][key] = bad;
+                assert!(
+                    serde_json::from_value::<QueryDeclaration>(changed)
+                        .unwrap()
+                        .validate_kernel_first(fixed::SYSTEM_SHA256)
+                        .is_err()
+                );
+            }
+            let mut changed = value.clone();
+            changed["diagnostics"].as_object_mut().unwrap().remove(role);
+            assert!(serde_json::from_value::<QueryDeclaration>(changed).is_err());
+        }
+        let mut changed = value.clone();
+        changed["diagnostics"]["logcat"] = source(QueryRole::Dumpsys);
+        assert!(
+            serde_json::from_value::<QueryDeclaration>(changed)
+                .unwrap()
+                .validate_kernel_first(fixed::SYSTEM_SHA256)
+                .is_err()
+        );
+        let mut changed = value.clone();
+        changed["diagnostics"] = serde_json::Value::Null;
+        assert!(serde_json::from_value::<QueryDeclaration>(changed).is_err());
+        let mut changed = value.clone();
+        changed.as_object_mut().unwrap().remove("contacts");
+        assert!(
+            serde_json::from_value::<QueryDeclaration>(changed)
+                .unwrap()
+                .validate_kernel_first(fixed::SYSTEM_SHA256)
+                .is_err()
+        );
+        let mut changed = value;
+        changed["diagnostics"]["scope"] = serde_json::json!("caller_selected");
+        assert!(
+            serde_json::from_value::<QueryDeclaration>(changed)
+                .unwrap()
+                .validate_kernel_first(fixed::SYSTEM_SHA256)
                 .is_err()
         );
     }

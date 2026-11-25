@@ -126,7 +126,7 @@ profile droidloom-production-broker flags=(attach_disconnected.path=/.droidloom-
   /var/{,lib/,lib/droidloom/} r,
   /var/lib/droidloom/{cohorts/,runtime-cohorts/,cohorts/*/,cohorts/*/images/,runtime-cohorts/*/,runtime-cohorts/*/images/} r,
   /var/lib/droidloom/{cohorts,runtime-cohorts}/*/images/*.img r,
-  /var/lib/droidloom/runtime-cohorts/*/images/{cmd-original,toybox-original,contacts-app-process64-original,contacts-content-jar-original} r,
+  /var/lib/droidloom/runtime-cohorts/*/images/{cmd-original,toybox-original,contacts-app-process64-original,contacts-content-jar-original,diagnostics-logcat-original,diagnostics-dumpsys-original} r,
   /var/lib/droidloom/{users/,users/[0-9]*/,users/[0-9]*/data/,identity-reservations/} r,
   /var/lib/droidloom/identity-reservations/** rk,
   /var/lib/droidloom/users/[0-9]*/data/data.img rwk,
@@ -146,13 +146,15 @@ profile droidloom-production-broker flags=(attach_disconnected.path=/.droidloom-
   /run/droidloom-early/readiness/shutdown-request rw,
   # Before transfer, only these names exist on the new detached private tmpfs.
   /.droidloom-kernel-apparmorfs/ rw,
-  /.droidloom-kernel-apparmorfs/{cmd,toybox,app_process64,content.jar} rw,
+  /.droidloom-kernel-apparmorfs/{cmd,toybox,app_process64,content.jar,logcat,dumpsys} rw,
   /.droidloom-kernel-apparmorfs/droidloom-query/ rw,
-  # The four selected immutable roles and their ordinary Android loader inputs.
+  # Selected immutable command, interpreter and diagnostic originals.
   /{dev/droidloom-query,.droidloom-query}/ r,
   /{dev/droidloom-query,.droidloom-query}/{cmd,toybox,app_process64} mrix,
+  /{dev/droidloom-query,.droidloom-query}/{logcat,dumpsys} r,
   /{dev/droidloom-query,.droidloom-query}/content.jar r,
   /system/bin/{cmd,toybox,app_process64} r,
+  /{system,run/droidloom-early-slot/rootfs/system,.droidloom-kernel-apparmorfs/system}/bin/{logcat,dumpsys} r,
   /system/framework/content.jar r,
   # Each original image input is selected and hash/inode checked in source.
   /{system,run/droidloom-early-slot/rootfs/system,.droidloom-kernel-apparmorfs/system}/bin/init r,

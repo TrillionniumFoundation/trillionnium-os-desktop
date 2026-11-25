@@ -37,6 +37,7 @@ pub use service_pin::EarlyUnitReferences;
 
 #[path = "diagnostics.rs"]
 mod diagnostics;
+pub(crate) use diagnostics::collect_with as render_diagnostics;
 
 #[path = "apk.rs"]
 mod apk;

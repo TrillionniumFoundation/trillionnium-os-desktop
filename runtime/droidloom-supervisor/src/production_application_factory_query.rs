@@ -533,6 +533,7 @@ fn native_domain(domain: OperationDomain) -> u32 {
         OperationDomain::Install => 5,
         OperationDomain::CatalogRead => 6,
         OperationDomain::DisplayControl => 7,
+        OperationDomain::DiagnosticsRead => 8,
     }
 }
 unsafe extern "C" {
@@ -735,7 +736,11 @@ fn spawn(
     let environment = query.environment(QueryProjection::EarlyDev);
     let mut envp: Vec<_> = environment.iter().map(|a| a.as_ptr()).collect();
     envp.push(std::ptr::null());
-    let mut filter = super::worker::query_filter();
+    let mut filter = if query.domain() == OperationDomain::DiagnosticsRead {
+        super::diagnostics::filter()
+    } else {
+        super::worker::query_filter()
+    };
     let program = libc::sock_fprog {
         len: filter.len() as u16,
         filter: filter.as_mut_ptr(),
@@ -1457,6 +1462,7 @@ fn drain(
     total: &mut usize,
     eof: &mut bool,
     limit: usize,
+    tail: Option<usize>,
 ) -> Result<()> {
     use std::io::Read;
     if *eof {
@@ -1478,6 +1484,11 @@ fn drain(
                     "factory query combined output exceeded bound",
                 )?;
                 body.extend_from_slice(&bytes[..n]);
+                if let Some(tail) = tail {
+                    if body.len() > tail {
+                        body.drain(..body.len() - tail);
+                    }
+                }
             }
             Err(e) if e.kind() == io::ErrorKind::Interrupted => continue,
             Err(e) if e.kind() == io::ErrorKind::WouldBlock => return Ok(()),
@@ -1491,6 +1502,7 @@ fn capture(
     stderr: &mut File,
     input: &mut Option<super::install_input::InputPump>,
     output_limit: usize,
+    tail: Option<(usize, usize)>,
     deadline: Instant,
     progress: &mut dyn FnMut() -> Result<()>,
 ) -> Result<(Vec<u8>, Vec<u8>)> {
@@ -1512,8 +1524,16 @@ fn capture(
             &mut total,
             &mut output_eof,
             output_limit,
+            tail.map(|v| v.0),
         )?;
-        drain(stderr, &mut error, &mut total, &mut error_eof, output_limit)?;
+        drain(
+            stderr,
+            &mut error,
+            &mut total,
+            &mut error_eof,
+            output_limit,
+            tail.map(|v| v.1),
+        )?;
         if client.poll_terminal(deadline)?.is_some() {
             if let Some(input) = input {
                 input.close();
@@ -1616,13 +1636,21 @@ pub(super) fn run_with_input(
             &files[10], root_uid, root_gid, deadline,
         )?
     } else {
-        super::process::ExecutableBinding::from_held_role(&files[10], root_uid, root_gid, deadline)?
+        if request.uses_diagnostic_executable() {
+            super::process::ExecutableBinding::from_diagnostics_role(
+                &files[10], root_uid, root_gid, deadline,
+            )?
+        } else {
+            super::process::ExecutableBinding::from_held_role(
+                &files[10], root_uid, root_gid, deadline,
+            )?
+        }
     };
     let shell_uid = root_uid
         .checked_add(2000)
         .ok_or_else(|| reject("query shell UID overflow"))?;
     let shell_gid = root_gid
-        .checked_add(2000)
+        .checked_add(request.domain().gid())
         .ok_or_else(|| reject("query shell GID overflow"))?;
     // The stdio creator is an independent real broker child, with its own
     // normal PIDFD wait. It is never presented as the query's creator.
@@ -1689,6 +1717,7 @@ pub(super) fn run_with_input(
             &mut stderr,
             &mut input,
             request.output_limit(),
+            request.diagnostic_tail(),
             deadline,
             &mut progress,
         )?;
@@ -2000,5 +2029,44 @@ mod tests {
             identity(&File::open("/proc/self/ns/pid").unwrap()).unwrap(),
             original
         );
+    }
+
+    #[test]
+    fn diagnostics_tail_drains_real_pipes_and_keeps_the_combined_traffic_bound() {
+        fn pipe() -> (File, File) {
+            let mut raw = [-1; 2];
+            assert_eq!(
+                unsafe { libc::pipe2(raw.as_mut_ptr(), libc::O_CLOEXEC | libc::O_NONBLOCK) },
+                0
+            );
+            unsafe { (File::from_raw_fd(raw[0]), File::from_raw_fd(raw[1])) }
+        }
+        use std::io::Write;
+        let (mut read, mut write) = pipe();
+        let (mut body, mut total, mut eof) = (Vec::new(), 0, false);
+        drain(&mut read, &mut body, &mut total, &mut eof, 20, Some(6)).unwrap();
+        assert!(!eof);
+        write.write_all(b"0123456789").unwrap();
+        drain(&mut read, &mut body, &mut total, &mut eof, 20, Some(6)).unwrap();
+        assert_eq!(body, b"456789");
+        assert_eq!(total, 10);
+        assert!(!eof);
+        drop(write);
+        drain(&mut read, &mut body, &mut total, &mut eof, 20, Some(6)).unwrap();
+        assert!(eof);
+        let (mut read2, mut write2) = pipe();
+        write2.write_all(b"abcdefghijk").unwrap();
+        let (mut body2, mut eof2) = (Vec::new(), false);
+        assert!(drain(&mut read2, &mut body2, &mut total, &mut eof2, 20, Some(6)).is_err());
+        assert_eq!(total, 21);
+        assert!(body2.is_empty());
+        let (mut read3, mut write3) = pipe();
+        write3.write_all(b"complete").unwrap();
+        drop(write3);
+        let (mut body3, mut total3, mut eof3) = (Vec::new(), 0, false);
+        drain(&mut read3, &mut body3, &mut total3, &mut eof3, 8, None).unwrap();
+        assert_eq!(body3, b"complete");
+        assert_eq!(total3, 8);
+        assert!(eof3);
     }
 }

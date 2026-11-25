@@ -215,10 +215,43 @@ fn exact_command_and_interpreter_domains_require_their_original_executable_roles
         assert_eq!(executable_role_label(domain), PROVIDER_EXEC);
         assert_ne!(executable_role_label(domain), QUERY_EXEC);
     }
-    for domain in [OperationDomain::Query, OperationDomain::Browser,
-        OperationDomain::LaunchRead, OperationDomain::LaunchStart,
-        OperationDomain::Install, OperationDomain::DisplayControl] {
+    for domain in [
+        OperationDomain::Query,
+        OperationDomain::Browser,
+        OperationDomain::LaunchRead,
+        OperationDomain::LaunchStart,
+        OperationDomain::Install,
+        OperationDomain::DisplayControl,
+    ] {
         assert_eq!(executable_role_label(domain), QUERY_EXEC);
         assert_ne!(executable_role_label(domain), PROVIDER_EXEC);
+    }
+}
+
+#[test]
+fn diagnostics_exec_role_does_not_admit_provider_or_other_domain_substitution() {
+    assert!(executable_role_matches(
+        OperationDomain::DiagnosticsRead,
+        QUERY_EXEC
+    ));
+    assert!(executable_role_matches(
+        OperationDomain::DiagnosticsRead,
+        DIAGNOSTIC_EXEC
+    ));
+    assert!(!executable_role_matches(
+        OperationDomain::DiagnosticsRead,
+        PROVIDER_EXEC
+    ));
+    for domain in [
+        OperationDomain::Query,
+        OperationDomain::Browser,
+        OperationDomain::ContactsRead,
+        OperationDomain::LaunchRead,
+        OperationDomain::LaunchStart,
+        OperationDomain::Install,
+        OperationDomain::CatalogRead,
+        OperationDomain::DisplayControl,
+    ] {
+        assert!(!executable_role_matches(domain, DIAGNOSTIC_EXEC));
     }
 }

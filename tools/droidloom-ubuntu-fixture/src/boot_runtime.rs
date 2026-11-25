@@ -1,10 +1,11 @@
 use crate::{
+    Result,
     boot_files::{self, FilePin},
-    ensure, fs, Result,
+    ensure, fs,
 };
 use rustix::fs::XattrFlags;
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use std::{
     collections::BTreeMap,
     io::{Read, Seek, SeekFrom, Write},
@@ -1014,7 +1015,12 @@ pub fn make_root_image(
     crate::boot_gdm_proof::validate_labels(labels)?;
     let query_runtime = labels["fixed_query_inputs"]["runtime_manifest_sha256"].as_str();
     if let Some(runtime) = query_runtime {
-        selected.extend(crate::boot_query::guest_paths(runtime)?);
+        let diagnostics = match labels["fixed_query_inputs"]["input_count"].as_u64() {
+            Some(4) => false,
+            Some(6) => true,
+            _ => return Err("fixed query label input count differs".into()),
+        };
+        selected.extend(crate::boot_query::guest_paths(runtime, diagnostics)?);
     }
     let rows = labels["labels"]
         .as_array()

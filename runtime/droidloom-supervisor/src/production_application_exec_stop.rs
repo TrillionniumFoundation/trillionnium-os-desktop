@@ -10,6 +10,7 @@ use std::os::unix::fs::FileExt;
 
 const QUERY_EXEC: &[u8] = b"u:object_r:droidloom_query_exec:s0";
 const PROVIDER_EXEC: &[u8] = b"u:object_r:droidloom_provider_exec:s0";
+const DIAGNOSTIC_EXEC: &[u8] = b"u:object_r:droidloom_diagnostics_exec:s0";
 const AA_STACK: &[u8] = b"droidloom-production-android//&droidloom-production-broker (enforce)\n";
 const EXEC_EVENT: i32 = libc::SIGTRAP | (libc::PTRACE_EVENT_EXEC << 8);
 const MAX_EXECUTABLE: u64 = 128 * 1024 * 1024;
@@ -21,6 +22,11 @@ fn executable_role_label(domain: OperationDomain) -> &'static [u8] {
         OperationDomain::ContactsRead | OperationDomain::CatalogRead => PROVIDER_EXEC,
         _ => QUERY_EXEC,
     }
+}
+
+fn executable_role_matches(domain: OperationDomain, label: &[u8]) -> bool {
+    label == executable_role_label(domain)
+        || (domain == OperationDomain::DiagnosticsRead && label == DIAGNOSTIC_EXEC)
 }
 
 #[cfg(test)]
@@ -188,6 +194,14 @@ impl ExecutableBinding {
         deadline: Instant,
     ) -> Result<Self> {
         Self::from_role(file, root_uid, root_gid, QUERY_EXEC, deadline)
+    }
+    pub(crate) fn from_diagnostics_role(
+        file: &File,
+        root_uid: u32,
+        root_gid: u32,
+        deadline: Instant,
+    ) -> Result<Self> {
+        Self::from_role(file, root_uid, root_gid, DIAGNOSTIC_EXEC, deadline)
     }
     pub(crate) fn from_contacts_role(
         file: &File,
@@ -447,8 +461,7 @@ pub(crate) fn verify_factory_exec(
         "actual factory query pidfd credentials differ",
     )?;
     require(
-        binding.label
-            == executable_role_label(domain),
+        executable_role_matches(domain, binding.label),
         "factory query domain and selected executable role differ",
     )?;
     let observed = crate::production_application::observe_metadata(
@@ -487,14 +500,14 @@ pub(crate) fn verify_factory_exec(
     )?;
     // The metadata observer changes only USERNS, so status IDs use the held
     // Android mapping while TracerPid and stat still use the host PID namespace.
-    for field in ["Uid:", "Gid:"] {
+    for (field, expected) in [("Uid:", 2000), ("Gid:", domain.gid())] {
         let values = status_field(&observed.status, field)?
             .split_ascii_whitespace()
             .map(str::parse::<u32>)
             .collect::<std::result::Result<Vec<_>, _>>()
             .map_err(external)?;
         require(
-            values == [2000; 4],
+            values == [expected; 4],
             "factory query stopped Android credentials differ",
         )?;
     }
@@ -737,8 +750,7 @@ impl<'a> ExecTrace<'a> {
         deadline: Instant,
     ) -> Result<ExecReceipt> {
         require(
-            binding.label
-                == executable_role_label(domain),
+            executable_role_matches(domain, binding.label),
             "operation domain does not match its private executable role",
         )?;
         let previous_tid = self.actual_exec_stop(deadline)?;
