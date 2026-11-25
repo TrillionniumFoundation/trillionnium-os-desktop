@@ -11,8 +11,21 @@ const RC: &[u8] =
     include_bytes!("../../../android/framework/droidloom-readiness/droidloom-readiness.rc");
 const INPUT_RC: &[u8] =
     include_bytes!("../../../android/framework/droidloom-input-bridge/droidloom-input-bridge.rc");
+const CAMERA_RC: &[u8] = include_bytes!(
+    "../../../android/framework/droidloom-camera-producer/droidloom-camera-producer.rc");
+const CAMERA_PROVIDER_RC: &[u8] = include_bytes!(
+    "../../../android/framework/droidloom-camera-producer/droidloom-virtual-camera.rc");
 const INPUT_WRAPPER: &[u8] =
     include_bytes!("../../../android/framework/droidloom-input-bridge/droidloom-input-bridge");
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct InstalledCamera {
+    jar: FileRef,
+    init_rc: FileRef,
+    provider: FileRef,
+    provider_init_rc: FileRef,
+}
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -21,10 +34,12 @@ struct InstalledFrontend {
     input_bridge_jar: FileRef,
     input_bridge_init_rc: FileRef,
     task_launcher: FileRef,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    camera: Option<InstalledCamera>,
 }
 
 impl InstalledFrontend {
-    fn read(install: &Path) -> Result<Self> {
+    fn read(install: &Path, product: &Path) -> Result<Self> {
         let value = Self {
             input_bridge_wrapper: pin(&install.join("bin/droidloom-input-bridge"), 4096)?,
             input_bridge_jar: pin(
@@ -36,6 +51,14 @@ impl InstalledFrontend {
                 4096,
             )?,
             task_launcher: pin(&install.join("bin/droidloom-task-launcher"), 8 * 1024 * 1024)?,
+            // These are outputs of the same normal vendor build. The provider
+            // retains its upstream target; only its immutable carrier path differs.
+            camera: Some(InstalledCamera {
+                jar: pin(&install.join("framework/droidloom-camera-producer.jar"), 8 * 1024 * 1024)?,
+                init_rc: pin(&install.join("etc/init/droidloom-camera-producer.rc"), 4096)?,
+                provider: pin(&product.join("system/bin/virtual_camera"), 8 * 1024 * 1024)?,
+                provider_init_rc: pin(&install.join("etc/init/droidloom-virtual-camera.rc"), 4096)?,
+            }),
         };
         value.digests()?;
         if bound_body(&value.input_bridge_wrapper, 4096)? != INPUT_WRAPPER
@@ -43,16 +66,30 @@ impl InstalledFrontend {
         {
             return fail("the installed frontend wrapper or init script differs from the normal product");
         }
+        let camera = value.camera.as_ref().ok_or("normal camera outputs missing")?;
+        if bound_body(&camera.init_rc, 4096)? != CAMERA_RC
+            || bound_body(&camera.provider_init_rc, 4096)? != CAMERA_PROVIDER_RC {
+            return fail("installed camera init scripts differ from the fixed normal product");
+        }
         Ok(value)
     }
 
-    fn entries(&self) -> [(&str, &FileRef, u64); 4] {
-        [
+    fn entries(&self) -> Vec<(&str, &FileRef, u64)> {
+        let mut entries = vec![
             ("input_bridge_wrapper", &self.input_bridge_wrapper, 4096),
             ("input_bridge_jar", &self.input_bridge_jar, 8 * 1024 * 1024),
             ("input_bridge_init_rc", &self.input_bridge_init_rc, 4096),
             ("task_launcher", &self.task_launcher, 8 * 1024 * 1024),
-        ]
+        ];
+        if let Some(camera) = &self.camera {
+            entries.extend([
+                ("camera_jar", &camera.jar, 8 * 1024 * 1024),
+                ("camera_init_rc", &camera.init_rc, 4096),
+                ("camera_provider", &camera.provider, 8 * 1024 * 1024),
+                ("camera_provider_init_rc", &camera.provider_init_rc, 4096),
+            ]);
+        }
+        entries
     }
 
     fn digests(&self) -> Result<contract::FrontendDeclaration> {
@@ -64,6 +101,12 @@ impl InstalledFrontend {
             input_bridge_jar_sha256: self.input_bridge_jar.sha256.clone(),
             input_bridge_init_rc_sha256: self.input_bridge_init_rc.sha256.clone(),
             task_launcher_sha256: self.task_launcher.sha256.clone(),
+            camera: self.camera.as_ref().map(|camera| contract::CameraDeclaration {
+                jar_sha256: camera.jar.sha256.clone(),
+                init_rc_sha256: camera.init_rc.sha256.clone(),
+                provider_sha256: camera.provider.sha256.clone(),
+                provider_init_rc_sha256: camera.provider_init_rc.sha256.clone(),
+            }),
         };
         if !value.valid() {
             return fail("invalid normal installed frontend member digest");
@@ -72,7 +115,7 @@ impl InstalledFrontend {
     }
 
     fn paths(&self) -> BTreeMap<&str, &Path> {
-        self.entries().map(|(name, file, _)| (name, file.path.as_path())).into()
+        self.entries().into_iter().map(|(name, file, _)| (name, file.path.as_path())).collect()
     }
 
     fn recheck(&self) -> Result<()> {
@@ -81,6 +124,14 @@ impl InstalledFrontend {
         }
         Ok(())
     }
+}
+
+fn verifier_inputs(rc: &str, frontend: &contract::FrontendDeclaration) -> Vec<String> {
+    let mut values = vec![rc.to_owned(), frontend.input_bridge_init_rc_sha256.clone()];
+    if let Some(camera) = &frontend.camera {
+        values.extend([camera.init_rc_sha256.clone(), camera.provider_init_rc_sha256.clone()]);
+    }
+    values
 }
 
 fn receipt_parents(
@@ -132,7 +183,7 @@ pub(crate) fn build(
     if bound_body(&rc, 4096)? != RC {
         return fail("the installed readiness init script differs from the normal product");
     }
-    let frontend = InstalledFrontend::read(&install)?;
+    let frontend = InstalledFrontend::read(&install, product)?;
     let frontend_digests = frontend.digests()?;
     let host = vendor_build.join("host/linux-x86/bin");
     let host_tool = |name: &str| -> Result<FileRef> {
@@ -148,6 +199,10 @@ pub(crate) fn build(
         &verifier,
         Command::new(&verifier.path).arg(&frontend.input_bridge_init_rc.path),
     )?;
+    let camera = frontend.camera.as_ref().ok_or("normal camera outputs missing")?;
+    for input in [&camera.init_rc, &camera.provider_init_rc] {
+        checked_tool(&verifier, Command::new(&verifier.path).arg(&input.path))?;
+    }
     let tools = BTreeMap::from([
         ("debugfs", reader_tool("debugfs")?),
         ("e2fsck", reader_tool("e2fsck")?),
@@ -197,7 +252,7 @@ pub(crate) fn build(
         "source_system_sha256":system.sha256,"installed_elf":elf,"installed_rc":rc,
         "installed_frontend":frontend,
         "mount_subtrees": contract::READINESS_TARGETS,
-        "host_init_verifier_inputs":[rc.sha256,frontend_digests.input_bridge_init_rc_sha256],
+        "host_init_verifier_inputs":verifier_inputs(&rc.sha256, &frontend_digests),
         "readback":readback,"host_init_verifier":verifier,"production_signed":false}),
     )
 }
@@ -239,7 +294,7 @@ pub(super) fn verify_retained(
         || normal["readback"]["parents"]
             != receipt_parents(&system.sha256, elf_sha, rc_sha, &frontend_digests)?
         || normal["host_init_verifier_inputs"]
-            != json!([rc_sha, frontend_digests.input_bridge_init_rc_sha256])
+            != json!(verifier_inputs(rc_sha, &frontend_digests))
         || !normal["host_init_verifier"]["bytes"]
             .as_u64()
             .is_some_and(|n| n > 0)

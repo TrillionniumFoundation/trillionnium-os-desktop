@@ -49,27 +49,60 @@ FRONTEND = {
 }
 
 
+CAMERA = {
+    "camera_jar": ("framework/droidloom-camera-producer.jar", 0o100644, 8 * 1024 * 1024,
+                   b"u:object_r:droidloom_camera_producer_jar:s0\0"),
+    "camera_init_rc": ("etc/init/droidloom-camera-producer.rc", 0o100644, 4096,
+                       b"u:object_r:system_file:s0\0"),
+    "camera_provider": ("bin/droidloom-virtual-camera", 0o100755, 8 * 1024 * 1024,
+                        b"u:object_r:virtual_camera_exec:s0\0"),
+    "camera_provider_init_rc": ("etc/init/droidloom-virtual-camera.rc", 0o100644, 4096,
+                                b"u:object_r:system_file:s0\0"),
+}
+
+
+def frontend_specs(expected):
+    values = expected.get("frontend")
+    check(isinstance(values, dict), "missing normal frontend declaration")
+    camera = values.get("camera")
+    wanted = {name + "_sha256" for name in FRONTEND}
+    if camera is not None:
+        wanted.add("camera")
+        check(isinstance(camera, dict)
+              and set(camera) == {name.removeprefix("camera_") + "_sha256" for name in CAMERA},
+              "incomplete camera declaration")
+    check(set(values) == wanted, "unexpected frontend declaration fields")
+    return FRONTEND | (CAMERA if camera is not None else {})
+
+
+def frontend_digest(expected, name):
+    values = expected["frontend"]
+    if name.startswith("camera_"):
+        return values["camera"][name.removeprefix("camera_") + "_sha256"]
+    return values[name + "_sha256"]
+
+
 def frontend_members(expected):
     values = expected.get("frontend")
-    check(isinstance(values, dict) and set(values) == {name + "_sha256" for name in FRONTEND},
-          "incomplete normal frontend digests")
-    check(all(isinstance(value, str) and re.fullmatch("[0-9a-f]{64}", value)
-              for value in values.values()), "invalid normal frontend digest")
-    return {relative: (mode, 0, 0, label, values[name + "_sha256"])
-            for name, (relative, mode, _limit, label) in FRONTEND.items()}
+    specs = frontend_specs(expected)
+    check(all(isinstance(frontend_digest(expected, name), str)
+              and re.fullmatch("[0-9a-f]{64}", frontend_digest(expected, name))
+              for name in specs), "invalid normal frontend digest")
+    return {relative: (mode, 0, 0, label, frontend_digest(expected, name))
+            for name, (relative, mode, _limit, label) in specs.items()}
 
 
 def verify_frontend_body(relative, body):
-    for role, (path, _mode, limit, _label) in FRONTEND.items():
+    for role, (path, _mode, limit, _label) in (FRONTEND | CAMERA).items():
         if relative != path:
             continue
         check(0 < len(body) <= limit, "normal frontend size: " + relative)
-        if role == "task_launcher":
+        if role in ("task_launcher", "camera_provider"):
             check(body[:7] == b"\x7fELF\x02\x01\x01" and body[16:20] == b"\x03\x00\x3e\x00",
                   "expected a little-endian x86_64 task launcher PIE")
         elif role == "input_bridge_wrapper":
             check(body.startswith(b"#!/system/bin/sh\n"), "expected the Android frontend wrapper")
-        elif role == "input_bridge_jar":
+        elif role in ("input_bridge_jar", "camera_jar"):
             with zipfile.ZipFile(io.BytesIO(body)) as archive:
                 entries = archive.infolist()
                 names = [entry.filename for entry in entries]
@@ -235,11 +268,12 @@ def build(system, service, rc, out, expected, frontend):
     new_files = {"bin/droidloom-readiness": (service, 0o100755, 0, 2000, b"u:object_r:droidloom_readiness_exec:s0\0"),
                  "etc/init/droidloom-readiness.rc": (rc, 0o100644, 0, 0, b"u:object_r:system_file:s0\0")}
     frontend_members(expected)
-    check(set(frontend) == set(FRONTEND), "incomplete normal installed frontend paths")
-    for name, (relative, mode, limit, label) in FRONTEND.items():
+    specs = frontend_specs(expected)
+    check(set(frontend) == set(specs), "incomplete normal installed frontend paths")
+    for name, (relative, mode, limit, label) in specs.items():
         path = Path(frontend[name])
         check(path.is_file() and 0 < path.stat().st_size <= limit
-              and digest(path) == expected["frontend"][name + "_sha256"],
+              and digest(path) == frontend_digest(expected, name),
               "normal frontend input changed: " + name)
         verify_frontend_body(relative, path.read_bytes())
         new_files[relative] = (path, mode, 0, 0, label)

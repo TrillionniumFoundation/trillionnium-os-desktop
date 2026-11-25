@@ -18,6 +18,8 @@ pub const TARGETS: &[&str] = &[
     "android.hardware.graphics.composer3-service.droidloom",
     "droidloom-task-launcher",
     "droidloom-input-bridge",
+    "droidloom-camera-producer",
+    "virtual_camera",
     "DroidloomIME",
     "DroidloomHome",
     "DroidloomSystemUI",

@@ -1,0 +1,489 @@
+--- a/services/camera/virtualcamera/VirtualCameraService.h
++++ b/services/camera/virtualcamera/VirtualCameraService.h
+@@ -17,7 +17,9 @@
+ #ifndef ANDROID_COMPANION_VIRTUALCAMERA_VIRTUALCAMERASERVICE_H
+ #define ANDROID_COMPANION_VIRTUALCAMERA_VIRTUALCAMERASERVICE_H
+ 
++#include <atomic>
+ #include <memory>
++#include <android/binder_ibinder.h>
+ #include <mutex>
+ #include <unordered_map>
+ 
+@@ -101,9 +103,22 @@
+       const std::string& cameraId, int32_t deviceId, bool* _aidl_return)
+       EXCLUDES(mLock);
+ 
++
++  struct TokenRegistration;
++  struct TokenDeathCookie;
++  static void tokenDied(void* cookie);
++  static void tokenUnlinked(void* cookie);
++  void retireToken(const std::shared_ptr<TokenRegistration>& registration,
++                   bool unlink) EXCLUDES(mLock);
++
+   std::shared_ptr<VirtualCameraProvider> mVirtualCameraProvider;
+   bool mCheckHardwareRequirements = true;
+   const PermissionsProxy& mPermissionProxy;
++
++  // Delete the recipient after the maps. onUnlinked owns the last cookie lease;
++  // a callback only holds weak service/state references across this destruction.
++  std::unique_ptr<AIBinder_DeathRecipient,
++                  decltype(&AIBinder_DeathRecipient_delete)> mTokenDeathRecipient;
+ 
+   std::mutex mLock;
+   struct BinderTokenHash {
+@@ -111,9 +126,10 @@
+       return std::hash<void*>{}(reinterpret_cast<void*>(key.get()));
+     }
+   };
+-  // Map Binder tokens to names of cameras managed by camera provider.
+-  std::unordered_map<::ndk::SpAIBinder, std::string, BinderTokenHash>
+-      mTokenToCameraName GUARDED_BY(mLock);
++  // A reserved registration has no camera until creation completes. Every
++  // callback targets this registration and the exact original device object.
++  std::unordered_map<::ndk::SpAIBinder, std::shared_ptr<TokenRegistration>,
++                     BinderTokenHash> mTokenRegistrations GUARDED_BY(mLock);
+ 
+   // Local binder token for test camera instance, or nullptr if there's none.
+   ::ndk::SpAIBinder mTestCameraToken;
+--- a/services/camera/virtualcamera/VirtualCameraService.cc
++++ b/services/camera/virtualcamera/VirtualCameraService.cc
+@@ -265,11 +265,69 @@
+ 
+ }  // namespace
+ 
++struct VirtualCameraService::TokenRegistration {
++  ::ndk::SpAIBinder token;
++  std::shared_ptr<TokenDeathCookie> cookie;
++  std::atomic<bool> dead{false};
++  // Accessed only while the service mLock is held.
++  std::shared_ptr<VirtualCameraDevice> camera;
++};
++
++struct VirtualCameraService::TokenDeathCookie {
++  std::weak_ptr<VirtualCameraService> service;
++  std::weak_ptr<TokenRegistration> registration;
++  // NDK guarantees onUnlinked exactly once, including failed link attempts, and
++  // only after pending onBinderDied. Never free the cookie after unlink returns.
++  std::shared_ptr<TokenDeathCookie> binderLifetime;
++};
++
++void VirtualCameraService::tokenUnlinked(void* opaque) {
++  auto* cookie = static_cast<TokenDeathCookie*>(opaque);
++  auto finalLease = std::move(cookie->binderLifetime);
++}
++
++void VirtualCameraService::tokenDied(void* opaque) {
++  auto* cookie = static_cast<TokenDeathCookie*>(opaque);
++  auto service = cookie->service.lock();
++  auto registration = cookie->registration.lock();
++  if (registration) registration->dead.store(true, std::memory_order_release);
++  if (service && registration) {
++    service->retireToken(registration, false);
++  }
++}
++
++void VirtualCameraService::retireToken(
++    const std::shared_ptr<TokenRegistration>& registration, bool unlink) {
++  std::shared_ptr<VirtualCameraDevice> camera;
++  {
++    std::lock_guard lock(mLock);
++    auto it = mTokenRegistrations.find(registration->token);
++    if (it != mTokenRegistrations.end() && it->second == registration) {
++      camera = std::move(registration->camera);
++      mTokenRegistrations.erase(it);
++    }
++  }
++  if (unlink && registration->cookie) {
++    // The held registration keeps the cookie address unique while this call
++    // races the death callback. Neither callback can target a newer registration.
++    AIBinder_unlinkToDeath(registration->token.get(), mTokenDeathRecipient.get(),
++                          registration->cookie.get());
++  }
++  if (camera != nullptr) {
++    // Removal uses the held original object, not a reusable device name, and
++    // unconditionally retires its session even when stream-close flags are off.
++    mVirtualCameraProvider->removeCamera(camera);
++  }
++}
++
+ VirtualCameraService::VirtualCameraService(
+     std::shared_ptr<VirtualCameraProvider> virtualCameraProvider,
+     const PermissionsProxy& permissionProxy)
+     : mVirtualCameraProvider(virtualCameraProvider),
+-      mPermissionProxy(permissionProxy) {
++      mPermissionProxy(permissionProxy),
++      mTokenDeathRecipient(AIBinder_DeathRecipient_new(tokenDied),
++                           AIBinder_DeathRecipient_delete) {
++  AIBinder_DeathRecipient_setOnUnlinked(mTokenDeathRecipient.get(), tokenUnlinked);
+ }
+ 
+ ndk::ScopedAStatus VirtualCameraService::registerCamera(
+@@ -296,10 +354,11 @@
+     const ::ndk::SpAIBinder& token,
+     const VirtualCameraConfiguration& configuration,
+     const std::string& cameraId, const int32_t deviceId, bool* _aidl_return) {
+-  if (_aidl_return == nullptr) {
++  if (_aidl_return == nullptr || token.get() == nullptr) {
+     return ndk::ScopedAStatus::fromServiceSpecificError(
+         Status::EX_ILLEGAL_ARGUMENT);
+   }
++  *_aidl_return = false;
+ 
+   if (mCheckHardwareRequirements) {
+     auto status = verifyRequiredEglExtensions();
+@@ -321,34 +380,62 @@
+     return status;
+   }
+ 
++  auto registration = std::make_shared<TokenRegistration>();
++  registration->token = token;
++  if (AIBinder_isRemote(token.get())) {
++    auto cookie = std::make_shared<TokenDeathCookie>();
++    cookie->service = this->ref<VirtualCameraService>();
++    cookie->registration = registration;
++    cookie->binderLifetime = cookie;
++    registration->cookie = cookie;
++    const auto linked = AIBinder_linkToDeath(
++        token.get(), mTokenDeathRecipient.get(), cookie.get());
++    if (linked != STATUS_OK) {
++      return ndk::ScopedAStatus::fromStatus(linked);
++    }
++  }
++  bool reserved = false;
+   {
+     std::lock_guard lock(mLock);
+-    if (mTokenToCameraName.find(token) != mTokenToCameraName.end()) {
+-      ALOGE(
+-          "Attempt to register camera corresponding to already registered "
+-          "binder token: 0x%" PRIxPTR,
+-          reinterpret_cast<uintptr_t>(token.get()));
+-      *_aidl_return = false;
+-      return ndk::ScopedAStatus::ok();
+-    }
+-  }
+-
++    if (!registration->dead.load(std::memory_order_acquire)
++        && mTokenRegistrations.find(token) == mTokenRegistrations.end()) {
++      mTokenRegistrations.emplace(token, registration);
++      reserved = true;
++    }
++  }
++  if (!reserved) {
++    // Do not unlink another registration, including the same token's earlier
++    // live registration. The exact cookie identifies only this attempt.
++    retireToken(registration, true);
++    return ndk::ScopedAStatus::ok();
++  }
++  // Local tokens belong to this provider process; process death also retires
++  // the provider. External callers always reach this API with a remote token.
+   std::shared_ptr<VirtualCameraDevice> camera =
+       mVirtualCameraProvider->createCamera(configuration, cameraId, deviceId);
+   if (camera == nullptr) {
+-    ALOGE("Failed to create camera for binder token 0x%" PRIxPTR,
+-          reinterpret_cast<uintptr_t>(token.get()));
+-    *_aidl_return = false;
+-    return ndk::ScopedAStatus::fromServiceSpecificError(
+-        Status::EX_SERVICE_SPECIFIC);
+-  }
+-
++    retireToken(registration, true);
++    return ndk::ScopedAStatus::fromServiceSpecificError(Status::EX_SERVICE_SPECIFIC);
++  }
++  bool published = false;
+   {
+     std::lock_guard lock(mLock);
+-    mTokenToCameraName[token] = camera->getCameraName();
+-    *_aidl_return = true;
+-    return ndk::ScopedAStatus::ok();
+-  }
++    const auto current = mTokenRegistrations.find(token);
++    if (current != mTokenRegistrations.end() && current->second == registration
++        && !registration->dead.load(std::memory_order_acquire)) {
++      registration->camera = camera;
++      published = true;
++    }
++  }
++  if (!published) {
++    // Death or an exact-token unregister won while camera creation was outside
++    // the mutex. Retire only the newly created, not-yet-published camera.
++    retireToken(registration, true);
++    mVirtualCameraProvider->removeCamera(camera);
++    return ndk::ScopedAStatus::fromStatus(STATUS_DEAD_OBJECT);
++  }
++  *_aidl_return = true;
++  return ndk::ScopedAStatus::ok();
+ }
+ 
+ ndk::ScopedAStatus VirtualCameraService::unregisterCamera(
+@@ -360,24 +447,16 @@
+     return ndk::ScopedAStatus::fromExceptionCode(EX_SECURITY);
+   }
+ 
+-  std::optional<std::string> cameraName;
++  std::shared_ptr<TokenRegistration> registration;
+   {
+     std::lock_guard lock(mLock);
+-    auto it = mTokenToCameraName.find(token);
+-    if (it == mTokenToCameraName.end()) {
+-      ALOGE(
+-          "Attempt to unregister camera corresponding to unknown binder"
+-          " token: 0x%" PRIxPTR,
+-          reinterpret_cast<uintptr_t>(token.get()));
++    auto it = mTokenRegistrations.find(token);
++    if (it == mTokenRegistrations.end()) {
+       return ndk::ScopedAStatus::ok();
+     }
+-    cameraName = it->second;
+-    mTokenToCameraName.erase(it);
+-  }
+-
+-  if (cameraName.has_value()) {
+-    mVirtualCameraProvider->removeCamera(cameraName.value());
+-  }
++    registration = it->second;
++  }
++  retireToken(registration, true);
+ 
+   return ndk::ScopedAStatus::ok();
+ }
+@@ -432,21 +511,13 @@
+     return nullptr;
+   }
+ 
+-  std::optional<std::string> cameraName;
+-  {
+-    std::lock_guard lock(mLock);
+-    auto it = mTokenToCameraName.find(token);
+-    if (it == mTokenToCameraName.end()) {
+-      return nullptr;
+-    }
+-    cameraName = it->second;
+-  }
+-
+-  if (!cameraName.has_value()) {
++  std::lock_guard lock(mLock);
++  auto it = mTokenRegistrations.find(token);
++  if (it == mTokenRegistrations.end()
++      || it->second->dead.load(std::memory_order_acquire)) {
+     return nullptr;
+   }
+-
+-  return mVirtualCameraProvider->getCamera(cameraName.value());
++  return it->second->camera;
+ }
+ 
+ binder_status_t VirtualCameraService::handleShellCommand(int, int out, int err,
+--- a/services/camera/virtualcamera/VirtualCameraProvider.h
++++ b/services/camera/virtualcamera/VirtualCameraProvider.h
+@@ -20,6 +20,7 @@
+ #include <map>
+ #include <memory>
+ #include <mutex>
++#include <set>
+ 
+ #include "VirtualCameraDevice.h"
+ #include "aidl/android/hardware/camera/common/VendorTagSection.h"
+@@ -81,6 +82,9 @@
+ 
+   bool removeCamera(const std::string& name);
+ 
++  // Retire only this exact object. A reused name is never removal authority.
++  bool removeCamera(const std::shared_ptr<VirtualCameraDevice>& camera);
++
+  private:
+   std::mutex mLock;
+ 
+@@ -90,6 +94,9 @@
+ 
+   std::map<std::string, std::shared_ptr<VirtualCameraDevice>> mCameras
+       GUARDED_BY(mLock);
++  // Keep the original map entry until NOT_PRESENT has completed. This prevents
++  // a replacement's PRESENT from overtaking the original removal notification.
++  std::set<std::string> mRetiringCameras GUARDED_BY(mLock);
+ };
+ 
+ }  // namespace virtualcamera
+--- a/services/camera/virtualcamera/VirtualCameraProvider.cc
++++ b/services/camera/virtualcamera/VirtualCameraProvider.cc
+@@ -201,30 +201,30 @@
+ }
+ 
+ bool VirtualCameraProvider::removeCamera(const std::string& name) {
+-  ALOGI("%s: %s", __func__, name.c_str());
++  return removeCamera(getCamera(name));
++}
++
++bool VirtualCameraProvider::removeCamera(
++    const std::shared_ptr<VirtualCameraDevice>& camera) {
++  if (camera == nullptr) {
++    return false;
++  }
++  const auto name = camera->getCameraName();
+   std::shared_ptr<ICameraProviderCallback> callback;
+-  std::vector<std::shared_ptr<VirtualCameraDevice>> camerasToClose;
+   {
+     const std::lock_guard<std::mutex> lock(mLock);
+     auto it = mCameras.find(name);
+-    if (it == mCameras.end()) {
+-      ALOGE("Cannot remove camera %s: no such camera", name.c_str());
++    if (it == mCameras.end() || it->second != camera
++        || !mRetiringCameras.insert(name).second) {
+       return false;
+     }
+-    if (flags::virtual_camera_stream_close_device_close()) {
+-      camerasToClose.push_back(it->second);
+-    }
+-    mCameras.erase(it);
+     callback = mCameraProviderCallback;
+   }
+ 
+-  if (flags::virtual_camera_stream_close_device_close()) {
+-    for (const auto& camera : camerasToClose) {
+-      camera->closeSession();
+-    }
+-    camerasToClose.clear();
+-  }
+-
++  // Never hold a provider/service mutex across device or Binder callbacks.
++  // Retirement is sticky: callers holding the old ICameraDevice cannot reopen
++  // it after token death, even if another registration reuses the same name.
++  camera->retire();
+   if (callback != nullptr) {
+     auto ret = callback->cameraDeviceStatusChange(
+         name, CameraDeviceStatus::NOT_PRESENT);
+@@ -234,6 +234,14 @@
+     }
+   }
+ 
++  {
++    const std::lock_guard<std::mutex> lock(mLock);
++    auto it = mCameras.find(name);
++    if (it != mCameras.end() && it->second == camera) {
++      mCameras.erase(it);
++    }
++    mRetiringCameras.erase(name);
++  }
+   return true;
+ }
+ 
+--- a/services/camera/virtualcamera/VirtualCameraDevice.h
++++ b/services/camera/virtualcamera/VirtualCameraDevice.h
+@@ -123,6 +123,10 @@
+   // Closes the current camera session and notifies camera framework of device error
+   void closeSession(bool notifyError = false);
+ 
++  // Permanently disallow new sessions and close the original session with a
++  // device error. Used for token retirement independently of feature flags.
++  void retire();
++
+   // Maximal number of RAW streams - virtual camera doesn't support RAW streams.
+   static constexpr int32_t kMaxNumberOfRawStreams = 0;
+ 
+@@ -175,6 +179,7 @@
+ 
+   const bool mIsMultiInputStreamEnabled;
+   std::mutex mSessionLock;
++  bool mRetired GUARDED_BY(mSessionLock) = false;
+   std::weak_ptr<VirtualCameraSession> mSession GUARDED_BY(mSessionLock);
+ };
+ 
+--- a/services/camera/virtualcamera/VirtualCameraDevice.cc
++++ b/services/camera/virtualcamera/VirtualCameraDevice.cc
+@@ -936,6 +936,9 @@
+ 
+   {
+     std::lock_guard<std::mutex> lock(mSessionLock);
++    if (mRetired) {
++      return cameraStatus(Status::CAMERA_DISCONNECTED);
++    }
+     auto currentSession = mSession.lock();
+     if (currentSession != nullptr) {
+       return cameraStatus(Status::CAMERA_IN_USE);
+@@ -1032,6 +1035,14 @@
+   return ref<VirtualCameraDevice>();
+ }
+ 
++void VirtualCameraDevice::retire() {
++  {
++    std::lock_guard<std::mutex> lock(mSessionLock);
++    mRetired = true;
++  }
++  closeSession(true);
++}
++
+ void VirtualCameraDevice::closeSession(bool notifyError) {
+   ALOGV("Close all sessions. notifyError %d", notifyError);
+   std::shared_ptr<VirtualCameraSession> session;
+--- a/services/camera/virtualcamera/tests/VirtualCameraProviderTest.cc
++++ b/services/camera/virtualcamera/tests/VirtualCameraProviderTest.cc
+@@ -15,6 +15,9 @@
+  */
+ 
+ #include <memory>
++#include <chrono>
++#include <future>
++#include <thread>
+ 
+ #include "VirtualCameraProvider.h"
+ #include "aidl/android/hardware/camera/common/CameraDeviceStatus.h"
+@@ -178,6 +181,58 @@
+   EXPECT_THAT(cameraIds, ElementsAre(camera->getCameraName()));
+ }
+ 
++TEST_F(VirtualCameraProviderTest, ExactRemovalCannotRetireSameNameReplacement) {
++  auto original = mCameraProvider->createCamera(
++      mInputConfig, kCameraId, kDefaultDeviceId);
++  ASSERT_NE(original, nullptr);
++  ASSERT_TRUE(mCameraProvider->removeCamera(original));
++  std::shared_ptr<
++      ::aidl::android::hardware::camera::device::ICameraDeviceSession> session;
++  auto opened = original->open(nullptr, &session);
++  EXPECT_FALSE(opened.isOk());
++  EXPECT_EQ(opened.getServiceSpecificError(),
++            static_cast<int32_t>(Status::CAMERA_DISCONNECTED));
++  EXPECT_EQ(session, nullptr);
++  auto replacement = mCameraProvider->createCamera(
++      mInputConfig, kCameraId, kDefaultDeviceId);
++  ASSERT_NE(replacement, nullptr);
++  EXPECT_FALSE(mCameraProvider->removeCamera(original));
++  EXPECT_EQ(mCameraProvider->getCamera(replacement->getCameraName()), replacement);
++  EXPECT_TRUE(mCameraProvider->removeCamera(replacement));
++}
++
++TEST_F(VirtualCameraProviderTest, RemovalNotificationPrecedesNameReuse) {
++  ASSERT_TRUE(mCameraProvider->setCallback(mMockCameraProviderCallback).isOk());
++  auto original = mCameraProvider->createCamera(
++      mInputConfig, kCameraId, kDefaultDeviceId);
++  ASSERT_NE(original, nullptr);
++  std::promise<void> entered, release;
++  auto enteredFuture = entered.get_future();
++  auto releaseFuture = release.get_future();
++  EXPECT_CALL(*mMockCameraProviderCallback,
++              cameraDeviceStatusChange(_, CameraDeviceStatus::NOT_PRESENT))
++      .WillOnce([&](const std::string&, CameraDeviceStatus) {
++        entered.set_value();
++        releaseFuture.wait();
++        return ndk::ScopedAStatus::ok();
++      });
++  bool removed = false;
++  std::thread retire([&] { removed = mCameraProvider->removeCamera(original); });
++  const auto observed = enteredFuture.wait_for(std::chrono::seconds(5));
++  EXPECT_EQ(observed, std::future_status::ready);
++  if (observed == std::future_status::ready) {
++    EXPECT_EQ(mCameraProvider->createCamera(
++                  mInputConfig, kCameraId, kDefaultDeviceId), nullptr);
++    EXPECT_FALSE(mCameraProvider->removeCamera(original));
++  }
++  release.set_value();
++  retire.join();
++  EXPECT_TRUE(removed);
++  auto replacement = mCameraProvider->createCamera(
++      mInputConfig, kCameraId, kDefaultDeviceId);
++  EXPECT_NE(replacement, nullptr);
++}
++
+ }  // namespace
+ }  // namespace virtualcamera
+ }  // namespace companion

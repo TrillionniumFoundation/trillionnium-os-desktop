@@ -23,6 +23,7 @@ pub(super) const NATIVE_TARGETS: &[&str] = &["droidloom_cp3a_native_bridge_packa
 pub(super) const VENDOR_TARGETS: &[&str] = &[
     "vendorimage", "secilc", "checkvintf", "host_init_verifier", "droidloom-readiness",
     "droidloom-input-bridge", "droidloom-task-launcher",
+    "droidloom-camera-producer", "virtual_camera", "virtual_camera_tests",
     keymint_test::TARGET,
 ];
 const HOST_DIRECTORY: &str = "lib64/droidloom/nativebridge";
@@ -685,6 +686,10 @@ pub(super) fn project(
     )?;
     let pack = vendor.join("android/native-bridge/official-vendor");
     fs::create_dir_all(&pack)?;
+    if matches!(request.phase, Phase::Vendor(_)) {
+        projection.patch(source, "frameworks/av",
+            &vendor.join("android/framework/droidloom-camera-producer/virtual-camera-token-death.patch"))?;
+    }
     let modules = match request.phase {
         Phase::Native => {
             projection.put(&pack.join("Android.bp"), native_blueprint())?;

@@ -1,0 +1,27 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+java_library {
+    name: "droidloom-camera-producer",
+    srcs: ["src/**/*.java"],
+    static_libs: ["virtual_camera_service_aidl-java"],
+    platform_apis: true,
+    installable: true,
+    system_ext_specific: true,
+    required: ["droidloom-camera-producer.rc", "droidloom-virtual-camera.rc"],
+    dex_preopt: {
+        enabled: false,
+    },
+}
+
+prebuilt_etc {
+    name: "droidloom-camera-producer.rc",
+    src: "droidloom-camera-producer.rc",
+    sub_dir: "init",
+    system_ext_specific: true,
+}
+
+prebuilt_etc {
+    name: "droidloom-virtual-camera.rc",
+    src: "droidloom-virtual-camera.rc",
+    sub_dir: "init",
+    system_ext_specific: true,
+}

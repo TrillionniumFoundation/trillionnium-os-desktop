@@ -228,6 +228,27 @@ pub const HOST_MODULES: &[&str] = &[
 mod tests {
     use super::*;
 
+    #[test]
+    fn camera_declaration_requires_all_four_closed_digest_roles() {
+        let valid = CameraDeclaration {
+            jar_sha256: "1".repeat(64), init_rc_sha256: "2".repeat(64),
+            provider_sha256: "3".repeat(64), provider_init_rc_sha256: "4".repeat(64),
+        };
+        assert!(valid.valid());
+        let raw = serde_json::to_value(&valid).unwrap();
+        for role in ["jar_sha256", "init_rc_sha256", "provider_sha256", "provider_init_rc_sha256"] {
+            let mut missing = raw.clone();
+            missing.as_object_mut().unwrap().remove(role);
+            assert!(serde_json::from_value::<CameraDeclaration>(missing).is_err());
+            let mut changed = raw.clone();
+            changed[role] = serde_json::json!("z".repeat(64));
+            assert!(!serde_json::from_value::<CameraDeclaration>(changed).unwrap().valid());
+        }
+        let mut extra = raw;
+        extra["path"] = serde_json::json!("/unselected");
+        assert!(serde_json::from_value::<CameraDeclaration>(extra).is_err());
+    }
+
     fn candidate() -> Declaration {
         Declaration {
             file: FILE.into(),
