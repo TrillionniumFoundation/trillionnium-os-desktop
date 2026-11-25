@@ -12,6 +12,7 @@ pub(crate) enum OperationDomain {
     LaunchStart,
     Install,
     CatalogRead,
+    DisplayControl,
 }
 impl OperationDomain {
     pub(super) const fn context(self) -> &'static str {
@@ -23,6 +24,7 @@ impl OperationDomain {
             Self::LaunchStart => "u:r:droidloom_launch_start:s0",
             Self::Install => "u:r:droidloom_install:s0",
             Self::CatalogRead => "u:r:droidloom_catalog_read:s0",
+            Self::DisplayControl => "u:r:droidloom_display_control:s0",
         }
     }
 
@@ -35,6 +37,7 @@ impl OperationDomain {
             Self::LaunchStart => b"u:r:droidloom_launch_start:s0\0",
             Self::Install => b"u:r:droidloom_install:s0\0",
             Self::CatalogRead => b"u:r:droidloom_catalog_read:s0\0",
+            Self::DisplayControl => b"u:r:droidloom_display_control:s0\0",
         }
     }
 }
@@ -157,6 +160,7 @@ pub(super) enum ApplicationOperation {
     Launch { value: LaunchCommand },
     Install { value: InstallCommand },
     Catalog { value: CatalogRequest },
+    Display { value: DisplayCommand },
 }
 
 impl ApplicationOperation {
@@ -168,6 +172,7 @@ impl ApplicationOperation {
             Self::Launch { value } => value.validate(),
             Self::Install { value } => value.validate(),
             Self::Catalog { value } => value.validate(),
+            Self::Display { value } => value.validate(),
         }
     }
 
@@ -228,7 +233,7 @@ impl ApplicationOperation {
             Self::Read { value } => value.binary(),
             Self::Browser { .. } => c"cmd",
             Self::ContactsRead { .. } | Self::Catalog { .. } => c"app_process64",
-            Self::Launch { .. } | Self::Install { .. } => c"cmd",
+            Self::Launch { .. } | Self::Install { .. } | Self::Display { .. } => c"cmd",
         }
     }
 
@@ -240,6 +245,7 @@ impl ApplicationOperation {
             Self::Launch { value } => value.arguments(),
             Self::Install { value } => value.arguments(),
             Self::Catalog { value } => value.arguments(),
+            Self::Display { value } => value.arguments(),
         }
     }
 
@@ -251,6 +257,7 @@ impl ApplicationOperation {
             Self::Launch { value } => value.domain(),
             Self::Install { .. } => OperationDomain::Install,
             Self::Catalog { .. } => OperationDomain::CatalogRead,
+            Self::Display { .. } => OperationDomain::DisplayControl,
         }
     }
 }
