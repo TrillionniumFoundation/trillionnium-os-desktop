@@ -142,6 +142,14 @@ enum Command {
         #[arg(long, default_value_t = 0)]
         user: u32,
     },
+    /// Observe package-scoped Android task metadata without changing tasks.
+    Tasks {
+        /// Android package name; task/object IDs are not accepted.
+        package: String,
+        /// Android user identifier.
+        #[arg(long, default_value_t = 0)]
+        user: u32,
+    },
     /// List Android applications exported to the native launcher.
     Applications {
         /// Android user identifier.
@@ -301,8 +309,39 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             *user,
             &mut report,
         )?
+    } else if let Command::Tasks { package, user } = &cli.command {
+        let inspected = request_with_progress(
+            &cli.socket,
+            &ControlRequest::InspectApplication { package: package.clone(), user: *user },
+            &mut report,
+        )?;
+        if !inspected.ok || inspected.state != droidloom_supervisor::control::CellState::Running {
+            return Err(inspected.message.into());
+        }
+        let expected = inspected.inspection.ok_or("current package inspection is missing")?;
+        if expected.package != *package || expected.user != *user
+            || inspected.host_pid != Some(expected.epoch.cell_host_pid) {
+            return Err("current package inspection owner differs".into());
+        }
+        let response = request_with_progress(
+            &cli.socket,
+            &ControlRequest::ObserveApplicationTasks { expected: expected.clone() },
+            &mut report,
+        )?;
+        if response.ok {
+            let observed: droidloom_supervisor::control::application_tasks::ApplicationTaskSnapshot =
+                serde_json::from_str(response.diagnostics.as_deref().ok_or("task snapshot is missing")?)?;
+            observed.validate(&expected)?;
+            if response.state != droidloom_supervisor::control::CellState::Running
+                || response.host_pid != Some(expected.epoch.cell_host_pid)
+                || response.inspection.as_ref() != Some(&expected) {
+                return Err("task snapshot response lost the actual inspected owner".into());
+            }
+        }
+        response
     } else {
         let control_request = match cli.command {
+            Command::Tasks { .. } => unreachable!("handled by the current inspected owner"),
             Command::Install { .. } | Command::InstallMultiple { .. } => {
                 unreachable!("handled with its APK file descriptor")
             }
@@ -598,4 +637,18 @@ fn session_lifecycle(
         println!("{message}");
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod task_metadata_cli_tests {
+    use super::*;
+
+    #[test]
+    fn task_metadata_cli_accepts_only_package_and_user() {
+        let parsed = Cli::try_parse_from(["droidloomctl", "--json", "tasks", "org.example.app", "--user", "0"]).unwrap();
+        assert!(matches!(parsed.command, Command::Tasks { package, user: 0 } if package == "org.example.app"));
+        for flag in ["--task", "--object", "--close", "--resolution", "--component", "--spec"] {
+            assert!(Cli::try_parse_from(["droidloomctl", "tasks", "org.example.app", flag, "9"]).is_err(), "{flag}");
+        }
+    }
 }

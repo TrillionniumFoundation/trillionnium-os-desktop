@@ -4,6 +4,7 @@
 
 mod clipboard;
 mod identity_trace;
+mod window_trace;
 mod activation;
 mod layers;
 mod fence_wakeup;
@@ -197,6 +198,7 @@ struct TaskWindow {
     layers: Option<layers::Stream>,
     package: String,
     android_task: Option<u64>,
+    window_trace: Option<window_trace::WindowIdentity>,
     window: Option<Window>,
     viewport: Option<WpViewport>,
     fractional_scale: Option<WpFractionalScaleV1>,
@@ -280,6 +282,7 @@ struct App {
     window_policy: WindowPolicyStore,
     endpoint: Option<DenialEndpoint>,
     tasks: BTreeMap<TaskObjectId, TaskWindow>,
+    window_audit: window_trace::Audit,
     keyboard: Option<wl_keyboard::WlKeyboard>,
     pointer: Option<wl_pointer::WlPointer>,
     touch: Option<wl_touch::WlTouch>,
@@ -492,12 +495,20 @@ impl App {
                     Some(sync_surface),
                 )
             };
+        let window_trace = window.as_ref().and_then(|window| {
+            self.window_audit.created(
+                object.0,
+                window.wl_surface().id().protocol_id(),
+                package,
+            )
+        });
         self.tasks.insert(
             object,
             TaskWindow {
                 layers: None,
                 package: package.to_owned(),
                 android_task: None,
+                window_trace,
                 window,
                 viewport,
                 fractional_scale,
@@ -1153,7 +1164,13 @@ impl App {
         if let Some(window) = task.window.as_ref() {
             window.xdg_toplevel().destroy();
         }
-        task.window.take();
+        if task.window.take().is_some() {
+            self.window_audit.event(
+                window_trace::Stage::Unmapped,
+                &task.window_trace,
+                task.android_task,
+            );
+        }
         task.unmap_requested = false;
 
         if self.focused == Some(object) {
@@ -1226,6 +1243,11 @@ impl App {
             EndpointAction::BindTask { object, task } => {
                 if let Some(window) = self.tasks.get_mut(&object) {
                     window.android_task = Some(task.0);
+                    self.window_audit.event(
+                        window_trace::Stage::Bound,
+                        &window.window_trace,
+                        window.android_task,
+                    );
                 }
             }
             EndpointAction::CreateTask {
@@ -1544,6 +1566,11 @@ impl WindowHandler for App {
                 Ok(()) => {
                     if let Some(task) = self.tasks.get_mut(&object) {
                         task.unmap_requested = true;
+                        self.window_audit.event(
+                            window_trace::Stage::CloseSent,
+                            &task.window_trace,
+                            task.android_task,
+                        );
                     }
                 }
                 Err(error) => self.fail(&error),
@@ -2386,6 +2413,7 @@ fn run() -> Result<(), PresenterError> {
         window_policy,
         endpoint: None,
         tasks: BTreeMap::new(),
+        window_audit: window_trace::Audit::default(),
         keyboard: None,
         pointer: None,
         touch: None,
