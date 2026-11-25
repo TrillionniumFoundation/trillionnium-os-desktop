@@ -278,7 +278,7 @@ fn proof<'a>(proofs: &'a [RecordedJson], pin: &EvidencePin) -> Result<&'a Record
     Ok(matches[0])
 }
 
-fn normalize_package(name: &str, architecture: &str) -> Result<String> {
+pub(super) fn normalize_package(name: &str, architecture: &str) -> Result<String> {
     let (base, qualifier) = name
         .split_once(':')
         .map_or((name, None), |(a, b)| (a, Some(b)));

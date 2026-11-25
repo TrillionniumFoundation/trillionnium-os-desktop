@@ -104,7 +104,7 @@
 (neverallow p4_linux_without_namespace_executor p4_all_nonboard (dir (mounton)))
 (neverallow p4_linux_without_native_directory_relabel_actors p4_all_nonboard (dir (relabelfrom)))
 (typeattribute p4_native_nonmac_without_module_dirs)
-(typeattributeset p4_native_nonmac_without_module_dirs (and (p4_linux_nonmac_without_native_selinux_queries) (not (or (p4_linux_uevent_label_t) (or (p4_native_sysfs_readers) (p4_native_maintenance_actors))))))
+(typeattributeset p4_native_nonmac_without_module_dirs (and (p4_linux_nonmac_without_native_selinux_queries) (not (or (p4_linux_console_setup_t) (or (p4_linux_uevent_label_t) (or (p4_native_sysfs_readers) (p4_native_maintenance_actors)))))))
 (neverallow p4_native_nonmac_without_module_dirs p4_all_nonboard (dir (read)))
 ; The sealed executor reopens only a newly created tmpfs mount FD before the
 ; stock credential label_fix_full(). This is an opaque directory handle, not

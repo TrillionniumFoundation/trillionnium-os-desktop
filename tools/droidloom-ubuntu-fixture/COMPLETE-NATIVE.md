@@ -111,3 +111,53 @@ cannot transfer that authority. This second preparation reports
 65-APK payload and then run real installation, launch and required business
 gates for the selected 39 apps. Preserved original data stays separate from
 both the initial calibration and fresh public-APK testing.
+
+## Normal console package closure
+
+The complete initializer checks the compiled board-policy/native-console-setup.json
+before modifying the cloned root. This binds the selected normal console-setup,
+keyboard-configuration, kbd, shell, coreutils and library packages, all consumed
+file bytes and modes, the complete hardlink groups, and command/library symlink
+targets. The 116 normal uutils names remain one inode; GNU cp is the actual
+selected /usr/bin/cp implementation. No executable replaces a package file and
+no normal hardlink group is split.
+
+The normal system service scripts and udev font/terminal cache scripts enter a
+dedicated console role. It has no general native command or runtime-library
+execution permission. Exact helper and library inodes have narrower labels.
+The strict linker derives and checks the old actors' effective access, MLS
+constraint membership, ioctl filters and existing transitions for each changed
+object family. Original Android assertions and existing native verifiers remain
+enabled. The real libselinux matcher checks every regular-file alias and
+wrong-kind or unselected-path cases.
+
+The selected configuration uses the US pc105 keyboard, UTF-8 and Uni2 Fixed16
+font. Cache regeneration can write only selected cache names and its private
+temporary type. The script's first /run/tmpkbd.XXXXXX attempt stays denied;
+its existing /tmp fallback creates a non-executable private temporary file.
+/run/console-setup has a named directory transition and non-executable marker storage.
+No home, password, account key, network socket, arbitrary program, mount or
+MAC-management authority is added. VT operations use the actual selected
+kernel/kbd ioctl closure and console configuration capability. Normal glibc 2.43
+isatty/tcgetattr and the selected normal stty issue TCGETS2 (0x802c542a);
+the SELinux filter uses its low 16 bits, 0x542a, and does not grant the obsolete
+TCGETS assumption. All 14 requests are checked in the actual linked policy for
+exactly the four VT object types. Every other character-device class vector is
+checked separately.
+
+The original units retain their ordering. console-setup.service is ordered
+before the display manager; that ordering and Wants edges do not constitute a
+hard GDM Requires dependency. Console functionality is a separate normal-host
+requirement. Source admission retains runtime_qualified=false. Actual unit
+completion, keyboard mode/keymap, font/terminal readback and normal udev execution
+require a real owned boot; package hashes or a service exit cannot claim them.
+
+Focused tests reject missing/extra hardlink aliases, substituted symlinks or
+independent copies, altered bytes, duplicate package identities, wrong
+architectures, versions and unconfigured dpkg-query states. The existing normal
+package canonicalizer accepts the real amd64-qualified names and the ii status.
+The explicitly ignored test
+boot_native::console::tests::admitted_normal_source_readback validates an existing
+normal source using DROIDLOOM_CONSOLE_SOURCE_ROOT, DROIDLOOM_CONSOLE_SOURCE_MANIFEST
+and its exact DROIDLOOM_CONSOLE_SOURCE_SHA256. It starts no service and writes no
+source file; it does not qualify a running console.

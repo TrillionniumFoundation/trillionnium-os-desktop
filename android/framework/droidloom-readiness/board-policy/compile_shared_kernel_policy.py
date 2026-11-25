@@ -12,6 +12,7 @@ import tempfile
 from derive_shared_payload_cgroup_policy import Decision, Policy, derive, verify
 from derive_native_uevent_policy import (derive_android as derive_uevent_android,
     derive_native as derive_uevent_native, verify as verify_uevent)
+from derive_native_console_policy import derive as derive_console, verify as verify_console
 from verify_native_user_cgroups import verify as verify_user_cgroups, source_inputs as user_cgroup_source_inputs
 from verify_native_login_audit import verify_login_audit
 from verify_native_journal_storage import verify_journal_storage
@@ -1303,7 +1304,7 @@ def main():
         "ubuntu-real-root-interpreter.cil", "ubuntu-mounted-api-metadata.cil",
         "ubuntu-native-journal-storage.cil",
         "ubuntu-core-cgroup-ownership.cil", "ubuntu-native-user-cgroups.cil", "ubuntu-native-services.cil",
-        "ubuntu-native-service-capabilities.cil",
+        "ubuntu-native-service-capabilities.cil", "ubuntu-native-console.cil",
         "ubuntu-native-login-audit.cil",
         "ubuntu-native-service-runtime.cil", "ubuntu-native-sandbox.cil",
         "ubuntu-native-maintenance.cil",
@@ -1327,6 +1328,7 @@ def main():
                here / "derive_shared_payload_cgroup_policy.py",
                here / "derive_native_uevent_policy.py", here / "native-uevent-labels.json",
                here / "verify_native_user_cgroups.py", here / "native-user-cgroups.json",
+               here / "derive_native_console_policy.py", here / "native-console-setup.json",
                *user_cgroup_source_inputs(here),
                here / "verify_native_login_audit.py", here / "verify_native_journal_storage.py",
                here / "verify_greeter_home.py", here / "verify_native_maintenance.py",
@@ -1359,6 +1361,14 @@ def main():
         linked = work / "combined.policy"
         compile_policy(compiler, [*args.android_cil, board, *components, shared, uevent_android, uevent_native],
                        linked, contexts, environment)
+        console_aliases = work / "native-console-aliases.cil"
+        console_contract = derive_console(library, linked, work / "console-before.cil",
+                                           here, console_aliases, export_binary_policy)
+        compile_policy(compiler, [*args.android_cil, board, *components, shared,
+                                 uevent_android, uevent_native, console_aliases],
+                       linked, contexts, environment)
+        console_access = verify_console(library, linked, work / "console-after.cil",
+                                        here, console_contract, export_binary_policy)
         uevent_access = verify_uevent(library, linked, uevent_contract,
                                      work / "native-uevent-binary.cil", export_binary_policy)
         user_cgroups = verify_user_cgroups(library, linked, here, work / "user-cgroup-binary.cil", export_binary_policy)
@@ -1375,6 +1385,7 @@ def main():
         manager_file_contexts = verify_manager_file_contexts(here, work)
         result = {
             "native_uevent": uevent_access,
+            "native_console": console_access,
             "native_user_cgroups": user_cgroups,
             "native_manager_file_contexts": manager_file_contexts,
             "native_maintenance": native_maintenance,

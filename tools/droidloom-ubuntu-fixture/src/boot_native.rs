@@ -15,6 +15,9 @@ use std::path::Path;
 mod public_source;
 pub use public_source::{ImportedPublicInputs, PublicInputCustody};
 
+#[path = "boot_native_console.rs"]
+mod console;
+
 #[path = "boot_native_complete.rs"]
 mod complete;
 pub use complete::{CompleteNativeInputs, initialize_complete};
