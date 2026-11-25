@@ -208,3 +208,17 @@ fn application_exec_stop_actual_early_exit_never_issues_exec_observation() {
     .join()
     .unwrap();
 }
+
+#[test]
+fn exact_command_and_interpreter_domains_require_their_original_executable_roles() {
+    for domain in [OperationDomain::ContactsRead, OperationDomain::CatalogRead] {
+        assert_eq!(executable_role_label(domain), PROVIDER_EXEC);
+        assert_ne!(executable_role_label(domain), QUERY_EXEC);
+    }
+    for domain in [OperationDomain::Query, OperationDomain::Browser,
+        OperationDomain::LaunchRead, OperationDomain::LaunchStart,
+        OperationDomain::Install, OperationDomain::DisplayControl] {
+        assert_eq!(executable_role_label(domain), QUERY_EXEC);
+        assert_ne!(executable_role_label(domain), PROVIDER_EXEC);
+    }
+}

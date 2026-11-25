@@ -14,6 +14,15 @@ const AA_STACK: &[u8] = b"droidloom-production-android//&droidloom-production-br
 const EXEC_EVENT: i32 = libc::SIGTRAP | (libc::PTRACE_EVENT_EXEC << 8);
 const MAX_EXECUTABLE: u64 = 128 * 1024 * 1024;
 
+// Both interpreter-backed operations execute the same held app_process64 copy.
+// Every ordinary command remains bound to the separate cmd/toybox role.
+fn executable_role_label(domain: OperationDomain) -> &'static [u8] {
+    match domain {
+        OperationDomain::ContactsRead | OperationDomain::CatalogRead => PROVIDER_EXEC,
+        _ => QUERY_EXEC,
+    }
+}
+
 #[cfg(test)]
 #[path = "production_application_exec_stop_tests.rs"]
 mod tests;
@@ -439,11 +448,7 @@ pub(crate) fn verify_factory_exec(
     )?;
     require(
         binding.label
-            == if domain == OperationDomain::ContactsRead {
-                PROVIDER_EXEC
-            } else {
-                QUERY_EXEC
-            },
+            == executable_role_label(domain),
         "factory query domain and selected executable role differ",
     )?;
     let observed = crate::production_application::observe_metadata(
@@ -733,11 +738,7 @@ impl<'a> ExecTrace<'a> {
     ) -> Result<ExecReceipt> {
         require(
             binding.label
-                == if domain == OperationDomain::ContactsRead {
-                    PROVIDER_EXEC
-                } else {
-                    QUERY_EXEC
-                },
+                == executable_role_label(domain),
             "operation domain does not match its private executable role",
         )?;
         let previous_tid = self.actual_exec_stop(deadline)?;
