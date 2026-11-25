@@ -476,3 +476,18 @@ authority, or accept an application/account pass flag. The isolated mechanism
 checks exercise publication and recovery; they do not replace the remaining
 source-bound cold command dispatcher, exact installed labels, real owned guest
 acceptance, original-device account continuity or actual Ubuntu-return proof.
+
+
+Boot event version 2 uses a contiguous durable sequence plus the kernel's real
+boot ID and a per-boot monotonic timestamp. Reopening after a reboot permits a
+new boot segment with a lower monotonic value. Reordered sequence numbers,
+regression within a boot and reappearance of an already closed boot segment
+are rejected. New snapshots identify this version explicitly; earlier prototype
+journals and test evidence are never rewritten to invent a boot identity.
+
+Before copying a temporary file, the engine records its exact random basename
+and original inode. The rename-ready record carries the same basename/inode.
+Recovery examines only these recorded names and retires only the original
+single-link regular inode. A same-name replacement, a changed parent or a
+creation whose inode was never durably recorded is preserved and rejected.
+Unrecorded directory members are never found through a wildcard deletion.

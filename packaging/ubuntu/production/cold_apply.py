@@ -943,6 +943,19 @@ class PublicTransaction:
 # or changes the next boot. Only arm_once(), after admission, may set next_entry.
 BOOT_TARGET="etc/systemd/system/droidloom-production.target"
 BOOT_FILE_BUDGET=1024**3
+BOOT_EVENT_SCHEMA="droidloom-cold-boot-event-v2"
+BOOT_ID=re.compile(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
+
+def boot_clock():
+    """Observe this boot; a monotonic value is meaningful only within it."""
+    fd=os.open("/proc/sys/kernel/random/boot_id",os.O_RDONLY|os.O_CLOEXEC|os.O_NOFOLLOW)
+    try:
+        raw=os.read(fd,64)
+        need(not os.read(fd,1),"bounded kernel boot identity")
+    finally:os.close(fd)
+    value=raw.decode("ascii","strict").strip()
+    need(BOOT_ID.fullmatch(value) is not None,"actual kernel boot identity")
+    return value,time.monotonic_ns()
 
 def boot_file_scope(deployment_id):
     deployment_id=digest(deployment_id)
@@ -1028,8 +1041,17 @@ class BootFileTransaction:
     def close(self):self._owned.close()
 
     def event(self,phase,**values):
-        body=canonical({"phase":phase,"release_id":self.release_id,
-            "deployment_id":self.deployment_id,"monotonic_ns":time.monotonic_ns(),**values})
+        previous=self.events();boot,now=boot_clock()
+        if previous:
+            if previous[-1]["boot_id"]==boot:
+                need(now>previous[-1]["monotonic_ns"],"same-boot event clock decreased")
+            else:
+                need(all(row["boot_id"]!=boot for row in previous),"closed boot segment reappeared")
+        need(not(set(values)&{"schema","sequence","boot_id","monotonic_ns","phase",
+                              "release_id","deployment_id"}),"fixed boot event envelope")
+        body=canonical({"schema":BOOT_EVENT_SCHEMA,"sequence":len(previous)+1,
+            "phase":phase,"release_id":self.release_id,"deployment_id":self.deployment_id,
+            "boot_id":boot,"monotonic_ns":now,**values})
         need(len(body)<=1024*1024,"bounded boot event")
         fd=os.open(self.journal,os.O_WRONLY|os.O_APPEND|os.O_CREAT|os.O_NOFOLLOW|os.O_CLOEXEC,0o600)
         try:
@@ -1051,12 +1073,20 @@ class BootFileTransaction:
             with held(self.journal,root=True,modes={0o600},maximum=32*1024*1024) as (fd,st):
                 raw=os.read(fd,st.st_size+1);need(len(raw)==st.st_size,"complete boot journal")
         except FileNotFoundError:return []
-        rows=[];last=0
+        rows=[];last=0;boot=None;seen_boots=set()
         for line in raw.splitlines():
             row=json_bytes(line)
-            need(row.get("release_id")==self.release_id and row.get("deployment_id")==self.deployment_id
-                 and type(row.get("monotonic_ns")) is int and row["monotonic_ns"]>last,
-                 "boot journal identity and order")
+            current=row.get("boot_id")
+            need(row.get("schema")==BOOT_EVENT_SCHEMA
+                 and type(row.get("sequence")) is int and row["sequence"]==len(rows)+1
+                 and row.get("release_id")==self.release_id and row.get("deployment_id")==self.deployment_id
+                 and isinstance(current,str) and BOOT_ID.fullmatch(current) is not None
+                 and type(row.get("monotonic_ns")) is int and row["monotonic_ns"]>0,
+                 "boot journal identity, sequence and clock segment")
+            if current!=boot:
+                need(current not in seen_boots,"closed boot journal segment reappeared")
+                seen_boots.add(current);boot=current;last=0
+            need(row["monotonic_ns"]>last,"same-boot journal clock decreased")
             last=row["monotonic_ns"];rows.append(row)
         return rows
 
@@ -1149,7 +1179,7 @@ class BootFileTransaction:
             again=self.leaf(rel);need(again is not None and again["identity"]==row["identity"]
                                      and again["xattrs"]==row["xattrs"],"original boot changed during backup")
             files[rel]={"existed":True,**row,"backup":file_pin(backup)}
-        self.snapshot={"schema":"droidloom-cold-boot-files-snapshot-v1","release_id":self.release_id,
+        self.snapshot={"schema":"droidloom-cold-boot-files-snapshot-v2","release_id":self.release_id,
             "deployment_id":self.deployment_id,"root_identity":self.root_identity,
             "files":files,"directories":directories,"backup_bytes":budget}
         new_file(self.path/"SNAPSHOT.json",canonical(self.snapshot),0o400)
@@ -1160,7 +1190,7 @@ class BootFileTransaction:
         v=self.snapshot
         exact(v,("schema","release_id","deployment_id","root_identity","files","directories","backup_bytes"),
               "boot snapshot")
-        need(v["schema"]=="droidloom-cold-boot-files-snapshot-v1" and v["release_id"]==self.release_id
+        need(v["schema"]=="droidloom-cold-boot-files-snapshot-v2" and v["release_id"]==self.release_id
              and v["deployment_id"]==self.deployment_id and v["root_identity"]==self.root_identity
              and set(v["files"])==set(self.files) and set(v["directories"])==self.parents(),
              "complete fixed boot snapshot")
@@ -1222,14 +1252,63 @@ class BootFileTransaction:
             stat.S_IMODE(current["identity"][2])==self.files[relative] and current["xattrs"]==expected_attrs)
         need(original or owned,"unknown boot-file update blocks publication and rollback")
 
+    def cleanup_temporaries(self):
+        """Retire only named original inodes recorded by this transaction."""
+        created={};started=set()
+        for row in self.events():
+            if row["phase"] not in ("boot-file-temporary-create-started","boot-file-temporary-created",
+                                    "boot-file-rename-ready"):continue
+            rel=row.get("path");name=row.get("temporary")
+            need(rel in self.files and isinstance(name,str)
+                 and re.fullmatch(r"\.droidloom-boot-[0-9a-f]{24}",name),"fixed recorded boot temporary")
+            key=(rel,name)
+            if row["phase"]=="boot-file-temporary-create-started":
+                need(key not in started,"duplicate boot temporary creation")
+                started.add(key);continue
+            identity=row.get("identity")
+            need(key in started and isinstance(identity,list) and len(identity)==9
+                 and identity[0]==self.root_device and stat.S_ISREG(identity[2])
+                 and identity[3:6]==[0,0,1],"recorded boot temporary inode")
+            if row["phase"]=="boot-file-temporary-created":
+                need(key not in created,"duplicate boot temporary inode")
+                created[key]=identity
+            else:
+                need(key in created and identity[:2]==created[key][:2],"rename names the original temporary inode")
+                digest(row["sha256"])
+        for relative,name in sorted(started):
+            parent,_,_=relative.rpartition("/")
+            with self.directory(parent,missing=True) as directory:
+                if directory is None:continue
+                try:fd=os.open(name,os.O_RDONLY|os.O_NOFOLLOW|os.O_NONBLOCK|os.O_CLOEXEC,dir_fd=directory)
+                except FileNotFoundError:continue
+                try:
+                    current=os.fstat(fd);identity=created.get((relative,name))
+                    need(identity is not None and [current.st_dev,current.st_ino]==identity[:2]
+                         and stat.S_ISREG(current.st_mode) and current.st_uid==current.st_gid==0
+                         and current.st_nlink==1 and not(current.st_mode&0o7022)
+                         and current.st_size<=BOOT_FILE_BUDGET,"unknown boot temporary must be preserved")
+                    need("security.capability" not in bounded_xattrs(fd),"boot temporary gained file capabilities")
+                    self.event("boot-file-temporary-remove-started",path=relative,temporary=name,
+                               identity=list(f9(current)))
+                    need(f9(os.stat(name,dir_fd=directory,follow_symlinks=False))==f9(current),
+                         "recorded boot temporary changed before retirement")
+                    os.unlink(name,dir_fd=directory);os.fsync(directory)
+                    self.event("boot-file-temporary-removed",path=relative,temporary=name,
+                               identity=list(f9(current)))
+                finally:os.close(fd)
+
     def write_leaf(self,relative,pin,mode,attrs,*,times=None):
         parent,_,leaf=relative.rpartition("/")
         with self.directory(parent,create=True) as d:
             before=self.leaf(relative);self.unchanged_or_owned(relative,before)
             temporary=".droidloom-boot-"+os.urandom(12).hex()
+            self.event("boot-file-temporary-create-started",path=relative,temporary=temporary)
             out=os.open(temporary,os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW|os.O_CLOEXEC,0o600,dir_fd=d)
             published=False
             try:
+                os.fsync(out);os.fsync(d)
+                self.event("boot-file-temporary-created",path=relative,temporary=temporary,
+                           identity=list(f9(os.fstat(out))))
                 with held(pin["path"],root=True,modes={0o400},maximum=BOOT_FILE_BUDGET) as (source,st):
                     need(st.st_size==pin["bytes"] and hash_fd(source)==pin["sha256"],"held boot source")
                     copied=0;h=hashlib.sha256()
@@ -1247,14 +1326,19 @@ class BootFileTransaction:
                 need((now is None and before is None) or
                      (now is not None and before is not None and now["identity"]==before["identity"]
                       and now["xattrs"]==before["xattrs"]),"boot target changed before atomic publication")
-                self.event("boot-file-rename-ready",path=relative,identity=list(f9(os.fstat(out))),
+                self.event("boot-file-rename-ready",path=relative,temporary=temporary,identity=list(f9(os.fstat(out))),
                            sha256=pin["sha256"])
                 os.rename(temporary,leaf,src_dir_fd=d,dst_dir_fd=d);published=True;os.fsync(d)
             finally:
-                os.close(out)
-                if not published:
-                    try:os.unlink(temporary,dir_fd=d)
-                    except FileNotFoundError:pass
+                try:
+                    if not published:
+                        try:named=os.stat(temporary,dir_fd=d,follow_symlinks=False)
+                        except FileNotFoundError:pass
+                        else:
+                            current=os.fstat(out)
+                            need(f9(named)==f9(current),"unknown temporary replacement must be preserved")
+                            os.unlink(temporary,dir_fd=d);os.fsync(d)
+                finally:os.close(out)
             row=self.leaf(relative)
             need(row is not None and row["sha256"]==pin["sha256"] and row["identity"][6]==pin["bytes"]
                  and stat.S_IMODE(row["identity"][2])==mode and row["xattrs"]==attrs,
@@ -1276,7 +1360,7 @@ class BootFileTransaction:
 
     def rollback(self):
         need(self.snapshot is not None,"original boot snapshot required")
-        self.validate_snapshot();staged=self.staged()
+        self.validate_snapshot();self.cleanup_temporaries();staged=self.staged()
         for rel in staged:self.unchanged_or_owned(rel,self.leaf(rel))
         for rel in reversed(tuple(staged)):
             old=self.snapshot["files"][rel];now=self.leaf(rel)
