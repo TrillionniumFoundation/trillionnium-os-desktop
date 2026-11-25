@@ -35,9 +35,11 @@ HOST_ACL_MEMBER = "etc/systemd/system/user-runtime-dir@.service.d/50-droidloom-n
 KERNEL = "6.18.64-p4ctx6181-fusectl-aafs-peer-r1"
 KERNEL_SHA = "19052ac77e40a86147f6bc186739763628916033f7c36f3448b4a872914090df"
 SYSTEM = "dc781249bb4724b7a0777e5077321b84576db46f61abb4b9086b81077bfd0ab4"
+# Production queries use the complete normal native15 systemd package.
+# Original-Ubuntu cold queries have a separate whole-package proof in cold_apply.
 TOOLS = {
- "systemctl": ("/usr/bin/systemctl",302112,"639bce3ce5c06b605079ea56f74e3f08216ddffcfa76e11f62073aa775180082"),
- "journalctl": ("/usr/bin/journalctl",97472,"d91b5f8629d41d7503fa00d8f4d58b6d0b72b5f0ca7b46667c8b5b1c59d460a2"),
+ "systemctl": ("/usr/bin/systemctl",302112,"64a96b6dbb9d4795e977e6fb3940fb090a435b1c22ce4e86ef968982d7e4cd8e"),
+ "journalctl": ("/usr/bin/journalctl",97472,"8d61e3edafab2ed0cac9a63c0eaa50933a16a37e39efc15a315d5316a18e8880"),
  "grub-editenv": ("/usr/bin/grub-editenv",1368360,"2e4f8b60ba8712989f87d927d731a368af8620da1227a3090455ea7897ce1338"),
 }
 SYSTEM_UNITS = (

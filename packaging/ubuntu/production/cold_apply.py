@@ -25,7 +25,7 @@ from release import (
     Rejected, STORE, HOST_ACL_MEMBER, need, exact, digest, canonical, f9,
     safe_relative, safe_host_relative, safe_absolute, held, hash_fd, read_pin,
     json_bytes, read_json_file, file_pin, new_file, copy_pin, bounded_process,
-    host_manifest, fixed_command,
+    host_manifest, TOOLS,
 )
 from cold_transaction import (
     ROOT_UUID, ORIGINAL_KERNEL, SOURCE_PATHS, PRESERVE_METADATA, NAMES,
@@ -85,6 +85,38 @@ def restore_xattrs(fd,values):
         if name not in decoded:os.removexattr(fd,name)
     for name,raw in decoded.items():os.setxattr(fd,name,raw)
 
+NATIVE_RELEASE_ID="27aa919057651931545bbf16edca2375decb23f3c5ee7c6e8b6c9ac95db55d51"
+
+def cold_systemctl_pins(payloads):
+    # The caller supplies only the output of the complete native release
+    # verifier, which checks both original archives and all normal source proof.
+    package=payloads["systemd"]
+    allowed=set()
+    for kind in ("old","new"):
+        row=package[kind]["payload"]["usr/bin/systemctl"]
+        need(row["path"]=="usr/bin/systemctl" and row["type"]=="0" and
+             row["uid"]==row["gid"]==0 and row["mode"]==0o755,"normal systemctl inode metadata")
+        allowed.add((row["bytes"],row["sha256"]))
+    new=package["new"]["payload"]
+    for name in ("systemctl","journalctl"):
+        row=new["usr/bin/"+name]
+        need((TOOLS[name][0],TOOLS[name][1],TOOLS[name][2])==
+             ("/"+row["path"],row["bytes"],row["sha256"]),"production tools match the complete normal native source")
+    need(len(allowed)==2,"exact original/new cold systemctl set")
+    return allowed
+
+@contextlib.contextmanager
+def held_cold_systemctl():
+    from native_release import verify_bundle
+    bundle=STORE/"native-releases"/NATIVE_RELEASE_ID
+    index,_,packages,payloads=verify_bundle(bundle,NATIVE_RELEASE_ID,True)
+    need(index["schema"]=="droidloom-normal-native-package-release-v2" and len(packages)==15,
+         "cold tools require the full normal native15 source closure")
+    allowed=cold_systemctl_pins(payloads)
+    with held("/usr/bin/systemctl",root=True,modes={0o755},maximum=16*1024*1024) as (fd,st):
+        need((st.st_size,hash_fd(fd)) in allowed,"unreviewed original/new cold systemctl")
+        yield fd
+
 def original_cold_authority():
     need(os.getuid()==os.geteuid()==0,"cold public transaction requires original root")
     need(os.uname().release==ORIGINAL_KERNEL,"only original Ubuntu maintenance kernel")
@@ -95,10 +127,13 @@ def original_cold_authority():
     need(a["source"]==b["source"] and a["uuid"]==ROOT_UUID,"fixed original root and boot")
     # The public transaction is cold. It does not stop a session to obtain
     # permission; the operator must first reach the admitted maintenance boot.
-    for unit in ("graphical.target","gdm.service","droidloom-production.service",
-                 "droidloom-instance-launcher.service","droidloom-instance-factory.service"):
-        r=fixed_command("systemctl",["show","--value","--property=ActiveState",unit],maximum=65536)
-        need(r["exit"]==0 and r["stdout"].strip() in (b"inactive",b"failed"),"live graphical/Android owner blocks cold transaction")
+    with held_cold_systemctl() as command:
+        for unit in ("graphical.target","gdm.service","droidloom-production.service",
+                     "droidloom-instance-launcher.service","droidloom-instance-factory.service"):
+            r=bounded_process([f"/proc/self/fd/{command}","show","--value","--property=ActiveState",unit],
+                              seconds=5,maximum=65536,pass_fds=(command,))
+            need(r["exit"]==0 and r["stdout"].strip() in (b"inactive",b"failed"),
+                 "live graphical/Android owner blocks cold transaction")
     return {"boot_id":Path("/proc/sys/kernel/random/boot_id").read_text().strip(),
             "root_identity":[root.st_dev,root.st_ino],"kernel":ORIGINAL_KERNEL}
 
