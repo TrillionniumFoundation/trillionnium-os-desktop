@@ -15,6 +15,8 @@ use std::{
     os::unix::fs::FileExt,
     path::{Path, PathBuf},
 };
+#[path = "cold_original_labels.rs"]
+pub(super) mod labels;
 #[path = "cold_original_data_scan.rs"]
 mod reference_scan;
 
