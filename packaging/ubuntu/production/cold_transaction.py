@@ -335,7 +335,7 @@ def initramfs_materials(bundle,release_id,native_bundle,native_id,output):
     descriptor,closure,natives,payloads=native_release.verify_bundle(native_bundle,native_id,True)
     need(descriptor["schema"]==native_release.ORIGINAL_SCHEMA and len(natives)==22,
          "original-host initramfs requires the exact twenty-two installed native packages")
-    rows=[]
+    rows=[];public_directories={}
     for role in sorted(natives):
         control=payloads[role]["new"]["control"]
         rows.append({"role":role,"package":natives[role]["new"],
@@ -343,6 +343,11 @@ def initramfs_materials(bundle,release_id,native_bundle,native_id,output):
                      "architecture":control["Architecture"]})
     for role in ("kernel","host"):
         package_payload(packages[role],scopes[role],output.parent)
+        for relative,mode in scopes[role]["directories"].items():
+            path="/"+relative
+            need(path not in public_directories or public_directories[path]==mode,
+                 "normal public directory modes disagree between packages")
+            public_directories[path]=mode
         rows.append({"role":role,"package":packages[role],"name":controls[role]["package"],
                      "version":controls[role]["version"],"architecture":controls[role]["architecture"]})
     required=[]
@@ -368,13 +373,15 @@ def initramfs_materials(bundle,release_id,native_bundle,native_id,output):
     module_path="usr/lib/droidloom/kernels/"+KERNEL+"/MODULES.json"
     module=entries[module_path]
     need(module["sha256"]==KERNEL_MODULES_SHA,"same complete shared-kernel modules")
-    result={"schema":"droidloom.original-host-initramfs-materials.v2",
+    need(all(public_directories.get(path)==0o755 for path in ("/usr/lib/droidloom","/usr/share/droidloom")),
+         "normal host/kernel archives own both fixed public namespaces")
+    result={"schema":"droidloom.original-host-initramfs-materials.v3",
        "public_release":file_pin(bundle/"RELEASE.json"),"public_release_id":release_id,
        "deployment_id":intent["deployment_id"],"native_release":file_pin(native_bundle/"NATIVE-RELEASE.json"),
        "native_release_id":native_id,"native_closure":closure["closure_sha256"],
        "kernel_release":KERNEL,"kernel_sha256":KERNEL_SHA,"root_uuid":ROOT_UUID,
        "original_kernel":ORIGINAL_KERNEL,"cohort_sha256":COHORT,"runtime_sha256":RUNTIME,
-       "packages":rows,"required_initrd_members":required,
+       "packages":rows,"required_initrd_members":required,"public_directories":public_directories,
        "module_manifest":{"path":"/"+module_path,"bytes":module["bytes"],"sha256":module["sha256"]},
        "physical_install":False,"qualification_boot_authorized":False,"production_ready":False}
     new_file(output,canonical(result),0o444)

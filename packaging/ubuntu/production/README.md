@@ -319,10 +319,30 @@ and purged records, including their exact prior version, architecture and state;
 they cannot stand in for an already installed native candidate dependency.
 Original GDM and service numbers are preserved.
 
+The material admission's v3 record includes the entire host/kernel directory
+inventory from the actual, fully verified Debian data streams. Original dpkg
+preserves existing directory owners: this host's two public namespace roots,
+`/usr/lib/droidloom` and `/usr/share/droidloom`, are legacy `1000:1000`, mode
+`0755`. After proving private overlay/PID isolation, the producer records a
+durable intent and changes only those two held directory descriptors to the
+archive's `0:0/0755`. It accepts only their exact original metadata or already
+correct ownership, never follows an alias, and never recursively changes a
+child. Every directory in the full admitted inventory is read back after normal
+installation. The outer process compares both original directory identities and
+metadata again, including when the private build fails. This private mechanism
+does not authorize physical directory changes; the cold transaction must retain
+their original owner/mode/xattrs in its rollback snapshot before its own claim.
+
 The producer calls the original normal `mkinitramfs`, with one-thread gzip,
 the retained shared-kernel release and the original host configuration. Its
 source-owned extra upstream hook uses `copy_exec` for both admitted native LSM
-libraries. Normal `unmkinitramfs` then reads back the whole output. The stock
+libraries. A fixed private `conf.d` file sets the upstream `FSTYPE=ext4` setting
+after the original root UUID and actual mounted ext4 are verified. The upstream
+fsck hook can then include the original filesystem checkers without gaining raw
+access to the host block device; automatic probing cannot do that in the isolated
+`/dev`. The original `fsck`, ext4 checker and `logsave` ELFs and alias chains are
+guarded across preparation, and their full bytes and metadata must appear in the
+normal output. Normal `unmkinitramfs` then reads back the whole output. The stock
 `/init`, early-custody order, both host ELFs, both native libraries, and every
 included kernel module must match their actual normal sources. A complete
 bounded member inventory retains both raw archive paths and normalized effective

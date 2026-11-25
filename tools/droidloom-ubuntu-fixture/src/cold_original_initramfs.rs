@@ -36,7 +36,14 @@ const TOOLS: &[&str] = &[
     "/usr/sbin/mkinitramfs",
     "/usr/bin/unmkinitramfs",
     "/usr/bin/gpgv",
+    "/usr/sbin/fsck",
+    "/usr/sbin/fsck.ext4",
+    "/usr/sbin/logsave",
 ];
+const FILESYSTEM_CHECKERS: &[&str] =
+    &["/usr/sbin/fsck", "/usr/sbin/fsck.ext4", "/usr/sbin/logsave"];
+const ORIGINAL_FSTYPE: &[u8] =
+    b"# Original Pocket4 root UUID and mounted ext4 were verified before staging.\nFSTYPE=ext4\n";
 const NATIVE_HOOK: &[u8] = b"#!/bin/sh\nset -eu\ncase \"${1:-}\" in prereqs) exit 0 ;; esac\n. /usr/share/initramfs-tools/hook-functions\ncopy_exec /usr/lib/x86_64-linux-gnu/libselinux.so.1\ncopy_exec /usr/lib/x86_64-linux-gnu/libapparmor.so.1\n";
 const POLICY_RC: &[u8] = b"#!/bin/sh\nexit 101\n";
 const PRIVATE_STATE_PATHS: &[&str] = &[
@@ -46,6 +53,7 @@ const PRIVATE_STATE_PATHS: &[&str] = &[
     "/var/lib/droidloom-maintenance",
     "/var/lib/droidloom-qualification",
 ];
+const PUBLIC_NAMESPACE_ROOTS: &[&str] = &["/usr/lib/droidloom", "/usr/share/droidloom"];
 
 #[derive(Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
@@ -94,6 +102,7 @@ struct Materials {
     packages: Vec<Package>,
     required_initrd_members: Vec<Required>,
     module_manifest: FilePin,
+    public_directories: BTreeMap<String, u32>,
     physical_install: bool,
     qualification_boot_authorized: bool,
     production_ready: bool,
@@ -164,7 +173,7 @@ fn read<T: serde::de::DeserializeOwned>(pin: &FilePin, maximum: u64) -> Result<T
 }
 fn actual_pin(path: &Path) -> Result<FilePin> {
     let pin = files::pin_file(path).map_err(|e| format!("cannot pin {}: {e}", path.display()))?;
-    trusted(&pin)?;
+    trusted(&pin).map_err(|e| format!("untrusted original-host path {}: {e}", path.display()))?;
     Ok(pin)
 }
 fn original_chroot_layout(requested: &str, pin: &FilePin, resolution: &Value) -> Result<()> {
@@ -295,11 +304,19 @@ fn original_context() -> Result<Value> {
             ]),
         );
     }
+    let public_directories = PUBLIC_NAMESPACE_ROOTS
+        .iter()
+        .map(|path| {
+            let (file, _parent) = public_namespace_directory(path)?;
+            Ok(((*path).to_owned(), fs::stat(&file)?))
+        })
+        .collect::<Result<BTreeMap<_, _>>>()?;
     let status = actual_pin(Path::new("/var/lib/dpkg/status"))?;
     Ok(
         json!({"kernel":ORIGINAL_KERNEL,"root_uuid":ROOT_UUID,"root_identity":[root.dev(),root.ino()],
         "boot_id":text("/proc/sys/kernel/random/boot_id",128)?.trim(),"namespaces":namespaces()?,
-        "account_files":accounts,"preserved_metadata":metadata,"dpkg_status":status}),
+        "account_files":accounts,"preserved_metadata":metadata,"dpkg_status":status,
+        "public_namespace_directories":public_directories}),
     )
 }
 type SourceGuard = (String, Value, FilePin, Identity, File);
@@ -406,7 +423,7 @@ fn guard_readback(guards: &[SourceGuard]) -> Result<Value> {
 }
 fn validate_materials(m: &Materials) -> Result<()> {
     ensure(
-        m.schema == "droidloom.original-host-initramfs-materials.v2"
+        m.schema == "droidloom.original-host-initramfs-materials.v3"
             && m.root_uuid == ROOT_UUID
             && m.original_kernel == ORIGINAL_KERNEL
             && m.kernel_release == KERNEL
@@ -490,6 +507,7 @@ fn validate_materials(m: &Materials) -> Result<()> {
             "required normal initrd member differs",
         )?;
     }
+    validate_public_directories(&m.public_directories)?;
     Ok(())
 }
 fn save(path: &Path, value: &impl Serialize) -> Result<FilePin> {
@@ -637,7 +655,7 @@ pub fn prepare(path: &Path, expected: &str) -> Result<()> {
             stage_pin.sha256.clone(),
         ],
         1800,
-    )?;
+    );
     ensure(
         original_context()? == before,
         "original host database/accounts/boot context changed",
@@ -648,6 +666,7 @@ pub fn prepare(path: &Path, expected: &str) -> Result<()> {
     }
     trusted(&stage_pin)?;
     trusted(&input)?;
+    let namespace = namespace?;
     let inner_pin = actual_pin(&build.join("BUILT.json"))?;
     let inner: Value = read(&inner_pin, 16 * 1024 * 1024)?;
     ensure(
@@ -1169,6 +1188,143 @@ fn apt_archive_path(package: &Package) -> Result<PathBuf> {
         package.architecture
     )))
 }
+fn validate_public_directories(directories: &BTreeMap<String, u32>) -> Result<()> {
+    ensure(
+        (2..=4096).contains(&directories.len()),
+        "bounded complete public directory inventory",
+    )?;
+    for path in PUBLIC_NAMESPACE_ROOTS {
+        ensure(
+            directories.get(*path) == Some(&0o755),
+            "normal packages must own the fixed public namespace roots",
+        )?;
+    }
+    for (path, mode) in directories {
+        crate::paths::parts(path)?;
+        ensure(
+            matches!(*mode, 0o700 | 0o755)
+                && !PRIVATE_STATE_PATHS
+                    .iter()
+                    .any(|p| path.as_str() == *p || path.starts_with(&format!("{p}/")))
+                && (path == "/usr"
+                    || path.starts_with("/usr/")
+                    || path == "/boot"
+                    || path.starts_with("/boot/droidloom/")
+                    || path == "/boot/droidloom"
+                    || path == "/etc"
+                    || path == "/etc/selinux"
+                    || path.starts_with("/etc/selinux/")
+                    || path == "/etc/systemd"
+                    || path == "/etc/systemd/system"
+                    || path == "/etc/systemd/system/user-runtime-dir@.service.d"
+                    || path == "/var"
+                    || path == "/var/lib"
+                    || path == "/var/lib/droidloom-mac-calibration"
+                    || path == "/var/lib/droidloom-public-apks"),
+            "normal public directory scope differs",
+        )?;
+    }
+    Ok(())
+}
+fn legacy_public_namespace(path: &str, id: &Identity) -> bool {
+    PUBLIC_NAMESPACE_ROOTS.contains(&path) && id.uid == 1000 && id.gid == 1000 && id.mode == 0o40755
+}
+fn public_namespace_directory(path: &str) -> Result<(File, File)> {
+    ensure(
+        PUBLIC_NAMESPACE_ROOTS.contains(&path),
+        "only the fixed public namespace root may change owner",
+    )?;
+    let (parent, name) = fs::Tree::open("/", 0)?.parent(path)?;
+    let file = File::from(rustix::fs::openat(
+        &parent,
+        name.as_str(),
+        OFlags::RDONLY | OFlags::DIRECTORY | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+        Mode::empty(),
+    )?);
+    Ok((file, parent))
+}
+fn claim_private_public_namespaces(work: &Path, stage: &Stage) -> Result<FilePin> {
+    // This runs only after build() proves the isolated overlay, private PID1,
+    // constrained capabilities and hidden original private trees. Neither
+    // recursive chown nor original-host directory repair is an operation here.
+    let mut held = Vec::new();
+    let mut originals = Vec::new();
+    for path in PUBLIC_NAMESPACE_ROOTS {
+        ensure(
+            stage.materials.public_directories.get(*path) == Some(&0o755),
+            "normal archive does not own the public namespace",
+        )?;
+        let (file, parent) = public_namespace_directory(path)?;
+        let before = fs::stat(&file)?;
+        let original: Identity =
+            serde_json::from_value(stage.original["public_namespace_directories"][*path].clone())?;
+        ensure(
+            (before.uid, before.gid, before.mode) == (original.uid, original.gid, original.mode)
+                && ((before.uid == 0 && before.gid == 0 && before.mode == 0o40755)
+                    || legacy_public_namespace(path, &before)),
+            "unreviewed original public namespace ownership",
+        )?;
+        originals.push(json!({"path":path,"original_host":original,"private_before":before,"normal_mode":0o755}));
+        held.push(((*path).to_owned(), file, parent, before));
+    }
+    let intent = save(
+        &work.join("PUBLIC-DIRECTORY-CLAIM-INTENT.json"),
+        &json!({
+        "schema":"droidloom.private-public-directory-claim-intent.v1",
+        "public_release_id":stage.materials.public_release_id,"directories":originals,
+        "recursive":false,"physical_install":false}),
+    )?;
+    let mut rows = Vec::new();
+    for (path, file, parent, before) in held {
+        ensure(
+            fs::stat(&file)? == before,
+            "private public namespace changed before ownership repair",
+        )?;
+        if before.uid != 0 || before.gid != 0 {
+            rustix::fs::fchown(
+                &file,
+                Some(rustix::process::Uid::from_raw(0)),
+                Some(rustix::process::Gid::from_raw(0)),
+            )?;
+            rustix::fs::fchmod(&file, Mode::from_raw_mode(0o755))?;
+            file.sync_all()?;
+            parent.sync_all()?;
+        }
+        let after = fs::stat(&file)?;
+        let current = fs::stat(&fs::Tree::open("/", 0)?.dir(&path)?)?;
+        ensure(
+            (after.dev, after.ino) == (before.dev, before.ino)
+                && current == after
+                && after.uid == 0
+                && after.gid == 0
+                && after.mode == 0o40755,
+            "private normal public namespace ownership readback differs",
+        )?;
+        rows.push(json!({"path":path,"before":before,"after":after,"recursive":false}));
+    }
+    save(
+        &work.join("PUBLIC-DIRECTORY-CLAIM.json"),
+        &json!({
+        "schema":"droidloom.private-public-directory-claim.v1","intent":intent,"directories":rows,
+        "physical_install":false,"qualification_boot_authorized":false}),
+    )
+}
+fn readback_public_directories(m: &Materials) -> Result<Value> {
+    let root = fs::Tree::open("/", 0)?;
+    let mut rows = Vec::new();
+    for (path, mode) in &m.public_directories {
+        let file = root
+            .dir(path)
+            .map_err(|e| format!("normal public directory {path}: {e}"))?;
+        let id = fs::stat(&file)?;
+        ensure(
+            id.uid == 0 && id.gid == 0 && id.mode & 0o7777 == *mode,
+            &format!("normal public directory owner/mode differs: {path}"),
+        )?;
+        rows.push(json!({"path":path,"identity":id,"normal_mode":mode}));
+    }
+    Ok(json!(rows))
+}
 fn effective_initrd_path(relative: &str, layered: bool) -> Result<&str> {
     if !layered {
         return Ok(relative);
@@ -1298,6 +1454,26 @@ fn readback(work: &Path, m: &Materials) -> Result<Value> {
         original_init.bytes == actual_init.bytes && original_init.sha256 == actual_init.sha256,
         "normal upstream /init was changed",
     )?;
+    let mut filesystem_checkers = Vec::new();
+    for path in FILESYSTEM_CHECKERS {
+        let (source, source_aliases) = files::resolve_public_file(Path::new("/"), path)?;
+        let (source_file, source_id) = trusted(&source)?;
+        let (actual, aliases) = files::resolve_public_file(root, path)?;
+        let id = files::open_pin(&actual)?.1;
+        ensure(
+            actual.bytes == source.bytes
+                && actual.sha256 == source.sha256
+                && id.uid == 0
+                && id.gid == 0
+                && id.mode == source_id.mode
+                && fs::stat(&source_file)? == source_id,
+            "normal initramfs omitted or changed an original filesystem checker",
+        )?;
+        filesystem_checkers.push(
+            json!({"requested_path":path,"source":source,"source_aliases":source_aliases,
+            "source_identity":source_id,"actual":actual,"identity":id,"aliases":aliases}),
+        );
+    }
     let order = std::fs::read(root.join("scripts/init-bottom/ORDER"))?;
     ensure(
         order
@@ -1347,7 +1523,8 @@ fn readback(work: &Path, m: &Materials) -> Result<Value> {
     )?;
     Ok(
         json!({"normal_unpack_command":command,"complete_inventory":inventory,"required_members":required,
-        "stock_init":actual_init,"signed_normal_modules_readback":found,"module_manifest":module_pin}),
+        "stock_init":actual_init,"original_filesystem_checkers":filesystem_checkers,
+        "signed_normal_modules_readback":found,"module_manifest":module_pin}),
     )
 }
 pub fn build(path: &Path, expected: &str) -> Result<()> {
@@ -1422,6 +1599,7 @@ pub fn build(path: &Path, expected: &str) -> Result<()> {
     )?;
     let before = roster(&files::read_pin(&status, 32 * 1024 * 1024)?)?;
     let wanted = expected_roster(&before, &stage.materials.packages)?;
+    let public_claim = claim_private_public_namespaces(work, &stage)?;
     for p in &stage.materials.packages {
         trusted(&p.package)?;
     }
@@ -1543,10 +1721,18 @@ pub fn build(path: &Path, expected: &str) -> Result<()> {
             "normal private installation changed original account identities",
         )?;
     }
+    let public_directories = readback_public_directories(&stage.materials)?;
     let native_hook =
         Path::new("/etc/initramfs-tools/hooks/droidloom-source-bound-native-libraries");
     files::write_new(native_hook, NATIVE_HOOK, 0o755)?;
     let hook_pin = actual_pin(native_hook)?;
+    // The upstream fsck hook supports this normal setting. The original root
+    // was proved ext4; exposing its raw block device to package scripts is not
+    // needed for automatic type discovery inside the private root.
+    let fstype =
+        Path::new("/etc/initramfs-tools/conf.d/droidloom-source-bound-original-root-fstype");
+    files::write_new(fstype, ORIGINAL_FSTYPE, 0o644)?;
+    let fstype_pin = actual_pin(fstype)?;
     let built = run(
         work,
         "normal-mkinitramfs",
@@ -1561,6 +1747,7 @@ pub fn build(path: &Path, expected: &str) -> Result<()> {
         300,
     )?;
     trusted(&hook_pin)?;
+    trusted(&fstype_pin)?;
     let observed = readback(work, &stage.materials)?;
     let image = actual_pin(Path::new("/build/initrd.img"))?;
     ensure(
@@ -1570,9 +1757,11 @@ pub fn build(path: &Path, expected: &str) -> Result<()> {
     let report = json!({"schema":"droidloom.original-host-normal-initramfs-build.v1","stage_sha256":pin.sha256,
         "kernel_release":KERNEL,"package_count":24,"private_namespaces":namespaces()?,"root_identity":[root.dev(),root.ino()],
         "normal_simulation":simulated,"normal_install":installed,"normal_audit":audit,"normal_archive_cache":archives,
+        "public_directory_claim":public_claim,"complete_public_directories":public_directories,
         "constrained_capabilities":capabilities,"actual_remount_denial":probe_pin,
         "status_before":status,"status_after":after,"retained_private_status":actual_pin(&work.join("PRIVATE-DPKG-STATUS"))?,"original_account_files":account_before,
         "policy_rc_101":policy_pin,"previous_private_policy_rc":previous_policy,"normal_native_hook":hook_pin,
+        "original_fstype_configuration":fstype_pin,
         "normal_mkinitramfs":built,"full_readback":observed,"initrd":image,"physical_install":false,
         "qualification_boot_authorized":false,"permanent_activation_authorized":false});
     save(&work.join("BUILT.json"), &report)?;
@@ -1582,6 +1771,47 @@ pub fn build(path: &Path, expected: &str) -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn public_namespace_claim_cannot_authorize_private_paths_or_other_owners() {
+        let mut id = Identity {
+            dev: 1,
+            ino: 2,
+            mode: 0o40755,
+            uid: 1000,
+            gid: 1000,
+            nlink: 2,
+            size: 1,
+            mtime_sec: 0,
+            mtime_nsec: 0,
+            ctime_sec: 0,
+            ctime_nsec: 0,
+        };
+        assert!(legacy_public_namespace("/usr/lib/droidloom", &id));
+        assert!(legacy_public_namespace("/usr/share/droidloom", &id));
+        for path in [
+            "/usr/lib/droidloom/old",
+            "/var/lib/droidloom",
+            "/home/alex",
+            "/usr/lib",
+        ] {
+            assert!(!legacy_public_namespace(path, &id));
+        }
+        id.uid = 1001;
+        assert!(!legacy_public_namespace("/usr/lib/droidloom", &id));
+        id.uid = 1000;
+        id.mode = 0o40777;
+        assert!(!legacy_public_namespace("/usr/lib/droidloom", &id));
+        let mut dirs = PUBLIC_NAMESPACE_ROOTS
+            .iter()
+            .map(|p| ((*p).to_owned(), 0o755))
+            .collect::<BTreeMap<_, _>>();
+        assert!(validate_public_directories(&dirs).is_ok());
+        dirs.insert("/var/lib/droidloom/users".into(), 0o755);
+        assert!(validate_public_directories(&dirs).is_err());
+        dirs.remove("/var/lib/droidloom/users");
+        dirs.insert("/usr/share/droidloom".into(), 0o777);
+        assert!(validate_public_directories(&dirs).is_err());
+    }
     #[test]
     fn offline_archive_cache_names_preserve_identity_and_reject_path_injection() {
         let mut package = Package {
