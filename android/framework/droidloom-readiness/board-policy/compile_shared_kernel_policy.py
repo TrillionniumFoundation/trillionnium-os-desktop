@@ -134,6 +134,146 @@ def verify_manager_tmpfs(lines, check, obj, role_types):
             "original_android_inodes_relabelled": False, "runtime_qualified": False}
 
 
+CREDENTIAL_DIRECTORY_FAMILIES = {
+    "p4_linux_journal_credentials_t": ("p4_linux_journald_t", ("systemd-journald.service",)),
+    "p4_linux_setup_credentials_t": ("p4_linux_setup_t", (
+        "systemd-firstboot.service", "systemd-sysusers.service", "systemd-tmpfiles-clean.service",
+        "systemd-tmpfiles-setup-dev-early.service", "systemd-tmpfiles-setup-dev.service",
+        "systemd-tmpfiles-setup.service")),
+    "p4_linux_udev_credentials_t": ("p4_linux_udev_t", ("systemd-udev-load-credentials.service",)),
+    "p4_linux_resolved_credentials_t": ("p4_linux_resolved_t", ("systemd-resolved.service",)),
+    "p4_linux_sysctl_credentials_t": ("p4_linux_sysctl_t", ("systemd-sysctl.service",)),
+}
+
+
+def verify_manager_credentials(lines, check, obj, role_types):
+    """Check the stock empty credential lifecycle without granting secret bodies."""
+    count = 0
+    for role, actor in role_types:
+        context = f"u:{role}:{actor}:s0"
+        manager = role == "system_r" and actor == "init_t"
+        executor = role == "system_r" and actor == "p4_linux_service_executor_t"
+        for permission, expected in (("write", manager or executor), ("add_name", executor),
+                                     ("remove_name", manager or executor), ("mounton", executor)):
+            check(context, obj("p4_linux_credentials_root_t"), "dir", [permission], expected)
+            count += 1
+        for target, (consumer, _) in CREDENTIAL_DIRECTORY_FAMILIES.items():
+            for permission in ("create", "write", "setattr", "rename", "reparent", "relabelto", "mounton"):
+                check(context, obj(target), "dir", [permission], executor)
+                count += 1
+            check(context, obj(target), "dir", ["rmdir"], manager or executor)
+            count += 1
+            for permission in ("open", "read"):
+                check(context, obj(target), "dir", [permission],
+                      manager or executor or (role == "system_r" and actor == consumer))
+                count += 1
+            for permission in ("add_name", "remove_name", "relabelfrom"):
+                check(context, obj(target), "dir", [permission], False)
+                count += 1
+            for permission in ("create", "open", "read", "write", "append", "unlink", "execute", "entrypoint"):
+                check(context, obj(target), "file", [permission], False)
+                count += 1
+            for permission in ("create", "read", "write", "unlink"):
+                check(context, obj(target), "lnk_file", [permission], False)
+                count += 1
+    executor = "u:system_r:p4_linux_service_executor_t:s0"
+    check(executor, obj("tmpfs"), "dir", ["open"], True)
+    check(executor, obj("tmpfs"), "dir", ["read"], False)
+    for permission in ("create", "open", "read", "write", "append", "unlink", "map", "execute", "entrypoint"):
+        check(executor, obj("tmpfs"), "file", [permission], False)
+    expected = {
+        f'(typetransition p4_linux_service_executor_t {parent} dir "{unit}" {target})'
+        for target, (_, units) in CREDENTIAL_DIRECTORY_FAMILIES.items()
+        for unit in units
+        for parent in ("p4_linux_credentials_root_t", "p4_linux_credential_staging_t")
+    }
+    actual = {line for line in lines if line.startswith((
+        "(typetransition p4_linux_service_executor_t p4_linux_credentials_root_t dir ",
+        "(typetransition p4_linux_service_executor_t p4_linux_credential_staging_t dir "))}
+    if actual != expected:
+        raise ValueError("Unexpected stock service credential directory transitions: " +
+                         repr({"missing": sorted(expected - actual), "extra": sorted(actual - expected)}))
+    return {"process_role_types": len(role_types), "role_permission_checks": count,
+            "credential_directory_families": len(CREDENTIAL_DIRECTORY_FAMILIES),
+            "exact_unit_transitions": len(expected), "credential_bodies_denied": True,
+            "tmpfs_directory_enumeration_denied": True, "capabilities_added": [],
+            "runtime_qualified": False}
+
+
+def verify_manager_runtime_metadata(lines, check, obj, role_types):
+    """Measure named native cgroup and stock manager/journal metadata ownership."""
+    count = 0
+    for role, actor in role_types:
+        context = f"u:{role}:{actor}:s0"
+        manager = role == "system_r" and actor == "init_t"
+        for permission in ("write", "add_name", "remove_name"):
+            check(context, obj("p4_linux_cgroup_root_t"), "dir", [permission], manager)
+            count += 1
+        for permission in ("create", "rmdir", "rename", "reparent"):
+            check(context, obj("p4_linux_cgroup_root_t"), "dir", [permission], False)
+            count += 1
+        for permission in ("create", "write", "add_name", "remove_name", "setattr"):
+            check(context, obj("p4_linux_manager_units_t"), "dir", [permission], manager)
+            count += 1
+        for permission in ("rename", "reparent", "rmdir", "mounton", "relabelto", "relabelfrom"):
+            check(context, obj("p4_linux_manager_units_t"), "dir", [permission], False)
+            count += 1
+        for permission in ("create", "write", "append", "setattr", "rename", "unlink"):
+            check(context, obj("p4_linux_manager_unit_metadata_t"), "file", [permission], manager)
+            count += 1
+        for permission in ("create", "rename", "unlink"):
+            check(context, obj("p4_linux_manager_unit_metadata_t"), "lnk_file", [permission], manager)
+            count += 1
+        for permission in ("execute", "execute_no_trans", "entrypoint", "mounton", "relabelto", "relabelfrom"):
+            check(context, obj("p4_linux_manager_unit_metadata_t"), "file", [permission], False)
+            count += 1
+        for permission in ("create", "watch"):
+            check(context, obj("p4_linux_manager_ask_password_t"), "dir", [permission], manager)
+            count += 1
+        for permission in ("write", "add_name", "remove_name", "setattr", "rename", "reparent", "rmdir", "mounton", "relabelto", "relabelfrom"):
+            check(context, obj("p4_linux_manager_ask_password_t"), "dir", [permission], False)
+            count += 1
+        for permission in ("create", "open", "read", "write", "execute", "entrypoint"):
+            check(context, obj("p4_linux_manager_ask_password_t"), "file", [permission], False)
+            count += 1
+    for actor in ("init_t", "p4_linux_journald_t"):
+        context = f"u:system_r:{actor}:s0"
+        check(context, obj("p4_linux_manager_units_t"), "dir",
+              ["getattr", "search", "open", "read"], True)
+        check(context, obj("p4_linux_manager_unit_metadata_t"), "file",
+              ["getattr", "open", "read"], True)
+        check(context, obj("p4_linux_manager_unit_metadata_t"), "lnk_file", ["getattr", "read"], True)
+    for actor in ("init_t", "p4_linux_service_executor_t", "p4_linux_generator_t"):
+        context = f"u:system_r:{actor}:s0"
+        check(context, obj("kmsg_device"), "chr_file", ["getattr", "open", "write"], True)
+        for permission in ("read", "append", "ioctl", "map"):
+            check(context, obj("kmsg_device"), "chr_file", [permission], False)
+        check(context, obj("device"), "chr_file", ["write"], False)
+    check("u:system_r:p4_linux_journald_t:s0", obj("kmsg_device"), "chr_file",
+          ["getattr", "open", "read", "write"], True)
+    required = {
+        '(typetransition init_t p4_linux_cgroup_root_t dir "-.mount" p4_linux_unit_cgroup_t)',
+        '(typetransition init_t p4_linux_systemd_run_t dir "units" p4_linux_manager_units_t)',
+        '(typetransition init_t p4_linux_manager_units_t file p4_linux_manager_unit_metadata_t)',
+        '(typetransition init_t p4_linux_manager_units_t lnk_file p4_linux_manager_unit_metadata_t)',
+        '(typetransition init_t p4_linux_systemd_run_t dir "ask-password" p4_linux_manager_ask_password_t)',
+    }
+    if not required.issubset(lines):
+        raise ValueError("Linked policy lacks fixed native manager runtime transitions: " + repr(sorted(required - lines)))
+    cgroup_creates = {line for line in lines if line.startswith("(typetransition init_t p4_linux_cgroup_root_t dir ")}
+    if cgroup_creates != {next(line for line in required if "cgroup_root_t" in line)}:
+        raise ValueError("Unexpected top-level native cgroup creation transition: " + repr(sorted(cgroup_creates)))
+    # Clone-into-cgroup is an optional stock optimization. Preserve the original
+    # manager's inability to open/write root membership or generic Android nodes.
+    check("u:system_r:init_t:s0", obj("p4_linux_cgroup_root_membership_t"), "file",
+          ["open", "read", "write"], False)
+    check("u:system_r:init_t:s0", obj("cgroup_v2"), "file", ["open", "read", "write"], False)
+    return {"process_role_types": len(role_types), "role_permission_checks": count,
+            "fixed_and_nested_transitions": len(required), "capabilities_added": [],
+            "generic_cgroup_writes_denied": True, "generic_device_writes_denied": True,
+            "runtime_qualified": False}
+
+
 def verify_manager_startup(lines, check, obj, role_types):
     """Read generator/status authority from the linked policy for every role."""
     count = 0
@@ -197,6 +337,8 @@ def verify_manager_startup(lines, check, obj, role_types):
             "fixed_and_nested_transitions": len(required), "capabilities_added": [],
             "generic_root_and_systemd_regular_file_writes_denied": True,
             "native_generator_tmpfs": verify_manager_tmpfs(lines, check, obj, role_types),
+             "native_runtime_metadata": verify_manager_runtime_metadata(lines, check, obj, role_types),
+             "native_credentials": verify_manager_credentials(lines, check, obj, role_types),
             "runtime_qualified": False}
 
 
@@ -235,6 +377,17 @@ def verify_manager_file_contexts(here, work):
         ("/run/systemd/generator.early-extra", stat.S_IFDIR, "p4_linux_rootdir_t"),
         ("/run/systemd/generatorx/example.service", stat.S_IFREG, "p4_linux_native_data_t"),
         ("/run/systemd/system", stat.S_IFDIR, "p4_linux_systemd_run_t"),
+        ("/run/systemd/units", stat.S_IFDIR, "p4_linux_manager_units_t"),
+        ("/run/systemd/units/invocation:systemd-journald.service", stat.S_IFLNK, "p4_linux_manager_unit_metadata_t"),
+        ("/run/systemd/units/.#invocation:example.service1234", stat.S_IFLNK, "p4_linux_manager_unit_metadata_t"),
+        ("/run/systemd/units/extra-fields:example.service", stat.S_IFREG, "p4_linux_manager_unit_metadata_t"),
+        ("/run/systemd/units/unknown-directory", stat.S_IFDIR, "p4_linux_rootdir_t"),
+        ("/run/systemd/units-extra", stat.S_IFDIR, "p4_linux_rootdir_t"),
+        ("/run/systemd/invocation:example.service", stat.S_IFLNK, "p4_linux_usrmerge_link_t"),
+        ("/run/systemd/ask-password", stat.S_IFDIR, "p4_linux_manager_ask_password_t"),
+        ("/run/systemd/ask-password", stat.S_IFREG, "p4_linux_native_data_t"),
+        ("/run/systemd/ask-password-extra", stat.S_IFDIR, "p4_linux_rootdir_t"),
+
         ("/run/systemd/show-status", stat.S_IFREG, "p4_linux_manager_status_t"),
         ("/run/systemd/systemd-units-load", stat.S_IFREG, "p4_linux_manager_status_t"),
         ("/run/systemd/show-status-extra", stat.S_IFREG, "p4_linux_native_data_t"),
@@ -247,6 +400,18 @@ def verify_manager_file_contexts(here, work):
         ("/usr/lib/systemd/system-environment-generators/unselected-generator", stat.S_IFREG, "p4_linux_runtime_lib_t"),
         ("/usr/libexec/netplan/generate", stat.S_IFREG, "p4_linux_generator_exec_t"),
         ("/usr/libexec/netplan/unselected-helper", stat.S_IFREG, "p4_linux_native_bin_t"),
+    ])
+    for target, (_, units) in CREDENTIAL_DIRECTORY_FAMILIES.items():
+        for unit in units:
+            for parent in ("/run/credentials/", "/run/systemd/temporary-credentials/"):
+                cases.append((parent + unit, stat.S_IFDIR, target))
+                cases.append((parent + unit, stat.S_IFREG, "p4_linux_native_data_t"))
+    cases.extend([
+        ("/run/credentials", stat.S_IFDIR, "p4_linux_credentials_root_t"),
+        ("/run/systemd/temporary-credentials", stat.S_IFDIR, "p4_linux_credential_staging_t"),
+        ("/run/credentials/unselected.service", stat.S_IFDIR, "p4_linux_rootdir_t"),
+        ("/run/credentials/systemd-journald.service-extra", stat.S_IFDIR, "p4_linux_rootdir_t"),
+        ("/run/systemd/temporary-credentials/unselected.service", stat.S_IFDIR, "p4_linux_rootdir_t"),
     ])
     # Normal debootstrap character nodes survive complete-root capture. Keep the
     # original class-specific labels without assigning device types to other kinds.
@@ -733,7 +898,11 @@ def verify_host_control(library, binary, export, original_contract):
     check(executor, obj("p4_linux_cgroup_init_scope_t"), "dir", ["mounton", "relabelto", "relabelfrom"], False)
     check(executor, obj("p4_linux_cgroup_init_tasks_t"), "file", ["open", "write", "relabelto", "relabelfrom"], False)
     check(executor, obj("tmpfs"), "dir", ["relabelfrom"], True)
-    check(executor, obj("tmpfs"), "dir", ["open", "read", "write", "add_name", "remove_name", "relabelto"], False)
+    # Stock credential fsmount() reopens the still-unlabelled directory FD
+    # before label_fix_full(); enumeration, content mutation and relabel-to
+    # the generic tmpfs type remain prohibited.
+    check(executor, obj("tmpfs"), "dir", ["open"], True)
+    check(executor, obj("tmpfs"), "dir", ["read", "write", "add_name", "remove_name", "relabelto"], False)
     for private in ["droidloom_public_apk_input", "p4_linux_product_store_t"]:
         check(executor, obj(private), "file", ["open", "read", "write", "create", "relabelto"], False)
     for actor in [session, udev, setup]:

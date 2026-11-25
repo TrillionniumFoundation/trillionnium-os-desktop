@@ -61,7 +61,7 @@
 # namespace, logind, resolver and journal paths keep their independent types.
 /run -d u:object_r:p4_linux_run_t:s0
 /run/systemd -d u:object_r:p4_linux_systemd_run_t:s0
-/run/systemd/(units|chr|blk|propagate)(/.*)? -d u:object_r:p4_linux_systemd_run_t:s0
+/run/systemd/(chr|blk|propagate)(/.*)? -d u:object_r:p4_linux_systemd_run_t:s0
 /run/systemd/journal -d u:object_r:p4_linux_journal_runtime_t:s0
 /run/log -d u:object_r:p4_linux_volatile_log_root_t:s0
 /run/log/journal -d u:object_r:p4_linux_volatile_journal_store_t:s0
@@ -82,3 +82,19 @@
 /run/systemd/generator(\.(early|late))?(/.*)? -l u:object_r:p4_linux_generated_unit_t:s0
 /run/systemd/system -d u:object_r:p4_linux_systemd_run_t:s0
 /run/systemd/(show-status|systemd-units-load) -- u:object_r:p4_linux_manager_status_t:s0
+/run/systemd/units -d u:object_r:p4_linux_manager_units_t:s0
+/run/systemd/units/[^/]+ -- u:object_r:p4_linux_manager_unit_metadata_t:s0
+/run/systemd/units/[^/]+ -l u:object_r:p4_linux_manager_unit_metadata_t:s0
+/run/systemd/ask-password -d u:object_r:p4_linux_manager_ask_password_t:s0
+/run/credentials -d u:object_r:p4_linux_credentials_root_t:s0
+/run/systemd/temporary-credentials -d u:object_r:p4_linux_credential_staging_t:s0
+/run/(credentials|systemd/temporary-credentials)/systemd-journald\.service -d u:object_r:p4_linux_journal_credentials_t:s0
+/run/(credentials|systemd/temporary-credentials)/systemd-firstboot\.service -d u:object_r:p4_linux_setup_credentials_t:s0
+/run/(credentials|systemd/temporary-credentials)/systemd-sysusers\.service -d u:object_r:p4_linux_setup_credentials_t:s0
+/run/(credentials|systemd/temporary-credentials)/systemd-tmpfiles-clean\.service -d u:object_r:p4_linux_setup_credentials_t:s0
+/run/(credentials|systemd/temporary-credentials)/systemd-tmpfiles-setup-dev-early\.service -d u:object_r:p4_linux_setup_credentials_t:s0
+/run/(credentials|systemd/temporary-credentials)/systemd-tmpfiles-setup-dev\.service -d u:object_r:p4_linux_setup_credentials_t:s0
+/run/(credentials|systemd/temporary-credentials)/systemd-tmpfiles-setup\.service -d u:object_r:p4_linux_setup_credentials_t:s0
+/run/(credentials|systemd/temporary-credentials)/systemd-udev-load-credentials\.service -d u:object_r:p4_linux_udev_credentials_t:s0
+/run/(credentials|systemd/temporary-credentials)/systemd-resolved\.service -d u:object_r:p4_linux_resolved_credentials_t:s0
+/run/(credentials|systemd/temporary-credentials)/systemd-sysctl\.service -d u:object_r:p4_linux_sysctl_credentials_t:s0

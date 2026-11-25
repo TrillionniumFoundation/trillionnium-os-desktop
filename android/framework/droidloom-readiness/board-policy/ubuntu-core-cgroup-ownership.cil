@@ -132,3 +132,15 @@
 (allow p4_linux_service_executor_t p4_linux_udevd_unit_cgroup_t (dir (getattr search open write add_name)))
 (neverallow p4_linux_service_executor_t p4_linux_udevd_unit_cgroup_t (dir (create rmdir rename setattr relabelfrom relabelto mounton)))
 (neverallow p4_linux_service_executor_t p4_linux_unit_cgroup_t (dir (write add_name)))
+
+
+; The stock perpetual root mount is extrinsic (systemd unit.c) and therefore
+; belongs to -.slice, not system.slice. kernfs computes this exact named
+; transition from the held native root SID; unknown top-level children retain
+; the root type, for which no process has create permission. Its generated
+; control files inherit the ordinary native unit type. Android remains below
+; the separately labelled production payload and receives no new authority.
+(typetransition init_t p4_linux_cgroup_root_t dir "-.mount" p4_linux_unit_cgroup_t)
+(allow init_t p4_linux_cgroup_root_t (dir (write add_name remove_name)))
+(neverallow p4_not_ubuntu_pid1 p4_linux_cgroup_root_t (dir (write add_name remove_name)))
+(neverallow p4_linux_procs p4_linux_cgroup_root_t (dir (create rmdir rename reparent)))

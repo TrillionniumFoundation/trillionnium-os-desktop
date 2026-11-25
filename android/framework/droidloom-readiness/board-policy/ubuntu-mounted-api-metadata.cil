@@ -291,7 +291,11 @@
 (allow p4_linux_service_executor_t p4_linux_journal_credentials_t (dir (create getattr search open read setattr rmdir)))
 (allow p4_linux_journald_t p4_linux_credentials_root_t (dir (getattr search)))
 (allow p4_linux_journald_t p4_linux_journal_credentials_t (dir (getattr search open read)))
-(neverallow p4_linux_procs p4_linux_credentials_root_t (dir (create rmdir rename relabelfrom relabelto mounton)))
+(neverallow p4_linux_procs p4_linux_credentials_root_t (dir (create rmdir rename relabelfrom relabelto)))
+; Stock namespace setup hides the already-held credential root only in the
+; sealed executor's private namespace. No other process gains this mountpoint.
+(allow p4_linux_service_executor_t p4_linux_credentials_root_t (dir (mounton)))
+(neverallow p4_not_service_executor p4_linux_credentials_root_t (dir (mounton)))
 (neverallow p4_linux_journald_t p4_linux_journal_credentials_t (dir (create setattr write add_name remove_name rmdir rename relabelfrom relabelto mounton)))
 
 ; Original Ubuntu setup_credentials_plain_dir moves the private journal unit
