@@ -259,7 +259,8 @@ by the actual acceptance gates and is not claimed complete by these build tests.
 
 Replace the example pins with the exact protected normal records. The work name
 uses lowercase letters, digits and hyphens, and must be absent. The native source
-is the complete v3 sixteen-package release. A fresh original-host preflight must
+is the separate `droidloom-original-host-native-package-release-v1` profile with
+exactly 22 candidate and 22 rollback packages. A fresh original-host preflight must
 match the actual boot ID, original kernel, root UUID, PID1 root and held original
 boot/tool inodes. Original tool paths are resolved through the existing protected
 alias reader and the exact alias inode chain and final ELF are rechecked after
@@ -274,8 +275,8 @@ records metadata of preserved account/SSH/home paths, and verifies them again
 after preparation. Shadow/gshadow and SSH key contents are never captured.
 
 The source-embedded existing cold admission code rereads the complete normal
-native archives and the real host/kernel Debian data streams. Eighteen exact
-archives are copied into the private input directory: native sixteen, public
+native archives and the real host/kernel Debian data streams. Twenty-four exact
+archives are copied into the private input directory: original native 22, public
 host and shared kernel. The Android package is bound to the same release but is
 not installed in this initramfs build. No package is installed in the physical
 root. The source modules, actual commands and source pins remain in the receipt.
@@ -392,9 +393,29 @@ python3 packaging/ubuntu/production/native_release.py prepare \
   --output /absolute/fresh-native-sixteen
 ~~~
 
-Historical five- and fifteen-package releases retain their original verification
-and rollback interpretation. New physical native application requires the full
-sixteen-package release. Package publication still grants no runtime or
+The physical original host has six more installed source-family packages than
+the complete qualification fixture: libselinux-dev, libsystemd-dev, libudev-dev,
+systemd-cryptsetup, systemd-dev and systemd-oomd. Its independent original-host
+profile includes exactly those six alongside the unchanged sixteen. The original
+2391-record dpkg status binds their versions, sources and architectures;
+systemd-dev remains architecture `all`. The six candidate archives are bound to
+the same admitted normal `.changes` and `.buildinfo`. Their original rollback
+archives are verified against complete Ubuntu InRelease and Packages files with
+the actual archive-key signature. Both versions' complete control and payload
+streams are read back, and executable maintainer/configuration scripts must be
+byte-identical. No original package is removed to satisfy a candidate dependency.
+
+~~~sh
+python3 packaging/ubuntu/production/native_release.py prepare-original \
+  --native-full /absolute/native-sixteen --native-release-id NATIVE_SIXTEEN_ID \
+  --extras /absolute/normal-original-six-and-signed-sources \
+  --output /absolute/fresh-original-native-22
+~~~
+
+Historical five-, fifteen- and sixteen-package releases retain their original
+verification and rollback interpretation. New physical native application
+requires the exact original-host 22-package profile; the complete fixture's
+sixteen-package contract is unchanged. Publication grants no runtime or
 application acceptance.
 
 ## Recovery of an interrupted native package transaction

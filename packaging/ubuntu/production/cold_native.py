@@ -19,7 +19,7 @@ import stat
 import time
 from release import (need,exact,digest,canonical,f9,safe_absolute,held,hash_fd,
                      new_file,read_json_file,bounded_process,Rejected,_fixed_command)
-from native_release import verify_bundle,FULL_SCHEMA
+from native_release import verify_bundle,FULL_SCHEMA,ORIGINAL_SCHEMA
 from systemd_bundle import configured_row
 from cold_apply import (original_cold_authority,original_cold_context,COLD_OWNER_UNITS,
                         actual_acceptance_binding)
@@ -70,8 +70,13 @@ class NativeTransaction:
         self.names={r:self.payloads[r]["new"]["control"]["Package"] for r in self.roles}
         self.old={r:self.payloads[r]["old"]["control"]["Version"] for r in self.roles}
         self.new={r:self.payloads[r]["new"]["control"]["Version"] for r in self.roles}
+        self.arch={r:self.payloads[r]["new"]["control"]["Architecture"] for r in self.roles}
+        need(all(self.arch[r]==self.payloads[r]["old"]["control"]["Architecture"]
+                 and self.arch[r]==("all" if self.names[r]=="systemd-dev" else "amd64") for r in self.roles),
+             "unchanged exact native package architecture")
         self.closure_sha256=self.index["closure_sha256"]
-        need(len(self.roles) in (5,15,16) and len(set(self.names.values()))==len(self.roles),
+        allowed=len(self.roles)==22 if self.index.get("schema")==ORIGINAL_SCHEMA else len(self.roles) in (5,15,16)
+        need(allowed and len(set(self.names.values()))==len(self.roles),
              "closed normal native package roles")
         self.state=self.ensure_state()
         self.lockfd=os.open(self.state/"transaction.lock",os.O_RDWR|os.O_CREAT|os.O_NOFOLLOW|os.O_CLOEXEC,0o600)
@@ -186,8 +191,8 @@ class NativeTransaction:
     def package_rows(self,all_rows):
         out={}
         for role in self.roles:
-            candidates=[k for k in (self.names[role]+":amd64",self.names[role]) if k in all_rows]
-            need(len(candidates)==1,"one actual native amd64 package row")
+            candidates=[k for k in (self.names[role]+":"+self.arch[role],self.names[role]) if k in all_rows]
+            need(len(candidates)==1,"one actual native package row with the selected architecture")
             out[role]=(candidates[0],all_rows[candidates[0]])
         return out
 
@@ -431,7 +436,7 @@ class NativeTransaction:
 
     def configure(self,kind):
         return self.run_dpkg("configure-"+kind,
-                            ["--configure",*[self.names[r]+":amd64" for r in self.remaining_roles(kind)]])
+                            ["--configure",*[self.names[r]+":"+self.arch[r] for r in self.remaining_roles(kind)]])
 
     def verify_installed(self,kind):
         self.check_root();self.audit()
@@ -460,8 +465,8 @@ class NativeTransaction:
     def apply(self):
         need(self.snapshot is not None,"native snapshot required")
         if self.root==Path("/"):
-            need(len(self.roles)==16 and self.index.get("schema")==FULL_SCHEMA,
-                 "physical native apply requires the complete sixteen-package normal release")
+            need(len(self.roles)==22 and self.index.get("schema")==ORIGINAL_SCHEMA,
+                 "physical native apply requires the exact original-host twenty-two-package release")
         with self.service_guard():
             self.unpack("new");self.configure("new");n=self.verify_installed("new")
         self.event("normal-native-installed",members=n,runtime_qualified=False,physical_activation=False)
@@ -520,8 +525,8 @@ def physical_inputs(deployment_id,native_id,operation="apply"):
     bundle=Path("/var/lib/droidloom-maintenance/releases")/deployment_id/"native"
     index,_,packages,_=verify_bundle(bundle,native_id,True)
     if operation=="apply":
-        need(index.get("schema")==FULL_SCHEMA and len(packages)==16,
-             "physical apply requires the same complete normal native family")
+        need(index.get("schema")==ORIGINAL_SCHEMA and len(packages)==22,
+             "physical apply requires the same exact original-host native family")
         authority=actual_acceptance_binding(deployment_id)
         need(isinstance(authority,dict) and authority.get("native_release_id")==native_id
              and authority.get("deployment_id")==deployment_id,"same owned runtime/private/native release authority")

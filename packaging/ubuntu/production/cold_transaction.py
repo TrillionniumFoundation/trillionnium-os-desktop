@@ -317,7 +317,7 @@ def activate(bundle,release_id):
     raise Rejected("activation unavailable: no admitted owned-runtime and physical private-working-copy acceptance verifier")
 
 def initramfs_materials(bundle,release_id,native_bundle,native_id,output):
-    """Read actual normal public and sixteen-native archives for private staging.
+    """Read actual normal public and original-host native archives for private staging.
 
     The Rust original-host producer calls this readonly existing admission
     code before an isolated normal package installation. This grants neither
@@ -333,8 +333,8 @@ def initramfs_materials(bundle,release_id,native_bundle,native_id,output):
          "fixed create-only original-host material output")
     intent,entries,_,packages,controls,scopes=load_inputs(bundle,release_id)
     descriptor,closure,natives,payloads=native_release.verify_bundle(native_bundle,native_id,True)
-    need(descriptor["schema"]==native_release.FULL_SCHEMA and len(natives)==16,
-         "original-host initramfs requires all sixteen normal native packages")
+    need(descriptor["schema"]==native_release.ORIGINAL_SCHEMA and len(natives)==22,
+         "original-host initramfs requires the exact twenty-two installed native packages")
     rows=[]
     for role in sorted(natives):
         control=payloads[role]["new"]["control"]
@@ -368,7 +368,7 @@ def initramfs_materials(bundle,release_id,native_bundle,native_id,output):
     module_path="usr/lib/droidloom/kernels/"+KERNEL+"/MODULES.json"
     module=entries[module_path]
     need(module["sha256"]==KERNEL_MODULES_SHA,"same complete shared-kernel modules")
-    result={"schema":"droidloom.original-host-initramfs-materials.v1",
+    result={"schema":"droidloom.original-host-initramfs-materials.v2",
        "public_release":file_pin(bundle/"RELEASE.json"),"public_release_id":release_id,
        "deployment_id":intent["deployment_id"],"native_release":file_pin(native_bundle/"NATIVE-RELEASE.json"),
        "native_release_id":native_id,"native_closure":closure["closure_sha256"],

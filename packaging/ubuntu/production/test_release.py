@@ -190,6 +190,55 @@ class Admission(unittest.TestCase):
              patch.object(native,"verify_bundle",return_value=({"schema":"old"},None,{str(i):{} for i in range(15)},None)),\
              patch.object(native,"actual_acceptance_binding",side_effect=AssertionError("incomplete family")):
             with self.assertRaises(release.Rejected):native.physical_inputs(deployment,component,"apply")
+    def test_original_native_profile_preserves_the_full_installed_source_family(self):
+        import native_release as native
+        roles=[]
+        for role in native.core.ROLES:
+            roles.append({"name":native.core.NAMES[role],"source":native.core.PROJECTS[role],
+                          "old_version":native.core.OLD[role]})
+        roles.append({"name":"apparmor","source":"apparmor","old_version":native.core.OLD["apparmor"]})
+        roles.extend({"name":name,"source":"systemd","old_version":native.systemd.OLD} for name in native.systemd.NAMES)
+        for name in native.ORIGINAL_EXTRAS:
+            source,version,arch=native.original_extra_identity(name,"old")
+            roles.append({"name":name,"source":source,"old_version":version})
+        rows=["Package: "+r["name"]+"\nSource: "+r["source"]+"\nVersion: "+r["old_version"]+
+              "\nArchitecture: "+("all" if r["name"]=="systemd-dev" else "amd64")+
+              "\nStatus: install ok installed" for r in roles]
+        rows.extend("Package: unrelated-"+str(i)+"\nStatus: deinstall ok config-files" for i in range(2391-len(rows)))
+        raw=("\n\n".join(rows)+"\n").encode()
+        native.original_profile_status(raw,roles)
+        changes=(raw.replace(b"Architecture: all",b"Architecture: amd64"),
+                 raw.replace(b"Version: 3.9-4build1",b"Version: 3.9-4build1+other",1),
+                 raw.replace(b"Status: install ok installed",b"Status: install ok unpacked",1),
+                 raw.replace(b"Source: libselinux",b"Source: unrelated",1),
+                 b"\n\n".join(raw.split(b"\n\n")[1:]),raw+b"\n"+rows[0].encode(),
+                 raw.replace(b"Package: unrelated-0\n",b"Package: unrelated-0\nSource: systemd\nVersion: old\nArchitecture: amd64\n").replace(
+                     b"Status: deinstall ok config-files",b"Status: install ok installed",1))
+        for changed in changes:
+            with self.subTest(changed=changed[:80]),self.assertRaises(release.Rejected):
+                native.original_profile_status(changed,roles)
+        with self.assertRaises(release.Rejected):native.original_profile_status(raw,roles[:-1])
+    def test_physical_native_profile_cannot_be_replaced_by_fixture_count_or_unbounded_count(self):
+        import cold_native as native
+        from unittest.mock import patch
+        cases=((native.FULL_SCHEMA,16),(native.FULL_SCHEMA,22),(native.ORIGINAL_SCHEMA,21),(native.ORIGINAL_SCHEMA,23))
+        for schema,count in cases:
+            with self.subTest(schema=schema,count=count),patch.object(native,"original_cold_authority"),\
+                 patch.object(native,"verify_bundle",return_value=({"schema":schema},None,{str(i):{} for i in range(count)},None)),\
+                 patch.object(native,"actual_acceptance_binding",side_effect=AssertionError("inexact family must be rejected first")):
+                with self.assertRaises(release.Rejected):native.physical_inputs("a"*64,"b"*64,"apply")
+    def test_native_all_architecture_is_not_rewritten_to_amd64(self):
+        import cold_native as native
+        tx=object.__new__(native.NativeTransaction);tx.roles=("systemd-dev",)
+        tx.names={"systemd-dev":"systemd-dev"};tx.arch={"systemd-dev":"all"}
+        rows={"systemd-dev":{"version":"old","status":"ii "}}
+        self.assertEqual(tx.package_rows(rows)["systemd-dev"],("systemd-dev",rows["systemd-dev"]))
+        for invalid in ({"systemd-dev:amd64":rows["systemd-dev"]},
+                        {**rows,"systemd-dev:all":rows["systemd-dev"]}):
+            with self.assertRaises(release.Rejected):tx.package_rows(invalid)
+        args=[];tx.remaining_roles=lambda kind:tx.roles
+        tx.run_dpkg=lambda stage,argv:args.append(argv)
+        tx.configure("new");self.assertEqual(args,[["--configure","systemd-dev:all"]])
     def test_native_recovery_reads_only_fixed_inactive_units_with_the_exact_saved_tool(self):
         import cold_native as native
         import contextlib

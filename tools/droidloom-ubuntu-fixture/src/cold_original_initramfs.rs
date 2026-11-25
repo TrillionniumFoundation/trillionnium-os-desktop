@@ -35,6 +35,7 @@ const TOOLS: &[&str] = &[
     "/usr/bin/dpkg-deb",
     "/usr/sbin/mkinitramfs",
     "/usr/bin/unmkinitramfs",
+    "/usr/bin/gpgv",
 ];
 const NATIVE_HOOK: &[u8] = b"#!/bin/sh\nset -eu\ncase \"${1:-}\" in prereqs) exit 0 ;; esac\n. /usr/share/initramfs-tools/hook-functions\ncopy_exec /usr/lib/x86_64-linux-gnu/libselinux.so.1\ncopy_exec /usr/lib/x86_64-linux-gnu/libapparmor.so.1\n";
 const POLICY_RC: &[u8] = b"#!/bin/sh\nexit 101\n";
@@ -405,7 +406,7 @@ fn guard_readback(guards: &[SourceGuard]) -> Result<Value> {
 }
 fn validate_materials(m: &Materials) -> Result<()> {
     ensure(
-        m.schema == "droidloom.original-host-initramfs-materials.v1"
+        m.schema == "droidloom.original-host-initramfs-materials.v2"
             && m.root_uuid == ROOT_UUID
             && m.original_kernel == ORIGINAL_KERNEL
             && m.kernel_release == KERNEL
@@ -417,8 +418,8 @@ fn validate_materials(m: &Materials) -> Result<()> {
         "normal original-host material scope differs",
     )?;
     ensure(
-        m.packages.len() == 18 && m.required_initrd_members.len() == 5,
-        "complete native16 and public host/kernel materials required",
+        m.packages.len() == 24 && m.required_initrd_members.len() == 5,
+        "exact original native22 and public host/kernel materials required",
     )?;
     let names = m
         .packages
@@ -444,15 +445,26 @@ fn validate_materials(m: &Materials) -> Result<()> {
         "udev",
         "droidloom-shared-host",
         "droidloom-shared-kernel",
+        "libselinux-dev",
+        "libsystemd-dev",
+        "libudev-dev",
+        "systemd-cryptsetup",
+        "systemd-dev",
+        "systemd-oomd",
     ]
     .into_iter()
     .collect();
     ensure(
         names == expected
-            && m.packages
-                .iter()
-                .all(|p| p.architecture == "amd64" && !p.version.is_empty()),
-        "fixed complete normal package family differs",
+            && m.packages.iter().all(|p| {
+                let architecture = if p.name == "systemd-dev" {
+                    "all"
+                } else {
+                    "amd64"
+                };
+                p.architecture == architecture && !p.version.is_empty()
+            }),
+        "fixed original-host normal package family differs",
     )?;
     ensure(
         [
@@ -641,7 +653,7 @@ pub fn prepare(path: &Path, expected: &str) -> Result<()> {
     ensure(
         inner["schema"] == "droidloom.original-host-normal-initramfs-build.v1"
             && inner["stage_sha256"] == stage_pin.sha256
-            && inner["package_count"] == 18
+            && inner["package_count"] == 24
             && inner["kernel_release"] == KERNEL,
         "actual private normal initramfs result differs",
     )?;
@@ -1520,7 +1532,7 @@ pub fn build(path: &Path, expected: &str) -> Result<()> {
         "bounded normal original-host initramfs",
     )?;
     let report = json!({"schema":"droidloom.original-host-normal-initramfs-build.v1","stage_sha256":pin.sha256,
-        "kernel_release":KERNEL,"package_count":18,"private_namespaces":namespaces()?,"root_identity":[root.dev(),root.ino()],
+        "kernel_release":KERNEL,"package_count":24,"private_namespaces":namespaces()?,"root_identity":[root.dev(),root.ino()],
         "normal_simulation":simulated,"normal_install":installed,"normal_audit":audit,"constrained_capabilities":capabilities,"actual_remount_denial":probe_pin,
         "status_before":status,"status_after":after,"retained_private_status":actual_pin(&work.join("PRIVATE-DPKG-STATUS"))?,"original_account_files":account_before,
         "policy_rc_101":policy_pin,"previous_private_policy_rc":previous_policy,"normal_native_hook":hook_pin,
