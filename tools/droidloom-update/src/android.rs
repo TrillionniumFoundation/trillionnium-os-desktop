@@ -13593,7 +13593,7 @@ fn build_targets_with_fixed_request_and_native_verification(
             &mut p,
             official.inputs,
         )?;
-        official_vendor::project(source, &vendor, official, &mut p)?;
+        official_vendor::project(repo, source, &vendor, official, &mut p)?;
     } else if complete_delivery {
         crate::native_bridge::prepare_coherent_build(source, &vendor, work, &mut p)?;
     } else {
@@ -30352,6 +30352,32 @@ mod patch_tests {
         p.restore().unwrap();
         assert_eq!(fs::read(source.join("input")).unwrap(), b"before\n");
         assert_eq!(fs::read(source.join("removed")).unwrap(), b"removed\n");
+    }
+
+    #[test]
+    fn independent_aosp_projection_records_only_original_repository_patch() {
+        let root = tempfile::tempdir().unwrap();
+        let repo = root.path().join("producer");
+        let source = root.path().join("aosp");
+        fs::create_dir(&repo).unwrap();
+        fs::create_dir(&source).unwrap();
+        write(&source.join("input"), "before\n").unwrap();
+        let patch = repo.join("camera.patch");
+        write(&patch, "--- a/input\n+++ b/input\n@@ -1 +1 @@\n-before\n+after\n").unwrap();
+        let mut projection = Projection::new(root.path().join("journal")).unwrap();
+        projection.patch(&source, "", &patch).unwrap();
+        let receipt = projection.effective_inventory(&repo, &source).unwrap();
+        assert_eq!(receipt["patches"]["camera.patch"], hash(&patch).unwrap());
+        projection.restore().unwrap();
+        assert_eq!(fs::read(source.join("input")).unwrap(), b"before\n");
+
+        let projected = source.join("projected-camera.patch");
+        copy(&patch, &projected).unwrap();
+        let mut wrong = Projection::new(root.path().join("wrong-journal")).unwrap();
+        wrong.patch(&source, "", &projected).unwrap();
+        assert!(wrong.effective_inventory(&repo, &source).is_err());
+        wrong.restore().unwrap();
+        assert_eq!(fs::read(source.join("input")).unwrap(), b"before\n");
     }
 
     #[test]
