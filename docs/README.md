@@ -120,7 +120,12 @@ Review the complete report, including unresolved source freshness and signer
 or data-migration facts. A newer installed package cannot erase those facts.
 
 The report's `runtime_plan` object is the existing schema-3 execution input.
-Extract it to a new ordinary file, review it, and independently pin the exact
+Its `source_selection` pin preserves the complete current source document;
+execution checks the exact package/version/APK roster and retains per-app source
+versions, freshness and data-migration facts in `source_context`. The pin is
+checked before and after execution. This is distinct from `preparation_selection`,
+which remains the fixed, independently adopted fourteen-leaf source selector.
+Extract the plan to a new ordinary file, review it, and independently pin the exact
 file that will execute:
 
 ```sh

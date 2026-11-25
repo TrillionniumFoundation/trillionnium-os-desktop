@@ -416,3 +416,73 @@ fn source_selection_cannot_change_behind_an_external_intent_pin() {
     .unwrap_err();
     assert!(error.contains("bytes differ"), "{error}");
 }
+
+#[test]
+fn extracted_runtime_plan_retains_source_facts_and_rejects_changed_source_or_identity() {
+    let (mut intent, mut selection, gates, mut client) = fixture();
+    selection.applications[0].latest_material_status =
+        "public_release_version_differs_requires_resolution".into();
+    selection.applications[0].original_registry_preconditions = json!({
+        "current_signer_set_matches_candidate":false,
+        "in_place_update_signer_precondition_met":false,
+        "business_data_migration_accepted":false
+    });
+    let directory = tempfile::tempdir().unwrap();
+    let raw = serde_json::to_vec(&selection).unwrap();
+    let source_path = directory.path().join("selection.json");
+    std::fs::write(&source_path, &raw).unwrap();
+    intent.selection = FilePin {
+        path: source_path.clone(),
+        bytes: raw.len() as u64,
+        sha256: hex::encode(Sha256::digest(&raw)),
+    };
+    let report = prepare(&intent, pin("intent"), &selection, &gates, &mut client).unwrap();
+    // Exactly the standalone object callers extract from preparation JSON.
+    let standalone = serde_json::to_vec(&report.runtime_plan).unwrap();
+    let plan: RuntimePlan = serde_json::from_slice(&standalone).unwrap();
+    assert_eq!(plan.source_selection.as_ref(), Some(&intent.selection));
+    assert!(plan.preparation_selection.is_none()); // The independent fixed 14-leaf selector.
+    let annotations = source_annotations(&plan).unwrap();
+    assert_eq!(annotations.len(), 39);
+    let first = &annotations["org.example.app0"];
+    assert_eq!(first.version_name, "42.0");
+    assert_eq!(
+        first.latest_material_status,
+        "public_release_version_differs_requires_resolution"
+    );
+    assert_eq!(
+        first.original_registry_preconditions["business_data_migration_accepted"],
+        false
+    );
+    assert_eq!(first.material_files.len(), 2);
+    for change in 0..4 {
+        let mut changed = plan.clone();
+        match change {
+            0 => {
+                changed.applications[0]
+                    .expected_input
+                    .as_mut()
+                    .unwrap()
+                    .version_code += 1
+            }
+            1 => changed.applications[0]
+                .expected_input
+                .as_mut()
+                .unwrap()
+                .apks
+                .pop()
+                .map(|_| ())
+                .unwrap(),
+            2 => {
+                changed.applications.pop();
+            }
+            _ => {
+                changed.applications[0].launch.as_mut().unwrap().component =
+                    "org.example.app0/.Unreviewed".into()
+            }
+        }
+        assert!(source_annotations(&changed).is_err(), "change {change}");
+    }
+    std::fs::write(source_path, b"changed source after extraction").unwrap();
+    assert!(source_annotations(&plan).is_err());
+}

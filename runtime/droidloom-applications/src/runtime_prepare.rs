@@ -23,7 +23,7 @@ struct PreparationIntent {
 // The source producer also records static manifest diagnostics and historical
 // provenance. Consume only the documented fields below; ignored annotations
 // never create runtime authority or imply acceptance.
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 struct StaticSelection {
     schema: String,
     package_count: usize,
@@ -44,12 +44,12 @@ struct MaterialFile {
     verified_signer_certificates_sha256: Vec<String>,
 }
 
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 struct LauncherCandidate {
     component: String,
 }
 
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 struct SourceApplication {
     package: String,
     application_label: String,
@@ -65,6 +65,102 @@ struct SourceApplication {
     launcher_candidates: Vec<LauncherCandidate>,
     preferred_manifest_component: Option<String>,
     original_registry_preconditions: Value,
+}
+
+/// Source facts retained even when a schema-3 plan is extracted from its
+/// preparation report. These facts never become installed-identity or gate credit.
+#[derive(Clone, Debug, Serialize)]
+pub(super) struct SourceAnnotations {
+    application_label: String,
+    role: String,
+    version_code: u64,
+    version_name: String,
+    material_files: Vec<MaterialFile>,
+    signature_verification_source: FilePin,
+    latest_material_status: String,
+    latest_device_delivery_verified: bool,
+    original_registry_preconditions: Value,
+}
+
+/// Bind annotations to the exact full selected roster before any runtime action.
+pub(super) fn source_annotations(
+    plan: &RuntimePlan,
+) -> Result<BTreeMap<String, SourceAnnotations>, String> {
+    let Some(pin) = &plan.source_selection else {
+        return Ok(BTreeMap::new());
+    };
+    let selection: StaticSelection = serde_json::from_slice(&pinned(pin)?)
+        .map_err(|error| format!("runtime source_selection: {error}"))?;
+    validate_selection(&selection, plan.applications.len())?;
+    let selected: BTreeMap<_, _> = selection
+        .applications
+        .iter()
+        .map(|app| (app.package.as_str(), app))
+        .collect();
+    let mut annotations = BTreeMap::new();
+    for requested in &plan.applications {
+        let app = selected
+            .get(requested.package.as_str())
+            .ok_or("runtime plan package differs from the complete pinned source selection")?;
+        if let Some(input) = &requested.expected_input {
+            validate_source(app, &input.source_receipt)?;
+            let source: BTreeSet<_> = app
+                .material_files
+                .iter()
+                .map(|file| (file.bytes, file.sha256.as_str()))
+                .collect();
+            let expected: BTreeSet<_> = input
+                .apks
+                .iter()
+                .map(|file| (file.bytes, file.sha256.as_str()))
+                .collect();
+            let base = app
+                .material_files
+                .iter()
+                .find(|file| file.expected_normalized_pm_name.as_deref() == Some("base.apk"))
+                .ok_or("source base APK missing")?;
+            let expected_base = input.apks.iter().find(|file| file.name == "base.apk");
+            if input.version_code != app.version_code
+                || source != expected
+                || expected.len() != input.apks.len()
+                || !expected_base
+                    .is_some_and(|file| file.bytes == base.bytes && file.sha256 == base.sha256)
+            {
+                return Err("runtime version or complete APK identities differ from pinned source_selection".into());
+            }
+        }
+        if let Some(launch) = &requested.launch {
+            let component = launch_route::normalized(&launch.component, &app.package)?;
+            if !app.launcher_candidates.iter().any(|candidate| {
+                launch_route::normalized(&candidate.component, &app.package)
+                    .is_ok_and(|value| value == component)
+            }) {
+                return Err(
+                    "runtime launch route is not in the pinned source candidate set".into(),
+                );
+            }
+        }
+        if annotations
+            .insert(
+                app.package.clone(),
+                SourceAnnotations {
+                    application_label: app.application_label.clone(),
+                    role: app.role.clone(),
+                    version_code: app.version_code,
+                    version_name: app.version_name.clone(),
+                    material_files: app.material_files.clone(),
+                    signature_verification_source: app.signature_verification_source.clone(),
+                    latest_material_status: app.latest_material_status.clone(),
+                    latest_device_delivery_verified: app.latest_device_delivery_verified,
+                    original_registry_preconditions: app.original_registry_preconditions.clone(),
+                },
+            )
+            .is_some()
+        {
+            return Err("runtime plan repeats a package from source_selection".into());
+        }
+    }
+    Ok(annotations)
 }
 
 #[derive(Debug, Serialize)]
@@ -238,7 +334,9 @@ fn validate_source(app: &SourceApplication, admitted_receipt: &FilePin) -> Resul
             Some("base.apk") => bases += 1,
             None => (),
             Some(_) => {
-                return Err("source must not infer split names before a live PM observation".into());
+                return Err(
+                    "source must not infer split names before a live PM observation".into(),
+                );
             }
         }
     }
@@ -388,6 +486,7 @@ fn skeleton(intent: &PreparationIntent, selection: &StaticSelection) -> RuntimeP
         execute_public_browser: false,
         browser_fixture: None,
         preparation_selection: None,
+        source_selection: Some(intent.selection.clone()),
     }
 }
 

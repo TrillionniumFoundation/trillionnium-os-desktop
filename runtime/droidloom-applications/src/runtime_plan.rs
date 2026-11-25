@@ -114,6 +114,9 @@ struct RuntimePlan {
     browser_fixture: Option<BrowserFixture>,
     #[serde(default)]
     preparation_selection: Option<FilePin>,
+    /// Current application source roster; distinct from the fixed native-leaf selector.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    source_selection: Option<FilePin>,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -169,6 +172,7 @@ struct AppDispatch {
     status: &'static str,
     reason: String,
     expected_input: Option<ExpectedInput>,
+    source_context: Option<runtime_prepare::SourceAnnotations>,
     requested_launch: Option<LaunchPlan>,
     requested_leaf: Option<LeafPlan>,
     prerequisites: Vec<String>,
@@ -191,6 +195,7 @@ struct AppDispatch {
 pub struct RuntimeReport {
     schema: u32,
     runtime_plan: Option<FilePin>,
+    source_selection: Option<FilePin>,
     main_qualification: FilePin,
     expected_epoch: RuntimeEpoch,
     gate_registry: FilePin,
@@ -455,6 +460,7 @@ fn dispatch(
             status: "blocked",
             reason: String::new(),
             expected_input: app.expected_input.clone(),
+            source_context: None,
             requested_launch: app.launch.clone(),
             requested_leaf: app.leaf.clone(),
             prerequisites: package.prerequisites.clone(),
@@ -586,6 +592,7 @@ fn dispatch(
     RuntimeReport {
         schema: 1,
         runtime_plan: None,
+        source_selection: plan.source_selection.clone(),
         main_qualification: plan.main_qualification.clone(),
         expected_epoch: plan.expected_epoch.clone(),
         gate_registry: plan.gate_registry.clone(),
@@ -730,6 +737,7 @@ pub fn run_files(
     let gates: GateRegistry =
         serde_json::from_slice(&pinned(&plan.gate_registry)?).map_err(|e| e.to_string())?;
     validate(&plan, &gates, expected_count)?;
+    let mut source_annotations = runtime_prepare::source_annotations(&plan)?;
     pinned(&plan.main_qualification)?;
     if let Some(selection) = &plan.preparation_selection {
         leaf_routes::validate_selection(selection)?;
@@ -743,6 +751,9 @@ pub fn run_files(
         }
     }
     let mut report = dispatch(&plan, &gates, &mut SocketClient { socket });
+    for row in &mut report.applications {
+        row.source_context = source_annotations.remove(&row.package);
+    }
     report.runtime_plan = Some(FilePin { path: path.into(), bytes: raw.len() as u64,
         sha256: expected_sha256.into() });
     pinned(&plan.main_qualification)?;
@@ -758,6 +769,7 @@ pub fn run_files(
     if let Some(selection) = &plan.preparation_selection {
         leaf_routes::validate_selection(selection)?;
     }
+    if let Some(selection) = &plan.source_selection { pinned(selection)?; }
     if hex::encode(Sha256::digest(
         crate::release::read_frozen(path, INPUT_LIMIT).map_err(|e| e.to_string())?,
     )) != expected_sha256
@@ -924,6 +936,7 @@ mod tests {
                 applications,
                 execute_public_browser: true,
                 preparation_selection: None,
+                source_selection: None,
                 browser_fixture: Some(BrowserFixture {
                     url: "https://example.com/".into(),
                     input_scope: "public_owned_https".into(),
