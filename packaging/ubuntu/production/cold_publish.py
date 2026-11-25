@@ -17,10 +17,15 @@ from release import (
 KERNEL_MODULES_SHA="5399a707d1aa2b8511a936dbc1b056891613f6043b8eafe0a1c0ad5c45eb7fa8"
 KERNEL_CERT_SHA="c8085a1357354a180e49eae55a5f4a3d202b0f6aef1cd748cb31db5d8e5fefdf"
 KERNEL_ARCHIVE_SHA="e5a305dfecff9dde1c7fc7a5980f606a67802963c31b363b412768c4e55949fc"
-ANDROID_HANDOFF_SHA="1f004df244aabe84ff8dc66ab042390c8a9d866eac93ba5a45158d5e99aeae40"
-COHORT="aa695f7f5d7ff0b2f70a7eef46aae0d13f3f080ac7dbbad089539ba670f6abc7"
-RUNTIME="8c8320f9a721069c17e3fd1ad6b5a3a7ea95635320fd83398d651ef80ef29604"
-BOARD="d76542c849772c867a43a2d4fb678fc9e066bc18b6f20bd6a06afcbf3f192114"
+ANDROID_MATERIALS_SHA="84916101e6c7908114e4053bf6fbdfefc2480b902153923152cad64e62c54547"
+ANDROID_HANDOFF_SHA="e476ae7039e9ee35aca15b49baa38930bdcdf28e2b393807d794a6fdb7664513"
+ANDROID_NORMAL_SHA="ccd0bf1294652ad907a254250711250515244b963a72ceb8271a75014b1d9714"
+ANDROID_TERMINAL_SHA="716b3b9a148f2cb304dcd02a39300163a2021702439b866e73c7ccc47ab1343a"
+ANDROID_SOURCE="11bf0fa339d9c52fbf1093d95e1218f1ada40574"
+ANDROID_TREE="266e49032d5a68e843dabb49db33595e652e5466"
+COHORT="5cffd431a41a450440fe9bac7b5a5f93927471b331acde5662df4e8379b1fa87"
+RUNTIME="ed9781109ae5bd0124b12badac21127636a742d0dbc406b3cee0f3900d257db8"
+BOARD="0c839371072c7c8bc2513909c92b7623853e3c1a6538f92e1d60248cb0739520"
 BANK="b5b7ee1522f87c6fafb668d671ff028685db9e8e346564b1edda1f7ef867d5f7"
 QUERY={
  "cmd-original":(52160,"237410b6f4bfb9586a9a1135feaa4e75c189288483575890447aa5d492c56984",0o555,"u:object_r:system_file:s0"),
@@ -30,9 +35,15 @@ QUERY={
 }
 IMAGES={
  "system":(2294853632,SYSTEM),
- "vendor":(1073741824,"bc61364dcbbfa7ff9fa14e88127847def0f6dfb731ad965a576af3c19305ee62"),
- "system_ext_lib64":(25165824,"91006fe85714feed7da09bc77dfd0236f2e63b5bbb0a468f83ac66bf4784acc3"),
- "system_ext_readiness":(8388608,"48f2d0459bd6965cd90c01dc0478941c1adf6ac3c91bd552e6fc2da874a0c09f"),
+ "vendor":(1073741824,"7a0559cfa3d0103e9256332bf0b1dcca009cf4399727685debfa11326767ce81"),
+ "system_ext_lib64":(25165824,"5e5112d735d2fdab2fad50f309bc5cebb17a4d7bdc401cc4956a4afbc376be32"),
+ "system_ext_readiness":(8388608,"5700f28e2af0c09023170096224281f45a71f17e30cc892c8441691ba479bde6"),
+}
+CAMERA={
+ "jar":("/framework/droidloom-camera-producer.jar",17833,"708752a90d2993392a175c3ae0916e7f05f1097aad9030676a9746c1a04b9ef1",0o644,"u:object_r:droidloom_camera_producer_jar:s0"),
+ "init_rc":("/etc/init/droidloom-camera-producer.rc",547,"7aa2fa285276242f72cd31683bf1c71854114280c2e8c78271d3843ff9e1fed0",0o644,"u:object_r:system_file:s0"),
+ "provider":("/bin/droidloom-virtual-camera",495424,"7e8d7bf4eacaa1d2f6a1f14fb0991bb29249346a1b40b4018ba4768d8f2ea6d9",0o755,"u:object_r:virtual_camera_exec:s0"),
+ "provider_init_rc":("/etc/init/droidloom-virtual-camera.rc",500,"f4624d70d2ce8214ce9a83a0ac80ea36f72426219b472907ff59b2b8f6e46886",0o644,"u:object_r:system_file:s0"),
 }
 def project_pin(value):
     need(isinstance(value,dict) and {"path","bytes","sha256"}<=set(value),"normal original file pin")
@@ -190,16 +201,93 @@ def pack_kernel(plan_path,output):
              "normal_build_exit_code":0,"physical_install":False,"runtime_qualified":False}
     new_file(output/"RESULT.json",canonical(receipt));return receipt
 
+def camera_readback(materials,handoff,normal):
+    """Bind exact normal producer output to its independently extracted members.
+
+    The fixed parent receipts are hashed by admit_camera_materials. These are
+    image/packaging facts, not a claim that physical camera capture has passed.
+    """
+    rows=materials["camera"];other=handoff["camera"]
+    need(isinstance(rows,list) and len(rows)==4 and {r["role"] for r in rows}==set(CAMERA),
+         "complete fixed camera source roles")
+    need(isinstance(other,list) and len(other)==4 and {r["role"] for r in other}==set(CAMERA),
+         "complete independently extracted camera roles")
+    actual={r["role"]:r for r in other}
+    built=normal["early_boot_readiness"]["installed_frontend"]["camera"]
+    members=normal["early_boot_readiness"]["readback"]["members"]
+    need(set(built)==set(CAMERA),"normal camera build closure")
+    for row in rows:
+        role=row["role"];path,size,sha,mode,label=CAMERA[role];observed=actual[role]
+        need((row["image_path"],row["bytes"],row["sha256"],row["mode"],row["uid"],row["gid"],row["selinux"])==
+             (path,size,sha,mode,0,0,label),"exact normal camera source and label")
+        need(project_pin(observed)==project_pin(row) and
+             all(observed[k]==row[k] for k in ("image_path","mode","uid","gid","selinux")),
+             "independent camera extraction differs")
+        need((built[role]["bytes"],built[role]["sha256"])==(size,sha),"camera differs from normal build")
+        member=members[path[1:]]
+        need((member["sha256"],member["uid"],member["gid"],member["mode"])==
+             (sha,0,0,oct(stat.S_IFREG|mode)) and
+             member["xattrs_hex"]=={"security.selinux":(label+"\0").encode().hex()},
+             "camera image bytes/metadata/label readback differs")
+
+def admit_camera_materials(original):
+    need((original["bytes"],original["sha256"])==(12961,ANDROID_MATERIALS_SHA),
+         "exact completed camera material source")
+    m=json_bytes(read_pin(original,1024*1024))
+    need(m["schema"]=="p4-normal-camera-android-materials-v1" and
+         (m["source_head"],m["source_tree"])==(ANDROID_SOURCE,ANDROID_TREE),"normal camera source objects")
+    hp=project_pin(m["full_readback"]);np=project_pin(m["normal_result"])
+    need((hp["bytes"],hp["sha256"])==(135437,ANDROID_HANDOFF_SHA) and
+         (np["bytes"],np["sha256"])==(120640,ANDROID_NORMAL_SHA),"normal camera original receipts")
+    h=json_bytes(read_pin(hp,1024*1024));n=json_bytes(read_pin(np,1024*1024))
+    need(h["schema"]=="p4-camera-normal-four-image-public-handoff-v1" and
+         (h["source_head"],h["source_tree"])==(ANDROID_SOURCE,ANDROID_TREE),"independent normal camera source")
+    need(project_pin(h["normal_result"])==np and h["base_cohort_sha256"]==m["base_cohort_sha256"]==COHORT,
+         "camera producer/readback cohort binding")
+    tp=project_pin(h["normal_terminal"])
+    need((tp["bytes"],tp["sha256"])==(782,ANDROID_TERMINAL_SHA),"actual normal producer terminal")
+    t=json_bytes(read_pin(tp,1024*1024))
+    need(t["schema"]=="p4-camera-normal-vendor-terminal-v1" and t["exit_code"]==0 and
+         (t["source_head"],t["source_tree"])==(ANDROID_SOURCE,ANDROID_TREE) and t["source_unchanged"] is True,
+         "completed normal producer and unchanged source")
+    for key in ("stdout","stderr"):read_pin(project_pin(t[key]),8*1024*1024)
+    need(n["schema"]=="droidloom-official-gsi-independent-vendor-normal-result-v1" and
+         n["normal_user_commands_returned_success"] is True and n["source_projection_restored"] is True,
+         "normal vendor build completion")
+    need(m["runtime_qualified"] is m["production_ready"] is False and
+         h["runtime_qualified"] is h["production_ready"] is h["original_userdata_accessed"] is False and
+         n["runtime_qualified"] is n["production_ready"] is False and
+         t["runtime_qualified"] is t["production_selection_changed"] is False,
+         "normal public source cannot claim runtime or activation")
+    need(h["camera_physical_capture_verified"] is False and h["android_tests_executed"] is False,
+         "packaging cannot manufacture application or physical camera acceptance")
+    for key in ("base_manifest","runtime_manifest","board_device_manifest"):
+        need(project_pin(m[key])==project_pin(h[key]),"camera manifest source/readback differs")
+    need(set(m["images"])==set(h["images"])==set(IMAGES),"complete four-image camera cohort")
+    for role in IMAGES:
+        need(project_pin(m["images"][role])==project_pin(h["images"][role]),"camera whole-image readback binding")
+    camera_readback(m,h,n)
+    for row in m["camera"]:read_pin(project_pin(row),1024*1024)
+    policies=m["android_policy_inputs"]
+    other={r["partition_path"]:r for r in h["android_policy_inputs"]}
+    need(len(policies)==len(other)==len(h["android_policy_inputs"])==9 and
+         {r["partition_path"] for r in policies}==set(other),"nine actual Android policy inputs")
+    for row in policies:
+        observed=other[row["partition_path"]]
+        need(project_pin(row)==project_pin(observed) and
+             all(row[k]==observed[k] for k in ("image_role","image_path","image_sha256")) and
+             row["image_sha256"]==IMAGES[row["image_role"]][1],"policy source/actual image binding")
+        read_pin(project_pin(row),4*1024*1024)
+    need(len(h["commands"])==70 and all(r["exit_code"]==0 for r in h["commands"]),
+         "completed independent normal image extraction")
+    # Freeze the actual original records too; a transport summary alone cannot
+    # replace either the normal build or its complete independent readback.
+    return m,h,n,{"materials":original,"handoff":hp,"normal_result":np,"normal_terminal":tp}
+
 def pack_android(plan_path,output):
-    original,plan=read_plan(plan_path,"droidloom-normal-android-deb-plan-v1","handoff")
-    need(original["bytes"]==21042 and original["sha256"]==ANDROID_HANDOFF_SHA,"exact completed normal Android handoff")
-    h=json_bytes(read_pin(original,1024*1024))
-    need(h["schema"]=="p4-normal-four-image-and-query-handoff-v1" and h["run"]["exit_code"]==0,"normal Android producer exit")
-    need(h["run"]["source_projection_journal_exists"] is False and h["runtime_scope"]=="android_kernel_first_stage_v2","normal Android terminal state")
-    need(h["original_userdata_or_metadata_accessed"] is False and h["runtime_qualified"] is False and h["production_ready"] is False,
-         "public Android artifacts only")
-    need(h["base_cohort_sha256"]==COHORT and h["runtime_manifest_sha256"]==RUNTIME,"fixed current Android cohort")
-    package_root=safe_absolute(h["package_root"])
+    original,plan=read_plan(plan_path,"droidloom-normal-android-deb-plan-v2","materials")
+    h,readback,normal,evidence=admit_camera_materials(original)
+    package_root=safe_absolute(readback["package_root"])
     basepin=project_pin(h["base_manifest"]);runtimepin=project_pin(h["runtime_manifest"]);boardpin=project_pin(h["board_device_manifest"])
     need(basepin["sha256"]==COHORT and runtimepin["sha256"]==RUNTIME and boardpin["sha256"]==BOARD,"normal manifest byte identities")
     base=json_bytes(read_pin(basepin));runtime=json_bytes(read_pin(runtimepin));board=json_bytes(read_pin(boardpin))
@@ -208,7 +296,13 @@ def pack_android(plan_path,output):
     need(runtime["argv"]==["/system/bin/init","second_stage"] and runtime["init_path"]=="/system/bin/init" and runtime["init_bytes"]==2934488 and runtime["init_sha256"]=="9f69cc83a88db5f8533014cfea5ad9ea8e0454120335329aec27f8d65b2a9537","stock init")
     need(board["schema"]==1 and board["scope"]=="android_private_device_source_v1" and board["base_cohort_sha256"]==COHORT and board["runtime_manifest_sha256"]==RUNTIME and board["source_system_sha256"]==SYSTEM,"normal board device binding")
     need(board["bytes"]==8388608 and board["sha256"]==BANK and board["file"]==BANK+".img","normal device bank")
-    need(set(h["images"])==set(IMAGES) and set(h["query_inputs"])==set(QUERY),"closed normal image/query roles")
+    query=h["query_inputs"]
+    need(h["query_input_count"]==readback["query_input_count"]==len(query)==4,
+         "four actual original query inputs")
+    query={Path(r["path"]).name:project_pin(r) for r in query}
+    need(set(h["images"])==set(IMAGES) and set(query)==set(QUERY),"closed normal image/query roles")
+    need(runtime==readback["runtime"] and board==readback["board_device_source"],
+         "normal runtime and device bank independent readback")
     output,root=new_stage(output);inventory={}
     def source(relative,pin,mode):
         need(pin["path"]==str(package_root/relative),"normal publisher relative input changed")
@@ -227,14 +321,17 @@ def pack_android(plan_path,output):
     requirements_by_name={row["file"]:row for row in q["sources"]}
     need(len(q["sources"])==4 and set(requirements_by_name)==set(QUERY),"closed query install labels")
     for name,(size,sha,mode,label) in QUERY.items():
-        pin=project_pin(h["query_inputs"][name]);row=requirements_by_name[name]
+        pin=query[name];row=requirements_by_name[name]
         need((pin["bytes"],pin["sha256"])==(size,sha),"fixed original query bytes")
         need((row["bytes"],row["sha256"],row["required_installed_uid"],row["required_installed_gid"],row["required_installed_mode"],row["required_original_label"])==(size,sha,0,0,mode,label+"\0"),"fixed original query metadata")
         need(row["required_security_capability_absent"] is True,"original query has no capability")
         source("var/lib/droidloom/runtime-cohorts/"+RUNTIME+"/images/"+name,pin,mode)
     source("var/lib/droidloom/runtime-cohorts/"+RUNTIME+"/QUERY-INSTALL-REQUIREMENTS.json",requirements,0o444)
     result=build_deb(root,inventory,output,"droidloom-android-cohort","0.1+"+COHORT)
-    receipt={"schema":"droidloom-normal-android-deb-result-v1","plan":plan,"handoff":original,
+    for role,pin in evidence.items():copy_pin(pin,output/("source-"+role+".json"),0o444)
+    evidence={role:file_pin(output/("source-"+role+".json")) for role in evidence}
+    receipt={"schema":"droidloom-normal-android-deb-result-v1","plan":plan,**evidence,
+             "android_source_commit":ANDROID_SOURCE,"android_source_tree":ANDROID_TREE,
              "cohort_sha256":COHORT,"runtime_sha256":RUNTIME,"board_device_manifest_sha256":BOARD,
              "package":result,"inventory":file_pin(output/"INVENTORY.json"),"normal_build_exit_code":0,
              "original_userdata_accessed":False,"query_original_labels_required_at_cold_install":True,

@@ -22,7 +22,11 @@ from release import (
     json_bytes, read_json_file, file_pin, new_file, copy_pin, mkdir_new,
     bounded_process, host_manifest,
 )
-from cold_publish import COHORT, RUNTIME, BOARD, KERNEL_MODULES_SHA, ANDROID_HANDOFF_SHA
+from cold_publish import (
+    COHORT, RUNTIME, BOARD, KERNEL_MODULES_SHA, ANDROID_HANDOFF_SHA,
+    ANDROID_MATERIALS_SHA, ANDROID_NORMAL_SHA, ANDROID_TERMINAL_SHA,
+    ANDROID_SOURCE, ANDROID_TREE,
+)
 
 ROOT_UUID="01c27223-3933-481e-9836-7bd0ef1be8c9"
 ORIGINAL_KERNEL="7.0.14-p4cred1"
@@ -193,8 +197,18 @@ def component(role,pin):
              result["handoff"]["sha256"]==ANDROID_HANDOFF_SHA and
              result.get("query_original_labels_required_at_cold_install") is True and
              result.get("query_installed_labels_observed") is False,"current normal Android cohort")
+        need((result.get("android_source_commit"),result.get("android_source_tree"))==
+             (ANDROID_SOURCE,ANDROID_TREE),"completed camera normal source")
+        for name,size,sha in (("materials",12961,ANDROID_MATERIALS_SHA),
+               ("handoff",135437,ANDROID_HANDOFF_SHA),("normal_result",120640,ANDROID_NORMAL_SHA),
+               ("normal_terminal",782,ANDROID_TERMINAL_SHA)):
+            source=pin_shape(result[name])
+            need((source["bytes"],source["sha256"])==(size,sha),"fixed actual Android source evidence")
+            read_pin(source,1024*1024)
+            inputs["android-source-"+name+".json"]=source
         inputs["android-inventory.json"]=result["inventory"]
         info={"cohort_sha256":COHORT,"runtime_sha256":RUNTIME,
+              "android_source_commit":ANDROID_SOURCE,"android_source_tree":ANDROID_TREE,
               "query_labels_require_actual_cold_install_readback":True}
     return inputs,info,control
 

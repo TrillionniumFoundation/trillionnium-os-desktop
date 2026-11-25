@@ -154,12 +154,27 @@ new production release. No success receipt is rewritten.
 
 The source-owned cold_publish.py adds two ordinary packaging commands. The kernel
 plan is droidloom-normal-kernel-deb-plan-v1 with one publication FilePin. The
-Android plan is droidloom-normal-android-deb-plan-v1 with one handoff FilePin.
+Android plan is droidloom-normal-android-deb-plan-v2 with one materials FilePin.
 The normal kernel publisher's exact completed manifest binds all 6,797 original
 signed modules and 15 indexes; this command verifies every original byte before
 packaging. It does not export the signing private key. The Android input is the
-exact completed normal R10 four-image/v2-query/device-bank handoff. It contains
-no userdata or metadata image and has no install-session or activation claim.
+exact completed camera source `11bf0fa339d9c52fbf1093d95e1218f1ada40574`,
+tree `266e49032d5a68e843dabb49db33595e652e5466`. The fixed MATERIALS,
+independent HANDOFF, normal vendor result and actual producer terminal hashes
+bind the new four-image/v2-query/device-bank cohort. Packaging rereads the normal
+source records, all nine actual Android CIL inputs and all four extracted camera
+members. It cross-checks their complete bytes, modes, owners and SELinux labels
+against the normal image readback before copying and fully extracting the Debian
+payload. The source records remain unchanged and are retained with the package
+and later cold release. The old R10 plan is rejected. No userdata or metadata
+image is included, and no install-session or runtime activation is claimed.
+
+The camera material pin is 12,961 bytes with SHA256
+`84916101e6c7908114e4053bf6fbdfefc2480b902153923152cad64e62c54547`.
+Its schema is `p4-normal-camera-android-materials-v1`. Supply the actual original
+MATERIALS path: a transported summary with rewritten paths is not the source
+record. The fixed public source images may be packaged by the ordinary build
+user; a physical source or service is never modified by this command.
 
 ~~~sh
 python3 packaging/ubuntu/production/cold_publish.py pack-kernel \
