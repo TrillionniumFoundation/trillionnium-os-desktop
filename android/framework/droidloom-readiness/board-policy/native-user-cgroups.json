@@ -1,0 +1,64 @@
+{
+  "schema": "droidloom.native-user-cgroup-contract.v1",
+  "identities": [
+    {
+      "profile": "original-ubuntu",
+      "account": "gdm",
+      "uid": 120,
+      "gid": 121
+    },
+    {
+      "profile": "complete-normal-ubuntu",
+      "account": "gdm",
+      "uid": 981,
+      "gid": 981
+    },
+    {
+      "profile": "desktop-user",
+      "account": "alex",
+      "uid": 1000,
+      "gid": 1000
+    }
+  ],
+  "systemd_version": "259.9-0ubuntu0.1+p4gentmp1",
+  "delegate_subgroup": "init.scope",
+  "delegation_attributes": [
+    "cgroup.procs",
+    "cgroup.subtree_control",
+    "cgroup.threads",
+    "memory.oom.group",
+    "memory.reclaim"
+  ],
+  "normal_units": {
+    "usr/lib/systemd/system/user.slice": {
+      "bytes": 440,
+      "sha256": "502efa90338cff5781e7d63195906700a868094154864add8f38d252feed2715"
+    },
+    "usr/lib/systemd/system/user@.service": {
+      "bytes": 1039,
+      "sha256": "3e64dd11e1f9f5b39e31b689adecebf6f2e79153d271acd4c55172002e468236"
+    },
+    "usr/lib/systemd/system/user-runtime-dir@.service": {
+      "bytes": 676,
+      "sha256": "bf3702919c8dc87f5e2da18aa393a53a71275ef8a7813c43287af36d6dfe7bb6"
+    },
+    "usr/lib/systemd/system/user-.slice.d/10-defaults.conf": {
+      "bytes": 458,
+      "sha256": "f8779864a6741f9a80eb803a651c38914a002330dcc17f048716f1d6f0cab983"
+    }
+  },
+  "early_boot_sources": {
+    "runtime/droidloom-early-boot/linux_run_label.c": {
+      "bytes": 28779,
+      "sha256": "06b218b65e594ac59108616adc4c8a907e3a3a56972165af7e4567de2ca9712f"
+    },
+    "runtime/droidloom-early-boot/board_policy.c": {
+      "bytes": 15390,
+      "sha256": "0e6e1623f718288e58f02fe89553f27816dae6afa8176a85d7b3da3b76f9a2ab"
+    },
+    "runtime/droidloom-early-boot/board_init.c": {
+      "bytes": 23692,
+      "sha256": "03534cf03113580888f9a652570999f5a200ab9ccea787a510cd2ca8a26afca4"
+    }
+  }
+}

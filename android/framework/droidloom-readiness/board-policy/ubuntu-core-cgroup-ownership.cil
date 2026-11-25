@@ -76,16 +76,22 @@
 (allow init_t p4_linux_system_slice_t (dir (setattr)))
 
 ; Linux checks MAY_WRITE against the common ancestor of source and target.
-; Only the immutable service executor receives that decision. No userspace
-; role can open the root membership file or use it to read running PIDs.
+; Only the immutable system manager/executor receive that decision. PID 1
+; moves logind session tasks from system.slice to user.slice through the
+; kernel's common-ancestor check. No userspace role can open this root
+; membership file or use it to read running PIDs.
 (type p4_linux_cgroup_root_membership_t)
 (roletype object_r p4_linux_cgroup_root_membership_t)
 (typeattributeset p4_linux_init_cgroup_inodes (p4_linux_cgroup_root_membership_t))
 (allow kernel p4_linux_cgroup_root_membership_t (file (getattr relabelto)))
 (allow p4_linux_service_executor_t p4_linux_cgroup_root_membership_t (file (write)))
+(allow init_t p4_linux_cgroup_root_membership_t (file (write)))
+; Other executor-specific contracts keep their original closed actor set.
 (typeattribute p4_not_service_executor)
 (typeattributeset p4_not_service_executor (not (p4_linux_service_executor_t)))
-(neverallow p4_not_service_executor p4_linux_cgroup_root_membership_t (file (write append)))
+(typeattribute p4_not_native_task_migrator)
+(typeattributeset p4_not_native_task_migrator (not (or (init_t) (p4_linux_service_executor_t))))
+(neverallow p4_not_native_task_migrator p4_linux_cgroup_root_membership_t (file (write append)))
 (neverallow p4_non_kernel_cgroup_actor p4_linux_cgroup_root_membership_t (file (open read append setattr map ioctl)))
 
 ; systemd's production unit requests DelegateSubgroup=broker. The original
@@ -108,7 +114,8 @@
 
 ; The normal distro manager must turn on the delegated controllers before
 ; its service units can apply their resource limits. Allow just the retained
-; top-level subtree_control inode, with no permission on root membership.
+; top-level subtree_control inode, independently of the unopened root
+; membership inode used only by the kernel's common-ancestor check.
 (type p4_linux_cgroup_subtree_control_t)
 (roletype object_r p4_linux_cgroup_subtree_control_t)
 (typeattributeset p4_linux_init_cgroup_inodes (p4_linux_cgroup_subtree_control_t))

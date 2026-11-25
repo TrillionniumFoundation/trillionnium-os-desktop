@@ -12,6 +12,7 @@ import tempfile
 from derive_shared_payload_cgroup_policy import Decision, Policy, derive, verify
 from derive_native_uevent_policy import (derive_android as derive_uevent_android,
     derive_native as derive_uevent_native, verify as verify_uevent)
+from verify_native_user_cgroups import verify as verify_user_cgroups, source_inputs as user_cgroup_source_inputs
 from verify_native_login_audit import verify_login_audit
 from verify_native_journal_storage import verify_journal_storage
 from verify_greeter_home import verify_greeter_home
@@ -255,6 +256,7 @@ def verify_manager_runtime_metadata(lines, check, obj, role_types):
           ["getattr", "open", "read", "write"], True)
     required = {
         '(typetransition init_t p4_linux_cgroup_root_t dir "-.mount" p4_linux_unit_cgroup_t)',
+        '(typetransition init_t p4_linux_cgroup_root_t dir "user.slice" p4_linux_user_slice_t)',
         '(typetransition init_t p4_linux_systemd_run_t dir "units" p4_linux_manager_units_t)',
         '(typetransition init_t p4_linux_manager_units_t file p4_linux_manager_unit_metadata_t)',
         '(typetransition init_t p4_linux_manager_units_t lnk_file p4_linux_manager_unit_metadata_t)',
@@ -263,13 +265,16 @@ def verify_manager_runtime_metadata(lines, check, obj, role_types):
     if not required.issubset(lines):
         raise ValueError("Linked policy lacks fixed native manager runtime transitions: " + repr(sorted(required - lines)))
     cgroup_creates = {line for line in lines if line.startswith("(typetransition init_t p4_linux_cgroup_root_t dir ")}
-    if cgroup_creates != {next(line for line in required if "cgroup_root_t" in line)}:
+    if cgroup_creates != {line for line in required if "cgroup_root_t" in line}:
         raise ValueError("Unexpected top-level native cgroup creation transition: " + repr(sorted(cgroup_creates)))
-    # Clone-into-cgroup is an optional stock optimization. Preserve the original
-    # manager's inability to open/write root membership or generic Android nodes.
-    check("u:system_r:init_t:s0", obj("p4_linux_cgroup_root_membership_t"), "file",
-          ["open", "read", "write"], False)
-    check("u:system_r:init_t:s0", obj("cgroup_v2"), "file", ["open", "read", "write"], False)
+    # The kernel checks MAY_WRITE at a common ancestor when PID 1 moves a
+    # logind session. Check each permission: a combined False would conceal
+    # the intentionally allowed write-only decision on this unopened inode.
+    for permission in ("open", "read", "append", "setattr", "map", "ioctl"):
+        check("u:system_r:init_t:s0", obj("p4_linux_cgroup_root_membership_t"), "file", [permission], False)
+    check("u:system_r:init_t:s0", obj("p4_linux_cgroup_root_membership_t"), "file", ["write"], True)
+    for permission in ("open", "read", "write"):
+        check("u:system_r:init_t:s0", obj("cgroup_v2"), "file", [permission], False)
     return {"process_role_types": len(role_types), "role_permission_checks": count,
             "fixed_and_nested_transitions": len(required), "capabilities_added": [],
             "generic_cgroup_writes_denied": True, "generic_device_writes_denied": True,
@@ -1297,7 +1302,7 @@ def main():
         "linux-initial-calibration.cil", "protected-device-readiness-target.cil", "orderly-android-shutdown.cil",
         "ubuntu-real-root-interpreter.cil", "ubuntu-mounted-api-metadata.cil",
         "ubuntu-native-journal-storage.cil",
-        "ubuntu-core-cgroup-ownership.cil", "ubuntu-native-services.cil",
+        "ubuntu-core-cgroup-ownership.cil", "ubuntu-native-user-cgroups.cil", "ubuntu-native-services.cil",
         "ubuntu-native-service-capabilities.cil",
         "ubuntu-native-login-audit.cil",
         "ubuntu-native-service-runtime.cil", "ubuntu-native-sandbox.cil",
@@ -1321,6 +1326,8 @@ def main():
                here / "cp3a-kernel-handle-inputs.json", Path(__file__),
                here / "derive_shared_payload_cgroup_policy.py",
                here / "derive_native_uevent_policy.py", here / "native-uevent-labels.json",
+               here / "verify_native_user_cgroups.py", here / "native-user-cgroups.json",
+               *user_cgroup_source_inputs(here),
                here / "verify_native_login_audit.py", here / "verify_native_journal_storage.py",
                here / "verify_greeter_home.py", here / "verify_native_maintenance.py",
                here / "verify_fixed_display.py",
@@ -1354,6 +1361,7 @@ def main():
                        linked, contexts, environment)
         uevent_access = verify_uevent(library, linked, uevent_contract,
                                      work / "native-uevent-binary.cil", export_binary_policy)
+        user_cgroups = verify_user_cgroups(library, linked, here, work / "user-cgroup-binary.cil", export_binary_policy)
         shared_access = verify(library, linked, contract)
         host_control = verify_host_control(library, linked, work / "host-control-binary.cil", contract)
         native_capabilities = verify_native_service_capabilities(library, linked)
@@ -1367,6 +1375,7 @@ def main():
         manager_file_contexts = verify_manager_file_contexts(here, work)
         result = {
             "native_uevent": uevent_access,
+            "native_user_cgroups": user_cgroups,
             "native_manager_file_contexts": manager_file_contexts,
             "native_maintenance": native_maintenance,
             "native_maintenance_verifier": sha256(here / "verify_native_maintenance.py"),
