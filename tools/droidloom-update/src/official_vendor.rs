@@ -598,6 +598,7 @@ fn exact_replace(
 }
 
 pub(super) fn project(
+    repo: &Path,
     source: &Path,
     vendor: &Path,
     request: Request<'_>,
@@ -688,7 +689,7 @@ pub(super) fn project(
     fs::create_dir_all(&pack)?;
     if matches!(request.phase, Phase::Vendor(_)) {
         projection.patch(source, "frameworks/av",
-            &vendor.join("android/framework/droidloom-camera-producer/virtual-camera-token-death.patch"))?;
+            &repo.join("android/framework/droidloom-camera-producer/virtual-camera-token-death.patch"))?;
     }
     let modules = match request.phase {
         Phase::Native => {
