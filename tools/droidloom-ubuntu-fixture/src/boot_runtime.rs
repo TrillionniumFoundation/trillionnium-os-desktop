@@ -906,6 +906,7 @@ pub fn make_root_image(
     uuid: &str,
     gib: u64,
     labels: &Value,
+    gdm_admission: crate::boot_gdm_candidate::ImageAdmission<'_>,
 ) -> Result<FilePin> {
     ensure(
         (64..=96).contains(&gib),
@@ -1144,7 +1145,8 @@ pub fn make_root_image(
         .map(|runtime| crate::boot_query_image::verify(root, work, &disk, runtime))
         .transpose()?;
     let apparmor_readback = crate::boot_apparmor_candidate::verify_image(root, work, &disk)?;
-    let gdm_readback = crate::boot_gdm_candidate::verify_image(root, work, &disk)?;
+    let gdm_readback =
+        crate::boot_gdm_candidate::verify_image(root, work, &disk, gdm_admission)?;
     let greeter_proof_readback = crate::boot_gdm_proof::verify_image(root, work, &disk)?;
     let record = boot_files::pin_file(&disk)?;
     fs::write_json(

@@ -674,7 +674,125 @@ pub fn apply(root: &Path, boot: &Path, manifest: &Manifest, input: &GdmCandidate
     Ok(result)
 }
 
-pub fn verify_image(root: &Path, work: &Path, image: &Path) -> Result<Value> {
+pub(super) enum ImageAdmission<'a> {
+    SelectedPublic,
+    CompleteNative(&'a crate::complete_boot::Admission),
+}
+
+fn complete_image_source(
+    root: &Path,
+    expected: &FilePin,
+    admission: &crate::complete_boot::Admission,
+) -> Result<Value> {
+    let source = crate::complete_native::validate(&admission.manifest)?;
+    let prepared = &admission.prepared;
+    ensure(
+        source.stage == "installed"
+            && source.native_release.is_some()
+            && source.native_transaction.is_some()
+            && prepared.schema == crate::complete_boot::SCHEMA
+            && prepared.complete_package_database
+            && prepared.normal_native_packages_installed
+            && !prepared.guest_qualified
+            && !prepared.production_ready
+            && prepared.work_directory.parent()
+                == Some(Path::new("/var/lib/droidloom-qualification"))
+            && prepared.root == prepared.work_directory.join("root")
+            && root == prepared.root
+            && expected.path == root.join(MEMBER),
+        "GDM image has no complete normal native installation authority",
+    )?;
+    let tree = fs::Tree::open(&fs::absolute_string(root)?, 0)?;
+    let current_root = fs::stat(&tree.root)?;
+    ensure(
+        current_root.dev == prepared.root_identity.dev
+            && current_root.ino == prepared.root_identity.ino
+            && current_root.uid == 0
+            && current_root.gid == 0
+            && current_root.mode & 0o022 == 0,
+        "GDM image root is not the admitted complete native clone",
+    )?;
+    // Host installation and relabeling may change root directory timestamps.
+    // The GDM regular inode's contents and package metadata must remain exact.
+    let members: Vec<_> = admission
+        .manifest
+        .entries
+        .iter()
+        .filter(|entry| entry.path == format!("/{MEMBER}"))
+        .collect();
+    ensure(
+        members.len() == 1,
+        "complete native GDM member is not unique",
+    )?;
+    let member = members[0];
+    let current = fs::stat(&boot_files::checked_file(expected)?)?;
+    ensure(
+        matches!(&member.content, Content::Regular { sha256 } if sha256 == &expected.sha256)
+            && member.source.size == expected.bytes
+            && member.source.uid == 0
+            && member.source.gid == 0
+            && member.source.nlink == 1
+            && member.source.mode & 0o7777 == 0o755
+            && rustix::fs::FileType::from_raw_mode(member.source.mode)
+                == rustix::fs::FileType::RegularFile
+            && current.size == member.source.size
+            && current.uid == member.source.uid
+            && current.gid == member.source.gid
+            && current.nlink == member.source.nlink
+            && current.mode == member.source.mode,
+        "complete native GDM differs from its installed package member",
+    )?;
+    let mut packages = Vec::new();
+    for name in ["gdm3", "libgdm1", "gir1.2-gdm-1.0"] {
+        let matching: Vec<_> = admission
+            .manifest
+            .packages
+            .iter()
+            .filter(|package| package.package == name)
+            .collect();
+        ensure(
+            matching.len() == 1
+                && matching[0].version == VERSION
+                && matching[0].architecture == "amd64"
+                && matching[0].status == "ii ",
+            "complete native GDM package family is mixed or unconfigured",
+        )?;
+        packages.push(matching[0]);
+    }
+    let status = boot_files::pin_file(&root.join("var/lib/dpkg/status"))?;
+    let statuses: Vec<_> = admission
+        .manifest
+        .entries
+        .iter()
+        .filter(|entry| entry.path == "/var/lib/dpkg/status")
+        .collect();
+    ensure(
+        statuses.len() == 1
+            && statuses[0].source.size == status.bytes
+            && matches!(&statuses[0].content,Content::Regular{sha256}if sha256 == &status.sha256),
+        "complete native installed package database changed before image readback",
+    )?;
+    Ok(json!({
+        "kind":"complete_normal_native_installation",
+        "fixture_manifest":prepared.fixture_manifest,
+        "native_source":admission.manifest.source.pin,
+        "native_release":source.native_release,
+        "native_transaction":source.native_transaction,
+        "root_identity":current_root,
+        "captured_member":member,
+        "packages":packages,
+        "actual_package_database":status,
+        "normal_package_transaction_verified":true,
+        "single_file_overlay":false
+    }))
+}
+
+pub fn verify_image(
+    root: &Path,
+    work: &Path,
+    image: &Path,
+    admission: ImageAdmission<'_>,
+) -> Result<Value> {
     let lock = source_lock()?;
     let expected = boot_files::pin_file(&root.join(MEMBER))?;
     let candidate = expected.sha256 == lock["candidate_executable"]["sha256"]
@@ -685,17 +803,29 @@ pub fn verify_image(root: &Path, work: &Path, image: &Path) -> Result<Value> {
                 && Some(expected.bytes) == lock["original_executable"]["bytes"].as_u64()),
         "GDM image contains an unadmitted ELF",
     )?;
-    if candidate {
-        let overlay = boot_files::pin_file(&work.join("gdm-candidate/OVERLAY.json"))?;
-        let record: Value = serde_json::from_slice(&boot_files::read_pin(&overlay, 1024 * 1024)?)?;
-        ensure(
-            record["schema"] == "droidloom.fixture-gdm-candidate.v1"
-                && record["source_lock_sha256"] == fs::digest(SOURCE_LOCK)
-                && record["installed_candidate"]["sha256"] == expected.sha256
-                && record["dpkg_database_updated"] == false,
-            "GDM image lost its actual source admission",
-        )?;
-    }
+    let source_admission = match admission {
+        ImageAdmission::CompleteNative(complete) => {
+            ensure(
+                candidate,
+                "complete native GDM is not the admitted normal candidate",
+            )?;
+            complete_image_source(root, &expected, complete)?
+        }
+        ImageAdmission::SelectedPublic if candidate => {
+            let overlay = boot_files::pin_file(&work.join("gdm-candidate/OVERLAY.json"))?;
+            let record: Value =
+                serde_json::from_slice(&boot_files::read_pin(&overlay, 1024 * 1024)?)?;
+            ensure(
+                record["schema"] == "droidloom.fixture-gdm-candidate.v1"
+                    && record["source_lock_sha256"] == fs::digest(SOURCE_LOCK)
+                    && record["installed_candidate"]["sha256"] == expected.sha256
+                    && record["dpkg_database_updated"] == false,
+                "GDM image lost its actual source admission",
+            )?;
+            json!({"kind":"selected_public_candidate_overlay","overlay":overlay})
+        }
+        ImageAdmission::SelectedPublic => json!({"kind":"selected_public_original"}),
+    };
     let check = work.join("gdm-image-readback");
     boot_files::private_dir(&check)?;
     let extracted = check.join("gdm3");
@@ -717,13 +847,153 @@ pub fn verify_image(root: &Path, work: &Path, image: &Path) -> Result<Value> {
     )?;
     Ok(
         json!({"source":expected,"image_executable":actual,"dump":dump,
-        "source_candidate_applied":candidate,"all_matched":true,"runtime_qualified":false}),
+        "source_candidate_applied":candidate,"source_admission":source_admission,
+        "all_matched":true,"runtime_qualified":false}),
     )
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    #[ignore = "requires the actual complete installed native receipt, its unbooted image, and a fresh protected readback directory"]
+    fn actual_complete_native_gdm_image_preserves_source_guards() -> Result<()> {
+        ensure(
+            rustix::process::geteuid().as_raw() == 0,
+            "actual complete GDM readback requires root",
+        )?;
+        let argument = |name| {
+            std::env::var_os(name)
+                .map(PathBuf::from)
+                .ok_or("actual complete GDM test input absent")
+        };
+        let native = boot_files::pin_file(&argument("DROIDLOOM_COMPLETE_GDM_NATIVE")?)?;
+        let native_value: Value =
+            serde_json::from_slice(&boot_files::read_pin(&native, 4 * 1024 * 1024)?)?;
+        let prepared: crate::complete_boot::Prepared =
+            serde_json::from_value(native_value.clone())?;
+        let manifest: crate::complete_native::CompleteManifest = serde_json::from_slice(
+            &boot_files::read_pin(&prepared.fixture_manifest, 128 * 1024 * 1024)?,
+        )?;
+        // The original prepare already admitted the full tree before adding the
+        // host release. Recheck the real installed-package proof here; this test
+        // does not pretend the post-install tree is the pre-host snapshot.
+        let normal_source = crate::complete_native::validate(&manifest)?;
+        ensure(
+            normal_source.stage == "installed",
+            "test is not a normal installed root",
+        )?;
+        let root = prepared.root.clone();
+        let image = argument("DROIDLOOM_COMPLETE_GDM_IMAGE")?;
+        let work = argument("DROIDLOOM_COMPLETE_GDM_WORK")?;
+        ensure(
+            work.parent() == Some(Path::new("/var/lib/droidloom-qualification"))
+                && work != prepared.work_directory,
+            "test readback must use a separate protected directory",
+        )?;
+        boot_files::private_dir(&work)?;
+        let image_file = std::fs::File::open(&image)?;
+        let image_before = fs::stat(&image_file)?;
+        let expected = boot_files::pin_file(&root.join(MEMBER))?;
+        let admission = crate::complete_boot::Admission { prepared, manifest };
+        let report = verify_image(
+            &root,
+            &work,
+            &image,
+            ImageAdmission::CompleteNative(&admission),
+        )?;
+        ensure(
+            report["all_matched"] == true
+                && report["source_admission"]["kind"] == "complete_normal_native_installation",
+            "complete GDM image was not actually read back",
+        )?;
+        // An absent overlay is allowed only in the explicit complete-native
+        // branch. The historical selected-public branch still fails closed.
+        assert!(verify_image(&root, &work, &image, ImageAdmission::SelectedPublic).is_err());
+        let mut rejected = vec!["selected_public_without_overlay"];
+        let fresh = || -> Result<crate::complete_boot::Admission> {
+            Ok(crate::complete_boot::Admission {
+                prepared: serde_json::from_value(native_value.clone())?,
+                manifest: admission.manifest.clone(),
+            })
+        };
+        let mut mixed = fresh()?;
+        mixed
+            .manifest
+            .packages
+            .iter_mut()
+            .find(|p| p.package == "libgdm1")
+            .ok_or("test libgdm package absent")?
+            .version = ORIGINAL_VERSION.into();
+        assert!(complete_image_source(&root, &expected, &mixed).is_err());
+        rejected.push("mixed_gdm_package_family");
+        let mut missing = fresh()?;
+        let transaction = normal_source
+            .native_transaction
+            .as_ref()
+            .ok_or("test normal transaction absent")?;
+        let before = missing.manifest.proofs.len();
+        missing
+            .manifest
+            .proofs
+            .retain(|proof| proof.pin != *transaction);
+        ensure(
+            missing.manifest.proofs.len() + 1 == before,
+            "test transaction proof is not unique",
+        )?;
+        assert!(complete_image_source(&root, &expected, &missing).is_err());
+        rejected.push("missing_normal_transaction_proof");
+        let mut absent = fresh()?;
+        absent
+            .manifest
+            .entries
+            .retain(|e| e.path != format!("/{MEMBER}"));
+        assert!(complete_image_source(&root, &expected, &absent).is_err());
+        rejected.push("missing_captured_gdm_member");
+        let mut another_root = fresh()?;
+        another_root.prepared.root_identity.ino ^= 1;
+        assert!(complete_image_source(&root, &expected, &another_root).is_err());
+        rejected.push("another_prepared_root_inode");
+        let mut changed_status = fresh()?;
+        changed_status
+            .manifest
+            .entries
+            .iter_mut()
+            .find(|e| e.path == "/var/lib/dpkg/status")
+            .ok_or("test installed status absent")?
+            .content = Content::Regular {
+            sha256: "0".repeat(64),
+        };
+        assert!(complete_image_source(&root, &expected, &changed_status).is_err());
+        rejected.push("changed_installed_package_database");
+        let source_after = boot_files::pin_file(&root.join(MEMBER))?;
+        ensure(
+            source_after.path == expected.path
+                && source_after.bytes == expected.bytes
+                && source_after.sha256 == expected.sha256
+                && fs::stat(&image_file)? == image_before,
+            "actual GDM source or source image changed during readback",
+        )?;
+        fs::write_json(
+            &fs::absolute_string(&work.join("ACTUAL-RESULT.json"))?,
+            &json!({
+                "schema":"droidloom.complete-native-gdm-image-regression.v1",
+                "native_receipt":native,
+                "source_executable":expected,
+                "image_identity":image_before,
+                "positive":report,
+                "rejected":rejected,
+                "negative_cases":rejected.len(),
+                "passed":true,
+                "source_root_modified":false,
+                "source_image_modified":false,
+                "guest_qualified":false
+            }),
+            0,
+        )?;
+        Ok(())
+    }
+
     #[test]
     #[ignore = "requires actual original public fixture files, root-protected candidate inputs, and fresh protected work"]
     fn actual_original_fixture_apply_preserves_optional_status_and_held_elf() -> Result<()> {

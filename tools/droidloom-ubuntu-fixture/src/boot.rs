@@ -620,8 +620,18 @@ pub fn prepare_boot(config: &Path, expected: &str) -> Result<()> {
     let uuid = native["root_filesystem_uuid"]
         .as_str()
         .ok_or("native root UUID absent")?;
-    let disk =
-        crate::boot_runtime::make_root_image(&root, &boot, uuid, plan.root_image_gib, &labels)?;
+    let gdm_admission = match complete.as_ref() {
+        Some(complete) => crate::boot_gdm_candidate::ImageAdmission::CompleteNative(complete),
+        None => crate::boot_gdm_candidate::ImageAdmission::SelectedPublic,
+    };
+    let disk = crate::boot_runtime::make_root_image(
+        &root,
+        &boot,
+        uuid,
+        plan.root_image_gib,
+        &labels,
+        gdm_admission,
+    )?;
     let result = serde_json::json!({"schema":"droidloom.full-ubuntu-boot-prepared.v1",
         "input_sha256":expected,"native_receipt":plan.native_receipt,"work_directory":work,
         "boot_directory":boot,"root_filesystem_uuid":uuid,"target_kernel_release":release,
