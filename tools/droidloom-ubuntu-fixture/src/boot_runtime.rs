@@ -1093,13 +1093,41 @@ pub fn make_root_image(
             ],
             120,
         )?;
-        for (path, value, _, _) in &attrs {
-            ensure(
-                std::fs::read(path)? == *value,
-                "ext4 native capability/ACL differs",
-            )?;
-        }
     }
+    let mut privilege_readback = Vec::new();
+    let mut privilege_errors = Vec::new();
+    for (path, value, guest, name) in &attrs {
+        let image_value = std::fs::read(path)?;
+        let comparison = crate::boot_privilege_xattr::compare(name, value, &image_value);
+        let (raw_equal, converted, error) = match comparison {
+            Ok(result) => (result.raw_equal, Some(result.unused_acl_ids_converted), None),
+            Err(error) => {
+                let error = format!("{guest} {name}: {error}");
+                privilege_errors.push(error.clone());
+                (*value == image_value, None, Some(error))
+            }
+        };
+        privilege_readback.push(json!({
+            "path":guest,"name":name,
+            "source_hex":hex::encode(value),"image_hex":hex::encode(&image_value),
+            "raw_equal":raw_equal,
+            "unused_acl_ids_converted":converted,"error":error
+        }));
+    }
+    // Keep both raw representations even when a comparison rejects the image.
+    fs::write_json(
+        &fs::absolute_string(&work.join("EXT4-PRIVILEGE-READBACK.json"))?,
+        &json!({
+            "schema":"droidloom.ext4-native-privilege-readback.v1",
+            "attributes":privilege_readback,"complete":privilege_errors.is_empty()
+        }),
+        0,
+    )?;
+    ensure(
+        privilege_errors.is_empty(),
+        &format!("ext4 native capability/ACL differs: {}", privilege_errors.join("; ")),
+    )?;
+
     let query_readback = query_runtime
         .map(|runtime| crate::boot_query_image::verify(root, work, &disk, runtime))
         .transpose()?;
@@ -1114,7 +1142,7 @@ pub fn make_root_image(
         &fs::absolute_string(&work.join("ROOT-IMAGE.json"))?,
         &json!({
         "image":record,"root_filesystem_uuid":uuid,"critical_label_paths":selected,
-        "privilege_attributes_verified":attrs.len(),"inode_metadata_readback":metadata,
+        "privilege_attributes_verified":attrs.len(),"privilege_attribute_readback":privilege_readback,"inode_metadata_readback":metadata,
         "public_apk_readback":public_apk_readback,
         "fixed_query_input_readback":query_readback,"apparmor_library_readback":apparmor_readback,"gdm_executable_readback":gdm_readback,"greeter_proof_readback":greeter_proof_readback,"guest_qualified":false}),
         0,

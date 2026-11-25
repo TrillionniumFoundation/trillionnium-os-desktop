@@ -15,6 +15,7 @@ mod boot_native;
 mod boot_native_candidates;
 mod boot_owned_evidence;
 mod boot_packages;
+mod boot_privilege_xattr;
 mod boot_public_apks;
 mod boot_qemu;
 mod boot_query;
