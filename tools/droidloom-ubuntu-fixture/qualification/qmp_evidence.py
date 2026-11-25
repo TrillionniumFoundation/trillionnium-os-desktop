@@ -30,6 +30,14 @@ KEY = re.compile(r"^Droidloom key trace: stage=wayland serial=(\d+) object=(\d+)
 class Rejected(RuntimeError):
     pass
 
+class NotReady(Rejected):
+    """A missing live observation may be polled; identity failures may not."""
+    pass
+
+def require_observation(value, message):
+    if not value:
+        raise NotReady(message)
+
 def need(value, message):
     if not value:
         raise Rejected(message)
@@ -649,12 +657,12 @@ def launch_event(path, sha):
     need(len(event["package"]) <= 255 and re.fullmatch(r"[A-Za-z0-9_]+(?:\.[A-Za-z0-9_]+)+", event["package"]), "invalid reviewed package")
     return event, pin
 
-def validate_focus(event, observation):
+def validate_focus(event, observation, maximum_launch_age_ns=30_000_000_000):
     need(observation["inspection_response"]["inspection"]["epoch"] == event["epoch"], "actual Android generation changed")
     need(event["guest_boot_id"] == observation["guest_boot_id"] and event["epoch"]["boot_id"] == observation["guest_boot_id"], "guest boot changed")
     start, end = observation["guest_monotonic_ns_start"], observation["guest_monotonic_ns_end"]
     need(type(start) is int and type(end) is int and 0 <= end-start <= 8_000_000_000, "unbounded focus observation")
-    need(0 <= end-event["guest_monotonic_ns_end"] <= 30_000_000_000, "launch event is stale")
+    need(0 <= end-event["guest_monotonic_ns_end"] <= maximum_launch_age_ns, "launch event is stale")
     p = observation["presenter"]
     if event.get("presenter") is not None:
         need(event["presenter"]["pid"] == p["pid"] and event["presenter"]["invocation_id"] == p["invocation_id"],
@@ -675,8 +683,8 @@ def validate_focus(event, observation):
             last_enter = observed if obj else None
         elif obj == 0 or current == obj:
             current = last_enter = None
-    need(current == event["binding"]["object"] and last_enter is not None and end-last_enter <= 15_000_000_000,
-         "no recent actual focus for this original task object")
+    require_observation(current == event["binding"]["object"] and last_enter is not None and end-last_enter <= 15_000_000_000,
+             "no recent actual focus for this original task object")
     return {"object": current, "presenter_pid": p["pid"], "presenter_invocation": p["invocation_id"],
             "focus_observed_guest_monotonic_ns": last_enter, "launch_event_epoch": event["epoch"]}
 
@@ -714,6 +722,478 @@ def wayland_key_pair(before, after, event, key):
             rows.append((int(m[1]), m[3]))
     return len(rows) == 2 and rows[0][1] == "Down" and rows[1] == (rows[0][0]+1, "Up")
 
+
+# This is a live exchange only. Saved launch events are never close authority.
+PUBLIC_STAGE = "/var/lib/droidloom-public-apks/u1000"
+REGISTRY_SHA256 = "0b21f963898308b082f3808dd48165c1397badd1fa8a753c3a766e135b3cb3c8"
+LIFECYCLE_SECONDS = 600
+WINDOW_PREFIX = "Droidloom window trace: "
+
+def fresh_lifecycle_inputs(prepared, package):
+    need(type(package) is str and len(package) <= 255
+         and re.fullmatch(r"[A-Za-z0-9_]+(?:\.[A-Za-z0-9_]+)+", package), "invalid selected package")
+    need(prepared["schema"] == "droidloom.full-ubuntu-boot-prepared.v1"
+         and prepared["calibration_requested"] is False
+         and prepared["boot_phase"] == "android_runtime", "not a normal fresh Android guest")
+    staged = prepared["public_apk_import"]
+    need(staged["schema"] == "droidloom.public-apks-staged.v1"
+         and staged["original_userdata_imported"] is False
+         and staged["package_count"] == 39 and staged["apk_file_count"] == 65
+         and staged["applications_installed"] == 0, "fresh complete public import is required")
+    files = staged["files"]
+    need(type(files) is list and len(files) == 69, "complete 65 APK and four JSON import required")
+    paths = [v["guest_path"] for v in files]
+    need(len(set(paths)) == 69 and all(type(p) is str and str(Path(p).parent) == PUBLIC_STAGE for p in paths),
+         "public import paths differ")
+    expected_json = {"selected39-execution.json", "selected39-source-selection.json",
+                     "selected39-signature-receipt.json", "app-release-gates.json"}
+    metadata = [v for v in files if v["package"] is None]
+    apks = [v for v in files if v["package"] is not None]
+    need(len(apks) == 65 and {Path(v["guest_path"]).name for v in metadata} == expected_json,
+         "public import membership differs")
+    for v in files:
+        source = v["source"]
+        need(type(source["bytes"]) is int and source["bytes"] > 0
+             and re.fullmatch("[0-9a-f]{64}", source["sha256"]), "invalid public file pin")
+        if v["package"] is not None:
+            need(Path(v["guest_path"]).name == source["sha256"] + ".apk", "APK digest filename differs")
+    prep = staged["runtime_preparation_inputs"]
+    for key, name in (("selection", "selected39-source-selection.json"),
+                      ("source_receipt", "selected39-signature-receipt.json"),
+                      ("gate_registry", "app-release-gates.json")):
+        pin = prep[key]
+        matches = [v for v in metadata if v["guest_path"] == pin["path"]]
+        need(pin["path"] == PUBLIC_STAGE + "/" + name and len(matches) == 1
+             and all(pin[k] == matches[0]["source"][k] for k in ("bytes", "sha256")),
+             "runtime source pin differs from actual imported material")
+    need(prep["gate_registry"]["bytes"] == 27878 and prep["gate_registry"]["sha256"] == REGISTRY_SHA256,
+         "canonical full gate registry differs")
+    rows = staged["applications"]
+    names = [v["package"] for v in rows]
+    need(len(names) == len(set(names)) == 39 and set(prep["required_gates"]) == set(names)
+         and package in names, "reviewed selected39 package missing")
+    required = prep["required_gates"][package]
+    need(type(required) is list and len(required) >= 6 and len(set(required)) == len(required),
+         "complete required gates missing")
+    members = [v for v in apks if v["package"] == package]
+    need(members and sum(v["split"] is None for v in members) == 1
+         and len({v["split"] for v in members}) == len(members), "selected base/split set differs")
+    return {"selection": prep["selection"], "required_gates": required,
+            "application": rows[names.index(package)],
+            "apks": [{"bytes": v["source"]["bytes"], "sha256": v["source"]["sha256"], "split": v["split"]}
+                     for v in members]}
+
+def selected_application(row, inspection, inputs, package):
+    need(row["package"] == inspection["package"] == inputs["application"]["package"] == package
+         and inspection["user"] == 0 and type(inspection["uid"]) is int and inspection["uid"] > 0
+         and inspection["version_code"] == row["version_code"] == inputs["application"]["version_code"],
+         "actual installed package/UID/version differs")
+    epoch = inspection["epoch"]
+    need(set(epoch) == {"boot_id", "cell_host_pid", "framework_host_pid", "framework_start_ticks"}
+         and re.fullmatch("[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}", epoch["boot_id"])
+         and all(type(epoch[k]) is int and epoch[k] > 0 for k in
+                 ("cell_host_pid", "framework_host_pid", "framework_start_ticks")), "actual epoch missing")
+    expected = sorted((v["sha256"], v["bytes"]) for v in inputs["apks"])
+    actual = inspection["apks"]
+    need(type(actual) is list and len(actual) == len(expected)
+         and sorted((v["sha256"], v["bytes"]) for v in actual) == expected
+         and len({v["path"] for v in actual}) == len(actual)
+         and len({v["name"] for v in actual}) == len(actual)
+         and sum(v["name"] == "base.apk" for v in actual) == 1,
+         "complete PM-returned APK bytes differ from signed selection")
+    need(sorted((v["sha256"], v["bytes"]) for v in row["material_files"]) == expected,
+         "live source selection APK set differs")
+    component = row["preferred_manifest_component"]
+    need(type(component) is str and component.startswith(package + "/") and len(component) <= 512
+         and re.fullmatch(r"[A-Za-z0-9_.$/]+", component)
+         and row["runtime_plan_application_binding"]["launch"] ==
+             {"component": component, "specification": None}, "reviewed launcher component differs")
+    return component
+
+def actual_control(observation, name, expected=None):
+    command = observation["commands"][name]
+    need(command["returncode"] == 0 and type(command["started_ns"]) is int
+         and type(command["ended_ns"]) is int and 0 < command["started_ns"] <= command["ended_ns"],
+         "actual public command failed or has invalid timing")
+    response = command["response"]
+    need(response["ok"] is True and response["state"] == "running"
+         and response["host_pid"] == response["inspection"]["epoch"]["cell_host_pid"],
+         "original Android owner is not Running")
+    if expected is not None:
+        need(response["inspection"] == expected, "installed identity or actual epoch changed")
+    return response
+
+def actual_tasks(observation, expected=None):
+    response = actual_control(observation, "tasks", expected)
+    snapshot = json.loads(response["diagnostics"])
+    need(snapshot["schema"] == "droidloom.application-task-snapshot.v1"
+         and snapshot["application"] == response["inspection"]
+         and type(snapshot["listing_bytes"]) is int and 0 <= snapshot["listing_bytes"] <= 65536
+         and re.fullmatch("[0-9a-f]{64}", snapshot["listing_sha256"])
+         and type(snapshot["tasks"]) is list and len(snapshot["tasks"]) <= 256,
+         "actual typed task snapshot differs")
+    ids = []
+    for task in snapshot["tasks"]:
+        need(set(task) == {"task", "root_task", "display", "user", "name", "visible", "top_activity"}
+             and all(type(task[k]) is int and 0 <= task[k] < 2**31 for k in ("task", "root_task", "display", "user"))
+             and task["user"] == 0 and task["name"].split("/", 1)[0] == snapshot["application"]["package"]
+             and type(task["visible"]) is bool, "foreign or malformed observed task")
+        ids.append(task["task"])
+    need(ids == sorted(set(ids)), "repeated or unordered observed task")
+    return snapshot
+
+def actual_launch_event(observation, expected):
+    response = actual_control(observation, "launch", expected)
+    raw = response["launch"]
+    need(type(raw) is str and 0 < len(raw) <= 256 and raw.isascii(), "missing bounded actual launch response")
+    binding = {}
+    for part in raw.split():
+        key, sep, value = part.partition("=")
+        need(sep and key not in binding and key in ("object", "composer_display", "android_display", "task")
+             and re.fullmatch("[0-9]{1,20}", value), "malformed actual launch binding")
+        binding[key] = int(value)
+    need(set(binding) == {"object", "composer_display", "android_display", "task"}
+         and 0 < binding["object"] < 2**64 and 0 < binding["composer_display"] < 2**64
+         and binding["android_display"] == 0 and 0 < binding["task"] < 2**31, "invalid actual launch binding")
+    command = observation["commands"]["launch"]
+    return {"schema": "p4-selected39-launch-event-v1", "guest_clock": "CLOCK_MONOTONIC",
+            "guest_boot_id": observation["guest_boot_id"], "package": expected["package"], "epoch": expected["epoch"],
+            "guest_monotonic_ns_start": command["started_ns"], "guest_monotonic_ns_end": command["ended_ns"],
+            "binding": binding, "presenter": observation["presenter"]}
+
+def native_window_events(observation, event):
+    presenter = observation["presenter"]
+    need(presenter == event["presenter"] and observation["guest_boot_id"] == event["guest_boot_id"],
+         "original presenter changed")
+    result = []; previous = 0; previous_sequence = 0
+    need(len(observation["window_journal"]) <= 512, "window journal bound exceeded")
+    for row in observation["window_journal"]:
+        stamp = journal_sender(row, presenter, observation["guest_boot_id"])
+        need(stamp >= previous, "window journal order changed"); previous = stamp
+        text = row["MESSAGE"]
+        need(type(text) is str and text.startswith(WINDOW_PREFIX) and len(text) <= 2048,
+             "malformed window journal")
+        value = json.loads(text[len(WINDOW_PREFIX):])
+        need(set(value) == {"schema", "pid", "sequence", "creation_sequence", "object", "surface",
+                           "package", "android_task", "observed_ns", "stage"}
+             and value["schema"] == "p4-presenter-window-event-v1" and value["pid"] == presenter["pid"]
+             and all(type(value[k]) is int and value[k] > 0 for k in
+                     ("sequence", "creation_sequence", "object", "surface", "observed_ns"))
+             and value["creation_sequence"] <= value["sequence"] <= 65536
+             and value["sequence"] > previous_sequence
+             and value["object"] < 2**64 and value["surface"] < 2**32
+             and (value["android_task"] is None or type(value["android_task"]) is int and 0 <= value["android_task"] < 2**31)
+             and type(value["package"]) is str and len(value["package"]) <= 255
+             and re.fullmatch(r"[A-Za-z0-9_]+(?:\.[A-Za-z0-9_]+)+", value["package"])
+             and presenter["start_ticks"]*1_000_000_000//presenter["clk_tck"] <= value["observed_ns"] <= stamp + 999
+             and stamp <= observation["guest_monotonic_ns_end"]
+             and value["stage"] in ("created", "bound", "close_sent", "unmapped"),
+             "invalid actual window event")
+        previous_sequence = value["sequence"]
+        if value["object"] == event["binding"]["object"]:
+            need(value["package"] == event["package"]
+                 and (value["android_task"] is None or value["android_task"] == event["binding"]["task"]),
+                 "window object belongs to a different package/task")
+            result.append(dict(value, journal_cursor=row.get("__CURSOR")))
+    return result
+
+def created_window(event, observation):
+    events = native_window_events(observation, event)
+    created = [v for v in events if v["stage"] == "created"]
+    require_observation(created, "actual window creation has not arrived")
+    need(len(created) == 1, "exactly one actual window creation required")
+    creation = created[0]
+    need(creation["android_task"] is None and creation["sequence"] == creation["creation_sequence"]
+         and event["guest_monotonic_ns_start"] <= creation["observed_ns"] <= observation["guest_monotonic_ns_end"],
+         "window was not created during this live launch exchange")
+    need(all(v["creation_sequence"] == creation["sequence"] and v["surface"] == creation["surface"] for v in events),
+         "window creation identity changed")
+    bound = [v for v in events if v["stage"] == "bound" and v["android_task"] == event["binding"]["task"]
+             and v["sequence"] > creation["sequence"] and v["observed_ns"] >= creation["observed_ns"]]
+    need(not any(v["stage"] in ("close_sent", "unmapped") for v in events), "window has already closed")
+    require_observation(bound, "actual window task binding has not arrived")
+    return {"created": creation, "bound": bound,
+            "exclusive_android_task_creation_proven": False}
+
+def closed_window(event, observation, created, before_ns):
+    events = native_window_events(observation, event)
+    creation = created["created"]
+    need(all(v["creation_sequence"] == creation["sequence"] and v["surface"] == creation["surface"] for v in events),
+         "original window token changed")
+    sent = [v for v in events if v["stage"] == "close_sent" and v["observed_ns"] >= before_ns
+            and v["android_task"] == event["binding"]["task"]]
+    unmapped = [v for v in events if v["stage"] == "unmapped" and v["observed_ns"] >= before_ns]
+    tasks = actual_tasks(observation, event["inspection"])["tasks"]
+    need(len(sent) <= 1 and len(unmapped) <= 1, "repeated native close or unmap event")
+    require_observation(sent and unmapped, "normal close-send and unmap not both observed")
+    need(sent[0]["sequence"] < unmapped[0]["sequence"]
+         and sent[0]["observed_ns"] <= unmapped[0]["observed_ns"], "native close/unmap order differs")
+    require_observation(not tasks, "selected package still has an actual task")
+    return {"close_sent": sent[0], "unmapped": unmapped[0], "task_absence_observed": True,
+            "close_message_alone_is_not_removal_ack": True}
+
+def normal_close_events():
+    return [{"type": "key", "data": {"down": down, "key": {"type": "qcode", "data": key}}}
+            for key, down in (("alt", True), ("f4", True), ("f4", False), ("alt", False))]
+
+
+# Reuse only the fixed public-file/unit/journal readers above. Launch is a closed
+# verb in this guest program, never a caller-supplied command or object selector.
+GUEST_LIFECYCLE = GUEST_PROBE.split("start=time.clock_gettime_ns(time.CLOCK_MONOTONIC)", 1)[0] + r"""
+def selected_source():
+ base='/var/lib/droidloom-public-apks'
+ parent=os.open('/',os.O_PATH|os.O_DIRECTORY|os.O_CLOEXEC)
+ try:
+  for part in base.split('/')[1:]:
+   child=os.open(part,os.O_PATH|os.O_DIRECTORY|os.O_NOFOLLOW|os.O_CLOEXEC,dir_fd=parent)
+   os.close(parent);parent=child
+   s=os.fstat(parent);assert s.st_uid==s.st_gid==0 and not s.st_mode&0o022
+  child=os.open('u1000',os.O_PATH|os.O_DIRECTORY|os.O_NOFOLLOW|os.O_CLOEXEC,dir_fd=parent)
+  os.close(parent);parent=child;s=os.fstat(parent)
+  assert s.st_uid==s.st_gid==1000 and stat.S_IMODE(s.st_mode)==0o700
+  assert SELECTION_PIN['path']==base+'/u1000/selected39-source-selection.json'
+  fd=os.open('selected39-source-selection.json',os.O_RDONLY|os.O_NOFOLLOW|os.O_CLOEXEC,dir_fd=parent)
+  try:
+   before=os.fstat(fd);assert stat.S_ISREG(before.st_mode) and before.st_uid==before.st_gid==1000
+   assert stat.S_IMODE(before.st_mode)==0o400 and before.st_nlink==1 and 0<before.st_size<=2*1024*1024
+   raw=b''
+   while len(raw)<=before.st_size:
+    part=os.read(fd,min(65536,before.st_size+1-len(raw)))
+    if not part:break
+    raw+=part
+   assert len(raw)==before.st_size==SELECTION_PIN['bytes'] and hashlib.sha256(raw).hexdigest()==SELECTION_PIN['sha256']
+   assert F(before)==F(os.fstat(fd))==F(os.stat('selected39-source-selection.json',dir_fd=parent,follow_symlinks=False))
+   selection=json.loads(raw);rows=selection['applications']
+   assert len(rows)==39 and len({v['package'] for v in rows})==39
+   matches=[v for v in rows if v['package']==PACKAGE];assert len(matches)==1
+   return matches[0],dict(SELECTION_PIN,identity=F(before))
+  finally:os.close(fd)
+ finally:os.close(parent)
+result={'schema':'p4-native-lifecycle-observation-v1','guest_clock':'CLOCK_MONOTONIC',
+        'action':ACTION,'commands':{},'success':False,'exchange_started_ns':time.clock_gettime_ns(time.CLOCK_MONOTONIC)}
+def ctl(name,argv,limit=130):
+ assert name in ('tasks','inspect','catalog','launch')
+ assert F(os.stat('/usr/bin/droidloomctl',follow_symlinks=False))==client['identity']
+ start=time.clock_gettime_ns(time.CLOCK_MONOTONIC)
+ run=subprocess.run(['/usr/bin/droidloomctl','--json']+argv,env=env,capture_output=True,timeout=limit)
+ assert len(run.stdout)<=1048576 and len(run.stderr)<=65536
+ rec={'argv':['/usr/bin/droidloomctl','--json']+argv,'returncode':run.returncode,
+      'started_ns':start,'ended_ns':time.clock_gettime_ns(time.CLOCK_MONOTONIC),
+      'stdout_bytes':len(run.stdout),'stdout_sha256':hashlib.sha256(run.stdout).hexdigest(),
+      'stderr':run.stderr.decode(errors='replace'),'response':None}
+ result['commands'][name]=rec
+ try:rec['response']=json.loads(run.stdout)
+ except ValueError:rec['unparsed_stdout']=run.stdout.decode(errors='replace')[:65536]
+ assert run.returncode==0 and rec['response']['ok'] is True and rec['response']['state']=='running'
+ assert F(os.stat('/usr/bin/droidloomctl',follow_symlinks=False))==client['identity']
+ return rec['response']
+try:
+ assert ACTION in ('tasks','focus','launch') and re.fullmatch(r'[A-Za-z0-9_]+(?:\.[A-Za-z0-9_]+)+',PACKAGE)
+ p=props();result['unit']=p
+ unit=public(UNIT_PATH,65536);pinned(unit,UNIT_PIN);result['public_unit']=unit
+ presenter=public('/usr/bin/droidloom-wayland',32*1024*1024,True);pinned(presenter,PRESENTER_PIN);result['public_presenter']=presenter
+ client=public('/usr/bin/droidloomctl',32*1024*1024,True);pinned(client,CLIENT_PIN);result['public_client']=client
+ identity_rows=journal(p,'identity',2);assert len(identity_rows)==1;result['identity_journal']=identity_rows
+ boot=identity_rows[0]['_BOOT_ID'];assert re.fullmatch('[0-9a-f]{32}',boot)
+ result['guest_boot_id']=boot[:8]+'-'+boot[8:12]+'-'+boot[12:16]+'-'+boot[16:20]+'-'+boot[20:]
+ selected,source_pin=selected_source();result['selected_application']=selected;result['selection_pin']=source_pin
+ command='tasks' if ACTION=='tasks' else 'inspect'
+ inspection_response=ctl(command,[command,PACKAGE,'--user','0'])
+ inspection=inspection_response['inspection']
+ assert inspection['package']==PACKAGE and inspection['user']==0
+ assert inspection_response['host_pid']==inspection['epoch']['cell_host_pid']
+ assert inspection['epoch']['boot_id']==result['guest_boot_id']
+ if EXPECTED is not None:assert inspection==EXPECTED
+ result['inspection_response']=inspection_response
+ if ACTION=='launch':
+  assert EXPECTED is not None
+  component=selected['preferred_manifest_component']
+  assert component==COMPONENT and selected['runtime_plan_application_binding']['launch']=={'component':component,'specification':None}
+  catalog=ctl('catalog',['applications','--user','0'])
+  matches=[v for v in catalog['applications'] if v['package']==PACKAGE and v['component']==component]
+  assert len(matches)==1 and catalog['host_pid']==inspection['epoch']['cell_host_pid']
+  response=ctl('launch',['launch',PACKAGE,'--component',component,'--user','0'])
+  assert response['inspection']==inspection and response['host_pid']==inspection['epoch']['cell_host_pid']
+ if ACTION=='focus':
+  setting=subprocess.run(['/usr/bin/gsettings','get','org.gnome.desktop.wm.keybindings','close'],env=env,capture_output=True,timeout=3,check=True)
+  assert len(setting.stdout)<=4096 and len(setting.stderr)<=4096
+  result['normal_close_keybinding']=setting.stdout.decode().strip()
+ result['guest_monotonic_ns_start']=time.clock_gettime_ns(time.CLOCK_MONOTONIC)
+ result['journal']=journal(p,'(focus|key|frame)',512)
+ result['window_journal']=journal(p,'window',512)
+ assert props()==p
+ for path,proof in [(UNIT_PATH,unit),('/usr/bin/droidloom-wayland',presenter),('/usr/bin/droidloomctl',client)]:
+  assert F(os.stat(path,follow_symlinks=False))==proof['identity']
+ row_after,pin_after=selected_source();assert row_after==selected and pin_after==source_pin
+ result['guest_monotonic_ns_end']=time.clock_gettime_ns(time.CLOCK_MONOTONIC)
+ result['success']=True
+except BaseException as error:
+ result['error']=(type(error).__name__+': '+str(error))[:1024]
+finally:
+ result['exchange_ended_ns']=time.clock_gettime_ns(time.CLOCK_MONOTONIC)
+ print(json.dumps(result,separators=(',',':')))
+"""
+
+def lifecycle_probe(authority, action, package, inputs, deadline, expected=None, component=None):
+    need(action in ("tasks", "focus", "launch"), "unsupported lifecycle verb")
+    b = authority.binding
+    authority.validate()
+    need(b["ssh_port"] is not None and b["fresh_client_key"] is not None, "explicit fresh guest SSH required")
+    for pin in (b["fresh_client_key"], b["known_hosts"]): read_file(pin["path"], pin, limit=16384)
+    read_file(b["ssh_tool"]["path"], b["ssh_tool"], limit=64*1024*1024)
+    command = ["/usr/bin/ssh", "-F", "/dev/null", "-T", "-oControlMaster=no", "-oControlPath=none",
+               "-oBatchMode=yes", "-oIdentitiesOnly=yes", "-oIdentityAgent=none",
+               "-oPasswordAuthentication=no", "-oKbdInteractiveAuthentication=no",
+               "-oPreferredAuthentications=publickey", "-oStrictHostKeyChecking=yes",
+               "-oUserKnownHostsFile="+b["known_hosts"]["path"], "-oGlobalKnownHostsFile=/dev/null",
+               "-oConnectTimeout=3", "-oConnectionAttempts=1", "-oLogLevel=ERROR",
+               "-i", b["fresh_client_key"]["path"], "-p", str(b["ssh_port"]),
+               "alex@127.0.0.1", "/usr/bin/python3", "-I", "-"]
+    values = {"ACTION": action, "PACKAGE": package, "EXPECTED": expected, "COMPONENT": component,
+              "SELECTION_PIN": inputs["selection"], "CLIENT_PIN": b["inspection_client"],
+              "PRESENTER_PIN": b["presenter"], "UNIT_PIN": b["presenter_unit"]}
+    fixed = "".join(key+"="+repr(value)+"\n" for key, value in values.items())
+    started = time.monotonic_ns()
+    # One global owner deadline, with the original broker's bounded commands.
+    # Closing this SSH transport is never a request to kill or clean up a task.
+    raw = bounded_subprocess(command, (fixed+GUEST_LIFECYCLE).encode(),
+                             min(deadline, time.monotonic()+290))
+    value = json.loads(raw)
+    value["host_collection_started_monotonic_ns"] = started
+    value["host_collection_finished_monotonic_ns"] = time.monotonic_ns()
+    return value
+
+def checked_lifecycle_probe(value, authority, inputs, package, expected=None):
+    need(value["schema"] == "p4-native-lifecycle-observation-v1"
+         and value["success"] is True and value["guest_clock"] == "CLOCK_MONOTONIC",
+         "live guest exchange failed: " + str(value.get("error", ""))[:512])
+    value["presenter"] = validate_presenter_identity(value, authority.binding)
+    response = actual_control(value, "tasks" if value["action"] == "tasks" else "inspect", expected)
+    need(value["inspection_response"] == response, "duplicated actual inspection response differs")
+    inspection = response["inspection"]
+    need(value["guest_boot_id"] == inspection["epoch"]["boot_id"], "actual guest/Android boot differs")
+    if expected is not None: need(inspection == expected, "actual installed identity or runtime epoch changed")
+    pin = value["selection_pin"]
+    need(all(pin[k] == inputs["selection"][k] for k in ("path", "bytes", "sha256")),
+         "actual source selection pin differs")
+    selected_application(value["selected_application"], inspection, inputs, package)
+    authority.validate()
+    return inspection
+
+
+def lifecycle_exchange(args, authority, qmp, result, deadline):
+    prepared, _ = json_file(authority.binding["original"]["prepared"]["path"],
+                            authority.binding["original"]["prepared"])
+    inputs = fresh_lifecycle_inputs(prepared, args.package)
+    result.update({"schema": "p4-qmp-application-lifecycle-v1", "package": args.package,
+                   "scope": "fresh_isolated_public_apk_guest", "source_inputs": inputs,
+                   "exchanges": {}, "exchange_receipts": {}, "close_observed": False,
+                   "reopen_observed": False, "fresh_task_proven": False,
+                   "common_gate_accepted": False, "data_preservation_qualified": False,
+                   "application_business_accepted": False, "business_pending": True})
+
+    def record(name, action, expected=None, component=None):
+        need(time.monotonic() < deadline, "lifecycle deadline reached")
+        value = lifecycle_probe(authority, action, args.package, inputs, deadline, expected, component)
+        # Persist the actual response, including a launch that later failed a
+        # check, before any next mutating operation. Never retry a launch.
+        result["exchanges"][name] = value
+        result["exchange_receipts"][name] = write_json(authority.root, args.name+"-"+name+".json", value)
+        checked_lifecycle_probe(value, authority, inputs, args.package, expected)
+        return value
+
+    initial = record("initial", "tasks")
+    baseline = actual_tasks(initial)
+    expected = baseline["application"]
+    need(not baseline["tasks"], "selected package already has tasks; leave them untouched")
+    component = selected_application(initial["selected_application"], expected, inputs, args.package)
+    result["expected_installed_identity"] = expected
+    result["requested_component"] = component
+
+    launched = record("launch", "launch", expected, component)
+    event = actual_launch_event(launched, expected)
+    event["inspection"] = expected
+    need(event["presenter"] == initial["presenter"], "presenter changed during launch")
+    result["actual_launch_event"] = event
+    running = record("launched-tasks", "tasks", expected)
+    listed = actual_tasks(running, expected)
+    need(any(t["task"] == event["binding"]["task"] and t["display"] == 0 and t["visible"]
+             for t in listed["tasks"]), "launch binding is absent from the actual selected package task list")
+    result["screen_launched"] = capture(qmp, authority.root, args.name+"-launched")
+
+    def focused(name, launch):
+        for attempt in range(8):
+            value = record(name+"-"+str(attempt), "focus", expected)
+            need(value["presenter"] == initial["presenter"], "original presenter changed")
+            need(value["normal_close_keybinding"] == "['<Alt>F4']", "normal desktop close binding differs")
+            try:
+                created = created_window(launch, value)
+                focus = validate_focus(launch, value, maximum_launch_age_ns=LIFECYCLE_SECONDS*1_000_000_000)
+                feedback = presented_feedback(launch, value)
+                require_observation(feedback["observed"], "actual presented callback has not arrived")
+                return value, created, focus, feedback
+            except NotReady:
+                if attempt == 7: raise
+                need(time.monotonic()+.15 < deadline, "lifecycle observation deadline")
+                time.sleep(.15)
+        raise Rejected("bounded focus observation ended")
+
+    before, creation, focus, feedback = focused("before-close", event)
+    result["window_created"] = creation
+    result["focus_before_normal_close"] = focus
+    result["sampled_wp_presentation_feedback"] = feedback
+    # One fixed OS gesture on the presently authenticated focused window. There
+    # is no task ID/object ID close API, control socket, or synthetic denial.
+    original_guard = qmp.guard
+    def close_guard():
+        original_guard()
+        need(time.monotonic_ns()-before["host_collection_finished_monotonic_ns"] < 1_000_000_000,
+             "actual focus became stale before the normal OS close gesture")
+    qmp.guard = close_guard
+    result["normal_close_request_attempted"] = True
+    try:
+        result["normal_close_qmp_reply"] = qmp.command("input-send-event", {"events": normal_close_events()})
+        result["normal_close_qmp_acknowledged"] = True
+    finally:
+        qmp.guard = original_guard
+    for attempt in range(8):
+        after = record("after-close-"+str(attempt), "tasks", expected)
+        need(after["presenter"] == initial["presenter"], "presenter changed after normal close")
+        try:
+            result["normal_close_evidence"] = closed_window(event, after, creation, before["guest_monotonic_ns_end"])
+            break
+        except NotReady:
+            if attempt == 7: raise
+            need(time.monotonic()+.15 < deadline, "close observation deadline")
+            time.sleep(.15)
+    result["close_observed"] = True
+    result["screen_closed"] = capture(qmp, authority.root, args.name+"-closed")
+
+    reopened = record("reopen", "launch", expected, component)
+    reopen = actual_launch_event(reopened, expected)
+    reopen["inspection"] = expected
+    result["actual_reopen_event"] = reopen
+    need(reopen["presenter"] == initial["presenter"]
+         and reopen["binding"]["task"] != event["binding"]["task"],
+         "reopen did not yield a distinct actual task in the same presenter generation")
+    running_again = record("reopened-tasks", "tasks", expected)
+    again = actual_tasks(running_again, expected)
+    need(any(t["task"] == reopen["binding"]["task"] and t["display"] == 0 and t["visible"]
+             for t in again["tasks"]), "reopened binding is absent from actual package tasks")
+    observed, second_creation, second_focus, second_feedback = focused("reopened-focus", reopen)
+    need(second_creation["created"]["creation_sequence"] > creation["created"]["creation_sequence"],
+         "reopen has no later actual native window creation")
+    result["reopened_window"] = second_creation
+    result["reopened_focus"] = second_focus
+    result["reopened_presented_feedback"] = second_feedback
+    result["reopen_observed"] = True
+    result["screen_reopened"] = capture(qmp, authority.root, args.name+"-reopened")
+    result["observation_limitations"] = [
+        "Before/after task absence plus native creation is not exclusive Android launch causality.",
+        "Screenshots show the actual guest console; pixel-to-task identity and content are unqualified.",
+        "Close/reopen alone does not verify retained application data or any complete common/business gate."]
+    authority.validate()
+
 def operation(args):
     need(re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,47}", args.name), "invalid capture name")
     authority = Authority(args.binding, args.binding_sha256)
@@ -730,34 +1210,42 @@ def operation(args):
              and os.fstat(lock).st_uid == os.fstat(lock).st_gid == 0
              and stat.S_IMODE(os.fstat(lock).st_mode) == 0o600, "unsafe evidence lock")
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        qmp = Qmp(authority.run/"qmp.sock", authority.peer, time.monotonic()+28, authority.validate)
+        seconds = LIFECYCLE_SECONDS if args.action == "lifecycle" else 28
+        if args.action == "lifecycle":
+            need(authority.binding["expires_boottime"]-time.clock_gettime(time.CLOCK_BOOTTIME) > seconds+16,
+                 "the original owner has insufficient lifetime for one bounded lifecycle exchange")
+        deadline = time.monotonic()+seconds
+        qmp = Qmp(authority.run/"qmp.sock", authority.peer, deadline, authority.validate)
         status = qmp.command("query-status")
         need(status.get("running") is True and status.get("status") == "running", "original guest is not running")
-        result["screen_before"] = capture(qmp, root, args.name+"-before")
-        event = event_pin = before = None
-        if getattr(args, "event", None):
-            need(getattr(args, "event_sha256", None), "event SHA is required")
-            event, event_pin = launch_event(args.event, args.event_sha256)
-            before = focus_probe(authority, event)
-            result.update({"launch_event": event_pin, "native_observation_before": before,
-                           "sampled_wp_presentation_feedback": presented_feedback(event, before)})
-        if args.action == "key":
-            need(event is not None and before is not None, "key requires the original launch event")
-            need(result["sampled_wp_presentation_feedback"]["observed"],
-                 "no actual presented callback for this task before input")
-            focus = validate_focus(event, before)
-            result.update({"launch_event": event_pin, "focus_before": before, "focus_binding": focus, "key": args.key})
-            authority.validate()
-            need(time.monotonic_ns()-before["host_collection_finished_monotonic_ns"] < 1_000_000_000,
-                 "focus probe became stale before key request")
-            events = [{"type":"key","data":{"down":down,"key":{"type":"qcode","data":args.key}}} for down in (True,False)]
-            qmp.command("input-send-event", {"events": events})
-            result["qmp_paired_key_request_acknowledged"] = True
-            result["screen_after"] = capture(qmp, root, args.name+"-after")
-            after = focus_probe(authority, event)
-            result["focus_after"] = after
-            result["actual_wayland_key_pair_observed"] = wayland_key_pair(before, after, event, args.key)
-            need(result["actual_wayland_key_pair_observed"], "QMP ACK lacked the matching actual Wayland key pair")
+        if args.action == "lifecycle":
+            lifecycle_exchange(args, authority, qmp, result, deadline)
+        else:
+            result["screen_before"] = capture(qmp, root, args.name+"-before")
+            event = event_pin = before = None
+            if getattr(args, "event", None):
+                need(getattr(args, "event_sha256", None), "event SHA is required")
+                event, event_pin = launch_event(args.event, args.event_sha256)
+                before = focus_probe(authority, event)
+                result.update({"launch_event": event_pin, "native_observation_before": before,
+                               "sampled_wp_presentation_feedback": presented_feedback(event, before)})
+            if args.action == "key":
+                need(event is not None and before is not None, "key requires the original launch event")
+                need(result["sampled_wp_presentation_feedback"]["observed"],
+                     "no actual presented callback for this task before input")
+                focus = validate_focus(event, before)
+                result.update({"launch_event": event_pin, "focus_before": before, "focus_binding": focus, "key": args.key})
+                authority.validate()
+                need(time.monotonic_ns()-before["host_collection_finished_monotonic_ns"] < 1_000_000_000,
+                     "focus probe became stale before key request")
+                events = [{"type":"key","data":{"down":down,"key":{"type":"qcode","data":args.key}}} for down in (True,False)]
+                qmp.command("input-send-event", {"events": events})
+                result["qmp_paired_key_request_acknowledged"] = True
+                result["screen_after"] = capture(qmp, root, args.name+"-after")
+                after = focus_probe(authority, event)
+                result["focus_after"] = after
+                result["actual_wayland_key_pair_observed"] = wayland_key_pair(before, after, event, args.key)
+                need(result["actual_wayland_key_pair_observed"], "QMP ACK lacked the matching actual Wayland key pair")
         authority.validate()
         result["success"] = True
     except BaseException as error:
@@ -775,14 +1263,17 @@ def main():
     p = sub.add_parser("bind")
     for name in ("run-directory","unit","invocation","fixture","fixture-sha256","host-stage","host-stage-sha256","output"):
         p.add_argument("--"+name, required=True)
-    for action in ("capture", "key"):
+    for action in ("capture", "key", "lifecycle"):
         p = sub.add_parser(action)
         for name in ("binding","binding-sha256","name"):
             p.add_argument("--"+name, required=True)
-        p.add_argument("--event", required=action=="key")
-        p.add_argument("--event-sha256", required=action=="key")
-        if action == "key":
-            p.add_argument("--key", choices=sorted(KEYS), required=True)
+        if action == "lifecycle":
+            p.add_argument("--package", required=True)
+        else:
+            p.add_argument("--event", required=action=="key")
+            p.add_argument("--event-sha256", required=action=="key")
+            if action == "key":
+                p.add_argument("--key", choices=sorted(KEYS), required=True)
     args = parser.parse_args()
     need(os.geteuid() == os.getegid() == 0, "requires an existing root controller")
     script = Path(__file__).absolute()

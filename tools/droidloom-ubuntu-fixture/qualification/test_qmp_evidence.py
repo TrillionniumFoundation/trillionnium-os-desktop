@@ -246,5 +246,134 @@ class EvidenceTests(unittest.TestCase):
         with self.assertRaises(q.Rejected):
             q.bounded_subprocess(["/usr/bin/python3","-c","import time;time.sleep(30)"],b"",time.monotonic()+.1,100)
 
+
+class LifecycleTests(unittest.TestCase):
+    def fresh(self):
+        names=["org.example.app"+str(i) for i in range(39)]
+        files=[]
+        for i,name in enumerate(names):
+            parts=[None,"config.arm64_v8a"] if i<26 else [None]
+            for split in parts:
+                sha=q.digest((name+str(split)).encode())
+                files.append({"guest_path":q.PUBLIC_STAGE+"/"+sha+".apk","package":name,"split":split,
+                              "source":{"path":"/source/"+sha+".apk","bytes":100,"sha256":sha}})
+        pins={}
+        for key,name in (("execution","selected39-execution.json"),("selection","selected39-source-selection.json"),
+                         ("source_receipt","selected39-signature-receipt.json"),("gate_registry","app-release-gates.json")):
+            pin={"path":q.PUBLIC_STAGE+"/"+name,"bytes":27878 if key=="gate_registry" else 200,
+                 "sha256":q.REGISTRY_SHA256 if key=="gate_registry" else q.digest(name.encode())}
+            pins[key]=pin
+            files.append({"guest_path":pin["path"],"package":None,"split":None,
+                          "source":dict(pin,path="/source/"+name)})
+        staged={"schema":"droidloom.public-apks-staged.v1","original_userdata_imported":False,
+                "package_count":39,"apk_file_count":65,"applications_installed":0,"files":files,
+                "applications":[{"package":name,"version_code":7} for name in names],
+                "runtime_preparation_inputs":dict({k:v for k,v in pins.items() if k!="execution"},
+                    required_gates={name:["common."+str(i) for i in range(6)] for name in names})}
+        return {"schema":"droidloom.full-ubuntu-boot-prepared.v1","calibration_requested":False,
+                "boot_phase":"android_runtime","public_apk_import":staged},names[0]
+
+    def test_lifecycle_requires_exact_fresh_import_and_original_registry(self):
+        import copy
+        prepared,package=self.fresh()
+        inputs=q.fresh_lifecycle_inputs(prepared,package)
+        self.assertEqual(len(inputs["apks"]),2)
+        for mutate in [
+            lambda x:x.update(calibration_requested=True),
+            lambda x:x["public_apk_import"].update(original_userdata_imported=True),
+            lambda x:x["public_apk_import"]["files"].pop(),
+            lambda x:x["public_apk_import"]["files"][0].update(guest_path="/home/alex/arbitrary.apk"),
+            lambda x:x["public_apk_import"]["runtime_preparation_inputs"]["gate_registry"].update(sha256="f"*64),
+            lambda x:x["public_apk_import"]["runtime_preparation_inputs"]["required_gates"][package].pop(),
+            lambda x:x["public_apk_import"].update(applications_installed=39)]:
+            bad=copy.deepcopy(prepared);mutate(bad)
+            with self.assertRaises(q.Rejected):q.fresh_lifecycle_inputs(bad,package)
+
+    def facts(self):
+        boot="01234567-89ab-cdef-0123-456789abcdef"
+        presenter={"pid":55,"invocation_id":"a"*32,"start_ticks":1,"clk_tck":100}
+        inspection={"package":"org.example.app","user":0,"uid":10042,"version_code":7,
+                    "epoch":{"boot_id":boot,"cell_host_pid":100,"framework_host_pid":101,"framework_start_ticks":50},
+                    "apks":[{"name":"base.apk","path":"/data/app/example/base.apk","bytes":100,"sha256":"c"*64}]}
+        event={"package":inspection["package"],"inspection":inspection,"epoch":inspection["epoch"],
+               "presenter":presenter,"guest_boot_id":boot,"guest_clock":"CLOCK_MONOTONIC",
+               "guest_monotonic_ns_start":1_000_000_000,"guest_monotonic_ns_end":1_050_000_000,
+               "binding":{"object":7,"composer_display":8,"android_display":0,"task":9}}
+        def row(stage,sequence,stamp,task=9):
+            value={"schema":"p4-presenter-window-event-v1","pid":55,"sequence":sequence,
+                   "creation_sequence":2,"object":7,"surface":15,"package":inspection["package"],
+                   "android_task":task,"observed_ns":stamp,"stage":stage}
+            return {"_PID":"55","_UID":"1000","_SYSTEMD_USER_UNIT":"droidloom-production-desktop.service",
+                    "_SYSTEMD_INVOCATION_ID":"a"*32,"_BOOT_ID":boot.replace("-",""),
+                    "__MONOTONIC_TIMESTAMP":str(stamp//1000+1),"__CURSOR":"window-"+str(sequence),
+                    "MESSAGE":q.WINDOW_PREFIX+json.dumps(value)}
+        snapshot={"schema":"droidloom.application-task-snapshot.v1","application":inspection,
+                  "listing_bytes":0,"listing_sha256":q.digest(b""),"tasks":[]}
+        response={"ok":True,"state":"running","host_pid":100,"inspection":inspection,"diagnostics":json.dumps(snapshot)}
+        observation={"presenter":presenter,"guest_boot_id":boot,"guest_monotonic_ns_end":2_000_000_000,
+                     "commands":{"tasks":{"returncode":0,"started_ns":1_400_000_000,"ended_ns":1_500_000_000,"response":response}},
+                     "window_journal":[row("created",2,1_010_000_000,None),row("bound",3,1_020_000_000)]}
+        return event,observation,row
+
+    def test_created_window_is_same_native_token_and_never_exclusive_launch_causality(self):
+        import copy
+        event,observation,row=self.facts()
+        creation=q.created_window(event,observation)
+        self.assertFalse(creation["exclusive_android_task_creation_proven"])
+        self.assertEqual(creation["created"]["surface"],15)
+        for mutate in [
+            lambda o:o["window_journal"][0].update(_PID="56"),
+            lambda o:o["window_journal"].append(row("created",4,1_100_000_000,None)),
+            lambda o:o["window_journal"].pop(),
+            lambda o:o["window_journal"].append(row("close_sent",4,1_100_000_000))]:
+            bad=copy.deepcopy(observation);mutate(bad)
+            with self.assertRaises(q.Rejected):q.created_window(event,bad)
+        stale=copy.deepcopy(event);stale["guest_monotonic_ns_start"]=1_030_000_000
+        with self.assertRaises(q.Rejected):q.created_window(stale,observation)
+
+    def test_close_needs_actual_send_unmap_task_absence_and_same_epoch(self):
+        import copy
+        event,observation,row=self.facts()
+        creation=q.created_window(event,observation)
+        observation["window_journal"] += [row("close_sent",4,1_200_000_000),row("unmapped",5,1_210_000_000)]
+        self.assertTrue(q.closed_window(event,observation,creation,1_100_000_000)["task_absence_observed"])
+        only_sent=copy.deepcopy(observation);only_sent["window_journal"].pop()
+        with self.assertRaises(q.Rejected):q.closed_window(event,only_sent,creation,1_100_000_000)
+        still=copy.deepcopy(observation)
+        snap=json.loads(still["commands"]["tasks"]["response"]["diagnostics"])
+        snap["tasks"]=[{"task":9,"root_task":0,"display":0,"user":0,"name":event["package"],"visible":True,"top_activity":None}]
+        still["commands"]["tasks"]["response"]["diagnostics"]=json.dumps(snap)
+        with self.assertRaises(q.Rejected):q.closed_window(event,still,creation,1_100_000_000)
+        stale=copy.deepcopy(observation)
+        stale["commands"]["tasks"]["response"]["inspection"]["epoch"]["framework_start_ticks"]+=1
+        with self.assertRaises(q.Rejected):q.closed_window(event,stale,creation,1_100_000_000)
+
+    def test_selected_identity_requires_complete_pm_apks_and_bound_component(self):
+        import copy
+        event,_,_=self.facts();inspection=event["inspection"];package=event["package"]
+        part={"sha256":"c"*64,"bytes":100,"split":None}
+        inputs={"application":{"package":package,"version_code":7},"apks":[part]}
+        component=package+"/Main"
+        row={"package":package,"version_code":7,"material_files":[part],"preferred_manifest_component":component,
+             "runtime_plan_application_binding":{"launch":{"component":component,"specification":None}}}
+        self.assertEqual(q.selected_application(row,inspection,inputs,package),component)
+        for mutate in [
+            lambda x:x["apks"][0].update(sha256="d"*64),
+            lambda x:x["apks"].append(dict(x["apks"][0],name="split_extra.apk")),
+            lambda x:x.update(version_code=8),
+            lambda x:x.update(user=10)]:
+            bad=copy.deepcopy(inspection);mutate(bad)
+            with self.assertRaises(q.Rejected):q.selected_application(row,bad,inputs,package)
+
+    def test_only_fixed_os_close_gesture_and_closed_guest_program(self):
+        events=q.normal_close_events()
+        self.assertEqual([(v["data"]["key"]["data"],v["data"]["down"]) for v in events],
+                         [("alt",True),("f4",True),("f4",False),("alt",False)])
+        self.assertNotIn("alt",q.KEYS)
+        self.assertNotIn("f4",q.KEYS)
+        self.assertEqual(set(q.Qmp.ALLOWED),{"query-status","add-fd","screendump","remove-fd","input-send-event"})
+        compile(q.GUEST_LIFECYCLE,"fixed guest lifecycle","exec")
+
+
 if __name__=="__main__":
     unittest.main(verbosity=2)
