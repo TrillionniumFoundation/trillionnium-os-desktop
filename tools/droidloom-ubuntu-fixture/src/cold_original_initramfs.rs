@@ -155,9 +155,38 @@ fn read<T: serde::de::DeserializeOwned>(pin: &FilePin, maximum: u64) -> Result<T
     Ok(serde_json::from_slice(&files::read_pin(pin, maximum)?)?)
 }
 fn actual_pin(path: &Path) -> Result<FilePin> {
-    let pin = files::pin_file(path)?;
+    let pin = files::pin_file(path).map_err(|e| format!("cannot pin {}: {e}", path.display()))?;
     trusted(&pin)?;
     Ok(pin)
+}
+fn original_tool(requested: &str, pin: &FilePin, aliases: &Value) -> Result<(File, Identity)> {
+    if requested != "/usr/bin/chroot" {
+        return trusted(pin);
+    }
+    // The original distribution's uutils chroot is a protected symlink to its
+    // normal multi-call ELF. This exact original read-only tool has 116 links;
+    // no candidate input, output or other executable gains this exception.
+    ensure(
+        pin.path == Path::new("/usr/lib/cargo/bin/coreutils/chroot")
+            && pin.bytes == 11_807_104
+            && pin.sha256 == "f84e76ea4da1e0c4e92254bd0d7dccdabe2c8b3098e734f27997dae3ee5d8e02"
+            && aliases.as_array().is_some_and(|v| v.len() == 1)
+            && aliases[0]["path"] == requested
+            && aliases[0]["target"] == "../lib/cargo/bin/coreutils/chroot",
+        "original source-bound uutils chroot alias/ELF differs",
+    )?;
+    fs::Tree::open("/", 0)?.parent(&fs::absolute_string(&pin.path)?)?;
+    let (file, id) = files::open_pin(pin)?;
+    ensure(
+        id.uid == 0
+            && id.gid == 0
+            && id.mode == 0o100755
+            && id.nlink == 116
+            && fs::hash(&file)? == pin.sha256
+            && fs::stat(&file)? == id,
+        "original uutils hard-linked read-only executable identity differs",
+    )?;
+    Ok((file, id))
 }
 fn config<T: serde::de::DeserializeOwned>(path: &Path, expected: &str) -> Result<(T, FilePin)> {
     let pin = actual_pin(path)?;
@@ -258,7 +287,8 @@ fn original_context() -> Result<Value> {
         "account_files":accounts,"preserved_metadata":metadata,"dpkg_status":status}),
     )
 }
-fn source_guards(target: &Value, original: &Value) -> Result<Vec<(FilePin, Identity, File)>> {
+type SourceGuard = (String, Value, FilePin, Identity, File);
+fn source_guards(target: &Value, original: &Value) -> Result<Vec<SourceGuard>> {
     ensure(
         target["schema"] == "droidloom-original-ubuntu-cold-preflight-v1"
             && target["kernel"] == ORIGINAL_KERNEL
@@ -315,32 +345,38 @@ fn source_guards(target: &Value, original: &Value) -> Result<Vec<(FilePin, Ident
             row["identity"] == identity,
             "original preflight inode identity changed",
         )?;
-        guards.push((pin, id, file));
+        guards.push((path.clone(), json!([]), pin, id, file));
     }
     for tool in TOOLS {
-        let pin = actual_pin(Path::new(tool))?;
+        let (pin, aliases) = files::resolve_public_file(Path::new("/"), tool)
+            .map_err(|e| format!("cannot resolve original tool {tool}: {e}"))?;
         if *tool == PYTHON {
             ensure(
                 pin.bytes == 7_477_160 && pin.sha256 == PYTHON_SHA,
                 "fixed original Python differs",
             )?;
         }
-        let (file, id) = trusted(&pin)?;
-        guards.push((pin, id, file));
+        let (file, id) = original_tool(tool, &pin, &aliases)?;
+        guards.push(((*tool).to_owned(), aliases, pin, id, file));
     }
     Ok(guards)
 }
-fn guard_readback(guards: &[(FilePin, Identity, File)]) -> Result<Value> {
+fn guard_readback(guards: &[SourceGuard]) -> Result<Value> {
     let mut out = Vec::new();
     let root = fs::Tree::open("/", 0)?;
-    for (pin, id, file) in guards {
+    for (requested, aliases, pin, id, file) in guards {
+        let (current, current_aliases) = files::resolve_public_file(Path::new("/"), requested)?;
+        ensure(
+            same_pin(&current, pin) && current_aliases == *aliases,
+            "original requested tool path or its protected alias chain changed",
+        )?;
         ensure(
             fs::stat(file)? == *id
                 && root.identity(&fs::absolute_string(&pin.path)?)? == *id
                 && fs::hash(file)? == pin.sha256,
             "original tool or boot source changed during preparation",
         )?;
-        out.push(json!({"pin":pin,"identity":id}));
+        out.push(json!({"requested_path":requested,"aliases":aliases,"pin":pin,"identity":id}));
     }
     Ok(json!(out))
 }
@@ -468,6 +504,7 @@ pub fn prepare(path: &Path, expected: &str) -> Result<()> {
         original_context()? == before,
         "original host changed before its package locks",
     )?;
+    guard_readback(&guards)?;
     let work = &plan.work_directory;
     files::private_dir(work)?;
     let modules = work.join("controller");
