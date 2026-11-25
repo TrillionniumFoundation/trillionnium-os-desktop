@@ -214,6 +214,36 @@ service enable, GRUB update, one-shot boot selection, or reboot action.
 The transaction is reviewable preparation. Physical publication remains blocked
 by the actual acceptance gates and is not claimed complete by these build tests.
 
+## Isolated cold command invocation
+
+The production C entry uses the held interpreter FD with the exact argument
+vector /usr/bin/python3.14, -I, -B, /proc/self/fd/4, --maintenance, the fixed
+action, and an optional release digest. It supplies only PATH, LC_ALL, LANG and
+PYTHONNOUSERSITE, changes directory to /, and never inserts the production
+directory into sys.path. Its pinned script imports no sibling cold module.
+
+Python isolated mode does not add the script directory to sys.path. A trusted
+operator in the original Ubuntu maintenance boot uses an explicit fixed module
+directory for the separate cold tool; the selected module is a literal in the
+command, never a caller-supplied module name. For example, the readonly bundle
+verification entry is:
+
+~~~sh
+sudo /usr/bin/env -i PATH=/usr/sbin:/usr/bin:/sbin:/bin LC_ALL=C LANG=C \
+  /usr/bin/python3.14 -I -B -c \
+  'import sys; sys.path.insert(0, "/usr/lib/droidloom/production/current"); from cold_transaction import main; main()' \
+  verify --bundle /var/lib/droidloom-maintenance/releases/RELEASE_SHA256 \
+  --release RELEASE_SHA256
+~~~
+
+This command belongs to the unchanged original Ubuntu administrator context,
+not the constrained production sudo role. It requires the normally installed,
+root-owned, non-writable module directory. The actual original interpreter
+identity and all eight module origins are covered by the loading audit. The
+same interpreter rejects an import without the explicit fixed directory under
+-I. No user site, current directory or PYTHONPATH is part of this invocation.
+Byte verification alone does not authorize apply or activation.
+
 ## Normal native package closure
 
 native_bundle.py retains the five complete normal libselinux, libapparmor and
