@@ -568,3 +568,18 @@ while its inode, size, mode and owner must remain the same. Its old copy hash is
 historical evidence and is never asserted as a new runtime or migration result.
 The mutation core has no standalone physical CLI; only the separately verified
 qualification controller's sealed authority may eventually call its adapter.
+
+Mount-reference observations bind both the mount namespace and the held
+process-root inode. Two chroots in the same namespace cannot share an unchecked
+mount result, and a missing process root never completes a namespace scan. The
+PID start identity, root and namespace must remain stable through the readback.
+Every mutation observation also rereads the held immutable intent's full bytes,
+F9 identity and named inode.
+
+The enclosing qualification authority must prove that the owned runtime,
+mounts and loops have retired before restoration. The data writer then performs
+real `fsync` on both held working-image descriptors and verifies their metadata
+again before restoring the selection or directory pair. It never synchronizes
+the preserved original images. The recovery receipt records the two actual
+working-backend synchronization results separately from directory rename
+durability and runtime or migration acceptance.

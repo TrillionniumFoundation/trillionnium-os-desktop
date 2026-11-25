@@ -861,6 +861,8 @@ struct DataTransaction {
     locations: Locations,
     intent: Intent,
     intent_pin: FilePin,
+    intent_file: File,
+    intent_identity: Identity,
     // Read-only image descriptors carry the same flock protocol as the live
     // provider. Neither body is read or written by the directory transaction.
     images: Vec<(File, Identity, bool)>,
@@ -875,6 +877,11 @@ impl DataTransaction {
             "original immutable data transaction intent custody",
         )?;
         let bytes = read_small(&f, 128 * 1024)?;
+        no_privilege_attributes(&f)?;
+        ensure(
+            named(&locations.work, INTENT)? == Some(id.clone()),
+            "immutable data intent pathname changed during admission",
+        )?;
         let intent: Intent = serde_json::from_slice(&bytes)?;
         ensure(
             intent.schema == "droidloom.original-data-exchange-intent.v1"
@@ -928,6 +935,8 @@ impl DataTransaction {
             locations,
             intent,
             intent_pin,
+            intent_file: f,
+            intent_identity: id,
             images: Vec::new(),
         };
         let layout = tx.layout(true)?;
@@ -965,6 +974,20 @@ impl DataTransaction {
         }
         tx.observe(true)?;
         Ok(tx)
+    }
+    fn validate_intent(&self) -> Result<()> {
+        ensure(
+            fs::stat(&self.intent_file)? == self.intent_identity
+                && named(&self.locations.work, INTENT)? == Some(self.intent_identity.clone()),
+            "held immutable data intent was changed or replaced",
+        )?;
+        no_privilege_attributes(&self.intent_file)?;
+        let bytes = read_small(&self.intent_file, 128 * 1024)?;
+        ensure(
+            bytes.len() as u64 == self.intent_pin.bytes
+                && fs::digest(&bytes) == self.intent_pin.sha256,
+            "held immutable data intent bytes differ",
+        )
     }
     fn layout(&self, mutable: bool) -> Result<Layout> {
         let at = |place| {
@@ -1024,6 +1047,7 @@ impl DataTransaction {
     }
     fn observe(&self, mutable: bool) -> Result<(Layout, SelectionState)> {
         self.locations.validate()?;
+        self.validate_intent()?;
         for (file, old, is_working) in &self.images {
             let now = fs::stat(file)?;
             ensure(
@@ -1130,6 +1154,13 @@ impl DataTransaction {
     ) -> Result<Value> {
         fence()?;
         let (mut layout, selected) = self.observe(true)?;
+        // The sealed authority must first prove normal owned-runtime, mount
+        // and loop retirement. Directory fsync alone cannot persist dirty
+        // working-image data. Synchronize only the held working backings;
+        // original image descriptors never receive a writeback operation.
+        let synced = self.sync_working_backings()?;
+        fence()?;
+        self.observe(true)?;
         if selected == SelectionState::Candidate {
             self.restore_selection()?;
             checkpoint("selection-restored")?;
@@ -1154,13 +1185,45 @@ impl DataTransaction {
             self.observe(true)? == (Layout::Ready, SelectionState::Original),
             "original pair restoration differs",
         )?;
-        let report = self.report(true)?;
+        let mut report = self.report(true)?;
+        report["working_backing_sync"] = synced;
         if named(&self.locations.work, RESTORED)?.is_none() {
             self.locations.write_json(RESTORED, &report)?;
         }
         Ok(report)
     }
+    fn sync_working_backings(&self) -> Result<Value> {
+        let mut rows = Vec::new();
+        for (file, expected, is_working) in &self.images {
+            if !is_working {
+                continue;
+            }
+            let before = fs::stat(file)?;
+            ensure(
+                stable(&before, expected),
+                "working backing changed before recovery fsync",
+            )?;
+            rustix::fs::flock(file, FlockOperation::NonBlockingLockExclusive)?;
+            file.sync_all()?;
+            let after = fs::stat(file)?;
+            ensure(
+                before == after,
+                "working backing identity changed across recovery fsync",
+            )?;
+            rows.push(json!({"before":before,"after":after,"fsync_completed":true}));
+        }
+        ensure(
+            rows.len() == 2,
+            "both working backings require actual recovery fsync",
+        )?;
+        Ok(
+            json!({"schema":"droidloom.working-pair-recovery-fsync.v1","backings":rows,
+            "normal_runtime_retirement_authority":"enclosing_original_qualification",
+            "original_images_synchronized":false}),
+        )
+    }
     fn report(&self, restored: bool) -> Result<Value> {
+        self.validate_intent()?;
         let old = if restored {
             Place::Original
         } else {
@@ -1374,7 +1437,14 @@ mod tests {
             write(&path, &vec![b'z'; 4096], 0o600);
             drop(tx);
             let tx = f.open();
-            tx.restore(&mut okay, &mut point).unwrap();
+            let restored = tx.restore(&mut okay, &mut point).unwrap();
+            let sync = &restored["working_backing_sync"];
+            assert_eq!(sync["backings"].as_array().unwrap().len(), 2);
+            assert_eq!(sync["original_images_synchronized"], false);
+            for row in sync["backings"].as_array().unwrap() {
+                assert_eq!(row["before"], row["after"]);
+                assert_eq!(row["fsync_completed"], true);
+            }
             drop(tx);
             f.restored(&old, &new, old_selection);
             assert_eq!(
@@ -1446,6 +1516,36 @@ mod tests {
             }
             assert!(DataTransaction::reopen(f.locations()).is_err());
             assert!(f.root.path().join("working-parent/working").is_dir());
+        }
+    }
+    #[test]
+    fn held_intent_bytes_clocks_and_named_inode_are_required_before_every_move() {
+        for case in 0..3 {
+            let f = Fixture::new(false);
+            let tx = f.open();
+            let original = record(&f.root.path().join("original-parent/data"));
+            let path = f.root.path().join("work").join(INTENT);
+            let bytes = std::fs::read(&path).unwrap();
+            if case == 0 {
+                let replacement = path.with_extension("replacement");
+                write(&replacement, &bytes, 0o400);
+                std::fs::rename(replacement, &path).unwrap();
+            } else {
+                std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o600)).unwrap();
+                if case == 1 {
+                    let mut changed = bytes;
+                    changed.push(b'\n');
+                    std::fs::write(&path, changed).unwrap();
+                }
+                std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o400)).unwrap();
+            }
+            assert!(tx.apply(&mut okay, &mut point).is_err());
+            assert_eq!(
+                record(&f.root.path().join("original-parent/data")),
+                original
+            );
+            assert!(f.root.path().join("working-parent/working").is_dir());
+            assert!(!f.root.path().join("work").join(ROLLBACK).exists());
         }
     }
     #[test]
