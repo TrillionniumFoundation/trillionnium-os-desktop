@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-"""Normal five-package native upgrade and rollback on an admitted cold root.
+"""Normal source-bound native upgrade and rollback on an admitted cold root.
 
 The engine runs the unchanged Debian maintainer scripts. A temporary, exact
 policy-rc.d denies service actions; no package state is forged and no dependency
@@ -19,7 +19,8 @@ import stat
 import time
 from release import (need,exact,digest,canonical,f9,safe_absolute,held,hash_fd,
                      new_file,read_json_file,bounded_process,Rejected)
-from native_bundle import (ROLES,NAMES,OLD,NEW,CLOSURE_SHA,verify_bundle)
+from native_release import verify_bundle
+from systemd_bundle import configured_row
 from cold_apply import original_cold_authority,actual_acceptance_binding
 
 POLICY=b"#!/bin/sh\nexit 101\n"
@@ -64,6 +65,13 @@ class NativeTransaction:
         need(s.st_uid==s.st_gid==0 and not(s.st_mode&0o022),"root directory owner/mode")
         self.root_identity=[s.st_dev,s.st_ino]
         self.index,self.closure,self.packages,self.payloads=verify_bundle(self.bundle,release_id,True)
+        self.roles=tuple(self.packages)
+        self.names={r:self.payloads[r]["new"]["control"]["Package"] for r in self.roles}
+        self.old={r:self.payloads[r]["old"]["control"]["Version"] for r in self.roles}
+        self.new={r:self.payloads[r]["new"]["control"]["Version"] for r in self.roles}
+        self.closure_sha256=self.index["closure_sha256"]
+        need(len(self.roles) in (5,15) and len(set(self.names.values()))==len(self.roles),
+             "closed normal native package roles")
         self.state=self.ensure_state()
         self.lockfd=os.open(self.state/"transaction.lock",os.O_RDWR|os.O_CREAT|os.O_NOFOLLOW|os.O_CLOEXEC,0o600)
         ls=os.fstat(self.lockfd)
@@ -81,7 +89,7 @@ class NativeTransaction:
                  "saved native transaction owner")
             self.snapshot,_=read_json_file(self.attempt/"SNAPSHOT.json",8*1024*1024,True,{0o400})
             need(self.snapshot["release_id"]==release_id and self.snapshot["root_identity"]==self.root_identity
-                 and self.snapshot["closure_sha256"]==CLOSURE_SHA,"saved native target/source binding")
+                 and self.snapshot["closure_sha256"]==self.closure_sha256,"saved native target/source binding")
             events=sorted(self.attempt.glob("EVENT-*.json"))
             need(len(events)<=64,"native journal event bound")
             for n,p in enumerate(events,1):
@@ -173,10 +181,10 @@ class NativeTransaction:
         need(50<=len(result)<=6000,"complete native package database required")
         return result
 
-    def five_rows(self,all_rows):
+    def package_rows(self,all_rows):
         out={}
-        for role in ROLES:
-            candidates=[k for k in (NAMES[role]+":amd64",NAMES[role]) if k in all_rows]
+        for role in self.roles:
+            candidates=[k for k in (self.names[role]+":amd64",self.names[role]) if k in all_rows]
             need(len(candidates)==1,"one actual native amd64 package row")
             out[role]=(candidates[0],all_rows[candidates[0]])
         return out
@@ -195,7 +203,7 @@ class NativeTransaction:
 
     def public_configs(self):
         paths=set(DISPLAY_CONFIG)
-        for role in ROLES:
+        for role in self.roles:
             raw=self.payloads[role]["old"]["control_bodies"].get("conffiles",b"")
             need(raw==self.payloads[role]["new"]["control_bodies"].get("conffiles",b""),"unchanged conffile declaration")
             for line in raw.decode().splitlines():
@@ -265,9 +273,10 @@ class NativeTransaction:
     def check_payload(self,kind,*,conffiles=True):
         exempt=set(self.public_configs()) if conffiles else set()
         checked=0
-        for role in ROLES:
+        for role in self.roles:
             for relative,row in self.payloads[role][kind]["payload"].items():
                 if relative in exempt:continue
+                row=configured_row(role,kind,relative,row,self.payloads)
                 actual=self.observe(relative)
                 need(not actual.get("absent") and actual["type"]==row["type"],"native payload type/missing: "+relative)
                 need(all(actual["node"][k]==row[k] for k in ("mode","uid","gid")),"native payload owner/mode: "+relative)
@@ -288,13 +297,13 @@ class NativeTransaction:
 
     def begin(self):
         self.check_root();self.audit()
-        baseline=self.query_all();five=self.five_rows(baseline)
-        need(all(row["version"]==OLD[role] and row["status"]=="ii " for role,(_,row) in five.items()),
-             "actual original five normal packages required")
+        baseline=self.query_all();selected=self.package_rows(baseline)
+        need(all(row["version"]==self.old[role] and row["status"]=="ii " for role,(_,row) in selected.items()),
+             "actual original normal package closure required")
         self.check_payload("old")
         # New files may only occupy previously absent leaves, never another
         # package's existing bytes. Shared directories remain normal dpkg.
-        for role in ROLES:
+        for role in self.roles:
             old=self.payloads[role]["old"]["payload"]
             for path,row in self.payloads[role]["new"]["payload"].items():
                 if path not in old and row["type"]!="5":
@@ -304,7 +313,7 @@ class NativeTransaction:
         self.attempt=self.state/(self.release_id+"-"+os.urandom(8).hex())
         os.mkdir(self.attempt,0o700)
         self.snapshot={"schema":"droidloom-normal-native-snapshot-v1","release_id":self.release_id,
-                       "closure_sha256":CLOSURE_SHA,"root_identity":self.root_identity,
+                       "closure_sha256":self.closure_sha256,"root_identity":self.root_identity,
                        "all_packages":baseline,"public_configs":self.public_configs(),
                        "service_policy":self.observe("usr/sbin/policy-rc.d"),
                        "private_metadata":self.private_metadata(),
@@ -377,11 +386,23 @@ class NativeTransaction:
         need(result["exit"]==0,"normal native dpkg "+stage+" failed")
         return result
 
+    def remaining_roles(self,kind):
+        need(kind in ("old","new"),"normal native transaction direction")
+        roles=[r for r in self.roles if r!="libsystemd-shared"]
+        if kind=="old" and "systemd" in roles:
+            # The new udev Breaks the old systemd. Downgrade udev first;
+            # its ordinary Depends are configured after the complete unpack.
+            roles.remove("udev")
+            roles.insert(roles.index("systemd"),"udev")
+        return tuple(roles)
+
     @contextlib.contextmanager
-    def package_fds(self,kind):
+    def package_fds(self,kind,roles):
+        need(kind in ("old","new") and len(roles)==len(set(roles))
+             and set(roles)<=set(self.roles),"closed native archive stage")
         with contextlib.ExitStack() as stack:
             fds=[]
-            for role in ROLES:
+            for role in roles:
                 p=self.packages[role][kind]
                 fd,st=stack.enter_context(held(p["path"],root=True,modes={0o400,0o444},maximum=16*1024*1024))
                 need((st.st_size,hash_fd(fd))==(p["bytes"],p["sha256"]),"held normal native archive")
@@ -389,32 +410,47 @@ class NativeTransaction:
             yield fds
 
     def unpack(self,kind):
-        with self.package_fds(kind) as fds:
+        if "systemd" in self.roles:
+            # This is the source-owned, exact Pre-Depends from the ordinary
+            # package controls, not a bypass or a caller-selected command.
+            version=self.old["systemd"] if kind=="old" else self.new["systemd"]
+            controls=self.payloads["systemd"][kind]["control"]
+            need(controls.get("Pre-Depends")=="libc6 (>= 2.38), libsystemd-shared (= "+version+")",
+                 "fixed systemd pre-dependency")
+            need(self.payloads["udev"][kind]["control"].get("Breaks")==
+                 "systemd (<< "+version+")","fixed udev/systemd order")
+            with self.package_fds(kind,("libsystemd-shared",)) as fds:
+                self.run_dpkg("unpack-"+kind+"-prerequisite",
+                    ["--no-triggers","--unpack",*[f"/proc/self/fd/{fd}" for fd in fds]],fds)
+            self.run_dpkg("configure-"+kind+"-prerequisite",
+                          ["--configure",self.names["libsystemd-shared"]+":amd64"])
+        with self.package_fds(kind,self.remaining_roles(kind)) as fds:
             return self.run_dpkg("unpack-"+kind,["--no-triggers","--unpack",*[f"/proc/self/fd/{fd}" for fd in fds]],fds)
 
     def configure(self,kind):
-        return self.run_dpkg("configure-"+kind,["--configure",*[NAMES[r]+":amd64" for r in ROLES]])
+        return self.run_dpkg("configure-"+kind,
+                            ["--configure",*[self.names[r]+":amd64" for r in self.remaining_roles(kind)]])
 
     def verify_installed(self,kind):
         self.check_root();self.audit()
-        current=self.query_all();five=self.five_rows(current)
-        wanted=NEW if kind=="new" else OLD
-        need(all(row["version"]==wanted[role] and row["status"]=="ii " for role,(_,row) in five.items()),
-             "actual configured five-package version closure")
-        keys={key for key,_ in five.values()}
+        current=self.query_all();selected=self.package_rows(current)
+        wanted=self.new if kind=="new" else self.old
+        need(all(row["version"]==wanted[role] and row["status"]=="ii " for role,(_,row) in selected.items()),
+             "actual configured native package version closure")
+        keys={key for key,_ in selected.values()}
         need({k:v for k,v in current.items() if k not in keys}==
              {k:v for k,v in self.snapshot["all_packages"].items() if k not in keys},
              "native transaction changed another package state")
         n=self.check_payload(kind);configs=self.compare_configs()
         if kind=="old":
-            for role in ROLES:
+            for role in self.roles:
                 old=self.payloads[role]["old"]["payload"]
                 for path,row in self.payloads[role]["new"]["payload"].items():
                     if path not in old and row["type"]!="5":
                         try:a=self.observe(path)
                         except FileNotFoundError:a={"absent":True}
                         need(a.get("absent"),"new native leaf remains after normal downgrade")
-        self.event("verified-"+kind,actual_package_rows={r:row for r,(_,row) in five.items()},
+        self.event("verified-"+kind,actual_package_rows={r:row for r,(_,row) in selected.items()},
                    whole_payload_members=n,configuration_semantics_preserved=True,
                    private_metadata_unchanged=True,package_state_sha256=hashlib.sha256(canonical(current)).hexdigest())
         return n
@@ -427,10 +463,10 @@ class NativeTransaction:
 
     def rollback(self):
         need(self.snapshot is not None,"original native snapshot required")
-        current=self.query_all();five=self.five_rows(current)
-        need(all(row["version"] in (OLD[role],NEW[role]) for role,(_,row) in five.items()),
+        current=self.query_all();selected=self.package_rows(current)
+        need(all(row["version"] in (self.old[role],self.new[role]) for role,(_,row) in selected.items()),
              "foreign native package version blocks rollback")
-        # The five original, normal archives are always reinstalled, including
+        # The original normal archives are always reinstalled, including
         # a half-installed package after a genuine interrupted/failed unpack.
         with self.service_guard():
             self.unpack("old");self.configure("old");n=self.verify_installed("old")
