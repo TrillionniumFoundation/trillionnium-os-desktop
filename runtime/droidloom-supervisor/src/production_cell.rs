@@ -42,6 +42,30 @@ fn rejected(error: impl fmt::Display) -> CellError {
     CellError::Rejected(error.to_string())
 }
 
+// Keep actual retirement failure typed until the controller fences its owner.
+// The public wire error is text, but text must never decide quarantine.
+fn application_observation_error(
+    error: crate::production_application::ApplicationError,
+) -> CellError {
+    match error {
+        crate::production_application::ApplicationError::RetirementUnproven => {
+            CellError::Retirement(error.to_string())
+        }
+        error => rejected(error),
+    }
+}
+
+fn application_observation_namespace_error(
+    error: crate::production_namespace::NamespaceError,
+) -> CellError {
+    match error {
+        crate::production_namespace::NamespaceError::RetirementUnproven => {
+            CellError::Retirement(error.to_string())
+        }
+        error => rejected(error),
+    }
+}
+
 /// This is a controller fence, not a cleanup capability. An error after host
 /// admission begins can include a worker/child whose Drop quarantined its
 /// resources. Such an error cannot be reported as Stopped or retried silently.
@@ -314,10 +338,10 @@ impl ProductionCell {
             .ok_or_else(|| rejected("production owner was retired"))?;
         let ready = tree
             .ready_witness(self.context.selection(), &self.execution)
-            .map_err(rejected)?
+            .map_err(application_observation_namespace_error)?
             .ok_or_else(|| rejected("task observation requires actual current readiness"))?;
         crate::production_application::observe_application_tasks(ready, expected, deadline)
-            .map_err(rejected)
+            .map_err(application_observation_error)
     }
 
     pub(crate) fn inspect_contacts_baseline(
@@ -335,5 +359,40 @@ impl ProductionCell {
             .ok_or_else(|| rejected("Contacts provider reads require actual current readiness"))?;
         crate::production_application::inspect_contacts_baseline(ready, contacts, provider)
             .map_err(rejected)
+    }
+}
+
+#[cfg(test)]
+mod application_observation_tests {
+    use super::*;
+
+    #[test]
+    fn task_observation_preserves_only_actual_typed_retirement() {
+        assert!(matches!(
+            application_observation_error(
+                crate::production_application::ApplicationError::RetirementUnproven
+            ),
+            CellError::Retirement(_)
+        ));
+        assert!(matches!(
+            application_observation_namespace_error(
+                crate::production_namespace::NamespaceError::RetirementUnproven
+            ),
+            CellError::Retirement(_)
+        ));
+        assert!(matches!(
+            application_observation_error(
+                crate::production_application::ApplicationError::Rejected(
+                    "retirement unproven".into()
+                )
+            ),
+            CellError::Rejected(_)
+        ));
+        assert!(matches!(
+            application_observation_namespace_error(
+                crate::production_namespace::NamespaceError::Rejected("retirement unproven")
+            ),
+            CellError::Rejected(_)
+        ));
     }
 }

@@ -2,7 +2,7 @@
 //! transport/validation helpers; it never calls the development lifecycle or
 //! its numeric-PID Android command helpers.
 use super::*;
-use crate::production_cell::{CellPoll, ProductionCell};
+use crate::production_cell::{CellError, CellPoll, ProductionCell};
 use crate::production_configuration::ConfigurationReadGuard;
 use crate::production_execution::PreparationAdmission;
 use crate::production_mac::{
@@ -1072,6 +1072,23 @@ impl ProductionDaemon {
         Ok(response)
     }
 
+    fn application_task_observation_result<T>(
+        &mut self,
+        result: Result<T, CellError>,
+    ) -> Result<T, ControlError> {
+        if let Err(error @ CellError::Retirement(_)) = &result {
+            // Retain the original active owner. No readiness poll or public
+            // retry may turn unproven helper retirement back into Running.
+            self.state = CellState::Quarantined;
+            self.last_result = error.to_string();
+            self.last_retirement = None;
+            self.owned_selection = None;
+            return Err(ControlError::Invalid(self.last_result.clone()));
+        }
+        self.poll();
+        result.map_err(|error| ControlError::Invalid(error.to_string()))
+    }
+
     fn observe_application_tasks(
         &mut self,
         peer_uid: u32,
@@ -1088,10 +1105,8 @@ impl ProductionDaemon {
             .active
             .as_mut()
             .expect("authorized active owner")
-            .observe_application_tasks(expected, deadline)
-            .map_err(|error| ControlError::Invalid(error.to_string()));
-        self.poll();
-        let observed = result?;
+            .observe_application_tasks(expected, deadline);
+        let observed = self.application_task_observation_result(result)?;
         if self.state != CellState::Running {
             return Err(ControlError::Invalid(
                 "production tree changed during task observation".into(),
@@ -1498,6 +1513,38 @@ mod tests {
                 .is_socket()
         );
         fs::remove_file(socket).unwrap(); // owned test fixture, no daemon cleanup credit
+    }
+
+    #[test]
+    fn task_observation_retirement_fences_before_poll_and_stays_quarantined() {
+        let mut daemon = ProductionDaemon::new();
+        daemon.state = CellState::Running;
+        let result: Result<(), ControlError> = daemon.application_task_observation_result(
+            Err(CellError::Retirement("actual query child remains owned".into())),
+        );
+        assert!(result.is_err());
+        assert_eq!(daemon.state, CellState::Quarantined);
+        assert!(daemon.last_retirement.is_none());
+        assert!(daemon.owned_selection.is_none());
+        assert!(daemon.last_result.contains("actual query child remains owned"));
+        daemon.poll();
+        assert_eq!(daemon.state, CellState::Quarantined);
+        assert!(daemon.start(0, Path::new(DEFAULT_CELL_SPEC)).is_err());
+        assert!(daemon.stop(0).is_err());
+        assert!(daemon.shutdown().is_err());
+        assert_eq!(daemon.state, CellState::Quarantined);
+    }
+
+    #[test]
+    fn task_observation_ordinary_rejection_does_not_claim_failed_retirement() {
+        let mut daemon = ProductionDaemon::new();
+        let result: Result<(), ControlError> = daemon.application_task_observation_result(
+            Err(CellError::Rejected("retirement unproven in caller text".into())),
+        );
+        assert!(result.is_err());
+        assert_eq!(daemon.state, CellState::Stopped);
+        assert!(daemon.last_retirement.is_none());
+        assert_eq!(daemon.application_task_observation_result(Ok(7)).unwrap(), 7);
     }
 
     #[test]

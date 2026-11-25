@@ -247,7 +247,7 @@ fn execute_with(
                 && u64::from(row.display) == task.android_display
                 && row.visible
         }) {
-            return Err("launched binding is not a visible task of this package/user in the current Android task list".into());
+            return Err("launched binding is not listed for this package/user under a visible Android root task".into());
         }
         same_inspection(request(&inspect)?, expected)?;
         pinned(&plan.specification)?;

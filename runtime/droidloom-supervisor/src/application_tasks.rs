@@ -16,7 +16,7 @@ const TASK_LIMIT: usize = 256;
 #[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct ApplicationTask {
-    /// Positive ActivityTaskManager leaf-task identity; not a close capability.
+    /// Nonnegative ActivityTaskManager leaf-task identity; not a close capability.
     pub task: u32,
     /// Actual containing root-task identity.
     pub root_task: u32,
@@ -26,9 +26,9 @@ pub struct ApplicationTask {
     pub user: u32,
     /// Exact package or normalized base component from the task record.
     pub name: String,
-    /// Android's task visibility flag, not proof of host pixels or usability.
+    /// Containing root's visibility printed on this row, not leaf pixels/usability.
     pub visible: bool,
-    /// Actual top component, possibly a foreign permission/login activity.
+    /// Containing root's top component; omitted by Android when it is null.
     pub top_activity: Option<String>,
 }
 
@@ -59,17 +59,19 @@ fn number(value: &str, positive: bool) -> Result<u32, String> {
     Ok(value)
 }
 
-fn field<'a>(line: &'a str, prefix: &str) -> Result<&'a str, String> {
+fn optional_field<'a>(line: &'a str, prefix: &str) -> Result<Option<&'a str>, String> {
     let mut values = line
         .split_ascii_whitespace()
         .filter_map(|part| part.strip_prefix(prefix));
-    let value = values
-        .next()
-        .ok_or_else(|| format!("task list field {prefix} is missing"))?;
+    let value = values.next();
     if values.next().is_some() {
         return Err(format!("task list field {prefix} is repeated"));
     }
     Ok(value)
+}
+
+fn field<'a>(line: &'a str, prefix: &str) -> Result<&'a str, String> {
+    optional_field(line, prefix)?.ok_or_else(|| format!("task list field {prefix} is missing"))
 }
 
 fn component(value: &str) -> Result<String, String> {
@@ -116,11 +118,10 @@ impl ApplicationTaskSnapshot {
         {
             return Err("task snapshot schema, complete identity or bounds differ".into());
         }
-        let mut previous = 0;
+        let mut previous = None;
         for task in &self.tasks {
-            if task.task <= previous
+            if previous.is_some_and(|id| task.task <= id)
                 || task.task > i32::MAX as u32
-                || task.root_task == 0
                 || task.root_task > i32::MAX as u32
                 || task.display > i32::MAX as u32
                 || task.user != expected.user
@@ -130,7 +131,7 @@ impl ApplicationTaskSnapshot {
             {
                 return Err("task snapshot contains an ambiguous or unscoped task".into());
             }
-            previous = task.task;
+            previous = Some(task.task);
         }
         Ok(())
     }
@@ -157,7 +158,7 @@ pub(crate) fn parse(
         .filter(|line| !line.is_empty())
     {
         if let Some(header) = line.strip_prefix("RootTask ") {
-            let id = number(field(header, "id=")?, true)?;
+            let id = number(field(header, "id=")?, false)?;
             let display = number(field(header, "displayId=")?, false)?;
             number(field(header, "userId=")?, false)?;
             root = Some((id, display));
@@ -172,7 +173,7 @@ pub(crate) fn parse(
         let (id, fields) = body
             .split_once(':')
             .ok_or("task list leaf has no identity separator")?;
-        let task = number(id, true)?;
+        let task = number(id, false)?;
         if !identities.insert(task) {
             return Err("task list repeats a leaf-task identity".into());
         }
@@ -194,16 +195,17 @@ pub(crate) fn parse(
             "false" => false,
             _ => return Err("task visibility is malformed".into()),
         };
-        let top = field(fields, "topActivity=")?;
-        let top_activity = if top == "null" {
-            None
-        } else {
-            Some(component(
-                top.strip_prefix("ComponentInfo{")
-                    .and_then(|v| v.strip_suffix('}'))
-                    .ok_or("task top activity is malformed")?,
-            )?)
-        };
+        // Actual official RootTaskInfo.toString appends this field only when
+        // the root's topActivity is non-null. It is not a leaf-specific value.
+        let top_activity = optional_field(fields, "topActivity=")?
+            .map(|top| {
+                component(
+                    top.strip_prefix("ComponentInfo{")
+                        .and_then(|v| v.strip_suffix('}'))
+                        .ok_or("task top activity is malformed")?,
+                )
+            })
+            .transpose()?;
         tasks.push(ApplicationTask {
             task,
             root_task,
@@ -304,7 +306,7 @@ mod tests {
             valid.replace("visible=true", ""),
             valid.replace("visible=true", "visible=true visible=false"),
             valid.replace("taskId=9", "taskId=2147483648"),
-            valid.replace("taskId=9", "taskId=0"),
+            valid.replace("taskId=9", "taskId=-1"),
             valid.replace("taskId=9", "taskId=+9"),
             valid.replace(
                 "topActivity=ComponentInfo{org.example.app/.Main}",
@@ -324,6 +326,54 @@ mod tests {
                 .tasks
                 .is_empty()
         );
+    }
+
+    #[test]
+    fn actual_framework_format_allows_zero_and_omits_null_root_top() {
+        // Layout checked against toString's actual DEX in selected system
+        // dc781249bb4724b7a0777e5077321b84576db46f61abb4b9086b81077bfd0ab4.
+        // This is a source-format fixture, not a claimed device observation.
+        let listing = concat!(
+            "RootTask id=0 bounds=[0,0][1200,1920] displayId=0 userId=0\n",
+            " configuration={1.0 0mcc0mnc [en_US] ldltr sw600dp w600dp h960dp 320dpi}\n",
+            "  taskId=0: org.example.app/.Main bounds=[0,0][1200,1920] userId=0 visible=false\n",
+            "\n",
+            "RootTask id=1 bounds=[0,0][1200,1920] displayId=0 userId=0\n",
+            " configuration={}\n",
+            "  taskId=7: org.example.app/.Main userId=0 visible=true topActivity=ComponentInfo{com.android.permissioncontroller/.Grant}\n",
+            "  taskId=8: org.example.app/.Second userId=0 visible=true topActivity=ComponentInfo{com.android.permissioncontroller/.Grant}\n",
+            "\n"
+        );
+        let observed = parse(&expected(), listing).unwrap();
+        assert_eq!(observed.tasks.len(), 3);
+        assert_eq!(observed.tasks[0].task, 0);
+        assert_eq!(observed.tasks[0].root_task, 0);
+        assert_eq!(observed.tasks[0].top_activity, None);
+        assert!(!observed.tasks[0].visible);
+        // Root visibility/top are repeated for both rows by the real method.
+        assert!(observed.tasks[1].visible);
+        assert_eq!(
+            observed.tasks[1].top_activity,
+            observed.tasks[2].top_activity
+        );
+        assert!(
+            parse(
+                &expected(),
+                &listing.replace("RootTask id=0", "RootTask id=-1")
+            )
+            .is_err()
+        );
+        assert!(
+            parse(
+                &expected(),
+                &listing.replace("visible=false\n", "visible=false topActivity=null\n")
+            )
+            .is_err()
+        );
+        assert!(parse(&expected(), &listing.replace(
+            "topActivity=ComponentInfo{com.android.permissioncontroller/.Grant}",
+            "topActivity=ComponentInfo{com.android.permissioncontroller/.Grant} topActivity=ComponentInfo{org.example.app/.Main}"
+        )).is_err());
     }
 
     #[test]
