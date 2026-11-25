@@ -1,0 +1,14 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Replace the same stock init service with its normal source-rebuilt provider.
+service virtual_camera /system_ext/bin/droidloom-virtual-camera
+    override
+    class core
+    user system
+    group system
+    capabilities SYS_NICE
+    rlimit rtprio 10 10
+    task_profiles CameraServiceCapacity CameraServicePerformance
+    interface aidl virtual_camera
+    interface aidl android.hardware.camera.provider.ICameraProvider/virtual/0
+    oneshot
+    disabled

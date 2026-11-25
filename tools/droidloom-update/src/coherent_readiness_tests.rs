@@ -80,7 +80,13 @@ fn frontend(install: &Path) -> InstalledFrontend {
     fs::write(install.join("etc/init/droidloom-input-bridge.rc"), INPUT_RC).unwrap();
     fs::copy("/usr/bin/true", install.join("bin/droidloom-task-launcher")).unwrap();
     jar(&install.join("framework/droidloom-input-bridge.jar"), true);
-    InstalledFrontend::read(install).unwrap()
+    jar(&install.join("framework/droidloom-camera-producer.jar"), true);
+    fs::write(install.join("etc/init/droidloom-camera-producer.rc"), CAMERA_RC).unwrap();
+    fs::write(install.join("etc/init/droidloom-virtual-camera.rc"), CAMERA_PROVIDER_RC).unwrap();
+    let product = install.parent().unwrap();
+    fs::create_dir_all(product.join("system/bin")).unwrap();
+    fs::copy("/usr/bin/true", product.join("system/bin/virtual_camera")).unwrap();
+    InstalledFrontend::read(install, product).unwrap()
 }
 
 fn builder(work: &Path, config: &Value) -> std::process::Output {
@@ -91,12 +97,12 @@ fn builder(work: &Path, config: &Value) -> std::process::Output {
 }
 
 #[test]
-fn normal_frontend_requires_exact_sources_and_four_bounded_pins() {
+fn normal_frontend_requires_exact_sources_and_eight_bounded_pins() {
     let temp = tempfile::tempdir().unwrap();
     let install = temp.path().join("system_ext");
     let selected = frontend(&install);
     assert!(selected.digests().unwrap().valid());
-    assert_eq!(selected.paths().len(), 4);
+    assert_eq!(selected.paths().len(), 8);
     for role in ["input_bridge_wrapper", "input_bridge_jar", "input_bridge_init_rc", "task_launcher"] {
         let mut missing = serde_json::to_value(&selected).unwrap();
         missing.as_object_mut().unwrap().remove(role);
@@ -108,8 +114,16 @@ fn normal_frontend_requires_exact_sources_and_four_bounded_pins() {
         wrong_hash[role]["sha256"] = json!("z".repeat(64));
         assert!(serde_json::from_value::<InstalledFrontend>(wrong_hash).unwrap().digests().is_err());
     }
+    for role in ["jar", "init_rc", "provider", "provider_init_rc"] {
+        let mut missing = serde_json::to_value(&selected).unwrap();
+        missing["camera"].as_object_mut().unwrap().remove(role);
+        assert!(serde_json::from_value::<InstalledFrontend>(missing).is_err());
+        let mut empty = serde_json::to_value(&selected).unwrap();
+        empty["camera"][role]["bytes"] = json!(0);
+        assert!(serde_json::from_value::<InstalledFrontend>(empty).unwrap().digests().is_err());
+    }
     fs::write(install.join("etc/init/droidloom-input-bridge.rc"), b"# different source\n").unwrap();
-    assert!(InstalledFrontend::read(&install).is_err());
+    assert!(InstalledFrontend::read(&install, temp.path()).is_err());
     assert!(selected.recheck().is_err());
 }
 
@@ -144,7 +158,9 @@ fn real_ext4_three_tree_roundtrip_rejects_lost_modified_or_mislabelled_members()
         assert_eq!(record["members"][path]["sha256"], hex::encode(Sha256::digest(bytes)));
     }
     for path in ["bin/droidloom-input-bridge", "bin/droidloom-task-launcher",
-        "framework/droidloom-input-bridge.jar", "etc/init/droidloom-input-bridge.rc"] {
+        "framework/droidloom-input-bridge.jar", "etc/init/droidloom-input-bridge.rc",
+        "framework/droidloom-camera-producer.jar", "etc/init/droidloom-camera-producer.rc",
+        "bin/droidloom-virtual-camera", "etc/init/droidloom-virtual-camera.rc"] {
         assert_eq!(record["members"][path]["uid"], 0);
         assert_eq!(record["members"][path]["gid"], 0);
     }
@@ -153,7 +169,21 @@ fn real_ext4_three_tree_roundtrip_rejects_lost_modified_or_mislabelled_members()
         "tools":{"debugfs":reader_tool("debugfs").unwrap().path,
             "e2fsck":reader_tool("e2fsck").unwrap().path}}));
     assert!(verify(&image, &expected).status.success());
-    for scenario in ["missing-jar", "changed-factory", "wrong-label", "wrong-owner", "extra-framework"] {
+    // Historical R10 remains readable with its exact old member inventory.
+    // Removing the declaration cannot hide camera files in a current image.
+    let mut historical = config.clone();
+    historical["sha256"]["frontend"].as_object_mut().unwrap().remove("camera");
+    for role in ["camera_jar", "camera_init_rc", "camera_provider", "camera_provider_init_rc"] {
+        historical["frontend"].as_object_mut().unwrap().remove(role);
+    }
+    historical["output"] = json!(work.join("historical-carrier.img"));
+    let older = builder(work, &historical);
+    assert!(older.status.success(), "{}", String::from_utf8_lossy(&older.stderr));
+    assert!(verify(&work.join("historical-carrier.img"), &historical["sha256"]).status.success());
+    assert!(!verify(&image, &historical["sha256"]).status.success());
+    assert!(!verify(&work.join("historical-carrier.img"), &expected).status.success());
+
+    for scenario in ["missing-jar", "changed-factory", "wrong-label", "wrong-owner", "extra-framework", "missing-camera", "camera-label", "provider-owner"] {
         let altered = work.join(format!("{scenario}.img"));
         fs::copy(&image, &altered).unwrap();
         match scenario {
@@ -168,6 +198,10 @@ fn real_ext4_three_tree_roundtrip_rejects_lost_modified_or_mislabelled_members()
             "wrong-owner" => { debug(&altered, "set_inode_field /bin/droidloom-task-launcher uid 1", true); }
             "extra-framework" => original_file(&altered, "/framework/unselected.jar", b"unselected",
                 "0100644", 0, "u:object_r:system_file:s0", work),
+            "missing-camera" => { debug(&altered, "rm /framework/droidloom-camera-producer.jar", true); }
+            "camera-label" => attributes(&altered, "/framework/droidloom-camera-producer.jar",
+                "0100644", 0, "u:object_r:system_file:s0", work),
+            "provider-owner" => { debug(&altered, "set_inode_field /bin/droidloom-virtual-camera uid 1000", true); }
             _ => unreachable!(),
         }
         assert!(!verify(&altered, &expected).status.success(), "accepted {scenario}");

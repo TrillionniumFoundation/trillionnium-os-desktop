@@ -1,0 +1,14 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Original init owns the producer; capture requires a real Surface.
+service droidloom-camera-producer /system/bin/app_process64 -Xint -Xusejit:false /system/bin com.droidloom.camera.CameraProducer
+    class late_start
+    disabled
+    user root
+    group root system graphics
+    capabilities
+    seclabel u:r:droidloom_camera_producer:s0
+    setenv CLASSPATH /system_ext/framework/droidloom-camera-producer.jar
+    restart_period 5
+
+on property:sys.boot_completed=1
+    start droidloom-camera-producer
