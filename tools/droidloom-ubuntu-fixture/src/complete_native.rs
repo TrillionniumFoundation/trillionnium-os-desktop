@@ -14,6 +14,9 @@ use std::path::{Path, PathBuf};
 pub(super) const SCHEMA: &str = "droidloom.complete-ubuntu-fixture-manifest.v1";
 const SOURCE_SCHEMA: &str = "droidloom.complete-ubuntu-native-source.v1";
 const LIMIT: u64 = 16 * 1024 * 1024;
+const BASELINE_LIMIT: u64 = 64 * 1024 * 1024;
+#[path = "complete_installed.rs"]
+mod installed;
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
@@ -44,6 +47,10 @@ pub(super) struct SourceReceipt {
     pub root: RootIdentity,
     pub bootstrap_receipt: EvidencePin,
     pub baseline_receipt: Option<EvidencePin>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub baseline_manifest: Option<EvidencePin>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub installed_admission_directory: Option<PathBuf>,
     pub package_transactions: Vec<EvidencePin>,
     pub packages: EvidencePin,
     pub dpkg_status: EvidencePin,
@@ -86,6 +93,10 @@ pub(super) struct CompleteManifest {
     pub schema: String,
     pub source: RecordedJson,
     pub proofs: Vec<RecordedJson>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub baseline_manifest_record: Option<RecordedJson>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub installed_admission: Option<installed::Admission>,
     pub source_root_identity: Identity,
     pub target_kernel_release: String,
     pub packages: Vec<Package>,
@@ -181,14 +192,18 @@ impl HeldInput {
     }
 
     fn json(&mut self) -> Result<RecordedJson> {
+        self.json_with_limit(LIMIT)
+    }
+
+    fn json_with_limit(&mut self, limit: u64) -> Result<RecordedJson> {
         ensure(
-            self.pin.bytes <= LIMIT,
+            self.pin.bytes <= limit,
             "complete JSON evidence exceeds bound",
         )?;
         self.file.seek(SeekFrom::Start(0))?;
         let mut body = String::new();
         Read::by_ref(&mut self.file)
-            .take(LIMIT + 1)
+            .take(limit + 1)
             .read_to_string(&mut body)?;
         self.revalidate()?;
         ensure(
@@ -205,9 +220,13 @@ impl HeldInput {
 
 impl RecordedJson {
     fn validate(&self) -> Result<Value> {
+        self.validate_with_limit(LIMIT)
+    }
+
+    fn validate_with_limit(&self, limit: u64) -> Result<Value> {
         ensure(
             self.body.len() as u64 == self.pin.bytes
-                && self.pin.bytes <= LIMIT
+                && self.pin.bytes <= limit
                 && fs::valid_digest(&self.pin.sha256)
                 && fs::digest(self.body.as_bytes()) == self.pin.sha256,
             "embedded source proof digest differs",
@@ -225,16 +244,18 @@ fn source(document: &RecordedJson) -> Result<SourceReceipt> {
             && result.configured,
         "complete source was not freshly and normally configured",
     )?;
-    // Baseline capture is useful material, never a final native release.
-    // Installed admission is a distinct normal-transaction contract, added only
-    // when the real upgrade/rollback producer has emitted it.
-    ensure(
-        result.stage == "baseline"
-            && result.baseline_receipt.is_none()
-            && result.native_release.is_none()
-            && result.native_transaction.is_none(),
-        "this complete capture requires the original configured baseline",
-    )?;
+    match result.stage.as_str() {
+        "baseline" => ensure(
+            result.baseline_receipt.is_none()
+                && result.baseline_manifest.is_none()
+                && result.installed_admission_directory.is_none()
+                && result.native_release.is_none()
+                && result.native_transaction.is_none(),
+            "baseline capture cannot claim installed lineage",
+        )?,
+        "installed" => installed::source_shape(&result)?,
+        _ => return Err("unsupported complete source stage".into()),
+    }
     ensure(
         !result.package_transactions.is_empty() && result.package_transactions.len() <= 32,
         "complete source lacks bounded normal package transactions",
@@ -544,7 +565,18 @@ pub(super) fn validate(manifest: &CompleteManifest) -> Result<SourceReceipt> {
             && manifest.source_root_identity.gid == 0,
         "complete source root identity differs",
     )?;
-    let packages = package_proofs(&input, &manifest.proofs)?;
+    let packages = match input.stage.as_str() {
+        "baseline" => {
+            ensure(
+                manifest.baseline_manifest_record.is_none()
+                    && manifest.installed_admission.is_none(),
+                "baseline cannot embed an installed admission or another baseline",
+            )?;
+            package_proofs(&input, &manifest.proofs)?
+        }
+        "installed" => installed::validate(manifest, &input)?,
+        _ => return Err("unsupported complete source stage".into()),
+    };
     ensure(
         package_map(&packages)? == package_map(&manifest.packages)?,
         "manifest package roster changed",
@@ -585,7 +617,19 @@ pub(super) fn capture(path: &Path, sha: &str, release: &str) -> Result<CompleteM
         proofs.push(file.json()?);
         held.push(file);
     }
-    let packages = package_proofs(&input, &proofs)?;
+    let (baseline_manifest_record, installed_admission) = if input.stage == "installed" {
+        let (baseline, admission) = installed::capture(&input, release, &mut proofs, &mut held)?;
+        (Some(baseline), Some(admission))
+    } else {
+        (None, None)
+    };
+    let packages = if input.stage == "baseline" {
+        package_proofs(&input, &proofs)?
+    } else {
+        let roster: Packages =
+            serde_json::from_value(proof(&proofs, &input.packages)?.validate()?)?;
+        roster.packages
+    };
     let status = tree.bytes("/var/lib/dpkg/status", LIMIT)?;
     ensure(
         fs::digest(&status) == input.dpkg_status.sha256
@@ -594,10 +638,12 @@ pub(super) fn capture(path: &Path, sha: &str, release: &str) -> Result<CompleteM
         "whole actual dpkg status differs from normal package query",
     )?;
     let (entries, static_devices) = complete_snapshot::capture(&tree)?;
-    let result = CompleteManifest {
+    let mut result = CompleteManifest {
         schema: SCHEMA.into(),
         source: source_doc,
         proofs,
+        baseline_manifest_record,
+        installed_admission,
         source_root_identity: root,
         target_kernel_release: release.into(),
         packages,
@@ -614,6 +660,13 @@ pub(super) fn capture(path: &Path, sha: &str, release: &str) -> Result<CompleteM
             "native, Android and application runtime qualification".into(),
         ],
     };
+    if input.stage == "installed" {
+        result.unresolved_requirements.remove(0);
+    }
+    ensure(
+        serde_json::to_vec_pretty(&result)?.len() <= 128 * 1024 * 1024,
+        "complete manifest exceeds the bounded reader contract",
+    )?;
     validate(&result)?;
     ensure(
         fs::stat(&tree.root)? == result.source_root_identity
@@ -642,7 +695,7 @@ fn receipt(
         "entries_verified":manifest.entries.len()+manifest.static_devices.len(),
         "regular_paths_verified":regular,"unique_regular_bytes":bytes,
         "complete_package_database":true,"materialization_complete":true,
-        "source_stage":"baseline","kernel_present":false,"guest_qualified":false,
+        "source_stage":source(&manifest.source)?.stage,"kernel_present":false,"guest_qualified":false,
         "unresolved_requirements":manifest.unresolved_requirements}),
     )
 }

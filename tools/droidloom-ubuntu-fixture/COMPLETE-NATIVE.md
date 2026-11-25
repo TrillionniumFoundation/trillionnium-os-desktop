@@ -28,11 +28,40 @@ whole source after capture. Copying uses new inodes, then complete readback.
 - materialize-complete-native --manifest MANIFEST --manifest-sha256 SHA --destination /var/lib/droidloom-qualification/WORK/root --receipt RECEIPT
 - verify-complete-native --manifest MANIFEST --manifest-sha256 SHA --destination /var/lib/droidloom-qualification/WORK/root --receipt RECEIPT
 
-This initial contract admits the original configured **baseline**. It explicitly
-rejects an installed claim: the final patched native package transaction and
-its whole payload need their separate completed admission contract. Baseline
-capture/copy is neither a final release nor permission to skip normal package
-installation.
+The original **baseline** authority remains unchanged. An **installed** source
+must instead bind the exact original baseline manifest, its successful complete
+materialization to a different root inode, and every subsequent successful
+normal apt/dpkg transaction. The original signed bootstrap and baseline records
+are preserved. The manifest embeds the complete original baseline JSON once;
+recursive installed baselines are rejected.
+
+An installed source receipt adds `baseline_manifest` and
+`installed_admission_directory`. Its `baseline_receipt` names the actual complete
+materialization, `package_transactions` names only the successful transactions on
+the new root, and `native_transaction` is the final transaction in that chain.
+The admission directory must be a new private direct child of
+`/var/lib/droidloom-qualification`, outside the source root. Baselines have none
+of these installed authorities.
+
+Each installed transaction binds the original staged archive and the actual
+private APT cache copy, actual binary control fields, exact offline APT command,
+complete simulation delta, both complete dpkg-query outputs, empty dpkg audit,
+and the database before/after. No baseline package may disappear, and no version
+may change without its actual requested archive. The final database and all
+changed-package dependencies are checked from actual bytes.
+
+`native_release` pins a JSON document with schema
+`droidloom.complete-ubuntu-native-release.v1` and `systemd` and
+`native_candidates` FilePins. These identify normal source/package admission
+receipts, not booleans. Capture reruns both admissions against the current root,
+including all ten systemd and six libselinux/AppArmor/GDM packages. The complete
+installed payload, actual controls, input provenance and current database are
+embedded and cross-checked against the full captured tree. Normal package
+post-install transformations retain their exact package/source evidence.
+
+These checks admit installed material for the subsequent initialization and
+shared-kernel boot workflow. They do not qualify a running guest or application;
+`guest_qualified` remains false and runtime requirements remain explicit.
 
 No kernel is fabricated from this root: its /boot is empty and it contains no
 module release. A later normal boot consumes the separately published shared
