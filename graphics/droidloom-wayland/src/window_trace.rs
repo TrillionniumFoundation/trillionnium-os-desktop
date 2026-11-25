@@ -69,7 +69,7 @@ fn encode(
             .package
             .bytes()
             .all(|b| b.is_ascii_alphanumeric() || matches!(b, b'.' | b'_'))
-        || task.is_some_and(|task| task == 0 || task > i32::MAX as u64)
+        || task.is_some_and(|task| task > i32::MAX as u64)
     {
         return None;
     }
@@ -202,7 +202,13 @@ mod tests {
             assert!(encode(&bad, 3, Stage::Bound, Some(9), 100, 950).is_none());
         }
         assert!(encode(&good, 1, Stage::Bound, Some(9), 100, 950).is_none());
-        assert!(encode(&good, 3, Stage::Bound, Some(0), 100, 950).is_none());
+        // Android observation IDs are nonnegative; zero is not control authority.
+        let zero: serde_json::Value =
+            serde_json::from_str(&encode(&good, 3, Stage::Bound, Some(0), 100, 950).unwrap())
+                .unwrap();
+        assert_eq!(zero["android_task"], 0);
+        assert!(encode(&good, 3, Stage::Bound, Some(i32::MAX as u64), 100, 950).is_some());
+        assert!(encode(&good, 3, Stage::Bound, Some(i32::MAX as u64 + 1), 100, 950).is_none());
         assert!(encode(&good, 3, Stage::Bound, Some(9), 0, 950).is_none());
         assert!(encode(&good, 3, Stage::Bound, Some(9), 100, 0).is_none());
         let mut audit = Audit {
