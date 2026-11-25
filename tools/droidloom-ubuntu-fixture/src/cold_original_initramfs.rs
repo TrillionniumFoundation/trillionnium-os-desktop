@@ -785,6 +785,38 @@ fn mount(work: &Path, name: &str, args: Vec<String>) -> Result<()> {
     run(work, name, "/usr/bin/mount", args, 30)?;
     Ok(())
 }
+fn prepare_mountpoint(root: &Path, guest: &str) -> Result<()> {
+    ensure(
+        ["/build", "/inputs", "/dev", "/proc", "/run", "/tmp", "/sys"].contains(&guest)
+            || PRIVATE_STATE_PATHS.contains(&guest),
+        "only fixed private mountpoints may be prepared",
+    )?;
+    let owner = rustix::process::geteuid().as_raw();
+    let group = rustix::process::getegid().as_raw();
+    let tree = fs::Tree::open(&fs::absolute_string(root)?, owner)?;
+    match tree.identity(guest) {
+        Ok(id) => {
+            // This reads only the final inode through a protected parent FD.
+            // The original sticky /tmp is overmounted without opening its
+            // contents or changing its mode; no descendant gets an exception.
+            ensure(
+                id.mode & 0o170000 == 0o040000
+                    && id.uid == owner
+                    && id.gid == group
+                    && (id.mode & 0o022 == 0 || (guest == "/tmp" && id.mode == 0o041777)),
+                &format!(
+                    "fixed private mountpoint is an alias, special or unprotected directory: {guest}"
+                ),
+            )?;
+        }
+        Err(e) if e.downcast_ref::<rustix::io::Errno>() == Some(&rustix::io::Errno::NOENT) => {
+            tree.mkdir(guest)?;
+            rustix::fs::fchmod(&tree.dir(guest)?, Mode::from_raw_mode(0o755))?;
+        }
+        Err(e) => return Err(e),
+    }
+    Ok(())
+}
 pub fn namespace(path: &Path, expected: &str) -> Result<()> {
     let (stage, pin): (Stage, FilePin) = config(path, expected)?;
     allowed_work(&stage.work_directory)?;
@@ -860,7 +892,7 @@ pub fn namespace(path: &Path, expected: &str) -> Result<()> {
         .into_iter()
         .chain(PRIVATE_STATE_PATHS.iter().copied())
     {
-        files::ensure_dir(&view, name, if name == "/tmp" { 0o1777 } else { 0o755 })?;
+        prepare_mountpoint(&view, name)?;
     }
     for (name, source, dest) in [
         ("build", work.join("build"), "/build"),
@@ -1489,6 +1521,45 @@ pub fn build(path: &Path, expected: &str) -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn fixed_sticky_tmp_mountpoint_is_preserved_without_opening_descendants() {
+        use std::os::unix::fs::PermissionsExt;
+        let root = tempfile::tempdir().unwrap();
+        let tmp = root.path().join("tmp");
+        std::fs::create_dir(&tmp).unwrap();
+        std::fs::set_permissions(&tmp, std::fs::Permissions::from_mode(0o1777)).unwrap();
+        let before = std::fs::symlink_metadata(&tmp).unwrap();
+        prepare_mountpoint(root.path(), "/tmp").unwrap();
+        let after = std::fs::symlink_metadata(&tmp).unwrap();
+        assert_eq!(
+            (
+                before.dev(),
+                before.ino(),
+                before.mode(),
+                before.ctime(),
+                before.ctime_nsec()
+            ),
+            (
+                after.dev(),
+                after.ino(),
+                after.mode(),
+                after.ctime(),
+                after.ctime_nsec()
+            )
+        );
+        assert!(prepare_mountpoint(root.path(), "/tmp/child").is_err());
+        prepare_mountpoint(root.path(), "/build").unwrap();
+        assert_eq!(
+            std::fs::metadata(root.path().join("build")).unwrap().mode() & 0o777,
+            0o755
+        );
+        let run = root.path().join("run");
+        std::fs::create_dir(&run).unwrap();
+        std::fs::set_permissions(&run, std::fs::Permissions::from_mode(0o1777)).unwrap();
+        assert!(prepare_mountpoint(root.path(), "/run").is_err());
+        std::os::unix::fs::symlink("tmp", root.path().join("inputs")).unwrap();
+        assert!(prepare_mountpoint(root.path(), "/inputs").is_err());
+    }
     #[test]
     fn mount_setup_rejects_shared_or_slave_propagation_before_any_mount() {
         let root = "31 22 259:2 / / rw,relatime - ext4 /dev/nvme0n1p2 rw\n";

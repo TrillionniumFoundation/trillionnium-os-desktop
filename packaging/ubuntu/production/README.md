@@ -286,6 +286,9 @@ a nonrecursive readonly bind of the original root before creating the overlay;
 this avoids cloning inherited locked child mounts. The readonly lower, inputs
 and hardware binds are verified from actual mountinfo. No package script runs
 during this setup.
+The fixed original `/tmp` mountpoint may retain its root-owned sticky 1777 mode
+until it is covered by the new tmpfs. Only its final directory inode is checked;
+none of its contents or descendant paths enter this exception.
 
 Package scripts then enter UID/GID map `0 0 65536` with a second private mount
 namespace, locking the inherited readonly binds, and retain the isolated
