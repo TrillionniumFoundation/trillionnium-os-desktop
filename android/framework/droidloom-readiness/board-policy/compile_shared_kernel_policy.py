@@ -10,6 +10,8 @@ import subprocess
 import tempfile
 
 from derive_shared_payload_cgroup_policy import Decision, Policy, derive, verify
+from derive_native_uevent_policy import (derive_android as derive_uevent_android,
+    derive_native as derive_uevent_native, verify as verify_uevent)
 from verify_native_login_audit import verify_login_audit
 from verify_native_journal_storage import verify_journal_storage
 from verify_greeter_home import verify_greeter_home
@@ -400,6 +402,9 @@ def verify_manager_file_contexts(here, work):
         ("/usr/lib/systemd/system-environment-generators/unselected-generator", stat.S_IFREG, "p4_linux_runtime_lib_t"),
         ("/usr/libexec/netplan/generate", stat.S_IFREG, "p4_linux_generator_exec_t"),
         ("/usr/libexec/netplan/unselected-helper", stat.S_IFREG, "p4_linux_native_bin_t"),
+        ("/usr/lib/droidloom/production/current/droidloom-native-uevent-label", stat.S_IFREG, "p4_linux_uevent_label_exec_t"),
+        ("/usr/lib/droidloom/production/current/droidloom-native-uevent-label", stat.S_IFDIR, "p4_linux_rootdir_t"),
+        ("/usr/lib/droidloom/production/current/droidloom-native-uevent-label", stat.S_IFLNK, "p4_linux_usrmerge_link_t"),
     ])
     for target, (_, units) in CREDENTIAL_DIRECTORY_FAMILIES.items():
         for unit in units:
@@ -1307,7 +1312,7 @@ def main():
         "ubuntu-native-greeter-home.cil",
 
         "ubuntu-native-manager-lifecycle.cil",
-        "ubuntu-native-hardware.cil",
+        "ubuntu-native-hardware.cil", "ubuntu-native-uevent.cil",
         "ubuntu-presenter-runtime.cil",
         "linux-package-maintenance.cil", "linux-public-control.cil",
     )
@@ -1315,6 +1320,7 @@ def main():
     sources = [compiler, library, args.linux_board_cil, *args.android_cil, *components,
                here / "cp3a-kernel-handle-inputs.json", Path(__file__),
                here / "derive_shared_payload_cgroup_policy.py",
+               here / "derive_native_uevent_policy.py", here / "native-uevent-labels.json",
                here / "verify_native_login_audit.py", here / "verify_native_journal_storage.py",
                here / "verify_greeter_home.py", here / "verify_native_maintenance.py",
                here / "verify_fixed_display.py",
@@ -1334,8 +1340,20 @@ def main():
         contract = derive(library, original, args.android_cil, shared)
         board = work / "linux-board.cil"
         board.write_text(add_namespace_to_board_guard(args.linux_board_cil.read_text()))
+        uevent_android = work / "native-uevent-android.cil"
+        uevent_contract = derive_uevent_android(library, original, args.android_cil,
+            here / "native-uevent-labels.json", uevent_android)
+        baseline = work / "native-uevent-baseline.policy"
+        compile_policy(compiler, [*args.android_cil, board, *components, shared, uevent_android],
+                       baseline, contexts, environment)
+        uevent_native = work / "native-uevent-native.cil"
+        derive_uevent_native(library, baseline, work / "native-uevent-baseline.cil",
+                             uevent_contract, uevent_native, export_binary_policy)
         linked = work / "combined.policy"
-        compile_policy(compiler, [*args.android_cil, board, *components, shared], linked, contexts, environment)
+        compile_policy(compiler, [*args.android_cil, board, *components, shared, uevent_android, uevent_native],
+                       linked, contexts, environment)
+        uevent_access = verify_uevent(library, linked, uevent_contract,
+                                     work / "native-uevent-binary.cil", export_binary_policy)
         shared_access = verify(library, linked, contract)
         host_control = verify_host_control(library, linked, work / "host-control-binary.cil", contract)
         native_capabilities = verify_native_service_capabilities(library, linked)
@@ -1348,6 +1366,7 @@ def main():
         native_maintenance = verify_native_maintenance(library, linked, work / "maintenance-binary.cil", export_binary_policy)
         manager_file_contexts = verify_manager_file_contexts(here, work)
         result = {
+            "native_uevent": uevent_access,
             "native_manager_file_contexts": manager_file_contexts,
             "native_maintenance": native_maintenance,
             "native_maintenance_verifier": sha256(here / "verify_native_maintenance.py"),

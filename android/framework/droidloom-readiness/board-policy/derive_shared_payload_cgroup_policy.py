@@ -156,7 +156,7 @@ def parse_expression(text):
     return result
 
 
-def original_xperms(inputs, subjects):
+def original_xperms(inputs, subjects, target_type="cgroup_v2"):
     text = "\n".join(path.read_text() for path in inputs)
     types = set(re.findall(r"\(type ([A-Za-z0-9_]+)\)", text))
     definitions = defaultdict(list)
@@ -238,7 +238,7 @@ def original_xperms(inputs, subjects):
               for name in ("dir", "file", "lnk_file")}
     for _, source, target, rule in statements:
         operation, class_name, values = rule
-        if operation != "ioctl" or class_name not in result or not member(target, "cgroup_v2"):
+        if operation != "ioctl" or class_name not in result or not member(target, target_type):
             continue
         allowed = numbers(values)
         for subject in subjects:

@@ -68,7 +68,10 @@
 (neverallow p4_android_userspace p4_linux_data (file (entrypoint execute execute_no_trans write append create unlink link rename setattr relabelfrom relabelto)))
 (neverallow p4_android_userspace p4_linux_nonstop_data (file (open read)))
 
-(neverallow p4_linux_procs p4_all_nonboard (file (entrypoint execute execute_no_trans append create unlink link rename setattr relabelfrom relabelto)))
+(neverallow p4_linux_procs p4_all_nonboard (file (entrypoint execute execute_no_trans append create unlink link rename setattr relabelto)))
+; Only the fixed coldplug helper may relabel the six original sysfs sources.
+(neverallow p4_uevent_not_helper p4_all_nonboard (file (relabelfrom)))
+(neverallow p4_linux_uevent_label_t p4_uevent_nonboard_not_sources (file (relabelfrom)))
 (neverallow p4_linux_nonmac_without_native_selinux_queries p4_all_nonboard (file (write)))
 (neverallow p4_linux_mac_roles p4_nonboard_except_mac_api (file (write)))
 (typeattribute p4_nonboard_except_kernel_cmdline)
@@ -101,7 +104,7 @@
 (neverallow p4_linux_without_namespace_executor p4_all_nonboard (dir (mounton)))
 (neverallow p4_linux_without_native_directory_relabel_actors p4_all_nonboard (dir (relabelfrom)))
 (typeattribute p4_native_nonmac_without_module_dirs)
-(typeattributeset p4_native_nonmac_without_module_dirs (and (p4_linux_nonmac_without_native_selinux_queries) (not (or (p4_native_sysfs_readers) (p4_native_maintenance_actors)))))
+(typeattributeset p4_native_nonmac_without_module_dirs (and (p4_linux_nonmac_without_native_selinux_queries) (not (or (p4_linux_uevent_label_t) (or (p4_native_sysfs_readers) (p4_native_maintenance_actors))))))
 (neverallow p4_native_nonmac_without_module_dirs p4_all_nonboard (dir (read)))
 ; The sealed executor reopens only a newly created tmpfs mount FD before the
 ; stock credential label_fix_full(). This is an opaque directory handle, not
@@ -136,7 +139,7 @@
 (typeattribute p4_nonboard_except_journal_proc_directories)
 (typeattributeset p4_nonboard_except_journal_proc_directories (and (p4_all_nonboard) (not (or (proc) (proc_random)))))
 (typeattribute p4_native_public_directory_traversers)
-(typeattributeset p4_native_public_directory_traversers (p4_native_sysfs_readers p4_native_dev_root_traversers))
+(typeattributeset p4_native_public_directory_traversers (p4_native_sysfs_readers p4_native_dev_root_traversers p4_linux_uevent_label_t))
 (typeattribute p4_native_nontraversing_without_module_dirs)
 (typeattributeset p4_native_nontraversing_without_module_dirs (and (p4_linux_nontraversing_without_native_selinux_queries) (not (or (p4_native_public_directory_traversers) (p4_native_maintenance_actors)))))
 (neverallow p4_native_nontraversing_without_module_dirs p4_all_nonboard (dir (search)))
