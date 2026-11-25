@@ -9,6 +9,8 @@
 ; unit.c creates its temporary invocation symlink before rename. Only this
 ; private metadata family is writable; /bin and other usrmerge links stay
 ; immutable. mkdir_label/symlink_label select the fixed file-context paths.
+(typeattribute p4_native_startup_all_types)
+(typeattributeset p4_native_startup_all_types (all))
 (type p4_linux_invocation_link_t)
 (roletype object_r p4_linux_invocation_link_t)
 (typeattributeset p4_all_board_owned (p4_linux_invocation_link_t))
@@ -17,7 +19,7 @@
 (typeattribute p4_without_native_invocation_writer)
 (typeattributeset p4_without_native_invocation_writer (and (all) (not (init_t))))
 (neverallow p4_without_native_invocation_writer p4_linux_invocation_link_t (lnk_file (create write setattr rename unlink link relabelto relabelfrom)))
-(neverallow all p4_linux_invocation_link_t (lnk_file (write setattr link relabelto relabelfrom mounton)))
+(neverallow p4_native_startup_all_types p4_linux_invocation_link_t (lnk_file (write setattr link relabelto relabelfrom mounton)))
 
 ; Stock exec-credential.c creates and seals credentials for a fixed unit.
 ; Separate inode types retain the selected service's read boundary. These
@@ -99,7 +101,7 @@
 (call p4_startup_credential (p4_linux_journal_credentials_t p4_linux_journal_credential_file_t p4_linux_journald_t))
 (neverallow p4_without_native_credential_writer p4_native_startup_credential_dirs (dir (create add_name setattr rename reparent mounton relabelto)))
 (neverallow p4_without_native_credential_cleanup p4_native_startup_credential_dirs (dir (write remove_name rmdir)))
-(neverallow all p4_native_startup_credential_dirs (dir (relabelfrom)))
+(neverallow p4_native_startup_all_types p4_native_startup_credential_dirs (dir (relabelfrom)))
 (neverallow p4_without_native_credential_writer p4_native_startup_credential_files (file (create write append setattr rename)))
 (neverallow p4_without_native_credential_cleanup p4_native_startup_credential_files (file (unlink)))
-(neverallow all p4_native_startup_credential_files (file (ioctl lock map execute execute_no_trans entrypoint link relabelfrom relabelto mounton)))
+(neverallow p4_native_startup_all_types p4_native_startup_credential_files (file (ioctl lock map execute execute_no_trans entrypoint link relabelfrom relabelto mounton)))
