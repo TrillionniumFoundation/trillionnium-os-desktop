@@ -1,0 +1,27 @@
+; The original PID 1 holds and validates /dev/kmsg before policy load,
+; then labels only that exact devtmpfs inode. Generic device bodies and the
+; separate immutable early-diagnostic kmsg_device keep their old permissions.
+(type p4_linux_native_kmsg_t)
+(roletype object_r p4_linux_native_kmsg_t)
+(typeattributeset p4_all_board_owned (p4_linux_native_kmsg_t))
+(allow p4_linux_native_kmsg_t device (filesystem (associate)))
+(allow kernel device (chr_file (getattr relabelfrom)))
+(allow kernel p4_linux_native_kmsg_t (chr_file (getattr relabelto)))
+(typeattribute p4_native_kmsg_writers)
+(typeattributeset p4_native_kmsg_writers (init_t p4_linux_service_executor_t p4_linux_generator_t p4_linux_journald_t))
+(allow p4_native_kmsg_writers p4_linux_native_kmsg_t (chr_file (getattr open write)))
+(allow p4_linux_journald_t p4_linux_native_kmsg_t (chr_file (read)))
+; ProtectKernelLogs uses the existing private-namespace inaccessible binding.
+(allow p4_linux_service_executor_t p4_linux_native_kmsg_t (chr_file (mounton)))
+; Normal udev ownership/mode updates do not authorize log contents.
+(allow p4_linux_udev_t p4_linux_native_kmsg_t (chr_file (getattr setattr)))
+(typeattribute p4_without_native_kmsg_readers)
+(typeattributeset p4_without_native_kmsg_readers (and (all) (not (p4_linux_journald_t))))
+(typeattribute p4_without_native_kmsg_writers)
+(typeattributeset p4_without_native_kmsg_writers (and (all) (not (p4_native_kmsg_writers))))
+(typeattribute p4_without_native_kmsg_labeler)
+(typeattributeset p4_without_native_kmsg_labeler (and (all) (not (kernel))))
+(neverallow p4_without_native_kmsg_readers p4_linux_native_kmsg_t (chr_file (read)))
+(neverallow p4_without_native_kmsg_writers p4_linux_native_kmsg_t (chr_file (open write append)))
+(neverallow p4_without_native_kmsg_labeler p4_linux_native_kmsg_t (chr_file (relabelto)))
+(neverallow p4_native_startup_all_types p4_linux_native_kmsg_t (chr_file (create ioctl map execute execute_no_trans entrypoint lock append link rename unlink relabelfrom)))

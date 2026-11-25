@@ -1131,6 +1131,7 @@ def main():
         "ubuntu-native-greeter-home.cil",
 
         "ubuntu-native-manager-lifecycle.cil", "ubuntu-native-startup-paths.cil",
+        "ubuntu-native-kmsg.cil",
         "ubuntu-native-hardware.cil",
         "ubuntu-presenter-runtime.cil",
         "linux-package-maintenance.cil", "linux-public-control.cil",

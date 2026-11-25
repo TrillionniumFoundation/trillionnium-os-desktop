@@ -13,6 +13,17 @@ struct droidloom_linux_run {
 };
 
 
+struct droidloom_linux_kmsg {
+    struct droidloom_linux_run dev;
+    struct droidloom_linux_run node;
+    unsigned long long mount_id;
+    mode_t mode;
+    gid_t group;
+};
+int droidloom_hold_native_kmsg(struct droidloom_linux_kmsg *out);
+int droidloom_label_native_kmsg(const struct droidloom_linux_kmsg *held);
+void droidloom_close_native_kmsg(struct droidloom_linux_kmsg *held);
+
 struct droidloom_linux_init_scope {
     struct droidloom_linux_run root;
     struct droidloom_linux_run scope;

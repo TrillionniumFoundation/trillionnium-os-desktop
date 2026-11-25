@@ -98,3 +98,6 @@
 /run/(credentials|systemd/temporary-credentials)/(systemd\-resolved\.service)/[^/]+ -- u:object_r:p4_linux_resolved_credentials_t:s0
 /run/(credentials|systemd/temporary-credentials)/(systemd\-journald\.service) -d u:object_r:p4_linux_journal_credentials_t:s0
 /run/(credentials|systemd/temporary-credentials)/(systemd\-journald\.service)/[^/]+ -- u:object_r:p4_linux_journal_credential_file_t:s0
+
+# The original devtmpfs inode is labelled by the held PID 1 publisher.
+/dev/kmsg -c u:object_r:p4_linux_native_kmsg_t:s0

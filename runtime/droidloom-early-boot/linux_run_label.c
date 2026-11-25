@@ -111,6 +111,166 @@ int droidloom_label_linux_run(const struct droidloom_linux_run *run)
     return apply_label(run, private_run_context);
 }
 
+
+static int verify_native_kmsg_inode(const struct droidloom_linux_kmsg *held)
+{
+    struct stat parent, node, path, dev_path;
+    struct statfs fs;
+    struct statx from, to, bound, dev_bound;
+    if (getpid() != 1 || geteuid() != 0) {
+        errno = EPERM;
+        return -1;
+    }
+    if (held->dev.fd < 0 || held->node.fd < 0) {
+        errno = EBADF;
+        return -1;
+    }
+    if (fstat(held->dev.fd, &parent) < 0 ||
+        fstat(held->node.fd, &node) < 0 ||
+        fstatat(held->dev.fd, "kmsg", &path, AT_SYMLINK_NOFOLLOW) < 0 ||
+        fstatat(AT_FDCWD, "/dev", &dev_path, AT_SYMLINK_NOFOLLOW) < 0 ||
+        fstatfs(held->dev.fd, &fs) < 0 ||
+        statx(held->dev.fd, "", AT_EMPTY_PATH, STATX_MNT_ID, &from) < 0 ||
+        statx(held->node.fd, "", AT_EMPTY_PATH, STATX_MNT_ID, &to) < 0 ||
+        statx(held->dev.fd, "kmsg", AT_SYMLINK_NOFOLLOW, STATX_MNT_ID, &bound) < 0 ||
+        statx(AT_FDCWD, "/dev", AT_SYMLINK_NOFOLLOW, STATX_MNT_ID, &dev_bound) < 0)
+        return -1;
+    if (!S_ISDIR(parent.st_mode) || parent.st_uid || parent.st_gid ||
+        (parent.st_mode & 0022) || fs.f_type != TMPFS_MAGIC ||
+        parent.st_dev != held->dev.device || parent.st_ino != held->dev.inode ||
+        dev_path.st_dev != parent.st_dev || dev_path.st_ino != parent.st_ino ||
+        !S_ISCHR(node.st_mode) || node.st_uid || node.st_gid != held->group ||
+        (node.st_mode & 07777) != held->mode ||
+        (held->mode & 0600) != 0600 || (held->mode & ~0644) || node.st_nlink != 1 ||
+        node.st_rdev != makedev(1, 11) ||
+        node.st_dev != held->node.device || node.st_ino != held->node.inode ||
+        node.st_dev != parent.st_dev ||
+        path.st_dev != node.st_dev || path.st_ino != node.st_ino ||
+        path.st_mode != node.st_mode || path.st_rdev != node.st_rdev ||
+        !(from.stx_mask & STATX_MNT_ID) || !(to.stx_mask & STATX_MNT_ID) ||
+        !(bound.stx_mask & STATX_MNT_ID) || !(dev_bound.stx_mask & STATX_MNT_ID) ||
+        from.stx_mnt_id != held->mount_id || to.stx_mnt_id != held->mount_id ||
+        bound.stx_mnt_id != held->mount_id || dev_bound.stx_mnt_id != held->mount_id) {
+        errno = ESTALE;
+        return -1;
+    }
+    return 0;
+}
+
+static int verify_native_kmsg(const struct droidloom_linux_kmsg *held)
+{
+    if (verify_native_kmsg_inode(held) < 0)
+        return -1;
+    int flags = fcntl(held->node.fd, F_GETFL);
+    int descriptor = fcntl(held->node.fd, F_GETFD);
+    if (flags < 0 || descriptor < 0)
+        return -1;
+    if ((flags & O_ACCMODE) != O_WRONLY || !(descriptor & FD_CLOEXEC)) {
+        errno = EACCES;
+        return -1;
+    }
+    return 0;
+}
+
+void droidloom_close_native_kmsg(struct droidloom_linux_kmsg *held)
+{
+    if (held->node.fd >= 0)
+        close(held->node.fd);
+    if (held->dev.fd >= 0)
+        close(held->dev.fd);
+    held->node.fd = held->dev.fd = -1;
+}
+
+int droidloom_hold_native_kmsg(struct droidloom_linux_kmsg *out)
+{
+    *out = (struct droidloom_linux_kmsg){ .dev.fd = -1, .node.fd = -1 };
+    if (getpid() != 1 || geteuid() != 0) {
+        errno = EPERM;
+        return -1;
+    }
+    struct open_how parent = {
+        .flags = O_RDONLY | O_DIRECTORY | O_CLOEXEC | O_NOFOLLOW,
+        .resolve = RESOLVE_NO_SYMLINKS | RESOLVE_NO_MAGICLINKS,
+    };
+    struct open_how node = {
+        .flags = O_PATH | O_CLOEXEC | O_NOFOLLOW,
+        .resolve = RESOLVE_BENEATH | RESOLVE_NO_SYMLINKS |
+                   RESOLVE_NO_MAGICLINKS | RESOLVE_NO_XDEV,
+    };
+    out->dev.fd = (int)syscall(SYS_openat2, AT_FDCWD, "/dev", &parent, sizeof(parent));
+    if (out->dev.fd < 0)
+        return -1;
+    struct stat dev, kmsg;
+    struct statx mounted;
+    int error = 0;
+    if (fstat(out->dev.fd, &dev) < 0 ||
+        statx(out->dev.fd, "", AT_EMPTY_PATH, STATX_MNT_ID, &mounted) < 0)
+        error = errno;
+    else if (!(mounted.stx_mask & STATX_MNT_ID))
+        error = EOPNOTSUPP;
+    if (!error) {
+        out->dev.device = dev.st_dev;
+        out->dev.inode = dev.st_ino;
+        out->mount_id = mounted.stx_mnt_id;
+        out->node.fd = (int)syscall(SYS_openat2, out->dev.fd, "kmsg", &node, sizeof(node));
+        if (out->node.fd < 0)
+            error = errno;
+    }
+    if (!error && fstat(out->node.fd, &kmsg) < 0)
+        error = errno;
+    if (!error) {
+        out->node.device = kmsg.st_dev;
+        out->node.inode = kmsg.st_ino;
+        out->mode = kmsg.st_mode & 07777;
+        out->group = kmsg.st_gid;
+        if (verify_native_kmsg_inode(out) < 0)
+            error = errno;
+    }
+    if (!error) {
+        /* Inspect the original object before opening its device driver. The
+         * only magic-link reopen is constructed from our still-held O_PATH
+         * descriptor, while the original PID 1 is single threaded/prepolicy.
+         * Kernel mode is 0644; keep any stricter original read mode/group
+         * unchanged and verify the exact observed metadata after every step. */
+        char name[64];
+        int length = snprintf(name, sizeof(name), "/proc/self/fd/%d", out->node.fd);
+        int fd = -1;
+        if (length < 0 || (size_t)length >= sizeof(name))
+            error = EOVERFLOW;
+        else {
+            fd = open(name, O_WRONLY | O_CLOEXEC | O_NOCTTY | O_NONBLOCK);
+            if (fd < 0)
+                error = errno;
+        }
+        if (!error) {
+            close(out->node.fd);
+            out->node.fd = fd;
+            if (verify_native_kmsg(out) < 0)
+                error = errno;
+        }
+    }
+    if (error) {
+        droidloom_close_native_kmsg(out);
+        errno = error;
+        return -1;
+    }
+    return 0;
+}
+
+int droidloom_label_native_kmsg(const struct droidloom_linux_kmsg *held)
+{
+    /* fsuse trans labels the original devtmpfs root and node as device.
+     * Checking that actual source label prevents a fresh tmpfs fixture from
+     * acquiring authority merely because fstatfs also reports TMPFS_MAGIC.
+     * The separate, immutable early-diagnostic node/FD is not changed here. */
+    if (verify_native_kmsg(held) < 0 ||
+        verify_label(&held->dev, "u:object_r:device:s0") < 0 ||
+        apply_label_from(&held->node, "u:object_r:device:s0",
+                         "u:object_r:p4_linux_native_kmsg_t:s0") < 0)
+        return -1;
+    return verify_native_kmsg(held);
+}
+
 static int hold_child(const struct droidloom_linux_run *parent, const char *name,
                       gid_t group, mode_t mode, struct droidloom_linux_run *child)
 {

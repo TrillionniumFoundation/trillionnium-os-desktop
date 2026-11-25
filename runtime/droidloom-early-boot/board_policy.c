@@ -292,6 +292,7 @@ int droidloom_board_activate_policy(gid_t observer_gid, const char *cohort)
     int status = -1, epoch_directory = -1;
     struct droidloom_linux_init_scope scope = { .root.fd = -1, .scope.fd = -1, .procs.fd = -1, .controllers.fd = -1, .system_slice.fd = -1, .root_membership.fd = -1, .root_subtree_control.fd = -1 };
     struct droidloom_linux_run run = {.fd = -1}, shm = {.fd = -1};
+    struct droidloom_linux_kmsg native_kmsg = { .dev.fd = -1, .node.fd = -1 };
     struct droidloom_linux_journal_store log_store = { .log.fd = -1, .journal.fd = -1 };
     struct droidloom_linux_credentials credentials = { .root.fd = -1, .systemd.fd = -1, .staging.fd = -1 };
     struct droidloom_linux_run udev = {.fd = -1}, udev_data = {.fd = -1};
@@ -304,6 +305,7 @@ int droidloom_board_activate_policy(gid_t observer_gid, const char *cohort)
     if (rc == 0) { stage = "prepare the original Ubuntu unified cgroup hierarchy"; rc = prepare_ubuntu_cgroup2(); }
     if (rc == 0) { stage = "hold the original Ubuntu cgroup root and move global PID 1 to its init.scope"; rc = droidloom_hold_linux_init_scope(&scope); }
     if (rc == 0) { stage = "prepare the original Ubuntu shared memory mount"; rc = droidloom_hold_linux_shm(&shm); }
+    if (rc == 0) { stage = "hold the original native kernel logging node"; rc = droidloom_hold_native_kmsg(&native_kmsg); }
     if (rc == 0) { stage = "hold original Ubuntu /run"; rc = droidloom_hold_linux_run(&run); }
     if (rc == 0) { stage = "hold the Ubuntu runtime log directory"; rc = droidloom_hold_ubuntu_log(&run, &log_store); }
     if (rc == 0) { stage = "hold the distro credentials root"; rc = droidloom_hold_ubuntu_credentials(&run, &credentials); }
@@ -332,6 +334,7 @@ int droidloom_board_activate_policy(gid_t observer_gid, const char *cohort)
     if (rc == 0) { stage = "load initial selected joint SELinux policy"; rc = submit(SELINUX_DIR "/load", policy.data, policy.size); }
     if (rc == 0) { stage = "label the held Ubuntu cgroup root and its initial scope"; rc = droidloom_label_linux_init_scope(&scope); }
     if (rc == 0) { stage = "label the original Ubuntu shared memory root"; rc = droidloom_label_linux_shm(&shm); }
+    if (rc == 0) { stage = "label the held native kernel logging node"; rc = droidloom_label_native_kmsg(&native_kmsg); }
     if (rc == 0) { stage = "label the held Ubuntu /run inode"; rc = droidloom_label_linux_run(&run); }
     if (rc == 0) { stage = "label the held Ubuntu runtime log directory"; rc = droidloom_label_ubuntu_log(&log_store); }
     if (rc == 0) { stage = "label the held distro credentials root"; rc = droidloom_label_ubuntu_credentials(&credentials); }
@@ -349,6 +352,7 @@ int droidloom_board_activate_policy(gid_t observer_gid, const char *cohort)
     if (paths.handoff.fd >= 0)
         close(paths.handoff.fd);
     droidloom_close_linux_init_scope(&scope);
+    droidloom_close_native_kmsg(&native_kmsg);
     if (shm.fd >= 0)
         close(shm.fd);
     droidloom_close_ubuntu_log(&log_store);

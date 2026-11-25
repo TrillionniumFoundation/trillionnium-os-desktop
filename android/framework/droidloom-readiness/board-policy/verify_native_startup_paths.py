@@ -25,6 +25,8 @@ def startup_file_context_cases(stat):
         ("/run/systemd/units/unselected-link", stat.S_IFLNK, "p4_linux_usrmerge_link_t"),
         ("/run/systemd/units/invocation:example.service", stat.S_IFREG, "p4_linux_native_data_t"),
         ("/bin", stat.S_IFLNK, "p4_linux_usrmerge_link_t"),
+        ("/dev/kmsg", stat.S_IFCHR, "p4_linux_native_kmsg_t"),
+        ("/dev/kmsg", stat.S_IFREG, "p4_linux_native_data_t"),
     ]
     for root in ("/run/credentials", "/run/systemd/temporary-credentials"):
         for short, _, units in GROUPS:
@@ -118,6 +120,20 @@ def verify_startup_paths(lines, check, obj, role_types):
                  actor == "init_t" and perm in {"getattr", "read", "create", "rename", "unlink"})
         test(context, obj("p4_linux_credentials_root_t"), "dir", ["mounton"],
              actor == "p4_linux_service_executor_t")
+    kmsg_perms = ("getattr open read write append create setattr ioctl map execute "
+                  "execute_no_trans entrypoint lock link rename unlink relabelto relabelfrom mounton").split()
+    for role, actor in role_types:
+        allowed = {
+            "kernel": {"getattr", "relabelto"},
+            "init_t": {"getattr", "open", "write"},
+            "p4_linux_service_executor_t": {"getattr", "open", "write", "mounton"},
+            "p4_linux_generator_t": {"getattr", "open", "write"},
+            "p4_linux_journald_t": {"getattr", "open", "read", "write"},
+            "p4_linux_udev_t": {"getattr", "setattr"},
+        }.get(actor, set())
+        for perm in kmsg_perms:
+            test(f"u:{role}:{actor}:s0", obj("p4_linux_native_kmsg_t"),
+                 "chr_file", [perm], perm in allowed)
     missing = [entry for entry in transitions if entry not in lines]
     if missing:
         raise ValueError("Missing stock startup transitions: " + repr(missing))
