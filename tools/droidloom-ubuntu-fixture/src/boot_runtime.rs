@@ -960,6 +960,11 @@ pub fn make_root_image(
     ]
     .iter()
     .map(|path| (*path).to_owned())
+    .chain(
+        crate::boot_host::cold_modules::FILES
+            .iter()
+            .map(|(path, _)| format!("/{path}")),
+    )
     .collect();
     selected.push(crate::boot_gdm_proof::CONFIG.into());
     selected.extend(

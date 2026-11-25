@@ -65,12 +65,27 @@ and original Android data. A fresh qualification root is not a deployment root.
 
 The normal droidloom-update host-stage producer compiles maintenance.c and embeds
 the exact SHA256/length of this script and the admitted original Ubuntu Python
-3.14 interpreter. It adds exactly:
+3.14 interpreter. The fixed production entry remains:
 
 | Normal payload | Mode |
 | --- | --- |
 | usr/lib/droidloom/production/current/droidloom-maintenance | 0755 |
 | usr/lib/droidloom/production/current/droidloom-maintenance.py | 0444 |
+
+The same normal host manifest also contains eight independent, readonly modules
+under /usr/lib/droidloom/production/current/: release.py, cold_publish.py,
+cold_transaction.py, cold_apply.py, native_bundle.py, systemd_bundle.py,
+native_release.py, and cold_native.py. All have root owner/group, mode 0444,
+and one link after normal import. cold_modules.rs is the shared source list
+used by the normal publisher, exact fixture source-byte admission, and final
+ext4 readback. The normal host Debian archive carries these members unchanged;
+no workspace module is copied into an installed system by a separate path.
+
+These modules add no production helper action, executable transition, capability,
+or live package writer. The authenticated production C entry still runs only
+the exact droidloom-maintenance.py script and the five commands above. The cold
+modules are used in the original Ubuntu maintenance boot, where the cold
+authority and actual acceptance records must be verified before any deployment.
 
 The C entry opens the original interpreter and script through root-owned,
 non-writable, non-symlink directory components, verifies complete SHA256 and
@@ -198,3 +213,42 @@ This component deliberately contains no dpkg installation, physical relabel,
 service enable, GRUB update, one-shot boot selection, or reboot action.
 The transaction is reviewable preparation. Physical publication remains blocked
 by the actual acceptance gates and is not claimed complete by these build tests.
+
+## Normal native package closure
+
+native_bundle.py retains the five complete normal libselinux, libapparmor and
+GDM package archives, their original rollback packages, and exact source/build
+receipts. systemd_bundle.py adds the ten actually installed binaries from the
+single normal systemd 259.9 source build. native_release.py combines both
+unchanged component releases into droidloom-normal-native-package-release-v2.
+Its package-role table and complete file inventory bind all 15 new and 15 old
+archives; this release is material, not activation authority.
+
+The ordinary cold_native.py engine checks the complete real package database
+and payloads, then invokes the stock dpkg commands with retained archive FDs.
+For this exact systemd cohort, libsystemd-shared is unpacked and configured
+first because the normal systemd control declares it as a Pre-Depends.
+Systemd precedes udev on upgrade; udev precedes systemd on downgrade to satisfy
+the normal Breaks relationship. No force or auto-deconfigure option is used.
+All other installed package rows must remain unchanged and configured.
+
+The source-owned configured-state interpretation is limited to
+/etc/credstore and /etc/credstore.encrypted: the unchanged, fully pinned
+stock tmpfiles rule and postinst make these root-owned directories mode 0700
+after configuration, although the archive placeholders are 0755. No other
+payload metadata is exempt. The normal scripts and all public payload bytes
+are verified on upgrade and rollback. Account, SSH and home paths are observed
+only through their held metadata and are never replaced by qualification data.
+
+Each attempt retains its actual snapshot, normal command arguments, exit status,
+stdout/stderr pins and ordered durable events. A failed unpack can be reopened
+by a new process and restored with the original normal packages. The complete
+Ubuntu qualification root is a separate successful installation, with a real
+971-package database and only the admitted 15 version changes. Its source and
+transaction receipts establish package installation; they do not establish
+a successful boot, application readiness, or original-account continuity.
+
+Physical activation remains blocked until the cold acceptance validator binds
+the same public/native release, actual owned runtime results and original-device
+private working-copy qualification. Missing evidence is an error, never a
+caller-supplied success flag.
