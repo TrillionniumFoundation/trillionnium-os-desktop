@@ -426,7 +426,7 @@ fn package_proofs(input: &SourceReceipt, proofs: &[RecordedJson]) -> Result<Vec<
     Ok(result.packages)
 }
 
-fn validate_members(manifest: &CompleteManifest) -> Result<()> {
+pub(super) fn validate_members(manifest: &CompleteManifest) -> Result<()> {
     ensure(
         !manifest.entries.is_empty()
             && manifest.entries.len() + manifest.static_devices.len()

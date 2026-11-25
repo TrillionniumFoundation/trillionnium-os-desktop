@@ -26,6 +26,49 @@ pub fn install(
     original_release: &str,
     input: &KernelMaterial,
 ) -> Result<Value> {
+    install_inner(root, work, Some(original_release), input)
+}
+
+/// A complete freshly bootstrapped Ubuntu source intentionally has no kernel
+/// package. Install the one normally published shared-kernel batch without
+/// fabricating or retiring an unrelated predecessor.
+pub(super) fn install_first(
+    root: &Path,
+    work: &Path,
+    expected_release: &str,
+    input: &KernelMaterial,
+) -> Result<Value> {
+    let tree = crate::complete_snapshot::Snapshot::open(root)?;
+    for directory in ["/boot", "/usr/lib/modules"] {
+        match tree.names(directory) {
+            Ok(names) => ensure(
+                names.is_empty(),
+                "complete base contains unbound kernel material",
+            )?,
+            Err(e) if e.downcast_ref::<rustix::io::Errno>() == Some(&rustix::io::Errno::NOENT) => {
+                ()
+            }
+            Err(e) => return Err(e),
+        }
+    }
+    let document: Manifest = serde_json::from_slice(&boot_files::read_pin(
+        &input.fixture_manifest,
+        128 * 1024 * 1024,
+    )?)?;
+    ensure(
+        document.target_kernel_release == expected_release,
+        "first kernel differs from complete source selection",
+    )?;
+    boot_files::ensure_dir(root, "/usr/lib/modules", 0o755)?;
+    install_inner(root, work, None, input)
+}
+
+fn install_inner(
+    root: &Path,
+    work: &Path,
+    original_release: Option<&str>,
+    input: &KernelMaterial,
+) -> Result<Value> {
     let manifest: Manifest = serde_json::from_slice(&boot_files::read_pin(
         &input.fixture_manifest,
         128 * 1024 * 1024,
@@ -38,7 +81,7 @@ pub fn install(
     let release = &manifest.target_kernel_release;
     ensure(
         release.starts_with("6.18.")
-            && release != original_release
+            && original_release.is_none_or(|old| release != old)
             && release
                 .bytes()
                 .all(|b| b.is_ascii_alphanumeric() || b"._-".contains(&b)),
@@ -84,26 +127,31 @@ pub fn install(
         Err(e) if e.downcast_ref::<rustix::io::Errno>() == Some(&rustix::io::Errno::NOENT) => (),
         _ => return Err("candidate module tree already exists".into()),
     }
-    let old = format!("/usr/lib/modules/{original_release}");
-    let original = target.dir(&old)?;
-    let id = fs::stat(&original)?;
-    ensure(
-        id.uid == 0 && id.mode & 0o022 == 0,
-        "old fixture module root is not protected",
-    )?;
-    let retired = work.join("prior-fixture-modules");
-    ensure(
-        std::fs::symlink_metadata(&retired)
-            .is_err_and(|e| e.kind() == std::io::ErrorKind::NotFound),
-        "old module retirement destination already exists",
-    )?;
-    std::fs::rename(boot_files::guest_path(root, &old)?, &retired)?;
-    let retired_tree = fs::Tree::open(&fs::absolute_string(&retired)?, 0)?;
-    let moved = fs::stat(&retired_tree.root)?;
-    ensure(
-        (moved.dev, moved.ino) == (id.dev, id.ino),
-        "scoped fixture module retirement changed identity",
-    )?;
+    let retired = if let Some(original_release) = original_release {
+        let old = format!("/usr/lib/modules/{original_release}");
+        let original = target.dir(&old)?;
+        let id = fs::stat(&original)?;
+        ensure(
+            id.uid == 0 && id.mode & 0o022 == 0,
+            "old fixture module root is not protected",
+        )?;
+        let retired_path = work.join("prior-fixture-modules");
+        ensure(
+            std::fs::symlink_metadata(&retired_path)
+                .is_err_and(|e| e.kind() == std::io::ErrorKind::NotFound),
+            "old module retirement destination already exists",
+        )?;
+        std::fs::rename(boot_files::guest_path(root, &old)?, &retired_path)?;
+        let retired_tree = fs::Tree::open(&fs::absolute_string(&retired_path)?, 0)?;
+        let moved = fs::stat(&retired_tree.root)?;
+        ensure(
+            (moved.dev, moved.ino) == (id.dev, id.ino),
+            "scoped fixture module retirement changed identity",
+        )?;
+        Some(retired_path)
+    } else {
+        None
+    };
     let mut dirs: Vec<_> = manifest
         .entries
         .iter()

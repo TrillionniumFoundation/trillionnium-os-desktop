@@ -21,7 +21,7 @@ import time
 SCHEMA = "droidloom.fixture-gdm-greeter-proof.v1"
 UNIT = "droidloom-fixture-greeter-proof.service"
 MIN_UID, MAX_UID = 60578, 60705
-SESSION_GID, FILE_GID = 121, 65534
+FILE_GID = 65534
 MAX_BYTES = 65536
 WAIT_SECONDS = 8.0
 REQUIRED_KEYS = ("USER", "LOGNAME", "HOME", "GDM_SEAT_ID")
@@ -40,8 +40,9 @@ def identity():
     uids, gids = os.getresuid(), os.getresgid()
     uid = uids[0]
     require(MIN_UID <= uid <= MAX_UID and uids == (uid, uid, uid), "not-dynamic-greeter-uid")
-    require(gids == (SESSION_GID, SESSION_GID, SESSION_GID), "not-dynamic-greeter-gid")
-    require(grp.getgrnam("gdm").gr_gid == SESSION_GID, "selected-gdm-group-mismatch")
+    session_gid = grp.getgrnam("gdm").gr_gid
+    require(1 <= session_gid < 1000, "selected-gdm-group-mismatch")
+    require(gids == (session_gid, session_gid, session_gid), "not-dynamic-greeter-gid")
     record = pwd.getpwuid(uid)
     name = record.pw_name
     # This is GDM 50.1's source-owned greeter name and bounded collision suffix.
@@ -51,13 +52,13 @@ def identity():
         and str(int(suffix)) == suffix and 2 <= int(suffix) <= 128
     ), "wrong-dynamic-account-name")
     home = "/run/gdm3/home/" + name
-    require(record.pw_uid == uid and record.pw_gid == SESSION_GID and record.pw_dir == home,
+    require(record.pw_uid == uid and record.pw_gid == session_gid and record.pw_dir == home,
             "dynamic-account-record-mismatch")
     require(os.environ.get("HOME") == home, "user-manager-home-mismatch")
     invocation = os.environ.get("INVOCATION_ID", "")
     require(re.fullmatch(r"[0-9a-f]{32}", invocation) is not None
             and invocation != "0" * 32, "missing-user-unit-invocation")
-    return uid, name, home, invocation
+    return uid, session_gid, name, home, invocation
 
 
 def file_identity(value):
@@ -166,7 +167,7 @@ def run():
     start = time.monotonic_ns()
     require(len(sys.argv) == 1 and sys.flags.isolated and sys.dont_write_bytecode,
             "non-fixed-invocation")
-    uid, name, home, invocation = identity()
+    uid, session_gid, name, home, invocation = identity()
     deadline = time.monotonic() + WAIT_SECONDS
     root = os.open("/", os.O_PATH | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC)
     try:
@@ -182,8 +183,8 @@ def run():
         require(time.monotonic() <= deadline, "proof-deadline-exceeded")
         # Bind the observation to the same actual IDs/NSS record and manager
         # invocation, not only to environment strings checked at entry.
-        require(identity() == (uid, name, home, invocation), "identity-changed")
-        return {"schema": SCHEMA, "result": "passed", "uid": uid, "gid": SESSION_GID,
+        require(identity() == (uid, session_gid, name, home, invocation), "identity-changed")
+        return {"schema": SCHEMA, "result": "passed", "uid": uid, "gid": session_gid,
                 "pid": os.getpid(), "unit": UNIT, "invocation_id": invocation,
                 "guest_clock": "CLOCK_MONOTONIC", "guest_monotonic_ns_start": start,
                 "guest_monotonic_ns_end": time.monotonic_ns(),

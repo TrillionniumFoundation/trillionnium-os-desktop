@@ -1,14 +1,14 @@
 //! Read original native journals only after the owned VM has been reaped.
 //! Filesystem recovery always acts on a new independent copy of its ended disk.
 use crate::{
+    Result,
     boot_child::OwnedChild,
     boot_files::{self, FilePin},
     ensure, fs,
     model::Identity,
-    Result,
 };
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use std::{
     collections::BTreeSet,
     io::{BufRead, BufReader, Read},
@@ -792,8 +792,52 @@ fn collect(
         false
     };
     greeter_source_verified &= timed_config_verified;
-    let greeter_proof =
-        crate::boot_gdm_proof::journal_evidence(&all_rows, &boot_ids, greeter_source_verified);
+    let mut greeter_account_readback = Value::Null;
+    let expected_gid = if prepared["native_source_kind"] == "complete-installed" {
+        let binding: crate::complete_identity::AccountBinding =
+            serde_json::from_value(prepared["native_gdm_account_binding"].clone())?;
+        let passwd = dump_regular(
+            plan,
+            work,
+            &replay,
+            "/etc/passwd",
+            "greeter-complete-passwd",
+            0o644,
+            1024 * 1024,
+            &mut directory_index,
+        )?;
+        let group = dump_regular(
+            plan,
+            work,
+            &replay,
+            "/etc/group",
+            "greeter-complete-group",
+            0o644,
+            1024 * 1024,
+            &mut directory_index,
+        )?;
+        let matched = match (&passwd, &group) {
+            (Some(p), Some(g)) => binding
+                .verify(
+                    &boot_files::read_pin(p, 1024 * 1024)?,
+                    &boot_files::read_pin(g, 1024 * 1024)?,
+                )
+                .is_ok(),
+            _ => false,
+        };
+        greeter_source_verified &= matched;
+        greeter_account_readback = json!({"binding":binding,"passwd":passwd,"group":group,
+            "exact_complete_account_source_verified":matched});
+        matched.then_some(binding.gid)
+    } else {
+        Some(121)
+    };
+    let greeter_proof = crate::boot_gdm_proof::journal_evidence_for_gid(
+        &all_rows,
+        &boot_ids,
+        greeter_source_verified,
+        expected_gid,
+    );
     let ordinary_shutdown =
         ended["exit_code"] == 0 && ended["signal"].is_null() && ended["forced_stop"] == false;
     let calibration_proven = verified
@@ -811,6 +855,7 @@ fn collect(
         "ordinary_guest_shutdown":ordinary_shutdown,"boot_ids":boot_ids,
         "greeter_proof_source_files":greeter_proof_files,"greeter_timed_login_config":timed_config,
         "greeter_timed_login_config_verified":timed_config_verified,"dynamic_greeter_environment":greeter_proof,
+        "greeter_account_readback":greeter_account_readback,
         "systemd_failed_jobs":failures,"mac_denials":denials,"priority_error_records":high_priority,
         "journal_entries":all_rows.len(),"ended_working_disk_preserved":true,
         "guest_qualified":false,"production_ready":false,

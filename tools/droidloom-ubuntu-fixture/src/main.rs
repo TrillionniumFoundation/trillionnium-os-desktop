@@ -19,6 +19,8 @@ mod boot_release;
 mod boot_runtime;
 mod boot_vm;
 mod capture;
+mod complete_boot;
+mod complete_identity;
 mod complete_native;
 mod complete_snapshot;
 mod fs;
@@ -83,6 +85,12 @@ enum Command {
         config_sha256: String,
     },
     PrepareNative {
+        #[arg(long)]
+        config: PathBuf,
+        #[arg(long)]
+        config_sha256: String,
+    },
+    PrepareCompleteNative {
         #[arg(long)]
         config: PathBuf,
         #[arg(long)]
@@ -182,26 +190,58 @@ fn run() -> Result<()> {
             config,
             config_sha256,
         } => boot::prepare_native(&config, &config_sha256)?,
+        Command::PrepareCompleteNative {
+            config,
+            config_sha256,
+        } => complete_boot::prepare(&config, &config_sha256)?,
         Command::CaptureCompleteNative {
-            source_receipt, source_receipt_sha256, target_kernel_release, output,
+            source_receipt,
+            source_receipt_sha256,
+            target_kernel_release,
+            output,
         } => {
-            let result = complete_native::capture(&source_receipt, &source_receipt_sha256, &target_kernel_release)?;
+            let result = complete_native::capture(
+                &source_receipt,
+                &source_receipt_sha256,
+                &target_kernel_release,
+            )?;
             let sha = fs::write_json(&fs::absolute_string(&output)?, &result, 0)?;
-            println!("{}", serde_json::json!({"manifest_sha256":sha,
+            println!(
+                "{}",
+                serde_json::json!({"manifest_sha256":sha,
                 "entries":result.entries.len()+result.static_devices.len(),
-                "complete_package_database":true,"source_stage":"baseline","guest_qualified":false}));
+                "complete_package_database":true,"source_stage":"baseline","guest_qualified":false})
+            );
         }
-        Command::MaterializeCompleteNative { manifest, manifest_sha256, destination, receipt } => {
-            let input:complete_native::CompleteManifest=fs::read_json(&fs::absolute_string(&manifest)?,&manifest_sha256)?;
-            let result=complete_native::materialize(&input,&manifest_sha256,&destination)?;
-            let sha=fs::write_json(&fs::absolute_string(&receipt)?,&result,0)?;
-            println!("{}",serde_json::json!({"receipt_sha256":sha,"materialization_complete":true,"guest_qualified":false}));
+        Command::MaterializeCompleteNative {
+            manifest,
+            manifest_sha256,
+            destination,
+            receipt,
+        } => {
+            let input: complete_native::CompleteManifest =
+                fs::read_json(&fs::absolute_string(&manifest)?, &manifest_sha256)?;
+            let result = complete_native::materialize(&input, &manifest_sha256, &destination)?;
+            let sha = fs::write_json(&fs::absolute_string(&receipt)?, &result, 0)?;
+            println!(
+                "{}",
+                serde_json::json!({"receipt_sha256":sha,"materialization_complete":true,"guest_qualified":false})
+            );
         }
-        Command::VerifyCompleteNative { manifest, manifest_sha256, destination, receipt } => {
-            let input:complete_native::CompleteManifest=fs::read_json(&fs::absolute_string(&manifest)?,&manifest_sha256)?;
-            let result=complete_native::verify(&input,&manifest_sha256,&destination)?;
-            let sha=fs::write_json(&fs::absolute_string(&receipt)?,&result,0)?;
-            println!("{}",serde_json::json!({"receipt_sha256":sha,"materialization_complete":true,"guest_qualified":false}));
+        Command::VerifyCompleteNative {
+            manifest,
+            manifest_sha256,
+            destination,
+            receipt,
+        } => {
+            let input: complete_native::CompleteManifest =
+                fs::read_json(&fs::absolute_string(&manifest)?, &manifest_sha256)?;
+            let result = complete_native::verify(&input, &manifest_sha256, &destination)?;
+            let sha = fs::write_json(&fs::absolute_string(&receipt)?, &result, 0)?;
+            println!(
+                "{}",
+                serde_json::json!({"receipt_sha256":sha,"materialization_complete":true,"guest_qualified":false})
+            );
         }
         Command::Capture {
             selection,

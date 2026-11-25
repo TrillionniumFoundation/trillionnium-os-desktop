@@ -1,8 +1,8 @@
 //! Fresh-fixture-only proof of GDM's dynamic greeter environment writer.
 //! This adds no root runtime observer and does not qualify a visible desktop.
-use crate::{boot_files, ensure, fs, Result};
+use crate::{Result, boot_files, ensure, fs};
 use serde::Deserialize;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use std::collections::BTreeSet;
 use std::path::Path;
 
@@ -213,7 +213,7 @@ fn nonzero_id(value: &str) -> bool {
         && value.bytes().any(|b| b != b'0')
 }
 
-fn trusted_record(row: &Value, proof: &Proof, boot: &str) -> bool {
+fn trusted_record(row: &Value, proof: &Proof, boot: &str, expected_gid: u32) -> bool {
     let uid = proof.uid.to_string();
     let user_manager = format!("user@{}.service", proof.uid);
     let journal_time = row["__MONOTONIC_TIMESTAMP"]
@@ -224,7 +224,8 @@ fn trusted_record(row: &Value, proof: &Proof, boot: &str) -> bool {
     proof.schema == "droidloom.fixture-gdm-greeter-proof.v1"
         && proof.result == "passed"
         && (60578..=60705).contains(&proof.uid)
-        && proof.gid == 121
+        && (1..1000).contains(&expected_gid)
+        && proof.gid == expected_gid
         && proof.pid > 1
         && proof.unit == UNIT
         && nonzero_id(&proof.invocation_id)
@@ -244,7 +245,7 @@ fn trusted_record(row: &Value, proof: &Proof, boot: &str) -> bool {
         && proof.checked_environment_fields == ["USER", "LOGNAME", "HOME", "GDM_SEAT_ID"]
         && !proof.source_body_emitted
         && row["_UID"] == uid
-        && row["_GID"] == "121"
+        && row["_GID"] == expected_gid.to_string()
         && row["_SYSTEMD_OWNER_UID"] == uid
         && row["_PID"] == proof.pid.to_string()
         && row["_SYSTEMD_UNIT"] == user_manager
@@ -262,6 +263,18 @@ pub fn journal_evidence(
     boot_ids: &BTreeSet<String>,
     source_verified: bool,
 ) -> Value {
+    journal_evidence_for_gid(rows, boot_ids, source_verified, Some(121))
+}
+
+/// Complete native sources bind this numeric group to the actual normal
+/// account database and the independently read-back guest group/passwd files.
+pub fn journal_evidence_for_gid(
+    rows: &[Value],
+    boot_ids: &BTreeSet<String>,
+    source_verified: bool,
+    expected_gid: Option<u32>,
+) -> Value {
+    let gid = expected_gid.filter(|g| (1..1000).contains(g)).unwrap_or(0);
     let boot = boot_ids.iter().next().map(String::as_str).unwrap_or("");
     let mut observations = Vec::new();
     let mut invalid = 0usize;
@@ -270,7 +283,7 @@ pub fn journal_evidence(
             .as_str()
             .filter(|s| s.len() <= 4096)
             .and_then(|s| serde_json::from_str::<Proof>(s).ok());
-        if let Some(proof) = proof.filter(|p| trusted_record(row, p, boot)) {
+        if let Some(proof) = proof.filter(|p| trusted_record(row, p, boot, gid)) {
             let uid = proof.uid.to_string();
             let manager = format!("user@{}.service", proof.uid);
             let terminal: Vec<_> = rows
@@ -309,13 +322,14 @@ pub fn journal_evidence(
         }
     }
     let accepted = source_verified
+        && gid != 0
         && boot_ids.len() == 1
         && nonzero_id(boot)
         && invalid == 0
         && observations.len() == 1
         && observations[0]["normal_oneshot_completion"] == true;
     json!({"schema":"droidloom.fixture-gdm-greeter-evidence.v1",
-        "proof_source_files_verified":source_verified,"observations":observations,
+        "proof_source_files_verified":source_verified,"selected_session_gid":expected_gid,"observations":observations,
         "invalid_proof_unit_records":invalid,"dynamic_environment_writer_proven":accepted,
         "visible_greeter_proven":false,"desktop_proven":false,"production_ready":false})
 }
@@ -558,5 +572,31 @@ mod tests {
             "writable proof source was accepted",
         )?;
         Ok(())
+    }
+
+    #[test]
+    fn complete_group_source_changes_are_bound_to_actual_journal_credentials() {
+        let (mut rows, boots) = observed();
+        for row in &mut rows {
+            if row["_SYSTEMD_USER_UNIT"] == UNIT {
+                row["_GID"] = Value::String("981".into());
+                let mut proof: Value =
+                    serde_json::from_str(row["MESSAGE"].as_str().unwrap()).unwrap();
+                proof["gid"] = Value::from(981);
+                row["MESSAGE"] = Value::String(serde_json::to_string(&proof).unwrap());
+            }
+        }
+        assert_eq!(
+            journal_evidence_for_gid(&rows, &boots, true, Some(981))["dynamic_environment_writer_proven"],
+            true
+        );
+        assert_eq!(
+            journal_evidence_for_gid(&rows, &boots, true, Some(121))["dynamic_environment_writer_proven"],
+            false
+        );
+        assert_eq!(
+            journal_evidence_for_gid(&rows, &boots, true, None)["dynamic_environment_writer_proven"],
+            false
+        );
     }
 }

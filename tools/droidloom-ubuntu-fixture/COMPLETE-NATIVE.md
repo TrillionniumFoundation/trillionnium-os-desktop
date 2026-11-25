@@ -39,3 +39,31 @@ module release. A later normal boot consumes the separately published shared
 kernel, its full modules and matching initrd. No machine/user credentials are
 copied from Pocket4, no process is started inside the captured root, and no
 physical package or service is changed by these three material commands.
+
+## Fresh complete native preparation
+
+The separate `prepare-complete-native` entry preserves all normally generated
+service accounts and the entire dpkg database. It creates only the two fixed
+qualification identities, fresh machine and SSH identities, and reviewed guest
+configuration. A baseline capture cannot enter this path: the typed installed
+source contract must pass first.
+
+The normal full boot consumer admits `droidloom.complete-ubuntu-native-prepared.v1`
+only after exact prepared-member readback. It installs the first, independently
+published shared-kernel batch into a kernel-free base and rejects any mixture
+with the historical single-ELF overlays. The historical public-root branch
+retains its old selector and replacement-kernel contract.
+
+The GDM session group is derived from the complete root's real normal account
+database. The prepared account hashes and numeric identity are checked again
+against the ended guest's actual passwd/group files; the journal proof must
+have the same real group. The old public input still requires its original
+GID 121. Greeter UID bounds and file GID 65534 are unchanged.
+
+Validation: the complete 52,876-member independent materialization executed
+the actual sysusers/firstboot/tmpfiles/SSH/systemctl-root initialization in
+21.958 seconds. Its entire dpkg database and original service accounts were
+unchanged. This was a baseline construction test, not a guest boot or a
+successful final installed release. Five focused journal/source tests passed,
+including a complete-root GID 981 positive and wrong-GID/absent-binding negatives.
+The final installed transaction/whole-payload gate remains a distinct component.

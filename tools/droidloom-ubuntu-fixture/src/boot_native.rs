@@ -1,11 +1,11 @@
 //! Fresh native Ubuntu state for a verified, isolated public-root clone.
 //! This never starts a service or imports host passwords, keys or user homes.
 use crate::boot_files::{self, FilePin};
-use crate::{ensure, fs, paths, Result};
+use crate::{Result, ensure, fs, paths};
 use rustix::fs::{FileType, Mode};
 use rustix::process::{Gid, Uid};
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use std::collections::{BTreeMap, BTreeSet};
 use std::fs::File;
 use std::io::{Read, Seek, SeekFrom, Write};
@@ -94,7 +94,7 @@ const SNAP_NAMES: &[&str] = &[
     "gnome-46-2404",
     "bare",
 ];
-const SYSTEM_UNITS: &[&str] = &[
+pub(super) const SYSTEM_UNITS: &[&str] = &[
     "gdm.service",
     "NetworkManager.service",
     "wpa_supplicant.service",
@@ -104,7 +104,7 @@ const SYSTEM_UNITS: &[&str] = &[
     "snapd.socket",
     "snapd.apparmor.service",
 ];
-const USER_UNITS: &[&str] = &[
+pub(super) const USER_UNITS: &[&str] = &[
     "dbus.socket",
     "pipewire.socket",
     "pipewire-pulse.socket",
@@ -133,14 +133,14 @@ const ALIASES_TO_RESTORE: &[(&str, &str)] = &[
     ),
 ];
 
-fn valid_name(s: &str) -> bool {
+pub(super) fn valid_name(s: &str) -> bool {
     !s.is_empty()
         && s.len() <= 64
         && s.bytes()
             .all(|b| b.is_ascii_alphanumeric() || b"_-".contains(&b))
 }
 
-fn valid_uuid(s: &str) -> bool {
+pub(super) fn valid_uuid(s: &str) -> bool {
     s.len() == 36
         && s.bytes().enumerate().all(|(i, b)| {
             if [8, 13, 18, 23].contains(&i) {
@@ -286,7 +286,7 @@ fn native_accounts(passwd: &[u8], group: &[u8]) -> Result<(Vec<String>, Value)> 
     Ok((lines, summary))
 }
 
-fn gdm_timed_login(bytes: &[u8]) -> Result<Vec<u8>> {
+pub(super) fn gdm_timed_login(bytes: &[u8]) -> Result<Vec<u8>> {
     let s = std::str::from_utf8(bytes)?;
     let active: Vec<_> = s
         .lines()
@@ -365,7 +365,7 @@ fn missing(tree: &fs::Tree, path: &str) -> Result<bool> {
 
 /// New parents must be traversable by native service users; private leaves are
 /// requested separately. Do not silently chmod existing ancestor directories.
-fn directory(root: &Path, guest: &str, mode: u32) -> Result<()> {
+pub(super) fn directory(root: &Path, guest: &str, mode: u32) -> Result<()> {
     let tree = fs::Tree::open(&fs::absolute_string(root)?, 0)?;
     let names = paths::parts(guest)?;
     let mut path = String::new();
@@ -412,7 +412,7 @@ fn parent_directory(root: &Path, guest: &str) -> Result<()> {
     Ok(())
 }
 
-fn write_guest(
+pub(super) fn write_guest(
     root: &Path,
     guest: &str,
     bytes: &[u8],
@@ -426,7 +426,7 @@ fn write_guest(
     Ok(())
 }
 
-fn link_guest(
+pub(super) fn link_guest(
     root: &Path,
     tree: &fs::Tree,
     guest: &str,
@@ -465,7 +465,7 @@ fn read_guest(tree: &fs::Tree, guest: &str, limit: u64) -> Result<Vec<u8>> {
     Ok(b)
 }
 
-fn run_native(
+pub(super) fn run_native(
     root: &Path,
     work: &Path,
     tree: &fs::Tree,
@@ -492,7 +492,7 @@ fn run_native(
     Ok(())
 }
 
-fn set_owned(file: &File, uid: u32, gid: u32, mode: u32) -> Result<()> {
+pub(super) fn set_owned(file: &File, uid: u32, gid: u32, mode: u32) -> Result<()> {
     rustix::fs::fchown(file, Some(Uid::from_raw(uid)), Some(Gid::from_raw(gid)))?;
     rustix::fs::fchmod(file, Mode::from_raw_mode(mode))?;
     rustix::fs::fsync(file)?;
@@ -1032,19 +1032,23 @@ mod tests {
     #[test]
     fn account_generation_rejects_numeric_drift_and_sysusers_expansion() {
         let (p, g) = accounts();
-        assert!(native_accounts(
-            p.replace("alex:x:1000", "alex:x:1001").as_bytes(),
-            g.as_bytes()
-        )
-        .is_err());
+        assert!(
+            native_accounts(
+                p.replace("alex:x:1000", "alex:x:1001").as_bytes(),
+                g.as_bytes()
+            )
+            .is_err()
+        );
         assert!(
             native_accounts(p.replace("/home/alex", "/home/%u").as_bytes(), g.as_bytes()).is_err()
         );
-        assert!(native_accounts(
-            p.replace("root:x:", "root:$6$secret:").as_bytes(),
-            g.as_bytes()
-        )
-        .is_err());
+        assert!(
+            native_accounts(
+                p.replace("root:x:", "root:$6$secret:").as_bytes(),
+                g.as_bytes()
+            )
+            .is_err()
+        );
     }
     #[test]
     fn native_service_trailing_home_separator_preserves_identity() -> Result<()> {
