@@ -40,6 +40,20 @@ TOOLS = {
  "journalctl": ("/usr/bin/journalctl",97472,"d91b5f8629d41d7503fa00d8f4d58b6d0b72b5f0ca7b46667c8b5b1c59d460a2"),
  "grub-editenv": ("/usr/bin/grub-editenv",1368360,"2e4f8b60ba8712989f87d927d731a368af8620da1227a3090455ea7897ce1338"),
 }
+ORIGINAL_KERNEL = "7.0.14-p4cred1"
+SYSTEMD_ORIGINAL_VERSION = "259.9-0ubuntu0.1"
+SYSTEMD_CANDIDATE_VERSION = "259.9-0ubuntu0.1+p4gentmp1"
+# These two ELF files were read back from the complete normally built systemd
+# candidate (systemd .deb SHA256 01c4a8ecb1eb4ef9af53115fe8591c4f1e9b7e3fa71ac6e214f6ad8aa1e27cd8).
+# A new source package requires a new normal host, not an environment override.
+SYSTEMD_CANDIDATE_TOOLS = {
+ "systemctl": ("/usr/bin/systemctl",302112,"64a96b6dbb9d4795e977e6fb3940fb090a435b1c22ce4e86ef968982d7e4cd8e"),
+ "journalctl": ("/usr/bin/journalctl",97472,"8d61e3edafab2ed0cac9a63c0eaa50933a16a37e39efc15a315d5316a18e8880"),
+}
+SYSTEMD_FAMILY = frozenset((
+ "libnss-systemd","libpam-systemd","libsystemd-shared","libsystemd0","libudev1",
+ "systemd","systemd-resolved","systemd-sysv","systemd-timesyncd","udev",
+))
 SYSTEM_UNITS = (
  "droidloom-instance-factory.service","droidloom-instance-launcher.service",
  "droidloom-manager-label.service","droidloom-production.service",
@@ -263,8 +277,67 @@ def bounded_process(argv, *, env=None, uid=None, seconds=30, maximum=8*1024*1024
         for f in (p.stdout,p.stderr):
             if not f.closed:f.close()
 
+def cold_systemd_version(raw):
+    """Select one completely configured normal family in original Ubuntu only."""
+    need(isinstance(raw,bytes) and len(raw)<=32*1024*1024 and b"\0" not in raw
+         and b"\r" not in raw,"bounded original package database")
+    selected={}
+    for paragraph in raw.decode("utf-8","strict").split("\n\n"):
+        fields={}
+        for line in paragraph.splitlines():
+            if line.startswith((" ","\t")):continue
+            key,sep,value=line.partition(":")
+            need(sep and re.fullmatch(r"[A-Za-z0-9-]+",key) and key not in fields,
+                 "ambiguous normal package field")
+            fields[key]=value.lstrip(" \t")
+        name=fields.get("Package")
+        if name not in SYSTEMD_FAMILY:continue
+        need(name not in selected and fields.get("Status")=="install ok installed"
+             and fields.get("Architecture")=="amd64","incomplete normal systemd family")
+        version=fields.get("Version")
+        need(version in (SYSTEMD_ORIGINAL_VERSION,SYSTEMD_CANDIDATE_VERSION)
+             and fields.get("Source","systemd") in ("systemd","systemd ("+version+")"),
+             "systemd family is not a source-bound normal package")
+        selected[name]=version
+    need(set(selected)==SYSTEMD_FAMILY and len(set(selected.values()))==1,
+         "mixed or absent normal systemd family blocks maintenance")
+    return selected["systemd"]
+
+def systemd_phase(kernel,context=None,status=None):
+    if kernel==KERNEL:
+        need(context==CONTEXT and status is None,"shared-kernel maintenance context required")
+        return "candidate-shared-runtime"
+    need(kernel==ORIGINAL_KERNEL and context is None and status is not None,
+         "only the admitted original cold or candidate shared-kernel phase")
+    return ("original-cold" if cold_systemd_version(status)==SYSTEMD_ORIGINAL_VERSION
+            else "candidate-cold")
+
+@contextlib.contextmanager
+def fixed_tool(name):
+    need(name in TOOLS,"unknown fixed maintenance command")
+    if name not in SYSTEMD_CANDIDATE_TOOLS:
+        yield TOOLS[name]
+        return
+    kernel=os.uname().release
+    if kernel==KERNEL:
+        phase=systemd_phase(kernel,selinux_current())
+        need(Path("/sys/fs/selinux/enforce").read_bytes().strip()==b"1",
+             "shared-kernel maintenance must remain enforcing")
+        yield SYSTEMD_CANDIDATE_TOOLS[name]
+        return
+    need(kernel==ORIGINAL_KERNEL,"unadmitted kernel cannot choose maintenance tools")
+    # The DB is read only in the original Ubuntu cold phase. The enforcing
+    # maintenance role needs no new package-database access. Retain this exact
+    # DB descriptor through the command and reject concurrent replacement.
+    with held("/var/lib/dpkg/status",root=True,modes={0o644},maximum=32*1024*1024) as (fd,st):
+        phase=systemd_phase(kernel,status=os.read(fd,st.st_size+1))
+        yield (TOOLS if phase=="original-cold" else SYSTEMD_CANDIDATE_TOOLS)[name]
+
 def fixed_command(name,argv,*,uid=None,seconds=30,maximum=8*1024*1024,borrowed=()):
-    path,size,sha=TOOLS[name]
+    with fixed_tool(name) as (path,size,sha):
+        return _fixed_command(path,size,sha,argv,uid=uid,seconds=seconds,maximum=maximum,borrowed=borrowed)
+
+def _fixed_command(path,size,sha,argv,*,uid,seconds,maximum,borrowed):
     with held(path,root=True,modes={0o755},maximum=16*1024*1024) as (fd,st):
         need(st.st_size==size and hash_fd(fd)==sha,"stock command pin changed")
         env={"PATH":"/usr/sbin:/usr/bin:/sbin:/bin","LC_ALL":"C","LANG":"C","SYSTEMD_COLORS":"0"}

@@ -34,6 +34,18 @@ irreversibly set to UID/GID 1000, with empty supplementary groups and the fixed
 local user-bus address; the maintenance owner stays root. A failed manager
 observation is returned as failed evidence, not a running/ready unit.
 
+Maintenance selects one exact systemd tool pair for its actual phase. Under the
+shared kernel, the real enforcing maintenance context admits only the normal
+259.9-0ubuntu0.1+p4gentmp1 candidate's `systemctl` and `journalctl` bytes. Their
+source package and complete installed payload are checked by the normal
+systemd admission; a caller cannot supply another hash, version, or path. The
+original 7.0.14-p4cred1 cold boot instead reads the protected actual dpkg status
+and requires all ten selected systemd packages to be configured at one identical
+original or candidate version before choosing that version's exact pair. A mixed
+or half-configured family is rejected. The original DB descriptor is retained
+through the command. Shared-kernel maintenance needs no new access to dpkg data,
+and a binary mismatch never falls back to the other phase's tool.
+
 The collect action retains bounded actual journal records for the fixed units,
 including trusted boot/PID/UID/unit/Invocation/cursor and monotonic fields.
 The journal reader is a separate zero-capability role. It does not reuse or

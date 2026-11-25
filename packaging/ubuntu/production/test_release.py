@@ -117,4 +117,49 @@ class Admission(unittest.TestCase):
         actual=release.bounded_process([sys.executable,"-c","print('original')"])
         self.assertEqual((actual["exit"],actual["stdout"]),(0,b"original\n"))
         with self.assertRaises(ChildProcessError):os.waitpid(-1,os.WNOHANG)
+    def systemd_status(self,version):
+        return ("\n\n".join("Package: "+name+"\nVersion: "+version+
+            "\nArchitecture: amd64\nStatus: install ok installed\nSource: systemd"
+            for name in sorted(release.SYSTEMD_FAMILY))+"\n").encode()
+    def test_systemd_tool_phase_is_selected_by_actual_kernel_context_and_complete_family(self):
+        old=self.systemd_status(release.SYSTEMD_ORIGINAL_VERSION)
+        new=self.systemd_status(release.SYSTEMD_CANDIDATE_VERSION)
+        self.assertEqual(release.systemd_phase(release.ORIGINAL_KERNEL,status=old),"original-cold")
+        self.assertEqual(release.systemd_phase(release.ORIGINAL_KERNEL,status=new),"candidate-cold")
+        self.assertEqual(release.cold_systemd_version(new+b"\nPackage: unrelated\nConffiles:\n"),
+                         release.SYSTEMD_CANDIDATE_VERSION)
+        self.assertEqual(release.systemd_phase(release.KERNEL,release.CONTEXT),"candidate-shared-runtime")
+        for kernel,context,status in (("other",None,new),(release.KERNEL,b"unconfined",None),
+                (release.KERNEL,release.CONTEXT,old),(release.ORIGINAL_KERNEL,release.CONTEXT,new),
+                (release.ORIGINAL_KERNEL,None,None)):
+            with self.subTest(kernel=kernel,context=context),self.assertRaises(release.Rejected):
+                release.systemd_phase(kernel,context,status)
+    def test_incomplete_mixed_or_unconfigured_systemd_family_cannot_choose_a_tool_pair(self):
+        valid=self.systemd_status(release.SYSTEMD_CANDIDATE_VERSION)
+        changes=(b"",valid.replace(release.SYSTEMD_CANDIDATE_VERSION.encode(),
+                    release.SYSTEMD_ORIGINAL_VERSION.encode(),1),
+                 valid.replace(b"install ok installed",b"install ok unpacked",1),
+                 valid.replace(b"Architecture: amd64",b"Architecture: arm64",1),
+                 valid.replace(b"Source: systemd",b"Source: other",1),
+                 valid.replace(b"Version: ",b"Version: 3rd-",1),
+                 valid+b"\n"+valid.split(b"\n\n")[0],valid.split(b"\n\n",1)[1])
+        for changed in changes:
+            with self.subTest(changed=changed[:120]),self.assertRaises(release.Rejected):
+                release.cold_systemd_version(changed)
+    def test_candidate_shared_phase_selects_only_candidate_pair_without_reading_package_database(self):
+        from unittest.mock import patch
+        kernel=type("Kernel",(),{"release":release.KERNEL})()
+        with patch.object(release.os,"uname",return_value=kernel),\
+             patch.object(release,"selinux_current",return_value=release.CONTEXT),\
+             patch.object(release.Path,"read_bytes",return_value=b"1\n"),\
+             patch.object(release,"held",side_effect=AssertionError("shared role must not read dpkg")):
+            for name in ("systemctl","journalctl"):
+                with release.fixed_tool(name) as pin:
+                    self.assertEqual(pin,release.SYSTEMD_CANDIDATE_TOOLS[name])
+                    self.assertNotEqual(pin,release.TOOLS[name])
+        with patch.object(release.os,"uname",return_value=kernel),\
+             patch.object(release,"selinux_current",return_value=release.CONTEXT),\
+             patch.object(release.Path,"read_bytes",return_value=b"0\n"):
+            with self.assertRaises(release.Rejected):
+                with release.fixed_tool("systemctl"):pass
 if __name__=="__main__":unittest.main()
