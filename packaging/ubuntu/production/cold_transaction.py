@@ -17,7 +17,7 @@ import sys
 import tarfile
 import time
 from release import (
-    Rejected, SCHEMA, COMMIT, KERNEL, KERNEL_SHA, need, exact, digest, canonical,
+    Rejected, SCHEMA, COMMIT, KERNEL, KERNEL_SHA, STORE, need, exact, digest, canonical,
     f9, safe_relative, safe_absolute, held, hash_fd, pin_shape, read_pin,
     json_bytes, read_json_file, file_pin, new_file, copy_pin, mkdir_new,
     bounded_process, host_manifest,
@@ -54,6 +54,58 @@ CORE_BLOCKERS=(
  "normal_selected_original_data_and_five_file_mac_publication",
  "actual_production_maintenance_and_original_ubuntu_return",
 )
+
+
+COLD_MODULES=("release.py","cold_publish.py","cold_transaction.py","cold_apply.py",
+              "native_bundle.py","systemd_bundle.py","native_release.py","cold_native.py")
+REQUIRED_HOST.update({"usr/lib/droidloom/production/current/"+name:0o444 for name in COLD_MODULES})
+
+def native_identity(inputs):
+    value=inputs["index"];descriptor=inputs["descriptor"]
+    return {"release_id":value["native_release_id"],"closure_sha256":value["closure_sha256"],
+            "archive_index_sha256":inputs["index_pin"]["sha256"],"archive":value["archive"],
+            "manifest":value["manifest"],
+            "package_roles":[{k:r[k] for k in ("role","name","source","old_version","new_version")}
+                             |{"old_package_sha256":r["old"]["package"]["sha256"],
+                               "new_package_sha256":r["new"]["package"]["sha256"]}
+                             for r in descriptor["package_roles"]]}
+
+def deployment_identity(source,packages,native=None):
+    value={"source":source,"packages":{role:{"bytes":packages[role]["bytes"],
+                                            "sha256":packages[role]["sha256"]}
+                                      for role in ("host","kernel","android")},"root_uuid":ROOT_UUID}
+    if native is not None:
+        value["native"]={"release_id":native["release_id"],
+                         "archive_index_sha256":native["archive_index_sha256"],
+                         "archive_sha256":native["archive"]["sha256"]}
+    return hashlib.sha256(canonical(value)).hexdigest()
+
+def bound_native_inputs(bundle,intent=None,*,root=False):
+    # This validates material identity only. The caller still needs the actual
+    # owned runtime and original-device private-account authority before dpkg.
+    import native_release
+    bundle=safe_absolute(str(bundle))
+    if intent is None:
+        intent,_=read_json_file(bundle/"COLD-INTENT.json",2*1024*1024,root,{0o444})
+    need(intent.get("schema")=="droidloom-cold-transaction-candidate-v2",
+         "cold operation requires a native-bound candidate")
+    inputs=native_release.archive_inputs(file_pin(bundle/native_release.ARCHIVE_INDEX),root)
+    native=native_identity(inputs)
+    need(intent.get("native_material")==native
+         and intent.get("native_material_target")==str(STORE/"native-releases"/native["release_id"])
+         and intent.get("native_before_public") is True,
+         "fixed normal native cold intent")
+    need(intent["component_identity"].get("native")==native,"same native component identity")
+    manifest,rows=host_manifest(file_pin(bundle/"host-manifest.json"))
+    source={"source_commit":manifest["commit"],"source_tree":manifest["tree"],
+            "host_file_count":len(rows),
+            "missing_required_maintenance":[p for p,mode in REQUIRED_HOST.items()
+                                            if p not in rows or rows[p]["mode"]!=mode]}
+    need(intent["component_identity"]["host"]==source,"same actual normal host source and cold modules")
+    packages={role:file_pin(bundle/(role+".deb")) for role in ("host","kernel","android")}
+    need(intent["deployment_id"]==deployment_identity(source,packages,native),
+         "public/native packages share the actual cold deployment identity")
+    return inputs
 
 def original_public(path):
     with held(path,root=True,maximum=512*1024*1024) as (fd,st):
@@ -219,8 +271,10 @@ def prepare(plan_path,output):
     need(os.geteuid()!=0,"release preparation runs as an ordinary build user")
     plan,planpin=read_json_file(plan_path,1024*1024)
     exact(plan,("schema","components","target_preflight"),"cold release plan")
-    need(plan["schema"]=="droidloom-cold-release-preparation-v1","cold release plan schema")
-    exact(plan["components"],("host","kernel","android"),"normal component roles")
+    need(plan["schema"] in ("droidloom-cold-release-preparation-v1","droidloom-cold-release-preparation-v2"),"cold release plan schema")
+    native_plan=plan["schema"].endswith("-v2")
+    exact(plan["components"],("host","kernel","android","native") if native_plan else
+          ("host","kernel","android"),"normal component roles")
     target=admit_target(pin_shape(plan["target_preflight"]))
     all_inputs={"target-preflight.json":plan["target_preflight"]}
     details={};controls={}
@@ -231,13 +285,19 @@ def prepare(plan_path,output):
     source=details["host"]
     need(COMMIT.fullmatch(source["source_commit"]) and COMMIT.fullmatch(source["source_tree"]),
          "normal host source objects")
-    deployment=hashlib.sha256(canonical({"source":source,"packages":{
-        k:{"bytes":all_inputs[k+".deb"]["bytes"],"sha256":all_inputs[k+".deb"]["sha256"]}
-        for k in ("host","kernel","android")},"root_uuid":ROOT_UUID})).hexdigest()
+    native_inputs=None;native=None
+    if native_plan:
+        import native_release
+        native_inputs=native_release.archive_inputs(pin_shape(plan["components"]["native"]))
+        native=native_identity(native_inputs);details["native"]=native
+        for name,key in ((native_release.ARCHIVE_INDEX,"index_pin"),
+                         (native_release.MANIFEST_NAME,"manifest_pin"),(native_release.ARCHIVE_NAME,"archive_pin")):
+            all_inputs[name]=native_inputs[key]
+    deployment=deployment_identity(source,{r:all_inputs[r+".deb"] for r in ("host","kernel","android")},native)
     grub=grub_candidate(deployment)
     blockers=list(CORE_BLOCKERS)
     if source["missing_required_maintenance"]:blockers.insert(0,"normal_host_missing_fixed_maintenance_payload")
-    intent={"schema":"droidloom-cold-transaction-candidate-v1","deployment_id":deployment,
+    intent={"schema":"droidloom-cold-transaction-candidate-v2" if native_plan else "droidloom-cold-transaction-candidate-v1","deployment_id":deployment,
         "root_uuid":ROOT_UUID,"original_kernel":ORIGINAL_KERNEL,"original_entry":ORIGINAL_ENTRY,
         "new_entry":grub["entry"],"kernel_release":KERNEL,"kernel_sha256":KERNEL_SHA,
         "component_control":controls,"component_identity":details,
@@ -254,7 +314,13 @@ def prepare(plan_path,output):
         "fresh_fixture_root_is_not_a_deployment_target":True,
         "accounts_passwords_ssh_and_original_android_data_are_not_payloads":True,
         "physical_install":False,"runtime_qualified":False}
+    if native is not None:
+        intent.update(native_material=native,native_material_target=str(STORE/"native-releases"/native["release_id"]),
+                      native_before_public=True)
     output=safe_absolute(str(output));mkdir_new(output)
+    native_check=None
+    if native_inputs is not None:
+        native_check=native_release.inspect_archive(native_inputs["index_pin"],output/"native-readback")
     bundle=output/"release";bundle.mkdir(mode=0o700)
     inventory=[]
     for name,pin in sorted(all_inputs.items()):
@@ -270,10 +336,11 @@ def prepare(plan_path,output):
     raw=canonical(release);release_id=hashlib.sha256(raw).hexdigest()
     new_file(bundle/"RELEASE.json",raw,0o444)
     verification=verify(bundle,release_id)
-    result={"schema":"droidloom-cold-release-prepared-v1","plan":planpin,"release":file_pin(bundle/"RELEASE.json"),
+    result={"schema":"droidloom-cold-release-prepared-v2" if native_plan else "droidloom-cold-release-prepared-v1","plan":planpin,"release":file_pin(bundle/"RELEASE.json"),
             "release_id":release_id,"deployment_id":deployment,"files":len(inventory),
             "verification":verification,"activation_blockers":blockers,
             "activation_supported":False,"system_modified":False,"runtime_qualified":False}
+    if native_check is not None:result["native_material_verification"]=native_check
     new_file(output/"RESULT.json",canonical(result));return result
 
 def verify(bundle,release_id):
@@ -293,7 +360,12 @@ def verify(bundle,release_id):
         with held(bundle/name,modes={0o444}) as (fd,st):
             need(st.st_size==row["bytes"] and hash_fd(fd)==digest(row["sha256"]),"candidate payload changed")
     need({p.name for p in bundle.iterdir()}==seen|{"RELEASE.json"},"unlisted release member")
-    return {"manifest":pin,"files_verified":len(seen),"qualified":False}
+    result={"manifest":pin,"files_verified":len(seen),"qualified":False}
+    intent,_=read_json_file(bundle/"COLD-INTENT.json",2*1024*1024,modes={0o444})
+    if intent.get("schema")=="droidloom-cold-transaction-candidate-v2":
+        native=bound_native_inputs(bundle,intent)
+        result["native_release_id"]=native["index"]["native_release_id"]
+    return result
 
 def activate(bundle,release_id):
     verify(bundle,release_id)

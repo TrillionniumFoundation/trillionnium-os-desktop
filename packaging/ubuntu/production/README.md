@@ -309,3 +309,18 @@ service change, boot selection, account operation, or runtime qualification.
 The same source-bound fifteen-package closure and original rollback archives
 remain mandatory after transport. This operation does not satisfy the owned
 runtime or original-device private-account acceptance gates.
+
+The v2 cold preparation plan has four pinned components: host, kernel, android,
+and native (the NATIVE-ARCHIVE.json file). It performs a separate full native
+archive materialization and normal package/source readback before publishing the
+flat immutable candidate. The candidate includes the three native transport
+files. Its deployment digest includes the native release ID, archive index and
+archive content hashes as well as the three public packages and original root
+UUID. The public RELEASE.json digest and deployment digest are distinct values.
+
+The native material destination is fixed to the same imported native ID under
+/var/lib/droidloom-maintenance/native-releases. Native installation precedes the
+public package phase. All eight source modules must be present in the actual
+normal host manifest; an older 46-file diagnostic host is recorded as missing
+those eight modules and remains an unqualified candidate. Preparing or verifying
+these materials still cannot grant runtime or private-account acceptance.
