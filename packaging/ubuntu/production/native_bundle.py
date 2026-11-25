@@ -24,15 +24,16 @@ MATERIALS_SHA="7bf3bfa35edecec628d482c24b086a03ad596efd0aa3b2f211e64332c15251d4"
 SCHEMA="droidloom-normal-native-package-release-v1"
 ROLES=("libselinux","libapparmor","libgdm","gir","gdm")
 NAMES={"libselinux":"libselinux1","libapparmor":"libapparmor1",
-       "libgdm":"libgdm1","gir":"gir1.2-gdm-1.0","gdm":"gdm3"}
+       "libgdm":"libgdm1","gir":"gir1.2-gdm-1.0","gdm":"gdm3","apparmor":"apparmor"}
 OLD={"libselinux":"3.9-4build1","libapparmor":"5.0.2-0ubuntu1~26.04.1",
-     "libgdm":"50.1-0ubuntu0.1","gir":"50.1-0ubuntu0.1","gdm":"50.1-0ubuntu0.1"}
+     "libgdm":"50.1-0ubuntu0.1","gir":"50.1-0ubuntu0.1","gdm":"50.1-0ubuntu0.1",
+     "apparmor":"5.0.2-0ubuntu1~26.04.1"}
 NEW={"libselinux":"3.9-4build1+p4lsmexec4",
      "libapparmor":"5.0.2-0ubuntu1~26.04.1+p4peer1",
      "libgdm":"50.1-0ubuntu0.1+p4fsuser3","gir":"50.1-0ubuntu0.1+p4fsuser3",
-     "gdm":"50.1-0ubuntu0.1+p4fsuser3"}
+     "gdm":"50.1-0ubuntu0.1+p4fsuser3","apparmor":"5.0.2-0ubuntu1~26.04.1+p4peer1"}
 PROJECTS={"libselinux":"libselinux","libapparmor":"apparmor",
-          "libgdm":"gdm3","gir":"gdm3","gdm":"gdm3"}
+          "libgdm":"gdm3","gir":"gdm3","gdm":"gdm3","apparmor":"apparmor"}
 MAX_MEMBER=16*1024*1024
 MAX_TAR=32*1024*1024
 CONTROL_FIELDS=("Package","Version","Architecture","Source")
@@ -120,7 +121,9 @@ def tar_rows(raw,permitted):
     return result,bodies
 
 def package_contents(pin,inventory,role,kind,root=False):
-    need(kind in ("old","new") and role in ROLES,"native package role")
+    # The old five-package materials remain byte-identical. The combined v3
+    # publisher separately admits the same normal source's apparmor package.
+    need(kind in ("old","new") and role in NAMES,"native package role")
     with held(pin["path"],root=root,maximum=16*1024*1024) as (fd,st):
         need((st.st_size,hash_fd(fd))==(pin["bytes"],pin["sha256"]),"native package bytes changed")
         controls=bounded_process(["/usr/bin/dpkg-deb","--ctrl-tarfile",f"/proc/self/fd/{fd}"],

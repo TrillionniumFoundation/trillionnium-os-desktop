@@ -210,3 +210,48 @@ This component deliberately contains no dpkg installation, physical relabel,
 service enable, GRUB update, one-shot boot selection, or reboot action.
 The transaction is reviewable preparation. Physical publication remains blocked
 by the actual acceptance gates and is not claimed complete by these build tests.
+
+## Complete normal native package publication
+
+The current combined native release is schema
+`droidloom-normal-native-package-release-v3`. It contains the same sixteen normal
+packages as the complete installed qualification root: ten systemd packages,
+libselinux1, apparmor, libapparmor1, gdm3, libgdm1 and gir1.2-gdm-1.0. The AppArmor
+parser package accompanies its library. Its exact original and candidate Debian
+archive digests are frozen in the source, and its candidate output is verified
+against the same normal AppArmor `.changes` and `.buildinfo` already admitted for
+libapparmor. Both complete payloads and every control member are read back.
+
+The two normal AppArmor postinst/postrm files each differ only in two generated
+`dh_apparmor` version comments. The verifier permits those exact full comment
+lines and requires every executable script byte, conffile declaration, config,
+trigger and template to remain identical. It does not rewrite either archive.
+
+~~~sh
+python3 packaging/ubuntu/production/native_release.py prepare \
+  --core /absolute/native-five --core-release-id NATIVE_FIVE_ID \
+  --systemd /absolute/systemd --systemd-release-id SYSTEMD_ID \
+  --apparmor-old /absolute/old-apparmor.deb \
+  --apparmor-new /absolute/new-apparmor.deb \
+  --output /absolute/fresh-native-sixteen
+~~~
+
+Historical five- and fifteen-package releases retain their original verification
+and rollback interpretation. New physical native application requires the full
+sixteen-package release. Package publication still grants no runtime or
+application acceptance.
+
+## Recovery of an interrupted native package transaction
+
+Rollback consumes the original protected attempt and snapshot, exact target root
+inode and native source closure. It does not require successful application
+acceptance or an already repaired dpkg database. The source admits the original
+Ubuntu kernel, initial user namespace and actual root/boot filesystem first.
+Under the original transaction and dpkg locks it then matches the installed
+`systemctl` ELF against exactly one old or new systemd package member from that
+same verified release. Only the fixed inactive graphical/Android owner checks
+may execute through this recovery path. The selected tool, boot and unit states
+are retained in the durable transaction journal before normal downgrade begins.
+Unknown binaries, a live owner, another root or another attempt are rejected.
+The shared-kernel maintenance command path and ordinary cold application keep
+their stricter complete-family admission.

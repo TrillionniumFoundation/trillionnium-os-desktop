@@ -18,10 +18,11 @@ import re
 import stat
 import time
 from release import (need,exact,digest,canonical,f9,safe_absolute,held,hash_fd,
-                     new_file,read_json_file,bounded_process,Rejected)
-from native_release import verify_bundle
+                     new_file,read_json_file,bounded_process,Rejected,_fixed_command)
+from native_release import verify_bundle,FULL_SCHEMA
 from systemd_bundle import configured_row
-from cold_apply import original_cold_authority,actual_acceptance_binding
+from cold_apply import (original_cold_authority,original_cold_context,COLD_OWNER_UNITS,
+                        actual_acceptance_binding)
 
 POLICY=b"#!/bin/sh\nexit 101\n"
 STATE_REL="var/lib/droidloom-maintenance/native-transactions"
@@ -70,7 +71,7 @@ class NativeTransaction:
         self.old={r:self.payloads[r]["old"]["control"]["Version"] for r in self.roles}
         self.new={r:self.payloads[r]["new"]["control"]["Version"] for r in self.roles}
         self.closure_sha256=self.index["closure_sha256"]
-        need(len(self.roles) in (5,15) and len(set(self.names.values()))==len(self.roles),
+        need(len(self.roles) in (5,15,16) and len(set(self.names.values()))==len(self.roles),
              "closed normal native package roles")
         self.state=self.ensure_state()
         self.lockfd=os.open(self.state/"transaction.lock",os.O_RDWR|os.O_CREAT|os.O_NOFOLLOW|os.O_CLOEXEC,0o600)
@@ -82,7 +83,8 @@ class NativeTransaction:
         fcntl.lockf(self.frontfd,fcntl.LOCK_EX|fcntl.LOCK_NB)
         self.attempt=None;self.snapshot=None;self.sequence=0
         if existing is not None:
-            need(isinstance(existing,str) and re.fullmatch(r"[0-9a-f]{64}-[0-9a-f]{16}",existing),"saved native attempt")
+            need(isinstance(existing,str) and re.fullmatch(re.escape(self.release_id)+r"-[0-9a-f]{16}",existing),
+                 "saved native attempt belongs to this exact release")
             self.attempt=self.state/existing
             ss=self.attempt.lstat()
             need(stat.S_ISDIR(ss.st_mode) and ss.st_uid==ss.st_gid==0 and stat.S_IMODE(ss.st_mode)==0o700,
@@ -457,12 +459,16 @@ class NativeTransaction:
 
     def apply(self):
         need(self.snapshot is not None,"native snapshot required")
+        if self.root==Path("/"):
+            need(len(self.roles)==16 and self.index.get("schema")==FULL_SCHEMA,
+                 "physical native apply requires the complete sixteen-package normal release")
         with self.service_guard():
             self.unpack("new");self.configure("new");n=self.verify_installed("new")
         self.event("normal-native-installed",members=n,runtime_qualified=False,physical_activation=False)
 
     def rollback(self):
         need(self.snapshot is not None,"original native snapshot required")
+        if self.root==Path("/"):self.cold_recovery_authority()
         current=self.query_all();selected=self.package_rows(current)
         need(all(row["version"] in (self.old[role],self.new[role]) for role,(_,row) in selected.items()),
              "foreign native package version blocks rollback")
@@ -472,14 +478,53 @@ class NativeTransaction:
             self.unpack("old");self.configure("old");n=self.verify_installed("old")
         self.event("normal-native-rolled-back",members=n,runtime_qualified=False)
 
-def physical_inputs(deployment_id,native_id):
+    def cold_recovery_authority(self):
+        # A failed normal unpack may leave dpkg intentionally incomplete. The
+        # original saved transaction, never an acceptance flag, admits recovery.
+        need(self.root==Path("/") and self.snapshot is not None and self.attempt is not None,
+             "recovery requires the original durable physical transaction")
+        authority=original_cold_context()
+        need(authority["root_identity"]==self.root_identity,"native recovery root changed")
+        if "systemd" not in self.roles:
+            # Historical five-package transactions did not change systemd.
+            original_cold_authority()
+            return
+        path="/usr/bin/systemctl"
+        with held(path,root=True,modes={0o755},maximum=16*1024*1024) as (fd,st):
+            observed=(st.st_size,hash_fd(fd))
+        matches=[]
+        for kind in ("old","new"):
+            row=self.payloads["systemd"][kind]["payload"]["usr/bin/systemctl"]
+            need(row["type"]=="0" and row["mode"]==0o755 and row["uid"]==row["gid"]==0,
+                 "normal recovery tool metadata differs")
+            if observed==(row["bytes"],row["sha256"]):matches.append(kind)
+        need(len(matches)==1,"recovery tool is not one exact saved normal package member")
+        states={}
+        for unit in COLD_OWNER_UNITS:
+            result=_fixed_command(path,observed[0],observed[1],
+                ["show","--value","--property=ActiveState",unit],
+                uid=None,seconds=30,maximum=65536,borrowed=())
+            state=result["stdout"].strip()
+            need(result["exit"]==0 and state in (b"inactive",b"failed"),
+                 "live graphical/Android owner blocks native recovery")
+            states[unit]=state.decode("ascii")
+        self.event("cold-recovery-authorized",authority=authority,unit_states=states,
+                   systemctl={"path":path,"bytes":observed[0],"sha256":observed[1],
+                              "package_kind":matches[0]},runtime_qualified=False)
+
+def physical_inputs(deployment_id,native_id,operation="apply"):
     digest(deployment_id);digest(native_id)
-    original_cold_authority()
-    authority=actual_acceptance_binding(deployment_id)
-    need(isinstance(authority,dict) and authority.get("native_release_id")==native_id
-         and authority.get("deployment_id")==deployment_id,"same owned runtime/private/native release authority")
+    need(operation in ("apply","rollback"),"fixed native cold operation")
+    if operation=="rollback":original_cold_context()
+    else:original_cold_authority()
     bundle=Path("/var/lib/droidloom-maintenance/releases")/deployment_id/"native"
-    verify_bundle(bundle,native_id,True)
+    index,_,packages,_=verify_bundle(bundle,native_id,True)
+    if operation=="apply":
+        need(index.get("schema")==FULL_SCHEMA and len(packages)==16,
+             "physical apply requires the same complete normal native family")
+        authority=actual_acceptance_binding(deployment_id)
+        need(isinstance(authority,dict) and authority.get("native_release_id")==native_id
+             and authority.get("deployment_id")==deployment_id,"same owned runtime/private/native release authority")
     return bundle
 
 def main():
@@ -488,8 +533,8 @@ def main():
     p.add_argument("deployment_id");p.add_argument("native_release_id")
     p.add_argument("--attempt")
     args=p.parse_args()
-    bundle=physical_inputs(args.deployment_id,args.native_release_id)
     need((args.operation=="rollback")==bool(args.attempt),"rollback needs original durable attempt")
+    bundle=physical_inputs(args.deployment_id,args.native_release_id,args.operation)
     with NativeTransaction(Path("/"),bundle,args.native_release_id,existing=args.attempt) as tx:
         if args.operation=="apply":tx.begin();tx.apply()
         else:tx.rollback()

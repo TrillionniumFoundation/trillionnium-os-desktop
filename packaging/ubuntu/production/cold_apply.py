@@ -37,6 +37,8 @@ MAX_FILES=7200
 MAX_BYTES=6*1024**3
 SYSTEM_DPKG="/usr/bin/dpkg"
 PUBLIC_ORDER=("kernel","android","host")
+COLD_OWNER_UNITS=("graphical.target","gdm.service","droidloom-production.service",
+                  "droidloom-instance-launcher.service","droidloom-instance-factory.service")
 
 def public_relative(relative):
     # Only the already-reviewed @ template and its own fixed ancestors.
@@ -85,7 +87,7 @@ def restore_xattrs(fd,values):
         if name not in decoded:os.removexattr(fd,name)
     for name,raw in decoded.items():os.setxattr(fd,name,raw)
 
-def original_cold_authority():
+def original_cold_context():
     need(os.getuid()==os.geteuid()==0,"cold public transaction requires original root")
     need(os.uname().release==ORIGINAL_KERNEL,"only original Ubuntu maintenance kernel")
     need(Path("/proc/self/uid_map").read_text().split()==["0","0","4294967295"],"initial user namespace")
@@ -93,14 +95,17 @@ def original_cold_authority():
     need((root.st_dev,root.st_ino)==(pid1.st_dev,pid1.st_ino),"original PID1 filesystem")
     a=mount_identity("/");b=mount_identity("/boot")
     need(a["source"]==b["source"] and a["uuid"]==ROOT_UUID,"fixed original root and boot")
-    # The public transaction is cold. It does not stop a session to obtain
-    # permission; the operator must first reach the admitted maintenance boot.
-    for unit in ("graphical.target","gdm.service","droidloom-production.service",
-                 "droidloom-instance-launcher.service","droidloom-instance-factory.service"):
-        r=fixed_command("systemctl",["show","--value","--property=ActiveState",unit],maximum=65536)
-        need(r["exit"]==0 and r["stdout"].strip() in (b"inactive",b"failed"),"live graphical/Android owner blocks cold transaction")
     return {"boot_id":Path("/proc/sys/kernel/random/boot_id").read_text().strip(),
             "root_identity":[root.st_dev,root.st_ino],"kernel":ORIGINAL_KERNEL}
+
+def original_cold_authority():
+    authority=original_cold_context()
+    # The public transaction is cold. It does not stop a session to obtain
+    # permission; the operator must first reach the admitted maintenance boot.
+    for unit in COLD_OWNER_UNITS:
+        r=fixed_command("systemctl",["show","--value","--property=ActiveState",unit],maximum=65536)
+        need(r["exit"]==0 and r["stdout"].strip() in (b"inactive",b"failed"),"live graphical/Android owner blocks cold transaction")
+    return authority
 
 def actual_acceptance_binding(release_id):
     digest(release_id)

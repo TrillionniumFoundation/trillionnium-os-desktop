@@ -10,6 +10,7 @@ import time
 import unittest
 spec=importlib.util.spec_from_file_location("release",Path(__file__).with_name("release.py"))
 release=importlib.util.module_from_spec(spec);spec.loader.exec_module(release)
+sys.modules.setdefault("release",release)
 class Admission(unittest.TestCase):
     def setUp(self):
         self.tmp=tempfile.TemporaryDirectory(prefix="droidloom-release-");self.root=Path(self.tmp.name)
@@ -162,4 +163,61 @@ class Admission(unittest.TestCase):
              patch.object(release.Path,"read_bytes",return_value=b"0\n"):
             with self.assertRaises(release.Rejected):
                 with release.fixed_tool("systemctl"):pass
+    def test_apparmor_source_comment_adjustment_cannot_hide_script_or_config_changes(self):
+        import native_release as native
+        before=("# Automatically added by dh_apparmor/"+native.core.OLD["apparmor"]+"\n").encode()
+        after=("# Automatically added by dh_apparmor/"+native.core.NEW["apparmor"]+"\n").encode()
+        body=before+b"echo original\n"+before
+        old={"postinst":body,"postrm":body,"conffiles":b"/etc/apparmor/parser.conf\n"}
+        new={**old,"postinst":body.replace(before,after),"postrm":body.replace(before,after)}
+        native.apparmor_scripts(old,new)
+        for changed in ({**new,"postinst":new["postinst"].replace(b"echo original",b"echo changed")},
+                        {**new,"postrm":new["postrm"]+after},
+                        {**new,"conffiles":b"/etc/other\n"}):
+            with self.assertRaises(release.Rejected):native.apparmor_scripts(old,changed)
+    def test_native_recovery_does_not_require_a_completed_application_or_package_phase(self):
+        import cold_native as native
+        from unittest.mock import patch
+        deployment="a"*64;component="b"*64
+        with patch.object(native,"original_cold_context") as context,\
+             patch.object(native,"original_cold_authority",side_effect=AssertionError("mixed dpkg is the recovery input")),\
+             patch.object(native,"actual_acceptance_binding",side_effect=AssertionError("recovery is not activation")),\
+             patch.object(native,"verify_bundle",return_value=({},None,{},None)):
+            self.assertEqual(native.physical_inputs(deployment,component,"rollback"),
+                Path("/var/lib/droidloom-maintenance/releases")/deployment/"native")
+            context.assert_called_once_with()
+        with patch.object(native,"original_cold_authority"),\
+             patch.object(native,"verify_bundle",return_value=({"schema":"old"},None,{str(i):{} for i in range(15)},None)),\
+             patch.object(native,"actual_acceptance_binding",side_effect=AssertionError("incomplete family")):
+            with self.assertRaises(release.Rejected):native.physical_inputs(deployment,component,"apply")
+    def test_native_recovery_reads_only_fixed_inactive_units_with_the_exact_saved_tool(self):
+        import cold_native as native
+        import contextlib
+        import hashlib
+        from unittest.mock import patch
+        path=self.file("systemctl",b"fixed normal candidate",0o755)
+        @contextlib.contextmanager
+        def opened(*args,**kwargs):
+            self.assertEqual(args[0],"/usr/bin/systemctl")
+            with path.open("rb") as handle:yield handle.fileno(),os.fstat(handle.fileno())
+        tx=object.__new__(native.NativeTransaction)
+        tx.root=Path("/");tx.snapshot={};tx.attempt=Path("/saved");tx.root_identity=[1,2]
+        tx.roles=("systemd",)
+        row={"type":"0","mode":0o755,"uid":0,"gid":0,"bytes":path.stat().st_size,
+             "sha256":hashlib.sha256(path.read_bytes()).hexdigest()}
+        tx.payloads={"systemd":{kind:{"payload":{"usr/bin/systemctl":{**row,"sha256":sha}}}
+            for kind,sha in (("old","0"*64),("new",row["sha256"]))}}
+        events=[];tx.event=lambda *args,**kwargs:events.append((args,kwargs))
+        with patch.object(native,"original_cold_context",return_value={"root_identity":[1,2]}),\
+             patch.object(native,"held",side_effect=opened),\
+             patch.object(native,"_fixed_command",return_value={"exit":0,"stdout":b"inactive\n"}) as command:
+            tx.cold_recovery_authority()
+            self.assertEqual(command.call_count,len(native.COLD_OWNER_UNITS))
+            for call,unit in zip(command.call_args_list,native.COLD_OWNER_UNITS):
+                self.assertEqual(call.args,("/usr/bin/systemctl",row["bytes"],row["sha256"],
+                    ["show","--value","--property=ActiveState",unit]))
+            self.assertEqual(events[0][1]["systemctl"]["package_kind"],"new")
+            command.return_value={"exit":0,"stdout":b"active\n"}
+            with self.assertRaises(release.Rejected):tx.cold_recovery_authority()
+            self.assertEqual(len(events),1)
 if __name__=="__main__":unittest.main()
