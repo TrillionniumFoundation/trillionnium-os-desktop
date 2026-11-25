@@ -55,15 +55,15 @@ pub struct PublicPackages {
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
-struct Member {
-    path: String,
-    package: String,
-    archive_sha256: String,
-    mode: u32,
-    uid: u32,
-    gid: u32,
-    bytes: u64,
-    content: Content,
+pub(super) struct Member {
+    pub(super) path: String,
+    pub(super) package: String,
+    pub(super) archive_sha256: String,
+    pub(super) mode: u32,
+    pub(super) uid: u32,
+    pub(super) gid: u32,
+    pub(super) bytes: u64,
+    pub(super) content: Content,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
@@ -99,9 +99,9 @@ struct Receipt {
     production_ready: bool,
 }
 
-struct Payload {
-    member: Member,
-    data: Vec<u8>,
+pub(super) struct Payload {
+    pub(super) member: Member,
+    pub(super) data: Vec<u8>,
 }
 
 fn relative_name(name: &str, directory: bool) -> Result<String> {
@@ -243,6 +243,38 @@ fn permitted(member: &Member) -> Result<()> {
 
 /// Parse the actual decompressed data member. Never delegate namespace extraction.
 fn parse_tar(tar: &[u8], package: &str, archive_sha: &str) -> Result<Vec<Payload>> {
+    parse_tar_with(tar, package, archive_sha, permitted)
+}
+
+/// Shared bounded parser; each caller retains its own admission policy.
+pub(super) fn parse_tar_with(
+    tar: &[u8],
+    package: &str,
+    archive_sha: &str,
+    validate: impl Fn(&Member) -> Result<()>,
+) -> Result<Vec<Payload>> {
+    parse_tar_impl(tar, package, archive_sha, false, validate)
+}
+
+/// Read-only systemd admission also needs GNU long path names. The original
+/// supplement parser retains its existing extension refusal above; neither
+/// profile admits PAX metadata, long link targets, sparse entries or devices.
+pub(super) fn parse_tar_with_long_names(
+    tar: &[u8],
+    package: &str,
+    archive_sha: &str,
+    validate: impl Fn(&Member) -> Result<()>,
+) -> Result<Vec<Payload>> {
+    parse_tar_impl(tar, package, archive_sha, true, validate)
+}
+
+fn parse_tar_impl(
+    tar: &[u8],
+    package: &str,
+    archive_sha: &str,
+    long_names: bool,
+    validate: impl Fn(&Member) -> Result<()>,
+) -> Result<Vec<Payload>> {
     ensure(
         tar.len() as u64 <= MAX_TAR && fs::valid_digest(archive_sha),
         "package tar outside bound",
@@ -250,6 +282,7 @@ fn parse_tar(tar: &[u8], package: &str, archive_sha: &str) -> Result<Vec<Payload
     let mut offset = 0usize;
     let mut seen = BTreeMap::<String, Member>::new();
     let mut out = Vec::new();
+    let mut pending_name: Option<String> = None;
     loop {
         let h = tar
             .get(offset..offset + 512)
@@ -257,7 +290,8 @@ fn parse_tar(tar: &[u8], package: &str, archive_sha: &str) -> Result<Vec<Payload
         offset += 512;
         if h.iter().all(|b| *b == 0) {
             ensure(
-                tar.len() >= offset + 512
+                pending_name.is_none()
+                    && tar.len() >= offset + 512
                     && tar.len() - offset <= 10752
                     && tar[offset..].iter().all(|b| *b == 0),
                 "package tar termination differs",
@@ -290,7 +324,7 @@ fn parse_tar(tar: &[u8], package: &str, archive_sha: &str) -> Result<Vec<Payload
         }
         let kind = h[156];
         ensure(
-            [0, b'0', b'1', b'2', b'5'].contains(&kind),
+            [0, b'0', b'1', b'2', b'5'].contains(&kind) || long_names && gnu && kind == b'L',
             "package extensions and special files refused",
         )?;
         let raw = crate::boot_host::text_field(&h[..100])?;
@@ -304,14 +338,13 @@ fn parse_tar(tar: &[u8], package: &str, archive_sha: &str) -> Result<Vec<Payload
         } else {
             format!("{prefix}/{raw}")
         };
-        let path = relative_name(&combined, kind == b'5')?;
         let size = usize::try_from(crate::boot_host::octal(&h[124..136])?)?;
         let mode = u32::try_from(crate::boot_host::octal(&h[100..108])?)?;
         let uid = u32::try_from(crate::boot_host::octal(&h[108..116])?)?;
         let gid = u32::try_from(crate::boot_host::octal(&h[116..124])?)?;
         let link = crate::boot_host::text_field(&h[157..257])?;
         ensure(
-            (kind == 0 || kind == b'0') || size == 0,
+            (kind == 0 || kind == b'0' || kind == b'L') || size == 0,
             "non-regular package member has payload",
         )?;
         ensure(
@@ -328,6 +361,37 @@ fn parse_tar(tar: &[u8], package: &str, archive_sha: &str) -> Result<Vec<Payload
             "package padding differs",
         )?;
         offset += padding;
+        if kind == b'L' {
+            ensure(
+                pending_name.is_none()
+                    && combined == "././@LongLink"
+                    && mode == 0o644
+                    && uid == 0
+                    && gid == 0
+                    && (102..=4097).contains(&body.len())
+                    && body.last() == Some(&0),
+                "GNU long-name declaration differs from the bounded normal format",
+            )?;
+            let name = &body[..body.len() - 1];
+            ensure(
+                name.iter().all(|b| b.is_ascii() && !b.is_ascii_control()),
+                "GNU long name contains non-ASCII or control bytes",
+            )?;
+            let name = std::str::from_utf8(name)?;
+            relative_name(name, false)?;
+            pending_name = Some(name.into());
+            continue;
+        }
+        let combined = if let Some(name) = pending_name.take() {
+            ensure(
+                gnu && raw.len() == 100 && name.as_bytes().starts_with(raw.as_bytes()),
+                "GNU long name does not bind its following ordinary member",
+            )?;
+            name
+        } else {
+            combined
+        };
+        let path = relative_name(&combined, kind == b'5')?;
         if path.is_empty() {
             ensure(
                 kind == b'5' && mode == 0o755 && uid == 0 && gid == 0,
@@ -398,7 +462,7 @@ fn parse_tar(tar: &[u8], package: &str, archive_sha: &str) -> Result<Vec<Payload
             bytes,
             content,
         };
-        permitted(&member)?;
+        validate(&member)?;
         ensure(
             seen.len() < 32768 && seen.insert(path, member.clone()).is_none(),
             "duplicate/excessive package member",
@@ -490,7 +554,7 @@ fn dependency_packages(audit: &Value) -> Result<BTreeSet<String>> {
     Ok(expected)
 }
 
-fn readback(tree: &fs::Tree, member: &Member) -> Result<()> {
+pub(super) fn readback(tree: &fs::Tree, member: &Member) -> Result<()> {
     let id = tree.identity(&member.path)?;
     ensure(
         id.mode & 0o7777 == member.mode
@@ -1058,6 +1122,39 @@ mod tests {
         let mut out = rows.concat();
         out.resize(out.len() + 1024, 0);
         out
+    }
+    #[test]
+    fn bounded_gnu_long_names_cannot_escape_rebind_or_change_the_supplement_profile() -> Result<()>
+    {
+        let name = format!("./usr/lib/systemd/{}", "x".repeat(100));
+        let body = format!("{name}\0");
+        let extension = record("././@LongLink", b'L', body.as_bytes(), 0o644, "");
+        let ordinary = record(&name[..100], b'0', b"normal bytes", 0o644, "");
+        let valid = tar(vec![extension.clone(), ordinary.clone()]);
+        assert!(parse_tar(&valid, "systemd", &"a".repeat(64)).is_err());
+        let parsed = parse_tar_with_long_names(&valid, "systemd", &"a".repeat(64), permitted)?;
+        assert_eq!(parsed.len(), 1);
+        assert_eq!(parsed[0].member.path, &name[1..]);
+        for bad in [
+            tar(vec![extension.clone()]),
+            tar(vec![extension.clone(), extension, ordinary]),
+            tar(vec![
+                record("././@LongLink", b'L', body.as_bytes(), 0o644, ""),
+                record("./usr/bin/different", b'0', b"bytes", 0o644, ""),
+            ]),
+            tar(vec![record(
+                "././@LongLink",
+                b'L',
+                format!("{name}/../escape\0").as_bytes(),
+                0o644,
+                "",
+            )]),
+        ] {
+            assert!(
+                parse_tar_with_long_names(&bad, "systemd", &"a".repeat(64), permitted).is_err()
+            );
+        }
+        Ok(())
     }
     fn base_manifest() -> Manifest {
         Manifest {

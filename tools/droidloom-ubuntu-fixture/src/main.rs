@@ -18,6 +18,7 @@ mod boot_query;
 mod boot_query_image;
 mod boot_release;
 mod boot_runtime;
+mod boot_systemd_candidate;
 mod boot_vm;
 mod capture;
 mod complete_native;
@@ -53,6 +54,12 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Command {
+    VerifySystemdCandidate {
+        #[arg(long)]
+        config: PathBuf,
+        #[arg(long)]
+        config_sha256: String,
+    },
     CollectBoot {
         #[arg(long)]
         config: PathBuf,
@@ -159,6 +166,10 @@ fn run() -> Result<()> {
         "real source capture/copy requires existing root rights; no privilege helper is installed",
     )?;
     match cli.command {
+        Command::VerifySystemdCandidate {
+            config,
+            config_sha256,
+        } => boot_systemd_candidate::run(&config, &config_sha256)?,
         Command::CollectBoot {
             config,
             config_sha256,
