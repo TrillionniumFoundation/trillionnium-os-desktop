@@ -855,7 +855,17 @@ fn readback_metadata(root: &Path, work: &Path, disk: &Path, paths: &[String]) ->
                 && (!(m.is_file() || m.file_type().is_symlink()) || size == m.len()),
             &format!("actual ext4 inode metadata differs for {path}"),
         )?;
-        rows.push(json!({"path":path,"type":kind,"mode":mode,"uid":uid,"gid":gid,"size":size}));
+        let public_links = if path.starts_with(&format!("{}/", crate::boot_public_apks::STAGE)) {
+            let raw = sections.get(&key).ok_or("public inode record missing")?;
+            let values: Vec<_> = raw.lines().filter(|line| line.starts_with("Links:"))
+                .filter_map(|line| line.split_whitespace().nth(1)).collect();
+            ensure(values == ["1"], "actual ext4 public material is not a singleton inode")?;
+            Some(1u64)
+        } else {
+            None
+        };
+        rows.push(json!({"path":path,"type":kind,"mode":mode,"uid":uid,"gid":gid,"size":size,
+            "public_material_links":public_links}));
     }
     Ok(json!({"command":result,"inodes":rows,"all_matched":true}))
 }
@@ -866,6 +876,7 @@ pub fn make_root_image(
     uuid: &str,
     gib: u64,
     labels: &Value,
+    public_apks: Option<&crate::boot_public_apks::Staged>,
 ) -> Result<FilePin> {
     ensure(
         (64..=96).contains(&gib),
@@ -968,6 +979,10 @@ pub fn make_root_image(
             .map(|(path, _)| (*path).into()),
     );
     crate::boot_gdm_proof::validate_labels(labels)?;
+    if let Some(staged) = public_apks {
+        crate::boot_public_apks::validate_labels(staged, labels)?;
+        selected.extend(crate::boot_public_apks::guest_paths(staged));
+    }
     let query_runtime = labels["fixed_query_inputs"]["runtime_manifest_sha256"].as_str();
     if let Some(runtime) = query_runtime {
         selected.extend(crate::boot_query::guest_paths(runtime)?);
@@ -1086,12 +1101,16 @@ pub fn make_root_image(
     let apparmor_readback = crate::boot_apparmor_candidate::verify_image(root, work, &disk)?;
     let gdm_readback = crate::boot_gdm_candidate::verify_image(root, work, &disk)?;
     let greeter_proof_readback = crate::boot_gdm_proof::verify_image(root, work, &disk)?;
+    let public_apk_readback = public_apks.map(|staged| {
+        crate::boot_public_apks::verify_image(root, work, &disk, staged)
+    }).transpose()?;
     let record = boot_files::pin_file(&disk)?;
     fs::write_json(
         &fs::absolute_string(&work.join("ROOT-IMAGE.json"))?,
         &json!({
         "image":record,"root_filesystem_uuid":uuid,"critical_label_paths":selected,
         "privilege_attributes_verified":attrs.len(),"inode_metadata_readback":metadata,
+        "public_apk_readback":public_apk_readback,
         "fixed_query_input_readback":query_readback,"apparmor_library_readback":apparmor_readback,"gdm_executable_readback":gdm_readback,"greeter_proof_readback":greeter_proof_readback,"guest_qualified":false}),
         0,
     )?;
@@ -1205,6 +1224,36 @@ mod tests {
         )?;
         let text = String::from_utf8(boot_files::read_pin(&device.log, 65536)?)?;
         assert_eq!(stat_fields(&text)?.0, "character");
+        Ok(())
+    }
+
+    #[test]
+    fn public_apk_ext4_inode_must_remain_a_singleton() -> Result<()> {
+        let temp = tempfile::tempdir()?;
+        let root = temp.path().join("root");
+        let guest = format!("{}/payload.apk", crate::boot_public_apks::STAGE);
+        let file = boot_files::guest_path(&root, &guest)?;
+        std::fs::create_dir_all(file.parent().unwrap())?;
+        std::fs::write(&file, b"PK\x03\x04original public bytes")?;
+        std::fs::set_permissions(&file, std::fs::Permissions::from_mode(0o400))?;
+        let disk = temp.path().join("test.ext4");
+        boot_files::new_file(&disk, 0o600)?.set_len(16 * 1024 * 1024)?;
+        boot_files::run_logged(temp.path(), "public-mkfs", "/usr/sbin/mke2fs",
+            &["-q".into(), "-F".into(), "-t".into(), "ext4".into(), "-d".into(),
+                root.to_string_lossy().into(), disk.to_string_lossy().into()], 30)?;
+        let positive = temp.path().join("positive");
+        boot_files::private_dir(&positive)?;
+        let actual = readback_metadata(&root, &positive, &disk, &[guest.clone()])?;
+        assert_eq!(actual["inodes"][0]["public_material_links"], 1);
+        // Mutate only this disposable test image, never a selected fixture.
+        boot_files::run_logged(temp.path(), "public-extra-link", "/usr/sbin/debugfs",
+            &["-w".into(), "-R".into(),
+                format!("set_inode_field {} links_count 2", debugfs_command_path(&guest)?),
+                disk.to_string_lossy().into()], 30)?;
+        let negative = temp.path().join("negative");
+        boot_files::private_dir(&negative)?;
+        assert!(readback_metadata(&root, &negative, &disk, &[guest]).unwrap_err()
+            .to_string().contains("singleton"));
         Ok(())
     }
 }

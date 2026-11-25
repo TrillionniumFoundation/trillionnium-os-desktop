@@ -484,6 +484,55 @@ independently. Failed private attempts and their original diagnostics remain
 available for diagnosis; the commands do not clean up the host or activate its
 production services.
 
+### Selected public APK material in a fresh normal guest
+
+The optional `prepare-boot` field `public_apks: FilePin` selects a
+`droidloom.public-apk-import.v1` object with three pinned inputs: `execution`
+(the original `p4-selected39-execution-v3`), `selection` (the current
+`p4-selected39-static-launch-inputs-v1`) and `source_receipt` (the complete
+SDK37 material/signature handoff). Each pin contains `path`, `bytes` and
+`sha256`. This field is accepted only for a normal guest with
+`android.persistent_data=null` and `android.calibrate=false`.
+
+The importer joins the complete 39-package roster and 65 original APKs across
+all three records. Versions, signer sets, original paths, SDK37 verification,
+one base plus the complete unique split set, per-session limits and the exact
+three exemptions must agree. The source paths are the explicitly selected
+public `.apk` files below `/home/alex/work`; no private Android data is read.
+The retained signature receipt is source evidence, not a new signature or
+runtime verification performed by this importer.
+
+After normal host/Android import and before `label_root`, every original APK
+is copied with held-descriptor identity checks, full hashing and independent
+destination readback. The create-only destination is
+`/var/lib/droidloom-public-apks/u1000/<sha256>.apk`. The normal public root
+remains root:root 0755; `u1000` is 1000:1000 0700 and all payloads are
+1000:1000 0400 with exactly one target hardlink. Existing public source
+hardlinks are preserved without edits; every source's complete F9, including
+its original link count, must agree before and after the whole copy and is
+retained in the receipt. Symlinks, privilege attributes, foreign owners,
+group/other writes, partial split sets and pre-existing destinations are
+rejected. A failed import stops preparation and leaves no successful boot
+receipt. It is not resumed or silently accepted as a partial selection.
+
+The same directory contains byte-identical `selected39-execution.json`,
+`selected39-source-selection.json` and `selected39-signature-receipt.json`.
+`PUBLIC-APKS-STAGED.json` records every source pin, destination and the existing
+`droidloomctl --json install`/`install-multiple` argument vectors, with original
+account signer blockers preserved. None of those commands runs during
+preparation. Before later installation, bind the owned Main/runtime epoch and
+inspect the current package; after any actual install, inspect the full
+installed version/APK set. Uncertain commits require inspection before retry.
+
+The normal label pass must produce exactly the public-root, UID directory and
+public-input SELinux types. Root-image generation reads back every payload's
+label, UID/GID, read-only mode and size through the existing ext4 checks, then
+dumps and hashes all 65 APKs and the three provenance files from the actual
+ext4 image. `ROOT-IMAGE.json.public_apk_readback` records those complete byte
+comparisons. Staging and image construction retain zero installed apps,
+`guest_qualified=false` and `production_ready=false`; the ordinary Android
+installation and application acceptance contracts remain required.
+
 ### Normal material smoke checks without a guest
 
 `verify-host-import` accepts schema `droidloom.normal-host-import-smoke.v1`,

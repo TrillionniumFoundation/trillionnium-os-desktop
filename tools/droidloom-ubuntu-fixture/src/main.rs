@@ -12,6 +12,7 @@ mod boot_host;
 mod boot_kernel;
 mod boot_native;
 mod boot_packages;
+mod boot_public_apks;
 mod boot_qemu;
 mod boot_query;
 mod boot_query_image;

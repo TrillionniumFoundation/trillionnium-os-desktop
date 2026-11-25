@@ -264,6 +264,8 @@ pub struct BootPlan {
     pub libapparmor_candidate: Option<crate::boot_apparmor_candidate::LibapparmorCandidate>,
     pub gdm_candidate: Option<crate::boot_gdm_candidate::GdmCandidate>,
     pub root_image_gib: u64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub public_apks: Option<FilePin>,
 }
 
 fn board_devices(root: &Path) -> Result<()> {
@@ -353,6 +355,11 @@ pub fn prepare_boot(config: &Path, expected: &str) -> Result<()> {
     ensure(
         plan.schema == "droidloom.full-ubuntu-boot-plan.v1",
         "unsupported full boot plan",
+    )?;
+    ensure(
+        plan.public_apks.is_none()
+            || (!plan.android.calibrate && plan.android.persistent_data.is_none()),
+        "public APK import requires a fresh normal guest without original userdata",
     )?;
     let native: serde_json::Value = serde_json::from_slice(&boot_files::read_pin(
         &plan.native_receipt,
@@ -488,6 +495,10 @@ pub fn prepare_boot(config: &Path, expected: &str) -> Result<()> {
         )?;
     }
     let android = crate::boot_release::install_android(&root, &boot, &plan.android)?;
+    let public_apks = plan.public_apks.as_ref().map(|input| {
+        crate::boot_public_apks::install(&root, &boot, input,
+            !plan.android.calibrate && plan.android.persistent_data.is_none())
+    }).transpose()?;
     // Qualification traces belong to the fresh guest user-manager environment.
     // Keep the exported production desktop unit unchanged and without drop-ins.
     // Calibration has no desktop qualification and leaves tracing disabled.
@@ -558,12 +569,13 @@ pub fn prepare_boot(config: &Path, expected: &str) -> Result<()> {
         .as_str()
         .ok_or("native root UUID absent")?;
     let disk =
-        crate::boot_runtime::make_root_image(&root, &boot, uuid, plan.root_image_gib, &labels)?;
+        crate::boot_runtime::make_root_image(&root, &boot, uuid, plan.root_image_gib, &labels, public_apks.as_ref())?;
     let result = serde_json::json!({"schema":"droidloom.full-ubuntu-boot-prepared.v1",
         "input_sha256":expected,"native_receipt":plan.native_receipt,"work_directory":work,
         "boot_directory":boot,"root_filesystem_uuid":uuid,"target_kernel_release":release,
         "kernel":boot_files::pin_file(&kernel)?,"initrd":initrd,"root_image":disk,
         "kernel_admission":kernel_report,"host_release":host,"android_release":android,
+        "public_apk_import":public_apks,
         "libselinux_candidate":candidate,
         "libapparmor_candidate":apparmor_candidate,
         "qualification_presenter_trace_environment":presenter_trace_environment,

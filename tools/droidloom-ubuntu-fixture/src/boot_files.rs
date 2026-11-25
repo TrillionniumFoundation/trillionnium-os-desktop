@@ -103,6 +103,11 @@ pub fn write_new(path: &Path, bytes: &[u8], mode: u32) -> Result<()> {
 
 /// Copy from one held no-follow descriptor; zero runs become holes only in a new file.
 pub fn copy_pin(pin: &FilePin, path: &Path, mode: u32) -> Result<()> {
+    copy_pin_with_identity(pin, path, mode).map(|_| ())
+}
+
+/// Return the unchanged identity of the held source descriptor actually copied.
+pub fn copy_pin_with_identity(pin: &FilePin, path: &Path, mode: u32) -> Result<crate::model::Identity> {
     let (mut input, before) = open_pin(pin)?;
     let mut output = new_file(path, mode)?;
     let mut hash = Sha256::new();
@@ -134,7 +139,8 @@ pub fn copy_pin(pin: &FilePin, path: &Path, mode: u32) -> Result<()> {
     ensure(
         fs::hash(&output)? == pin.sha256,
         "independent destination readback differs",
-    )
+    )?;
+    Ok(before)
 }
 
 pub fn pin_file(path: &Path) -> Result<FilePin> {
