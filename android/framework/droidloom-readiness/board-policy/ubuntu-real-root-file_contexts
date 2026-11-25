@@ -70,3 +70,15 @@
 
 # sd-event watches this symlink inode, with O_PATH|O_NOFOLLOW, not all public links.
 /etc/localtime -l u:object_r:p4_linux_timezone_link_t:s0
+
+# Distribution generator programs and their generated unit outputs are
+# separate immutable-code and mutable-data partitions.
+# The netplan generator is a distribution symlink to this exact executable.
+/usr/lib/systemd/(system|user)-(environment-)?generators -d u:object_r:p4_linux_generator_directory_t:s0
+/usr/lib/systemd/system-environment-generators/snapd-env-generator -- u:object_r:p4_linux_generator_exec_t:s0
+/usr/libexec/netplan/generate -- u:object_r:p4_linux_generator_exec_t:s0
+/run/systemd/generator(\.(early|late))?(/.*)? -d u:object_r:p4_linux_generator_run_t:s0
+/run/systemd/generator(\.(early|late))?(/.*)? -- u:object_r:p4_linux_generated_unit_t:s0
+/run/systemd/generator(\.(early|late))?(/.*)? -l u:object_r:p4_linux_generated_unit_t:s0
+/run/systemd/system -d u:object_r:p4_linux_systemd_run_t:s0
+/run/systemd/(show-status|systemd-units-load) -- u:object_r:p4_linux_manager_status_t:s0

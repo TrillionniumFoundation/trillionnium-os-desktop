@@ -79,6 +79,143 @@ def export_binary_policy(policy, binary, output):
     return {line.strip() for line in output.read_text().splitlines()}
 
 
+
+def verify_manager_startup(lines, check, obj, role_types):
+    """Read generator/status authority from the linked policy for every role."""
+    count = 0
+    for role, actor in role_types:
+        context = f"u:{role}:{actor}:s0"
+        owner = actor in ("init_t", "p4_linux_generator_t")
+        for permission in ("create", "write", "add_name", "remove_name", "setattr", "rename", "reparent", "rmdir"):
+            check(context, obj("p4_linux_generator_run_t"), "dir", [permission], owner)
+            count += 1
+        for cls in ("file", "lnk_file"):
+            for permission in ("create", "write", "setattr", "rename"):
+                check(context, obj("p4_linux_generated_unit_t"), cls, [permission],
+                      actor == "p4_linux_generator_t")
+                count += 1
+            check(context, obj("p4_linux_generated_unit_t"), cls, ["unlink"], owner)
+            count += 1
+        for permission in ("execute", "execute_no_trans", "entrypoint", "relabelto", "relabelfrom", "mounton"):
+            check(context, obj("p4_linux_generated_unit_t"), "file", [permission], False)
+            count += 1
+        for permission in ("create", "write", "setattr", "unlink"):
+            check(context, obj("p4_linux_manager_status_t"), "file", [permission], actor == "init_t")
+            count += 1
+        for permission in ("execute", "execute_no_trans", "entrypoint", "map", "relabelto", "relabelfrom", "mounton"):
+            check(context, obj("p4_linux_manager_status_t"), "file", [permission], False)
+            count += 1
+        for permission in ("write", "create", "add_name", "remove_name", "setattr", "rmdir"):
+            check(context, obj("p4_linux_generator_directory_t"), "dir", [permission], False)
+            count += 1
+    for actor in ("init_t", "p4_linux_generator_t"):
+        check(f"u:system_r:{actor}:s0", obj("p4_linux_generator_directory_t"),
+              "dir", ["getattr", "search", "open", "read"], True)
+        check(f"u:system_r:{actor}:s0", obj("p4_linux_rootdir_t"),
+              "dir", ["create", "write", "add_name"], False)
+    check("u:system_r:init_t:s0", obj("p4_linux_systemd_run_t"), "file", ["create", "write"], False)
+    check("u:system_r:init_t:s0", obj("p4_linux_generated_unit_t"), "file",
+          ["getattr", "open", "read", "map"], True)
+    check("u:system_r:p4_linux_generator_t:s0", obj("p4_linux_systemd_memfd_t"),
+          "file", ["getattr", "read", "write"], True)
+    check("u:system_r:p4_linux_generator_t:s0", obj("p4_linux_systemd_memfd_t"),
+          "file", ["open", "create", "map", "execute", "entrypoint"], False)
+    required = [
+        f'(typetransition init_t p4_linux_systemd_run_t dir "{leaf}" p4_linux_generator_run_t)'
+        for leaf in ("generator", "generator.early", "generator.late")
+    ]
+    required += [
+        f'(typetransition {actor} p4_linux_generator_run_t dir p4_linux_generator_run_t)'
+        for actor in ("init_t", "p4_linux_generator_t")
+    ]
+    required += [
+        f'(typetransition p4_linux_generator_t p4_linux_generator_run_t {cls} p4_linux_generated_unit_t)'
+        for cls in ("file", "lnk_file")
+    ]
+    required += [
+        f'(typetransition init_t p4_linux_systemd_run_t file "{leaf}" p4_linux_manager_status_t)'
+        for leaf in ("show-status", "systemd-units-load")
+    ]
+    missing = [line for line in required if line not in lines]
+    if missing:
+        raise ValueError("Linked policy lacks stock manager creation transitions: " + repr(missing))
+    return {"process_role_types": len(role_types), "role_permission_checks": count,
+            "fixed_and_nested_transitions": len(required), "capabilities_added": [],
+            "generic_root_and_systemd_regular_file_writes_denied": True,
+            "runtime_qualified": False}
+
+
+def verify_manager_file_contexts(here, work):
+    """Use libselinux's real class-aware matcher in the normal producer order."""
+    import stat
+    names = ("ubuntu-native-file_contexts", "ubuntu-real-root-file_contexts",
+             "linux-service-file_contexts", "linux-initial-calibration-file_contexts")
+    source = b"".join((here / name).read_bytes() for name in names)
+    path = work / "manager-file-contexts"
+    path.write_bytes(source)
+    class Option(ctypes.Structure):
+        _fields_ = [("type", ctypes.c_int), ("value", ctypes.c_char_p)]
+    lib = ctypes.CDLL("libselinux.so.1", use_errno=True)
+    lib.selabel_open.argtypes = [ctypes.c_uint, ctypes.POINTER(Option), ctypes.c_uint]
+    lib.selabel_open.restype = ctypes.c_void_p
+    lib.selabel_lookup_raw.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_char_p),
+                                      ctypes.c_char_p, ctypes.c_int]
+    lib.selabel_lookup_raw.restype = ctypes.c_int
+    lib.selabel_close.argtypes = [ctypes.c_void_p]
+    lib.freecon.argtypes = [ctypes.c_void_p]
+    handle = lib.selabel_open(0, ctypes.byref(Option(3, str(path).encode())), 1)
+    if not handle:
+        raise OSError(ctypes.get_errno(), "Cannot open actual manager file-context matcher")
+    cases = []
+    for root in ("generator", "generator.early", "generator.late"):
+        prefix = "/run/systemd/" + root
+        cases.extend([
+            (prefix, stat.S_IFDIR, "p4_linux_generator_run_t"),
+            (prefix + "/multi-user.target.wants", stat.S_IFDIR, "p4_linux_generator_run_t"),
+            (prefix + "/example.service", stat.S_IFREG, "p4_linux_generated_unit_t"),
+            (prefix + "/multi-user.target.wants/example.service", stat.S_IFLNK, "p4_linux_generated_unit_t"),
+        ])
+    cases.extend([
+        ("/run/systemd/generatorx", stat.S_IFDIR, "p4_linux_rootdir_t"),
+        ("/run/systemd/generator.early-extra", stat.S_IFDIR, "p4_linux_rootdir_t"),
+        ("/run/systemd/generatorx/example.service", stat.S_IFREG, "p4_linux_native_data_t"),
+        ("/run/systemd/system", stat.S_IFDIR, "p4_linux_systemd_run_t"),
+        ("/run/systemd/show-status", stat.S_IFREG, "p4_linux_manager_status_t"),
+        ("/run/systemd/systemd-units-load", stat.S_IFREG, "p4_linux_manager_status_t"),
+        ("/run/systemd/show-status-extra", stat.S_IFREG, "p4_linux_native_data_t"),
+        ("/run/systemd/journal", stat.S_IFDIR, "p4_linux_journal_runtime_t"),
+        ("/run/systemd/namespace-example", stat.S_IFDIR, "p4_linux_sandbox_dir_t"),
+        ("/run/systemd/inaccessible", stat.S_IFDIR, "p4_linux_inaccessible_t"),
+        ("/usr/lib/systemd/system-generators", stat.S_IFDIR, "p4_linux_generator_directory_t"),
+        ("/usr/lib/systemd/system-environment-generators", stat.S_IFDIR, "p4_linux_generator_directory_t"),
+        ("/usr/lib/systemd/system-environment-generators/snapd-env-generator", stat.S_IFREG, "p4_linux_generator_exec_t"),
+        ("/usr/lib/systemd/system-environment-generators/unselected-generator", stat.S_IFREG, "p4_linux_runtime_lib_t"),
+        ("/usr/libexec/netplan/generate", stat.S_IFREG, "p4_linux_generator_exec_t"),
+        ("/usr/libexec/netplan/unselected-helper", stat.S_IFREG, "p4_linux_native_bin_t"),
+    ])
+    actual = []
+    try:
+        for filename, mode, expected_type in cases:
+            value = ctypes.c_char_p()
+            if lib.selabel_lookup_raw(handle, ctypes.byref(value), filename.encode(), mode) != 0:
+                raise OSError(ctypes.get_errno(), "Actual manager file-context lookup failed: " + filename)
+            try:
+                context = value.value.decode()
+            finally:
+                lib.freecon(value)
+            expected = "u:object_r:" + expected_type + ":s0"
+            if context != expected:
+                raise ValueError(f"Wrong stock manager creation label for {filename}: {context} != {expected}")
+            actual.append([filename, mode, context])
+    finally:
+        lib.selabel_close(handle)
+    return {"actual_selabel_lookup_raw_checks": len(actual),
+            "normal_input_order": list(names),
+            "source_sha256": {name: sha256(here / name) for name in names},
+            "joined_sha256": hashlib.sha256(source).hexdigest(),
+            "case_matrix_sha256": hashlib.sha256(json.dumps(actual, separators=(",", ":")).encode()).hexdigest()}
+
+
 def verify_native_hardware(policy, lines, check, obj):
     """Read the complete linked hardware boundary, including every ioctl bit."""
     from functools import lru_cache
@@ -697,6 +834,7 @@ def verify_host_control(library, binary, export, original_contract):
     ])
     transitions.append("(typetransition p4_linux_udev_t droidloom_container_entry_exec_t process p4_linux_hardware_label_t)")
     hardware = verify_native_hardware(policy, lines, check, obj)
+    manager_startup = verify_manager_startup(lines, check, obj, role_types)
     # The exact timezone symlink retains the prior read-only public-link
     # contract, while only PID 1 may place its stock IN_DONT_FOLLOW watch.
     timezone_decisions = 0
@@ -723,6 +861,7 @@ def verify_host_control(library, binary, export, original_contract):
         raise ValueError("Linked binary lacks exact automatic transitions: " + repr(missing))
     return {
         "native_hardware": hardware,
+        "native_manager_startup": manager_startup,
         "timezone_link_decisions": timezone_decisions + 9,
         "binary_access_checks": len(checks),
         "public_module_role_types": len(role_types),
@@ -929,7 +1068,8 @@ def main():
                here / "derive_shared_payload_cgroup_policy.py",
                here / "verify_native_login_audit.py", here / "verify_native_journal_storage.py",
                here / "verify_greeter_home.py", here / "verify_native_maintenance.py",
-               here / "ubuntu-native-file_contexts"]
+               here / "ubuntu-native-file_contexts", here / "ubuntu-real-root-file_contexts",
+               here / "linux-service-file_contexts", here / "linux-initial-calibration-file_contexts"]
     if any(output.resolve() == path.resolve() for path in sources):
         raise ValueError("The output path is a policy input or build tool")
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -956,7 +1096,9 @@ def main():
             library, linked, work / "host-control-binary.cil", contract)
         greeter_home = verify_greeter_home(library, linked, work / "host-control-binary.cil", contract, here / "ubuntu-native-file_contexts")
         native_maintenance = verify_native_maintenance(library, linked, work / "maintenance-binary.cil", export_binary_policy)
+        manager_file_contexts = verify_manager_file_contexts(here, work)
         result = {
+            "native_manager_file_contexts": manager_file_contexts,
             "native_maintenance": native_maintenance,
             "native_maintenance_verifier": sha256(here / "verify_native_maintenance.py"),
             "native_journal_storage": journal_storage,

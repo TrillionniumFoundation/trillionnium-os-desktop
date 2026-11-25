@@ -15,3 +15,73 @@
 (neverallow init_t self (capability (dac_override dac_read_search sys_ptrace)))
 (neverallow init_t self (capability2 (mac_admin mac_override)))
 (neverallow init_t kernel (security (load_policy setenforce setbool setsecparam setcheckreqprot read_policy)))
+
+; Original systemd 259.9 manager_startup() runs its distribution generators
+; before loading units. mkdir_label() must select these separate output roots;
+; the immutable native root directory remains uncreatable and unwritable.
+(type p4_linux_generator_directory_t)
+(type p4_linux_generator_run_t)
+(type p4_linux_generated_unit_t)
+(type p4_linux_manager_status_t)
+(roletype object_r p4_linux_generator_directory_t)
+(roletype object_r p4_linux_generator_run_t)
+(roletype object_r p4_linux_generated_unit_t)
+(roletype object_r p4_linux_manager_status_t)
+(typeattributeset p4_linux_data (p4_linux_generator_directory_t p4_linux_generator_run_t p4_linux_generated_unit_t p4_linux_manager_status_t))
+(typeattribute p4_native_generator_directory_readers)
+(typeattributeset p4_native_generator_directory_readers (init_t p4_linux_native_processes))
+(allow p4_native_generator_directory_readers p4_linux_generator_directory_t (dir (getattr search open read)))
+(neverallow p4_linux_procs p4_linux_generator_directory_t (dir (write create add_name remove_name setattr rename reparent rmdir mounton relabelto relabelfrom)))
+
+; Only PID 1 creates the three fixed top-level output directories. Existing
+; generator entrypoint/domain transitions remain unchanged. The generator
+; domain writes units and links below these roots, never arbitrary /run files.
+(typeattribute p4_native_generator_directory_owners)
+(typeattributeset p4_native_generator_directory_owners (init_t p4_linux_generator_t))
+(typeattribute p4_native_without_generator_directory_owners)
+(typeattributeset p4_native_without_generator_directory_owners (and (p4_linux_procs) (not (p4_native_generator_directory_owners))))
+(typetransition init_t p4_linux_systemd_run_t dir "generator" p4_linux_generator_run_t)
+(typetransition init_t p4_linux_systemd_run_t dir "generator.early" p4_linux_generator_run_t)
+(typetransition init_t p4_linux_systemd_run_t dir "generator.late" p4_linux_generator_run_t)
+(typetransition p4_native_generator_directory_owners p4_linux_generator_run_t dir p4_linux_generator_run_t)
+(typetransition p4_linux_generator_t p4_linux_generator_run_t file p4_linux_generated_unit_t)
+(typetransition p4_linux_generator_t p4_linux_generator_run_t lnk_file p4_linux_generated_unit_t)
+(allow p4_linux_generator_run_t tmpfs (filesystem (associate)))
+(allow p4_linux_generated_unit_t tmpfs (filesystem (associate)))
+(allow p4_native_generator_directory_owners p4_linux_generator_run_t (dir (getattr search open read create write add_name remove_name setattr rename reparent rmdir)))
+(allow p4_linux_generator_t p4_linux_generated_unit_t (file (getattr open read create write append setattr rename unlink)))
+(allow p4_linux_generator_t p4_linux_generated_unit_t (lnk_file (getattr read create write setattr rename unlink)))
+; The manager parses the output and removes it on a normal reload. It does not
+; create or write generated units; that authority stays in the generator.
+(allow init_t p4_linux_generated_unit_t (file (getattr open read map ioctl unlink)))
+(allowx init_t p4_linux_generated_unit_t (ioctl file (0x542a)))
+(allow init_t p4_linux_generated_unit_t (lnk_file (getattr read unlink)))
+(neverallow p4_native_without_generator_directory_owners p4_linux_generator_run_t (dir (create write add_name remove_name setattr rename reparent rmdir)))
+(neverallow p4_native_without_generator_directory_owners p4_linux_generated_unit_t (file (create write append setattr rename unlink)))
+(neverallow p4_native_without_generator_directory_owners p4_linux_generated_unit_t (lnk_file (create write setattr rename unlink)))
+(neverallow init_t p4_linux_generated_unit_t (file (create write append setattr rename)))
+(neverallow init_t p4_linux_generated_unit_t (lnk_file (create write setattr rename)))
+(neverallow p4_linux_procs p4_linux_generator_run_t (dir (mounton relabelto relabelfrom)))
+(neverallow p4_linux_procs p4_linux_generated_unit_t (file (execute execute_no_trans entrypoint mounton relabelto relabelfrom)))
+(neverallow p4_linux_procs p4_linux_generated_unit_t (lnk_file (mounton relabelto relabelfrom)))
+(neverallow p4_android_userspace p4_linux_generator_run_t (dir (search open read create write add_name remove_name)))
+(neverallow p4_android_userspace p4_linux_generated_unit_t (file (open read create write append map)))
+(neverallow p4_android_userspace p4_linux_generated_unit_t (lnk_file (read create write)))
+
+; Stock manager status is two fixed non-executable marker inodes. This does
+; not permit creating a regular file with the systemd runtime-directory type.
+(typetransition init_t p4_linux_systemd_run_t file "show-status" p4_linux_manager_status_t)
+(typetransition init_t p4_linux_systemd_run_t file "systemd-units-load" p4_linux_manager_status_t)
+(allow p4_linux_manager_status_t tmpfs (filesystem (associate)))
+(allow init_t p4_linux_manager_status_t (file (getattr open read create write setattr unlink)))
+(neverallow p4_linux_not_pid1_manager p4_linux_manager_status_t (file (create write append setattr unlink rename link relabelto relabelfrom)))
+(neverallow p4_android_userspace p4_linux_manager_status_t (file (open read create write append setattr unlink)))
+(neverallow p4_linux_procs p4_linux_manager_status_t (file (execute execute_no_trans entrypoint map mounton relabelto relabelfrom)))
+
+; exec-util.c creates an O_RDWR serialization memfd, closes other descriptors
+; and hands only stdout to the environment generator. SELinux revalidates both
+; FD access bits at the generator exec. The existing sealed executor-state
+; memfds remain immutable under VFS seals; no pathname, map or reopen is given.
+(allow p4_linux_generator_t p4_linux_systemd_memfd_t (file (getattr read write)))
+(neverallow p4_linux_generator_t p4_linux_systemd_memfd_t (file (open create append setattr map execute execute_no_trans entrypoint mounton relabelto relabelfrom)))
+(neverallowx init_t p4_linux_generated_unit_t (ioctl file (not (0x542a))))
