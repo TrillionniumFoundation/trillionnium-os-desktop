@@ -255,3 +255,47 @@ are retained in the durable transaction journal before normal downgrade begins.
 Unknown binaries, a live owner, another root or another attempt are rejected.
 The shared-kernel maintenance command path and ordinary cold application keep
 their stricter complete-family admission.
+
+
+## Independent owned full-guest evidence
+
+The normal fixture tool's `verify-owned-guest` command binds one completed full
+native guest to its original preparation, run and collector inputs. The plan
+schema is `droidloom.owned-full-guest-evidence-plan.v1`, with `boot_plan`,
+`collect_plan` and `collected` FilePins, `expected_boot_phase` (`mac_calibration`
+or `android_runtime`), and a fresh `verification_name` of at most 48 ASCII
+letters, digits, underscores or hyphens. `collected` points to the actual
+`boot/RUN/COLLECTION/COLLECTED.json`; the two plan pins refer to the exact source
+bytes used by preparation and collection, including their original hashes.
+All inputs and their ancestors must remain root protected.
+
+~~~sh
+droidloom-ubuntu-fixture verify-owned-guest \
+  --config /var/lib/droidloom-qualification/INPUTS/OWNED-GUEST.json \
+  --config-sha256 SOURCE_PLAN_SHA256
+~~~
+
+Verification checks the complete installed-source manifest and all sixteen
+normally installed native packages, preserved package database, selected normal
+host, shared kernel, Android cohort and runtime, actual paused QEMU executable
+inode and unprivileged process fields, exact device/descriptor/network command
+line, ended independent disk, retained original image and ordinary guest exit.
+It then invokes the existing bounded collector on a fresh replay of that ended
+disk. The actual journal and PID 1 fields are read again; an asserted successful
+collector flag is not evidence. Original files remain unchanged. New evidence
+is confined to `boot/RUN/NAME` and `boot/RUN/NAME-journals`.
+
+The output `OWNED-GUEST-VERIFIED.json` proves only the owned normal guest
+mechanism. Calibration must occur before ordinary Android runtime and does not
+require application business acceptance. Calibration forbids original working
+data and public APK imports; ordinary runtime requires the exact five-file MAC
+input set. Neither mode authorizes physical publication, application acceptance,
+service activation or deletion of recovery inputs.
+
+The cold sequence remains ordered: normal source-bound public and sixteen-package
+native publication; original-host initramfs, file-contexts and recovery-entry
+readback for a controlled qualification boot; then independent original-data,
+complete selected-39 business/common gates and actual maintenance-to-Ubuntu
+return evidence before permanent activation. The owned guest record retains
+those separate outstanding authorities rather than folding them into a passed
+flag or making the first calibration depend on final application acceptance.

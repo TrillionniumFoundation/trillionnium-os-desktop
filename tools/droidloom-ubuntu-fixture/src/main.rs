@@ -13,6 +13,7 @@ mod boot_host;
 mod boot_kernel;
 mod boot_native;
 mod boot_native_candidates;
+mod boot_owned_evidence;
 mod boot_packages;
 mod boot_public_apks;
 mod boot_qemu;
@@ -57,6 +58,12 @@ struct Cli {
 #[derive(Subcommand)]
 enum Command {
     VerifyNativeCandidates {
+        #[arg(long)]
+        config: PathBuf,
+        #[arg(long)]
+        config_sha256: String,
+    },
+    VerifyOwnedGuest {
         #[arg(long)]
         config: PathBuf,
         #[arg(long)]
@@ -184,6 +191,10 @@ fn run() -> Result<()> {
             config,
             config_sha256,
         } => boot_native_candidates::run(&config, &config_sha256)?,
+        Command::VerifyOwnedGuest {
+            config,
+            config_sha256,
+        } => boot_owned_evidence::run(&config, &config_sha256)?,
         Command::VerifySystemdCandidate {
             config,
             config_sha256,

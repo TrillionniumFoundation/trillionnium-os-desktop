@@ -849,7 +849,7 @@ fn collect(
     )
 }
 
-pub fn run(path: &Path, expected: &str) -> Result<()> {
+fn collect_impl(path: &Path, expected: &str, report: bool) -> Result<FilePin> {
     let plan: CollectPlan = fs::read_json(&fs::absolute_string(path)?, expected)?;
     ensure(
         plan.schema == "droidloom.full-ubuntu-boot-collect-plan.v1"
@@ -993,15 +993,27 @@ pub fn run(path: &Path, expected: &str) -> Result<()> {
         "guest_qualified":false,"production_ready":false});
     let receipt = work.join("COLLECTED.json");
     let sha = fs::write_json(&fs::absolute_string(&receipt)?, &output, 0)?;
-    println!(
-        "{}",
-        json!({"receipt":receipt,"sha256":sha,"status":status,
-        "guest_qualified":false,"production_ready":false})
-    );
+    if report {
+        println!(
+            "{}",
+            json!({"receipt":receipt,"sha256":sha,"status":status,
+            "guest_qualified":false,"production_ready":false})
+        );
+    }
     source_check?;
     native_check?;
     result?;
-    Ok(())
+    let pin = boot_files::pin_file(&receipt)?;
+    ensure(pin.sha256 == sha, "collected receipt changed before return")?;
+    Ok(pin)
+}
+
+pub(super) fn collect_to_receipt(path: &Path, expected: &str) -> Result<FilePin> {
+    collect_impl(path, expected, false)
+}
+
+pub fn run(path: &Path, expected: &str) -> Result<()> {
+    collect_impl(path, expected, true).map(|_| ())
 }
 
 #[cfg(test)]

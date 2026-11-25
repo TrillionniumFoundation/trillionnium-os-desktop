@@ -146,6 +146,28 @@ fn cpu_budget_allowed(cpus: usize, available: usize) -> bool {
             .is_some_and(|required| required <= available)
 }
 
+pub(super) fn kernel_command_line(uuid: &str, calibration: bool) -> Result<String> {
+    ensure(
+        uuid.len() == 36
+            && uuid.bytes().enumerate().all(|(i, b)| {
+                if [8, 13, 18, 23].contains(&i) {
+                    b == b'-'
+                } else {
+                    b.is_ascii_hexdigit()
+                }
+            }),
+        "invalid root UUID",
+    )?;
+    let (unit, manager_log_level) = if calibration {
+        ("droidloom-calibration-qualification.target", "debug")
+    } else {
+        ("graphical.target", "info")
+    };
+    Ok(format!(
+        "console=ttyS0,115200 root=UUID={uuid} rootfstype=ext4 rw rootwait loglevel=7 enforcing=1 audit_backlog_limit=32768 sysctl.kernel.printk_ratelimit=0 lsm=lockdown,capability,landlock,yama,selinux,apparmor,bpf,ima,evm audit=1 init=/usr/lib/droidloom/production/current/droidloom-board-init systemd.unit={unit} systemd.log_target=journal-or-kmsg systemd.show_status=1 systemd.log_level={manager_log_level}"
+    ))
+}
+
 pub fn run(config: &Path, expected: &str) -> Result<()> {
     let plan: RunPlan = fs::read_json(&fs::absolute_string(config)?, expected)?;
     ensure(
@@ -236,21 +258,10 @@ pub fn run(config: &Path, expected: &str) -> Result<()> {
     // Original PID 1 emits successful process-exit records only at DEBUG.
     // Calibration collection requires those trusted fields; ordinary Android
     // acceptance uses its native live lifecycle and keeps the normal log level.
-    let (unit, manager_log_level) = if prepared["calibration_requested"] == true {
-        ("droidloom-calibration-qualification.target", "debug")
-    } else {
-        ("graphical.target", "info")
-    };
     let uuid = prepared["root_filesystem_uuid"]
         .as_str()
         .ok_or("root UUID missing")?;
-    ensure(
-        uuid.len() == 36 && uuid.bytes().all(|b| b.is_ascii_hexdigit() || b == b'-'),
-        "invalid root UUID",
-    )?;
-    let cmdline = format!(
-        "console=ttyS0,115200 root=UUID={uuid} rootfstype=ext4 rw rootwait loglevel=7 enforcing=1 audit_backlog_limit=32768 sysctl.kernel.printk_ratelimit=0 lsm=lockdown,capability,landlock,yama,selinux,apparmor,bpf,ima,evm audit=1 init=/usr/lib/droidloom/production/current/droidloom-board-init systemd.unit={unit} systemd.log_target=journal-or-kmsg systemd.show_status=1 systemd.log_level={manager_log_level}"
-    );
+    let cmdline = kernel_command_line(uuid, prepared["calibration_requested"] == true)?;
     let mut args = launch.fixed_args();
     args.extend(vec![
         "-S".into(),
