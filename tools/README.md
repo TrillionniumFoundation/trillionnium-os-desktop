@@ -517,6 +517,29 @@ receipt. It is not resumed or silently accepted as a partial selection.
 
 The same directory contains byte-identical `selected39-execution.json`,
 `selected39-source-selection.json` and `selected39-signature-receipt.json`.
+The import object may also include `gate_registry`, a `FilePin` for the complete
+original `pocket4-app-release-gates-v1` contract including its Firefox extension:
+27,878 bytes, SHA-256
+`0b21f963898308b082f3808dd48165c1397badd1fa8a753c3a766e135b3cb3c8`.
+When present, the typed registry must retain all 46 original package entries,
+all six common gates, every profile and the full selected-39 coverage. A changed
+or weaker contract is rejected. Its original bytes become
+`/var/lib/droidloom-public-apks/u1000/app-release-gates.json` through exactly the
+same create-only copy, identity, ownership, label and readback checks. The
+complete imported set is then 69 files; the original three-input form remains
+exactly 68 files.
+
+With that registry, `PUBLIC-APKS-STAGED.json.runtime_preparation_inputs` exposes
+the actual guest `selection`, `source_receipt` and `gate_registry` pins and every
+selected application's required gate IDs. These are only static prerequisites.
+It contains no `main_qualification`, `expected_epoch` or preparation intent.
+After the owned Android runtime exists, the ordinary UID-1000 user session can
+create new flat, pinned evidence/intent files in the same public input directory;
+the installed public client has read-only access under the existing policy.
+Bind the actual Main evidence, daemon-observed physical epoch and selected
+specification before `droidloom-applications --prepare-runtime-plan`. The later
+live evidence is not part of the initial image's 68/69-file import receipt.
+
 `PUBLIC-APKS-STAGED.json` records every source pin, destination and the existing
 `droidloomctl --json install`/`install-multiple` argument vectors, with original
 account signer blockers preserved. None of those commands runs during
@@ -527,9 +550,9 @@ installed version/APK set. Uncertain commits require inspection before retry.
 The normal label pass must produce exactly the public-root, UID directory and
 public-input SELinux types. Root-image generation reads back every payload's
 label, UID/GID, read-only mode and size through the existing ext4 checks, then
-dumps and hashes all 65 APKs and the three provenance files from the actual
-ext4 image. `ROOT-IMAGE.json.public_apk_readback` records those complete byte
-comparisons. Staging and image construction retain zero installed apps,
+dumps and hashes all 65 APKs and the three or four declared provenance files
+from the actual ext4 image. `ROOT-IMAGE.json.public_apk_readback` records those
+complete byte comparisons. Staging and image construction retain zero installed apps,
 `guest_qualified=false` and `production_ready=false`; the ordinary Android
 installation and application acceptance contracts remain required.
 

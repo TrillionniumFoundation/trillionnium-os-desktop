@@ -22,6 +22,9 @@ pub const STAGE: &str = "/var/lib/droidloom-public-apks/u1000";
 const PACKAGES: usize = 39;
 const APKS: usize = 65;
 const MAX_APP_BYTES: u64 = 2 * 1024 * 1024 * 1024;
+const REGISTRY_NAME: &str = "app-release-gates.json";
+const REGISTRY_BYTES: u64 = 27_878;
+const REGISTRY_SHA256: &str = "0b21f963898308b082f3808dd48165c1397badd1fa8a753c3a766e135b3cb3c8";
 
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -30,6 +33,9 @@ struct ImportPlan {
     execution: FilePin,
     selection: FilePin,
     source_receipt: FilePin,
+    /// Optional original complete contract; never an alternative weaker gate set.
+    #[serde(default)]
+    gate_registry: Option<FilePin>,
 }
 
 #[derive(Clone, Debug, Serialize)]
@@ -43,6 +49,40 @@ pub struct Material {
     pub split: Option<String>,
 }
 
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct GateProfile {
+    checks: BTreeMap<String, String>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct PackageProfile {
+    app: String,
+    kind: String,
+    profile: String,
+    prerequisites: Vec<String>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct GateRegistry {
+    schema: String,
+    common_gates: BTreeMap<String, String>,
+    profiles: BTreeMap<String, GateProfile>,
+    packages: BTreeMap<String, PackageProfile>,
+}
+
+/// Only static source inputs. Main, expected_epoch and a preparation intent must
+/// be produced later from the actual owned Android run; none is synthesized.
+#[derive(Debug, Serialize)]
+pub struct PreparationInputs {
+    pub selection: FilePin,
+    pub source_receipt: FilePin,
+    pub gate_registry: FilePin,
+    pub required_gates: BTreeMap<String, Vec<String>>,
+}
+
 #[derive(Debug, Serialize)]
 pub struct Staged {
     pub schema: &'static str,
@@ -51,6 +91,8 @@ pub struct Staged {
     pub applications: Vec<Value>,
     pub package_count: usize,
     pub apk_file_count: usize,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub runtime_preparation_inputs: Option<PreparationInputs>,
     pub original_userdata_imported: bool,
     pub applications_installed: usize,
     pub application_business_accepted: bool,
@@ -351,6 +393,104 @@ fn validate(
     Ok((files, applications))
 }
 
+fn registry_coverage(
+    registry: &GateRegistry,
+    applications: &[Value],
+) -> Result<BTreeMap<String, Vec<String>>> {
+    let common = BTreeSet::from([
+        "identity",
+        "lifecycle",
+        "stability",
+        "data_permissions",
+        "release_scope",
+        "ui_observation",
+    ]);
+    ensure(
+        registry.schema == "pocket4-app-release-gates-v1"
+            && registry.packages.len() == 46
+            && registry
+                .common_gates
+                .keys()
+                .map(String::as_str)
+                .collect::<BTreeSet<_>>()
+                == common
+            && registry.common_gates.values().all(|v| !v.trim().is_empty())
+            && !registry.profiles.is_empty(),
+        "original complete application gate registry schema or common contracts differ",
+    )?;
+    for (profile, body) in &registry.profiles {
+        ensure(
+            !body.checks.is_empty()
+                && body.checks.iter().all(|(id, text)| {
+                    id.starts_with(&format!("{profile}.")) && !text.trim().is_empty()
+                }),
+            "application profile has an empty or mismatched business contract",
+        )?;
+    }
+    for profile in registry.packages.values() {
+        ensure(
+            !profile.app.trim().is_empty()
+                && !profile.kind.trim().is_empty()
+                && profile.prerequisites.iter().all(|v| !v.trim().is_empty())
+                && registry.profiles.contains_key(&profile.profile),
+            "application registry profile or prerequisites are incomplete",
+        )?;
+    }
+    let mut required = BTreeMap::new();
+    for app in applications {
+        let package = string(app, "package")?;
+        let profile = registry.packages.get(package).ok_or_else(|| {
+            format!("selected application has no original gate contract: {package}")
+        })?;
+        let gates = registry
+            .common_gates
+            .keys()
+            .chain(registry.profiles[&profile.profile].checks.keys())
+            .cloned()
+            .collect();
+        ensure(
+            required.insert(package.to_owned(), gates).is_none(),
+            "repeated selected application in registry coverage",
+        )?;
+    }
+    ensure(
+        required.len() == PACKAGES,
+        "gate registry does not cover the complete selected 39",
+    )?;
+    Ok(required)
+}
+
+fn guest_pin(source: &FilePin, name: &str) -> FilePin {
+    FilePin {
+        path: format!("{STAGE}/{name}").into(),
+        bytes: source.bytes,
+        sha256: source.sha256.clone(),
+    }
+}
+
+fn preparation_inputs(
+    plan: &ImportPlan,
+    applications: &[Value],
+) -> Result<Option<PreparationInputs>> {
+    let Some(input) = &plan.gate_registry else {
+        return Ok(None);
+    };
+    // Keep every original description and prerequisite byte-identical. A
+    // structurally valid but reduced registry cannot replace this contract.
+    ensure(
+        input.bytes == REGISTRY_BYTES && input.sha256 == REGISTRY_SHA256,
+        "gate registry must be the complete original canonical contract",
+    )?;
+    let raw = boot_files::read_pin(input, REGISTRY_BYTES)?;
+    let registry: GateRegistry = serde_json::from_slice(&raw)?;
+    Ok(Some(PreparationInputs {
+        selection: guest_pin(&plan.selection, "selected39-source-selection.json"),
+        source_receipt: guest_pin(&plan.source_receipt, "selected39-signature-receipt.json"),
+        gate_registry: guest_pin(input, REGISTRY_NAME),
+        required_gates: registry_coverage(&registry, applications)?,
+    }))
+}
+
 pub fn admit(input: &FilePin, fresh_normal: bool) -> Result<(Staged, Vec<(FilePin, String)>)> {
     ensure(
         fresh_normal,
@@ -366,7 +506,8 @@ pub fn admit(input: &FilePin, fresh_normal: bool) -> Result<(Staged, Vec<(FilePi
         &serde_json::from_slice(&selection)?,
         &serde_json::from_slice(&source_receipt)?,
     )?;
-    let provenance = vec![
+    let runtime_preparation_inputs = preparation_inputs(&plan, &applications)?;
+    let mut provenance = vec![
         (plan.execution, format!("{STAGE}/selected39-execution.json")),
         (
             plan.selection,
@@ -377,6 +518,9 @@ pub fn admit(input: &FilePin, fresh_normal: bool) -> Result<(Staged, Vec<(FilePi
             format!("{STAGE}/selected39-signature-receipt.json"),
         ),
     ];
+    if let Some(registry) = plan.gate_registry {
+        provenance.push((registry, format!("{STAGE}/{REGISTRY_NAME}")));
+    }
     Ok((
         Staged {
             schema: "droidloom.public-apks-staged.v1",
@@ -385,6 +529,7 @@ pub fn admit(input: &FilePin, fresh_normal: bool) -> Result<(Staged, Vec<(FilePi
             applications,
             package_count: PACKAGES,
             apk_file_count: APKS,
+            runtime_preparation_inputs,
             original_userdata_imported: false,
             applications_installed: 0,
             application_business_accepted: false,
@@ -515,7 +660,52 @@ pub fn guest_paths(staged: &Staged) -> Vec<String> {
         .collect()
 }
 
+fn provenance_count(files: &[Material]) -> Result<usize> {
+    let mut paths = BTreeSet::new();
+    let mut provenance = BTreeSet::new();
+    for item in files {
+        let name = item
+            .guest_path
+            .strip_prefix(&format!("{STAGE}/"))
+            .ok_or("public material lies outside the fixed UID directory")?;
+        ensure(
+            !name.is_empty() && !name.contains('/') && paths.insert(&item.guest_path),
+            "public material path is nested, empty or repeated",
+        )?;
+        if item.package.is_none() {
+            ensure(
+                item.split.is_none(),
+                "public provenance cannot be an APK split",
+            )?;
+            provenance.insert(name);
+        } else {
+            ensure(
+                name.strip_suffix(".apk").is_some_and(fs::valid_digest),
+                "public APK destination is not its fixed digest filename",
+            )?;
+        }
+    }
+    let mut expected = BTreeSet::from([
+        "selected39-execution.json",
+        "selected39-source-selection.json",
+        "selected39-signature-receipt.json",
+    ]);
+    if provenance.contains(REGISTRY_NAME) {
+        expected.insert(REGISTRY_NAME);
+    }
+    ensure(
+        provenance == expected && files.len() == APKS + expected.len(),
+        "public material set must be exactly 65 APKs and the three or four declared JSON inputs",
+    )?;
+    Ok(expected.len())
+}
+
 fn verify_tree(root: &Path, staged: &Staged) -> Result<()> {
+    let provenance = provenance_count(&staged.files)?;
+    ensure(
+        (provenance == 4) == staged.runtime_preparation_inputs.is_some(),
+        "staged runtime preparation inputs differ from the actual registry material",
+    )?;
     let stage = boot_files::guest_path(root, STAGE)?;
     let directory = fs::Tree::open(&fs::absolute_string(&stage)?, 1000)?;
     let id = fs::stat(&directory.root)?;
@@ -529,7 +719,7 @@ fn verify_tree(root: &Path, staged: &Staged) -> Result<()> {
         .map(|f| f.guest_path.rsplit('/').next().unwrap().to_owned())
         .collect();
     ensure(
-        expected.len() == APKS + 3 && list(&directory.root)? == expected,
+        expected.len() == APKS + provenance && list(&directory.root)? == expected,
         "public material directory is incomplete or has extra entries",
     )?;
     for item in &staged.files {
@@ -595,10 +785,7 @@ pub fn verify_image(root: &Path, work: &Path, disk: &Path, staged: &Staged) -> R
 }
 
 fn readback_bodies(work: &Path, disk: &Path, files: &[Material]) -> Result<Value> {
-    ensure(
-        files.len() == APKS + 3,
-        "ext4 public material set is incomplete",
-    )?;
+    let provenance = provenance_count(files)?;
     let output = work.join("public-apk-readback");
     boot_files::private_dir(&output)?;
     let disk_before = std::fs::symlink_metadata(disk)?;
@@ -642,7 +829,8 @@ fn readback_bodies(work: &Path, disk: &Path, files: &[Material]) -> Result<Value
     )?;
     Ok(
         json!({"schema":"droidloom.public-apks-ext4-readback.v1","files":rows,
-        "package_count":PACKAGES,"apk_file_count":APKS,"provenance_file_count":3,
+        "package_count":PACKAGES,"apk_file_count":APKS,"provenance_file_count":provenance,
+        "gate_registry_imported":provenance == 4,
         "all_original_bytes_matched":true,"readonly_ext4_reader":true,
         "applications_installed":0,"application_business_accepted":false,
         "guest_qualified":false,"production_ready":false}),

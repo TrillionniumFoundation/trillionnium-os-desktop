@@ -1,6 +1,56 @@
 use super::*;
 use std::os::unix::fs::PermissionsExt;
 
+const CANONICAL_REGISTRY: &[u8] = include_bytes!("../tests/fixtures/app-release-gates.json");
+const SELECTED: [&str; PACKAGES] = [
+    "com.Hyatt.hyt",
+    "com.MobileTicket",
+    "com.amazon.mShop.android.shopping",
+    "com.android.calendar",
+    "com.android.camera2",
+    "com.android.contacts",
+    "com.android.deskclock",
+    "com.android.dialer",
+    "com.android.documentsui",
+    "com.android.gallery3d",
+    "com.android.messaging",
+    "com.android.quicksearchbox",
+    "com.android.settings",
+    "com.bestbuy.android",
+    "com.ehi.national.mobile",
+    "com.google.android.gms",
+    "com.hertz.android.digital",
+    "com.hilton.android.hhonors",
+    "com.ihg.apps.android",
+    "com.jingdong.app.mall",
+    "com.lianjia.beike",
+    "com.marriott.mrt",
+    "com.rytong.airchina",
+    "com.rytong.ceair",
+    "com.sankuai.meituan.takeoutnew",
+    "com.sdu.didi.psnger",
+    "com.ss.android.ugc.aweme",
+    "com.szzc",
+    "com.taobao.taobao",
+    "com.tencent.mm",
+    "com.united.mobile.android",
+    "com.xunmeng.pinduoduo",
+    "com.zhubajie.client",
+    "com.zillow.android.streeteasy",
+    "ctrip.android.view",
+    "jp.co.ana.android.tabidachi",
+    "org.fcitx.fcitx5.android",
+    "org.mozilla.firefox",
+    "tv.danmaku.bili",
+];
+
+fn selected_apps() -> Vec<Value> {
+    SELECTED
+        .iter()
+        .map(|package| json!({"package":package}))
+        .collect()
+}
+
 fn fake_pin() -> FilePin {
     FilePin {
         path: "/reviewed/receipt.json".into(),
@@ -20,7 +70,7 @@ fn synthetic() -> (ImportPlan, Value, Value, Value) {
     let mut signed_rows = Vec::new();
     let mut total = 0;
     for app in 0..PACKAGES {
-        let package = format!("org.example.app{app:02}");
+        let package = SELECTED[app];
         let signers = vec!["b".repeat(64)];
         let mut parts = Vec::new();
         let mut materials = Vec::new();
@@ -81,6 +131,7 @@ fn synthetic() -> (ImportPlan, Value, Value, Value) {
             execution: fake_pin(),
             selection: fake_pin(),
             source_receipt: receipt_pin,
+            gate_registry: None,
         },
         execution,
         selection,
@@ -102,7 +153,7 @@ fn complete_public_split_plan_keeps_all_39_and_blocks_original_account_shortcuts
         && a["runtime_epoch_binding_required"] == true));
     let base = files
         .iter()
-        .find(|f| f.package.as_deref() == Some("org.example.app00") && f.split.is_none())
+        .find(|f| f.package.as_deref() == Some(SELECTED[0]) && f.split.is_none())
         .unwrap();
     assert_eq!(apps[0]["install_argv"][5], base.guest_path);
     assert!(
@@ -218,6 +269,7 @@ fn staged() -> Staged {
         applications,
         package_count: PACKAGES,
         apk_file_count: APKS,
+        runtime_preparation_inputs: None,
         original_userdata_imported: false,
         applications_installed: 0,
         application_business_accepted: false,
@@ -228,7 +280,7 @@ fn staged() -> Staged {
 
 #[test]
 fn public_material_labels_require_exact_uid_boundary_and_input_roles() {
-    let staged = staged();
+    let staged = staged_with_registry();
     let rows: Vec<_> = std::iter::once(ROOT.to_owned()).chain(guest_paths(&staged)).map(|path| {
         let kind=if path == ROOT { "root" } else if path == STAGE { "dir" } else { "input" };
         json!({"path":path,"label_hex":hex::encode(format!("u:object_r:droidloom_public_apk_{kind}:s0\0"))})
@@ -248,46 +300,231 @@ fn public_material_labels_require_exact_uid_boundary_and_input_roles() {
     assert!(validate_labels(&staged, &duplicate).is_err());
 }
 
+fn staged_with_registry() -> Staged {
+    let mut material = staged();
+    let registry = FilePin {
+        path: "/reviewed/app-release-gates.json".into(),
+        bytes: REGISTRY_BYTES,
+        sha256: REGISTRY_SHA256.into(),
+    };
+    material.files.push(Material {
+        source: registry.clone(),
+        source_identity_before: None,
+        source_identity_after: None,
+        destination_identity: None,
+        guest_path: format!("{STAGE}/{REGISTRY_NAME}"),
+        package: None,
+        split: None,
+    });
+    material.runtime_preparation_inputs = Some(PreparationInputs {
+        selection: guest_pin(&fake_pin(), "selected39-source-selection.json"),
+        source_receipt: guest_pin(&fake_pin(), "selected39-signature-receipt.json"),
+        gate_registry: guest_pin(&registry, REGISTRY_NAME),
+        required_gates: registry_coverage(
+            &serde_json::from_slice(CANONICAL_REGISTRY).unwrap(),
+            &material.applications,
+        )
+        .unwrap(),
+    });
+    material
+}
+
+#[test]
+fn canonical_registry_covers_every_original_selected_gate_without_runtime_placeholders()
+-> Result<()> {
+    assert_eq!(CANONICAL_REGISTRY.len() as u64, REGISTRY_BYTES);
+    assert_eq!(fs::digest(CANONICAL_REGISTRY), REGISTRY_SHA256);
+    let temp = tempfile::tempdir()?;
+    let registry_path = temp.path().join(REGISTRY_NAME);
+    std::fs::write(&registry_path, CANONICAL_REGISTRY)?;
+    let (mut plan, _, _, _) = synthetic();
+    assert!(preparation_inputs(&plan, &selected_apps())?.is_none());
+    plan.gate_registry = Some(boot_files::pin_file(&registry_path)?);
+    let prepared = preparation_inputs(&plan, &selected_apps())?.unwrap();
+    assert_eq!(prepared.required_gates.len(), PACKAGES);
+    assert_eq!(prepared.required_gates["org.mozilla.firefox"].len(), 11);
+    assert_eq!(prepared.required_gates["com.android.camera2"].len(), 11);
+    assert_eq!(prepared.required_gates["com.android.settings"].len(), 9);
+    assert!(prepared.required_gates["com.android.dialer"].contains(&"dialer.call".into()));
+    assert!(prepared.required_gates["com.tencent.mm"].contains(&"messaging.delivery".into()));
+    assert_eq!(
+        prepared.gate_registry.path,
+        Path::new(STAGE).join(REGISTRY_NAME)
+    );
+    assert_eq!(prepared.gate_registry.sha256, REGISTRY_SHA256);
+    assert_eq!(
+        prepared.selection.path,
+        Path::new(STAGE).join("selected39-source-selection.json")
+    );
+    let serialized = serde_json::to_value(&prepared)?;
+    for field in [
+        "main_qualification",
+        "expected_epoch",
+        "intent",
+        "production_ready",
+    ] {
+        assert!(serialized.get(field).is_none(), "{field} was synthesized");
+    }
+    assert_eq!(std::fs::read(&registry_path)?, CANONICAL_REGISTRY);
+    Ok(())
+}
+
+#[test]
+fn optional_registry_rejects_replacement_bytes_missing_coverage_and_weaker_contracts() -> Result<()>
+{
+    let temp = tempfile::tempdir()?;
+    let path = temp.path().join(REGISTRY_NAME);
+    let (mut plan, _, _, _) = synthetic();
+    let mut weaker: Value = serde_json::from_slice(CANONICAL_REGISTRY)?;
+    weaker["profiles"]["messaging"]["checks"]
+        .as_object_mut()
+        .unwrap()
+        .remove("messaging.delivery");
+    std::fs::write(&path, serde_json::to_vec(&weaker)?)?;
+    plan.gate_registry = Some(boot_files::pin_file(&path)?);
+    assert!(
+        preparation_inputs(&plan, &selected_apps())
+            .unwrap_err()
+            .to_string()
+            .contains("canonical contract")
+    );
+    for case in 0..6 {
+        let mut registry: Value = serde_json::from_slice(CANONICAL_REGISTRY)?;
+        let mut apps = selected_apps();
+        match case {
+            0 => {
+                registry["common_gates"]
+                    .as_object_mut()
+                    .unwrap()
+                    .remove("stability");
+            }
+            1 => {
+                registry["profiles"]["camera"]["checks"] = json!({});
+            }
+            2 => {
+                registry["packages"]
+                    .as_object_mut()
+                    .unwrap()
+                    .remove("org.mozilla.firefox");
+            }
+            3 => registry["packages"]["org.mozilla.firefox"]["profile"] = "missing".into(),
+            4 => {
+                apps[0]["package"] = "org.example.unreviewed".into();
+            }
+            _ => {
+                apps[1] = apps[0].clone();
+            }
+        }
+        let typed: GateRegistry = serde_json::from_value(registry)?;
+        assert!(registry_coverage(&typed, &apps).is_err(), "case {case}");
+    }
+    let mut unknown: Value = serde_json::from_slice(CANONICAL_REGISTRY)?;
+    unknown["profiles"]["camera"]["passed"] = true.into();
+    assert!(serde_json::from_value::<GateRegistry>(unknown).is_err());
+    let legacy: ImportPlan = serde_json::from_value(json!({
+        "schema":"droidloom.public-apk-import.v1","execution":fake_pin(),
+        "selection":fake_pin(),"source_receipt":fake_pin()
+    }))?;
+    assert!(legacy.gate_registry.is_none());
+    Ok(())
+}
+
+#[test]
+fn public_material_roster_accepts_only_complete_declared_68_or_69_files() {
+    assert_eq!(provenance_count(&staged().files).unwrap(), 3);
+    assert_eq!(provenance_count(&staged_with_registry().files).unwrap(), 4);
+    for case in 0..5 {
+        let mut material = staged_with_registry();
+        match case {
+            0 => {
+                material.files.remove(APKS);
+            }
+            1 => {
+                let extra = material.files.last().unwrap().clone();
+                material.files.push(extra);
+            }
+            2 => {
+                material.files.last_mut().unwrap().guest_path = format!("{STAGE}/weaker-gates.json")
+            }
+            3 => {
+                material.files.last_mut().unwrap().guest_path =
+                    "/home/alex/app-release-gates.json".into()
+            }
+            _ => {
+                material.files.last_mut().unwrap().guest_path =
+                    format!("{STAGE}/nested/{REGISTRY_NAME}")
+            }
+        }
+        assert!(provenance_count(&material.files).is_err(), "case {case}");
+    }
+}
+
 #[test]
 fn actual_ext4_public_material_readback_detects_tampered_bytes_and_is_create_only() -> Result<()> {
-    let temp = tempfile::tempdir()?;
-    let root = temp.path().join("root");
-    let stage = root.join(STAGE.trim_start_matches('/'));
-    std::fs::create_dir_all(&stage)?;
-    let mut material = staged();
-    for (index, item) in material.files.iter_mut().enumerate() {
-        let path = root.join(item.guest_path.trim_start_matches('/'));
-        std::fs::write(&path, format!("PK\u{3}\u{4}exact original {index}"))?;
-        item.source = boot_files::pin_file(&path)?;
+    for with_registry in [false, true] {
+        let temp = tempfile::tempdir()?;
+        let root = temp.path().join("root");
+        let stage = root.join(STAGE.trim_start_matches('/'));
+        std::fs::create_dir_all(&stage)?;
+        let mut material = if with_registry {
+            staged_with_registry()
+        } else {
+            staged()
+        };
+        for (index, item) in material.files.iter_mut().enumerate() {
+            let path = root.join(item.guest_path.trim_start_matches('/'));
+            if item.guest_path.ends_with(REGISTRY_NAME) {
+                std::fs::write(&path, CANONICAL_REGISTRY)?;
+            } else {
+                std::fs::write(&path, format!("PK\u{3}\u{4}exact original {index}"))?;
+            }
+            item.source = boot_files::pin_file(&path)?;
+        }
+        let disk = temp.path().join("test.ext4");
+        let image = boot_files::new_file(&disk, 0o600)?;
+        image.set_len(32 * 1024 * 1024)?;
+        boot_files::run_logged(
+            temp.path(),
+            "make-test-ext4",
+            "/usr/sbin/mke2fs",
+            &[
+                "-q".into(),
+                "-F".into(),
+                "-t".into(),
+                "ext4".into(),
+                "-d".into(),
+                root.to_string_lossy().into(),
+                disk.to_string_lossy().into(),
+            ],
+            30,
+        )?;
+        let good = temp.path().join("good");
+        boot_files::private_dir(&good)?;
+        let receipt = readback_bodies(&good, &disk, &material.files)?;
+        let provenance = if with_registry { 4 } else { 3 };
+        assert_eq!(
+            receipt["files"].as_array().unwrap().len(),
+            APKS + provenance
+        );
+        assert_eq!(receipt["provenance_file_count"], provenance);
+        assert_eq!(receipt["gate_registry_imported"], with_registry);
+        assert_eq!(receipt["all_original_bytes_matched"], true);
+        assert_eq!(receipt["production_ready"], false);
+        if with_registry {
+            let row = receipt["files"].as_array().unwrap().last().unwrap();
+            assert_eq!(row["actual"]["sha256"], REGISTRY_SHA256);
+            assert_eq!(row["actual"]["bytes"], REGISTRY_BYTES);
+        }
+        assert!(readback_bodies(&good, &disk, &material.files).is_err());
+        let bad = temp.path().join("bad");
+        boot_files::private_dir(&bad)?;
+        let index = if with_registry {
+            material.files.len() - 1
+        } else {
+            0
+        };
+        material.files[index].source.sha256 = "0".repeat(64);
+        assert!(readback_bodies(&bad, &disk, &material.files).is_err());
     }
-    let disk = temp.path().join("test.ext4");
-    let image = boot_files::new_file(&disk, 0o600)?;
-    image.set_len(32 * 1024 * 1024)?;
-    boot_files::run_logged(
-        temp.path(),
-        "make-test-ext4",
-        "/usr/sbin/mke2fs",
-        &[
-            "-q".into(),
-            "-F".into(),
-            "-t".into(),
-            "ext4".into(),
-            "-d".into(),
-            root.to_string_lossy().into(),
-            disk.to_string_lossy().into(),
-        ],
-        30,
-    )?;
-    let good = temp.path().join("good");
-    boot_files::private_dir(&good)?;
-    let receipt = readback_bodies(&good, &disk, &material.files)?;
-    assert_eq!(receipt["files"].as_array().unwrap().len(), APKS + 3);
-    assert_eq!(receipt["all_original_bytes_matched"], true);
-    assert_eq!(receipt["production_ready"], false);
-    assert!(readback_bodies(&good, &disk, &material.files).is_err());
-    let bad = temp.path().join("bad");
-    boot_files::private_dir(&bad)?;
-    material.files[0].source.sha256 = "0".repeat(64);
-    assert!(readback_bodies(&bad, &disk, &material.files).is_err());
     Ok(())
 }
