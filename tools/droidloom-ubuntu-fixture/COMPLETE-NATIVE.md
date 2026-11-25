@@ -82,3 +82,32 @@ Exactly seven nonempty public Snap archives must be present in the manifest and 
 Focused tests cover account/UID conflicts, unlocked state, old homes, symlink confinement, full preimages, create-only retirement and exact Snap rosters. An explicitly root-only test exercises real normal `systemd-sysusers`, `systemd-firstboot`, preimage retention and independent replacement in a newly created temporary root; unprivileged runs report it as ignored rather than passing it.
 
 The ended-VM GDM collector reads the boot receipt's exact private `NATIVE-PREPARED.json` pin and preserves its full identity and digest through collection. For this complete schema, the expected GDM primary group comes from the initialized normal account summary; historical public fixtures still require 121. The collector extracts the ended image's root-owned mode-0644 `/etc/group` by inode and checks it against the preparation before considering journal proof. Both the trusted journald `_GID` and the proof payload GID must match. The existing greeter proof reads the fixed `gdm` NSS group and checks its actual credential triple and dynamic account at entry and completion. This changes no journal or desktop acceptance requirement.
+
+## First enforcing calibration, then Android runtime
+
+A complete normally installed root supports two explicit boot phases. First use
+`android.calibrate=true`, `android.mac_release=null`, `android.persistent_data=null`
+and no `public_apks`. The full installed manifest, native package admission,
+normal shared kernel, host archive, labels and initrd are still verified. All
+three legacy native ELF overlay fields must remain absent in either phase.
+
+This first phase boots the independent owned guest with enforcing policy and
+runs the original `droidloom-mac-calibration.service`. Its
+`droidloom-host-mac export-kernel-first-release` producer observes the actual
+kernel, original PID 1 and confined loader and exports the five MAC release
+members. The collector must verify the actual capture and original systemd
+invocation. A preparation receipt only reports `boot_phase="mac_calibration"`;
+it does not claim successful calibration, guest qualification or application
+acceptance.
+
+After that real capture is verified, prepare another fresh complete root with
+`android.calibrate=false` and all five exact pinned `mac_release` files. The
+normal release binds the same Android cohort/runtime, kernel policy, complete
+systemd ELF and host MAC loader ELF. A changed host, systemd, policy or final
+camera cohort needs a compatible real capture; filenames or edited hashes
+cannot transfer that authority. This second preparation reports
+`boot_phase="android_runtime"`, still with `guest_qualified=false` and
+`production_ready=false`. The fresh second root can import the complete pinned
+65-APK payload and then run real installation, launch and required business
+gates for the selected 39 apps. Preserved original data stays separate from
+both the initial calibration and fresh public-APK testing.

@@ -350,16 +350,42 @@ fn board_devices(root: &Path) -> Result<()> {
     Ok(())
 }
 
-pub fn prepare_boot(config: &Path, expected: &str) -> Result<()> {
-    let plan: BootPlan = fs::read_json(&fs::absolute_string(config)?, expected)?;
+fn admit_boot_mode(plan: &BootPlan, is_complete: bool) -> Result<&'static str> {
+    // Keep the same exclusive calibration/normal-release contract as the
+    // installation consumer, but reject incompatible inputs before mutation.
     ensure(
-        plan.schema == "droidloom.full-ubuntu-boot-plan.v1",
-        "unsupported full boot plan",
+        plan.android.calibrate != plan.android.mac_release.is_some(),
+        "select exactly calibration or a normal five-file MAC release",
+    )?;
+    ensure(
+        !plan.android.calibrate || plan.android.persistent_data.is_none(),
+        "real working data is not used in factory calibration",
     )?;
     ensure(
         plan.public_apks.is_none()
             || (!plan.android.calibrate && plan.android.persistent_data.is_none()),
         "public APK import requires a fresh normal guest without original userdata",
+    )?;
+    if is_complete {
+        ensure(
+            plan.libselinux_candidate.is_none()
+                && plan.libapparmor_candidate.is_none()
+                && plan.gdm_candidate.is_none(),
+            "complete normal boot consumes the normally installed native families without overlays",
+        )?;
+    }
+    Ok(if plan.android.calibrate {
+        "mac_calibration"
+    } else {
+        "android_runtime"
+    })
+}
+
+pub fn prepare_boot(config: &Path, expected: &str) -> Result<()> {
+    let plan: BootPlan = fs::read_json(&fs::absolute_string(config)?, expected)?;
+    ensure(
+        plan.schema == "droidloom.full-ubuntu-boot-plan.v1",
+        "unsupported full boot plan",
     )?;
     let native: serde_json::Value = serde_json::from_slice(&boot_files::read_pin(
         &plan.native_receipt,
@@ -395,14 +421,8 @@ pub fn prepare_boot(config: &Path, expected: &str) -> Result<()> {
         "native root identity changed before release admission",
     )?;
     let is_complete = native["schema"] == crate::boot_complete::PREPARED_SCHEMA;
+    let boot_phase = admit_boot_mode(&plan, is_complete)?;
     let (complete, original) = if is_complete {
-        ensure(
-            !plan.android.calibrate
-                && plan.libselinux_candidate.is_none()
-                && plan.libapparmor_candidate.is_none()
-                && plan.gdm_candidate.is_none(),
-            "complete normal boot consumes the normally installed native families without overlays",
-        )?;
         let pin: FilePin = serde_json::from_value(native["complete_fixture_manifest"].clone())?;
         let manifest = crate::boot_complete::admitted_manifest(&pin)?;
         ensure(
@@ -678,12 +698,14 @@ pub fn prepare_boot(config: &Path, expected: &str) -> Result<()> {
         "desktop_enable":{"command":desktop_enable,"unit":desktop_unit,
             "wants_path":desktop_wants,"target":desktop_target,"identity":desktop_link},
         "labels":boot_files::pin_file(&boot.join("ROOT-LABELS.json"))?,
+        "boot_phase":boot_phase,
         "calibration_requested":plan.android.calibrate,"guest_qualified":false,"production_ready":false});
     let path = boot.join("BOOT-PREPARED.json");
     let sha = fs::write_json(&fs::absolute_string(&path)?, &result, 0)?;
     println!(
         "{}",
-        serde_json::json!({"receipt":path,"sha256":sha,"guest_qualified":false,"production_ready":false})
+        serde_json::json!({"receipt":path,"sha256":sha,"boot_phase":boot_phase,
+            "guest_qualified":false,"production_ready":false})
     );
     Ok(())
 }
@@ -764,4 +786,110 @@ fn persistent_journal(root: &Path, work: &Path, gid: u32) -> Result<serde_json::
         0,
     )?;
     Ok(result)
+}
+
+#[cfg(test)]
+mod boot_mode_tests {
+    use super::*;
+    use serde_json::{Value, json};
+
+    fn pin() -> Value {
+        json!({"path":"/unused-mode-test-input","bytes":1,"sha256":"a".repeat(64)})
+    }
+
+    fn plan(calibrate: bool) -> BootPlan {
+        let mac: Value = if calibrate {
+            Value::Null
+        } else {
+            [
+                "contract.json",
+                "manager-label.json",
+                "policy.bin",
+                "policy-export.bin",
+                "derivation.json",
+            ]
+            .into_iter()
+            .map(|name| (name.to_owned(), pin()))
+            .collect()
+        };
+        serde_json::from_value(json!({
+            "schema":"droidloom.full-ubuntu-boot-plan.v1",
+            "native_receipt":pin(),"host_manifest":pin(),"host_archive":pin(),
+            "kernel":pin(),"base_initrd":pin(),"replacement_kernel":null,
+            "android":{"cohort":pin(),"runtime":pin(),"query_inputs":null,
+                "device_manifest":pin(),"images":{},"device_bank":pin(),
+                "cell_template":pin(),"persistent_data":null,
+                "mac_release":mac,"calibrate":calibrate},
+            "label_tools":{"setfiles":pin(),"matchpathcon":pin(),"producer_libsepol":pin()},
+            "initrd_tools":{"package_name":"initramfs-tools-core","package_version":"test",
+                "hook_functions":pin()},
+            "libselinux_candidate":null,"libapparmor_candidate":null,"gdm_candidate":null,
+            "root_image_gib":64,"public_apks":null
+        }))
+        .unwrap()
+    }
+
+    #[test]
+    fn complete_boot_mode_admits_calibration_then_normal_material() {
+        assert_eq!(
+            admit_boot_mode(&plan(true), true).unwrap(),
+            "mac_calibration"
+        );
+        assert_eq!(
+            admit_boot_mode(&plan(false), true).unwrap(),
+            "android_runtime"
+        );
+        // These are input phases only; this function issues no runtime witness.
+    }
+
+    #[test]
+    fn complete_boot_mode_preserves_exclusive_mac_authority() {
+        let mut missing = plan(false);
+        missing.android.mac_release = None;
+        assert!(admit_boot_mode(&missing, true).is_err());
+        let mut both = plan(true);
+        both.android.mac_release = plan(false).android.mac_release;
+        assert!(admit_boot_mode(&both, true).is_err());
+    }
+
+    #[test]
+    fn complete_boot_mode_keeps_calibration_free_of_apps_and_original_data() {
+        let mut apps = plan(true);
+        apps.public_apks = Some(serde_json::from_value(pin()).unwrap());
+        assert!(admit_boot_mode(&apps, true).is_err());
+        let mut data = plan(true);
+        data.android.persistent_data = Some(crate::boot_release::WorkingDataInputs {
+            receipt: serde_json::from_value(pin()).unwrap(),
+            images: Default::default(),
+        });
+        assert!(admit_boot_mode(&data, true).is_err());
+        let mut normal = plan(false);
+        normal.public_apks = apps.public_apks;
+        assert_eq!(admit_boot_mode(&normal, true).unwrap(), "android_runtime");
+        normal.android.persistent_data = data.android.persistent_data;
+        assert!(admit_boot_mode(&normal, true).is_err());
+    }
+
+    #[test]
+    fn complete_boot_mode_rejects_each_native_overlay_in_both_phases() {
+        let mut common = json!({
+            "declaration":pin(),"package":pin(),"source_commit":pin(),"source_dsc":pin(),
+            "source_debian_archive":pin(),"source_orig_archive":pin()
+        });
+        let apparmor = common.clone();
+        common["source_orig_signature"] = pin();
+        for (field, candidate) in [
+            ("libselinux_candidate", common),
+            ("libapparmor_candidate", apparmor),
+            ("gdm_candidate", json!({"artifacts":{}})),
+        ] {
+            for calibrate in [true, false] {
+                let mut value = serde_json::to_value(plan(calibrate)).unwrap();
+                value[field] = candidate.clone();
+                let input: BootPlan = serde_json::from_value(value).unwrap();
+                assert!(admit_boot_mode(&input, true).is_err(), "{field}");
+                assert!(admit_boot_mode(&input, false).is_ok(), "{field}");
+            }
+        }
+    }
 }
