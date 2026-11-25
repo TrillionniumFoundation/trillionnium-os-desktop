@@ -264,7 +264,8 @@ match the actual boot ID, original kernel, root UUID, PID1 root and held origina
 boot/tool inodes. Original tool paths are resolved through the existing protected
 alias reader and the exact alias inode chain and final ELF are rechecked after
 the package locks and at completion. Each full held-descriptor hash restarts at
-offset zero, including repeated readbacks of the same inode. The original uutils chroot has one fixed
+offset zero, including repeated readbacks of the same inode. The original uutils
+chroot has one fixed
 root-owned symlink and a source-pinned multi-call ELF with exactly 116 hard links;
 this narrow read-only tool exception does not apply to candidate inputs or outputs.
 The producer takes POSIX shared locks on the physical dpkg and
@@ -279,9 +280,17 @@ host and shared kernel. The Android package is bound to the same release but is
 not installed in this initramfs build. No package is installed in the physical
 root. The source modules, actual commands and source pins remain in the receipt.
 
-Package scripts run with UID/GID map `0 0 65536` in private user, mount, network,
-IPC and UTS namespaces. A new overlay reads the original host filesystem and
-stores writes in an independent bounded tmpfs. A nested PID namespace places
+Fixed mount setup first proves a distinct, recursively private mount namespace
+and an isolated network while retaining the original user namespace. It makes
+a nonrecursive readonly bind of the original root before creating the overlay;
+this avoids cloning inherited locked child mounts. The readonly lower, inputs
+and hardware binds are verified from actual mountinfo. No package script runs
+during this setup.
+
+Package scripts then enter UID/GID map `0 0 65536` with a second private mount
+namespace, locking the inherited readonly binds, and retain the isolated
+network, IPC and UTS namespaces. The overlay stores writes in an independent
+bounded tmpfs. A nested PID namespace places
 the chrooted builder at PID1, preventing `/proc/1/root` from exposing the setup
 process's original root. Home, original Android data, maintenance state and the entire previous
 qualification tree are hidden; only this build's separate `/build` and `/inputs`

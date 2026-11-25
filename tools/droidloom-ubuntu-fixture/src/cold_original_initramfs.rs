@@ -593,7 +593,7 @@ pub fn prepare(path: &Path, expected: &str) -> Result<()> {
     }
     let build = work.join("build");
     files::private_dir(&build)?;
-    for name in ["overlay-volatile", "view"] {
+    for name in ["overlay-volatile", "view", "lower"] {
         files::private_dir(&work.join(name))?;
     }
     let producer = actual_pin(&std::env::current_exe()?)?;
@@ -612,10 +612,6 @@ pub fn prepare(path: &Path, expected: &str) -> Result<()> {
         "normal-original-host-namespace",
         "/usr/bin/unshare",
         vec![
-            "--user".into(),
-            "--map-users=0,0,65536".into(),
-            "--map-groups=0,0,65536".into(),
-            "--setgroups=allow".into(),
             "--mount".into(),
             "--net".into(),
             "--ipc".into(),
@@ -676,6 +672,90 @@ pub fn prepare(path: &Path, expected: &str) -> Result<()> {
     Ok(())
 }
 
+fn private_mount_tree(raw: &str) -> Result<()> {
+    ensure(!raw.trim().is_empty(), "private mount inventory is empty")?;
+    for line in raw.lines() {
+        let fields = line.split_whitespace().collect::<Vec<_>>();
+        let separator = fields
+            .iter()
+            .position(|s| *s == "-")
+            .ok_or("mountinfo separator missing")?;
+        ensure(
+            separator >= 6
+                && fields.len() >= separator + 4
+                && fields[6..separator].iter().all(|s| {
+                    !s.starts_with("shared:")
+                        && !s.starts_with("master:")
+                        && !s.starts_with("propagate_from:")
+                }),
+            "mount setup requires a recursively private mount tree",
+        )?;
+    }
+    Ok(())
+}
+fn isolated_network() -> Result<()> {
+    let network = text("/proc/net/dev", 65536)?;
+    ensure(
+        network
+            .lines()
+            .filter_map(|l| l.split_once(':').map(|r| r.0.trim()))
+            .all(|name| name == "lo"),
+        "private build has an external network interface",
+    )
+}
+fn setup_namespace(stage: &Stage) -> Result<()> {
+    ensure(
+        stage.schema == "droidloom.original-host-initramfs-stage.v1",
+        "private original-host stage schema",
+    )?;
+    // Only fixed source-bound mount setup runs in this private mount namespace
+    // before the user namespace exists. Inherited locked child mounts prevent
+    // cloning / as an overlay lower after entering a less privileged userns.
+    let current = original_context()?;
+    for key in [
+        "kernel",
+        "root_uuid",
+        "root_identity",
+        "boot_id",
+        "account_files",
+        "preserved_metadata",
+        "dpkg_status",
+    ] {
+        ensure(
+            current[key] == stage.original[key],
+            "original host changed before private mount setup",
+        )?;
+    }
+    let ns = &current["namespaces"];
+    let original = &stage.original["namespaces"];
+    ensure(
+        ns["user"] == original["user"]
+            && ns["pid"] == original["pid"]
+            && ns["mnt"] != original["mnt"]
+            && ns["net"] != original["net"],
+        "fixed mount setup requires a new mount/network namespace on the original user namespace",
+    )?;
+    private_mount_tree(&text("/proc/self/mountinfo", 1024 * 1024)?)?;
+    isolated_network()
+}
+fn readonly_mount(path: &Path) -> Result<String> {
+    let raw = text("/proc/self/mountinfo", 1024 * 1024)?;
+    private_mount_tree(&raw)?;
+    let name = fs::absolute_string(path)?;
+    let rows = raw
+        .lines()
+        .filter(|line| line.split_whitespace().nth(4) == Some(name.as_str()))
+        .collect::<Vec<_>>();
+    ensure(
+        rows.len() == 1
+            && rows[0]
+                .split_whitespace()
+                .nth(5)
+                .is_some_and(|s| s.split(',').any(|v| v == "ro")),
+        "required private bind mount is not actually readonly",
+    )?;
+    Ok(rows[0].to_owned())
+}
 fn mapped_namespace(stage: &Stage) -> Result<()> {
     ensure(
         stage.schema == "droidloom.original-host-initramfs-stage.v1",
@@ -692,20 +772,13 @@ fn mapped_namespace(stage: &Stage) -> Result<()> {
         "normal service groups are unavailable",
     )?;
     let current = namespaces()?;
-    for name in ["user", "mnt", "net"] {
+    for name in ["user", "mnt", "pid", "net"] {
         ensure(
             stage.original["namespaces"][name] != current[name],
             "required private namespace was not created",
         )?;
     }
-    let network = text("/proc/net/dev", 65536)?;
-    ensure(
-        network
-            .lines()
-            .filter_map(|l| l.split_once(':').map(|r| r.0.trim()))
-            .all(|name| name == "lo"),
-        "private build has an external network interface",
-    )?;
+    isolated_network()?;
     Ok(())
 }
 fn mount(work: &Path, name: &str, args: Vec<String>) -> Result<()> {
@@ -715,7 +788,7 @@ fn mount(work: &Path, name: &str, args: Vec<String>) -> Result<()> {
 pub fn namespace(path: &Path, expected: &str) -> Result<()> {
     let (stage, pin): (Stage, FilePin) = config(path, expected)?;
     allowed_work(&stage.work_directory)?;
-    mapped_namespace(&stage)?;
+    setup_namespace(&stage)?;
     validate_materials(&stage.materials)?;
     let work = &stage.work_directory;
     let view = work.join("view");
@@ -742,8 +815,32 @@ pub fn namespace(path: &Path, expected: &str) -> Result<()> {
     for name in ["upper", "work"] {
         files::private_dir(&volatile.join(name))?;
     }
+    // A nonrecursive bind excludes all original child mounts. Making it
+    // readonly before the final userns also locks that flag in the child.
+    let lower = work.join("lower");
+    mount(
+        work,
+        "bind-original-lower",
+        vec!["--bind".into(), "/".into(), fs::absolute_string(&lower)?],
+    )?;
+    mount(
+        work,
+        "readonly-original-lower",
+        vec![
+            "-o".into(),
+            "remount,bind,ro,nosuid,nodev".into(),
+            fs::absolute_string(&lower)?,
+        ],
+    )?;
+    let lower_mount = readonly_mount(&lower)?;
+    let lower_id = std::fs::metadata(&lower)?;
+    ensure(
+        json!([lower_id.dev(), lower_id.ino()]) == stage.original["root_identity"],
+        "readonly lower is not the actual original root",
+    )?;
     let options = format!(
-        "lowerdir=/,upperdir={},workdir={}",
+        "lowerdir={},upperdir={},workdir={}",
+        lower.display(),
         volatile.join("upper").display(),
         volatile.join("work").display()
     );
@@ -885,10 +982,19 @@ pub fn namespace(path: &Path, expected: &str) -> Result<()> {
             fs::absolute_string(&view.join("sys"))?,
         ],
     )?;
+    let mount_observations = save(
+        &work.join("PREPARED-MOUNTS.json"),
+        &json!({
+        "schema":"droidloom.original-host-private-mounts.v1","setup_namespaces":namespaces()?,
+        "readonly_lower":lower_mount,"original_root_identity":[lower_id.dev(),lower_id.ino()],
+        "readonly_inputs":readonly_mount(&view.join("inputs"))?,"readonly_sys":readonly_mount(&view.join("sys"))?}),
+    )?;
     // The setup process still sees the original root. Put all package scripts
     // in a *nested* PID namespace, whose PID1 has already chrooted. They cannot
     // escape through /proc/1/root back to the setup process's original root.
     let nested=run(work,"private-normal-package-and-initramfs","/usr/bin/unshare",vec![
+        "--user".into(),"--map-users=0,0,65536".into(),"--map-groups=0,0,65536".into(),"--setgroups=allow".into(),
+        "--mount".into(),"--propagation=private".into(),
         "--pid".into(),"--fork".into(),"--kill-child".into(),format!("--mount-proc={}",view.join("proc").display()),
         "/usr/bin/chroot".into(),fs::absolute_string(&view)?,"/usr/bin/setpriv".into(),
         "--bounding-set=-all,+chown,+dac_override,+fowner,+fsetid,+setgid,+setuid,+setpcap,+net_bind_service,+audit_write,+setfcap".into(),
@@ -897,7 +1003,7 @@ pub fn namespace(path: &Path, expected: &str) -> Result<()> {
         "--config".into(),"/build/INNER-INPUTS.json".into(),"--config-sha256".into(),pin.sha256.clone()],1500)?;
     save(
         &work.join("NAMESPACE-ENDED.json"),
-        &json!({"schema":"droidloom.original-host-build-namespace-ended.v1","command":nested,"stage":pin}),
+        &json!({"schema":"droidloom.original-host-build-namespace-ended.v1","command":nested,"stage":pin,"prepared_mounts":mount_observations}),
     )?;
     Ok(())
 }
@@ -1383,6 +1489,16 @@ pub fn build(path: &Path, expected: &str) -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn mount_setup_rejects_shared_or_slave_propagation_before_any_mount() {
+        let root = "31 22 259:2 / / rw,relatime - ext4 /dev/nvme0n1p2 rw\n";
+        private_mount_tree(root).unwrap();
+        for optional in ["shared:7", "master:4", "propagate_from:2"] {
+            assert!(private_mount_tree(&root.replace(" - ", &format!(" {optional} - "))).is_err());
+        }
+        assert!(private_mount_tree("").is_err());
+        assert!(private_mount_tree("31 22 - ext4 /dev/root rw").is_err());
+    }
     #[test]
     fn repeated_held_hash_reads_the_whole_inode_and_detects_changed_bytes() {
         use std::io::{Seek, SeekFrom, Write};
