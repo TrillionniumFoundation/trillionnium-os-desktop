@@ -22,6 +22,29 @@ use std::{
     path::{Path, PathBuf},
 };
 
+/// An adapter requests one fixed operation; this value cannot advance the
+/// journal or create authority. Every request is checked against actual state.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(super) enum OriginalDataStep {
+    Prepare,
+    Exchange,
+    Label,
+    PublishSelection,
+    Restore,
+}
+
+fn data_phase_allowed(phase: Phase, step: OriginalDataStep) -> bool {
+    use OriginalDataStep::*;
+    matches!(
+        (phase, step),
+        (Phase::CellPublished, Prepare)
+            | (Phase::PairExchangeIntent, Exchange)
+            | (Phase::LabelsIntent, Label)
+            | (Phase::SelectionPublishIntent, PublishSelection)
+            | (Phase::SelectionWithdrawn | Phase::Aborting, Restore)
+    )
+}
+
 enum RetirementSource {
     Initial,
     Prepared(SealedInput),
@@ -81,6 +104,30 @@ impl OriginalQualificationAuthority {
     }
     pub(super) fn selection(&self) -> &FilePin {
         self.selection.pin()
+    }
+
+    pub(super) fn verify_data_step(&self, step: OriginalDataStep) -> Result<()> {
+        self.verify_current_owner()?;
+        let phase = self
+            .journal
+            .borrow()
+            .phase()
+            .ok_or("once mutation lacks a durable phase")?;
+        ensure(
+            data_phase_allowed(phase, step),
+            "data adapter operation is outside the owned durable phase",
+        )?;
+        match (&*self.retirement.borrow(), step) {
+            (RetirementSource::Initial, OriginalDataStep::Prepare | OriginalDataStep::Restore)
+            | (
+                RetirementSource::Prepared(_),
+                OriginalDataStep::Exchange
+                | OriginalDataStep::Label
+                | OriginalDataStep::PublishSelection
+                | OriginalDataStep::Restore,
+            ) => Ok(()),
+            _ => Err("data adapter lacks the phase's actual immutable intent".into()),
+        }
     }
 
     pub(super) fn verify_current_owner(&self) -> Result<()> {
@@ -212,5 +259,45 @@ impl OriginalQualificationAuthority {
         sealed.revalidate()?;
         *self.retirement.borrow_mut() = RetirementSource::Prepared(sealed);
         self.verify_current_owner()
+    }
+}
+
+#[cfg(test)]
+mod operation_tests {
+    use super::*;
+    #[test]
+    fn adapter_cannot_skip_exchange_label_or_selection_retirement() {
+        assert!(data_phase_allowed(
+            Phase::CellPublished,
+            OriginalDataStep::Prepare
+        ));
+        assert!(!data_phase_allowed(
+            Phase::CellPublished,
+            OriginalDataStep::Exchange
+        ));
+        assert!(!data_phase_allowed(
+            Phase::PairExchanged,
+            OriginalDataStep::Label
+        ));
+        assert!(data_phase_allowed(
+            Phase::LabelsIntent,
+            OriginalDataStep::Label
+        ));
+        assert!(!data_phase_allowed(
+            Phase::LabelsApplied,
+            OriginalDataStep::PublishSelection
+        ));
+        assert!(data_phase_allowed(
+            Phase::SelectionPublishIntent,
+            OriginalDataStep::PublishSelection
+        ));
+        assert!(!data_phase_allowed(
+            Phase::OriginalReturned,
+            OriginalDataStep::Restore
+        ));
+        assert!(data_phase_allowed(
+            Phase::SelectionWithdrawn,
+            OriginalDataStep::Restore
+        ));
     }
 }
