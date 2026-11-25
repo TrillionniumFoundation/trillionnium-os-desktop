@@ -1,6 +1,7 @@
 //! One explicit launcher observation through the existing owned supervisor API.
 //! This does not close an Android task, prove a fresh task, or grant business gates.
 use super::{ApplicationInspection, FilePin, INPUT_LIMIT, consume_inspection, pinned};
+use droidloom_supervisor::control::application_tasks::ApplicationTaskSnapshot;
 use droidloom_supervisor::control::{self, CellState, ControlRequest, ControlResponse};
 use serde::{Deserialize, Serialize};
 use std::path::Path;
@@ -28,6 +29,8 @@ pub(super) struct LaunchObservation {
     pub(super) requested_component: String,
     pub(super) catalog_component: String,
     pub(super) task: OwnedTaskObservation,
+    pub(super) tasks_before: ApplicationTaskSnapshot,
+    pub(super) tasks_after: ApplicationTaskSnapshot,
     pub(super) business_pending: bool,
     pub(super) close_observed: bool,
     pub(super) reopen_observed: bool,
@@ -133,6 +136,28 @@ fn same_inspection(reply: ControlResponse, expected: &ApplicationInspection) -> 
     Ok(())
 }
 
+fn task_snapshot(
+    reply: ControlResponse,
+    expected: &ApplicationInspection,
+) -> Result<ApplicationTaskSnapshot, String> {
+    running_owner(&reply, expected)?;
+    if reply.inspection.as_ref() != Some(expected) {
+        return Err(
+            "task observation returned a different installed identity or Main epoch".into(),
+        );
+    }
+    let raw = reply
+        .diagnostics
+        .ok_or("broker returned no typed task observation")?;
+    if raw.len() > 262_144 {
+        return Err("task observation exceeds the bounded response".into());
+    }
+    let snapshot: ApplicationTaskSnapshot =
+        serde_json::from_str(&raw).map_err(|e| format!("task observation JSON differs: {e}"))?;
+    snapshot.validate(expected)?;
+    Ok(snapshot)
+}
+
 pub(super) fn execute(
     socket: &Path,
     expected: &ApplicationInspection,
@@ -181,6 +206,12 @@ fn execute_with(
     same_inspection(request(&inspect)?, expected)?;
     pinned(&plan.specification)?;
     pinned(source_receipt)?;
+    let observe = ControlRequest::ObserveApplicationTasks {
+        expected: expected.clone(),
+    };
+    let tasks_before = task_snapshot(request(&observe)?, expected)?;
+    pinned(&plan.specification)?;
+    pinned(source_receipt)?;
     let reply = request(&ControlRequest::Launch {
         spec: plan.specification.path.clone(),
         package: expected.package.clone(),
@@ -210,6 +241,14 @@ fn execute_with(
                 .as_deref()
                 .ok_or("owned launch returned no actual task binding")?,
         )?;
+        let tasks_after = task_snapshot(request(&observe)?, expected)?;
+        if !tasks_after.tasks.iter().any(|row| {
+            u64::from(row.task) == task.task
+                && u64::from(row.display) == task.android_display
+                && row.visible
+        }) {
+            return Err("launched binding is not a visible task of this package/user in the current Android task list".into());
+        }
         same_inspection(request(&inspect)?, expected)?;
         pinned(&plan.specification)?;
         pinned(source_receipt)?;
@@ -218,6 +257,8 @@ fn execute_with(
             requested_component: plan.component.clone(),
             catalog_component,
             task,
+            tasks_before,
+            tasks_after,
             business_pending: true,
             close_observed: false,
             reopen_observed: false,
@@ -230,16 +271,45 @@ fn execute_with(
 }
 
 #[cfg(test)]
-pub(super) fn test_observation(component: &str) -> LaunchObservation {
+pub(super) fn test_observation(
+    component: &str,
+    expected: &ApplicationInspection,
+) -> LaunchObservation {
     LaunchObservation {
         scope: "launch_only",
         requested_component: component.into(),
         catalog_component: component.into(),
         task: parse_binding("object=7 composer_display=8 android_display=0 task=9").unwrap(),
+        tasks_before: test_snapshot(expected, false),
+        tasks_after: test_snapshot(expected, true),
         business_pending: true,
         close_observed: false,
         reopen_observed: false,
         fresh_task_proven: false,
+    }
+}
+
+#[cfg(test)]
+fn test_snapshot(expected: &ApplicationInspection, launched: bool) -> ApplicationTaskSnapshot {
+    use droidloom_supervisor::control::application_tasks::{ApplicationTask, TASK_SNAPSHOT_SCHEMA};
+    ApplicationTaskSnapshot {
+        schema: TASK_SNAPSHOT_SCHEMA.into(),
+        application: expected.clone(),
+        listing_bytes: if launched { 200 } else { 0 },
+        listing_sha256: "c".repeat(64),
+        tasks: if launched {
+            vec![ApplicationTask {
+                task: 9,
+                root_task: 9,
+                display: 0,
+                user: expected.user,
+                name: format!("{}/{}.Main", expected.package, expected.package),
+                visible: true,
+                top_activity: Some(format!("{}/{}.Main", expected.package, expected.package)),
+            }]
+        } else {
+            vec![]
+        },
     }
 }
 
@@ -318,7 +388,18 @@ mod tests {
         }]);
         let mut launched = reply(expected);
         launched.launch = Some("object=7 composer_display=8 android_display=0 task=9".into());
-        VecDeque::from([catalog, reply(expected), launched, reply(expected)])
+        let mut before = reply(expected);
+        before.diagnostics = Some(serde_json::to_string(&test_snapshot(expected, false)).unwrap());
+        let mut after = reply(expected);
+        after.diagnostics = Some(serde_json::to_string(&test_snapshot(expected, true)).unwrap());
+        VecDeque::from([
+            catalog,
+            reply(expected),
+            before,
+            launched,
+            after,
+            reply(expected),
+        ])
     }
 
     #[test]
@@ -331,12 +412,15 @@ mod tests {
             Ok(replies.pop_front().unwrap())
         })
         .unwrap();
-        assert_eq!(calls.len(), 4);
-        assert!(matches!(&calls[2], ControlRequest::Launch {
+        assert_eq!(calls.len(), 6);
+        assert!(matches!(&calls[3], ControlRequest::Launch {
             spec, package, component: Some(component), resolution: None, user: 0,
         } if spec == &plan.specification.path && package == &expected.package && component == &plan.component));
         assert_eq!(result.scope, "launch_only");
         assert_eq!(result.task.task, 9);
+        assert!(result.tasks_before.tasks.is_empty());
+        assert_eq!(result.tasks_after.tasks[0].task, 9);
+        assert!(result.tasks_after.tasks[0].visible);
         assert_eq!(
             result.catalog_component,
             "org.example.app/org.example.app.Main"
@@ -439,15 +523,93 @@ mod tests {
     fn post_launch_failure_keeps_binding_and_never_retries() {
         let (_dir, expected, plan, source) = fixture();
         let mut replies = responses(&expected);
-        replies[3].inspection.as_mut().unwrap().version_code += 1;
+        replies[5].inspection.as_mut().unwrap().version_code += 1;
         let mut calls = 0;
         let failure = execute_with(&expected, &plan, &source, |_| {
             calls += 1;
             Ok(replies.pop_front().unwrap())
         })
         .unwrap_err();
-        assert_eq!(calls, 4);
+        assert_eq!(calls, 6);
         assert!(failure.contains("task=9") && failure.contains("no automatic retry"));
+    }
+
+    #[test]
+    fn changed_or_absent_snapshot_before_launch_cannot_start_an_activity() {
+        for kind in 0..3 {
+            let (_dir, expected, plan, source) = fixture();
+            let mut replies = responses(&expected);
+            let mut before = test_snapshot(&expected, false);
+            match kind {
+                0 => before.application.epoch.framework_start_ticks += 1,
+                1 => before.schema = "unsupported".into(),
+                _ => replies[2].inspection.as_mut().unwrap().uid += 1,
+            }
+            replies[2].diagnostics = Some(serde_json::to_string(&before).unwrap());
+            let mut calls = Vec::new();
+            assert!(
+                execute_with(&expected, &plan, &source, |request| {
+                    calls.push(request.clone());
+                    Ok(replies.pop_front().unwrap())
+                })
+                .is_err()
+            );
+            assert_eq!(calls.len(), 3);
+            assert!(
+                !calls
+                    .iter()
+                    .any(|call| matches!(call, ControlRequest::Launch { .. }))
+            );
+        }
+    }
+
+    #[test]
+    fn post_launch_task_must_match_actual_binding_user_visibility_and_epoch() {
+        for kind in 0..5 {
+            let (_dir, expected, plan, source) = fixture();
+            let mut replies = responses(&expected);
+            let mut after = test_snapshot(&expected, true);
+            match kind {
+                0 => after.tasks[0].task += 1,
+                1 => after.tasks[0].user += 1,
+                2 => after.tasks[0].display += 1,
+                3 => after.tasks[0].visible = false,
+                _ => after.application.epoch.framework_start_ticks += 1,
+            }
+            replies[4].diagnostics = Some(serde_json::to_string(&after).unwrap());
+            let mut calls = Vec::new();
+            let failure = execute_with(&expected, &plan, &source, |request| {
+                calls.push(request.clone());
+                Ok(replies.pop_front().unwrap())
+            })
+            .unwrap_err();
+            assert_eq!(calls.len(), 5);
+            assert_eq!(
+                calls
+                    .iter()
+                    .filter(|call| matches!(call, ControlRequest::Launch { .. }))
+                    .count(),
+                1
+            );
+            assert!(failure.contains("task=9") && failure.contains("no automatic retry"));
+        }
+    }
+
+    #[test]
+    fn preexisting_visible_task_is_observed_without_freshness_or_close_authority() {
+        let (_dir, expected, plan, source) = fixture();
+        let mut replies = responses(&expected);
+        replies[2].diagnostics =
+            Some(serde_json::to_string(&test_snapshot(&expected, true)).unwrap());
+        let observed = execute_with(&expected, &plan, &source, |_| {
+            Ok(replies.pop_front().unwrap())
+        })
+        .unwrap();
+        assert_eq!(observed.tasks_before.tasks, observed.tasks_after.tasks);
+        assert!(
+            !observed.fresh_task_proven && !observed.close_observed && !observed.reopen_observed
+        );
+        assert!(observed.business_pending);
     }
 
     #[test]

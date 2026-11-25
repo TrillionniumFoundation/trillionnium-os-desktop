@@ -33,19 +33,50 @@ struct Inspection<'a, 'borrow, 'owner> {
     original: Option<&'a ApplicationInspection>,
     reads: &'a mut Vec<ReadReceipt>,
     deadline: Instant,
+    retirement_unproven: bool,
+}
+
+// AndroidProbe returns strings for portability. Retain an actual retirement
+// failure separately so that this adapter cannot downgrade broker quarantine.
+fn inspection_result<T>(
+    result: Result<T>,
+    retirement_unproven: &mut bool,
+) -> std::result::Result<T, String> {
+    if matches!(&result, Err(ApplicationError::RetirementUnproven)) {
+        *retirement_unproven = true;
+    }
+    result.map_err(|error| error.to_string())
+}
+
+fn completed_inspection<T>(
+    result: std::result::Result<T, String>,
+    retirement_unproven: bool,
+) -> Result<T> {
+    if retirement_unproven {
+        Err(ApplicationError::RetirementUnproven)
+    } else {
+        result.map_err(external)
+    }
+}
+
+impl Inspection<'_, '_, '_> {
+    fn inspect(&mut self) -> Result<ApplicationInspection> {
+        let package = self.request.package.clone();
+        let user = self.request.user;
+        let result = crate::control::application_probe::inspect(self, &package, user);
+        completed_inspection(result, self.retirement_unproven)
+    }
 }
 
 impl AndroidProbe for Inspection<'_, '_, '_> {
     fn epoch(&mut self) -> std::result::Result<RuntimeEpoch, String> {
-        require(Instant::now() < self.deadline, "launch inspection deadline")
-            .map_err(|e| e.to_string())?;
-        let epoch = self
-            .ready
-            .application_epoch(self.framework)
-            .map_err(|e| e.to_string())?;
-        require(Instant::now() < self.deadline, "launch inspection deadline")
-            .map_err(|e| e.to_string())?;
-        Ok(epoch)
+        let result = (|| {
+            require(Instant::now() < self.deadline, "launch inspection deadline")?;
+            let epoch = self.ready.application_epoch(self.framework)?;
+            require(Instant::now() < self.deadline, "launch inspection deadline")?;
+            Ok(epoch)
+        })();
+        inspection_result(result, &mut self.retirement_unproven)
     }
     fn command(&mut self, args: &[String]) -> std::result::Result<String, String> {
         let result = (|| -> Result<String> {
@@ -72,8 +103,7 @@ impl AndroidProbe for Inspection<'_, '_, '_> {
             )?;
             let result = self
                 .ready
-                .run_application_read_before(&command, self.deadline)
-                .map_err(external)?;
+                .run_application_read_before(&command, self.deadline)?;
             require(
                 retired(&result.receipt) && result.receipt.query_waitid_status == 0,
                 "launch inspection child retirement incomplete",
@@ -85,7 +115,7 @@ impl AndroidProbe for Inspection<'_, '_, '_> {
             )?;
             Ok(result.output)
         })();
-        result.map_err(|e| e.to_string())
+        inspection_result(result, &mut self.retirement_unproven)
     }
 }
 
@@ -222,7 +252,7 @@ pub(super) fn launch(
         },
         request,
     )?;
-    let framework = ready.observe_application_framework().map_err(external)?;
+    let framework = ready.observe_application_framework()?;
     let mut reads = Vec::new();
     let original = {
         let mut probe = Inspection {
@@ -232,9 +262,9 @@ pub(super) fn launch(
             original: None,
             reads: &mut reads,
             deadline,
+            retirement_unproven: false,
         };
-        crate::control::application_probe::inspect(&mut probe, &request.package, request.user)
-            .map_err(external)?
+        probe.inspect()?
     };
     require(
         !reads.is_empty() && Instant::now() < deadline,
@@ -264,9 +294,9 @@ pub(super) fn launch(
                 original: Some(&adapter.original),
                 reads: &mut adapter.reads,
                 deadline,
+                retirement_unproven: false,
             };
-            crate::control::application_probe::inspect(&mut probe, &request.package, request.user)
-                .map_err(external)?
+            probe.inspect()?
         };
         require(
             observed == adapter.original
@@ -307,4 +337,140 @@ pub(super) fn launch(
         commands: adapter.commands,
         bridge,
     })
+}
+
+pub(super) fn observe_tasks(
+    mut ready: Workflow<'_, '_>,
+    expected: &ApplicationInspection,
+    deadline: Instant,
+) -> Result<crate::control::application_tasks::ApplicationTaskSnapshot> {
+    use sha2::{Digest, Sha256};
+    require(
+        deadline
+            .checked_duration_since(Instant::now())
+            .is_some_and(|remaining| !remaining.is_zero() && remaining <= LAUNCH_LIMIT),
+        "task observation deadline expired or exceeds the fixed limit",
+    )?;
+    let request = LaunchRequest {
+        package: expected.package.clone(),
+        component: None,
+        user: expected.user,
+        resolution: None,
+    };
+    // Only the fixed read command is selected. No task ID, shell, executable,
+    // descriptor or launch argument can be provided through this public route.
+    let command = LaunchCommand::bind(&AndroidCommand::ListTasks, &request)?;
+    let framework = ready.observe_application_framework()?;
+    let mut reads = Vec::new();
+    let result = (|| {
+        let original = {
+            let mut probe = Inspection {
+                ready: &mut ready,
+                framework: &framework,
+                request: &request,
+                original: None,
+                reads: &mut reads,
+                deadline,
+                retirement_unproven: false,
+            };
+            probe.inspect()?
+        };
+        require(
+            original == *expected,
+            "task observation expected identity or epoch changed",
+        )?;
+        require(
+            ready.application_epoch(&framework)? == original.epoch,
+            "task observation framework changed before the read",
+        )?;
+        let observed = ready.run_application_launch(&command, deadline)?;
+        require(
+            retired(&observed.receipt)
+                && observed.receipt.query_waitid_status == 0
+                && observed.output.status.success()
+                && observed.output.stderr.is_empty(),
+            "task observation command did not exit successfully and retire",
+        )?;
+        require(
+            observed.operation_deadline <= deadline
+                && Instant::now() < observed.operation_deadline
+                && observed.receipt.output_bytes == observed.output.stdout.len()
+                && observed.receipt.output_sha256
+                    == format!("{:x}", Sha256::digest(&observed.output.stdout))
+                && observed.stderr_bytes == observed.output.stderr.len()
+                && observed.stderr_sha256
+                    == format!("{:x}", Sha256::digest(&observed.output.stderr)),
+            "task observation command output or absolute deadline differs",
+        )?;
+        require(
+            ready.application_epoch(&framework)? == original.epoch,
+            "task observation framework changed after the read",
+        )?;
+        let listing = std::str::from_utf8(&observed.output.stdout).map_err(external)?;
+        let snapshot =
+            crate::control::application_tasks::parse(&original, listing).map_err(external)?;
+        let after = {
+            let mut probe = Inspection {
+                ready: &mut ready,
+                framework: &framework,
+                request: &request,
+                original: Some(&original),
+                reads: &mut reads,
+                deadline,
+                retirement_unproven: false,
+            };
+            probe.inspect()?
+        };
+        require(
+            after == original
+                && !reads.is_empty()
+                && reads
+                    .iter()
+                    .all(|row| retired(row) && row.query_waitid_status == 0),
+            "task observation installed APK identity changed or read retirement incomplete",
+        )?;
+        require(
+            ready.application_epoch(&framework)? == original.epoch,
+            "task observation framework changed at completion",
+        )?;
+        Ok(snapshot)
+    })();
+    // Preserve the actual owner's retirement failure on both success and error;
+    // neither malformed stdout nor an identity mismatch skips the owner check.
+    workflow::finish_effect(result, || ready.revalidate_application(), deadline)
+}
+
+#[cfg(test)]
+mod task_observation_tests {
+    use super::*;
+
+    #[test]
+    fn actual_retirement_failure_survives_the_string_probe_boundary() {
+        let mut quarantined = false;
+        let result =
+            inspection_result::<()>(Err(ApplicationError::RetirementUnproven), &mut quarantined);
+        assert!(quarantined);
+        assert!(matches!(
+            completed_inspection(result, quarantined),
+            Err(ApplicationError::RetirementUnproven)
+        ));
+        // A later parser error or successful callback cannot erase that state.
+        assert!(inspection_result(Ok(()), &mut quarantined).is_ok());
+        assert!(matches!(
+            completed_inspection::<()>(Err("secondary parser failure".into()), quarantined),
+            Err(ApplicationError::RetirementUnproven)
+        ));
+    }
+
+    #[test]
+    fn ordinary_inspection_errors_do_not_invent_retirement_failure() {
+        let mut quarantined = false;
+        let result = inspection_result::<()>(Err(reject("different package")), &mut quarantined);
+        assert!(!quarantined);
+        assert!(matches!(
+            completed_inspection(result, quarantined),
+            Err(ApplicationError::Rejected(_))
+        ));
+        assert!(completed_inspection(Ok(()), quarantined).is_ok());
+    }
 }

@@ -303,6 +303,23 @@ impl ProductionCell {
             .ok_or_else(|| rejected("production browser requires actual current readiness"))?;
         crate::production_application::open_browser(ready, expected, url).map_err(rejected)
     }
+    pub(crate) fn observe_application_tasks(
+        &mut self,
+        expected: &crate::control::application_probe::ApplicationInspection,
+        deadline: Instant,
+    ) -> Result<crate::control::application_tasks::ApplicationTaskSnapshot> {
+        let tree = self
+            .tree
+            .as_mut()
+            .ok_or_else(|| rejected("production owner was retired"))?;
+        let ready = tree
+            .ready_witness(self.context.selection(), &self.execution)
+            .map_err(rejected)?
+            .ok_or_else(|| rejected("task observation requires actual current readiness"))?;
+        crate::production_application::observe_application_tasks(ready, expected, deadline)
+            .map_err(rejected)
+    }
+
     pub(crate) fn inspect_contacts_baseline(
         &mut self,
         contacts: &crate::control::application_probe::ApplicationInspection,

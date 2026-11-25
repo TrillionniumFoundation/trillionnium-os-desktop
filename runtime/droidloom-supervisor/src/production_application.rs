@@ -548,6 +548,22 @@ pub(crate) fn launch_application(
     launch::launch(Workflow::Legacy(ready), request, deadline)
 }
 
+pub(crate) fn observe_application_tasks(
+    ready: ReadyTreeWitness<'_>,
+    expected: &ApplicationInspection,
+    deadline: std::time::Instant,
+) -> Result<crate::control::application_tasks::ApplicationTaskSnapshot> {
+    launch::observe_tasks(Workflow::Legacy(ready), expected, deadline)
+}
+
+pub(crate) fn observe_application_tasks_early(
+    authority: &crate::production_selection::early_generation::EarlyApplicationAuthority<'_>,
+    expected: &ApplicationInspection,
+    deadline: std::time::Instant,
+) -> Result<crate::control::application_tasks::ApplicationTaskSnapshot> {
+    launch::observe_tasks(Workflow::Early(authority), expected, deadline)
+}
+
 pub(crate) fn connect_task_control(
     authority: &ApplicationAuthority<'_>,
     package: &str,

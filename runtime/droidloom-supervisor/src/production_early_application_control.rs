@@ -283,6 +283,18 @@ impl EarlyApplicationControl {
                     response.launch = Some(output);
                     response.message = "Implicit Firefox HTTPS activity opened in the original early Android generation; rendered content, media and whole-app acceptance remain pending".into();
                 }
+                ControlRequest::ObserveApplicationTasks { expected } => {
+                    progress.report("Reading this package's current Android task metadata...");
+                    let observed = crate::production_application::observe_application_tasks_early(
+                        authority,
+                        &expected,
+                        launch_deadline,
+                    )
+                    .map_err(|e| early_application_error(e, &mut acquisition_quarantined))?;
+                    response.inspection = Some(observed.application.clone());
+                    response.diagnostics = Some(serde_json::to_string(&observed)?);
+                    response.message = "Current package task metadata observed in the original early generation; host pixels, close authority and business acceptance remain pending".into();
+                }
                 ControlRequest::InspectContactsFixture { contacts, provider } => {
                     progress.report("Reading the fixed Contacts provider baseline...");
                     let observed = crate::production_application::inspect_contacts_baseline_early(

@@ -68,6 +68,9 @@ pub mod application_probe;
 #[path = "application_custody.rs"]
 pub mod application_custody;
 
+#[path = "application_tasks.rs"]
+pub mod application_tasks;
+
 #[path = "application_command.rs"]
 mod application_command;
 
@@ -206,6 +209,12 @@ pub enum ControlRequest {
         package: String,
         /// Android user owning the package.
         user: u32,
+    },
+    /// Read only this package/user's current ActivityTaskManager task metadata.
+    /// This cannot close a task or accept rendered content or business gates.
+    ObserveApplicationTasks {
+        /// Complete current installed identity and physical runtime generation.
+        expected: application_probe::ApplicationInspection,
     },
     /// Open a reviewed HTTPS fixture via the current implicit Firefox resolver.
     OpenBrowser {
@@ -429,6 +438,9 @@ impl Daemon {
             ControlRequest::OpenBrowser { expected, url } => {
                 self.open_browser(peer_uid, &expected, &url)
             }
+            ControlRequest::ObserveApplicationTasks { .. } => Err(ControlError::Invalid(
+                "fixed task observation requires the production Ready owner".into(),
+            )),
             ControlRequest::InspectContactsFixture { .. } => Err(ControlError::Invalid(
                 "fixed Contacts provider reads require the production Ready owner".into(),
             )),

@@ -1072,6 +1072,37 @@ impl ProductionDaemon {
         Ok(response)
     }
 
+    fn observe_application_tasks(
+        &mut self,
+        peer_uid: u32,
+        expected: &application_probe::ApplicationInspection,
+        deadline: Instant,
+    ) -> Result<ControlResponse, ControlError> {
+        self.authorize_active(peer_uid)?;
+        if self.state != CellState::Running {
+            return Err(ControlError::Invalid(
+                "task observation requires current Android readiness".into(),
+            ));
+        }
+        let result = self
+            .active
+            .as_mut()
+            .expect("authorized active owner")
+            .observe_application_tasks(expected, deadline)
+            .map_err(|error| ControlError::Invalid(error.to_string()));
+        self.poll();
+        let observed = result?;
+        if self.state != CellState::Running {
+            return Err(ControlError::Invalid(
+                "production tree changed during task observation".into(),
+            ));
+        }
+        let mut response = self.success("Current package task metadata observed; host pixels, close authority and business acceptance remain pending");
+        response.inspection = Some(observed.application.clone());
+        response.diagnostics = Some(serde_json::to_string(&observed)?);
+        Ok(response)
+    }
+
     fn inspect_contacts_fixture(
         &mut self,
         peer_uid: u32,
@@ -1153,6 +1184,16 @@ impl ProductionDaemon {
             }
             ControlRequest::InspectContactsFixture { contacts, provider } => {
                 self.inspect_contacts_fixture(peer_uid, &contacts, &provider)
+            }
+            ControlRequest::ObserveApplicationTasks { expected } => {
+                if file.is_some() || shutdown.load(Ordering::Relaxed) {
+                    Err(ControlError::Invalid(
+                        "task observation rejects descriptors and shutdown".into(),
+                    ))
+                } else {
+                    let deadline = Instant::now() + droidloom_task_launcher::effects::LAUNCH_LIMIT;
+                    self.observe_application_tasks(peer_uid, &expected, deadline)
+                }
             }
             _ => {
                 // Additional app/business actions need dedicated owned-tree

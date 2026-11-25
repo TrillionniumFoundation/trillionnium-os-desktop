@@ -801,7 +801,10 @@ mod tests {
             _: &FilePin,
         ) -> Result<(ApplicationInspection, LaunchObservation), String> {
             self.launch_calls += 1;
-            Ok((expected.clone(), launch_route::test_observation(&plan.component)))
+            Ok((
+                expected.clone(),
+                launch_route::test_observation(&plan.component, expected),
+            ))
         }
         fn inspect(&mut self, p: &str, _: u32) -> Result<ApplicationInspection, String> {
             self.identities
