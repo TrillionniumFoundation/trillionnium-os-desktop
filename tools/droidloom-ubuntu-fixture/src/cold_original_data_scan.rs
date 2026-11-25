@@ -186,10 +186,6 @@ fn check_mounts(pid: u32, root: &File, nodes: &Nodes) -> Result<Option<u64>> {
             return Err(e);
         }
     };
-    ensure(
-        !raw.is_empty(),
-        "held process root has no complete mount inventory",
-    )?;
     for line in raw.split(|b| *b == b'\n').filter(|s| !s.is_empty()) {
         let fields = std::str::from_utf8(line)?
             .split_whitespace()
@@ -234,6 +230,7 @@ fn check_process(
     pid: u32,
     nodes: &Nodes,
     mount_namespaces: &mut BTreeSet<ScopeKey>,
+    empty_mount_roots: &mut BTreeSet<ScopeKey>,
     held_namespaces: &mut Vec<MountScope>,
 ) -> Result<(u64, u64)> {
     let Some(before) = start(pid)? else {
@@ -273,12 +270,12 @@ fn check_process(
         )?;
     }
     let mut bytes = check_maps(pid, nodes)?;
-    let mut completed = false;
+    let mut observed = None;
     if let Some(scope) = &scope {
         if !mount_namespaces.contains(&scope.key) {
             if let Some(count) = check_mounts(pid, &scope.root, nodes)? {
                 bytes += count;
-                completed = true;
+                observed = Some(count);
             }
         }
     }
@@ -294,9 +291,11 @@ fn check_process(
         scope.as_ref().map(|s| s.key) == after_scope.as_ref().map(|s| s.key),
         "process root or mount namespace changed during data reference scan",
     )?;
-    // A missing process root (including a kernel thread), an exited PID, or
-    // an incomplete mount read never marks its namespace as fully examined.
-    if completed {
+    // Chroots without a mountpoint beneath their root can produce an actual
+    // successful empty mountinfo read. Preserve that separate observation;
+    // never let it suppress a later scan of the same or a different root.
+    // A missing root, an exited PID or a failed read supplies no observation.
+    if let Some(count) = observed {
         let scope = scope.ok_or("completed mount scan lost its held process root")?;
         let ns = fs::stat(&scope.namespace)?;
         let root = fs::stat(&scope.root)?;
@@ -304,8 +303,14 @@ fn check_process(
             (ns.dev, ns.ino, root.dev, root.ino) == scope.key,
             "held mount scope changed",
         )?;
-        mount_namespaces.insert(scope.key);
-        held_namespaces.push(scope);
+        let first = if count == 0 {
+            empty_mount_roots.insert(scope.key)
+        } else {
+            mount_namespaces.insert(scope.key)
+        };
+        if first {
+            held_namespaces.push(scope);
+        }
     }
     Ok((fds, bytes))
 }
@@ -387,6 +392,7 @@ pub(super) fn require_no_other_references(identities: &[Identity]) -> Result<Val
     let mut fds = 0;
     let mut bytes = 0;
     let mut namespaces = BTreeSet::new();
+    let mut empty_mount_roots = BTreeSet::new();
     let mut held = Vec::new();
     let loops_before = check_loops(&nodes)?;
     for row in std::fs::read_dir("/proc")? {
@@ -407,7 +413,13 @@ pub(super) fn require_no_other_references(identities: &[Identity]) -> Result<Val
             processes <= 32768 && start.elapsed() < Duration::from_secs(45),
             "bounded original process reference scan expired",
         )?;
-        let (n, b) = check_process(pid, &nodes, &mut namespaces, &mut held)?;
+        let (n, b) = check_process(
+            pid,
+            &nodes,
+            &mut namespaces,
+            &mut empty_mount_roots,
+            &mut held,
+        )?;
         fds += n;
         bytes += b;
         ensure(
@@ -422,6 +434,7 @@ pub(super) fn require_no_other_references(identities: &[Identity]) -> Result<Val
         "process_metadata_bytes":bytes,
         "mount_namespaces_observed":namespaces.iter().map(|s|(s.0,s.1)).collect::<BTreeSet<_>>().len(),
         "mount_namespace_roots_observed":namespaces.len(),
+        "empty_mount_inventory_scopes":empty_mount_roots,
         "loop_devices_before":loops_before,"loop_devices_after":loops_after,"other_references":0,
         "permission_errors":0,"elapsed_seconds":start.elapsed().as_secs_f64()}),
     )
@@ -506,7 +519,13 @@ mod tests {
             std::thread::sleep(Duration::from_millis(10));
         }
         let result = if ready.exists() {
-            check_process(child.id(), &nodes, &mut BTreeSet::new(), &mut Vec::new())
+            check_process(
+                child.id(),
+                &nodes,
+                &mut BTreeSet::new(),
+                &mut BTreeSet::new(),
+                &mut Vec::new(),
+            )
         } else {
             Err("child did not reach the owned descriptor checkpoint".into())
         };
@@ -520,7 +539,14 @@ mod tests {
                 .contains("retains descriptor")
         );
         assert_eq!(
-            check_process(child.id(), &nodes, &mut BTreeSet::new(), &mut Vec::new()).unwrap(),
+            check_process(
+                child.id(),
+                &nodes,
+                &mut BTreeSet::new(),
+                &mut BTreeSet::new(),
+                &mut Vec::new()
+            )
+            .unwrap(),
             (0, 0)
         );
     }
