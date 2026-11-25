@@ -125,17 +125,71 @@ fn check_maps(pid: u32, nodes: &Nodes) -> Result<u64> {
     }
     Ok(raw.len() as u64)
 }
-fn check_mounts(pid: u32, nodes: &Nodes) -> Result<u64> {
+type ScopeKey = (u64, u64, u64, u64);
+struct MountScope {
+    namespace: File,
+    root: File,
+    key: ScopeKey,
+}
+fn mount_scope(process: &Path) -> Result<Option<MountScope>> {
+    let namespace = match File::open(process.join("ns/mnt")) {
+        Ok(v) => v,
+        Err(e) if vanished(&e) => return Ok(None),
+        Err(e) => return Err(e.into()),
+    };
+    let root = match File::open(process.join("root")) {
+        Ok(v) => v,
+        Err(e) if vanished(&e) => return Ok(None),
+        Err(e) => return Err(e.into()),
+    };
+    let ns = fs::stat(&namespace)?;
+    let r = fs::stat(&root)?;
+    ensure(
+        FileType::from_raw_mode(r.mode) == FileType::Directory,
+        "process root is not a held directory",
+    )?;
+    Ok(Some(MountScope {
+        namespace,
+        root,
+        key: (ns.dev, ns.ino, r.dev, r.ino),
+    }))
+}
+fn rooted_mount_matches(root: &File, target: &Path, nodes: &Nodes) -> Result<bool> {
+    let relative = target.strip_prefix("/")?;
+    let node = if relative.as_os_str().is_empty() {
+        fs::stat(root)?
+    } else {
+        // The kernel's mountpoint path is interpreted in this exact process
+        // root. A different chroot in the same mount namespace is a different
+        // observation. No caller-root absolute symlink may escape that root.
+        let file = File::from(rustix::fs::openat2(
+            root,
+            relative,
+            OFlags::PATH | OFlags::CLOEXEC,
+            Mode::empty(),
+            rustix::fs::ResolveFlags::BENEATH
+                | rustix::fs::ResolveFlags::NO_SYMLINKS
+                | rustix::fs::ResolveFlags::NO_MAGICLINKS,
+        )?);
+        fs::stat(&file)?
+    };
+    Ok(nodes.contains(&(node.dev, node.ino)))
+}
+fn check_mounts(pid: u32, root: &File, nodes: &Nodes) -> Result<Option<u64>> {
     let path = PathBuf::from(format!("/proc/{pid}/mountinfo"));
     let raw = match bounded(&path, 16 * 1024 * 1024) {
         Ok(v) => v,
         Err(e) => {
             if start(pid)?.is_none() {
-                return Ok(0);
+                return Ok(None);
             }
             return Err(e);
         }
     };
+    ensure(
+        !raw.is_empty(),
+        "held process root has no complete mount inventory",
+    )?;
     for line in raw.split(|b| *b == b'\n').filter(|s| !s.is_empty()) {
         let fields = std::str::from_utf8(line)?
             .split_whitespace()
@@ -156,24 +210,37 @@ fn check_mounts(pid: u32, nodes: &Nodes) -> Result<u64> {
             continue;
         }
         let target = decode_mount_path(fields[4])?;
-        let rooted = PathBuf::from(format!("/proc/{pid}/root")).join(target.strip_prefix("/")?);
         ensure(
-            !metadata_matches(&rooted, nodes)?,
+            !rooted_mount_matches(root, &target, nodes)?,
             &format!("process {pid} retains a bind mount of a data inode"),
         )?;
     }
-    Ok(raw.len() as u64)
+    let after = match bounded(&path, 16 * 1024 * 1024) {
+        Ok(v) => v,
+        Err(e) => {
+            if start(pid)?.is_none() {
+                return Ok(None);
+            }
+            return Err(e);
+        }
+    };
+    ensure(
+        after == raw,
+        "process mount inventory changed during data observation",
+    )?;
+    Ok(Some((raw.len() + after.len()) as u64))
 }
 fn check_process(
     pid: u32,
     nodes: &Nodes,
-    mount_namespaces: &mut BTreeSet<(u64, u64)>,
-    held_namespaces: &mut Vec<File>,
+    mount_namespaces: &mut BTreeSet<ScopeKey>,
+    held_namespaces: &mut Vec<MountScope>,
 ) -> Result<(u64, u64)> {
     let Some(before) = start(pid)? else {
         return Ok((0, 0));
     };
     let root = PathBuf::from(format!("/proc/{pid}"));
+    let scope = mount_scope(&root)?;
     let entries = match std::fs::read_dir(root.join("fd")) {
         Ok(v) => v,
         Err(e) if vanished(&e) => return Ok((0, 0)),
@@ -206,21 +273,39 @@ fn check_process(
         )?;
     }
     let mut bytes = check_maps(pid, nodes)?;
-    let namespace = match File::open(root.join("ns/mnt")) {
-        Ok(v) => v,
-        Err(e) if vanished(&e) => return Ok((fds, bytes)),
-        Err(e) => return Err(e.into()),
-    };
-    let ns = fs::stat(&namespace)?;
-    if mount_namespaces.insert((ns.dev, ns.ino)) {
-        bytes += check_mounts(pid, nodes)?;
-        held_namespaces.push(namespace);
+    let mut completed = false;
+    if let Some(scope) = &scope {
+        if !mount_namespaces.contains(&scope.key) {
+            if let Some(count) = check_mounts(pid, &scope.root, nodes)? {
+                bytes += count;
+                completed = true;
+            }
+        }
     }
-    if let Some(after) = start(pid)? {
+    let Some(after) = start(pid)? else {
+        return Ok((fds, bytes));
+    };
+    ensure(
+        after == before,
+        "process identity changed during data reference scan",
+    )?;
+    let after_scope = mount_scope(&root)?;
+    ensure(
+        scope.as_ref().map(|s| s.key) == after_scope.as_ref().map(|s| s.key),
+        "process root or mount namespace changed during data reference scan",
+    )?;
+    // A missing process root (including a kernel thread), an exited PID, or
+    // an incomplete mount read never marks its namespace as fully examined.
+    if completed {
+        let scope = scope.ok_or("completed mount scan lost its held process root")?;
+        let ns = fs::stat(&scope.namespace)?;
+        let root = fs::stat(&scope.root)?;
         ensure(
-            after == before,
-            "process identity changed during data reference scan",
+            (ns.dev, ns.ino, root.dev, root.ino) == scope.key,
+            "held mount scope changed",
         )?;
+        mount_namespaces.insert(scope.key);
+        held_namespaces.push(scope);
     }
     Ok((fds, bytes))
 }
@@ -334,7 +419,9 @@ pub(super) fn require_no_other_references(identities: &[Identity]) -> Result<Val
     Ok(
         json!({"schema":"droidloom.original-data-reference-observation.v1","observer_pid":own,
         "target_identities":identities,"processes_observed":processes,"descriptors_observed":fds,
-        "process_metadata_bytes":bytes,"mount_namespaces_observed":namespaces.len(),
+        "process_metadata_bytes":bytes,
+        "mount_namespaces_observed":namespaces.iter().map(|s|(s.0,s.1)).collect::<BTreeSet<_>>().len(),
+        "mount_namespace_roots_observed":namespaces.len(),
         "loop_devices_before":loops_before,"loop_devices_after":loops_after,"other_references":0,
         "permission_errors":0,"elapsed_seconds":start.elapsed().as_secs_f64()}),
     )
@@ -344,6 +431,41 @@ pub(super) fn require_no_other_references(identities: &[Identity]) -> Result<Val
 mod tests {
     use super::*;
     use std::process::{Command, Stdio};
+    #[test]
+    fn same_mount_namespace_with_different_roots_needs_separate_observation() {
+        use std::os::unix::fs::symlink;
+        let t = tempfile::tempdir().unwrap();
+        let a = t.path().join("root-a");
+        let b = t.path().join("root-b");
+        for root in [&a, &b] {
+            std::fs::create_dir(root).unwrap();
+            std::fs::write(root.join("mountpoint"), b"ordinary metadata target").unwrap();
+        }
+        let process = t.path().join("process");
+        std::fs::create_dir_all(process.join("ns")).unwrap();
+        symlink("/proc/self/ns/mnt", process.join("ns/mnt")).unwrap();
+        assert!(mount_scope(&process).unwrap().is_none());
+        symlink(&a, process.join("root")).unwrap();
+        let first = mount_scope(&process).unwrap().unwrap();
+        let selected = fs::stat(&File::open(a.join("mountpoint")).unwrap()).unwrap();
+        let nodes = BTreeSet::from([(selected.dev, selected.ino)]);
+        assert!(rooted_mount_matches(&first.root, Path::new("/mountpoint"), &nodes).unwrap());
+        std::fs::remove_file(process.join("root")).unwrap();
+        symlink(&b, process.join("root")).unwrap();
+        let second = mount_scope(&process).unwrap().unwrap();
+        assert_eq!((first.key.0, first.key.1), (second.key.0, second.key.1));
+        assert_ne!(first.key, second.key);
+        assert!(!rooted_mount_matches(&second.root, Path::new("/mountpoint"), &nodes).unwrap());
+        let mut scopes = BTreeSet::new();
+        assert!(scopes.insert(first.key));
+        assert!(scopes.insert(second.key));
+        assert!(!scopes.insert(first.key));
+        // The original held root still resolves its own target after the
+        // process-root pathname changed, while revalidation detects the key.
+        assert!(rooted_mount_matches(&first.root, Path::new("/mountpoint"), &nodes).unwrap());
+        symlink(a.join("mountpoint"), b.join("alias")).unwrap();
+        assert!(rooted_mount_matches(&second.root, Path::new("/alias"), &nodes).is_err());
+    }
     #[test]
     fn owner_probe_child() {
         if let Ok(path) = std::env::var("DROIDLOOM_DATA_REFERENCE_CHILD") {
