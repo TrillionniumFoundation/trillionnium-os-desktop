@@ -269,4 +269,162 @@ class Admission(unittest.TestCase):
             command.return_value={"exit":0,"stdout":b"active\n"}
             with self.assertRaises(release.Rejected):tx.cold_recovery_authority()
             self.assertEqual(len(events),1)
+@unittest.skipUnless(os.geteuid()==0 and os.environ.get("DROIDLOOM_PUBLIC_TEST_ROOT"),
+                     "requires an explicit private root-owned directory for real dpkg rollback tests")
+class PublicNamespaceTransaction(unittest.TestCase):
+    """Real ordinary packages, confined to a fresh disposable --root tree.
+
+    Only the outer release publication is replaced by these test inventories.
+    Payload tar validation, dpkg, directory/file custody and recovery are real;
+    no physical admission dispatcher or current host package database is used.
+    """
+    def setUp(self):
+        import cold_apply
+        import hashlib
+        import subprocess
+        from unittest.mock import patch
+        self.cold=cold_apply
+        parent=Path(os.environ["DROIDLOOM_PUBLIC_TEST_ROOT"])
+        st=parent.lstat()
+        self.assertTrue(parent.is_absolute() and stat.S_ISDIR(st.st_mode))
+        self.assertEqual((st.st_uid,st.st_gid,stat.S_IMODE(st.st_mode)),(0,0,0o700))
+        self.tmp=tempfile.TemporaryDirectory(prefix="public-transaction-",dir=parent)
+        self.addCleanup(self.tmp.cleanup)
+        self.base=Path(self.tmp.name);self.root=self.base/"root";self.root.mkdir(mode=0o700)
+        for rel in ("var/lib/dpkg/info","var/lib/dpkg/updates","var/lib/dpkg/triggers",
+                    "etc/ssh","home/alex","usr/lib/droidloom","usr/share/droidloom"):
+            (self.root/rel).mkdir(parents=True,exist_ok=True)
+        (self.root/"var/lib/dpkg/status").write_bytes(b"")
+        (self.root/"etc/passwd").write_bytes(b"original account fixture\n")
+        (self.root/"home/alex/private").write_bytes(b"unselected private fixture\n")
+        self.private_identity=release.f9((self.root/"home/alex/private").stat())
+        self.original={};self.untouched={}
+        for rel in cold_apply.PUBLIC_NAMESPACE_ROOTS:
+            path=self.root/rel
+            child=path/"unselected";child.write_bytes(b"original unselected child\n")
+            os.chown(child,1000,1000);child.chmod(0o600)
+            self.untouched[str(child)]=release.f9(child.stat())
+            os.setxattr(path,"user.droidloom-test",b"original-directory-attribute")
+            os.chown(path,1000,1000);path.chmod(0o755)
+        old=self.root/"usr/lib/droidloom/public-test.bin"
+        old.write_bytes(b"original public file\n");old.chmod(0o644)
+        os.setxattr(old,"user.droidloom-test",b"original-file-attribute")
+        self.old_file=old.read_bytes()
+        self.files={};self.directories={};self.packages={};self.controls={};self.scopes={}
+        payloads={
+            "kernel":{"usr/lib/droidloom/kernel-test/vmlinuz":(b"new normal kernel fixture\n",0o444)},
+            "android":{"usr/share/droidloom/cohort-test/image":(b"new normal cohort fixture\n",0o444)},
+            "host":{"usr/lib/droidloom/public-test.bin":(b"new normal host fixture\n",0o755)}}
+        for role in cold_apply.PUBLIC_ORDER:
+            package=self.base/("package-"+role);package.mkdir(mode=0o755);package.chmod(0o755)
+            (package/"DEBIAN").mkdir(mode=0o755);(package/"DEBIAN").chmod(0o755)
+            version="0.0.1"
+            (package/"DEBIAN/control").write_text("Package: "+cold_apply.NAMES[role]+
+                "\nVersion: "+version+"\nArchitecture: amd64\nMaintainer: Test <test@example.invalid>"
+                "\nDescription: confined public transaction fixture\n")
+            files={};dirs={}
+            for rel,(body,mode) in payloads[role].items():
+                path=package/rel;path.parent.mkdir(parents=True,exist_ok=True)
+                path.write_bytes(body);path.chmod(mode)
+                row={"path":rel,"bytes":len(body),"sha256":hashlib.sha256(body).hexdigest(),"mode":mode}
+                files[rel]=row;self.files[rel]=dict(row,role=role)
+                parts=rel.split("/")
+                for n in range(1,len(parts)):dirs["/".join(parts[:n])]=0o755
+            for rel in dirs:(package/rel).chmod(0o755)
+            archive=self.base/(role+".deb")
+            built=subprocess.run(["/usr/bin/dpkg-deb","--build","--root-owner-group","-Znone",
+                                  str(package),str(archive)],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+            self.assertEqual(built.returncode,0,built.stderr.decode("utf-8","replace"))
+            archive.chmod(0o444);self.packages[role]=release.file_pin(archive)
+            self.controls[role]={"version":version};self.directories.update(dirs)
+            self.scopes[role]={"files":files,"directories":dirs}
+        for rel in cold_apply.PUBLIC_NAMESPACE_ROOTS:
+            path=self.root/rel;self.original[rel]=(release.f9(path.stat()),os.getxattr(path,"user.droidloom-test"))
+        inputs=({},self.files,self.directories,self.packages,self.controls,self.scopes)
+        self.patches=[patch.object(cold_apply,"load_inputs",return_value=inputs),
+                      patch.object(cold_apply,"PRESERVE_METADATA",("/etc/passwd","/etc/ssh","/home"))]
+        for p in self.patches:p.start()
+        self.release_id="a"*64;self.transactions=[]
+
+    def tearDown(self):
+        for tx in self.transactions:tx.close()
+        for p in reversed(self.patches):p.stop()
+        self.tmp.cleanup()
+
+    def transaction(self,*,existing=False):
+        tx=self.cold.PublicTransaction(self.root,self.base,self.release_id,existing=existing)
+        self.transactions.append(tx);return tx
+
+    def assert_unselected_unchanged(self):
+        self.assertEqual(release.f9((self.root/"home/alex/private").stat()),self.private_identity)
+        for path,identity in self.untouched.items():self.assertEqual(release.f9(Path(path).stat()),identity)
+
+    def assert_restored(self):
+        for rel,(identity,value) in self.original.items():
+            path=self.root/rel;now=release.f9(path.stat())
+            self.assertEqual(now[:7],identity[:7]);self.assertEqual(now[7],identity[7])
+            self.assertEqual(os.getxattr(path,"user.droidloom-test"),value)
+        old=self.root/"usr/lib/droidloom/public-test.bin"
+        self.assertEqual(old.read_bytes(),self.old_file)
+        self.assertEqual(stat.S_IMODE(old.stat().st_mode),0o644)
+        self.assertEqual(os.getxattr(old,"user.droidloom-test"),b"original-file-attribute")
+        self.assertFalse((self.root/"usr/lib/droidloom/kernel-test").exists())
+        self.assertFalse((self.root/"usr/share/droidloom/cohort-test").exists())
+        self.assert_unselected_unchanged()
+
+    def test_real_dpkg_install_then_reopened_snapshot_restores_original_metadata_last(self):
+        tx=self.transaction();tx.install()
+        for rel in self.original:
+            st=(self.root/rel).stat();self.assertEqual((st.st_uid,st.st_gid,stat.S_IMODE(st.st_mode)),(0,0,0o755))
+        tx.verify_installed();self.assert_unselected_unchanged();tx.close()
+        rollback=self.transaction(existing=True);rollback.rollback();self.assert_restored()
+        rows=[release.json_bytes(line) for line in rollback.journal.read_bytes().splitlines()]
+        releases=[i for i,row in enumerate(rows) if row["phase"]=="public-namespace-released"]
+        self.assertEqual(len(releases),2)
+        self.assertLess(max(i for i,row in enumerate(rows) if row["phase"]=="dpkg-remove-end"),min(releases))
+
+    def test_first_claim_crash_recovers_from_original_durable_snapshot(self):
+        from unittest.mock import patch
+        tx=self.transaction();event=tx.event
+        def interrupted(phase,**fields):
+            event(phase,**fields)
+            if phase=="public-namespace-claimed":raise RuntimeError("test process interruption after first claim")
+        with patch.object(tx,"event",side_effect=interrupted),self.assertRaises(RuntimeError):tx.install()
+        self.assertEqual((self.root/"usr/lib/droidloom").stat().st_uid,0)
+        self.assertEqual((self.root/"usr/share/droidloom").stat().st_uid,1000)
+        tx.close();self.transaction(existing=True).rollback();self.assert_restored()
+
+    def test_fixed_namespace_owner_mode_alias_and_unlisted_path_are_rejected(self):
+        tx=self.transaction();path=self.root/"usr/lib/droidloom"
+        for uid,gid,mode in ((1001,1001,0o755),(1000,0,0o755),(1000,1000,0o775)):
+            os.chown(path,uid,gid);path.chmod(mode)
+            with self.subTest(uid=uid,gid=gid,mode=mode),self.assertRaises(release.Rejected):
+                with tx.directory("usr/lib/droidloom",original=True):pass
+        os.chown(path,1000,1000);path.chmod(0o755)
+        other=self.root/"usr/lib/unlisted";other.mkdir();os.chown(other,1000,1000)
+        with self.assertRaises(release.Rejected):
+            with tx.directory("usr/lib/unlisted",original=True):pass
+        path.rename(path.with_name("saved"));path.symlink_to("saved")
+        with self.assertRaises(OSError):
+            with tx.directory("usr/lib/droidloom",original=True):pass
+
+    def test_snapshot_inode_or_selected_file_replacement_rejects_before_any_claim(self):
+        tx=self.transaction();tx.capture()
+        path=self.root/"usr/lib/droidloom/public-test.bin"
+        replacement=path.with_name("replacement");replacement.write_bytes(path.read_bytes())
+        replacement.chmod(stat.S_IMODE(path.stat().st_mode));os.replace(replacement,path)
+        with self.assertRaises(release.Rejected):tx.claim_public_namespaces()
+        self.assertTrue(all((self.root/rel).stat().st_uid==1000 for rel in self.original))
+        namespace=self.root/"usr/lib/droidloom";namespace.rename(namespace.with_name("saved"))
+        namespace.mkdir();os.chown(namespace,1000,1000);namespace.chmod(0o755)
+        with self.assertRaises(release.Rejected):tx.claim_public_namespaces()
+
+    def test_wrong_normal_directory_mode_and_special_selected_leaf_are_rejected(self):
+        tx=self.transaction();self.directories["usr/lib/droidloom"]=0o700
+        with self.assertRaises(release.Rejected):
+            with tx.directory("usr/lib/droidloom",original=True):pass
+        self.directories["usr/lib/droidloom"]=0o755
+        path=self.root/"usr/lib/droidloom/public-test.bin";path.unlink();os.mkfifo(path,0o600)
+        with self.assertRaises(release.Rejected):tx.capture()
+
 if __name__=="__main__":unittest.main()

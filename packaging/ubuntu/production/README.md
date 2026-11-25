@@ -333,6 +333,28 @@ metadata again, including when the private build fails. This private mechanism
 does not authorize physical directory changes; the cold transaction must retain
 their original owner/mode/xattrs in its rollback snapshot before its own claim.
 
+The cold public transaction now records those exact two legacy directories in
+its v2 snapshot, together with the original inode, metadata and extended
+attributes of every selected directory. The complete normal package inventory
+must declare both as `0:0/0755`. Snapshot and recovery-pointer durability precede
+the held-descriptor, nonrecursive ownership claims; the selected original files
+and directory identities are checked again before and after those claims, before
+dpkg may run. No other user-owned ancestor is admitted. Existing private parents
+retain their original restrictive mode and attributes, while the claimed public
+namespaces remain root-owned after installation. Readback covers every selected
+directory as well as every normal package file.
+
+Recovery uses that same durable snapshot if interruption occurs between the two
+claims or during package installation. It rejects an unknown replacement inode
+and reclaims only the saved public namespace roots, then performs normal package
+removal and restores selected original files. Newly created empty directories
+are removed before the two legacy owners are restored last. Their original
+mode, extended attributes and modification time are restored with descriptor
+and parent-directory fsync; existing unselected children are never traversed or
+recursively chowned. Old v1 snapshots retain their original interpretation and
+cannot introduce a legacy-owner exception. This recovery mechanism leaves the
+physical qualification and permanent activation gates unchanged.
+
 The producer calls the original normal `mkinitramfs`, with one-thread gzip,
 the retained shared-kernel release and the original host configuration. Its
 source-owned extra upstream hook uses `copy_exec` for both admitted native LSM
@@ -495,8 +517,8 @@ data and public APK imports; ordinary runtime requires the exact five-file MAC
 input set. Neither mode authorizes physical publication, application acceptance,
 service activation or deletion of recovery inputs.
 
-The cold sequence remains ordered: normal source-bound public and sixteen-package
-native publication; original-host initramfs, file-contexts and recovery-entry
+The cold sequence remains ordered: normal source-bound public and exact original
+22-package native publication; original-host initramfs, file-contexts and recovery-entry
 readback for a controlled qualification boot; then independent original-data,
 complete selected-39 business/common gates and actual maintenance-to-Ubuntu
 return evidence before permanent activation. The owned guest record retains

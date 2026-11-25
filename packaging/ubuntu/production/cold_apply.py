@@ -37,6 +37,9 @@ MAX_FILES=7200
 MAX_BYTES=6*1024**3
 SYSTEM_DPKG="/usr/bin/dpkg"
 PUBLIC_ORDER=("kernel","android","host")
+# These are the two actual legacy namespace roots in the normal host/kernel
+# payload. The exception never applies to their children or to a private root.
+PUBLIC_NAMESPACE_ROOTS=("usr/lib/droidloom","usr/share/droidloom")
 COLD_OWNER_UNITS=("graphical.target","gdm.service","droidloom-production.service",
                   "droidloom-instance-launcher.service","droidloom-instance-factory.service")
 
@@ -86,6 +89,10 @@ def restore_xattrs(fd,values):
     for name in os.listxattr(fd):
         if name not in decoded:os.removexattr(fd,name)
     for name,raw in decoded.items():os.setxattr(fd,name,raw)
+
+def legacy_public_namespace(relative,identity):
+    return relative in PUBLIC_NAMESPACE_ROOTS and stat.S_ISDIR(identity[2]) and \
+           stat.S_IMODE(identity[2])==0o755 and identity[3:5]==[1000,1000]
 
 def original_cold_context():
     need(os.getuid()==os.geteuid()==0,"cold public transaction requires original root")
@@ -344,14 +351,19 @@ class PublicTransaction:
             st=os.fstat(fd);need(st.st_uid==st.st_gid==0 and st.st_nlink==1 and st.st_size<=16*1024*1024,"journal custody")
             need(os.write(fd,b)==len(b),"complete transaction event");os.fsync(fd)
         finally:os.close(fd)
+        fd=os.open(self.path,os.O_RDONLY|os.O_DIRECTORY|os.O_CLOEXEC|os.O_NOFOLLOW)
+        try:os.fsync(fd)
+        finally:os.close(fd)
 
     @contextlib.contextmanager
-    def directory(self,relative,*,missing=False):
+    def directory(self,relative,*,missing=False,original=False):
         fd=os.open(self.root,os.O_RDONLY|os.O_DIRECTORY|os.O_CLOEXEC|os.O_NOFOLLOW)
         try:
             if relative:
                 public_relative(relative)
+                prefix=[]
                 for part in relative.split("/"):
+                    prefix.append(part);current="/".join(prefix)
                     try:n=os.open(part,os.O_RDONLY|os.O_DIRECTORY|os.O_CLOEXEC|os.O_NOFOLLOW,dir_fd=fd)
                     except FileNotFoundError:
                         if missing:
@@ -359,7 +371,13 @@ class PublicTransaction:
                         raise
                     os.close(fd);fd=n
                     s=os.fstat(fd)
-                    need(s.st_dev==self.root_device and s.st_uid==0 and not(s.st_mode&0o022),
+                    legacy=original and self.directories.get(current)==0o755 and \
+                           legacy_public_namespace(current,list(f9(s)))
+                    if legacy and self.snapshot is not None:
+                        row=self.snapshot["directories"].get(current)
+                        need(row is not None and row["existed"] and
+                             [s.st_dev,s.st_ino]==row["identity"][:2],"original public namespace replaced")
+                    need(s.st_dev==self.root_device and (s.st_uid==0 or legacy) and not(s.st_mode&0o022),
                          "original public parent directory boundary")
             yield fd
         finally:os.close(fd)
@@ -386,14 +404,14 @@ class PublicTransaction:
         for name in NAMES.values():self.package_absent(name)
         dirs={};leaves={};budget=0
         for rel in sorted(self.directories,key=lambda x:(x.count("/"),x)):
-            with self.directory(rel,missing=True) as fd:
+            with self.directory(rel,missing=True,original=True) as fd:
                 if fd is None:dirs[rel]={"existed":False};continue
                 s=os.fstat(fd);dirs[rel]={"existed":True,"identity":list(f9(s)),"xattrs":bounded_xattrs(fd)}
         for index,(rel,row) in enumerate(sorted(self.files.items())):
             parent,_,leaf=rel.rpartition("/")
-            with self.directory(parent,missing=True) as d:
+            with self.directory(parent,missing=True,original=True) as d:
                 if d is None:leaves[rel]={"existed":False};continue
-                try:fd=os.open(leaf,os.O_RDONLY|os.O_CLOEXEC|os.O_NOFOLLOW,dir_fd=d)
+                try:fd=os.open(leaf,os.O_RDONLY|os.O_CLOEXEC|os.O_NOFOLLOW|os.O_NONBLOCK|os.O_NOCTTY,dir_fd=d)
                 except FileNotFoundError:
                     leaves[rel]={"existed":False};continue
                 try:
@@ -426,9 +444,12 @@ class PublicTransaction:
         for path in PRESERVE_METADATA:
             p=self.root/path.lstrip("/")
             preserved[path]=list(f9(p.lstat()))
-        self.snapshot={"schema":"droidloom-cold-public-snapshot-v1","release_id":self.release_id,
+        claims=sorted(rel for rel,row in dirs.items() if row["existed"] and
+                      legacy_public_namespace(rel,row["identity"]))
+        self.snapshot={"schema":"droidloom-cold-public-snapshot-v2","release_id":self.release_id,
              "root_identity":[self.root_device,self.root.stat().st_ino],"files":leaves,"directories":dirs,
-             "preserved_metadata_only":preserved,"backup_bytes":budget}
+             "preserved_metadata_only":preserved,"backup_bytes":budget,"public_namespace_claims":claims}
+        self.check_original_scope()
         new_file(self.path/"SNAPSHOT.json",canonical(self.snapshot),0o600)
         self.validate_snapshot()
         self.publish_snapshot_pointer()
@@ -436,20 +457,101 @@ class PublicTransaction:
 
     def validate_snapshot(self):
         v=self.snapshot
-        exact(v,("schema","release_id","root_identity","files","directories","preserved_metadata_only","backup_bytes"),"snapshot")
-        need(v["schema"]=="droidloom-cold-public-snapshot-v1" and v["release_id"]==self.release_id and
+        keys=("schema","release_id","root_identity","files","directories","preserved_metadata_only","backup_bytes")
+        if v.get("schema")=="droidloom-cold-public-snapshot-v2":keys+=("public_namespace_claims",)
+        exact(v,keys,"snapshot")
+        need(v["schema"] in ("droidloom-cold-public-snapshot-v1","droidloom-cold-public-snapshot-v2") and v["release_id"]==self.release_id and
              v["root_identity"]==[self.root_device,self.root.stat().st_ino],"original transaction root")
         need(set(v["files"])==set(self.files) and set(v["directories"])==set(self.directories),"snapshot scope")
         need(set(v["preserved_metadata_only"])==set(PRESERVE_METADATA),"original account/SSH metadata guards")
+        claims=[]
+        for rel,row in v["directories"].items():
+            need(type(row.get("existed")) is bool,"saved directory existence")
+            if not row["existed"]:
+                exact(row,("existed",),"absent original public directory");continue
+            exact(row,("existed","identity","xattrs"),"saved public directory")
+            identity=row["identity"]
+            need(isinstance(identity,list) and len(identity)==9 and all(type(n) is int for n in identity) and
+                 identity[0]==self.root_device and identity[1]>0 and stat.S_ISDIR(identity[2]) and
+                 not(identity[2]&0o022),"saved public directory identity")
+            if legacy_public_namespace(rel,identity):
+                need(self.directories[rel]==0o755,"legacy public namespace must belong to normal payload")
+                claims.append(rel)
+            else:need(identity[3]==0,"saved public directory has unknown owner")
+        need(v.get("public_namespace_claims",[])==sorted(claims),"exact public namespace claim set")
         for index,(rel,row) in enumerate(sorted(v["files"].items())):
+            need(type(row.get("existed")) is bool,"saved public file existence")
             if row["existed"]:
                 exact(row,("existed","identity","sha256","backup","xattrs"),"saved public file")
+                identity=row["identity"]
+                need(isinstance(identity,list) and len(identity)==9 and all(type(n) is int for n in identity) and
+                     identity[0]==self.root_device and identity[1]>0 and stat.S_ISREG(identity[2]) and
+                     identity[3:6]==[0,0,1] and 0<=identity[6]<=MAX_BYTES,"saved original public file identity")
                 need(row["backup"]["path"]==str(self.path/"backups"/f"{index:05d}") and
                      row["backup"]["sha256"]==row["sha256"] and row["backup"]["bytes"]==row["identity"][6],
                      "fixed backup identity")
                 with held(row["backup"]["path"],root=True,modes={0o600}) as (fd,st):
                     need(st.st_size==row["backup"]["bytes"] and hash_fd(fd)==row["sha256"],"saved original bytes changed")
             else:exact(row,("existed",),"absent original public file")
+
+    def check_original_scope(self,*,claimed=False):
+        """Close the writable-parent snapshot race before any dpkg operation."""
+        claims=self.snapshot.get("public_namespace_claims",[])
+        for rel,row in self.snapshot["directories"].items():
+            with self.directory(rel,missing=True,original=not claimed) as fd:
+                if not row["existed"]:
+                    need(fd is None,"absent original directory appeared");continue
+                need(fd is not None,"original directory disappeared")
+                current=list(f9(os.fstat(fd)))
+                if claimed and rel in claims:
+                    need(current[:2]==row["identity"][:2] and current[3:5]==[0,0] and
+                         stat.S_IMODE(current[2])==0o755,"claimed public namespace changed")
+                else:
+                    need(current==row["identity"] and bounded_xattrs(fd)==row["xattrs"],
+                         "original directory changed before public installation")
+        for rel,row in self.snapshot["files"].items():
+            parent,_,leaf=rel.rpartition("/")
+            with self.directory(parent,missing=True,original=not claimed) as d:
+                fd=None
+                if d is not None:
+                    try:fd=os.open(leaf,os.O_RDONLY|os.O_CLOEXEC|os.O_NOFOLLOW|os.O_NONBLOCK|os.O_NOCTTY,dir_fd=d)
+                    except FileNotFoundError:pass
+                try:
+                    if not row["existed"]:
+                        need(fd is None,"absent original public file appeared");continue
+                    need(fd is not None and list(f9(os.fstat(fd)))==row["identity"] and
+                         hash_fd(fd)==row["sha256"] and bounded_xattrs(fd)==row["xattrs"] and
+                         list(f9(os.stat(leaf,dir_fd=d,follow_symlinks=False)))==row["identity"],
+                         "original public file changed before installation")
+                finally:
+                    if fd is not None:os.close(fd)
+        self.preserved()
+
+    def claim_public_namespaces(self,*,recovery=False,owned=None):
+        need(self.expected_snapshot is not None,"durable original snapshot must precede directory claim")
+        owned={} if owned is None else owned
+        if not recovery:self.check_original_scope()
+        for rel in self.snapshot.get("public_namespace_claims",[]):
+            row=self.snapshot["directories"][rel];before=row["identity"]
+            with self.directory(rel,original=True) as fd:
+                current=list(f9(os.fstat(fd)))
+                need(current[:2]==owned.get(rel,before[:2]),"public namespace claim inode changed")
+                if not recovery:need(current==before,"original public namespace changed before claim")
+                else:need(legacy_public_namespace(rel,current) or
+                          (current[3:5]==[0,0] and (stat.S_IMODE(current[2])==0o755 or
+                           (rel in owned and stat.S_IMODE(current[2])==0o700))),
+                          "unknown public namespace state during recovery")
+                self.event("public-namespace-claim-begin",path=rel,original_identity=before,
+                           identity=current,snapshot=self.expected_snapshot,recovery=recovery)
+                os.fchown(fd,0,0);os.fchmod(fd,0o755);os.fsync(fd)
+                after=list(f9(os.fstat(fd)))
+                with self.directory(rel) as named:
+                    need(list(f9(os.fstat(named)))==after and after[:2]==current[:2] and
+                         after[3:5]==[0,0] and stat.S_IMODE(after[2])==0o755,
+                         "held public namespace claim readback")
+                with self.directory(rel.rpartition("/")[0]) as parent:os.fsync(parent)
+                self.event("public-namespace-claimed",path=rel,identity=after,recovery=recovery)
+        if not recovery:self.check_original_scope(claimed=True)
 
     def preserved(self):
         for path,original in self.snapshot["preserved_metadata_only"].items():
@@ -479,13 +581,13 @@ class PublicTransaction:
             result[rel]=identity[:2]
         return result
 
-    def recreate_original_directories(self):
+    def recreate_original_directories(self,*,original=False):
         owned=self.recreated_directories()
         for rel,row in sorted(self.snapshot["directories"].items(),
                               key=lambda x:(x[0].count("/"),x[0])):
             if not row["existed"]:continue
             parent,_,leaf=rel.rpartition("/")
-            with self.directory(parent) as parent_fd:
+            with self.directory(parent,original=original) as parent_fd:
                 try:fd=os.open(leaf,os.O_RDONLY|os.O_DIRECTORY|os.O_CLOEXEC|os.O_NOFOLLOW,dir_fd=parent_fd)
                 except FileNotFoundError:
                     need(rel not in owned,"previously recreated directory disappeared")
@@ -505,19 +607,37 @@ class PublicTransaction:
                     st=os.fstat(fd)
                     need([st.st_dev,st.st_ino]==owned.get(rel,row["identity"][:2]),
                          "unknown directory replacement blocks public rollback")
+                    need(not(st.st_mode&0o022) and
+                         (st.st_uid==0 or (original and legacy_public_namespace(rel,list(f9(st))))),
+                         "unknown original directory owner during recovery")
                 finally:os.close(fd)
         return owned
 
-    def restore_directory_metadata(self,*,owned=None):
+    def restore_directory_metadata(self,*,owned=None,rollback=False):
         owned={} if owned is None else owned
-        for rel,row in sorted(self.snapshot["directories"].items(),key=lambda x:x[0].count("/")):
+        claims=self.snapshot.get("public_namespace_claims",[])
+        # On rollback, release the only writable legacy ancestors last, after
+        # every selected leaf and newly created directory has been handled.
+        order=lambda x:(x[0] in claims,-x[0].count("/"),x[0])
+        for rel,row in sorted(self.snapshot["directories"].items(),key=order):
             if not row["existed"]:continue
+            if rel in claims and not rollback:continue
             with self.directory(rel) as fd:
                 s=os.fstat(fd);before=row["identity"]
                 need([s.st_dev,s.st_ino]==owned.get(rel,before[:2]),
                      "original public parent directory replaced")
+                if rel in claims:
+                    self.event("public-namespace-release-begin",path=rel,identity=list(f9(s)),
+                               original_identity=before,snapshot=self.expected_snapshot)
                 os.fchown(fd,before[3],before[4]);os.fchmod(fd,stat.S_IMODE(before[2]))
-                restore_xattrs(fd,row["xattrs"]);os.fsync(fd)
+                restore_xattrs(fd,row["xattrs"])
+                if rollback:os.utime(fd,ns=(os.fstat(fd).st_atime_ns,before[7]))
+                os.fsync(fd);after=os.fstat(fd)
+                need((after.st_uid,after.st_gid,stat.S_IMODE(after.st_mode))==
+                     (before[3],before[4],stat.S_IMODE(before[2])) and bounded_xattrs(fd)==row["xattrs"],
+                     "restored original public directory metadata differs")
+                with self.directory(rel.rpartition("/")[0]) as parent:os.fsync(parent)
+                if rel in claims:self.event("public-namespace-released",path=rel,identity=list(f9(after)))
 
     def dpkg(self,operation):
         need(operation in ("unpack","configure","remove"),"closed dpkg operation")
@@ -545,6 +665,19 @@ class PublicTransaction:
             for fd in held_fds:os.close(fd)
 
     def verify_installed(self):
+        claims=self.snapshot.get("public_namespace_claims",[])
+        for rel,mode in self.directories.items():
+            old=self.snapshot["directories"][rel]
+            with self.directory(rel) as fd:
+                st=os.fstat(fd);expected=(0,0,mode)
+                if old["existed"]:
+                    before=old["identity"]
+                    need([st.st_dev,st.st_ino]==before[:2],"installed public directory inode differs")
+                    if rel not in claims:
+                        expected=(before[3],before[4],stat.S_IMODE(before[2]))
+                        need(bounded_xattrs(fd)==old["xattrs"],"original public directory attributes changed")
+                need((st.st_uid,st.st_gid,stat.S_IMODE(st.st_mode))==expected,
+                     "installed normal public directory metadata differs")
         for rel,row in self.files.items():
             with held(absolute_under(self.root,rel),root=True,modes={row["mode"]},
                       host_acl=rel==HOST_ACL_MEMBER) as (fd,st):
@@ -554,14 +687,17 @@ class PublicTransaction:
                     need(e.errno in (61,95),"installed file capability query failed")
                 else:raise Rejected("normal public package unexpectedly installed file capabilities")
         self.preserved()
-        self.event("public-installed-readback",files=len(self.files),runtime_qualified=False)
+        self.event("public-installed-readback",files=len(self.files),directories=len(self.directories),
+                   public_namespace_claims=claims,runtime_qualified=False)
 
     def install(self):
         self.capture()
+        self.claim_public_namespaces()
         self.dpkg("unpack")
         self.dpkg("configure")
         # Package structural directories may not widen an existing private
-        # parent. Preserve its original owner/mode/ACL, including 0700 roots.
+        # parent. Preserve its original owner/mode/ACL, including 0700 roots,
+        # except for the two explicitly snapshotted public namespace claims.
         self.restore_directory_metadata()
         self.verify_installed()
         self.event("public-phase-completed",activated=False)
@@ -613,21 +749,34 @@ class PublicTransaction:
                     restore_xattrs(fd,row["xattrs"]);os.fsync(fd)
                 finally:os.close(fd)
                 os.rename(temporary,leaf,src_dir_fd=d,dst_dir_fd=d);os.fsync(d)
-        self.restore_directory_metadata(owned=owned)
         for rel,row in sorted(self.snapshot["directories"].items(),key=lambda x:-x[0].count("/")):
             if row["existed"]:continue
-            try:absolute_under(self.root,rel).rmdir()
-            except FileNotFoundError:pass
-            except OSError as e:
-                need(e.errno in (39,17),"unexpected new-directory rollback error")
-                self.event("new-directory-not-empty-preserved",path=rel)
+            parent,_,leaf=rel.rpartition("/")
+            with self.directory(parent,missing=True) as d:
+                if d is None:continue
+                try:
+                    st=os.stat(leaf,dir_fd=d,follow_symlinks=False)
+                    need(stat.S_ISDIR(st.st_mode) and st.st_uid==st.st_gid==0 and
+                         st.st_dev==self.root_device and not(st.st_mode&0o022),
+                         "changed new directory blocks public rollback")
+                    os.rmdir(leaf,dir_fd=d);os.fsync(d)
+                except FileNotFoundError:pass
+                except OSError as e:
+                    need(e.errno in (39,17),"unexpected new-directory rollback error")
+                    self.event("new-directory-not-empty-preserved",path=rel)
+        self.restore_directory_metadata(owned=owned,rollback=True)
         self.preserved()
         self.event("original-public-files-restored",files=len(self.files),original_data_accessed=False)
 
     def rollback(self):
         need(self.snapshot is not None,"rollback needs the original durable snapshot")
+        self.validate_snapshot()
         self.audit_payloads()
         self.preserved()
+        # Also handles a crash before/halfway through the two descriptor-bound
+        # claims. Reclaim only the saved inodes before looking below them.
+        owned=self.recreate_original_directories(original=True)
+        self.claim_public_namespaces(recovery=True,owned=owned)
         # Check before dpkg is allowed to unlink a leaf. A different public
         # update or a changed file is preserved and requires reconciliation.
         for rel,row in self.files.items():
