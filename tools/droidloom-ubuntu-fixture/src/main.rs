@@ -229,12 +229,13 @@ fn run() -> Result<()> {
                 &source_receipt_sha256,
                 &target_kernel_release,
             )?;
+            let source_stage = complete_native::validate(&result)?.stage;
             let sha = fs::write_json(&fs::absolute_string(&output)?, &result, 0)?;
             println!(
                 "{}",
                 serde_json::json!({"manifest_sha256":sha,
                 "entries":result.entries.len()+result.static_devices.len(),
-                "complete_package_database":true,"source_stage":"baseline","guest_qualified":false})
+                "complete_package_database":true,"source_stage":source_stage,"guest_qualified":false})
             );
         }
         Command::MaterializeCompleteNative {
