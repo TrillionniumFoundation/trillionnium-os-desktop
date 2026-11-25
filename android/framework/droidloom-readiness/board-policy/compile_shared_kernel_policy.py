@@ -15,6 +15,7 @@ from verify_native_journal_storage import verify_journal_storage
 from verify_greeter_home import verify_greeter_home
 from verify_native_maintenance import verify_native_maintenance
 from verify_native_camera import verify_camera
+from verify_fixed_display import verify_fixed_display
 
 
 def sha256(path):
@@ -911,6 +912,7 @@ def verify_host_control(library, binary, export, original_contract):
     hardware = verify_native_hardware(policy, lines, check, obj)
     manager_startup = verify_manager_startup(lines, check, obj, role_types)
     camera = verify_camera(policy, lines, check, obj, Path(__file__).resolve().parent)
+    fixed_display = verify_fixed_display(lines, check, obj, role_types)
     # The exact timezone symlink retains the prior read-only public-link
     # contract, while only PID 1 may place its stock IN_DONT_FOLLOW watch.
     timezone_decisions = 0
@@ -939,6 +941,7 @@ def verify_host_control(library, binary, export, original_contract):
         "native_hardware": hardware,
         "native_manager_startup": manager_startup,
         "native_camera": camera,
+        "fixed_display_control": fixed_display,
         "timezone_link_decisions": timezone_decisions + 9,
         "binary_access_checks": len(checks),
         "public_module_role_types": len(role_types),
@@ -1128,7 +1131,7 @@ def main():
         "frontend-android-interface.cil", "native-camera-interface.cil", "linux-frontend-observer.cil", "instance-launcher.cil",
         "linux-query-owner.cil", "linux-fixed-metadata-observer.cil",
         "instance-factory-cgroup.cil", "ubuntu-systemd-unit-status.cil",
-        "linux-application-roles.cil", "linux-install-catalog.cil",
+        "linux-application-roles.cil", "linux-install-catalog.cil", "linux-display-control.cil",
         "ubuntu-dbus.cil", "ubuntu-native-selinux-query.cil",
         "ubuntu-native-pam.cil", "ubuntu-native-session-storage.cil", "ubuntu-native-session-ipc.cil",
         "ubuntu-native-runtime-retirement.cil",
@@ -1145,6 +1148,7 @@ def main():
                here / "derive_shared_payload_cgroup_policy.py",
                here / "verify_native_login_audit.py", here / "verify_native_journal_storage.py",
                here / "verify_greeter_home.py", here / "verify_native_maintenance.py",
+               here / "verify_fixed_display.py",
                here / "ubuntu-native-file_contexts", here / "ubuntu-real-root-file_contexts",
                here / "linux-service-file_contexts", here / "linux-initial-calibration-file_contexts"]
     if any(output.resolve() == path.resolve() for path in sources):

@@ -293,6 +293,23 @@ impl EarlyApplicationControl {
                     response.diagnostics = Some(serde_json::to_string(&observed)?);
                     response.message = "Contacts provider baseline observed in the original early generation; account topology and create/edit/search/delete acceptance remain pending".into();
                 }
+                ControlRequest::SetDpi { spec, dpi } => {
+                    validate_display_density(dpi)?;
+                    let guard = ConfigurationReadGuard::acquire()
+                        .map_err(|e| ControlError::Invalid(e.to_string()))?;
+                    let selected = ProductionSelection::load(&guard, &spec, peer)
+                        .map_err(|e| ControlError::Invalid(e.to_string()))?;
+                    authority.verify_selection(&selected)
+                        .map_err(|e| ControlError::Invalid(e.to_string()))?;
+                    progress.report("Persisting and reading back Android's primary display density...");
+                    let observed = crate::production_application::set_density_early(
+                        authority, dpi, launch_deadline,
+                    ).map_err(|e| early_application_error(e, &mut acquisition_quarantined))?;
+                    guard.revalidate().map_err(|e| ControlError::Invalid(e.to_string()))?;
+                    authority.verify_selection(&selected)
+                        .map_err(|e| ControlError::Invalid(e.to_string()))?;
+                    response.message = format!("Android primary display density persisted and read back as {observed} dpi");
+                }
                 ControlRequest::Status | ControlRequest::Readiness => {
                     authority
                         .ready()
