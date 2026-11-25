@@ -24,6 +24,7 @@ mod complete_identity;
 mod complete_installation;
 mod complete_native;
 mod complete_snapshot;
+mod complete_transport;
 mod fs;
 mod materialize;
 mod model;
@@ -106,6 +107,16 @@ enum Command {
         target_kernel_release: String,
         #[arg(long)]
         output: PathBuf,
+    },
+    ExportCompleteNative {
+        #[arg(long)]
+        manifest: PathBuf,
+        #[arg(long)]
+        manifest_sha256: String,
+        #[arg(long)]
+        output: PathBuf,
+        #[arg(long)]
+        receipt: PathBuf,
     },
     MaterializeCompleteNative {
         #[arg(long)]
@@ -212,6 +223,19 @@ fn run() -> Result<()> {
                 serde_json::json!({"manifest_sha256":sha,
                 "entries":result.entries.len()+result.static_devices.len(),
                 "complete_package_database":true,"source_stage":complete_native::source(&result.source)?.stage,"guest_qualified":false})
+            );
+        }
+        Command::ExportCompleteNative {
+            manifest,
+            manifest_sha256,
+            output,
+            receipt,
+        } => {
+            let result = complete_transport::export(&manifest, &manifest_sha256, &output)?;
+            let sha = fs::write_json(&fs::absolute_string(&receipt)?, &result, 0)?;
+            println!(
+                "{}",
+                serde_json::json!({"receipt_sha256":sha,"payload":result["payload"],"guest_qualified":false})
             );
         }
         Command::MaterializeCompleteNative {

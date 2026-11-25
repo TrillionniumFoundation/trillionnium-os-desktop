@@ -20,6 +20,8 @@ struct NativePlan {
     work_directory: PathBuf,
     fixture_manifest: FilePin,
     fixture_root: PathBuf,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    fixture_payload: Option<FilePin>,
     native: Inputs,
 }
 
@@ -90,7 +92,15 @@ pub(super) fn prepare(path: &Path, sha: &str) -> Result<()> {
         0,
     )?;
     let root = plan.work_directory.join("root");
-    let cloned = complete_native::materialize(&manifest, &plan.fixture_manifest.sha256, &root)?;
+    let cloned = match &plan.fixture_payload {
+        Some(payload) => crate::complete_transport::materialize(
+            &manifest,
+            &plan.fixture_manifest.sha256,
+            payload,
+            &root,
+        )?,
+        None => complete_native::materialize(&manifest, &plan.fixture_manifest.sha256, &root)?,
+    };
     fs::write_json(
         &fs::absolute_string(&plan.work_directory.join("COMPLETE-CLONE.json"))?,
         &cloned,

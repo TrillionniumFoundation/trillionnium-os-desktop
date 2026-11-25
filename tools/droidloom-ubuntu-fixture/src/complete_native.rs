@@ -659,7 +659,7 @@ pub(super) fn capture(path: &Path, sha: &str, release: &str) -> Result<CompleteM
     Ok(result)
 }
 
-fn receipt(
+pub(super) fn receipt(
     manifest: &CompleteManifest,
     sha: &str,
     path: &Path,

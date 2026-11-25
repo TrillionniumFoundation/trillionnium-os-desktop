@@ -77,4 +77,27 @@ the actual sysusers/firstboot/tmpfiles/SSH/systemctl-root initialization in
 unchanged. This was a baseline construction test, not a guest boot or a
 successful final installed release. Five focused journal/source tests passed,
 including a complete-root GID 981 positive and wrong-GID/absent-binding negatives.
-Actual installed-root capture and complete preparation remain required; source\nand material tests alone do not qualify a guest.
+Actual installed-root capture and complete preparation remain required; source
+and material tests alone do not qualify a guest.
+
+
+## Transport to another host
+
+The export-complete-native command takes the source manifest and SHA, a fixed
+/var/lib/droidloom-qualification/WORK/NATIVE-PAYLOAD.bin output and a receipt.
+It exports an admitted installed root without changing its original identities.
+The 56-byte fixed header binds the manifest SHA, original regular-file count
+and exact byte count. The remaining bytes are only those regular files, in the
+manifest order. The format carries no arbitrary path, link, device or metadata
+commands. Every original file and the full tree retain their SHA/F9 bookends;
+the output has complete readback.
+
+A complete native plan can supply fixture_payload as an ordinary FilePin.
+The fixture_root still names the original source for provenance, and no original
+receipt or inode is rewritten to impersonate the destination. The importer
+requires a root-owned, single-link, readonly payload and verifies its whole
+SHA/F9 before and after use. It creates new local inodes from the manifest's
+exact directories, links, eight static device nodes, ownership, modes and
+privilege metadata. Each regular file, then the whole reconstructed tree, has
+full readback before fresh native initialization. A truncated, altered or
+extended payload cannot produce a native preparation receipt.

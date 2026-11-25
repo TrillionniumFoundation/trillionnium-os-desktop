@@ -409,8 +409,31 @@ pub(super) fn verify(
     Ok((regular, bytes))
 }
 
+enum CopyInput<'a> {
+    Tree(&'a Snapshot),
+    Payload(&'a mut File),
+}
+
 pub(super) fn copy(
     source: &Snapshot,
+    destination: &Path,
+    entries: &[CompleteEntry],
+    devices: &[StaticDevice],
+) -> Result<Snapshot> {
+    copy_inner(CopyInput::Tree(source), destination, entries, devices)
+}
+
+pub(super) fn copy_payload(
+    payload: &mut File,
+    destination: &Path,
+    entries: &[CompleteEntry],
+    devices: &[StaticDevice],
+) -> Result<Snapshot> {
+    copy_inner(CopyInput::Payload(payload), destination, entries, devices)
+}
+
+fn copy_inner(
+    mut input: CopyInput<'_>,
     destination: &Path,
     entries: &[CompleteEntry],
     devices: &[StaticDevice],
@@ -444,14 +467,6 @@ pub(super) fn copy(
     for e in entries {
         match &e.content {
             Content::Regular { sha256 } => {
-                let mut file = source.file(&e.path)?;
-                let before = fs::stat(&file)?;
-                ensure(
-                    fs::same_metadata(&before, &e.source)
-                        && before.size == e.source.size
-                        && fs::xattrs(&file)? == e.xattrs,
-                    "complete source differs before copy",
-                )?;
                 let (parent, name) = output.parent(&e.path)?;
                 let mut new = File::from(rfs::openat(
                     &parent,
@@ -463,14 +478,38 @@ pub(super) fn copy(
                         | OFlags::CLOEXEC,
                     Mode::from_raw_mode(0o600),
                 )?);
-                let copied =
-                    std::io::copy(&mut Read::by_ref(&mut file).take(before.size + 1), &mut new)?;
-                ensure(
-                    copied == before.size
-                        && fs::stat(&file)? == before
-                        && source.identity(&e.path)? == before,
-                    "complete source changed during copy",
-                )?;
+                match &mut input {
+                    CopyInput::Tree(source) => {
+                        let mut file = source.file(&e.path)?;
+                        let before = fs::stat(&file)?;
+                        ensure(
+                            fs::same_metadata(&before, &e.source)
+                                && before.size == e.source.size
+                                && fs::xattrs(&file)? == e.xattrs,
+                            "complete source differs before copy",
+                        )?;
+                        let copied = std::io::copy(
+                            &mut Read::by_ref(&mut file).take(before.size + 1),
+                            &mut new,
+                        )?;
+                        ensure(
+                            copied == before.size
+                                && fs::stat(&file)? == before
+                                && source.identity(&e.path)? == before,
+                            "complete source changed during copy",
+                        )?;
+                    }
+                    CopyInput::Payload(payload) => {
+                        let copied = std::io::copy(
+                            &mut Read::by_ref(*payload).take(e.source.size),
+                            &mut new,
+                        )?;
+                        ensure(
+                            copied == e.source.size,
+                            "complete transport truncated an original file",
+                        )?;
+                    }
+                }
                 use std::io::{Seek, SeekFrom};
                 new.seek(SeekFrom::Start(0))?;
                 ensure(fs::hash(&new)? == *sha256, "complete copied bytes differ")?;
@@ -482,10 +521,12 @@ pub(super) fn copy(
                 rfs::linkat(&old_parent, old_name, &parent, name, AtFlags::empty())?;
             }
             Content::Symlink { target } => {
-                ensure(
-                    source.link(&e.path)?.1 == *target,
-                    "complete source link changed",
-                )?;
+                if let CopyInput::Tree(source) = &input {
+                    ensure(
+                        source.link(&e.path)?.1 == *target,
+                        "complete source link changed",
+                    )?;
+                }
                 let (parent, name) = output.parent(&e.path)?;
                 rfs::symlinkat(target, &parent, name.as_str())?;
                 rfs::chownat(

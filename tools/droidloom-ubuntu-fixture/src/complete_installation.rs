@@ -12,7 +12,9 @@ use rustix::fs::{self as rfs, AtFlags, FileType};
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use std::collections::{BTreeMap, BTreeSet};
-use std::path::{Path, PathBuf};
+#[cfg(test)]
+use std::path::Path;
+use std::path::PathBuf;
 
 const JSON_LIMIT: u64 = 16 * 1024 * 1024;
 const MATERIAL_LIMIT: u64 = 128 * 1024 * 1024;
