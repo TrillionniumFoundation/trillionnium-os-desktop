@@ -407,3 +407,23 @@ private-account and original-Ubuntu return evidence therefore still prevents
 activation. The physical dispatchers look only at the fixed
 `observations/DEPLOYMENT_ID/RUNTIME-INPUTS.json` beneath the maintenance store;
 they accept neither an alternate caller-selected store nor a success boolean.
+
+
+### Final camera and six-input Android material
+
+The Android normal Debian publisher consumes the source-bound query6
+MATERIALS.json produced by the normal package-official-base command. It
+checks the real normal producer build/terminal receipts and unchanged input
+bookends, then verifies the same four camera-cohort images, final runtime
+manifest, final device manifest, immutable device bank and all six original
+query files. The two additional inputs are the original logcat and dumpsys;
+their fixed original labels and capability-absent requirements remain
+mandatory at the later real installation.
+
+This package's version includes both the base cohort and runtime digest.
+Changing the runtime beneath an unchanged four-image cohort therefore produces
+a distinct normal package version. The ordinary archive contains fifteen
+regular public payload files and no maintainer scripts. Full normal Debian
+control/data readback remains mandatory. Normal publication does not establish
+installed labels, original-device accounts, runtime or application acceptance.
+Old query4 archives and receipts are preserved as separate diagnostic materials.
