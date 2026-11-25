@@ -109,7 +109,7 @@ def verify_startup_paths(lines, check, obj, role_types):
             elif actor == reader:
                 allowed_dir = {"getattr", "search", "open", "read"}
             elif actor == "init_t":
-                allowed_dir = {"getattr", "search", "open", "read", "write", "remove_name", "rmdir"}
+                allowed_dir = {"getattr", "search", "open", "read", "write", "remove_name", "setattr", "rmdir"}
             for perm in dir_perms:
                 test(context, obj(directory), "dir", [perm], perm in allowed_dir)
 

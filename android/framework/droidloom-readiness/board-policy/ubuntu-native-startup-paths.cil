@@ -42,7 +42,10 @@
     (allow reader payload (file (getattr open read)))
     ; PID 1 removes the unit's existing state at ordinary service retirement,
     ; but it neither reads payloads nor creates or mutates their contents.
-    (allow init_t directory (dir (getattr search open read write remove_name rmdir)))
+    ; exec_context_destroy_credentials() uses REMOVE_CHMOD after unmount.
+    ; A root-owned plain-dir fallback is read-only until the manager restores
+    ; owner write permission to delete its entries. No payload body is read.
+    (allow init_t directory (dir (getattr search open read write remove_name setattr rmdir)))
     (allow init_t payload (file (getattr unlink)))
 )
 
@@ -99,8 +102,8 @@
 (typeattributeset p4_all_board_owned (p4_linux_journal_credential_file_t))
 (typeattributeset p4_native_startup_credential_files (p4_linux_journal_credential_file_t))
 (call p4_startup_credential (p4_linux_journal_credentials_t p4_linux_journal_credential_file_t p4_linux_journald_t))
-(neverallow p4_without_native_credential_writer p4_native_startup_credential_dirs (dir (create add_name setattr rename reparent mounton relabelto)))
-(neverallow p4_without_native_credential_cleanup p4_native_startup_credential_dirs (dir (write remove_name rmdir)))
+(neverallow p4_without_native_credential_writer p4_native_startup_credential_dirs (dir (create add_name rename reparent mounton relabelto)))
+(neverallow p4_without_native_credential_cleanup p4_native_startup_credential_dirs (dir (write remove_name setattr rmdir)))
 (neverallow p4_native_startup_all_types p4_native_startup_credential_dirs (dir (relabelfrom)))
 (neverallow p4_without_native_credential_writer p4_native_startup_credential_files (file (create write append setattr rename)))
 (neverallow p4_without_native_credential_cleanup p4_native_startup_credential_files (file (unlink)))
