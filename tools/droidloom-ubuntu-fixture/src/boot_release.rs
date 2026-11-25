@@ -395,6 +395,7 @@ pub fn install_android(root: &Path, work: &Path, input: &AndroidInputs) -> Resul
         0o644,
     )?;
     let units = [
+        "droidloom-production.target",
         "droidloom-instance-factory.service",
         "droidloom-instance-launcher.service",
         "droidloom-manager-label.service",
@@ -408,23 +409,8 @@ pub fn install_android(root: &Path, work: &Path, input: &AndroidInputs) -> Resul
         install(root, &format!("/etc/systemd/system/{name}"), &pin, 0o644)?;
         unit_rows.push(json!({"name":name,"sha256":pin.sha256}));
     }
-    for name in [
-        "droidloom-production.service",
-        "droidloom-early-observer.service",
-    ] {
-        boot_files::run_logged(
-            work,
-            &format!("enable-{}", name.trim_end_matches(".service")),
-            "/usr/bin/systemctl",
-            &[
-                "--root".into(),
-                root.to_string_lossy().into(),
-                "enable".into(),
-                name.into(),
-            ],
-            30,
-        )?;
-    }
+    // The dedicated production target owns activation. Ordinary Ubuntu
+    // graphical/multi-user targets never pull this candidate into a fallback boot.
     if input.calibrate {
         let template =
             root.join("usr/share/droidloom/production/droidloom-mac-calibration.service");

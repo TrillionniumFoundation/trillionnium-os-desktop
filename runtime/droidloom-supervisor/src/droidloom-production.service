@@ -1,4 +1,5 @@
 [Unit]
+ConditionKernelCommandLine=init=/usr/lib/droidloom/production/current/droidloom-board-init
 Description=Droidloom production cell broker
 Requires=systemd-tmpfiles-setup.service droidloom-manager-label.service droidloom-instance-launcher.service
 Conflicts=droidloomd.service

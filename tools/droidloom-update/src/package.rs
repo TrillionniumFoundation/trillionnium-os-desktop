@@ -322,6 +322,7 @@ fn production_host_payload(repo: &Path, host: &Path, runtime: &Path) -> Result<(
         mode(&target, 0o755)?;
     }
     for unit in [
+        "droidloom-production.target",
         "droidloom-production.service",
         "droidloom-instance-launcher.service",
         "droidloom-instance-factory.service",
@@ -340,6 +341,16 @@ fn production_host_payload(repo: &Path, host: &Path, runtime: &Path) -> Result<(
         copy(&source, &target)?;
         mode(&target, 0o644)?;
     }
+    // The cold path reads the same source contract used by generated PID 1
+    // inputs and the Rust native-init verifier; it never keeps a second pin.
+    let board_lock = runtime.join("usr/share/droidloom/board/pocket4-board-inputs.lock.json");
+    write(
+        &board_lock,
+        include_bytes!(
+            "../../../android/framework/droidloom-readiness/board-policy/pocket4-board-inputs.lock.json"
+        ),
+    )?;
+    mode(&board_lock, 0o444)?;
     // The desktop only joins its original early owner's listener. It never
     // starts the legacy daemon or waits for the Android observer's READY.
     let desktop_unit = runtime.join("usr/lib/systemd/user/droidloom-production-desktop.service");
@@ -444,6 +455,12 @@ mod tests {
         fs::create_dir(&host).unwrap();
         for (name, body) in [
             (
+                "droidloom-production.target",
+                include_str!(
+                    "../../../runtime/droidloom-supervisor/src/droidloom-production.target"
+                ),
+            ),
+            (
                 "droidloom-instance-launcher.service",
                 include_str!(
                     "../../../runtime/droidloom-supervisor/src/droidloom-instance-launcher.service"
@@ -530,6 +547,20 @@ mod tests {
         )
         .unwrap();
         production_host_payload(&repo, &host, &runtime).unwrap();
+        for (path, bytes, mode) in [
+            ("usr/share/droidloom/production/droidloom-production.target",
+             include_bytes!("../../../runtime/droidloom-supervisor/src/droidloom-production.target").as_slice(), 0o644),
+            ("usr/share/droidloom/board/pocket4-board-inputs.lock.json",
+             include_bytes!("../../../android/framework/droidloom-readiness/board-policy/pocket4-board-inputs.lock.json").as_slice(), 0o444),
+        ] {
+            let path = runtime.join(path);
+            assert_eq!(fs::read(&path).unwrap(), bytes);
+            let metadata = fs::symlink_metadata(&path).unwrap();
+            assert!(metadata.is_file());
+            assert_eq!(metadata.nlink(), 1);
+            assert_eq!(metadata.mode() & 0o7777, mode);
+        }
+
         let helper = runtime.join("usr/lib/droidloom/droidloom-package-helper");
         assert_eq!(
             fs::read(&helper).unwrap(),
@@ -649,6 +680,12 @@ mod tests {
                         .any(|line| line == "Service=droidloom-container-entry.service")
                 );
                 assert!(body.lines().any(|line| line == "DirectoryMode=0700"));
+                continue;
+            }
+            if unit.file_name().unwrap() == "droidloom-production.target" {
+                assert!(body.lines().any(|line| line == "ConditionKernelCommandLine=init=/usr/lib/droidloom/production/current/droidloom-board-init"));
+                assert!(body.lines().any(|line| line == "Requires=graphical.target droidloom-production.service droidloom-early-observer.service"));
+                assert!(body.lines().any(|line| line == "After=graphical.target"));
                 continue;
             }
             if unit.extension().is_some_and(|ext| ext == "target") {

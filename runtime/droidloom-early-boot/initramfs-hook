@@ -6,3 +6,7 @@ program=/usr/lib/droidloom/production/current/droidloomd
 copy_exec "$program" "$program"
 firststage=/usr/lib/droidloom/production/current/droidloom-early-firststage
 copy_exec "$firststage" "$firststage"
+
+# Preserve both admitted native LSM libraries in a fresh ordinary initrd.
+copy_exec /usr/lib/x86_64-linux-gnu/libselinux.so.1
+copy_exec /usr/lib/x86_64-linux-gnu/libapparmor.so.1

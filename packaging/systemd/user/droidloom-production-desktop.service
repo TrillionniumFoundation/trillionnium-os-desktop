@@ -1,4 +1,5 @@
 [Unit]
+ConditionKernelCommandLine=init=/usr/lib/droidloom/production/current/droidloom-board-init
 Description=Droidloom production Android desktop presenter
 PartOf=graphical-session.target
 After=graphical-session-pre.target wayland-session-waitenv.service

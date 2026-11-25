@@ -1,0 +1,6 @@
+[Unit]
+Description=Selected Droidloom production with ordinary Ubuntu desktop
+ConditionKernelCommandLine=init=/usr/lib/droidloom/production/current/droidloom-board-init
+Requires=graphical.target droidloom-production.service droidloom-early-observer.service
+After=graphical.target
+AllowIsolate=yes

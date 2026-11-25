@@ -1,4 +1,5 @@
 [Unit]
+ConditionKernelCommandLine=init=/usr/lib/droidloom/production/current/droidloom-board-init
 Description=Observe the kernel-started Droidloom Android instance
 After=local-fs.target droidloom-manager-label.service droidloom-production.service
 BindsTo=droidloom-production.service

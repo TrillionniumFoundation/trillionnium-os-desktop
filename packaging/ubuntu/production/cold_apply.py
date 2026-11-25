@@ -939,6 +939,380 @@ class PublicTransaction:
         self.restore_files()
         self.event("public-rollback-completed",rebooted=False)
 
+# The boot phase is separate from package installation and never starts a unit
+# or changes the next boot. Only arm_once(), after admission, may set next_entry.
+BOOT_TARGET="etc/systemd/system/droidloom-production.target"
+BOOT_FILE_BUDGET=1024**3
+
+def boot_file_scope(deployment_id):
+    deployment_id=digest(deployment_id)
+    return {
+        "boot/grub/grub.cfg":0o444,
+        "boot/grub/grubenv":0o600,
+        "boot/grub/droidloom/"+deployment_id+".cfg":0o400,
+        "etc/grub.d/42_droidloom_"+deployment_id:0o755,
+        "etc/default/grub.d/90-droidloom-recovery.cfg":0o644,
+        "boot/droidloom/releases/"+deployment_id+"/initrd.img":0o400,
+        BOOT_TARGET:0o644,
+        "etc/droidloom-maintenance/installation.json":0o400,
+    }
+
+def stock_grub_entries(raw):
+    """Preserve complete entries from stock grub-mkconfig's checked syntax.
+
+    Callers must first run the admitted grub-script-check. This deliberately
+    rejects an unreviewed custom layout instead of attempting to reinterpret it.
+    """
+    need(isinstance(raw,bytes) and 0<len(raw)<=16*1024*1024 and b"\0" not in raw,
+         "bounded ordinary GRUB configuration")
+    lines=raw.decode("utf-8","strict").splitlines(keepends=True)
+    entries=[];begin=None
+    for index,line in enumerate(lines):
+        if begin is None:
+            if line.startswith(("menuentry ","submenu ")):
+                need(line.rstrip().endswith("{"),"ordinary GRUB entry opening")
+                begin=index
+        elif line.rstrip()=="}":
+            body="".join(lines[begin:index+1]).encode()
+            need(body not in entries,"duplicate original GRUB entry")
+            entries.append(body);begin=None
+    need(begin is None and entries,"complete stock GRUB menu entries")
+    return entries
+
+
+class BootFileTransaction:
+    """Closed, durable boot-file publication on one admitted native filesystem.
+
+    The production dispatcher supplies cold authority and actual qualification.
+    This engine can also be tested in an independent public root; it never
+    infers physical authority from such a successful mechanism test.
+    """
+    def __init__(self,root,release_id,deployment_id,*,existing=None):
+        need(os.getuid()==os.geteuid()==0,"boot publication requires root")
+        self.root=Path("/") if str(root)=="/" else safe_absolute(str(root))
+        self.release_id=digest(release_id)
+        self.deployment_id=digest(deployment_id);self.files=boot_file_scope(deployment_id)
+        self._owned=contextlib.ExitStack();self.snapshot=None
+        try:
+            self.root_fd=os.open(self.root,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW|os.O_CLOEXEC)
+            self._owned.callback(os.close,self.root_fd)
+            st=os.fstat(self.root_fd)
+            need(st.st_uid==st.st_gid==0 and not(st.st_mode&0o022),"protected native root")
+            self.root_identity=[st.st_dev,st.st_ino];self.root_device=st.st_dev
+            parent=ensure_private_state(self.root)
+            lock=os.open(parent/"owner.lock",os.O_RDWR|os.O_CREAT|os.O_NOFOLLOW|os.O_CLOEXEC,0o600)
+            self._owned.callback(os.close,lock);st=os.fstat(lock)
+            need(stat.S_ISREG(st.st_mode) and st.st_uid==st.st_gid==0 and st.st_nlink==1
+                 and not(st.st_mode&0o022),"original cold owner lock")
+            fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
+            if existing is None:
+                self.path=parent/(self.deployment_id+"-boot-"+os.urandom(8).hex())
+                self.path.mkdir(mode=0o700)
+                for name in ("backups","staged"):(self.path/name).mkdir(mode=0o700)
+            else:
+                self.path=safe_absolute(str(existing))
+                need(self.path.parent==parent and re.fullmatch(
+                    re.escape(self.deployment_id)+r"-boot-[0-9a-f]{16}",self.path.name),
+                    "same fixed boot transaction")
+                for p in (self.path,self.path/"backups",self.path/"staged"):
+                    s=p.lstat()
+                    need(stat.S_ISDIR(s.st_mode) and s.st_uid==s.st_gid==0
+                         and s.st_dev==self.root_device and stat.S_IMODE(s.st_mode)==0o700,
+                         "original protected boot state")
+                self.snapshot,_=read_json_file(self.path/"SNAPSHOT.json",8*1024*1024,True,{0o400})
+            self.journal=self.path/"events.jsonl"
+            if self.snapshot is not None:self.validate_snapshot()
+        except BaseException:
+            self._owned.close();raise
+
+    def close(self):self._owned.close()
+
+    def event(self,phase,**values):
+        body=canonical({"phase":phase,"release_id":self.release_id,
+            "deployment_id":self.deployment_id,"monotonic_ns":time.monotonic_ns(),**values})
+        need(len(body)<=1024*1024,"bounded boot event")
+        fd=os.open(self.journal,os.O_WRONLY|os.O_APPEND|os.O_CREAT|os.O_NOFOLLOW|os.O_CLOEXEC,0o600)
+        try:
+            st=os.fstat(fd)
+            need(stat.S_ISREG(st.st_mode) and st.st_uid==st.st_gid==0 and st.st_nlink==1
+                 and stat.S_IMODE(st.st_mode)==0o600 and st.st_size<=32*1024*1024,
+                 "protected boot event journal")
+            view=memoryview(body)
+            while view:
+                n=os.write(fd,view);need(n>0,"boot event write");view=view[n:]
+            os.fsync(fd)
+        finally:os.close(fd)
+        d=os.open(self.path,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW|os.O_CLOEXEC)
+        try:os.fsync(d)
+        finally:os.close(d)
+
+    def events(self):
+        try:
+            with held(self.journal,root=True,modes={0o600},maximum=32*1024*1024) as (fd,st):
+                raw=os.read(fd,st.st_size+1);need(len(raw)==st.st_size,"complete boot journal")
+        except FileNotFoundError:return []
+        rows=[];last=0
+        for line in raw.splitlines():
+            row=json_bytes(line)
+            need(row.get("release_id")==self.release_id and row.get("deployment_id")==self.deployment_id
+                 and type(row.get("monotonic_ns")) is int and row["monotonic_ns"]>last,
+                 "boot journal identity and order")
+            last=row["monotonic_ns"];rows.append(row)
+        return rows
+
+    def parents(self):
+        result=set()
+        for rel in self.files:
+            parts=rel.split("/")
+            result.update("/".join(parts[:n]) for n in range(1,len(parts)))
+        return result
+
+    def created_directories(self):
+        out={}
+        for row in self.events():
+            if row["phase"]!="boot-directory-created":continue
+            rel=row["path"]
+            need(rel in self.parents() and rel not in out,"unique owned boot directory")
+            identity=row["identity"]
+            need(isinstance(identity,list) and len(identity)==9 and identity[0]==self.root_device
+                 and stat.S_ISDIR(identity[2]) and identity[3:5]==[0,0],"created directory identity")
+            out[rel]=identity
+        return out
+
+    @contextlib.contextmanager
+    def directory(self,relative,*,missing=False,create=False):
+        need(not relative or relative in self.parents(),"closed boot parent")
+        fd=os.dup(self.root_fd);walk=[]
+        try:
+            for part in relative.split("/") if relative else ():
+                walk.append(part);current="/".join(walk)
+                try:n=os.open(part,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW|os.O_CLOEXEC,dir_fd=fd)
+                except FileNotFoundError:
+                    if not create:
+                        if missing:yield None;return
+                        raise
+                    need(self.snapshot is not None and not self.snapshot["directories"][current]["existed"],
+                         "only snapshotted absent parents may be created")
+                    need(current not in self.created_directories(),"owned boot directory disappeared")
+                    self.event("boot-directory-create-started",path=current)
+                    mode=0o700 if current.startswith(("boot/droidloom","boot/grub/droidloom",
+                                                      "etc/droidloom-maintenance")) else 0o755
+                    os.mkdir(part,mode,dir_fd=fd)
+                    n=os.open(part,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW|os.O_CLOEXEC,dir_fd=fd)
+                    os.fchmod(n,mode);os.fsync(n);os.fsync(fd)
+                    self.event("boot-directory-created",path=current,identity=list(f9(os.fstat(n))))
+                os.close(fd);fd=n;s=os.fstat(fd)
+                need(s.st_uid==s.st_gid==0 and s.st_dev==self.root_device and not(s.st_mode&0o022),
+                     "native boot parent boundary")
+                if self.snapshot is not None:
+                    old=self.snapshot["directories"][current]
+                    expected=old["identity"] if old["existed"] else self.created_directories().get(current)
+                    need(expected is not None and [s.st_dev,s.st_ino]==expected[:2],
+                         "original or owned boot parent replaced")
+            yield fd
+        finally:os.close(fd)
+
+    def leaf(self,relative):
+        need(relative in self.files,"closed boot file")
+        parent,_,name=relative.rpartition("/")
+        with self.directory(parent,missing=True) as d:
+            if d is None:return None
+            try:fd=os.open(name,os.O_RDONLY|os.O_NOFOLLOW|os.O_NONBLOCK|os.O_CLOEXEC,dir_fd=d)
+            except FileNotFoundError:return None
+            try:
+                st=os.fstat(fd)
+                need(stat.S_ISREG(st.st_mode) and st.st_dev==self.root_device and st.st_uid==st.st_gid==0
+                     and st.st_nlink==1 and not(st.st_mode&0o7022) and st.st_size<=BOOT_FILE_BUDGET,
+                     "single original native boot file")
+                sha=hash_fd(fd);attrs=bounded_xattrs(fd)
+                need("security.capability" not in attrs,"boot files must not carry file capabilities")
+                need(f9(st)==f9(os.fstat(fd))==f9(os.stat(name,dir_fd=d,follow_symlinks=False)),
+                     "boot file changed while held")
+                return {"identity":list(f9(st)),"atime_ns":st.st_atime_ns,"sha256":sha,"xattrs":attrs}
+            finally:os.close(fd)
+
+    def capture(self):
+        need(self.snapshot is None,"boot snapshot already exists")
+        directories={};files={};budget=0
+        for rel in sorted(self.parents(),key=lambda x:(x.count("/"),x)):
+            with self.directory(rel,missing=True) as fd:
+                if fd is None:directories[rel]={"existed":False};continue
+                st=os.fstat(fd);directories[rel]={"existed":True,"identity":list(f9(st)),
+                                                "xattrs":bounded_xattrs(fd)}
+        for index,rel in enumerate(sorted(self.files)):
+            row=self.leaf(rel)
+            if row is None:files[rel]={"existed":False};continue
+            budget+=row["identity"][6];need(budget<=BOOT_FILE_BUDGET,"bounded original boot backup")
+            pin={"path":str(self.root/rel),"bytes":row["identity"][6],"sha256":row["sha256"]}
+            backup=self.path/"backups"/f"{index:03d}"
+            copy_pin(pin,backup,0o400)
+            again=self.leaf(rel);need(again is not None and again["identity"]==row["identity"]
+                                     and again["xattrs"]==row["xattrs"],"original boot changed during backup")
+            files[rel]={"existed":True,**row,"backup":file_pin(backup)}
+        self.snapshot={"schema":"droidloom-cold-boot-files-snapshot-v1","release_id":self.release_id,
+            "deployment_id":self.deployment_id,"root_identity":self.root_identity,
+            "files":files,"directories":directories,"backup_bytes":budget}
+        new_file(self.path/"SNAPSHOT.json",canonical(self.snapshot),0o400)
+        self.validate_snapshot()
+        self.event("boot-files-snapshot",snapshot=file_pin(self.path/"SNAPSHOT.json"))
+
+    def validate_snapshot(self):
+        v=self.snapshot
+        exact(v,("schema","release_id","deployment_id","root_identity","files","directories","backup_bytes"),
+              "boot snapshot")
+        need(v["schema"]=="droidloom-cold-boot-files-snapshot-v1" and v["release_id"]==self.release_id
+             and v["deployment_id"]==self.deployment_id and v["root_identity"]==self.root_identity
+             and set(v["files"])==set(self.files) and set(v["directories"])==self.parents(),
+             "complete fixed boot snapshot")
+        total=0
+        for index,(rel,row) in enumerate(sorted(v["files"].items())):
+            if not row["existed"]:exact(row,("existed",),"absent original boot file");continue
+            exact(row,("existed","identity","atime_ns","sha256","xattrs","backup"),"original boot file")
+            identity=row["identity"]
+            need(isinstance(identity,list) and len(identity)==9 and identity[0]==self.root_device
+                 and stat.S_ISREG(identity[2]) and identity[3:6]==[0,0,1],"original boot inode")
+            pin=row["backup"];need(pin["path"]==str(self.path/"backups"/f"{index:03d}")
+                 and pin["bytes"]==identity[6] and pin["sha256"]==row["sha256"],"fixed boot backup")
+            with held(pin["path"],root=True,modes={0o400},maximum=BOOT_FILE_BUDGET) as (fd,st):
+                need(st.st_size==pin["bytes"] and hash_fd(fd)==pin["sha256"],"original boot backup changed")
+            total+=pin["bytes"]
+        need(total==v["backup_bytes"] and total<=BOOT_FILE_BUDGET,"boot snapshot bytes")
+
+    def staged(self):
+        rows={}
+        for row in self.events():
+            if row["phase"]!="boot-file-staged":continue
+            rel=row["path"];need(rel in self.files,"fixed staged boot target")
+            pin=row["source"]
+            need(pin["path"]==str(self.path/"staged"/hashlib.sha256(rel.encode()).hexdigest()),
+                 "fixed staged source")
+            need(rel not in rows or rows[rel]==pin,"conflicting staged boot file")
+            rows[rel]=pin
+        return rows
+
+    def stage(self,relative,pin):
+        need(self.snapshot is not None and relative in self.files,"snapshot and closed boot target required")
+        target=self.path/"staged"/hashlib.sha256(relative.encode()).hexdigest()
+        need(relative not in self.staged(),"boot target already staged")
+        need(0<pin["bytes"]<=BOOT_FILE_BUDGET,"bounded staged boot file")
+        copy_pin(pin,target,0o400)
+        actual=file_pin(target);self.event("boot-file-staged",path=relative,source=actual)
+        return actual
+
+    def stage_bytes(self,relative,body):
+        need(isinstance(body,bytes) and 0<len(body)<=16*1024*1024,"bounded source-owned boot text")
+        source=self.path/("source-"+hashlib.sha256(relative.encode()+body).hexdigest())
+        new_file(source,body,0o400)
+        return self.stage(relative,file_pin(source))
+
+    def unchanged_or_owned(self,relative,current):
+        old=self.snapshot["files"][relative];staged=self.staged().get(relative)
+        if current is None:
+            need(not old["existed"],"original boot file disappeared");return
+        own_nodes={tuple(row["identity"][:2]) for row in self.events()
+                   if row["phase"]=="boot-file-rename-ready" and row["path"]==relative
+                   and row["sha256"]==current["sha256"]}
+        known_node=tuple(current["identity"][:2]) in own_nodes
+        original=(old["existed"] and (known_node or current["identity"][:2]==old["identity"][:2]) and
+            current["sha256"]==old["sha256"] and
+            current["identity"][2:7]==old["identity"][2:7] and current["xattrs"]==old["xattrs"])
+        expected_attrs=old["xattrs"] if old["existed"] else {}
+        owned=(known_node and staged is not None and current["sha256"]==staged["sha256"] and
+            current["identity"][6]==staged["bytes"] and
+            stat.S_IMODE(current["identity"][2])==self.files[relative] and current["xattrs"]==expected_attrs)
+        need(original or owned,"unknown boot-file update blocks publication and rollback")
+
+    def write_leaf(self,relative,pin,mode,attrs,*,times=None):
+        parent,_,leaf=relative.rpartition("/")
+        with self.directory(parent,create=True) as d:
+            before=self.leaf(relative);self.unchanged_or_owned(relative,before)
+            temporary=".droidloom-boot-"+os.urandom(12).hex()
+            out=os.open(temporary,os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW|os.O_CLOEXEC,0o600,dir_fd=d)
+            published=False
+            try:
+                with held(pin["path"],root=True,modes={0o400},maximum=BOOT_FILE_BUDGET) as (source,st):
+                    need(st.st_size==pin["bytes"] and hash_fd(source)==pin["sha256"],"held boot source")
+                    copied=0;h=hashlib.sha256()
+                    while True:
+                        block=os.read(source,1024*1024)
+                        if not block:break
+                        copied+=len(block);h.update(block);view=memoryview(block)
+                        while view:
+                            n=os.write(out,view);need(n>0,"boot leaf write");view=view[n:]
+                    need(copied==pin["bytes"] and h.hexdigest()==pin["sha256"],"complete boot source")
+                os.fchown(out,0,0);os.fchmod(out,mode);restore_xattrs(out,attrs)
+                if times is not None:os.utime(out,ns=times)
+                os.fsync(out)
+                now=self.leaf(relative)
+                need((now is None and before is None) or
+                     (now is not None and before is not None and now["identity"]==before["identity"]
+                      and now["xattrs"]==before["xattrs"]),"boot target changed before atomic publication")
+                self.event("boot-file-rename-ready",path=relative,identity=list(f9(os.fstat(out))),
+                           sha256=pin["sha256"])
+                os.rename(temporary,leaf,src_dir_fd=d,dst_dir_fd=d);published=True;os.fsync(d)
+            finally:
+                os.close(out)
+                if not published:
+                    try:os.unlink(temporary,dir_fd=d)
+                    except FileNotFoundError:pass
+            row=self.leaf(relative)
+            need(row is not None and row["sha256"]==pin["sha256"] and row["identity"][6]==pin["bytes"]
+                 and stat.S_IMODE(row["identity"][2])==mode and row["xattrs"]==attrs,
+                 "boot leaf whole readback")
+            return row
+
+    def publish(self,relative):
+        need(self.snapshot is not None,"original boot snapshot required")
+        pin=self.staged().get(relative);need(pin is not None,"actual staged boot file required")
+        self.unchanged_or_owned(relative,self.leaf(relative))
+        old=self.snapshot["files"][relative]
+        attrs=old["xattrs"] if old["existed"] else {}
+        # Existing ACL/capability metadata is preserved; SELinux publication is
+        # an explicit, separately journaled metadata phase, never guessed here.
+        self.event("boot-file-publish-started",path=relative,source=pin)
+        result=self.write_leaf(relative,pin,self.files[relative],attrs)
+        self.event("boot-file-published",path=relative,identity=result["identity"],sha256=result["sha256"])
+        return result
+
+    def rollback(self):
+        need(self.snapshot is not None,"original boot snapshot required")
+        self.validate_snapshot();staged=self.staged()
+        for rel in staged:self.unchanged_or_owned(rel,self.leaf(rel))
+        for rel in reversed(tuple(staged)):
+            old=self.snapshot["files"][rel];now=self.leaf(rel)
+            self.unchanged_or_owned(rel,now)
+            self.event("boot-file-restore-started",path=rel)
+            if old["existed"]:
+                self.write_leaf(rel,old["backup"],stat.S_IMODE(old["identity"][2]),old["xattrs"],
+                                times=(old["atime_ns"],old["identity"][7]))
+            elif now is not None:
+                parent,_,name=rel.rpartition("/")
+                with self.directory(parent) as d:
+                    st=os.stat(name,dir_fd=d,follow_symlinks=False)
+                    need(list(f9(st))==now["identity"],"owned boot file replaced before removal")
+                    os.unlink(name,dir_fd=d);os.fsync(d)
+            self.event("boot-file-restored",path=rel,existed=old["existed"])
+        created=self.created_directories()
+        for rel,identity in sorted(created.items(),key=lambda x:-x[0].count("/")):
+            with self.directory(rel,missing=True) as fd:
+                if fd is None:continue
+                need([os.fstat(fd).st_dev,os.fstat(fd).st_ino]==identity[:2],"owned boot directory replaced")
+            parent,_,name=rel.rpartition("/")
+            with self.directory(parent) as fd:
+                try:os.rmdir(name,dir_fd=fd);os.fsync(fd)
+                except OSError as e:
+                    need(e.errno in (39,17),"boot directory retirement failed")
+                    self.event("boot-directory-nonempty-preserved",path=rel)
+        for rel,row in self.snapshot["directories"].items():
+            if not row["existed"]:continue
+            with self.directory(rel) as fd:
+                st=os.fstat(fd);need([st.st_dev,st.st_ino]==row["identity"][:2],"original boot directory replaced")
+                need(stat.S_IMODE(st.st_mode)==stat.S_IMODE(row["identity"][2]) and
+                     bounded_xattrs(fd)==row["xattrs"],"original boot directory metadata changed")
+        self.event("boot-files-rollback-completed",rebooted=False)
+
+
+
 def protected_bundle(release_id):
     return STORE/"releases"/digest(release_id)
 

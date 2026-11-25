@@ -427,3 +427,52 @@ regular public payload files and no maintainer scripts. Full normal Debian
 control/data readback remains mandatory. Normal publication does not establish
 installed labels, original-device accounts, runtime or application acceptance.
 Old query4 archives and receipts are preserved as separate diagnostic materials.
+
+
+### Production boot selection and original Ubuntu return
+
+The normal host publishes two additional source-owned files: the production
+unit target at `usr/share/droidloom/production/droidloom-production.target`
+(mode 0644), and the original board input lock at
+`usr/share/droidloom/board/pocket4-board-inputs.lock.json` (mode 0444). This makes
+56 regular files and the same two empty state directories. The latter is the
+same byte sequence used by the normal producer's generated PID 1 header and
+Rust native-init admission. Cold preparation reads it from the manifest-bound
+normal Debian package and requires its systemd package identity to match the
+normal fifteen-package native closure. There is no second native-init digest.
+The installed original ELF is checked again against that contract.
+
+Normal qualification and the physical candidate both select
+`systemd.unit=droidloom-production.target`. The target requires the ordinary
+Ubuntu graphical target, the production broker and early observer. It and the
+five participating system services, plus the native desktop user service,
+require the exact kernel argument
+`init=/usr/lib/droidloom/production/current/droidloom-board-init`. The normal
+fixture no longer globally enables the broker/observer under multi-user.target.
+Original Ubuntu keeps its ordinary default and GRUB environment; it does not
+satisfy the production condition. Calibration retains its dedicated target.
+The new target is a normal source-file copy. The board lock is compiled into
+the normal producer; both are rechecked byte for byte by fixture admission.
+
+The initramfs hook copies the two admitted native LSM libraries along with the
+normal firststage and daemon. Its actual ordinary mkinitramfs inputs come from
+the target's normal installed packages, including the signed kernel's original
+module directory and kernel configuration. A different build root's tools are
+not evidence that the target owns this toolchain.
+
+`BootFileTransaction` is a separate, bounded publication engine for eight fixed
+boot files: the GRUB configuration/environment, per-release GRUB fragment and
+generator, recovery defaults, per-release initrd, production target and fixed
+maintenance installation record. It holds the native root and the cold owner
+lock, snapshots each original inode and complete bytes/metadata/xattrs, and
+fsyncs original backups and ordered journal records before publication. Its
+write-ahead rename record binds the actual new inode. Reopening an interrupted
+transaction therefore distinguishes its own new files from a same-byte foreign
+replacement. Rollback restores original bytes, owners, modes and xattrs and
+preserves unknown updates or nonempty newly created directories.
+
+This engine does not invoke a service, select a host boot entry, infer physical
+authority, or accept an application/account pass flag. The isolated mechanism
+checks exercise publication and recovery; they do not replace the remaining
+source-bound cold command dispatcher, exact installed labels, real owned guest
+acceptance, original-device account continuity or actual Ubuntu-return proof.

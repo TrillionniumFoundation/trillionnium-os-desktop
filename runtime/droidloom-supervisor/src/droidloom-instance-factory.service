@@ -1,4 +1,5 @@
 [Unit]
+ConditionKernelCommandLine=init=/usr/lib/droidloom/production/current/droidloom-board-init
 Description=Droidloom original boot factory custody
 Requires=droidloom-manager-label.service
 After=local-fs.target droidloom-manager-label.service

@@ -30,6 +30,8 @@ ORIGINAL_ENTRY="gnulinux-simple-"+ROOT_UUID
 REQUIRED_HOST={
  "usr/lib/droidloom/production/current/droidloom-maintenance":0o755,
  "usr/lib/droidloom/production/current/droidloom-maintenance.py":0o444,
+ "usr/share/droidloom/production/droidloom-production.target":0o644,
+ "usr/share/droidloom/board/pocket4-board-inputs.lock.json":0o444,
 }
 NAMES={"host":"droidloom-shared-host","kernel":"droidloom-shared-kernel",
        "android":"droidloom-android-cohort"}
@@ -250,13 +252,81 @@ def component(role,pin):
               "query_labels_require_actual_cold_install_readback":True}
     return inputs,info,control
 
+BOOT_HOST_MEMBERS={
+    "DROIDLOOM-PRODUCTION.target":("usr/share/droidloom/production/droidloom-production.target",0o644),
+    "BOARD-INPUTS.lock.json":("usr/share/droidloom/board/pocket4-board-inputs.lock.json",0o444),
+}
+
+def normal_host_boot_inputs(package,manifest_pin):
+    """Use original normal-host bytes for both activation and native-init identity."""
+    _,rows=host_manifest(manifest_pin)
+    expected={relative:(name,mode) for name,(relative,mode) in BOOT_HOST_MEMBERS.items()}
+    for relative,(_,mode) in expected.items():
+        row=rows.get(relative)
+        need(row is not None and row["mode"]==mode and 0<row["size"]<65536,
+             "normal host must publish its original target and board contract")
+    with held(package["path"]) as (fd,st):
+        need(st.st_size==package["bytes"] and hash_fd(fd)==package["sha256"],"same normal host package")
+        r=bounded_process(["/usr/bin/dpkg-deb","--fsys-tarfile",f"/proc/self/fd/{fd}"],
+                          seconds=60,maximum=64*1024*1024,pass_fds=(fd,))
+        need(r["exit"]==0,"normal host package reader failed")
+    found={}
+    with tarfile.open(fileobj=io.BytesIO(r["stdout"]),mode="r:") as archive:
+        for member in archive:
+            name=member.name[2:] if member.name.startswith("./") else member.name
+            if name not in expected:continue
+            leaf,mode=expected[name];row=rows[name]
+            need(leaf not in found and member.isfile() and member.uid==member.gid==0
+                 and member.mode==mode and member.size==row["size"],"normal boot member metadata")
+            stream=archive.extractfile(member);need(stream is not None,"normal boot member body")
+            body=stream.read(65536)
+            need(len(body)==row["size"] and hashlib.sha256(body).hexdigest()==row["sha256"],
+                 "normal boot member whole bytes")
+            found[leaf]=body
+    need(set(found)==set(BOOT_HOST_MEMBERS),"exact normal boot member set")
+    return found
+
+def native_init_contract(raw,native=None):
+    value=json_bytes(raw)
+    need(value.get("schema")=="droidloom-pocket4-joint-initramfs-inputs-v1",
+         "normal board input contract schema")
+    selected=value.get("native_init")
+    exact(selected,("path","size","sha256","package_name","package_version",
+                    "package_architecture","package_bytes","package_sha256"),"normal native init")
+    need(selected["path"]=="/usr/lib/systemd/systemd" and selected["package_name"]=="systemd"
+         and selected["package_architecture"]=="amd64"
+         and type(selected["size"]) is int and 0<selected["size"]<=16*1024*1024
+         and type(selected["package_bytes"]) is int and 0<selected["package_bytes"]<=128*1024*1024
+         and isinstance(selected["package_version"],str)
+         and re.fullmatch(r"[A-Za-z0-9.+:~_-]{1,128}",selected["package_version"]),
+         "fixed normal native-init role")
+    digest(selected["sha256"]);digest(selected["package_sha256"])
+    if native is not None:
+        matches=[r for r in native["descriptor"]["package_roles"] if r["name"]=="systemd"]
+        need(len(matches)==1,"one actual normal systemd package")
+        role=matches[0];package=role["new"]["package"]
+        need(role["new_version"]==selected["package_version"]
+             and package["bytes"]==selected["package_bytes"]
+             and package["sha256"]==selected["package_sha256"],
+             "native closure and board init must use the same normal Debian package")
+    return selected
+
+def native_init_at(root,selected):
+    """Recheck the installed ELF; no alternate digest or caller-selected path."""
+    path=Path(root)/selected["path"].lstrip("/")
+    with held(path,root=True,modes={0o755},maximum=16*1024*1024) as (fd,st):
+        need(st.st_size==selected["size"] and hash_fd(fd)==selected["sha256"],
+             "installed native init differs from the normal board contract")
+        return {"path":selected["path"],"identity":list(f9(st)),
+                "bytes":st.st_size,"sha256":selected["sha256"]}
+
 def grub_candidate(deployment_id):
     digest(deployment_id)
     entry="droidloom-shared-"+deployment_id
     command=("root=UUID="+ROOT_UUID+" rootfstype=ext4 rw rootwait enforcing=1 "
        "audit_backlog_limit=32768 lsm="+LSMS+" audit=1 "
        "init=/usr/lib/droidloom/production/current/droidloom-board-init "
-       "systemd.unit=graphical.target systemd.log_target=journal-or-kmsg systemd.show_status=1")
+       "systemd.unit=droidloom-production.target systemd.log_target=journal-or-kmsg systemd.show_status=1")
     text=("menuentry 'Droidloom shared kernel "+deployment_id[:12]+"' --id '"+entry+"' {\n"
        "    insmod part_gpt\n    insmod ext2\n"
        "    search --no-floppy --fs-uuid --set=root "+ROOT_UUID+"\n"
@@ -295,6 +365,8 @@ def prepare(plan_path,output):
             all_inputs[name]=native_inputs[key]
     deployment=deployment_identity(source,{r:all_inputs[r+".deb"] for r in ("host","kernel","android")},native)
     grub=grub_candidate(deployment)
+    boot_inputs=normal_host_boot_inputs(all_inputs["host.deb"],all_inputs["host-manifest.json"])
+    selected_init=native_init_contract(boot_inputs["BOARD-INPUTS.lock.json"],native_inputs)
     blockers=list(CORE_BLOCKERS)
     if source["missing_required_maintenance"]:blockers.insert(0,"normal_host_missing_fixed_maintenance_payload")
     intent={"schema":"droidloom-cold-transaction-candidate-v2" if native_plan else "droidloom-cold-transaction-candidate-v1","deployment_id":deployment,
@@ -307,9 +379,11 @@ def prepare(plan_path,output):
         "candidate_install_targets":{
           "GRUB-CANDIDATE.cfg":"/boot/grub/droidloom/"+deployment+".cfg",
           "GRUB-GENERATOR":"/etc/grub.d/42_droidloom_"+deployment,
-          "GRUB-DEFAULTS.cfg":"/etc/default/grub.d/90-droidloom-recovery.cfg"},
+          "GRUB-DEFAULTS.cfg":"/etc/default/grub.d/90-droidloom-recovery.cfg",
+          "DROIDLOOM-PRODUCTION.target":"/etc/systemd/system/droidloom-production.target"},
         "required_new_initrd":"/boot/droidloom/releases/"+deployment+"/initrd.img",
         "required_final_kernel_command_line":grub["command_line"],
+        "native_init":selected_init,
         "activation_blockers":blockers,"activation_supported":False,
         "fresh_fixture_root_is_not_a_deployment_target":True,
         "accounts_passwords_ssh_and_original_android_data_are_not_payloads":True,
@@ -328,7 +402,8 @@ def prepare(plan_path,output):
         copy_pin(pin,bundle/name,0o444)
         inventory.append({"path":name,"bytes":pin["bytes"],"sha256":pin["sha256"],"mode":0o444})
     for name,body in (("COLD-INTENT.json",canonical(intent)),("GRUB-CANDIDATE.cfg",grub["config"]),
-                      ("GRUB-GENERATOR",grub["generator"]),("GRUB-DEFAULTS.cfg",grub["defaults"])):
+                      ("GRUB-GENERATOR",grub["generator"]),("GRUB-DEFAULTS.cfg",grub["defaults"]),
+                       *boot_inputs.items()):
         new_file(bundle/name,body,0o444)
         inventory.append({"path":name,"bytes":len(body),"sha256":hashlib.sha256(body).hexdigest(),"mode":0o444})
     release={"schema":SCHEMA,"source_commit":source["source_commit"],"source_tree":source["source_tree"],
@@ -362,8 +437,28 @@ def verify(bundle,release_id):
     need({p.name for p in bundle.iterdir()}==seen|{"RELEASE.json"},"unlisted release member")
     result={"manifest":pin,"files_verified":len(seen),"qualified":False}
     intent,_=read_json_file(bundle/"COLD-INTENT.json",2*1024*1024,modes={0o444})
+    if "DROIDLOOM-PRODUCTION.target" in seen:
+        grub=grub_candidate(intent["deployment_id"])
+        need(intent["required_final_kernel_command_line"]==grub["command_line"]
+             and intent["candidate_install_targets"]=={
+                 "GRUB-CANDIDATE.cfg":"/boot/grub/droidloom/"+intent["deployment_id"]+".cfg",
+                 "GRUB-GENERATOR":"/etc/grub.d/42_droidloom_"+intent["deployment_id"],
+                 "GRUB-DEFAULTS.cfg":"/etc/default/grub.d/90-droidloom-recovery.cfg",
+                 "DROIDLOOM-PRODUCTION.target":"/etc/systemd/system/droidloom-production.target"},
+             "closed production target and boot selection")
+        for name,key in (("GRUB-CANDIDATE.cfg","config"),("GRUB-GENERATOR","generator"),
+                         ("GRUB-DEFAULTS.cfg","defaults")):
+            need(read_pin(file_pin(bundle/name),16384)==grub[key],"source-owned original/candidate GRUB text")
+        boot_inputs=normal_host_boot_inputs(file_pin(bundle/"host.deb"),file_pin(bundle/"host-manifest.json"))
+        for name,body in boot_inputs.items():
+            need(name in seen and read_pin(file_pin(bundle/name),65536)==body,
+                 "candidate boot member differs from its normal host package")
+        need(intent.get("native_init")==native_init_contract(boot_inputs["BOARD-INPUTS.lock.json"]),
+             "same original board native-init contract")
     if intent.get("schema")=="droidloom-cold-transaction-candidate-v2":
         native=bound_native_inputs(bundle,intent)
+        if "BOARD-INPUTS.lock.json" in seen:
+            native_init_contract(read_pin(file_pin(bundle/"BOARD-INPUTS.lock.json"),65536),native)
         result["native_release_id"]=native["index"]["native_release_id"]
     return result
 

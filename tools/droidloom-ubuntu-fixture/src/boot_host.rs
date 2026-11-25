@@ -381,6 +381,10 @@ pub fn install(
             include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-dbus_contexts").as_slice(),
         ),
         (
+            "usr/share/droidloom/board/pocket4-board-inputs.lock.json",
+            include_bytes!("../../../android/framework/droidloom-readiness/board-policy/pocket4-board-inputs.lock.json").as_slice(),
+        ),
+        (
             "etc/selinux/droidloom/seusers",
             include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-seusers").as_slice(),
         ),
@@ -417,9 +421,26 @@ pub fn install(
             "source-owned native configuration or cold module differs from the normal publisher",
         )?;
     }
-    let maintenance = manifest.files.iter().find(|entry| {
-        entry.path == "usr/lib/droidloom/production/current/droidloom-maintenance"
-    }).ok_or("normal host archive lacks the fixed maintenance executable")?;
+    let target_path = "usr/share/droidloom/production/droidloom-production.target";
+    let target_bytes =
+        include_bytes!("../../../runtime/droidloom-supervisor/src/droidloom-production.target");
+    let target = manifest
+        .files
+        .iter()
+        .find(|entry| entry.path == target_path)
+        .ok_or("normal host archive lacks the source-owned production target")?;
+    ensure(
+        target.mode == 0o644
+            && target.size == target_bytes.len() as u64
+            && target.sha256 == fs::digest(target_bytes)
+            && std::fs::read(root.join(target_path))? == target_bytes,
+        "normal production target differs from its source",
+    )?;
+    let maintenance = manifest
+        .files
+        .iter()
+        .find(|entry| entry.path == "usr/lib/droidloom/production/current/droidloom-maintenance")
+        .ok_or("normal host archive lacks the fixed maintenance executable")?;
     ensure(
         maintenance.mode == 0o755 && maintenance.size > 0,
         "normal maintenance executable mode or size differs",

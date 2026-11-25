@@ -239,7 +239,7 @@ pub fn run(config: &Path, expected: &str) -> Result<()> {
     let (unit, manager_log_level) = if prepared["calibration_requested"] == true {
         ("droidloom-calibration-qualification.target", "debug")
     } else {
-        ("graphical.target", "info")
+        ("droidloom-production.target", "info")
     };
     let uuid = prepared["root_filesystem_uuid"]
         .as_str()
