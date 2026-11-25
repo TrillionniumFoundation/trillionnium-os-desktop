@@ -246,6 +246,20 @@ def verify_manager_file_contexts(here, work):
         ("/usr/libexec/netplan/generate", stat.S_IFREG, "p4_linux_generator_exec_t"),
         ("/usr/libexec/netplan/unselected-helper", stat.S_IFREG, "p4_linux_native_bin_t"),
     ])
+    # Normal debootstrap character nodes survive complete-root capture. Keep the
+    # original class-specific labels without assigning device types to other kinds.
+    for name, device_type in [
+        ("console", "console_device"), ("full", "p4_linux_standardio_t"),
+        ("null", "null_device"), ("ptmx", "ptmx_device"),
+        ("random", "random_device"), ("tty", "owntty_device"),
+        ("urandom", "random_device"), ("zero", "zero_device"),
+    ]:
+        cases.extend([
+            ("/dev/" + name, stat.S_IFCHR, device_type),
+            ("/dev/" + name, stat.S_IFREG, "p4_linux_native_data_t"),
+            ("/dev/" + name, stat.S_IFDIR, "p4_linux_rootdir_t"),
+            ("/dev/" + name, stat.S_IFLNK, "p4_linux_usrmerge_link_t"),
+        ])
     actual = []
     try:
         for filename, mode, expected_type in cases:
