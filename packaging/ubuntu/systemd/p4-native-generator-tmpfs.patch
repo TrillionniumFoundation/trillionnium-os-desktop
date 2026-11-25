@@ -1,0 +1,80 @@
+Description: Give the shared-kernel native manager a fixed private generator tmpfs context
+ Preserve the original clone, slave propagation, nosuid/nodev flags, tmpfs limits,
+ generator execution and child wait/error semantics. Only the actual native raw
+ SELinux context selects the fixed labels. Other managers keep stock options.
+Origin: vendor
+Forwarded: not-needed
+Last-Update: 2026-11-25
+
+--- a/src/basic/process-util.c
++++ b/src/basic/process-util.c
+@@ -1513,6 +1513,8 @@
+         int prio, r;
+ 
+         assert(!FLAGS_SET(flags, FORK_WAIT|FORK_FREEZE));
++        assert(!(flags & FORK_PRIVATE_TMP_P4) ||
++               FLAGS_SET(flags, FORK_PRIVATE_TMP|FORK_NEW_MOUNTNS|FORK_MOUNTNS_SLAVE));
+         assert(!FLAGS_SET(flags, FORK_DETACH) ||
+                (flags & (FORK_WAIT|FORK_DEATHSIG_SIGTERM|FORK_DEATHSIG_SIGINT|FORK_DEATHSIG_SIGKILL)) == 0);
+ 
+@@ -1761,10 +1763,17 @@
+         if (FLAGS_SET(flags, FORK_PRIVATE_TMP)) {
+                 assert(FLAGS_SET(flags, FORK_NEW_MOUNTNS));
+ 
+-                /* Optionally, overmount new tmpfs instance on /tmp/. */
++                /* Optionally, overmount a new tmpfs instance on /tmp/. The fixed native
++                 * context partitions this fresh superblock from Android tmpfs. Keep the
++                 * original namespace, mount flags, limits and fatal failure behavior. */
++                const char *options = "mode=01777" TMPFS_LIMITS_RUN;
++                if (flags & FORK_PRIVATE_TMP_P4)
++                        options = "mode=01777" TMPFS_LIMITS_RUN
++                                  ",fscontext=u:object_r:p4_linux_generator_tmpfs_t:s0"
++                                  ",context=u:object_r:p4_linux_generator_tmp_t:s0";
++
+                 r = mount_nofollow("tmpfs", "/tmp", "tmpfs",
+-                                   MS_NOSUID|MS_NODEV,
+-                                   "mode=01777" TMPFS_LIMITS_RUN);
++                                   MS_NOSUID|MS_NODEV, options);
+                 if (r < 0) {
+                         log_full_errno(prio, r, "Failed to overmount /tmp/: %m");
+                         _exit(EXIT_FAILURE);
+--- a/src/basic/process-util.h
++++ b/src/basic/process-util.h
+@@ -189,6 +189,10 @@
+         FORK_FREEZE             = 1 << 22, /* Don't return in child, just call freeze() instead */
+         FORK_ALLOW_DLOPEN       = 1 << 23, /* Do not block dlopen() in child */
+ 
++        /* Fixed native generator mount context, selected only by the admitted system manager.
++         * Requires PRIVATE_TMP, NEW_MOUNTNS and MOUNTNS_SLAVE together. */
++        FORK_PRIVATE_TMP_P4     = 1 << 25,
++
+         _FORK_PID_ONLY          = 1 << 24, /* Don't open a pidfd referencing the child process */
+ } ForkFlags;
+ 
+--- a/src/core/manager.c
++++ b/src/core/manager.c
+@@ -4150,8 +4150,23 @@
+ 
+         /* On some systems /tmp/ doesn't exist, and on some other systems we cannot create it at all. Avoid
+          * trying to mount a private tmpfs on it as there's no one size fits all. */
+-        if (is_dir("/tmp", /* follow= */ false) > 0 && !MANAGER_IS_TEST_RUN(m))
++        if (is_dir("/tmp", /* follow= */ false) > 0 && !MANAGER_IS_TEST_RUN(m)) {
+                 flags |= FORK_PRIVATE_TMP;
++
++                if (mac_selinux_use()) {
++                        _cleanup_freecon_ char *context = NULL;
++
++                        /* Select before clone: no allocation, policy query or caller-chosen
++                         * mount option is introduced into the raw-clone child. */
++                        r = mac_selinux_get_our_label(&context);
++                        if (r < 0) {
++                                log_error_errno(r, "Failed to identify generator sandbox SELinux context: %m");
++                                goto finish;
++                        }
++                        if (streq(context, "u:system_r:init_t:s0"))
++                                flags |= FORK_PRIVATE_TMP_P4;
++                }
++        }
+ 
+         r = safe_fork("(sd-gens)", flags, NULL);
+         if (r == 0) {

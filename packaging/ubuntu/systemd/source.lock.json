@@ -1,0 +1,60 @@
+{
+  "schema": "droidloom.native-systemd-generator-tmp-source.v1",
+  "original_source_version": "259.9-0ubuntu0.1",
+  "candidate_source_version": "259.9-0ubuntu0.1+p4gentmp1",
+  "normal_source_archives": {
+    "systemd_259.9-0ubuntu0.1.dsc": {
+      "bytes": 8779,
+      "sha256": "17ad848e882b6b91ac0d31300181bb4ec6b221077329b0c5296c9765cce769b5"
+    },
+    "systemd_259.9.orig.tar.gz": {
+      "bytes": 17618264,
+      "sha256": "6ac77a1baf0539b835193eec46cdb1c73abb42d7f87aa977009150e9d8375757"
+    },
+    "systemd_259.9-0ubuntu0.1.debian.tar.xz": {
+      "bytes": 254204,
+      "sha256": "c58ab8296f580f8760afc945261917fa23dfb62df8a78121a5967c5b237a24cc"
+    }
+  },
+  "original_applied_ubuntu_files": {
+    "src/core/manager.c": {
+      "bytes": 198565,
+      "sha256": "d5a228539a8972158884cbfe17ffb5b07305beaf3ed606e43a1fb6c3ca8644f9"
+    },
+    "src/basic/process-util.c": {
+      "bytes": 77868,
+      "sha256": "b1b9575a105f933c4e8b01dd01ae7cc3cae8462627db4cacc0e671ef82e9a32b"
+    },
+    "src/basic/process-util.h": {
+      "bytes": 11846,
+      "sha256": "8cff90d749f7bf56e1ec8b3bd80c7347821c872138a123b6282cd4e85844c8d7"
+    }
+  },
+  "patched_files": {
+    "src/core/manager.c": {
+      "bytes": 199293,
+      "sha256": "0db0ed62a7c188306a7edb95a903c6356ebec54ef5d4c8946fc5a3f7597f95bc"
+    },
+    "src/basic/process-util.c": {
+      "bytes": 78499,
+      "sha256": "eb7b16a0030ff501fc4435121365cb746f80cc508bdd4e9c5e37bfdda2027676"
+    },
+    "src/basic/process-util.h": {
+      "bytes": 12061,
+      "sha256": "8e44b2ead7396cff3f8fa9c51ed3266d06679089c36e1d2cf9bc76c0137038e6"
+    }
+  },
+  "patch": {
+    "file": "p4-native-generator-tmpfs.patch",
+    "bytes": 4012,
+    "sha256": "7745100e9dd1fc3a680538aa2b66894abc92ffc09faa9fbbc2e6a0a661572fce"
+  },
+  "required_raw_manager_context": "u:system_r:init_t:s0",
+  "fixed_fscontext": "u:object_r:p4_linux_generator_tmpfs_t:s0",
+  "fixed_inode_context": "u:object_r:p4_linux_generator_tmp_t:s0",
+  "fork_flag_bit": 25,
+  "original_android_cil_files_changed": 0,
+  "normal_debian_build_required": true,
+  "full_package_payload_and_dependency_closure_required": true,
+  "actual_enforcing_runtime_required": true
+}
