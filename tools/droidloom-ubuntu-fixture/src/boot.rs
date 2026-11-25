@@ -366,7 +366,8 @@ pub fn prepare_boot(config: &Path, expected: &str) -> Result<()> {
         4 * 1024 * 1024,
     )?)?;
     ensure(
-        native["schema"] == "droidloom.ubuntu-native-prepared.v1"
+        (native["schema"] == "droidloom.ubuntu-native-prepared.v1"
+            || native["schema"] == crate::boot_complete::PREPARED_SCHEMA)
             && native["guest_qualified"] == false
             && native["production_ready"] == false,
         "native receipt must describe an unbooted prepared fixture",
@@ -393,9 +394,44 @@ pub fn prepare_boot(config: &Path, expected: &str) -> Result<()> {
         fs::stat(&root_tree.root)? == identity,
         "native root identity changed before release admission",
     )?;
-    let original_pin: FilePin = serde_json::from_value(native["fixture_manifest"].clone())?;
-    let original: crate::model::Manifest =
-        serde_json::from_slice(&boot_files::read_pin(&original_pin, 128 * 1024 * 1024)?)?;
+    let is_complete = native["schema"] == crate::boot_complete::PREPARED_SCHEMA;
+    let (complete, original) = if is_complete {
+        ensure(
+            !plan.android.calibrate
+                && plan.libselinux_candidate.is_none()
+                && plan.libapparmor_candidate.is_none()
+                && plan.gdm_candidate.is_none(),
+            "complete normal boot consumes the normally installed native families without overlays",
+        )?;
+        let pin: FilePin = serde_json::from_value(native["complete_fixture_manifest"].clone())?;
+        let manifest = crate::boot_complete::admitted_manifest(&pin)?;
+        ensure(
+            native["normal_native_packages"]
+                == crate::boot_complete::normal_families(&manifest.packages)?,
+            "native prepared receipt and complete candidate cohort disagree",
+        )?;
+        ensure(
+            native
+                .get("public_package_supplement")
+                .is_none_or(|v| v.is_null()),
+            "complete normal source cannot consume a historical public supplement",
+        )?;
+        (Some((pin, manifest)), None)
+    } else {
+        let pin: FilePin = serde_json::from_value(native["fixture_manifest"].clone())?;
+        let manifest: crate::model::Manifest =
+            serde_json::from_slice(&boot_files::read_pin(&pin, 128 * 1024 * 1024)?)?;
+        (None, Some(manifest))
+    };
+    let target_release = if let Some((_, manifest)) = &complete {
+        manifest.target_kernel_release.clone()
+    } else {
+        original
+            .as_ref()
+            .ok_or("native source absent")?
+            .target_kernel_release
+            .clone()
+    };
     if let Some(value) = native
         .get("public_package_supplement")
         .filter(|v| !v.is_null())
@@ -403,10 +439,11 @@ pub fn prepare_boot(config: &Path, expected: &str) -> Result<()> {
         let pin: FilePin = serde_json::from_value(value.clone())?;
         crate::boot_packages::verify(&root, &pin)?;
     }
-    let old_kernel = original
-        .kernel
-        .as_ref()
-        .ok_or("original fixture lacks target kernel binding")?;
+    let old_kernel = original.as_ref().and_then(|m| m.kernel.as_ref());
+    ensure(
+        is_complete || old_kernel.is_some(),
+        "original fixture lacks target kernel binding",
+    )?;
     let boot = work.join("boot");
     boot_files::private_dir(&boot)?;
     fs::write_json(
@@ -414,7 +451,25 @@ pub fn prepare_boot(config: &Path, expected: &str) -> Result<()> {
         &plan,
         0,
     )?;
-    let (kernel_report, release) = if let Some(replacement) = &plan.replacement_kernel {
+    let (kernel_report, release) = if is_complete {
+        let replacement = plan
+            .replacement_kernel
+            .as_ref()
+            .ok_or("complete normal source requires separately admitted shared-kernel materials")?;
+        ensure(
+            replacement.image.sha256 == plan.kernel.sha256
+                && replacement.image.bytes == plan.kernel.bytes
+                && replacement.normal_initrd.sha256 == plan.base_initrd.sha256
+                && replacement.normal_initrd.bytes == plan.base_initrd.bytes,
+            "initial complete kernel/initrd inputs disagree",
+        )?;
+        let result = crate::boot_kernel::install_initial(&root, &boot, replacement)?;
+        ensure(
+            result["target_kernel_release"] == target_release,
+            "complete native source and shared-kernel producer differ",
+        )?;
+        (result, target_release.clone())
+    } else if let Some(replacement) = &plan.replacement_kernel {
         ensure(
             replacement.image.sha256 == plan.kernel.sha256
                 && replacement.image.bytes == plan.kernel.bytes
@@ -422,12 +477,7 @@ pub fn prepare_boot(config: &Path, expected: &str) -> Result<()> {
                 && replacement.normal_initrd.bytes == plan.base_initrd.bytes,
             "candidate kernel/initrd inputs disagree",
         )?;
-        let result = crate::boot_kernel::install(
-            &root,
-            &boot,
-            &original.target_kernel_release,
-            replacement,
-        )?;
+        let result = crate::boot_kernel::install(&root, &boot, &target_release, replacement)?;
         let release = result["target_kernel_release"]
             .as_str()
             .ok_or("candidate release absent")?
@@ -435,26 +485,41 @@ pub fn prepare_boot(config: &Path, expected: &str) -> Result<()> {
         (result, release)
     } else {
         ensure(
-            plan.kernel.sha256 == old_kernel.binding.image_sha256
-                && plan.kernel.bytes == old_kernel.image_identity.size,
+            plan.kernel.sha256
+                == old_kernel
+                    .ok_or("original kernel absent")?
+                    .binding
+                    .image_sha256
+                && plan.kernel.bytes
+                    == old_kernel
+                        .ok_or("original kernel absent")?
+                        .image_identity
+                        .size,
             "original kernel image does not match complete selected modules",
         )?;
         (
             serde_json::json!({"original_kernel_binding":old_kernel}),
-            original.target_kernel_release.clone(),
+            target_release.clone(),
         )
     };
     let host = crate::boot_host::install(&root, &boot, &plan.host_manifest, &plan.host_archive)?;
     let candidate = plan
         .libselinux_candidate
         .as_ref()
-        .map(|input| crate::boot_candidate::apply(&root, &boot, &original, input))
+        .map(|input| {
+            crate::boot_candidate::apply(
+                &root,
+                &boot,
+                original.as_ref().ok_or("legacy native source absent")?,
+                input,
+            )
+        })
         .transpose()?;
     ensure(
-        plan.android.calibrate || plan.libapparmor_candidate.is_some(),
+        plan.android.calibrate || plan.libapparmor_candidate.is_some() || is_complete,
         "full native boot requires the admitted AppArmor peer-label candidate",
     )?;
-    if plan.libapparmor_candidate.is_some() {
+    if plan.libapparmor_candidate.is_some() || is_complete {
         ensure(
             release == crate::boot_apparmor_candidate::REQUIRED_KERNEL_RELEASE,
             "AppArmor peer-label candidate requires its matching complete kernel batch",
@@ -463,16 +528,30 @@ pub fn prepare_boot(config: &Path, expected: &str) -> Result<()> {
     let apparmor_candidate = plan
         .libapparmor_candidate
         .as_ref()
-        .map(|input| crate::boot_apparmor_candidate::apply(&root, &boot, &original, input))
+        .map(|input| {
+            crate::boot_apparmor_candidate::apply(
+                &root,
+                &boot,
+                original.as_ref().ok_or("legacy native source absent")?,
+                input,
+            )
+        })
         .transpose()?;
     ensure(
-        plan.android.calibrate || plan.gdm_candidate.is_some(),
+        plan.android.calibrate || plan.gdm_candidate.is_some() || is_complete,
         "full native boot requires the admitted GDM filesystem-credential candidate",
     )?;
     let gdm_candidate = plan
         .gdm_candidate
         .as_ref()
-        .map(|input| crate::boot_gdm_candidate::apply(&root, &boot, &original, input))
+        .map(|input| {
+            crate::boot_gdm_candidate::apply(
+                &root,
+                &boot,
+                original.as_ref().ok_or("legacy native source absent")?,
+                input,
+            )
+        })
         .transpose()?;
     for path in [
         "usr/bin/droidloomctl",
@@ -495,10 +574,18 @@ pub fn prepare_boot(config: &Path, expected: &str) -> Result<()> {
         )?;
     }
     let android = crate::boot_release::install_android(&root, &boot, &plan.android)?;
-    let public_apks = plan.public_apks.as_ref().map(|input| {
-        crate::boot_public_apks::install(&root, &boot, input,
-            !plan.android.calibrate && plan.android.persistent_data.is_none())
-    }).transpose()?;
+    let public_apks = plan
+        .public_apks
+        .as_ref()
+        .map(|input| {
+            crate::boot_public_apks::install(
+                &root,
+                &boot,
+                input,
+                !plan.android.calibrate && plan.android.persistent_data.is_none(),
+            )
+        })
+        .transpose()?;
     // Qualification traces belong to the fresh guest user-manager environment.
     // Keep the exported production desktop unit unchanged and without drop-ins.
     // Calibration has no desktop qualification and leaves tracing disabled.
@@ -568,8 +655,14 @@ pub fn prepare_boot(config: &Path, expected: &str) -> Result<()> {
     let uuid = native["root_filesystem_uuid"]
         .as_str()
         .ok_or("native root UUID absent")?;
-    let disk =
-        crate::boot_runtime::make_root_image(&root, &boot, uuid, plan.root_image_gib, &labels, public_apks.as_ref())?;
+    let disk = crate::boot_runtime::make_root_image(
+        &root,
+        &boot,
+        uuid,
+        plan.root_image_gib,
+        &labels,
+        public_apks.as_ref(),
+    )?;
     let result = serde_json::json!({"schema":"droidloom.full-ubuntu-boot-prepared.v1",
         "input_sha256":expected,"native_receipt":plan.native_receipt,"work_directory":work,
         "boot_directory":boot,"root_filesystem_uuid":uuid,"target_kernel_release":release,
@@ -577,6 +670,8 @@ pub fn prepare_boot(config: &Path, expected: &str) -> Result<()> {
         "kernel_admission":kernel_report,"host_release":host,"android_release":android,
         "public_apk_import":public_apks,
         "libselinux_candidate":candidate,
+        "complete_native_package_admission":complete.as_ref().map(|(pin,_)|
+            serde_json::json!({"manifest":pin,"normal_native_packages":native["normal_native_packages"]})) ,
         "libapparmor_candidate":apparmor_candidate,
         "qualification_presenter_trace_environment":presenter_trace_environment,
         "gdm_candidate":gdm_candidate,

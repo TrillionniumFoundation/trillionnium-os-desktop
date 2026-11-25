@@ -26,6 +26,20 @@ pub fn install(
     original_release: &str,
     input: &KernelMaterial,
 ) -> Result<Value> {
+    install_inner(root, work, Some(original_release), input)
+}
+
+/// A complete normally installed source deliberately has no old kernel tree.
+pub fn install_initial(root: &Path, work: &Path, input: &KernelMaterial) -> Result<Value> {
+    install_inner(root, work, None, input)
+}
+
+fn install_inner(
+    root: &Path,
+    work: &Path,
+    original_release: Option<&str>,
+    input: &KernelMaterial,
+) -> Result<Value> {
     let manifest: Manifest = serde_json::from_slice(&boot_files::read_pin(
         &input.fixture_manifest,
         128 * 1024 * 1024,
@@ -38,7 +52,7 @@ pub fn install(
     let release = &manifest.target_kernel_release;
     ensure(
         release.starts_with("6.18.")
-            && release != original_release
+            && original_release.is_none_or(|old| release != old)
             && release
                 .bytes()
                 .all(|b| b.is_ascii_alphanumeric() || b"._-".contains(&b)),
@@ -84,26 +98,47 @@ pub fn install(
         Err(e) if e.downcast_ref::<rustix::io::Errno>() == Some(&rustix::io::Errno::NOENT) => (),
         _ => return Err("candidate module tree already exists".into()),
     }
-    let old = format!("/usr/lib/modules/{original_release}");
-    let original = target.dir(&old)?;
-    let id = fs::stat(&original)?;
-    ensure(
-        id.uid == 0 && id.mode & 0o022 == 0,
-        "old fixture module root is not protected",
-    )?;
-    let retired = work.join("prior-fixture-modules");
-    ensure(
-        std::fs::symlink_metadata(&retired)
-            .is_err_and(|e| e.kind() == std::io::ErrorKind::NotFound),
-        "old module retirement destination already exists",
-    )?;
-    std::fs::rename(boot_files::guest_path(root, &old)?, &retired)?;
-    let retired_tree = fs::Tree::open(&fs::absolute_string(&retired)?, 0)?;
-    let moved = fs::stat(&retired_tree.root)?;
-    ensure(
-        (moved.dev, moved.ino) == (id.dev, id.ino),
-        "scoped fixture module retirement changed identity",
-    )?;
+    let retired = if let Some(original_release) = original_release {
+        let old = format!("/usr/lib/modules/{original_release}");
+        let original = target.dir(&old)?;
+        let id = fs::stat(&original)?;
+        ensure(
+            id.uid == 0 && id.mode & 0o022 == 0,
+            "old fixture module root is not protected",
+        )?;
+        let retired = work.join("prior-fixture-modules");
+        ensure(
+            std::fs::symlink_metadata(&retired)
+                .is_err_and(|e| e.kind() == std::io::ErrorKind::NotFound),
+            "old module retirement destination already exists",
+        )?;
+        std::fs::rename(boot_files::guest_path(root, &old)?, &retired)?;
+        let retired_tree = fs::Tree::open(&fs::absolute_string(&retired)?, 0)?;
+        let moved = fs::stat(&retired_tree.root)?;
+        ensure(
+            (moved.dev, moved.ino) == (id.dev, id.ino),
+            "scoped fixture module retirement changed identity",
+        )?;
+        Some(retired)
+    } else {
+        match target.identity("/usr/lib/modules") {
+            Ok(id) => {
+                ensure(
+                    id.uid == 0 && id.gid == 0 && id.mode & 0o022 == 0,
+                    "initial complete module parent is untrusted",
+                )?;
+                ensure(
+                    target.list("/usr/lib/modules")?.is_empty(),
+                    "complete native source unexpectedly contains an old kernel",
+                )?;
+            }
+            Err(e) if e.downcast_ref::<rustix::io::Errno>() == Some(&rustix::io::Errno::NOENT) => {
+                boot_files::ensure_dir(root, "/usr/lib/modules", 0o755)?;
+            }
+            Err(e) => return Err(e),
+        }
+        None
+    };
     let mut dirs: Vec<_> = manifest
         .entries
         .iter()
