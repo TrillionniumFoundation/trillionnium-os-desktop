@@ -159,22 +159,29 @@ fn actual_pin(path: &Path) -> Result<FilePin> {
     trusted(&pin)?;
     Ok(pin)
 }
-fn original_tool(requested: &str, pin: &FilePin, aliases: &Value) -> Result<(File, Identity)> {
+fn original_chroot_layout(requested: &str, pin: &FilePin, resolution: &Value) -> Result<()> {
+    ensure(
+        pin.path == Path::new("/usr/lib/cargo/bin/coreutils/chroot")
+            && pin.bytes == 11_807_104
+            && pin.sha256 == "f84e76ea4da1e0c4e92254bd0d7dccdabe2c8b3098e734f27997dae3ee5d8e02"
+            && resolution["guest_path"] == requested
+            && resolution["resolved_path"] == pin.path.to_string_lossy().as_ref()
+            && resolution["aliases"]
+                .as_array()
+                .is_some_and(|v| v.len() == 1)
+            && resolution["aliases"][0]["path"] == requested
+            && resolution["aliases"][0]["target"] == "../lib/cargo/bin/coreutils/chroot",
+        "original source-bound uutils chroot alias/ELF differs",
+    )
+}
+fn original_tool(requested: &str, pin: &FilePin, resolution: &Value) -> Result<(File, Identity)> {
     if requested != "/usr/bin/chroot" {
         return trusted(pin);
     }
     // The original distribution's uutils chroot is a protected symlink to its
     // normal multi-call ELF. This exact original read-only tool has 116 links;
     // no candidate input, output or other executable gains this exception.
-    ensure(
-        pin.path == Path::new("/usr/lib/cargo/bin/coreutils/chroot")
-            && pin.bytes == 11_807_104
-            && pin.sha256 == "f84e76ea4da1e0c4e92254bd0d7dccdabe2c8b3098e734f27997dae3ee5d8e02"
-            && aliases.as_array().is_some_and(|v| v.len() == 1)
-            && aliases[0]["path"] == requested
-            && aliases[0]["target"] == "../lib/cargo/bin/coreutils/chroot",
-        "original source-bound uutils chroot alias/ELF differs",
-    )?;
+    original_chroot_layout(requested, pin, resolution)?;
     fs::Tree::open("/", 0)?.parent(&fs::absolute_string(&pin.path)?)?;
     let (file, id) = files::open_pin(pin)?;
     ensure(
@@ -345,7 +352,13 @@ fn source_guards(target: &Value, original: &Value) -> Result<Vec<SourceGuard>> {
             row["identity"] == identity,
             "original preflight inode identity changed",
         )?;
-        guards.push((path.clone(), json!([]), pin, id, file));
+        guards.push((
+            path.clone(),
+            json!({"guest_path":path,"resolved_path":path,"aliases":[]}),
+            pin,
+            id,
+            file,
+        ));
     }
     for tool in TOOLS {
         let (pin, aliases) = files::resolve_public_file(Path::new("/"), tool)
@@ -1356,6 +1369,24 @@ pub fn build(path: &Path, expected: &str) -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn original_chroot_uses_the_readers_full_resolution_object() {
+        let pin = FilePin {
+            path: "/usr/lib/cargo/bin/coreutils/chroot".into(),
+            bytes: 11_807_104,
+            sha256: "f84e76ea4da1e0c4e92254bd0d7dccdabe2c8b3098e734f27997dae3ee5d8e02".into(),
+        };
+        let resolution = json!({"guest_path":"/usr/bin/chroot","resolved_path":pin.path,
+            "aliases":[{"path":"/usr/bin/chroot","target":"../lib/cargo/bin/coreutils/chroot","identity":{"uid":0}}]});
+        original_chroot_layout("/usr/bin/chroot", &pin, &resolution).unwrap();
+        assert!(original_chroot_layout("/usr/bin/chroot", &pin, &resolution["aliases"]).is_err());
+        let mut changed = resolution.clone();
+        changed["resolved_path"] = json!("/usr/bin/other");
+        assert!(original_chroot_layout("/usr/bin/chroot", &pin, &changed).is_err());
+        changed = resolution.clone();
+        changed["aliases"][0]["target"] = json!("/untrusted/tool");
+        assert!(original_chroot_layout("/usr/bin/chroot", &pin, &changed).is_err());
+    }
     #[test]
     fn normal_main_and_early_archive_paths_preserve_public_members() {
         for (raw, effective) in [
