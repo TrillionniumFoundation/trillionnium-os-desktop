@@ -542,6 +542,12 @@ pub fn admit(input: &FilePin, fresh_normal: bool) -> Result<(Staged, Vec<(FilePi
         fresh_normal,
         "public APK import requires a fresh normal guest without original userdata",
     )?;
+    read_materials(input)
+}
+
+// Static parsing is also useful before a fresh guest exists. Only admit/install
+// accepts the fresh-normal authority; this helper never creates a guest or data.
+fn read_materials(input: &FilePin) -> Result<(Staged, Vec<(FilePin, String)>)> {
     let plan: ImportPlan = serde_json::from_slice(&boot_files::read_pin(input, 65536)?)?;
     let execution = boot_files::read_pin(&plan.execution, 1024 * 1024)?;
     let selection = boot_files::read_pin(&plan.selection, 2 * 1024 * 1024)?;
@@ -608,6 +614,82 @@ fn check_source(source: &FilePin, apk: bool) -> Result<crate::model::Identity> {
         "public material changed during admission",
     )?;
     Ok(before)
+}
+
+fn hold_verified_source(
+    source: &FilePin,
+    apk: bool,
+) -> Result<(std::fs::File, crate::model::Identity)> {
+    let before = check_source(source, apk)?;
+    let file = boot_files::checked_file(source)?;
+    ensure(
+        fs::stat(&file)? == before,
+        "public input inode changed during complete hash verification",
+    )?;
+    Ok((file, before))
+}
+
+fn recheck_held_source(
+    source: &FilePin,
+    apk: bool,
+    file: &std::fs::File,
+    before: &crate::model::Identity,
+) -> Result<()> {
+    ensure(
+        fs::stat(file)? == *before && check_source(source, apk)? == *before,
+        "held public input or its named path changed during the complete check",
+    )
+}
+
+/// Read-only check of the same pinned material contract consumed by install.
+/// It does not infer a guest, Main, epoch, labels, installation or business result.
+pub fn verify_inputs(config: &Path, expected: &str) -> Result<()> {
+    let input = boot_files::pin_file(config)?;
+    ensure(input.sha256 == expected, "public APK import digest differs")?;
+    let (staged, provenance) = read_materials(&input)?;
+    let mut sources = vec![(input.clone(), false)];
+    sources.extend(staged.files.iter().map(|item| (item.source.clone(), true)));
+    sources.extend(provenance.into_iter().map(|(source, _)| (source, false)));
+    let mut held = Vec::with_capacity(sources.len());
+    for (source, apk) in &sources {
+        held.push(hold_verified_source(source, *apk)?);
+    }
+    let mut verified = Vec::with_capacity(sources.len());
+    for ((source, apk), (file, before)) in sources.iter().zip(&held) {
+        recheck_held_source(source, *apk, file, before)?;
+        verified.push(json!({
+            "source":source,
+            "apk":apk,
+            "source_identity_before":before,
+            "source_identity_after":fs::stat(file)?,
+            "complete_sha256_verified":true
+        }));
+    }
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&json!({
+            "schema":"droidloom.public-apk-inputs-verified.v1",
+            "scope":"source_materials_only",
+            "import":input,
+            "package_count":staged.package_count,
+            "apk_file_count":staged.apk_file_count,
+            "applications":staged.applications,
+            "sources":verified,
+            "prospective_runtime_preparation_inputs":staged.runtime_preparation_inputs,
+            "fresh_normal_guest_required_for_install":true,
+            "sdk_signatures_reexecuted":false,
+            "labels_checked":false,
+            "ext4_readback_checked":false,
+            "files_staged":false,
+            "original_userdata_imported":false,
+            "applications_installed":0,
+            "application_business_accepted":false,
+            "latest_qualification_evaluated":false,
+            "guest_qualified":false,
+            "production_ready":false
+        }))?
+    );
+    Ok(())
 }
 
 fn list(file: &std::fs::File) -> Result<BTreeSet<String>> {

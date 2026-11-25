@@ -59,6 +59,12 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Command {
+    VerifyPublicApkInputs {
+        #[arg(long)]
+        config: PathBuf,
+        #[arg(long)]
+        config_sha256: String,
+    },
     PrepareOriginalInitramfs {
         #[arg(long)]
         config: PathBuf,
@@ -209,6 +215,10 @@ fn run() -> Result<()> {
         "real source capture/copy requires existing root rights; no privilege helper is installed",
     )?;
     match cli.command {
+        Command::VerifyPublicApkInputs {
+            config,
+            config_sha256,
+        } => boot_public_apks::verify_inputs(&config, &config_sha256)?,
         Command::PrepareOriginalInitramfs {
             config,
             config_sha256,

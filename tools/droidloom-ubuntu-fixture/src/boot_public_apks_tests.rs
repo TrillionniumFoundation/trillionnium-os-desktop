@@ -548,3 +548,24 @@ fn exact_pinned_sets_allow_changed_split_counts_without_replacing_selected_packa
     s["applications"][0]["material_files"][0]["metadata"]["split"] = "different".into();
     assert!(validate(&plan, &e, &s, &r).is_err());
 }
+
+#[test]
+fn offline_public_input_check_hashes_actual_bytes_and_rejects_named_inode_replacement() -> Result<()>
+{
+    let directory = tempfile::tempdir()?;
+    let path = directory.path().join("original.apk");
+    std::fs::write(&path, b"PK\x03\x04actual public bytes")?;
+    let pin = boot_files::pin_file(&path)?;
+    let (held, before) = hold_verified_source(&pin, true)?;
+    recheck_held_source(&pin, true, &held, &before)?;
+    let mut wrong = pin.clone();
+    wrong.sha256 = "0".repeat(64);
+    assert!(hold_verified_source(&wrong, true).is_err());
+    let original = directory.path().join("preserved-original.apk");
+    std::fs::rename(&path, &original)?;
+    std::fs::write(&path, b"PK\x03\x04actual public bytes")?;
+    assert_eq!(boot_files::pin_file(&path)?.sha256, pin.sha256);
+    assert!(recheck_held_source(&pin, true, &held, &before).is_err());
+    assert_eq!(boot_files::pin_file(&original)?.sha256, pin.sha256);
+    Ok(())
+}

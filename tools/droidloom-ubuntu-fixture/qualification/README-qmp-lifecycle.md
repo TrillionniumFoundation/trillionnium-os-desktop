@@ -6,6 +6,24 @@ qualification VM. It does not start a VM, an Android runtime, a service, or a
 second presenter. It never accepts a task ID, object ID, component, resolution,
 arbitrary remote command, or saved launch event as close authority.
 
+## Check a new public material selection
+
+Before preparing a new normal guest, run the fixture's read-only
+`verify-public-apk-inputs --config IMPORT.json --config-sha256 SHA256` command
+with the actual pinned import and existing root rights. It consumes the same
+three-manifest contract and optional canonical gate registry as the boot
+importer. Every selected APK and provenance file is fully hashed from a held
+descriptor, with the complete original file identities and named paths checked
+again after the whole set. The output identifies the exact 39 packages and
+their complete base/split sets. It reuses the pinned SDK signature evidence;
+it does not rerun the Android SDK signer.
+
+This source check creates no guest files and makes no runtime, Main, epoch,
+label, ext4, install, freshness, or business acceptance claim. Keep known newer
+unavailable packages and original data migration blockers in the selection.
+The later normal boot importer still requires fresh Android data and performs
+its own copy, label and ext4 readback checks.
+
 ## Required original inputs
 
 The existing `bind` action must have admitted the original live QEMU process,
