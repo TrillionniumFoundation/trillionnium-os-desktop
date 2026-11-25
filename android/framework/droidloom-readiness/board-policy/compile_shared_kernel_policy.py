@@ -80,6 +80,58 @@ def export_binary_policy(policy, binary, output):
 
 
 
+def verify_manager_tmpfs(lines, check, obj, role_types):
+    """Measure the complete fresh-filesystem label and temporary-inode boundary."""
+    count = 0
+    def test(source, target, cls, permissions, allowed):
+        nonlocal count
+        check(source, target, cls, permissions, allowed)
+        count += len(permissions)
+    fs = obj("p4_linux_generator_tmpfs_t")
+    inode = obj("p4_linux_generator_tmp_t")
+    for role, actor in role_types:
+        context = f"u:{role}:{actor}:s0"
+        manager = role == "system_r" and actor == "init_t"
+        generator = role == "system_r" and actor == "p4_linux_generator_t"
+        for permission in ("mount", "relabelfrom", "relabelto"):
+            test(context, fs, "filesystem", [permission], manager)
+        test(context, fs, "filesystem", ["remount", "unmount"], False)
+        test(context, inode, "dir", ["open", "read"], manager or generator)
+        test(context, inode, "dir",
+             ["create", "write", "add_name", "remove_name", "setattr", "rename", "reparent", "rmdir"], generator)
+        test(context, inode, "dir", ["mounton", "relabelto", "relabelfrom"], False)
+        test(context, inode, "file",
+             ["open", "read", "create", "write", "append", "setattr", "rename", "unlink"], generator)
+        test(context, inode, "file",
+             ["execute", "execute_no_trans", "entrypoint", "map", "mounton", "relabelto", "relabelfrom"], False)
+        test(context, inode, "lnk_file",
+             ["read", "create", "write", "setattr", "rename", "unlink"], generator)
+        test(context, inode, "lnk_file", ["mounton", "relabelto", "relabelfrom"], False)
+        for cls in ("chr_file", "blk_file", "sock_file", "fifo_file"):
+            test(context, inode, cls, ["create", "open", "read", "write"], False)
+    object_types = sorted(line[len("(roletype object_r "):-1] for line in lines
+                          if line.startswith("(roletype object_r "))
+    for name in object_types:
+        if not name or any(c.isspace() or c in "()" for c in name):
+            raise ValueError("Unexpected concrete object role in tmpfs verifier")
+        target = obj(name)
+        test("u:system_r:init_t:s0", target, "filesystem", ["relabelfrom"],
+             name in ("tmpfs", "p4_linux_generator_tmpfs_t"))
+        test("u:system_r:init_t:s0", target, "filesystem", ["relabelto"],
+             name == "p4_linux_generator_tmpfs_t")
+        test(target, fs, "filesystem", ["associate"], name == "p4_linux_generator_tmp_t")
+    test("u:system_r:init_t:s0", obj("tmpfs"), "filesystem", ["mount", "relabelto"], False)
+    test("u:system_r:init_t:s0", obj("p4_linux_tmp_t"), "dir", ["mounton"], True)
+    test("u:system_r:p4_linux_generator_t:s0", obj("tmpfs"), "filesystem",
+         ["mount", "relabelto", "relabelfrom"], False)
+    for actor in ("init_t", "p4_linux_generator_t"):
+        test(f"u:system_r:{actor}:s0", fs, "filesystem", ["getattr"], True)
+    return {"process_role_types": len(role_types), "concrete_object_types": len(object_types),
+            "permission_checks": count, "capabilities_added": [],
+            "generic_tmpfs_mount_and_relabel_to_denied": True,
+            "original_android_inodes_relabelled": False, "runtime_qualified": False}
+
+
 def verify_manager_startup(lines, check, obj, role_types):
     """Read generator/status authority from the linked policy for every role."""
     count = 0
@@ -142,6 +194,7 @@ def verify_manager_startup(lines, check, obj, role_types):
     return {"process_role_types": len(role_types), "role_permission_checks": count,
             "fixed_and_nested_transitions": len(required), "capabilities_added": [],
             "generic_root_and_systemd_regular_file_writes_denied": True,
+            "native_generator_tmpfs": verify_manager_tmpfs(lines, check, obj, role_types),
             "runtime_qualified": False}
 
 

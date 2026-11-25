@@ -43,7 +43,9 @@
 (allow init_t p4_linux_rootdir_t (dir (mounton)))
 (allow init_t p4_native_shutdown_filesystems (filesystem (getattr remount unmount)))
 (neverallow init_t p4_nonboard_without_shutdown_filesystems (filesystem (remount unmount)))
-(neverallow init_t p4_all_nonboard (filesystem (mount relabelto relabelfrom)))
+(neverallow init_t p4_all_nonboard (filesystem (mount relabelto)))
+; The manager lifecycle component separately limits its new tmpfs label source.
+(neverallow init_t p4_nonboard_except_generator_tmpfs_source (filesystem (relabelfrom)))
 
 ; Fixed mount-rootfs and private namespace staging directories. The dynamic
 ; namespace-XXXXXX leaf comes only from the stock executor's mkdtemp call; it

@@ -85,3 +85,58 @@
 (allow p4_linux_generator_t p4_linux_systemd_memfd_t (file (getattr read write)))
 (neverallow p4_linux_generator_t p4_linux_systemd_memfd_t (file (open create append setattr map execute execute_no_trans entrypoint mounton relabelto relabelfrom)))
 (neverallowx init_t p4_linux_generated_unit_t (ioctl file (not (0x542a))))
+
+; The normal systemd native-manager patch selects these literal labels only in
+; its original private/slave generator mount namespace. Keep these ephemeral
+; objects outside p4_linux_data: its general native/query traversal contract is
+; not authority to inspect another generator's temporary files.
+(type p4_linux_generator_tmpfs_t)
+(type p4_linux_generator_tmp_t)
+(roletype object_r p4_linux_generator_tmpfs_t)
+(roletype object_r p4_linux_generator_tmp_t)
+(typeattributeset p4_all_board_owned (p4_linux_generator_tmpfs_t p4_linux_generator_tmp_t))
+(typeattribute p4_generator_tmp_users)
+(typeattributeset p4_generator_tmp_users (init_t p4_linux_generator_t))
+(typeattribute p4_without_generator_tmp_users)
+(typeattributeset p4_without_generator_tmp_users (and (all) (not (p4_generator_tmp_users))))
+(typeattribute p4_without_generator_tmp_writer)
+(typeattributeset p4_without_generator_tmp_writer (and (all) (not (p4_linux_generator_t))))
+(typeattribute p4_without_generator_tmp_inode)
+(typeattributeset p4_without_generator_tmp_inode (and (all) (not (p4_linux_generator_tmp_t))))
+(typeattribute p4_nonboard_except_generator_tmpfs_source)
+(typeattributeset p4_nonboard_except_generator_tmpfs_source (and (p4_all_nonboard) (not (tmpfs))))
+(typeattribute p4_linux_without_fresh_filesystem_labelers)
+(typeattributeset p4_linux_without_fresh_filesystem_labelers (and (p4_linux_procs) (not (or (droidloom_broker) (init_t)))))
+
+; The kernel first checks relabel-from the default fresh tmpfs superblock, then
+; relabel-to the one native filesystem SID. Its context/rootcontext checks then
+; require relabel-from that new SID and association of the one inode type.
+; No original Android inode or existing initialized superblock is relabelled.
+(allow init_t tmpfs (filesystem (relabelfrom)))
+(allow init_t p4_linux_generator_tmpfs_t (filesystem (getattr mount relabelfrom relabelto)))
+(allow p4_linux_generator_t p4_linux_generator_tmpfs_t (filesystem (getattr)))
+(allow p4_linux_generator_tmp_t p4_linux_generator_tmpfs_t (filesystem (associate)))
+(allow init_t p4_linux_tmp_t (dir (mounton)))
+(neverallow init_t p4_nonboard_except_generator_tmpfs_source (filesystem (relabelfrom)))
+(neverallow init_t tmpfs (filesystem (mount relabelto)))
+(neverallow p4_linux_not_pid1_manager p4_linux_generator_tmpfs_t (filesystem (mount relabelfrom relabelto)))
+(neverallow p4_linux_procs p4_linux_generator_tmpfs_t (filesystem (remount unmount)))
+(neverallow p4_without_generator_tmp_inode p4_linux_generator_tmpfs_t (filesystem (associate)))
+
+; The manager only traverses its empty mount. Original generator entrypoints
+; own temporary directories/files/links and cannot execute or relabel them.
+(allow init_t p4_linux_generator_tmp_t (dir (getattr search open read)))
+(allow p4_linux_generator_t p4_linux_generator_tmp_t (dir (getattr search open read create write add_name remove_name setattr rename reparent rmdir)))
+(allow p4_linux_generator_t p4_linux_generator_tmp_t (file (getattr open read create write append setattr rename unlink)))
+(allow p4_linux_generator_t p4_linux_generator_tmp_t (lnk_file (getattr read create write setattr rename unlink)))
+(neverallow p4_without_generator_tmp_users p4_linux_generator_tmp_t (dir (open read)))
+(neverallow p4_without_generator_tmp_writer p4_linux_generator_tmp_t (dir (create write add_name remove_name setattr rename reparent rmdir)))
+(neverallow p4_without_generator_tmp_writer p4_linux_generator_tmp_t (file (open read create write append setattr rename unlink)))
+(neverallow p4_without_generator_tmp_writer p4_linux_generator_tmp_t (lnk_file (read create write setattr rename unlink)))
+(neverallow p4_linux_procs p4_linux_generator_tmp_t (dir (mounton relabelfrom relabelto)))
+(neverallow p4_linux_procs p4_linux_generator_tmp_t (file (execute execute_no_trans entrypoint map mounton relabelfrom relabelto)))
+(neverallow p4_linux_procs p4_linux_generator_tmp_t (lnk_file (mounton relabelfrom relabelto)))
+(neverallow p4_linux_procs p4_linux_generator_tmp_t (chr_file (create open read write ioctl)))
+(neverallow p4_linux_procs p4_linux_generator_tmp_t (blk_file (create open read write ioctl)))
+(neverallow p4_linux_procs p4_linux_generator_tmp_t (sock_file (create open read write)))
+(neverallow p4_linux_procs p4_linux_generator_tmp_t (fifo_file (create open read write)))

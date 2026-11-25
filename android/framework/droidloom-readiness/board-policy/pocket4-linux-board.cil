@@ -163,7 +163,7 @@
 (allow init_t p4_linux_distribution_info_t (file (getattr open read)))
 (neverallow p4_linux_without_native_mount_actors p4_all_nonboard (filesystem (mount remount unmount)))
 (neverallow p4_linux_procs p4_all_nonboard (filesystem (relabelto)))
-(neverallow p4_linux_without_query_owner p4_all_nonboard (filesystem (relabelfrom)))
+(neverallow p4_linux_without_fresh_filesystem_labelers p4_all_nonboard (filesystem (relabelfrom)))
 (neverallow droidloom_broker p4_nonboard_except_query_fs_source (filesystem (relabelfrom)))
 (neverallow p4_linux_procs p4_all_nonboard (security (load_policy setenforce setbool setsecparam)))
 (neverallow p4_linux_procs p4_all_nonboard (process (transition dyntransition ptrace signal setexec setcurrent)))
