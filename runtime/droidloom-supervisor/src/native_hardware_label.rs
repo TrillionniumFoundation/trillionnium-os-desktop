@@ -166,7 +166,7 @@ struct LsmContext {
     text: [u8; 480],
 }
 
-fn current(provider: u64) -> io::Result<Vec<u8>> {
+pub(crate) fn current(provider: u64) -> io::Result<Vec<u8>> {
     let mut context = LsmContext {
         id: provider,
         flags: 0,
@@ -253,7 +253,7 @@ struct CapData {
     inheritable: u32,
 }
 
-fn root_without_capabilities() -> io::Result<()> {
+pub(crate) fn root_without_capabilities() -> io::Result<()> {
     let mut ids = [1u32; 6];
     syscall_ok(unsafe { libc::getresuid(&mut ids[0], &mut ids[1], &mut ids[2]) } as _)?;
     syscall_ok(unsafe { libc::getresgid(&mut ids[3], &mut ids[4], &mut ids[5]) } as _)?;
@@ -416,6 +416,22 @@ pub(crate) fn label(file: &File) -> io::Result<Vec<u8>> {
         result.pop();
     }
     Ok(result)
+}
+
+pub(crate) fn replace_label(file: &File, expected: &[u8], wanted: &[u8]) -> io::Result<()> {
+    if label(file)? != expected {
+        return Err(reject("held inode source label changed"));
+    }
+    let args = XattrArgs {
+        value: wanted.as_ptr() as u64,
+        size: wanted.len() as u32,
+        flags: 0,
+    };
+    held_xattr(file, SYS_SETXATTRAT, c"security.selinux", &args)?;
+    if label(file)? != wanted {
+        return Err(reject("held inode label readback differs"));
+    }
+    Ok(())
 }
 
 fn label_fixed(file: &File, wanted: &[u8]) -> io::Result<()> {

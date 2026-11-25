@@ -13,6 +13,8 @@ fn main() {
 
 #[cfg(target_os = "linux")]
 pub mod native_hardware_label;
+#[cfg(target_os = "linux")]
+pub mod native_uevent_label;
 pub mod control;
 mod cpu_placement;
 pub mod development;
