@@ -3,7 +3,7 @@
 //! The source-bound plan and live once adapter own its only production caller.
 use super::{LABEL, LabelDerivation, Snapshot, apply_one, only_ctime_changed, set, snapshot};
 use crate::{Result, boot_files::FilePin, ensure, fs, model::Identity};
-use rustix::fs::{AtFlags, FileType, Mode, OFlags, RenameFlags};
+use rustix::fs::{AtFlags, FileType, Mode, OFlags, RenameFlags, ResolveFlags};
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use std::{
@@ -29,6 +29,10 @@ pub(in crate::cold_original_data) use transaction::{
 #[path = "cold_original_label_batch.rs"]
 mod batch;
 use batch::{BATCH_LIMIT, RecordBatch, sync_targets};
+
+#[cfg(test)]
+#[path = "cold_original_label_directory_tests.rs"]
+mod directory_tests;
 
 const LIMIT: u64 = 32 * 1024 * 1024;
 
@@ -70,8 +74,18 @@ impl Records {
         Ok(value)
     }
     fn revalidate(&self) -> Result<()> {
-        let tree = fs::Tree::open(&fs::absolute_string(&self.path)?, self.identity.uid)?;
-        for actual in [fs::stat(&tree.root)?, fs::stat(&self.held)?] {
+        // The original Tree::open path grammar and final owner/mode gates
+        // remain unchanged. Resolve the same absolute path without following
+        // any component symlink in one kernel operation, rather than reopening
+        // every ancestor separately for every immutable journal read.
+        let named = File::from(rustix::fs::openat2(
+            rustix::fs::CWD,
+            fs::absolute_string(&self.path)?,
+            OFlags::RDONLY | OFlags::DIRECTORY | OFlags::CLOEXEC | OFlags::NOFOLLOW,
+            Mode::empty(),
+            ResolveFlags::NO_SYMLINKS | ResolveFlags::NO_MAGICLINKS,
+        )?);
+        for actual in [fs::stat(&named)?, fs::stat(&self.held)?] {
             ensure(
                 (actual.dev, actual.ino, actual.mode, actual.uid, actual.gid)
                     == (
