@@ -13,10 +13,10 @@ NAMES=("systemd","systemd-sysv","systemd-timesyncd","libpam-systemd",
        "systemd-resolved")
 OLD="259.9-0ubuntu0.1"
 NEW=OLD+"+p4gentmp2"
-CLOSURE_SHA="d2d5721e51a7f5f277efff8a2203c03da5edf4e6055522f4374e99111c798755"
-CLOSURE_BYTES=182043
-BUILD_SHA="bcc3464689e33ab645a8372aec6cd0ce38e0e7f21dae22a8ef9a0be5b3e3c88c"
-BUILD_BYTES=115885
+CLOSURE_SHA="37faab52478c102377d257b72342e8c3d09da7b311aabed3e3ff14706ff00594"
+CLOSURE_BYTES=39826
+BUILD_SHA="8a210cbee5da8a9bcf079826e6963cc341b2c55d7ddb391948c48a4866ca8906"
+BUILD_BYTES=25611
 SCHEMA="droidloom-systemd-native-package-release-v1"
 INDEX_SCHEMA="droidloom-systemd-native-materials-v1"
 PROOF_NAMES=("build-result.json","build-command.json","build.stdout","build.stderr",
@@ -114,9 +114,51 @@ def verify_sources(directory,index,build,root):
          "normal systemd build was not successful")
     need(build["normal_tests"]=={"failed":0,"passed":1415,"stock_skipped":39,"tests_disabled":False},
          "original normal systemd test evidence")
-    need(build["parent_git_commit"]=="2601488570f379847a9b6785de76d451dcb5b789"
+    need(build.get("schema")=="p4-normal-systemd-debian-build-v2"
+         and build.get("source_admission_commit")=="86f03d54ad9d71fec1c61aae7f5fab6a5c9c3f59"
+         and build.get("source_admission_tree")=="a98a81ecc882595c458e3c73ecdc4db49799ee10"
          and build["source_version"]==NEW and build["original_source_version"]==OLD,
-         "reviewed systemd patch/version source")
+         "reviewed normal systemd source admission/version")
+    need(build["normal_build"]==command
+         and command.get("command",[])[-5:]==["/usr/bin/dpkg-buildpackage","-F","-us","-uc","-j2"],
+         "complete actual normal Debian build command")
+    environment=build["normal_build_environment"]
+    need(environment["environment"]["DEB_BUILD_OPTIONS"]=="parallel=2"
+         and environment["uid"]==environment["gid"]==65000
+         and environment["original_status_unchanged"] is True,
+         "normal build account, tests and original package database")
+    # This fixed alias contains the full maintained Rust source/payload/dependency
+    # admission, including the six normal dpkg-source roundtrip file identities.
+    admission=json_bytes(proof("source-delta.json"))
+    lock=json_bytes(proof("source-lock.json"))
+    need(admission.get("schema")=="droidloom.systemd-candidate-admitted.v1"
+         and admission["source_files_modified_by_admission"] is False
+         and admission["maintainer_scripts_executed_by_admission"] is False
+         and admission["package_installation_performed_by_admission"] is False
+         and admission["guest_qualified"] is False and admission["production_ready"] is False,
+         "source admission is read-only and cannot grant runtime qualification")
+    need(admission["source"]["source_lock_sha256"]==index["files"]["source-lock.json"]["sha256"]
+         and admission["source"]["patch_sha256"]==lock["patch"]["sha256"]
+         and lock["candidate_source_version"]==NEW and lock["original_source_version"]==OLD,
+         "same committed source lock and full generator/credential patch")
+    normal=admission["normal_build"]
+    need(normal["producer_command_receipt"]==build["normal_build_receipt"]
+         and normal["normal_tests"]==build["normal_tests"]
+         and normal["argv"]==command["command"][-5:] and normal["exit_code"]==0
+         and normal["source_roundtrip"]==lock["patched_files"]
+         and len(normal["source_roundtrip"])==6
+         and admission["source"]["normal_changes"]==build["changes"]
+         and admission["source"]["normal_buildinfo"]==build["buildinfo"],
+         "same actual normal source build, tests and complete source roundtrip")
+    need(len(admission["packages"])==len(NAMES)
+         and {row["package"] for row in admission["packages"]}==set(NAMES)
+         and all(row["version"]==NEW and row["architecture"]=="amd64"
+                 for row in admission["packages"]),
+         "complete normally admitted systemd runtime family")
+    for name in NAMES:
+        pin=index["files"][name+"-new.deb"]
+        need(normal["outputs"].get(name+"_"+NEW+"_amd64.deb")==pin,
+             "actual normal admission output differs from the copied archive")
     for kind,version,alias in (("old",OLD,"systemd-old.dsc"),("new",NEW,"systemd-new.dsc")):
         fields=source_fields(proof(alias))
         need(fields.get("Source")=="systemd" and fields.get("Version")==version,
