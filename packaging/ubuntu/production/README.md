@@ -789,6 +789,12 @@ two-FD fsync and retirement proof. The single GRUB environment and owned
 directory renames use their exact transaction observations, not generic mutable
 paths. Unknown generations, aliases, attributes or source states remain errors.
 
+A mutable path category describes admissible metadata evolution; it does not
+reject an unchanged symlink such as `/var/log/README`. Exact applied/current
+equality is admitted only after the existing complete handle, xattr and any
+specialized service-state checks. Changed symlinks and special objects still
+have no mutable metadata allowance, and a replacement generation is rejected.
+
 An interrupted successful xattr operation is recognized from its real inode
 before the held owner's ctime is rebound. A new real retirement may finish
 restoration after permitted mutable growth without editing an older preimage.

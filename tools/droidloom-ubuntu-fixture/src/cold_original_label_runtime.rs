@@ -108,6 +108,13 @@ pub(super) fn admit_current(
         applied.handle == current.handle && original_attributes == current_attributes,
         "post-runtime label or an unrelated xattr no longer matches the actual applied inode",
     )?;
+    // A source-defined mutable directory can contain unchanged symlinks (for
+    // example /var/log/README). Full equality already proves the strict
+    // applied generation, F9 and every attribute; it needs no mutable inode
+    // contract. Changed symlinks and special objects still fail below.
+    if applied == current {
+        return Ok(());
+    }
     if class.is_none() {
         return ensure(
             applied == current,
@@ -713,6 +720,152 @@ impl RuntimeRestoreAttempt {
 mod tests {
     use super::*;
     use std::os::unix::fs::PermissionsExt;
+    #[test]
+    fn an_actual_unchanged_log_symlink_is_exact_but_changed_or_replaced_symlinks_are_not_mutable() {
+        let tmp = tempfile::Builder::new()
+            .prefix(".p4-exact-log-symlink-")
+            .tempdir_in(std::env::current_dir().unwrap())
+            .unwrap();
+        let target = tmp.path().join("target");
+        let link = tmp.path().join("inode");
+        std::fs::write(&target, b"unmodified link target").unwrap();
+        std::os::unix::fs::symlink("target", &link).unwrap();
+        let held = File::from(
+            rustix::fs::open(
+                &link,
+                OFlags::PATH | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+                Mode::empty(),
+            )
+            .unwrap(),
+        );
+        let target_held = File::open(&target).unwrap();
+        let target_before = snapshot(&target_held).unwrap();
+        let before = snapshot(&held).unwrap();
+        assert_eq!(
+            FileType::from_raw_mode(before.identity.mode),
+            FileType::Symlink
+        );
+        let class = runtime_class(Path::new("/var/log/README"), &"b".repeat(64));
+        assert_eq!(class, Some(RuntimeClass::Log));
+        admit_current(&before, &snapshot(&held).unwrap(), class).unwrap();
+        // The existing specialized seed authority is not bypassed by the
+        // equality branch; it still requires its normal root-only file.
+        assert!(admit_current(&before, &before, Some(RuntimeClass::RandomSeed)).is_err());
+
+        let mut times = rustix::fs::Timestamps {
+            last_access: Default::default(),
+            last_modification: Default::default(),
+        };
+        times.last_access.tv_sec = before.identity.mtime_sec as _;
+        times.last_access.tv_nsec = before.identity.mtime_nsec as _;
+        times.last_modification.tv_sec = (before.identity.mtime_sec + 1) as _;
+        times.last_modification.tv_nsec = before.identity.mtime_nsec as _;
+        rustix::fs::utimensat(
+            &File::open(tmp.path()).unwrap(),
+            "inode",
+            &times,
+            rustix::fs::AtFlags::SYMLINK_NOFOLLOW,
+        )
+        .unwrap();
+        let changed = snapshot(&held).unwrap();
+        assert_eq!(before.handle, changed.handle);
+        assert_ne!(before.identity, changed.identity);
+        assert!(admit_current(&before, &changed, class).is_err());
+        assert_eq!(target_before, snapshot(&target_held).unwrap());
+
+        std::fs::rename(&link, tmp.path().join("retained-alias")).unwrap();
+        std::os::unix::fs::symlink("target", &link).unwrap();
+        let replaced = File::from(
+            rustix::fs::open(
+                &link,
+                OFlags::PATH | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+                Mode::empty(),
+            )
+            .unwrap(),
+        );
+        assert!(admit_current(&before, &snapshot(&replaced).unwrap(), class).is_err());
+        assert_eq!(std::fs::read(&target).unwrap(), b"unmodified link target");
+    }
+    #[test]
+    #[ignore = "root-only isolated security.selinux symlink apply/current/restore; no physical authority"]
+    fn an_actual_log_symlink_completes_durable_current_preimage_and_label_restore() {
+        assert!(rustix::process::geteuid().is_root());
+        let tmp = tempfile::Builder::new()
+            .prefix(".p4-exact-selinux-symlink-")
+            .tempdir_in(std::env::current_dir().unwrap())
+            .unwrap();
+        for name in ["apply", "restore"] {
+            std::fs::create_dir(tmp.path().join(name)).unwrap();
+            std::fs::set_permissions(
+                tmp.path().join(name),
+                std::fs::Permissions::from_mode(0o700),
+            )
+            .unwrap();
+        }
+        let target = tmp.path().join("target");
+        std::fs::write(&target, b"target must retain its metadata and bytes").unwrap();
+        std::os::unix::fs::symlink("target", tmp.path().join("inode")).unwrap();
+        let held = File::from(
+            rustix::fs::open(
+                tmp.path().join("inode"),
+                OFlags::PATH | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+                Mode::empty(),
+            )
+            .unwrap(),
+        );
+        let target_held = File::open(&target).unwrap();
+        let target_before = snapshot(&target_held).unwrap();
+        let before = snapshot(&held).unwrap();
+        crate::boot_files::write_new(
+            &tmp.path().join("source-plan"),
+            b"isolated core test source\n",
+            0o400,
+        )
+        .unwrap();
+        crate::boot_files::write_new(
+            &tmp.path().join("retirement"),
+            b"isolated test only; no OriginalRetirement constructed\n",
+            0o400,
+        )
+        .unwrap();
+        let source = crate::boot_files::pin_file(&tmp.path().join("source-plan")).unwrap();
+        let retirement = crate::boot_files::pin_file(&tmp.path().join("retirement")).unwrap();
+        let original = DurableAttempt::prepare(
+            Records::open(&tmp.path().join("apply")).unwrap(),
+            held,
+            &"b".repeat(64),
+            &source,
+            0,
+            Path::new("/var/log/README"),
+            b"u:object_r:p4_linux_native_config_t:s0",
+            "security.selinux",
+        )
+        .unwrap();
+        original.apply().unwrap();
+        let runtime = RuntimeRestoreAttempt::prepare(
+            original,
+            Records::open(&tmp.path().join("restore")).unwrap(),
+            &retirement,
+        )
+        .unwrap();
+        let (restored, _) = runtime.restore().unwrap();
+        assert!(runtime.has_completed_result().unwrap());
+        assert_eq!(restored.after.handle, before.handle);
+        assert_eq!(restored.after.attributes, before.attributes);
+        assert!(only_ctime_changed(
+            &before.identity,
+            &restored.after.identity
+        ));
+        assert_eq!(snapshot(&target_held).unwrap(), target_before);
+        assert_eq!(
+            std::fs::read(&target).unwrap(),
+            b"target must retain its metadata and bytes"
+        );
+        assert_eq!(
+            std::fs::read_link(tmp.path().join("inode")).unwrap(),
+            Path::new("target")
+        );
+    }
     #[test]
     fn historical_restore_uses_the_actual_synchronized_after_ctime() {
         let tmp = tempfile::Builder::new()
