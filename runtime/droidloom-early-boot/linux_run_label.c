@@ -14,6 +14,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <sys/stat.h>
@@ -915,6 +916,380 @@ int droidloom_initialize_linux_vts(void)
         result = droidloom_verify_linux_vts(&held);
     int error = errno;
     droidloom_close_linux_vts(&held);
+    return result == 0 ? 0 : vt_fail(error);
+}
+
+/* The two normal Linux entropy nodes are original devtmpfs inodes. Only
+ * their SELinux labels change, after the first policy load and before PID 1
+ * hands off to systemd. No entropy bytes are opened or consumed here. */
+#ifndef SYS_listxattrat
+#define SYS_listxattrat 465
+#endif
+#define LINUX_ENTROPY_COUNT 2U
+#define ENTROPY_XATTR_BYTES (1024U * 1024U)
+struct entropy_xattr {
+    struct entropy_xattr *next;
+    char *name;
+    unsigned char *value;
+    size_t size;
+};
+struct entropy_node {
+    int fd;
+    int label_kind;
+    struct stat identity;
+    struct entropy_xattr *xattrs;
+    size_t xattr_count;
+    size_t xattr_bytes;
+};
+struct linux_entropy {
+    int dev;
+    int proc_fds;
+    uint64_t dev_mount;
+    uint64_t proc_mount;
+    struct stat dev_identity;
+    struct stat proc_identity;
+    size_t held_count;
+    struct entropy_node nodes[LINUX_ENTROPY_COUNT];
+};
+static const char *const linux_entropy_names[LINUX_ENTROPY_COUNT] = {
+    "random", "urandom"
+};
+static const char linux_entropy_context[] = "u:object_r:random_device:s0";
+
+static int entropy_admit_node(int dev, uint64_t dev_mount, size_t index,
+                              struct stat *identity)
+{
+    if (index >= LINUX_ENTROPY_COUNT)
+        return vt_fail(EINVAL);
+    int fd = vt_open_path(dev, linux_entropy_names[index], false);
+    if (fd < 0)
+        return -1;
+    struct stat parent;
+    struct statfs fs;
+    uint64_t mount;
+    int error = 0;
+    if (fstat(fd, identity) < 0 || fstat(dev, &parent) < 0 ||
+        fstatfs(fd, &fs) < 0 || vt_mount(fd, &mount) < 0)
+        error = errno;
+    else if (!S_ISCHR(identity->st_mode) ||
+             identity->st_rdev != makedev(1, 8 + index) ||
+             (identity->st_mode & 07777) != 0666 ||
+             identity->st_uid != 0 || identity->st_gid != 0 ||
+             identity->st_nlink != 1 || identity->st_size != 0 ||
+             identity->st_dev != parent.st_dev || mount != dev_mount ||
+             fs.f_type != TMPFS_MAGIC || (fs.f_flags & ST_RDONLY))
+        error = EACCES;
+    if (error) {
+        close(fd);
+        return vt_fail(error);
+    }
+    return fd;
+}
+
+/* Every operation brackets both names, both held inodes and both mounts.
+ * Only the node whose label was just written may advance its ctime. */
+static int entropy_verify_held(const struct linux_entropy *held,
+                               size_t changed, struct stat current[LINUX_ENTROPY_COUNT])
+{
+    if (held->held_count != LINUX_ENTROPY_COUNT)
+        return vt_fail(EINVAL);
+    struct stat parent, proc;
+    struct statfs devfs, procfs;
+    uint64_t mount, proc_mount;
+    if (fstat(held->dev, &parent) < 0 || fstat(held->proc_fds, &proc) < 0 ||
+        fstatfs(held->dev, &devfs) < 0 || fstatfs(held->proc_fds, &procfs) < 0 ||
+        vt_mount(held->dev, &mount) < 0 ||
+        vt_mount(held->proc_fds, &proc_mount) < 0)
+        return -1;
+    if (!vt_same_inode(&parent, &held->dev_identity, true) ||
+        !vt_same_proc_directory(&proc, &held->proc_identity) ||
+        mount != held->dev_mount || proc_mount != held->proc_mount ||
+        devfs.f_type != TMPFS_MAGIC || (devfs.f_flags & ST_RDONLY) ||
+        procfs.f_type != PROC_SUPER_MAGIC)
+        return vt_fail(ESTALE);
+    for (size_t n = 0; n < LINUX_ENTROPY_COUNT; n++) {
+        struct stat named;
+        int fd = entropy_admit_node(held->dev, held->dev_mount, n, &named);
+        if (fd < 0)
+            return -1;
+        int error = 0;
+        if (fstat(held->nodes[n].fd, &current[n]) < 0 ||
+            vt_mount(held->nodes[n].fd, &mount) < 0)
+            error = errno;
+        else if (mount != held->dev_mount ||
+                 !vt_same_inode(&current[n], &held->nodes[n].identity, n != changed) ||
+                 !vt_same_inode(&named, &current[n], true))
+            error = ESTALE;
+        close(fd);
+        if (error)
+            return vt_fail(error);
+    }
+    return 0;
+}
+
+/* The sole write is the fixed security.selinux context. Reads may enumerate
+ * existing xattrs to prove that ACLs and every other xattr stayed unchanged.
+ * All operations follow only an original numeric FD in our held procfs. */
+static ssize_t entropy_raw_xattr(struct linux_entropy *held, size_t index,
+                                 bool write_label, const char *key,
+                                 void *value, size_t size)
+{
+    if (index >= LINUX_ENTROPY_COUNT ||
+        (write_label && (key != NULL || value != NULL || size != 0)))
+        return vt_fail(EINVAL);
+    struct stat before[LINUX_ENTROPY_COUNT], after[LINUX_ENTROPY_COUNT], duplicate;
+    if (entropy_verify_held(held, LINUX_ENTROPY_COUNT, before) < 0)
+        return -1;
+    char name[32];
+    (void)snprintf(name, sizeof(name), "%d", held->nodes[index].fd);
+    int fd = openat(held->proc_fds, name, O_PATH | O_CLOEXEC);
+    if (fd < 0)
+        return -1;
+    uint64_t mount;
+    int error = 0;
+    if (fstat(fd, &duplicate) < 0 || vt_mount(fd, &mount) < 0)
+        error = errno;
+    else if (!vt_same_inode(&before[index], &duplicate, true) ||
+             mount != held->dev_mount)
+        error = ESTALE;
+    ssize_t result = -1;
+    if (!error) {
+        if (!write_label && key == NULL) {
+            result = syscall(SYS_listxattrat, held->proc_fds, name, 0U, value, size);
+        } else {
+            struct vt_xattr_args args = {
+                .value = (uint64_t)(uintptr_t)(write_label ? linux_entropy_context : value),
+                .size = write_label ? sizeof(linux_entropy_context) : size,
+                .flags = 0,
+            };
+            result = syscall(write_label ? SYS_setxattrat : SYS_getxattrat,
+                             held->proc_fds, name, 0U,
+                             write_label ? "security.selinux" : key, &args, sizeof(args));
+        }
+        if (result < 0)
+            error = errno;
+    }
+    int verified = entropy_verify_held(held,
+            write_label && result == 0 ? index : LINUX_ENTROPY_COUNT, after);
+    if (verified < 0)
+        error = errno;
+    if (fstat(fd, &duplicate) < 0 || vt_mount(fd, &mount) < 0)
+        error = errno;
+    else if (verified == 0 &&
+             (!vt_same_inode(&after[index], &duplicate, true) || mount != held->dev_mount))
+        error = ESTALE;
+    close(fd);
+    if (error)
+        return vt_fail(error);
+    if (write_label)
+        held->nodes[index].identity = after[index];
+    return result;
+}
+
+static int entropy_label_kind(struct linux_entropy *held, size_t index)
+{
+    char label[128];
+    ssize_t size = entropy_raw_xattr(held, index, false, "security.selinux",
+                                     label, sizeof(label));
+    if (size < 0)
+        return -1;
+    if (droidloom_context_matches(label, size, original_vt_context))
+        return 1;
+    if (droidloom_context_matches(label, size, linux_entropy_context))
+        return 2;
+    return vt_fail(EACCES);
+}
+
+static void entropy_close(struct linux_entropy *held)
+{
+    for (size_t n = 0; n < held->held_count; n++) {
+        if (held->nodes[n].fd >= 0)
+            close(held->nodes[n].fd);
+        held->nodes[n].fd = -1;
+        struct entropy_xattr *entry = held->nodes[n].xattrs;
+        while (entry) {
+            struct entropy_xattr *next = entry->next;
+            free(entry->name);
+            free(entry->value);
+            free(entry);
+            entry = next;
+        }
+        held->nodes[n].xattrs = NULL;
+        held->nodes[n].xattr_count = held->nodes[n].xattr_bytes = 0;
+    }
+    held->held_count = 0;
+    if (held->proc_fds >= 0)
+        close(held->proc_fds);
+    if (held->dev >= 0)
+        close(held->dev);
+    held->proc_fds = held->dev = -1;
+}
+
+static int entropy_hold_devices(struct linux_entropy *held)
+{
+    if (held->held_count || held->dev != -1 || held->proc_fds != -1)
+        return vt_fail(EINVAL);
+    held->dev = vt_open_path(AT_FDCWD, "/dev", true);
+    char path[64];
+    (void)snprintf(path, sizeof(path), "/proc/%ld/fd", (long)getpid());
+    held->proc_fds = vt_open_path(AT_FDCWD, path, true);
+    struct statfs devfs, procfs;
+    int error = 0;
+    if (held->dev < 0 || held->proc_fds < 0 ||
+        fstat(held->dev, &held->dev_identity) < 0 ||
+        fstat(held->proc_fds, &held->proc_identity) < 0 ||
+        fstatfs(held->dev, &devfs) < 0 || fstatfs(held->proc_fds, &procfs) < 0 ||
+        vt_mount(held->dev, &held->dev_mount) < 0 ||
+        vt_mount(held->proc_fds, &held->proc_mount) < 0)
+        error = errno;
+    else if (!S_ISDIR(held->dev_identity.st_mode) ||
+             held->dev_identity.st_uid || held->dev_identity.st_gid ||
+             (held->dev_identity.st_mode & 0022) || devfs.f_type != TMPFS_MAGIC ||
+             (devfs.f_flags & ST_RDONLY) ||
+             !S_ISDIR(held->proc_identity.st_mode) ||
+             held->proc_identity.st_uid || held->proc_identity.st_gid ||
+             (held->proc_identity.st_mode & 07777) != 0500 ||
+             procfs.f_type != PROC_SUPER_MAGIC)
+        error = EACCES;
+    for (size_t n = 0; n < LINUX_ENTROPY_COUNT && !error; n++) {
+        struct entropy_node *node = &held->nodes[n];
+        node->fd = entropy_admit_node(held->dev, held->dev_mount, n, &node->identity);
+        if (node->fd < 0)
+            error = errno;
+        else
+            held->held_count++;
+    }
+    if (error) {
+        entropy_close(held);
+        return vt_fail(error);
+    }
+    return 0;
+}
+
+static int entropy_other_xattrs(struct linux_entropy *held, size_t index, bool capture)
+{
+    struct entropy_node *node = &held->nodes[index];
+    /* Linux bounds each xattr list and value at 64 KiB. A separate 1 MiB
+     * aggregate budget bounds this early transaction; exhaustion is fatal. */
+    char *names = malloc(65536);
+    unsigned char *value = malloc(65536);
+    if (!names || !value) {
+        free(names);
+        free(value);
+        return vt_fail(ENOMEM);
+    }
+    ssize_t length = entropy_raw_xattr(held, index, false, NULL, names, 65536);
+    int error = length < 0 ? errno : 0;
+    size_t count = 0;
+    for (size_t at = 0; !error && at < (size_t)length;) {
+        size_t left = (size_t)length - at;
+        size_t name_size = strnlen(names + at, left);
+        if (name_size == 0 || name_size == left || name_size > 255) {
+            error = EINVAL;
+            break;
+        }
+        const char *name = names + at;
+        at += name_size + 1;
+        if (strcmp(name, "security.selinux") == 0)
+            continue;
+        struct entropy_xattr *entry = node->xattrs;
+        while (entry && strcmp(entry->name, name) != 0)
+            entry = entry->next;
+        ssize_t size = entropy_raw_xattr(held, index, false, name, value, 65536);
+        if (size < 0) {
+            error = errno;
+            break;
+        }
+        if (capture) {
+            size_t cost = sizeof(*entry) + name_size + 1 + (size_t)size;
+            if (entry || cost > ENTROPY_XATTR_BYTES - node->xattr_bytes) {
+                error = entry ? EINVAL : E2BIG;
+                break;
+            }
+            entry = calloc(1, sizeof(*entry));
+            if (!entry) {
+                error = ENOMEM;
+                break;
+            }
+            entry->name = strdup(name);
+            entry->value = malloc(size ? (size_t)size : 1);
+            if (!entry->name || !entry->value) {
+                free(entry->name);
+                free(entry->value);
+                free(entry);
+                error = ENOMEM;
+                break;
+            }
+            memcpy(entry->value, value, size);
+            entry->size = (size_t)size;
+            entry->next = node->xattrs;
+            node->xattrs = entry;
+            node->xattr_count++;
+            node->xattr_bytes += cost;
+        } else if (!entry || entry->size != (size_t)size ||
+                   memcmp(entry->value, value, size) != 0) {
+            error = ESTALE;
+            break;
+        }
+        count++;
+    }
+    if (!error && count != node->xattr_count)
+        error = ESTALE;
+    free(value);
+    free(names);
+    return error ? vt_fail(error) : 0;
+}
+
+static int entropy_verify_all(struct linux_entropy *held, bool target)
+{
+    for (size_t n = 0; n < LINUX_ENTROPY_COUNT; n++) {
+        int kind = entropy_label_kind(held, n);
+        if (kind < 0)
+            return -1;
+        if (kind != (target ? 2 : held->nodes[n].label_kind))
+            return vt_fail(ESTALE);
+        if (entropy_other_xattrs(held, n, false) < 0)
+            return -1;
+    }
+    return 0;
+}
+
+static int entropy_relabel_held(struct linux_entropy *held)
+{
+    /* Admit both complete labels and all other xattrs before the first write. */
+    for (size_t n = 0; n < LINUX_ENTROPY_COUNT; n++) {
+        int kind = entropy_label_kind(held, n);
+        if (kind < 0)
+            return -1;
+        held->nodes[n].label_kind = kind;
+        if (entropy_other_xattrs(held, n, true) < 0)
+            return -1;
+    }
+    for (size_t n = 0; n < LINUX_ENTROPY_COUNT; n++) {
+        if (entropy_verify_all(held, false) < 0)
+            return -1;
+        if (held->nodes[n].label_kind == 1) {
+            if (entropy_raw_xattr(held, n, true, NULL, NULL, 0) < 0)
+                return -1;
+            held->nodes[n].label_kind = 2;
+        }
+        if (entropy_verify_all(held, false) < 0)
+            return -1;
+    }
+    return entropy_verify_all(held, true);
+}
+
+int droidloom_initialize_linux_entropy_devices(void)
+{
+    /* Only the original enforcing FINISH path calls this no-argument entry. */
+    if (getpid() != 1 || geteuid() != 0)
+        return vt_fail(EPERM);
+    struct linux_entropy held = { .dev = -1, .proc_fds = -1 };
+    int result = entropy_hold_devices(&held);
+    if (result == 0)
+        result = entropy_relabel_held(&held);
+    int error = errno;
+    entropy_close(&held);
     return result == 0 ? 0 : vt_fail(error);
 }
 

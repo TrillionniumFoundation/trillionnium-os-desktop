@@ -82,6 +82,13 @@
 (allow p4_linux_early_t device (chr_file (getattr relabelfrom)))
 (neverallow p4_linux_early_t device (chr_file (open read write append ioctl map setattr create unlink link rename relabelto)))
 (neverallow p4_linux_early_t p4_linux_console_vt_t (chr_file (open read write append ioctl map setattr create unlink link rename relabelfrom)))
+; The fixed original random/urandom pair is relabelled by the same enforcing
+; FINISH stage before systemd can start any entropy consumer. Only the label
+; and its mandatory devtmpfs association change; no device body is opened.
+(allow p4_linux_early_t random_device (chr_file (getattr relabelto)))
+(neverallow p4_linux_early_t random_device (chr_file (not (getattr relabelto))))
+(allow random_device device (filesystem (associate)))
+(neverallow random_device device (filesystem (not (associate))))
 ; O_PATH admits /dev and /proc/1/fd; the sole magic links are this original
 ; PID 1's own held numeric FDs. All other proc bodies remain inaccessible.
 (allow p4_linux_early_t device (dir (getattr search)))

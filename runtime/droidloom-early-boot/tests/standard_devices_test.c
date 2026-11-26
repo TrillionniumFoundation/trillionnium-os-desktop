@@ -165,6 +165,169 @@ static void fixed_vt_cases(void)
     ++checks;
 }
 
+
+static void expect_entropy(int dev, uint64_t mount, size_t index, bool okay)
+{
+    struct stat st;
+    errno = 0;
+    int fd = entropy_admit_node(dev, mount, index, &st);
+    if (okay) {
+        assert(fd >= 0);
+        assert((fcntl(fd, F_GETFL) & O_PATH) == O_PATH);
+        assert(fcntl(fd, F_GETFD) & FD_CLOEXEC);
+        close(fd);
+    } else {
+        assert(fd == -1);
+        assert(errno == EACCES || errno == ELOOP || errno == EINVAL);
+    }
+    ++checks;
+}
+
+static void close_entropy_checked(struct linux_entropy *held)
+{
+    int fds[4] = {held->dev, held->proc_fds, held->nodes[0].fd, held->nodes[1].fd};
+    assert(held->held_count == 2);
+    entropy_close(held);
+    assert(held->held_count == 0 && held->dev == -1 && held->proc_fds == -1);
+    for (size_t n = 0; n < 4; n++)
+        assert(fcntl(fds[n], F_GETFD) == -1 && errno == EBADF);
+    assert(held->nodes[0].xattrs == NULL && held->nodes[1].xattrs == NULL);
+    ++checks;
+}
+
+static void fixed_entropy_cases(void)
+{
+    assert(LINUX_ENTROPY_COUNT == 2);
+    assert(droidloom_initialize_linux_entropy_devices() == -1 && errno == EPERM);
+    ++checks;
+    assert(mknod("/dev/random", S_IFCHR | 0666, makedev(1, 8)) == 0);
+    assert(mknod("/dev/urandom", S_IFCHR | 0666, makedev(1, 9)) == 0);
+    int dev = vt_open_path(AT_FDCWD, "/dev", true);
+    uint64_t mount_id;
+    assert(dev >= 0 && vt_mount(dev, &mount_id) == 0);
+    expect_entropy(dev, mount_id, 0, true);
+    expect_entropy(dev, mount_id, 1, true);
+    expect_entropy(dev, mount_id, 2, false);
+    expect_entropy(dev, mount_id + 1, 0, false);
+    assert(chmod("/dev/random", 0600) == 0);
+    expect_entropy(dev, mount_id, 0, false);
+    assert(chmod("/dev/random", 0666) == 0);
+    assert(chown("/dev/random", 1, 0) == 0);
+    expect_entropy(dev, mount_id, 0, false);
+    assert(chown("/dev/random", 0, 1) == 0);
+    expect_entropy(dev, mount_id, 0, false);
+    assert(chown("/dev/random", 0, 0) == 0);
+    assert(link("/dev/random", "/dev/random.extra") == 0);
+    expect_entropy(dev, mount_id, 0, false);
+    assert(unlink("/dev/random.extra") == 0);
+    assert(unlink("/dev/random") == 0);
+    assert(mknod("/dev/random", S_IFCHR | 0666, makedev(1, 9)) == 0);
+    expect_entropy(dev, mount_id, 0, false);
+    assert(unlink("/dev/random") == 0);
+    int regular = open("/dev/random", O_CREAT | O_EXCL | O_WRONLY | O_CLOEXEC, 0666);
+    assert(regular >= 0);
+    close(regular);
+    expect_entropy(dev, mount_id, 0, false);
+    assert(unlink("/dev/random") == 0);
+    assert(symlink("urandom", "/dev/random") == 0);
+    expect_entropy(dev, mount_id, 0, false);
+    assert(unlink("/dev/random") == 0);
+    assert(mknod("/dev/random", S_IFCHR | 0666, makedev(1, 8)) == 0);
+    assert(mknod("/random", S_IFCHR | 0666, makedev(1, 8)) == 0);
+    int ext4 = vt_open_path(AT_FDCWD, "/", true);
+    uint64_t ext4_mount;
+    assert(ext4 >= 0 && vt_mount(ext4, &ext4_mount) == 0);
+    expect_entropy(ext4, ext4_mount, 0, false);
+    close(ext4);
+    close(dev);
+
+    struct linux_entropy held = {.dev = -1, .proc_fds = -1};
+    assert(entropy_hold_devices(&held) == 0);
+    assert(entropy_relabel_held(&held) == -1 && errno == ENODATA);
+    ++checks;
+    close_entropy_checked(&held);
+    assert(setxattr("/dev/random", "security.selinux",
+                    original_vt_context, sizeof(original_vt_context), 0) == 0);
+    const char wrong_context[] = "u:object_r:random_device:s0:c1";
+    assert(setxattr("/dev/urandom", "security.selinux",
+                    wrong_context, sizeof(wrong_context), 0) == 0);
+    assert(entropy_hold_devices(&held) == 0);
+    assert(entropy_relabel_held(&held) == -1 && errno == EACCES);
+    /* Admission of the second label failed before the first label was written. */
+    assert(entropy_label_kind(&held, 0) == 1);
+    ++checks;
+    close_entropy_checked(&held);
+    assert(setxattr("/dev/urandom", "security.selinux",
+                    original_vt_context, sizeof(original_vt_context), 0) == 0);
+    struct {
+        uint32_t version;
+        struct { uint16_t tag, perm; uint32_t id; } entries[5];
+    } acl = {2, {{1, 6, UINT32_MAX}, {2, 4, 1000}, {4, 6, UINT32_MAX},
+                 {16, 6, UINT32_MAX}, {32, 6, UINT32_MAX}}};
+    const unsigned char witness[] = {0, 7, 0, 255, 9, 1};
+    assert(setxattr("/dev/random", "system.posix_acl_access", &acl, sizeof(acl), 0) == 0);
+    assert(setxattr("/dev/random", "trusted.droidloom_entropy_test",
+                    witness, sizeof(witness), 0) == 0);
+    struct stat original[2], after[2];
+    assert(lstat("/dev/random", &original[0]) == 0);
+    assert(lstat("/dev/urandom", &original[1]) == 0);
+    assert(entropy_hold_devices(&held) == 0);
+    assert(entropy_relabel_held(&held) == 0);
+    assert(entropy_verify_all(&held, true) == 0);
+    assert(entropy_verify_held(&held, LINUX_ENTROPY_COUNT, after) == 0);
+    for (size_t n = 0; n < 2; n++)
+        assert(vt_same_inode(&original[n], &after[n], false));
+    unsigned char readback[128];
+    assert(getxattr("/dev/random", "system.posix_acl_access",
+                    readback, sizeof(readback)) == sizeof(acl));
+    assert(memcmp(readback, &acl, sizeof(acl)) == 0);
+    assert(getxattr("/dev/random", "trusted.droidloom_entropy_test",
+                    readback, sizeof(readback)) == sizeof(witness));
+    assert(memcmp(readback, witness, sizeof(witness)) == 0);
+    checks += 3;
+    /* A changed snapshot is rejected even if all inode metadata still agrees. */
+    assert(held.nodes[0].xattrs && held.nodes[0].xattrs->size);
+    held.nodes[0].xattrs->value[0] ^= 1;
+    assert(entropy_other_xattrs(&held, 0, false) == -1 && errno == ESTALE);
+    held.nodes[0].xattrs->value[0] ^= 1;
+    ++checks;
+    int old = held.nodes[0].fd;
+    held.nodes[0].fd = held.nodes[1].fd;
+    assert(entropy_label_kind(&held, 0) == -1 && errno == ESTALE);
+    held.nodes[0].fd = old;
+    ++checks;
+    int proc = held.proc_fds;
+    held.proc_fds = held.dev;
+    assert(entropy_label_kind(&held, 0) == -1 && errno == ESTALE);
+    held.proc_fds = proc;
+    ++checks;
+    uint64_t unique = held.dev_mount;
+    held.dev_mount++;
+    assert(entropy_label_kind(&held, 0) == -1 && errno == ESTALE);
+    held.dev_mount = unique;
+    ++checks;
+    close_entropy_checked(&held);
+    /* Already-labelled nodes are admitted without even a ctime change. */
+    assert(entropy_hold_devices(&held) == 0);
+    assert(entropy_relabel_held(&held) == 0);
+    assert(entropy_verify_held(&held, LINUX_ENTROPY_COUNT, original) == 0);
+    for (size_t n = 0; n < 2; n++)
+        assert(vt_same_inode(&original[n], &after[n], true));
+    ++checks;
+    /* A change to the other inode blocks a write to this inode as well. */
+    assert(chmod("/dev/urandom", 0600) == 0);
+    assert(entropy_raw_xattr(&held, 0, true, NULL, NULL, 0) == -1 && errno == EACCES);
+    ++checks;
+    close_entropy_checked(&held);
+    assert(chmod("/dev/urandom", 0666) == 0);
+    assert(entropy_hold_devices(&held) == 0);
+    assert(rename("/dev/random", "/dev/random.retained") == 0);
+    assert(mknod("/dev/random", S_IFCHR | 0666, makedev(1, 8)) == 0);
+    assert(entropy_label_kind(&held, 0) == -1 && errno == ESTALE);
+    ++checks;
+    close_entropy_checked(&held);
+}
+
 int main(int argc, char **argv)
 {
     assert(argc == 2 && geteuid() == 0);
@@ -226,7 +389,8 @@ int main(int argc, char **argv)
     assert(symlink("/dev/null", kmsg->path) == 0);
     expect_node(kmsg, false, false);
     fixed_vt_cases();
+    fixed_entropy_cases();
     printf("{\"real_inode_admission_checks\":%u,\"device_bodies_opened\":false,"
-           "\"private_mount_namespace\":true,\"fixed_linux_vt_nodes\":65,\"acl_bytes_preserved\":true,\"raw_label_readback_only\":true,\"runtime_qualified\":false}\n", checks);
+           "\"private_mount_namespace\":true,\"fixed_linux_vt_nodes\":65,\"fixed_linux_entropy_nodes\":2,\"acl_bytes_preserved\":true,\"raw_label_readback_only\":true,\"runtime_qualified\":false}\n", checks);
     return 0;
 }

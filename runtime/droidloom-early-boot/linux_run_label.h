@@ -92,6 +92,7 @@ struct droidloom_linux_vts {
     struct droidloom_linux_vt nodes[DROIDLOOM_LINUX_VT_COUNT];
 };
 int droidloom_initialize_linux_vts(void);
+int droidloom_initialize_linux_entropy_devices(void);
 int droidloom_initialize_linux_root_device(void);
 int droidloom_prepare_linux_vts(struct droidloom_linux_vts *held);
 int droidloom_verify_linux_vts(const struct droidloom_linux_vts *held);

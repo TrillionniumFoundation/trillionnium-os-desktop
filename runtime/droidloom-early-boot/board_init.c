@@ -325,6 +325,9 @@ static int finish(int argc, char **argv)
     operation = "label and verify the original Linux VTs in the enforcing early role";
     if (droidloom_initialize_linux_vts() < 0)
         return -1;
+    operation = "label and verify the original Linux entropy devices";
+    if (droidloom_initialize_linux_entropy_devices() < 0)
+        return -1;
     operation = "label the mounted root UUID link and device metadata";
     if (droidloom_initialize_linux_root_device() < 0)
         return -1;

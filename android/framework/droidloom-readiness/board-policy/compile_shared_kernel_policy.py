@@ -28,6 +28,7 @@ from verify_fixed_display import verify_fixed_display
 from verify_native_stdio import verify_native_stdio, source_inputs as native_stdio_source_inputs
 from verify_native_tcgets2_audit import verify_native_tcgets2_audit
 from verify_native_calibration import verify_native_calibration, source_inputs as native_calibration_source_inputs
+from verify_native_entropy import verify_native_entropy, source_inputs as native_entropy_source_inputs
 from verify_native_resolved_runtime import verify_native_resolved_runtime
 
 
@@ -1724,6 +1725,7 @@ def main():
                here / "verify_native_stdio.py", *native_stdio_source_inputs(here),
                here / "verify_native_tcgets2_audit.py",
                here / "verify_native_calibration.py", *native_calibration_source_inputs(here),
+               here / "verify_native_entropy.py", *native_entropy_source_inputs(here),
                here / "verify_native_resolved_runtime.py", here / "native-resolved-runtime-source.json",
                here.parents[3] / "packaging/ubuntu/systemd/source.lock.json",
                here.parents[3] / "packaging/ubuntu/systemd/p4-native-generator-tmpfs.patch",
@@ -1814,6 +1816,8 @@ def main():
             library, linked, work / "host-control-binary.cil", here)
         native_resolved_runtime = verify_native_resolved_runtime(
             library, linked, work / "host-control-binary.cil", here)
+        native_entropy = verify_native_entropy(
+            library, linked, work / "host-control-binary.cil", here)
         manager_file_contexts = verify_manager_file_contexts(here, work)
         result = {
             "native_composed_file_contexts": composed_file_contexts,
@@ -1824,6 +1828,7 @@ def main():
             "native_remount": remount_access,
             "native_logind_state": logind_access,
             "native_calibration_manager": native_calibration,
+            "native_early_entropy": native_entropy,
             "native_resolved_runtime": native_resolved_runtime,
             "native_sysusers_lock": sysusers_access,
             "native_netplan": netplan_access,

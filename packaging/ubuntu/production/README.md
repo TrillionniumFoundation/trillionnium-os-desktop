@@ -1064,3 +1064,18 @@ file/link access and socket I/O absent. Its normal source contract includes the
 selected kernel's ACL permission check before the absent-ACL result. The exact
 normal source/unit readback remains a required producer input, and this source
 change is not evidence of a successful boot.
+
+The enforcing FINISH stage now admits the original Linux random and urandom
+devtmpfs nodes together before handing PID 1 to systemd. Each fixed node must
+retain its original device number, root ownership, 0666 mode, single link,
+zero size, inode and unique mount identity. Only the complete SELinux context
+changes from device to random_device. Numeric links under the held original
+proc-fd directory carry O_PATH descriptors; no entropy bytes are opened.
+The transaction reads back both nodes, their metadata and listed non-SELinux
+xattrs after each change, preserves ACL bytes, and closes every descriptor on
+failure. An already-correct pair is verified without a label write.
+The linked-policy verifier preserves the original device relabelfrom right,
+adds only entropy getattr/relabelto and the mandatory devtmpfs association,
+and checks the full permission complements and unchanged relabel constraints.
+The 65 existing Linux VT nodes and the selected shared kernel stay unchanged.
+Focused real-inode and binary-policy checks do not replace an enforcing boot.
