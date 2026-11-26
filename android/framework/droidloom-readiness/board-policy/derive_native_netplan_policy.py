@@ -549,7 +549,10 @@ def verify(library, binary, exported, here, expected, export):
     }
     # These are explicit, source-owned alias sets, never a discovered directory
     # or an automatic permit for a previously unknown type.
-    for row in console_contract(here)["aliases"] + SYSUSERS_ALIASES + LOGIND_ALIASES + TIMESYNC_ALIASES:
+    from derive_native_ldconfig_policy import ALIASES as LDCONFIG_ALIASES
+    from derive_native_journal_catalog_policy import ALIASES as CATALOG_ALIASES
+    for row in (console_contract(here)["aliases"] + SYSUSERS_ALIASES + LOGIND_ALIASES
+                + TIMESYNC_ALIASES + LDCONFIG_ALIASES + CATALOG_ALIASES):
         table = file_access if row["class"] == "file" else directories if row["class"] == "dir" else {}
         if row["source"] in table:
             table.setdefault(row["target"], set()).update(table[row["source"]])

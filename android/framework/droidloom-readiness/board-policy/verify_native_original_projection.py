@@ -24,6 +24,7 @@ NEW_TYPES=frozenset({
  "p4_linux_random_seed_t","p4_linux_random_seed_exec_t","p4_linux_random_seed_file_t",
  "p4_linux_ldconfig_t","p4_linux_ldconfig_exec_t","p4_linux_ldconfig_config_t",
  "p4_linux_ldconfig_config_dir_t","p4_linux_ldconfig_aux_dir_t","p4_linux_ldconfig_aux_t",
+ "p4_linux_journal_catalog_dir_t","p4_linux_journal_catalog_file_t",
 })
 AUDIT=frozenset({"auditallow","dontaudit","auditallowx","dontauditx"})
 TYPE_OPERATIONS=frozenset({"type","typeattribute","typeattributeset","typealias","typealiasactual","expandtypeattribute"})

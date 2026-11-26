@@ -1,0 +1,179 @@
+{
+  "aliases": [
+    {
+      "class": "dir",
+      "source": "p4_linux_rootdir_t",
+      "target": "p4_linux_journal_catalog_dir_t"
+    },
+    {
+      "class": "file",
+      "source": "p4_linux_native_data_t",
+      "target": "p4_linux_journal_catalog_file_t"
+    }
+  ],
+  "direct_r13_avc_observed": false,
+  "directory": {
+    "create_permission": false,
+    "gid": 0,
+    "mode": 493,
+    "must_already_exist": true,
+    "path": "/var/lib/systemd/catalog",
+    "type": "p4_linux_journal_catalog_dir_t",
+    "uid": 0
+  },
+  "kernel_runtime_qualified": false,
+  "normal_files": [
+    {
+      "admission": "normal-complete-root",
+      "bytes": 750,
+      "path": "/usr/lib/systemd/system/systemd-journal-catalog-update.service",
+      "sha256": "9d06e11680ff85b40579106281faf56442dfac86bddff0151d8524464439ae9e"
+    },
+    {
+      "admission": "normal-complete-root",
+      "bytes": 97472,
+      "path": "/usr/bin/journalctl",
+      "sha256": "9021f580ba218a3948d532ce251fa7cc097936d9359d4e0c388a325ceb8d0224"
+    },
+    {
+      "admission": "normal-complete-root",
+      "bytes": 5017728,
+      "path": "/usr/lib/x86_64-linux-gnu/systemd/libsystemd-shared-259.so",
+      "sha256": "21ddd09d02a864c40139986fdc89c3f2a428ad1adcc201c8276bc9590c2c98fd"
+    },
+    {
+      "admission": "normal-complete-root",
+      "bytes": 254864,
+      "path": "/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+      "sha256": "c0b20d6e1ced12abfe0b1ef2b5b68017950beaaea3df69eb6949d73e0ecf7b40"
+    },
+    {
+      "admission": "normal-complete-root",
+      "bytes": 2190608,
+      "path": "/usr/lib/x86_64-linux-gnu/libc.so.6",
+      "sha256": "9941dc28e68bc5fd788d9cd024c69e68c791d63799e7538a97b6040dd9f50fb6"
+    }
+  ],
+  "output": {
+    "atomic_rename": true,
+    "body_read": false,
+    "cleanup_unlink": true,
+    "creation_mode": 384,
+    "fsync_called": false,
+    "open_mode": "O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC|O_NOCTTY",
+    "path": "/var/lib/systemd/catalog/database",
+    "published_mode": 420,
+    "temporary_basename_regex": "\\.#database[0-9a-f]{16}",
+    "type": "p4_linux_journal_catalog_file_t"
+  },
+  "package": "systemd:amd64",
+  "production_qualified": false,
+  "role": "p4_linux_journalctl_t",
+  "schema": "droidloom.native-journal-catalog-source.v1",
+  "self_proc_permissions": {
+    "dir": [
+      "search"
+    ],
+    "lnk_file": [
+      "read"
+    ]
+  },
+  "source_documents": [
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 23536,
+      "path": "src/libsystemd/sd-journal/catalog.c",
+      "sha256": "919436213a200fcef21f40cfebce2b245a4beda70671bf60cb831576444d3b4e"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 1143,
+      "path": "src/libsystemd/sd-journal/catalog.h",
+      "sha256": "d5a27bd3114c22419db3194203fd6f103178dc93a1ec389c32c84a12826ae78d"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 1584,
+      "path": "src/journal/journalctl-catalog.c",
+      "sha256": "680350686b0a0da7433b0c79eaf024e959d11e615902d882fc81bc37509b85a7"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 12703,
+      "path": "src/basic/tmpfile-util.c",
+      "sha256": "a88d08443488a816367a3df2e1022b19a72bd8796377b9fe856174aeb5ceee74"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 2908,
+      "path": "src/basic/tmpfile-util.h",
+      "sha256": "3a49bad2ad1bed76e5bf6032f65f4753bbe436d81c8cb7f6da14eb8be0df302d"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 9880,
+      "path": "src/basic/mkdir.c",
+      "sha256": "88a9ce00bc2c05c0c5d329653c29846622356efcbc207639a5877b323d102756"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 2396,
+      "path": "src/basic/mkdir.h",
+      "sha256": "c15ef9b8ffe871145167de528a757f540c53b6a7b7c50fc9b6f061584284df95"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 41483,
+      "path": "src/basic/fd-util.c",
+      "sha256": "cb60ffa3bbe82f099d62dac6d7b37102cb56ab69e46b75483bf5f7dcfdfd0311"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 7294,
+      "path": "src/basic/fd-util.h",
+      "sha256": "2570e5365fabbe9f26e684d138184f25bf720d081bbb551dde9182958344b962"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 34859,
+      "path": "src/basic/conf-files.c",
+      "sha256": "ee1d150afbc9ab9ec3714c67bf49a15ec452ff01368a4d61b2e9f84a969c1619"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 55754,
+      "path": "src/basic/fileio.c",
+      "sha256": "691d77b7655f522473d2c0baba78f285bfe5ff344e3ebd4357b63a7b87402d86"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 750,
+      "path": "units/systemd-journal-catalog-update.service",
+      "sha256": "9d06e11680ff85b40579106281faf56442dfac86bddff0151d8524464439ae9e"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 129384,
+      "path": "meson.build",
+      "sha256": "2425c096d79637a5b2aecf38188682c64f96d554f1a76e2edc0809ca3c198672"
+    },
+    {
+      "admission": "selected-kernel-source",
+      "bytes": 212133,
+      "kind": "kernel",
+      "package": "linux",
+      "path": "security/selinux/hooks.c",
+      "sha256": "4fa2a20bff2788fffc1f6bc95d49af3e1145e6a679f69ff5aa2d5a1bd85272a0",
+      "version": "6.18.64-p4ctx6181-fusectl-aafs-peer-r1"
+    }
+  ],
+  "unit": {
+    "argv": [
+      "journalctl",
+      "--update-catalog"
+    ],
+    "path": "/usr/lib/systemd/system/systemd-journal-catalog-update.service"
+  },
+  "unit_environment_overridden": false,
+  "version": "259.9-0ubuntu0.1+p4gentmp2"
+}

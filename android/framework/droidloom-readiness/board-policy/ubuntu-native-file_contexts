@@ -424,3 +424,8 @@
 /var/cache/ldconfig -d u:object_r:p4_linux_ldconfig_aux_dir_t:s0
 /var/cache/ldconfig/aux-cache -- u:object_r:p4_linux_ldconfig_aux_t:s0
 /var/cache/ldconfig/aux-cache~ -- u:object_r:p4_linux_ldconfig_aux_t:s0
+
+# Exact normal catalog directory and atomic temporary/database regular files.
+/var/lib/systemd/catalog -d u:object_r:p4_linux_journal_catalog_dir_t:s0
+/var/lib/systemd/catalog/database -- u:object_r:p4_linux_journal_catalog_file_t:s0
+/var/lib/systemd/catalog/\.#database[0-9a-f]{16} -- u:object_r:p4_linux_journal_catalog_file_t:s0

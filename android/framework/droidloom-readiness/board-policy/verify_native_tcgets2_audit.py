@@ -2,7 +2,7 @@
 
 The five commitments remain those of the actual R13 normal binary/export.
 The original concrete types, all 781 original attributes, constraints, transitions,
-and permissions retain those commitments after the fixed sixteen-bit subtraction.
+and permissions retain those commitments after the fixed eighteen-bit subtraction.
 New source-owned component families have separate complete role/alias verifiers;
 the projection removes only their explicitly declared new-type authority.
 No expected commitment is generated from a candidate.
@@ -204,7 +204,7 @@ def _verify_raw_pairs(forms, membership):
 
 
 # These are the separately reviewed normal startup fixes, not caller input.
-# The baseline raw bit is zero for each of the fifteen permissions. The directory
+# The baseline raw bit is zero for each of the eighteen permissions. The directory
 # tuple also has no prior allowx/auditallowx/dontauditx entry.
 REVIEWED_NATIVE_GRANTS = (
     ("droidloom_policy_loader", "init_t", "dir", ("getattr", "search")),
@@ -218,6 +218,8 @@ REVIEWED_NATIVE_GRANTS = (
     ("p4_linux_udev_t", "p4_linux_udev_listener_t", "sock_file", ("write",)),
     ("p4_linux_udev_t", "p4_linux_udev_t", "unix_stream_socket", ("connectto",)),
     ("p4_linux_console_ld_cache_native_config_t", "labeledfs", "filesystem", ("associate",)),
+    ("p4_linux_journalctl_t", "p4_linux_journalctl_t", "dir", ("search",)),
+    ("p4_linux_journalctl_t", "p4_linux_journalctl_t", "lnk_file", ("read",)),
 )
 QUOTA_PAIR = ("p4_linux_service_executor_t", "p4_linux_logind_state_t")
 QUOTA_COMMAND = 0x581f

@@ -320,3 +320,25 @@
 (neverallow p4_linux_random_seed_t p4_seed_all_types (packet_socket (all)))
 (neverallow p4_linux_random_seed_t p4_seed_all_types (netlink_route_socket (all)))
 (neverallow p4_linux_random_seed_t p4_seed_all_types (netlink_kobject_uevent_socket (all)))
+
+; The unchanged normal journalctl --update-catalog reads only public catalog
+; sources through /proc/self/fd and atomically replaces one database in the
+; already-existing directory. fopen_temporary uses O_RDWR, not O_WRONLY.
+; Source evidence is bound by native-journal-catalog-source.json and the
+; external normal source readback; no R13 child AVC survived the audit loss.
+(type p4_linux_journal_catalog_dir_t)
+(type p4_linux_journal_catalog_file_t)
+(roletype object_r p4_linux_journal_catalog_dir_t)
+(roletype object_r p4_linux_journal_catalog_file_t)
+(typeattributeset p4_linux_data (p4_linux_journal_catalog_dir_t p4_linux_journal_catalog_file_t))
+(allow p4_linux_journalctl_t self (dir (search)))
+(allow p4_linux_journalctl_t self (lnk_file (read)))
+(neverallow p4_linux_journalctl_t self (dir (not (search))))
+(neverallow p4_linux_journalctl_t self (lnk_file (not (read))))
+(allow p4_linux_journalctl_t p4_linux_journal_catalog_dir_t (dir (getattr open read search write add_name remove_name)))
+(typetransition p4_linux_journalctl_t p4_linux_journal_catalog_dir_t file p4_linux_journal_catalog_file_t)
+(allow p4_linux_journalctl_t p4_linux_journal_catalog_file_t (file (getattr open read write create setattr rename unlink)))
+(allow p4_linux_journal_catalog_dir_t labeledfs (filesystem (associate)))
+(allow p4_linux_journal_catalog_file_t labeledfs (filesystem (associate)))
+(neverallow p4_linux_journalctl_t p4_linux_journal_catalog_dir_t (dir (not (getattr open read search write add_name remove_name))))
+(neverallow p4_linux_journalctl_t p4_linux_journal_catalog_file_t (file (not (getattr open read write create setattr rename unlink))))

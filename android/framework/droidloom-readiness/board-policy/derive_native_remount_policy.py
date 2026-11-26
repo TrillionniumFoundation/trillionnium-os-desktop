@@ -122,8 +122,9 @@ def verify(library, binary, exported, here, expected, export):
     text = exported.read_text()
     value = contract(here)
     from derive_native_ldconfig_policy import ALIASES as LDCONFIG_ALIASES
+    from derive_native_journal_catalog_policy import ALIASES as CATALOG_ALIASES
     aliases = (console_contract(here)["aliases"] + SYSUSERS_ALIASES + NETPLAN_ALIASES
-               + LOGIND_ALIASES + TIMESYNC_ALIASES + LDCONFIG_ALIASES)
+               + LOGIND_ALIASES + TIMESYNC_ALIASES + LDCONFIG_ALIASES + CATALOG_ALIASES)
     checks = verify_preserved_aliases(policy, exported, value["aliases"], expected)
     objects = sorted(set(re.findall(r"\(roletype object_r (\w+)\)", text)))
     actors = _roles(lines)

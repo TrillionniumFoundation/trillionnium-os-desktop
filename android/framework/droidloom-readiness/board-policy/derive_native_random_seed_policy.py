@@ -178,19 +178,28 @@ def _base_role():
 
 
 def _predecessor_aliases(here):
-    # The normal kmod producer precedes this component. Retain the seed
-    # actor's original source view; it obtains no static-nodes file access.
-    path = here / "derive_native_kmod_static_policy.py"
-    if not path.exists():
-        return []
-    from derive_native_kmod_static_policy import ALIASES as KMOD
-    fixed = [
-        {"source": "p4_linux_rootdir_t", "target": "p4_linux_kmod_tmpfiles_dir_t", "class": "dir"},
-        {"source": "p4_linux_native_data_t", "target": "p4_linux_kmod_static_nodes_t", "class": "file"},
-    ]
-    if KMOD != fixed:
-        raise ValueError("The fixed kmod predecessor alias roster changed")
-    return KMOD
+    # Each installed predecessor must retain this actor's exact original
+    # source view. No catalog or static-nodes file access is inherited.
+    rows = []
+    if (here / "derive_native_kmod_static_policy.py").exists():
+        from derive_native_kmod_static_policy import ALIASES as KMOD
+        fixed = [
+            {"source": "p4_linux_rootdir_t", "target": "p4_linux_kmod_tmpfiles_dir_t", "class": "dir"},
+            {"source": "p4_linux_native_data_t", "target": "p4_linux_kmod_static_nodes_t", "class": "file"},
+        ]
+        if KMOD != fixed:
+            raise ValueError("The fixed kmod predecessor alias roster changed")
+        rows.extend(KMOD)
+    if (here / "derive_native_journal_catalog_policy.py").exists():
+        from derive_native_journal_catalog_policy import ALIASES as CATALOG
+        fixed = [
+            {"source": "p4_linux_rootdir_t", "target": "p4_linux_journal_catalog_dir_t", "class": "dir"},
+            {"source": "p4_linux_native_data_t", "target": "p4_linux_journal_catalog_file_t", "class": "file"},
+        ]
+        if CATALOG != fixed:
+            raise ValueError("The fixed catalog predecessor alias roster changed")
+        rows.extend(CATALOG)
+    return rows
 
 
 def _successor_aliases(here):
