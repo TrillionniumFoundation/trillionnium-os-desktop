@@ -7,7 +7,11 @@
 (allow kernel p4_linux_usrmerge_link_t (lnk_file (getattr read)))
 (allow p4_linux_procs p4_linux_usrmerge_link_t (lnk_file (getattr read)))
 (allow kernel p4_linux_elf_interpreter_t (file (getattr open read execute map)))
-(allow p4_linux_procs p4_linux_elf_interpreter_t (file (getattr open read execute map)))
+; The static-PIE ldconfig reader maps this ELF as library data only.
+; Every old p4_linux_procs member retains the original complete grant.
+(typeattribute p4_linux_dynamic_interpreter_clients)
+(typeattributeset p4_linux_dynamic_interpreter_clients (and (p4_linux_procs) (not (p4_linux_ldconfig_t))))
+(allow p4_linux_dynamic_interpreter_clients p4_linux_elf_interpreter_t (file (getattr open read execute map)))
 (neverallow p4_linux_procs p4_linux_usrmerge_link_t (lnk_file (write create unlink rename setattr relabelto relabelfrom)))
 (neverallow p4_linux_procs p4_linux_elf_interpreter_t (file (write create append setattr entrypoint relabelto relabelfrom)))
 (neverallow p4_android_userspace p4_linux_usrmerge_link_t (lnk_file (read write create unlink rename setattr relabelto relabelfrom)))

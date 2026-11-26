@@ -11,7 +11,7 @@ import json
 from derive_native_uevent_policy import Membership
 from derive_shared_payload_cgroup_policy import parse_expression
 
-SCHEMA="droidloom.native-original-authority-projection.v1"
+SCHEMA="droidloom.native-original-authority-projection.v2"
 BASELINE_DERIVATION={"bytes":10323,"sha256":"4b4319b42ac436245e5f9f94ee1d5135a18766030bf55e20bce769e0fbe51bbc"}
 BASELINE_CONTROLLER={"bytes":4637,"sha256":"faa6fd7d3f97aec2b5ad0bf4b870ff6e15519e8746370ae831afc9d4cf096fd8"}
 # The exact reviewed component families are source-owned. Unknown additions alter
@@ -106,11 +106,61 @@ def normalise_allow(items):
  out.extend(["allow",a,b,[c,sorted(ps)]] for (a,b,c),ps in sorted(merged.items()) if ps)
  return out
 
+
+INTERPRETER_ATTRIBUTE="p4_linux_dynamic_interpreter_clients"
+INTERPRETER_ORIGINAL="p4_linux_procs"
+INTERPRETER_TARGET="p4_linux_elf_interpreter_t"
+STATIC_LDCONFIG="p4_linux_ldconfig_t"
+INTERPRETER_PERMISSIONS=["execute","getattr","map","open","read"]
+
+def project_interpreter_source(items,membership,sets,old):
+ """Normalize only the reviewed interpreter allow after exact member proof."""
+ items=normalise_allow(items)
+ if INTERPRETER_ATTRIBUTE not in membership.attributes:
+  return items,{"present":False,"normalized_allow_rules":0}
+ if STATIC_LDCONFIG not in membership.types:
+  raise ValueError("Interpreter source projection requires the fixed static ldconfig type")
+ original=sets.members(INTERPRETER_ORIGINAL)
+ if STATIC_LDCONFIG not in original:
+  raise ValueError("Static ldconfig lost its declared native guard membership")
+ selected=sets.members(INTERPRETER_ATTRIBUTE)
+ if selected!=original-{STATIC_LDCONFIG} or selected&old!=original&old:
+  raise ValueError("Interpreter clients differ from exactly native processes minus static ldconfig")
+ wanted=["allow",INTERPRETER_ATTRIBUTE,INTERPRETER_TARGET,["file",INTERPRETER_PERMISSIONS]]
+ definitions=declarations=rewrites=0
+ out=[]
+ for f in items:
+  if INTERPRETER_ATTRIBUTE in atoms(f):
+   if f[0]=="typeattribute" and f==["typeattribute",INTERPRETER_ATTRIBUTE]:
+    declarations+=1
+   elif f[0]=="typeattributeset" and len(f)==3 and f[1]==INTERPRETER_ATTRIBUTE:
+    definitions+=1
+   elif f==wanted:
+    f=["allow",INTERPRETER_ORIGINAL,INTERPRETER_TARGET,["file",list(INTERPRETER_PERMISSIONS)]]
+    rewrites+=1
+   else:
+    raise ValueError("Interpreter attribute appears outside its single reviewed source allow")
+  elif (f[0]=="allow" and len(f)==4 and f[1]==INTERPRETER_ORIGINAL
+        and f[2]==INTERPRETER_TARGET and f[3][0]=="file"):
+   raise ValueError("Original interpreter source allow remains beside the reviewed replacement")
+  out.append(f)
+ if (declarations,definitions,rewrites)!=(1,1,1):
+  raise ValueError("Interpreter source replacement is missing or repeated")
+ return out,{
+  "present":True,"exact_source_attribute_rewrite":True,"normalized_allow_rules":1,
+  "source_attribute":INTERPRETER_ATTRIBUTE,"original_source_attribute":INTERPRETER_ORIGINAL,
+  "excluded_new_type":STATIC_LDCONFIG,"target":INTERPRETER_TARGET,
+  "class":"file","permissions":list(INTERPRETER_PERMISSIONS),
+  "all_old_members_equal":True,
+  "old_members":commitment(["type",t] for t in sorted(original&old)),
+ }
+
 def project(items,membership):
  """Return old-only symbolic authority; never discard an unmodeled statement."""
  sets=ConcreteSets(membership)
  new=membership.types&NEW_TYPES
  old=membership.types-new
+ items,interpreter_projection=project_interpreter_source(items,membership,sets,old)
  selected={"kernel","init_t","p4_linux_service_executor_t","p4_linux_netplan_t"}&old
  for name in sorted(membership.attributes):
   value=sets.members(name)
@@ -149,6 +199,7 @@ def project(items,membership):
   out.append(decls[name])
   if name in definitions:out.append(definitions[name])
  return normalise_allow(out),{
+  "reviewed_interpreter_source_attribute":interpreter_projection,
   "original_concrete_types":commitment(["type",x] for x in sorted(old)),
   "new_types":sorted(new),
   "removed_new_type_authority_forms":len(removed),

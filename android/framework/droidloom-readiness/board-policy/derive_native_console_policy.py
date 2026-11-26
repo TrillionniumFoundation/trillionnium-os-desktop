@@ -334,7 +334,7 @@ def derive(library, baseline, exported, here, output, export):
                 extras[(actor, row["target"], row["class"])] = names
     expected = derive_preserved_aliases(library, baseline, exported,
         value["aliases"], output, export, prefix="p4_console_preserved",
-        isolated_roles={ROLE}, extra_permissions=extras, preamble=(
+        isolated_roles={ROLE, "p4_linux_ldconfig_t"}, extra_permissions=extras, preamble=(
             "; Derived from the actual normal pre-console-alias binary.",
             "; Preserve all existing concrete actors; no generic execute grant."))
     expected["contract_sha256"] = hashlib.sha256(

@@ -308,3 +308,43 @@ label, executable and unit. Remount, Netplan and original-return verification
 retain their original read-only directory vectors for the alias. These
 static checks do not qualify logind runtime; the next enforcing normal boot
 must provide that result.
+
+### Normal ldconfig cache publication
+
+The installed `libc-bin 2.43-2ubuntu2.7` unit runs `/usr/sbin/ldconfig -X`.
+Its normal ELF is a static PIE with no interpreter or DT_NEEDED entry. The
+`-X` option disables library symlink replacement and stale-link deletion;
+it still reads configured directories and maps ELF headers as data. The
+dynamic linker itself is also a scanned DSO, so its bytes remain readable
+without granting the ldconfig actor interpreter execution.
+
+`native-ldconfig-source.json` pins that ELF, the unchanged unit, the exact
+three normal configuration files, the normal glibc call chain, and the selected
+kernel creation checks. A dedicated entry and process type replace only the
+executor's old setup-entry transition for this one executable. Every other
+actor retains the original full AV vectors, extended ioctl masks, constraints,
+and transitions on the five narrowed entry/configuration/auxiliary aliases.
+The new actor's complete raw and effective boundary is checked independently.
+
+The main cache keeps its existing console cache label. The normal program
+creates only the named temporary `/etc/ld.so.cache~`, writes and fsyncs it,
+sets mode 0644, closes it, then renames it to `/etc/ld.so.cache`. Failure is
+fatal to ldconfig. The auxiliary directory and the two fixed auxiliary-cache
+basenames have separate types. The normal 0600 auxiliary temporary is written,
+fdatasynced and renamed; failure follows the program's existing cleanup and
+fallback. No unrelated /etc file body, account database, generic file
+creation, library symlink mutation, helper execution, capability, or network
+socket is granted.
+
+The selected kernel requires the created cache SID to associate with the
+existing labeled filesystem SID. The three exact cache/auxiliary types gain
+only this association; all other filesystem targets and permissions are
+checked as absent. Existing roles' cache reads are preserved, while the new
+writer is explicitly isolated from the console and sysusers alias copiers.
+The interpreter-client attribute changes only the original single interpreter
+allow's source set: all pre-existing members remain, and the new static
+ldconfig actor receives only its separate data-read mapping.
+
+Normal input readback and focused policy checks are static evidence.
+The final original Android assertions and the normal enforcing service run
+remain separate gates; these reports retain `runtime_qualified=false`.

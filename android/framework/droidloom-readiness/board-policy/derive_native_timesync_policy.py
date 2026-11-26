@@ -375,6 +375,7 @@ def _own_tables(here):
     from derive_native_logind_state_policy import ALIASES as LOGIND_ALIASES
     from derive_native_netplan_policy import ALIASES as NETPLAN_ALIASES
     from derive_native_sysusers_policy import ALIASES as SYSUSERS_ALIASES
+    from derive_native_ldconfig_policy import ALIASES as LDCONFIG_ALIASES
     file_access = {
         ROLE: words("getattr open read"),
         ENTRY: words("getattr open read execute map entrypoint"),
@@ -407,7 +408,7 @@ def _own_tables(here):
              "p4_linux_timezone_link_t": words("getattr read")}
     tables = {"file": file_access, "dir": directories, "lnk_file": links}
     successors = (console_contract(here)["aliases"] + REMOUNT_ALIASES +
-                  LOGIND_ALIASES + NETPLAN_ALIASES + SYSUSERS_ALIASES)
+                  LOGIND_ALIASES + NETPLAN_ALIASES + SYSUSERS_ALIASES + LDCONFIG_ALIASES)
     for row in successors:
         table = tables.get(row["class"], {})
         if row["source"] in table:

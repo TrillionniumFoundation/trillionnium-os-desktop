@@ -35,7 +35,7 @@
 /usr/lib/systemd/(system|user)-generators/[^/]+ -- u:object_r:p4_linux_generator_exec_t:s0
 /usr/lib/systemd/systemd-(battery-check|binfmt|bsod|factory-reset|hibernate-resume|pcrextend|tpm2-setup|update-done|user-sessions|user-runtime-dir) -- u:object_r:p4_linux_setup_exec_t:s0
 /usr/bin/systemd-(firstboot|hwdb|machine-id-setup|sysusers|tmpfiles|sysext|confext) -- u:object_r:p4_linux_setup_exec_t:s0
-/usr/sbin/ldconfig -- u:object_r:p4_linux_setup_exec_t:s0
+/usr/sbin/ldconfig -- u:object_r:p4_linux_ldconfig_exec_t:s0
 /usr/lib/systemd/systemd-modules-load -- u:object_r:p4_linux_module_loader_exec_t:s0
 /usr/bin/kmod -- u:object_r:p4_linux_module_loader_exec_t:s0
 /usr/lib/systemd/systemd-sysctl -- u:object_r:p4_linux_sysctl_exec_t:s0
@@ -414,3 +414,13 @@
 # Fixed normal random-seed entry and its single persistent file.
 /usr/lib/systemd/systemd-random-seed -- u:object_r:p4_linux_random_seed_exec_t:s0
 /var/lib/systemd/random-seed -- u:object_r:p4_linux_random_seed_file_t:s0
+
+# Exact normal ldconfig configuration and cache publication inodes.
+/etc/ld\.so\.conf -- u:object_r:p4_linux_ldconfig_config_t:s0
+/etc/ld\.so\.conf\.d -d u:object_r:p4_linux_ldconfig_config_dir_t:s0
+/etc/ld\.so\.conf\.d/libc\.conf -- u:object_r:p4_linux_ldconfig_config_t:s0
+/etc/ld\.so\.conf\.d/x86_64-linux-gnu\.conf -- u:object_r:p4_linux_ldconfig_config_t:s0
+/etc/ld\.so\.cache~ -- u:object_r:p4_linux_console_ld_cache_native_config_t:s0
+/var/cache/ldconfig -d u:object_r:p4_linux_ldconfig_aux_dir_t:s0
+/var/cache/ldconfig/aux-cache -- u:object_r:p4_linux_ldconfig_aux_t:s0
+/var/cache/ldconfig/aux-cache~ -- u:object_r:p4_linux_ldconfig_aux_t:s0

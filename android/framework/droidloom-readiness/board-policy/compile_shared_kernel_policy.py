@@ -15,6 +15,7 @@ from derive_native_uevent_policy import (derive_android as derive_uevent_android
 from derive_native_random_seed_policy import derive as derive_random_seed, verify as verify_random_seed
 from derive_native_console_policy import derive as derive_console, verify as verify_console
 from derive_native_timesync_policy import derive as derive_timesync, verify as verify_timesync
+from derive_native_ldconfig_policy import derive as derive_ldconfig, verify as verify_ldconfig
 from derive_native_remount_policy import derive as derive_remount, verify as verify_remount
 from derive_native_logind_state_policy import derive as derive_logind_state, verify as verify_logind_state
 from derive_native_netplan_policy import derive as derive_netplan, verify as verify_netplan
@@ -1691,6 +1692,7 @@ def main():
         "ubuntu-core-cgroup-ownership.cil", "ubuntu-native-user-cgroups.cil", "ubuntu-native-services.cil",
         "ubuntu-native-service-capabilities.cil", "ubuntu-native-console.cil",
         "ubuntu-native-timesync.cil",
+        "ubuntu-native-ldconfig.cil",
         "ubuntu-native-login-audit.cil", "ubuntu-native-remount.cil", "ubuntu-native-logind-state.cil",
         "ubuntu-native-netplan.cil", "ubuntu-native-sysusers.cil",
         "ubuntu-native-service-runtime.cil", "ubuntu-native-sandbox.cil",
@@ -1718,6 +1720,7 @@ def main():
                here / "derive_native_random_seed_policy.py", here / "native-random-seed-source.json",
                here / "derive_native_console_policy.py", here / "native-console-setup.json",
                here / "derive_native_timesync_policy.py", here / "native-timesync-source.json",
+               here / "derive_native_ldconfig_policy.py", here / "native-ldconfig-source.json",
                here / "derive_preserved_alias_policy.py",
                here / "derive_native_remount_policy.py", here / "native-remount-source.json",
                here / "derive_native_logind_state_policy.py", here / "native-logind-state-source.json",
@@ -1778,35 +1781,41 @@ def main():
         compile_policy(compiler, [*args.android_cil, board, *components, shared,
                                  uevent_android, uevent_native, random_seed_aliases, timesync_aliases],
                        linked, contexts, environment)
+        ldconfig_aliases = work / "native-ldconfig-aliases.cil"
+        ldconfig_contract = derive_ldconfig(library, linked, work / "ldconfig-before.cil",
+                                            here, ldconfig_aliases, export_binary_policy)
+        compile_policy(compiler, [*args.android_cil, board, *components, shared,
+                                 uevent_android, uevent_native, random_seed_aliases, timesync_aliases, ldconfig_aliases],
+                       linked, contexts, environment)
         console_aliases = work / "native-console-aliases.cil"
         console_contract = derive_console(library, linked, work / "console-before.cil",
                                            here, console_aliases, export_binary_policy)
         compile_policy(compiler, [*args.android_cil, board, *components, shared,
-                                 uevent_android, uevent_native, random_seed_aliases, timesync_aliases, console_aliases],
+                                 uevent_android, uevent_native, random_seed_aliases, timesync_aliases, ldconfig_aliases, console_aliases],
                        linked, contexts, environment)
         remount_aliases = work / "native-remount-aliases.cil"
         remount_contract = derive_remount(library, linked, work / "remount-before.cil",
                                           here, remount_aliases, export_binary_policy)
         compile_policy(compiler, [*args.android_cil, board, *components, shared,
-                                 uevent_android, uevent_native, random_seed_aliases, timesync_aliases, console_aliases, remount_aliases],
+                                 uevent_android, uevent_native, random_seed_aliases, timesync_aliases, ldconfig_aliases, console_aliases, remount_aliases],
                        linked, contexts, environment)
         logind_aliases = work / "native-logind-state-aliases.cil"
         logind_contract = derive_logind_state(library, linked, work / "logind-state-before.cil",
                                               here, logind_aliases, export_binary_policy)
         compile_policy(compiler, [*args.android_cil, board, *components, shared,
-                                 uevent_android, uevent_native, random_seed_aliases, timesync_aliases, console_aliases, remount_aliases,
+                                 uevent_android, uevent_native, random_seed_aliases, timesync_aliases, ldconfig_aliases, console_aliases, remount_aliases,
                                  logind_aliases], linked, contexts, environment)
         netplan_aliases = work / "native-netplan-aliases.cil"
         netplan_contract = derive_netplan(library, linked, work / "netplan-before.cil",
                                           here, netplan_aliases, export_binary_policy)
         compile_policy(compiler, [*args.android_cil, board, *components, shared,
-                                 uevent_android, uevent_native, random_seed_aliases, timesync_aliases, console_aliases, remount_aliases,
+                                 uevent_android, uevent_native, random_seed_aliases, timesync_aliases, ldconfig_aliases, console_aliases, remount_aliases,
                                  logind_aliases, netplan_aliases], linked, contexts, environment)
         sysusers_aliases = work / "native-sysusers-aliases.cil"
         sysusers_contract = derive_sysusers(library, linked, work / "sysusers-before.cil",
                                            here, sysusers_aliases, export_binary_policy)
         compile_policy(compiler, [*args.android_cil, board, *components, shared,
-                                 uevent_android, uevent_native, random_seed_aliases, timesync_aliases, console_aliases, remount_aliases,
+                                 uevent_android, uevent_native, random_seed_aliases, timesync_aliases, ldconfig_aliases, console_aliases, remount_aliases,
                                  logind_aliases, netplan_aliases, sysusers_aliases], linked, contexts, environment)
         host_control = verify_host_control(library, linked, work / "host-control-binary.cil", contract)
         tcgets2_audit = verify_native_tcgets2_audit(work / "host-control-binary.cil")
@@ -1823,6 +1832,8 @@ def main():
                                        here, remount_contract, export_binary_policy)
         random_seed_access = verify_random_seed(library, linked, work / "random-seed-after.cil",
                                                here, random_seed_contract, export_binary_policy)
+        ldconfig_access = verify_ldconfig(library, linked, work / "ldconfig-after.cil",
+                                          here, ldconfig_contract, export_binary_policy)
         console_access = verify_console(library, linked, work / "console-after.cil",
                                         here, console_contract, export_binary_policy)
         uevent_access = verify_uevent(library, linked, uevent_contract,
@@ -1855,6 +1866,7 @@ def main():
             "native_console": console_access,
             "native_random_seed": random_seed_access,
             "native_timesync": timesync_access,
+            "native_ldconfig": ldconfig_access,
             "native_remount": remount_access,
             "native_logind_state": logind_access,
             "native_calibration_manager": native_calibration,

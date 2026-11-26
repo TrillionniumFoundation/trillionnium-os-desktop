@@ -78,7 +78,7 @@ def contract(here):
 def derive(library, baseline, exported, here, output, export):
     value = contract(here)
     expected = derive_preserved_aliases(library, baseline, exported, ALIASES,
-        output, export, prefix="p4_sysusers_preserved", isolated_roles={ROLE},
+        output, export, prefix="p4_sysusers_preserved", isolated_roles={ROLE, "p4_linux_ldconfig_t"},
         extra_permissions={}, preamble=(
             "; Preserve every other existing actor; setup has a separate full proof.",
             "; Only /etc:dir write and existing .pwd.lock:file write/lock differ."))
