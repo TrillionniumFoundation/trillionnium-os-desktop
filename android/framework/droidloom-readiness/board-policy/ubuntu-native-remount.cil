@@ -89,6 +89,8 @@
 ; This constructor is metadata-only; it is not a native query client and cannot
 ; read/write selinuxfs files or issue a security-server request.
 (typeattribute p4_native_selinux_metadata_clients)
+; Preserve the original exported metadata set even when only derived guards use it.
+(expandtypeattribute (p4_native_selinux_metadata_clients) false)
 (typeattributeset p4_native_selinux_metadata_clients (p4_linux_remount_t))
 (allow p4_linux_remount_t sysfs (dir (search)))
 (allow p4_linux_remount_t selinuxfs (dir (search)))

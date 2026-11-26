@@ -9,6 +9,7 @@ from collections import defaultdict
 
 from derive_native_uevent_policy import ContextPolicy, Membership, LEVELS
 from derive_shared_payload_cgroup_policy import parse_expression, original_xperms, format_xperms
+from verify_native_original_projection import NEW_TYPES
 
 def _classes(text):
     common = dict((n, body.split()) for n, body in
@@ -249,7 +250,11 @@ def derive_preserved_aliases(library, baseline, exported, aliases, output, expor
                 allowed = vals[0] | extra_mask
             groups[allowed].append(actor)
             samples.append([role, actor, old, new, cls, vals, allowed])
-        for group, (allowed, selected) in enumerate(sorted(groups.items())):
+        # Keep every group containing an original concrete actor in its original
+        # mask order. New-only vectors must not renumber the old authority groups.
+        ordered_groups = sorted(groups.items(),
+            key=lambda row: (not (set(row[1]) - NEW_TYPES), row[0]))
+        for group, (allowed, selected) in enumerate(ordered_groups):
             attr = prefix + "_" + str(index) + "_" + str(group)
             generated += ["(typeattribute " + attr + ")",
                           "(typeattributeset " + attr + " (" + " ".join(sorted(set(selected))) + "))"]
