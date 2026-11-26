@@ -712,10 +712,19 @@ impl Configurations {
                 )?;
                 // The context constructor replayed all completed effects. No
                 // existing event is rewritten or applied twice.
-                let target = observe_kind(&i.target, i.purpose_target.is_some())?;
+                let target = restored_target_observation(
+                    &i.target,
+                    i.purpose_target.is_some(),
+                    i.original.is_none(),
+                    &restoration.parents,
+                    &restoration.retired_directories,
+                )?;
+                let retained: Option<Node> =
+                    serde_json::from_value(v["actual"]["candidate_retained"].clone())?;
                 ensure(
-                    expected(&i.original, &target),
-                    "completed configuration original no longer present",
+                    expected(&i.original, &target)
+                        && observe_kind(&i.pending, i.purpose_target.is_some())? == retained,
+                    "completed configuration original or retained candidate changed",
                 )?;
                 reports.push(files::pin_file(&out)?);
                 continue;
@@ -807,6 +816,14 @@ impl Configurations {
                 serde_json::from_value(actual["private_parent_after"].clone())?;
             advance_parent(&mut restoration.parents, &before, &after)?;
             if i.purpose_target.is_some() {
+                let retained: Node = serde_json::from_value(actual["candidate_retained"].clone())?;
+                ensure(
+                    i.original.is_none(),
+                    "only source-created directories may retire",
+                )?;
+                restoration
+                    .retired_directories
+                    .insert(i.target.clone(), (i.pending.clone(), retained));
                 restoration.parents.remove(&i.target);
             }
             reports.push(files::pin_file(&out)?);
@@ -827,6 +844,44 @@ pub(super) struct ConfigurationRestoration {
     source: SealedInput,
     parents: BTreeMap<PathBuf, DirectoryState>,
     inputs: Vec<SealedInput>,
+    // Populated only from this producer's actual completed directory reversals.
+    // A vanished ancestor is never accepted merely because lookup returned ENOENT.
+    retired_directories: BTreeMap<PathBuf, (PathBuf, Node)>,
+}
+fn restored_target_observation(
+    path: &Path,
+    directory: bool,
+    original_absent: bool,
+    parents: &BTreeMap<PathBuf, DirectoryState>,
+    retired: &BTreeMap<PathBuf, (PathBuf, Node)>,
+) -> Result<Option<Node>> {
+    let removed = retired
+        .iter()
+        .filter(|(ancestor, _)| path.starts_with(ancestor))
+        .min_by_key(|(ancestor, _)| ancestor.components().count());
+    let Some((ancestor, (pending, saved))) = removed else {
+        return observe_kind(path, directory);
+    };
+    ensure(
+        original_absent,
+        "an original configuration cannot disappear with an owned new directory",
+    )?;
+    let public = ancestor.parent().ok_or("retired directory public parent")?;
+    let private = pending.parent().ok_or("retired directory private parent")?;
+    parents
+        .get(public)
+        .ok_or("retired directory lacks its surviving ancestor checkpoint")?
+        .reopen()?;
+    parents
+        .get(private)
+        .ok_or("retired directory lacks its exact private checkpoint")?
+        .reopen()?;
+    ensure(
+        observe_kind(ancestor, true)?.is_none()
+            && observe_kind(pending, true)?.as_ref() == Some(saved),
+        "missing configuration ancestor is not the retained original generation",
+    )?;
+    Ok(None)
 }
 struct Item {
     directory: PathBuf,
@@ -1407,6 +1462,7 @@ impl ConfigurationRestoration {
             source: SealedInput::open(&pin)?,
             parents,
             inputs,
+            retired_directories: BTreeMap::new(),
         };
         result.revalidate(a)?;
         Ok(result)
@@ -1434,8 +1490,9 @@ impl ConfigurationRestoration {
             source,
             parents,
             inputs: pins.iter().map(SealedInput::open).collect::<Result<_>>()?,
+            retired_directories: BTreeMap::new(),
         };
-        replay_runtime_archives(a, &mut result)?;
+        let archives = replay_runtime_archives(a, &mut result)?;
         let items = configuration_items(a)?;
         for group in ["grub", "recovery", "runtime", "package-masks", "owner"] {
             for item in items.iter().rev().filter(|item| item.intent.group == group) {
@@ -1495,6 +1552,19 @@ impl ConfigurationRestoration {
                     advance_parent(&mut result.parents, &before, &after)?;
                 }
                 if i.purpose_target.is_some() {
+                    ensure(
+                        i.original.is_none(),
+                        "only source-created directory history may retire",
+                    )?;
+                    result.retired_directories.insert(
+                        i.target.clone(),
+                        (
+                            i.pending.clone(),
+                            pending
+                                .clone()
+                                .ok_or("retired directory candidate absent")?,
+                        ),
+                    );
                     result.parents.remove(&i.target);
                 }
                 result.inputs.push(seal);
@@ -1507,6 +1577,22 @@ impl ConfigurationRestoration {
                     &mut result.inputs,
                 )?;
             }
+        }
+        // Current public paths are checked only after the complete historical
+        // configuration reverse chain has reconstructed any retired ancestors.
+        for (path, destination, saved) in archives {
+            ensure(
+                restored_target_observation(
+                    &path,
+                    false,
+                    true,
+                    &result.parents,
+                    &result.retired_directories,
+                )?
+                .is_none()
+                    && observe(&destination)?.as_ref() == Some(&saved),
+                "archived runtime evidence is not in its actual restored placement",
+            )?;
         }
         result.revalidate(a)?;
         Ok(result)
@@ -1812,11 +1898,11 @@ pub(super) fn package_writers_preimage(
 fn replay_runtime_archives(
     a: &OriginalQualificationAuthority,
     ctx: &mut ConfigurationRestoration,
-) -> Result<()> {
+) -> Result<Vec<(PathBuf, PathBuf, Node)>> {
     let source: Value = serde_json::from_slice(&ctx.source.read()?)?;
     let birth = &source["actual_runtime_births"];
     if birth.is_null() {
-        return Ok(());
+        return Ok(Vec::new());
     }
     let nodes: BTreeMap<PathBuf, Node> = serde_json::from_value(birth["members"].clone())?;
     let root = Path::new("/var/lib/droidloom/qualification")
@@ -1824,6 +1910,7 @@ fn replay_runtime_archives(
         .join("runtime-evidence");
     let archive = a.work().join("runtime-evidence-archive");
     let mut gap = false;
+    let mut archived = Vec::new();
     for (ordinal, (path, expected)) in nodes.iter().enumerate() {
         ensure(
             path.parent() == Some(root.as_path())
@@ -1882,15 +1969,16 @@ fn replay_runtime_archives(
         )?;
         pb.after_replace(&pa, "evidence", &Some(saved.clone()))?;
         ensure(
-            observe(path)?.is_none() && observe(&destination)?.as_ref() == Some(&saved),
+            observe(&destination)?.as_ref() == Some(&saved),
             "archived runtime file changed after its actual return",
         )?;
+        archived.push((path.clone(), destination, saved));
         pa.reopen()?;
         advance_parent(&mut ctx.parents, &before, &after)?;
         ctx.inputs.push(intent);
         ctx.inputs.push(guard);
     }
-    Ok(())
+    Ok(archived)
 }
 
 /// New runtime evidence is archived after the typed label restoration, with
@@ -2547,6 +2635,99 @@ mod tests {
                     && expected(&i.original, &observe(&pending)?),
                 "rejected parent-only drift wrote a configuration",
             )?;
+        }
+        Ok(())
+    }
+    #[test]
+    #[ignore = "root only; exact source-created parent retirement and archived evidence replay"]
+    fn completed_reverse_reopens_after_its_actual_parent_directory_was_retired() -> Result<()> {
+        ensure(rustix::process::geteuid().is_root(), "root only")?;
+        let stamp = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)?
+            .as_nanos();
+        let base = PathBuf::from(format!(
+            "/var/lib/droidloom-qualification/once-retired-parent-{}-{stamp}",
+            std::process::id()
+        ));
+        files::private_dir(&base)?;
+        for case in ["valid", "missing-proof", "foreign-public", "foreign-saved"] {
+            let work = base.join(case);
+            files::private_dir(&work)?;
+            let public = work.join("public");
+            let private = work.join("private");
+            files::private_dir(&public)?;
+            files::private_dir(&private)?;
+            let pending = private.join("value");
+            files::private_dir(&pending)?;
+            let target = public.join("runtime-evidence");
+            let i = Intent {
+                schema: "test".into(),
+                candidate_id: "a".repeat(64),
+                group: "test".into(),
+                ordinal: 0,
+                logical_path: target.clone(),
+                target: target.clone(),
+                pending: pending.clone(),
+                payload: Payload::Absent,
+                original: None,
+                prepared: observe_kind(&pending, true)?,
+                parent: DirectoryState::capture(&public)?.state,
+                private_parent: DirectoryState::capture(&private)?.state,
+                purpose_target: Some(target.join("owner.lock")),
+            };
+            let published = publish_one(&i)?;
+            let before: DirectoryState =
+                serde_json::from_value(published["public_parent_after"].clone())?;
+            let private_before: DirectoryState =
+                serde_json::from_value(published["private_parent_after"].clone())?;
+            let reversed = restore_one_from(&i, &before, &private_before)?;
+            let saved: Node = serde_json::from_value(reversed["candidate_retained"].clone())?;
+            let parents = [
+                (
+                    public.clone(),
+                    serde_json::from_value(reversed["public_parent_after"].clone())?,
+                ),
+                (
+                    private.clone(),
+                    serde_json::from_value(reversed["private_parent_after"].clone())?,
+                ),
+            ]
+            .into_iter()
+            .collect();
+            let mut retired: BTreeMap<PathBuf, (PathBuf, Node)> =
+                [(target.clone(), (pending.clone(), saved))]
+                    .into_iter()
+                    .collect();
+            let original = target.join("runtime-RESULT.json");
+            assert!(
+                observe(&original).is_err(),
+                "the real parent must be absent"
+            );
+            if case == "missing-proof" {
+                retired.clear();
+            }
+            if case == "foreign-public" {
+                files::private_dir(&target)?;
+            }
+            if case == "foreign-saved" {
+                files::write_new(&pending.join("foreign"), b"not owned", 0o400)?;
+            }
+            let actual = restored_target_observation(&original, false, true, &parents, &retired);
+            if case == "valid" {
+                ensure(
+                    actual?.is_none(),
+                    "owned retired ancestor did not prove exact original absence",
+                )?;
+                assert!(
+                    restored_target_observation(&original, false, false, &parents, &retired)
+                        .is_err()
+                );
+            } else {
+                assert!(
+                    actual.is_err(),
+                    "{case} must not prove a source-owned absent parent"
+                );
+            }
         }
         Ok(())
     }

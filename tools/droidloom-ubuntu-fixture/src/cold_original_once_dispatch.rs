@@ -116,48 +116,91 @@ fn event(a: &OriginalQualificationAuthority, next: Phase, observed: Value) -> Re
 fn observation(a: &OriginalQualificationAuthority, p: Phase) -> Result<Option<Value>> {
     a.journal.borrow().observation(p)
 }
-fn next_command_name(a: &OriginalQualificationAuthority, op: &str) -> Result<String> {
+// These are the three source-owned producers of command work directories.
+// Recognizing a name allocates no operation or qualification authority.
+fn command_history_index(directory: &str, name: &str) -> Result<Option<usize>> {
+    if let Some(rest) = name.strip_prefix("dispatch-") {
+        ensure(
+            rest.len() > 5
+                && rest.is_ascii()
+                && rest.as_bytes()[4] == b'-'
+                && rest[..4].bytes().all(|b| b.is_ascii_digit())
+                && rest[5..]
+                    .bytes()
+                    .all(|b| b.is_ascii_lowercase() || b == b'-'),
+            "fixed bounded dispatch history name",
+        )?;
+        let index = rest[..4].parse::<usize>()?;
+        ensure(index < 4096, "bounded dispatch ordinal")?;
+        return Ok(Some(index));
+    }
+    ensure(
+        directory == "commands",
+        "native parent history is dispatch-only",
+    )?;
+    for prefix in ["label-writer-inventory-", "label-thaw-guard-start-"] {
+        if let Some(rest) = name.strip_prefix(prefix) {
+            let (purpose, invocation) = rest.split_once('-').ok_or("quiescence history fields")?;
+            ensure(
+                matches!(purpose, "forward" | "restore")
+                    && invocation.len() == 32
+                    && invocation.bytes().all(|b| b.is_ascii_hexdigit()),
+                "source-owned quiescence history name",
+            )?;
+            return Ok(None);
+        }
+    }
+    if let Some(rest) = name.strip_prefix("retirement-") {
+        ensure(
+            rest.is_ascii()
+                && rest.len() > 70
+                && rest.as_bytes()[36] == b'-'
+                && rest.as_bytes()[69] == b'-'
+                && c::uuid(&rest[..36])
+                && rest[37..69].bytes().all(|b| b.is_ascii_hexdigit())
+                && matches!(&rest[70..], "grub" | "journal"),
+            "source-owned retirement observation name",
+        )?;
+        return Ok(None);
+    }
+    Err("unknown original once command history member".into())
+}
+fn next_command_name_in(work: &Path, op: &str) -> Result<String> {
     ensure(
         !op.is_empty() && op.len() <= 48 && op.bytes().all(|b| b.is_ascii_lowercase() || b == b'-'),
         "closed dispatch operation name",
     )?;
     let mut next = 0usize;
     for directory in ["commands", "native-package-parents"] {
-        let root = a.work().join(directory);
+        let root = work.join(directory);
         if !root.try_exists()? {
             continue;
         }
         let mut count = 0;
-        for e in std::fs::read_dir(&root)? {
-            let name = e?
+        for row in std::fs::read_dir(&root)? {
+            let row = row?;
+            ensure(
+                row.file_type()?.is_dir(),
+                "command history member is not an actual directory",
+            )?;
+            let name = row
                 .file_name()
                 .into_string()
                 .map_err(|_| "dispatch history nonUTF8 name")?;
-            let rest = name
-                .strip_prefix("dispatch-")
-                .ok_or("dispatch history prefix differs")?;
-            ensure(
-                rest.len() > 5
-                    && rest.is_ascii()
-                    && rest.as_bytes()[4] == b'-'
-                    && rest[..4].bytes().all(|b| b.is_ascii_digit())
-                    && rest[5..]
-                        .bytes()
-                        .all(|b| b.is_ascii_lowercase() || b == b'-'),
-                "fixed bounded dispatch history name",
-            )?;
-            let index = rest[..4].parse::<usize>()?;
-            ensure(
-                index < 4096 && count < 4096,
-                "bounded resumable command history",
-            )?;
-            next = next.max(index + 1);
+            if let Some(index) = command_history_index(directory, &name)? {
+                next = next.max(index + 1);
+            }
             count += 1;
+            ensure(count <= 4096, "bounded resumable command history")?;
         }
     }
     ensure(next < 4096, "resumable dispatch history exhausted")?;
     Ok(format!("dispatch-{next:04}-{op}"))
 }
+fn next_command_name(a: &OriginalQualificationAuthority, op: &str) -> Result<String> {
+    next_command_name_in(a.work(), op)
+}
+
 fn command(
     a: &OriginalQualificationAuthority,
     op: &str,
@@ -944,5 +987,67 @@ pub(super) fn run(input: &Path, expected: &str) -> Result<Value> {
                 Err(restoration)=>Err(format!("original once forward action failed: {text}; durable restoration remains incomplete: {restoration}").into()),
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod dispatch_history_tests {
+    use super::*;
+    #[test]
+    fn actual_mixed_command_directories_keep_dispatch_ordinals_and_reject_unknown_members()
+    -> Result<()> {
+        let root = tempfile::tempdir()?;
+        for n in ["commands", "native-package-parents"] {
+            std::fs::create_dir(root.path().join(n))?;
+        }
+        let invocation = "a".repeat(32);
+        let boot = "12345678-1234-1234-1234-123456789abc";
+        for name in [
+            "dispatch-0000-public-snapshot".into(),
+            "dispatch-0007-native-apply".into(),
+            format!("label-writer-inventory-forward-{invocation}"),
+            format!("label-thaw-guard-start-forward-{invocation}"),
+            format!("label-writer-inventory-restore-{invocation}"),
+            format!("label-thaw-guard-start-restore-{invocation}"),
+            format!("retirement-{boot}-{invocation}-grub"),
+            format!("retirement-{boot}-{invocation}-journal"),
+        ] {
+            std::fs::create_dir(root.path().join("commands").join(name))?;
+        }
+        std::fs::create_dir(
+            root.path()
+                .join("native-package-parents/dispatch-0009-native-rollback"),
+        )?;
+        assert_eq!(
+            next_command_name_in(root.path(), "grub-read")?,
+            "dispatch-0010-grub-read"
+        );
+        for name in [
+            "foreign",
+            "label-writer-inventory-unknown-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "label-thaw-guard-start-forward-aaaa",
+            "retirement-not-a-uuid-grub",
+            "dispatch-4096-systemctl",
+        ] {
+            let p = root.path().join("commands").join(name);
+            std::fs::create_dir(&p)?;
+            assert!(
+                next_command_name_in(root.path(), "grub-read").is_err(),
+                "{name}"
+            );
+            std::fs::remove_dir(p)?;
+        }
+        let name = format!("label-writer-inventory-forward-{invocation}");
+        let p = root.path().join("native-package-parents").join(&name);
+        std::fs::create_dir(&p)?;
+        assert!(next_command_name_in(root.path(), "grub-read").is_err());
+        std::fs::remove_dir(p)?;
+        let p = root.path().join("commands/dispatch-0012-systemctl");
+        std::os::unix::fs::symlink(
+            root.path().join("commands/dispatch-0000-public-snapshot"),
+            &p,
+        )?;
+        assert!(next_command_name_in(root.path(), "grub-read").is_err());
+        Ok(())
     }
 }
