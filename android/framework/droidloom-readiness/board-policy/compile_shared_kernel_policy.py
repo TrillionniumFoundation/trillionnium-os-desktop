@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 """Link the Pocket4 shared-kernel policy using the original Android assertions."""
 import argparse
+from contextlib import contextmanager
 import ctypes
 import hashlib
 import json
 import os
 from pathlib import Path
+import shutil
 import subprocess
+import sys
 import tempfile
 
 from derive_shared_payload_cgroup_policy import Decision, Policy, derive, verify
@@ -42,6 +45,20 @@ from verify_native_utility_bridges import verify_native_utility_bridges
 from verify_native_netplan_trigger import (verify_native_netplan_trigger,
     source_inputs as native_netplan_trigger_source_inputs,
     validate_sources as validate_netplan_trigger_sources)
+
+
+@contextmanager
+def policy_work_directory(parent: Path):
+    """Keep failed compiler artifacts for diagnosis and clean successful work."""
+    work = Path(tempfile.mkdtemp(dir=parent, prefix="pocket4-sepolicy-"))
+    try:
+        yield work
+    except BaseException:
+        print(f"Policy compilation failed; retained diagnostic artifacts: {work}",
+              file=sys.stderr, flush=True)
+        raise
+    else:
+        shutil.rmtree(work)
 
 
 def sha256(path):
@@ -1769,8 +1786,7 @@ def main():
     if any(output.resolve() == path.resolve() for path in sources):
         raise ValueError("The output path is a policy input or build tool")
     output.parent.mkdir(parents=True, exist_ok=True)
-    with tempfile.TemporaryDirectory(dir=output.parent, prefix="pocket4-sepolicy-") as private:
-        work = Path(private)
+    with policy_work_directory(output.parent) as work:
         original = work / "original.policy"
         contexts = work / "contexts"
         compile_policy(compiler, args.android_cil, original, contexts, environment)
