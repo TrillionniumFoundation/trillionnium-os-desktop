@@ -665,14 +665,33 @@ mod tests {
                 continue;
             }
             let body = fs::read_to_string(&unit).unwrap();
-            assert_eq!(
-                body,
-                fs::read_to_string(templates.join(unit.file_name().unwrap())).unwrap()
-            );
+            let name = unit.file_name().unwrap().to_str().unwrap();
+            let expected = match name {
+                "droidloom-original-once.target" =>
+                    include_str!("../../../packaging/systemd/droidloom-original-once.target").to_owned(),
+                "droidloom-original-once-return.service" =>
+                    include_str!("../../../packaging/systemd/droidloom-original-once-return.service").to_owned(),
+                "droidloom-original-once-return.timer" =>
+                    include_str!("../../../packaging/systemd/droidloom-original-once-return.timer").to_owned(),
+                _ => fs::read_to_string(templates.join(name)).unwrap(),
+            };
+            assert_eq!(body, expected);
             assert_eq!(
                 fs::metadata(&unit).unwrap().permissions().mode() & 0o777,
                 0o644
             );
+            if matches!(name, "droidloom-original-once.target"
+                | "droidloom-original-once-return.service"
+                | "droidloom-original-once-return.timer")
+            {
+                assert!(body.lines().any(|line| line == "ConditionKernelCommandLine=droidloom.once"));
+                assert!(!body.lines().any(|line| line == "[Install]"));
+                assert!(!runtime.join("etc/systemd/system").join(name).exists());
+                assert!(!runtime.join("usr/lib/systemd/system").join(name).exists());
+                if unit.extension().is_some_and(|ext| ext == "target" || ext == "timer") {
+                    continue;
+                }
+            }
             if unit.extension().is_some_and(|ext| ext == "socket") {
                 assert!(
                     body.lines()
@@ -702,7 +721,12 @@ mod tests {
                 .unwrap();
             let executable = command.split_whitespace().next().unwrap();
             let target = runtime.join(executable.strip_prefix('/').unwrap());
-            let original = host.join(target.file_name().unwrap());
+            let original_name = target.file_name().unwrap().to_str().unwrap();
+            let original = host.join(if original_name == "droidloom-original-once-return" {
+                "droidloomd"
+            } else {
+                original_name
+            });
             let metadata = fs::symlink_metadata(&target).unwrap();
             assert!(metadata.is_file());
             assert_eq!(metadata.permissions().mode() & 0o777, 0o755);
@@ -765,6 +789,10 @@ mod tests {
             (
                 "usr/lib/systemd/system/systemd-udev-trigger.service.d/50-droidloom-uevent-label.conf",
                 include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-udev-trigger-label.conf").as_slice(),
+            ),
+            (
+                "usr/lib/systemd/system/mount.d/50-droidloom-private-keyring.conf",
+                include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-mount-private-keyring.conf").as_slice(),
             ),
         ] {
             let path = runtime.join(relative);

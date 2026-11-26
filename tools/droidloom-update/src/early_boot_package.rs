@@ -273,6 +273,10 @@ pub(super) fn stage_native_configuration(destination: &Path) -> Result<()> {
             "usr/lib/systemd/system/systemd-udev-trigger.service.d/50-droidloom-uevent-label.conf",
             include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-udev-trigger-label.conf").as_slice(),
         ),
+        (
+            "usr/lib/systemd/system/mount.d/50-droidloom-private-keyring.conf",
+            include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-mount-private-keyring.conf").as_slice(),
+        ),
     ] {
         let path = destination.join(relative);
         write(&path, body)?;

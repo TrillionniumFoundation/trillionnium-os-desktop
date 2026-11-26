@@ -341,6 +341,10 @@ mod tests {
                 include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-udev-trigger-label.conf").as_slice(),
             ),
             (
+                "usr/lib/systemd/system/mount.d/50-droidloom-private-keyring.conf",
+                include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-mount-private-keyring.conf").as_slice(),
+            ),
+            (
                 "etc/systemd/system/user-runtime-dir@.service.d/50-droidloom-native-session.conf",
                 include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-user-runtime-dir.conf").as_slice(),
             ),

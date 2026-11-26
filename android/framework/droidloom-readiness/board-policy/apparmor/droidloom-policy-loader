@@ -28,7 +28,7 @@ profile droidloom-policy-loader flags=(attach_disconnected.path=/.droidloom-kern
   /sys/fs/selinux/{,class/,class/**,policy,enforce,policyvers,status,mls,policy_capabilities/*} r,
   /sys/fs/selinux/{access,context} rw,
   @{PROC}/[0-9]*/{,status,stat,cgroup,mountinfo,uid_map,gid_map,setgroups,exe,cmdline,root/,attr/current,attr/apparmor/current,attr/selinux/current} r,
-  owner @{PROC}/[0-9]*/task/[0-9]*/{,status,stat,attr/,attr/{current,apparmor/,selinux/,apparmor/current,selinux/current},ns/,ns/{user,pid},fdinfo/,fdinfo/[0-9]*} r,
+  owner @{PROC}/[0-9]*/task/[0-9]*/{,status,stat,cgroup,attr/,attr/{current,apparmor/,selinux/,apparmor/current,selinux/current},ns/,ns/{user,pid},fdinfo/,fdinfo/[0-9]*} r,
   @{PROC}/[0-9]*/{ns/,ns/{user,mnt,pid,ipc,cgroup,net,uts},fdinfo/,fdinfo/[0-9]*} r,
   /usr/lib/droidloom/{,production/,production/current/} r,
   /usr/lib/systemd/systemd r,
