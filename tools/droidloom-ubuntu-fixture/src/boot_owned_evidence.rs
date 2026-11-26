@@ -825,37 +825,96 @@ fn verify_to_receipt(config: &Path, expected: &str) -> Result<FilePin> {
     Ok(pin)
 }
 
-/// The physical owner's admission calls the same full ended-disk verifier.
-/// Only its output name changes. No prior success field is accepted as authority.
-pub(super) fn verify_for_original_once(
-    input: &FilePin,
-    request: &Path,
-    verification_name: &str,
-) -> Result<Value> {
-    let mut custody = Custody::default();
-    let mut plan: Plan = serde_json::from_value(custody.json(input, 1024 * 1024)?)?;
+fn same_once_work(expected: &Identity, actual: &Identity) -> bool {
+    // Publishing the regular request changes directory size/timestamps, but
+    // cannot replace the held inode or change its ownership, mode or links.
+    (
+        expected.dev,
+        expected.ino,
+        expected.mode,
+        expected.uid,
+        expected.gid,
+        expected.nlink,
+    ) == (
+        actual.dev,
+        actual.ino,
+        actual.mode,
+        actual.uid,
+        actual.gid,
+        actual.nlink,
+    )
+}
+
+fn original_once_verification_name(request: &Path, work: &Identity) -> Result<String> {
     let parent = request.parent().ok_or("once owned request parent absent")?;
-    let name = parent.file_name().and_then(|v| v.to_str()).ok_or("once work name absent")?;
-    let candidate = name.strip_prefix("original-once-").ok_or("once work prefix differs")?;
+    let name = parent
+        .file_name()
+        .and_then(|v| v.to_str())
+        .ok_or("once work name absent")?;
+    let candidate = name
+        .strip_prefix("original-once-")
+        .ok_or("once work prefix differs")?;
     ensure(
         parent.parent() == Some(Path::new(BASE))
             && fs::valid_digest(candidate)
             && request.file_name() == Some(std::ffi::OsStr::new("OWNED-VERIFY-INPUTS.json"))
-            && verification_name == format!("once-{}", &candidate[..24])
-            && safe_name(verification_name)
-            && plan.verification_name != verification_name,
+            && work.ino != 0,
         "fresh owned verification must be bound to its once candidate work",
     )?;
+    // An unadmitted attempt is preserved under its original inode. A retry
+    // receives a new work directory and must not overwrite that attempt's
+    // ended-guest verification or journal collection.
+    let name = format!("once-{}-{}", &candidate[..24], work.ino);
+    ensure(safe_name(&name), "bounded once verification name required")?;
+    Ok(name)
+}
+
+fn revalidate_once_work(work: &File, parent: &Path, expected: &Identity) -> Result<()> {
     private(parent)?;
-    plan.verification_name = verification_name.into();
+    let named = fs::Tree::open(&fs::absolute_string(parent)?, 0)?;
+    let actual = fs::stat(work)?;
+    ensure(
+        actual == fs::stat(&named.root)?
+            && actual.uid == 0
+            && actual.gid == 0
+            && actual.mode == 0o40700
+            && same_once_work(expected, &actual),
+        "once verification lost its actual held/named work directory",
+    )
+}
+
+/// The physical owner's admission calls the same full ended-disk verifier.
+/// Its name is derived from the owner's actual held work directory; a caller
+/// string or a prior success field cannot supply that custody.
+pub(super) fn verify_for_original_once(
+    input: &FilePin,
+    request: &Path,
+    work: &File,
+) -> Result<Value> {
+    let mut custody = Custody::default();
+    let mut plan: Plan = serde_json::from_value(custody.json(input, 1024 * 1024)?)?;
+    let parent = request.parent().ok_or("once owned request parent absent")?;
+    let work_identity = fs::stat(work)?;
+    revalidate_once_work(work, parent, &work_identity)?;
+    let verification_name = original_once_verification_name(request, &work_identity)?;
+    ensure(
+        plan.verification_name != verification_name,
+        "fresh owned verification must not reuse the original verification name",
+    )?;
+    plan.verification_name = verification_name;
     let sha = fs::write_json(&fs::absolute_string(request)?, &plan, 0)?;
     let request_pin = boot_files::pin_file(request)?;
-    ensure(request_pin.sha256 == sha, "fresh owned request bytes differ")?;
+    ensure(
+        request_pin.sha256 == sha,
+        "fresh owned request bytes differ",
+    )?;
     custody.admit(&request_pin)?;
+    revalidate_once_work(work, parent, &work_identity)?;
     let receipt = verify_to_receipt(request, &sha)?;
     let result = custody.json(&receipt, 16 * 1024 * 1024)?;
     same_value_pin(&result["input"], &request_pin)?;
     let files = custody.finish()?;
+    revalidate_once_work(work, parent, &work_identity)?;
     Ok(json!({"schema":"droidloom.original-once-owned-readback.v1",
         "source_verification_input":input, "fresh_input":request_pin,
         "receipt":receipt, "actual":result, "verified_file_custody":files}))
@@ -872,6 +931,87 @@ pub fn run(config: &Path, expected: &str) -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn original_once_verification_binds_actual_inode_and_preserved_retry() -> Result<()> {
+        let root = tempfile::tempdir()?;
+        let candidate = "a".repeat(64);
+        let leaf = format!("original-once-{candidate}");
+        let work = root.path().join(&leaf);
+        std::fs::create_dir(&work)?;
+        let held = File::open(&work)?;
+        let before = fs::stat(&held)?;
+        let request = Path::new(BASE).join(&leaf).join("OWNED-VERIFY-INPUTS.json");
+        let first = original_once_verification_name(&request, &before)?;
+        assert_eq!(first, format!("once-{}-{}", &candidate[..24], before.ino));
+        assert_ne!(first, format!("once-{}", &candidate[..24]));
+        std::fs::rename(&work, root.path().join("preserved"))?;
+        std::fs::create_dir(&work)?;
+        let replacement = fs::stat(&File::open(&work)?)?;
+        assert_eq!(fs::stat(&held)?.ino, before.ino);
+        assert!(!same_once_work(&before, &replacement));
+        assert_ne!(
+            first,
+            original_once_verification_name(&request, &replacement)?
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn original_once_verification_rejects_other_candidates_and_paths() -> Result<()> {
+        let root = tempfile::tempdir()?;
+        let identity = fs::stat(&File::open(root.path())?)?;
+        let valid = Path::new(BASE)
+            .join(format!("original-once-{}", "a".repeat(64)))
+            .join("OWNED-VERIFY-INPUTS.json");
+        original_once_verification_name(&valid, &identity)?;
+        for path in [
+            Path::new("/tmp").join(valid.strip_prefix("/")?),
+            Path::new(BASE).join("original-once-a/OWNED-VERIFY-INPUTS.json"),
+            Path::new(BASE).join(format!(
+                "original-once-{}/OWNED-VERIFY-INPUTS.json",
+                "A".repeat(64)
+            )),
+            valid.with_file_name("OTHER.json"),
+            valid
+                .parent()
+                .unwrap()
+                .join("extra/OWNED-VERIFY-INPUTS.json"),
+        ] {
+            assert!(original_once_verification_name(&path, &identity).is_err());
+        }
+        let mut changed = identity.clone();
+        changed.ino = 0;
+        assert!(original_once_verification_name(&valid, &changed).is_err());
+        changed.ino = u64::MAX;
+        assert!(original_once_verification_name(&valid, &changed).is_err());
+        Ok(())
+    }
+
+    #[test]
+    fn original_once_work_bookend_rejects_authority_changes() -> Result<()> {
+        let root = tempfile::tempdir()?;
+        let original = fs::stat(&File::open(root.path())?)?;
+        for field in ["dev", "ino", "mode", "uid", "gid", "nlink"] {
+            let mut changed = original.clone();
+            match field {
+                "dev" => changed.dev ^= 1,
+                "ino" => changed.ino ^= 1,
+                "mode" => changed.mode ^= 1,
+                "uid" => changed.uid ^= 1,
+                "gid" => changed.gid ^= 1,
+                "nlink" => changed.nlink += 1,
+                _ => unreachable!(),
+            }
+            assert!(!same_once_work(&original, &changed), "{field}");
+        }
+        let mut publication = original.clone();
+        publication.size += 1;
+        publication.mtime_sec += 1;
+        publication.ctime_sec += 1;
+        assert!(same_once_work(&original, &publication));
+        Ok(())
+    }
 
     fn status() -> Value {
         json!({"Pid":"42","Uid":"65534 65534 65534 65534","Gid":"65534 65534 65534 65534",

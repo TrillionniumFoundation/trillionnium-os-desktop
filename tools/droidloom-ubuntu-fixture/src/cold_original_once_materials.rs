@@ -1016,7 +1016,7 @@ pub(super) fn admit(input: &FilePin) -> Result<Rc<OriginalQualificationAuthority
     let owned = crate::boot_owned_evidence::verify_for_original_once(
         &plan.owned_verification_input,
         &work.join("OWNED-VERIFY-INPUTS.json"),
-        &format!("once-{}-{}", &plan.candidate_id[..24], work_identity.ino),
+        &work_fd,
     )?;
     compare_candidates(
         &plan.candidate_id,
