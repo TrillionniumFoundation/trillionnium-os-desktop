@@ -243,11 +243,13 @@ def original_xperms(inputs, subjects, target_type="cgroup_v2", *,
               for name in class_names}
     for _, source, target, rule in statements:
         operation, class_name, values = rule
-        if operation != "ioctl" or class_name not in result or not member(target, target_type):
+        if operation != "ioctl" or class_name not in result:
+            continue
+        if target != "self" and not member(target, target_type):
             continue
         allowed = numbers(values)
         for subject in subjects:
-            if member(source, subject):
+            if member(source, subject) and (target != "self" or subject == target_type):
                 result[class_name][subject] |= allowed
     return result
 

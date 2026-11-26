@@ -1,8 +1,12 @@
 """Focused declaration-boundary tests for the existing policy library."""
 import copy
 import unittest
+import tempfile
+from pathlib import Path
 
-from derive_preserved_alias_policy import _validate_inputs
+from derive_preserved_alias_policy import (
+    _validate_inputs, _mcs_transform_guards, _preserved_xperm_rules)
+from derive_shared_payload_cgroup_policy import original_xperms
 
 
 class PreservedAliasInputs(unittest.TestCase):
@@ -74,6 +78,89 @@ class PreservedAliasInputs(unittest.TestCase):
                          ("; comment\n(allow old_a selected (file (execute)))",)):
             with self.subTest(preamble=preamble), self.assertRaises(ValueError):
                 self.check(preamble=preamble)
+
+
+class McsTransformGuards(unittest.TestCase):
+    def setUp(self):
+        self.classes = {name: [] for name in ("file", "dir", "chr_file", "lnk_file", "blk_file")}
+        self.selected = {"lnk_file", "blk_file"}
+
+    def check(self, lines):
+        return _mcs_transform_guards(lines, self.classes, self.selected)
+
+    def test_typebounds_rejected_even_when_not_named_in_alias(self):
+        with self.assertRaisesRegex(ValueError, "typebounds"):
+            self.check(["(typebounds parent_actor unrelated_actor)"])
+
+    def test_selected_relabel_constraints_rejected(self):
+        for op in ("validatetrans", "mlsvalidatetrans"):
+            for cls in self.selected:
+                with self.subTest(op=op, cls=cls), self.assertRaisesRegex(
+                        ValueError, "selected relabel constraints"):
+                    self.check(["(" + op + " " + cls + " (eq t1 t2))"])
+
+    def test_other_inode_classes_keep_existing_constraints(self):
+        self.check([
+            "(validatetrans chr_file (eq t1 t2))",
+            "(mlsvalidatetrans chr_file (eq l1 l2))",
+            "(validatetrans dir (eq t1 t2))",
+            "(validatetrans file (neq t3 writer))",
+        ])
+
+    def test_noncanonical_or_unknown_constraints_are_rejected(self):
+        for lines in (["(validatetrans", " lnk_file (eq t1 t2))"],
+                      ["(validatetrans unknown_class (eq t1 t2))"]):
+            with self.subTest(lines=lines), self.assertRaises(ValueError):
+                self.check(lines)
+
+
+class PreservedIoctlFilters(unittest.TestCase):
+    def setUp(self):
+        self.work = tempfile.TemporaryDirectory()
+        self.addCleanup(self.work.cleanup)
+        self.source = Path(self.work.name) / "source.cil"
+        self.linked = Path(self.work.name) / "alias.cil"
+        self.base = "\n".join([
+            "(type actor_a)", "(type actor_b)", "(type isolated)",
+            "(type original)", "(type selected)", "(type self_alias)",
+            "(typeattribute actors)", "(typeattributeset actors (actor_a actor_b isolated))",
+            "(typeattribute devices)", "(typeattributeset devices (original))",
+            "(allowx actors devices (ioctl blk_file ((range 0x5450 0x5451))))",
+            "(allowx actor_a original (ioctl blk_file (0x1268)))",
+            "(allowx actor_b devices (ioctl blk_file ((not (0x0 (range 0x100 0xfffe))))))",
+            "(allowx actors self (ioctl lnk_file (0x77)))",
+        ]) + "\n"
+        self.source.write_text(self.base)
+        self.aliases = [
+            {"source": "original", "target": "selected", "class": "blk_file"},
+            {"source": "actor_a", "target": "self_alias", "class": "lnk_file"},
+        ]
+        self.actors = [("r", "actor_a"), ("r", "actor_b")]
+        self.expected, self.rules = _preserved_xperm_rules(
+            self.source, self.aliases, self.actors)
+        self.linked.write_text(self.base + "\n".join(self.rules) + "\n")
+
+    def test_attribute_and_direct_filters_preserve_all_65536_bits(self):
+        actual = original_xperms([self.linked], ["actor_a", "actor_b"], "selected",
+                                 class_names=("blk_file",))["blk_file"]
+        wanted_a = (1 << 0x1268) | (1 << 0x5450) | (1 << 0x5451)
+        wanted_b = ((1 << 0x100) - 2) | (1 << 0xffff) | (1 << 0x5450) | (1 << 0x5451)
+        self.assertEqual(actual, {"actor_a": wanted_a, "actor_b": wanted_b})
+        self.assertEqual(actual, self.expected["original"]["blk_file"])
+        self.assertTrue(all(" actors " not in line and " devices " not in line
+                            for line in self.rules))
+
+    def test_excluded_actor_receives_no_alias_filter(self):
+        actual = original_xperms([self.linked], ["isolated"], "selected",
+                                 class_names=("blk_file",))
+        self.assertEqual(actual["blk_file"]["isolated"], 0)
+        self.assertTrue(all(" isolated " not in line for line in self.rules))
+
+    def test_self_filter_matches_both_source_actor_and_original_target(self):
+        actual = original_xperms([self.linked], ["actor_a", "actor_b"], "self_alias",
+                                 class_names=("lnk_file",))["lnk_file"]
+        self.assertEqual(actual, {"actor_a": 1 << 0x77, "actor_b": 0})
+        self.assertEqual(actual, self.expected["actor_a"]["lnk_file"])
 
 
 if __name__ == "__main__":

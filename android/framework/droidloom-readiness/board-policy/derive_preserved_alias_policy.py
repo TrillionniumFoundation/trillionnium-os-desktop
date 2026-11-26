@@ -8,7 +8,7 @@ import re
 from collections import defaultdict
 
 from derive_native_uevent_policy import ContextPolicy, Membership, LEVELS
-from derive_shared_payload_cgroup_policy import parse_expression, original_xperms
+from derive_shared_payload_cgroup_policy import parse_expression, original_xperms, format_xperms
 
 def _classes(text):
     common = dict((n, body.split()) for n, body in
@@ -76,11 +76,33 @@ def _validate_inputs(lines, classes, aliases, prefix, isolated_roles, extra_perm
     return [(role, actor) for role, actor in all_actors if actor not in isolated], extras
 
 
+def _mcs_transform_guards(lines, classes, selected_classes):
+    """Reject transforms not covered by the raw-TE/constraint equivalence proof."""
+    text = "\n".join(lines)
+    if re.search(r"\(typebounds\b", text):
+        raise ValueError("MCS alias preservation does not model typebounds")
+    count = 0
+    for line in lines:
+        line = line.strip()
+        if not line.startswith(("(validatetrans ", "(mlsvalidatetrans ")):
+            continue
+        count += 1
+        form = parse_expression(line)
+        if (len(form) != 3 or not isinstance(form[1], str)
+                or form[1] not in classes):
+            raise ValueError("Unsupported relabel constraint form")
+        if form[1] in selected_classes:
+            raise ValueError("MCS alias preservation does not model selected relabel constraints")
+    if count != len(re.findall(r"\((?:validatetrans|mlsvalidatetrans)\b", text)):
+        raise ValueError("Relabel constraints are not complete exported statements")
+
+
 def _raw_vectors(lines, classes, aliases, actors, policy):
     """Read unconditional TE rules, before any MLS constraint is evaluated."""
     text = "\n".join(lines)
     if re.search(r"\((?:booleanif|tunableif)\b", text):
         raise ValueError("MCS alias preservation requires unconditional TE rules")
+    _mcs_transform_guards(lines, classes, {row["class"] for row in aliases})
     members = Membership(text)
     wanted = {(row[side], row["class"]) for row in aliases for side in ("source", "target")}
     bits = {cls: policy.permissions(cls, classes[cls])[1] for _, cls in wanted}
@@ -146,6 +168,24 @@ def _constraint_targets(lines, aliases):
     return sorted(forms), checked
 
 
+def _preserved_xperm_rules(exported, aliases, actors):
+    """Materialize each selected actor's complete inherited ioctl filter."""
+    actor_names = sorted({actor for _, actor in actors})
+    sources = {
+        source: original_xperms([exported], actor_names, source,
+            class_names=tuple(sorted({row["class"] for row in aliases
+                                      if row["source"] == source})))
+        for source in sorted({row["source"] for row in aliases})
+    }
+    rules = []
+    for row in aliases:
+        for actor, mask in sorted(sources[row["source"]][row["class"]].items()):
+            if mask:
+                rules.append("(allowx " + actor + " " + row["target"] +
+                    " (ioctl " + row["class"] + " " + format_xperms(mask) + "))")
+    return sources, sorted(set(rules))
+
+
 def derive_preserved_aliases(library, baseline, exported, aliases, output, export, *,
                              prefix, isolated_roles, extra_permissions, preamble=(),
                              mcs_aliases=()):
@@ -169,7 +209,10 @@ def derive_preserved_aliases(library, baseline, exported, aliases, output, expor
     constraints, constraint_checks = _constraint_targets(lines, aliases)
     raw = _raw_vectors(lines, classes, mcs_rows, actors, policy) if mcs_rows else {}
     raw_samples, mcs_samples = [], []
-    generated = list(preamble)
+    source_xperms, xperm_rules = _preserved_xperm_rules(exported, aliases, actors)
+    generated = list(preamble) + xperm_rules
+    # The binary exporter can canonicalize ioctl ranges. Their complete masks,
+    # including zero entries, are checked below rather than textual spellings.
     samples, transitions = [], set()
     for index, row in enumerate(aliases):
         old, new, cls = row["source"], row["target"], row["class"]
@@ -219,7 +262,7 @@ def derive_preserved_aliases(library, baseline, exported, aliases, output, expor
         # The source policy's macros have already expanded to concrete types.
         for line in lines:
             if line.startswith(("(typetransition ", "(typechange ", "(typemember ",
-                                "(roletransition ", "(allowx ")):
+                                "(roletransition ")):
                 form = parse_expression(line)
                 if len(form) >= 4 and form[2] == old:
                     copied = line.replace(" " + old + " ", " " + new + " ", 1)
@@ -231,10 +274,7 @@ def derive_preserved_aliases(library, baseline, exported, aliases, output, expor
             "raw_te_samples": raw_samples, "mcs_effective_samples": mcs_samples,
             "constraint_forms": constraints, "constraint_target_checks": constraint_checks,
             "transitions": sorted(transitions),
-            "source_xperms": {row["source"]: original_xperms([exported],
-                sorted({a for _, a in actors}), row["source"],
-                class_names=tuple(sorted({r["class"] for r in aliases if r["source"] == row["source"]})))
-                for row in {r["source"]:r for r in aliases}.values()},
+            "source_xperms": source_xperms,
             "aliases": [dict(row) for row in aliases],
             "isolated_roles": sorted(set(isolated_roles)),
             "extra_permissions": [[*key, sorted(names)] for key, names in sorted(extras.items())],
@@ -262,7 +302,7 @@ def verify_preserved_aliases(policy, exported, aliases, expected):
     if source_forms != expected["source_transition_forms"]:
         raise ValueError("Original transition or extended-permission forms changed")
     if not set(expected["transitions"]).issubset(lines):
-        raise ValueError("An original alias transition or ioctl filter disappeared")
+        raise ValueError("An original alias transition disappeared")
     constraints, _ = _constraint_targets(sorted(lines), aliases)
     if constraints != expected["constraint_forms"]:
         raise ValueError("Alias changed original constraint expressions")
