@@ -69,6 +69,27 @@ impl Records {
         }
         Ok(())
     }
+    fn sync_target(&self, target: &File, expected: &Snapshot) -> Result<Value> {
+        self.revalidate()?;
+        ensure(
+            expected.identity.dev == self.identity.dev && snapshot(target)? == *expected,
+            "label durability anchor and actual target filesystem differ",
+        )?;
+        // O_PATH cannot fsync an inode. This ordinary held directory belongs
+        // to exactly the same filesystem as the target and durable preimage.
+        // syncfs flushes target xattr metadata, not merely journal contents.
+        rustix::fs::syncfs(&self.held)?;
+        self.revalidate()?;
+        ensure(
+            snapshot(target)? == *expected,
+            "label changed across its filesystem durability barrier",
+        )?;
+        Ok(
+            json!({"operation":"syncfs","filesystem_dev":self.identity.dev,
+            "anchor_identity":fs::stat(&self.held)?,"target_identity":expected.identity,
+            "target_handle":expected.handle}),
+        )
+    }
     fn read(&self, name: &str) -> Result<(File, Identity, Vec<u8>)> {
         self.revalidate()?;
         let file = File::from(rustix::fs::openat(
@@ -399,11 +420,14 @@ impl DurableAttempt {
             Ok(derivation) => {
                 self.validate_intent()?;
                 derivation.revalidate()?;
+                let durability = self
+                    .records
+                    .sync_target(&self.recovery, &derivation.after)?;
                 self.records.publish(
                     "APPLIED.json",
                     &json!({
                     "schema":"droidloom.original-label-applied.v1","preimage":self.pin,
-                    "before":derivation.before,"after":derivation.after}),
+                    "before":derivation.before,"after":derivation.after,"target_metadata_durability":durability}),
                 )?;
                 derivation.revalidate()?;
                 Ok(derivation)
@@ -460,12 +484,13 @@ impl DurableAttempt {
             !still_applied && restored.attributes == self.preimage.before.attributes,
             "label restoration has not reached its exact preimage",
         )?;
+        let durability = self.records.sync_target(&self.recovery, &restored)?;
         if !self.records.exists("RESTORED.json")? {
             self.records.publish(
                 "RESTORED.json",
                 &json!({
                 "schema":"droidloom.original-label-restored.v1","preimage":self.pin,
-                "observed_before_restore":observed,"after":restored}),
+                "observed_before_restore":observed,"after":restored,"target_metadata_durability":durability}),
             )?;
         } else {
             let (_, _, bytes) = self.records.read("RESTORED.json")?;

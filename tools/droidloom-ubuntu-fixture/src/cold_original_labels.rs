@@ -8,10 +8,17 @@ use std::{
     ffi::CString,
     fs::File,
     os::fd::{AsFd, AsRawFd},
+    path::{Path, PathBuf},
+    sync::Arc,
 };
 
 #[path = "cold_original_label_journal.rs"]
 mod journal;
+#[path = "cold_original_label_plan.rs"]
+mod plan;
+#[path = "cold_original_label_scope.rs"]
+mod scope;
+pub(crate) use plan::{OriginalLabelSources, inspect_files as inspect_original_labels_files};
 
 const LABEL: &str = "security.selinux";
 const MAX_NAMES: usize = 65_536;
@@ -318,6 +325,104 @@ impl LabelDerivation {
             snapshot(&self.file)? == self.after,
             "applied label derivation changed",
         )
+    }
+}
+
+// Shared custody of the potentially large immutable complete source plan.
+// Admission and final readback hash all bytes; each inode step checks the held
+// and named complete identity. A caller cannot construct this seal or a label
+// derivation by deserializing a receipt.
+struct PlanSeal {
+    pin: crate::boot_files::FilePin,
+    file: File,
+    identity: Identity,
+}
+impl PlanSeal {
+    fn open(pin: &crate::boot_files::FilePin) -> Result<Self> {
+        super::root_pin(pin, 512 * 1024 * 1024)?;
+        let (file, identity) = crate::boot_files::open_pin(pin)?;
+        let value = Self {
+            pin: pin.clone(),
+            file,
+            identity,
+        };
+        value.revalidate()?;
+        Ok(value)
+    }
+    fn revalidate(&self) -> Result<()> {
+        ensure(
+            fs::stat(&self.file)? == self.identity
+                && fs::Tree::open("/", 0)?.identity(&fs::absolute_string(&self.pin.path)?)?
+                    == self.identity,
+            "held immutable complete label plan was changed or replaced",
+        )?;
+        super::no_privilege_attributes(&self.file)
+    }
+    fn full_readback(&self) -> Result<()> {
+        self.revalidate()?;
+        super::root_pin(&self.pin, 512 * 1024 * 1024)?;
+        self.revalidate()
+    }
+}
+
+/// The once owner accepts only this actual held-inode, source-bound transition.
+/// There is no public constructor, Deserialize, Clone or caller-passed success.
+/// The complete label adapter owns construction after durable target syncfs.
+pub(crate) struct OriginalLabelDerivation {
+    candidate_id: String,
+    logical_path: PathBuf,
+    plan: Arc<PlanSeal>,
+    preimage: crate::boot_files::FilePin,
+    applied: crate::boot_files::FilePin,
+    core: LabelDerivation,
+}
+impl OriginalLabelDerivation {
+    pub(crate) fn candidate_id(&self) -> &str {
+        &self.candidate_id
+    }
+    pub(crate) fn path(&self) -> &Path {
+        &self.logical_path
+    }
+    pub(crate) fn source_plan(&self) -> &crate::boot_files::FilePin {
+        &self.plan.pin
+    }
+    pub(crate) fn before_identity(&self) -> &Identity {
+        &self.core.before.identity
+    }
+    pub(crate) fn after_identity(&self) -> &Identity {
+        &self.core.after.identity
+    }
+    pub(crate) fn revalidate(&self) -> Result<()> {
+        self.plan.revalidate()?;
+        self.core.revalidate()?;
+        let mut wanted = self.core.before.attributes.clone();
+        let label = self
+            .core
+            .after
+            .attributes
+            .get(LABEL)
+            .ok_or("actual source-bound label missing")?;
+        wanted.insert(LABEL.into(), label.clone());
+        ensure(
+            only_ctime_changed(&self.core.before.identity, &self.core.after.identity)
+                && self.core.before.handle == self.core.after.handle
+                && wanted == self.core.after.attributes,
+            "opaque label transition changed an unrelated attribute or inode field",
+        )?;
+        let record: serde_json::Value =
+            serde_json::from_slice(&super::root_pin(&self.applied, 32 * 1024 * 1024)?)?;
+        ensure(
+            record["schema"] == "droidloom.original-label-applied.v1"
+                && record["preimage"] == serde_json::to_value(&self.preimage)?
+                && record["before"] == serde_json::to_value(&self.core.before)?
+                && record["after"] == serde_json::to_value(&self.core.after)?
+                && record["target_metadata_durability"]["operation"] == "syncfs"
+                && record["target_metadata_durability"]["filesystem_dev"]
+                    == self.core.after.identity.dev,
+            "actual durable label transition record differs",
+        )?;
+        self.core.revalidate()?;
+        self.plan.revalidate()
     }
 }
 

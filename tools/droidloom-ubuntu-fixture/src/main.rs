@@ -76,6 +76,12 @@ enum Command {
         #[arg(long)]
         config_sha256: String,
     },
+    InspectOriginalLabels {
+        #[arg(long)]
+        config: PathBuf,
+        #[arg(long)]
+        config_sha256: String,
+    },
     VerifyOriginalInitramfs {
         #[arg(long)]
         config: PathBuf,
@@ -243,6 +249,10 @@ fn run() -> Result<()> {
         } => {
             cold_original_data::inspect(&config, &config_sha256)?;
         }
+        Command::InspectOriginalLabels {
+            config,
+            config_sha256,
+        } => cold_original_data::labels::inspect_original_labels_files(&config, &config_sha256)?,
         Command::VerifyOriginalInitramfs {
             config,
             config_sha256,

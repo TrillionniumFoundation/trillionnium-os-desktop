@@ -1,0 +1,510 @@
+//! A complete read-only original-root label plan from the actual normal host
+//! package and matcher. No deserialized plan grants label mutation authority.
+use super::{
+    Snapshot,
+    scope::{Inventory, RootScope},
+};
+use crate::{
+    Result,
+    boot_files::{self as files, FilePin},
+    boot_runtime::LabelTools,
+    ensure, fs,
+    model::Identity,
+};
+use rustix::fs::FileType;
+use serde::{Deserialize, Serialize};
+use serde_json::{Value, json};
+use std::{
+    collections::{BTreeMap, BTreeSet},
+    fs::File,
+    io::Seek,
+    path::{Path, PathBuf},
+};
+
+const QUALIFICATION: &str = "/var/lib/droidloom-qualification";
+const TOOLS: [(&str, u64, &str, u32); 3] = [
+    (
+        "setfiles",
+        22920,
+        "02597f1eceaa93a877ab8dd2a5fd0dbbd2d5dfdba8481e5421bfb0834783f5a5",
+        0o500,
+    ),
+    (
+        "matchpathcon",
+        14728,
+        "48cdccc40775e3db029b1d20af97f37e13a350d894b86150993cfc71d10ca51a",
+        0o500,
+    ),
+    (
+        "libsepol.so.2",
+        941928,
+        "d96adef8761310b409df7280f0f92aa3083b5eb6b177f6718d7bcdb2b0e64365",
+        0o444,
+    ),
+];
+struct Guard {
+    pin: FilePin,
+    file: File,
+    identity: Identity,
+}
+impl Guard {
+    fn open(pin: &FilePin) -> Result<Self> {
+        let tree = fs::Tree::open("/", 0)?;
+        tree.parent(&fs::absolute_string(&pin.path)?)?;
+        let (file, identity) = files::open_pin(pin)?;
+        ensure(
+            identity.uid == 0
+                && identity.gid == 0
+                && identity.nlink == 1
+                && identity.mode & 0o6022 == 0,
+            "normal label input has lost root custody",
+        )?;
+        ensure(
+            fs::xattrs(&file)?.is_empty(),
+            "normal label input has ACL or capability",
+        )?;
+        let result = Self {
+            pin: pin.clone(),
+            file,
+            identity,
+        };
+        result.revalidate()?;
+        Ok(result)
+    }
+    fn revalidate(&self) -> Result<()> {
+        let mut file = &self.file;
+        file.rewind()?;
+        ensure(
+            fs::stat(&self.file)? == self.identity
+                && fs::hash(&self.file)? == self.pin.sha256
+                && fs::stat(&self.file)? == self.identity
+                && fs::Tree::open("/", 0)?.identity(&fs::absolute_string(&self.pin.path)?)?
+                    == self.identity,
+            "held normal label source was changed or replaced",
+        )
+    }
+}
+fn pin(path: &Path) -> Result<FilePin> {
+    let pin = files::pin_file(path)?;
+    Guard::open(&pin)?;
+    Ok(pin)
+}
+fn save(path: &Path, value: &impl Serialize) -> Result<FilePin> {
+    let body = serde_json::to_vec(value)?;
+    ensure(
+        body.len() <= 512 * 1024 * 1024,
+        "bounded complete original label plan required",
+    )?;
+    files::write_new(path, &body, 0o400)?;
+    let file = File::open(path)?;
+    file.sync_all()?;
+    File::open(path.parent().ok_or("label plan parent missing")?)?.sync_all()?;
+    pin(path)
+}
+fn source_work(path: &Path) -> Result<()> {
+    let name = path
+        .file_name()
+        .and_then(|v| v.to_str())
+        .ok_or("label source work name missing")?;
+    ensure(
+        path.parent() == Some(Path::new(QUALIFICATION))
+            && name.starts_with("original-initramfs-label-")
+            && name.len() <= 80
+            && name
+                .bytes()
+                .all(|v| v.is_ascii_lowercase() || v.is_ascii_digit() || v == b'-'),
+        "original label sources require a create-only protected qualification work",
+    )
+}
+fn raw_context(line: &str) -> Result<Vec<u8>> {
+    ensure(
+        line.starts_with("u:object_r:")
+            && line.ends_with(":s0")
+            && line.len() <= 4095
+            && line
+                .bytes()
+                .all(|v| v.is_ascii_alphanumeric() || b"_:".contains(&v))
+            && line.split(':').count() == 4,
+        "normal matcher did not return one canonical Linux inode context",
+    )?;
+    let kind = line.split(':').nth(2).ok_or("Linux label type missing")?;
+    ensure(
+        !kind.is_empty() && kind.bytes().all(|v| v.is_ascii_alphanumeric() || v == b'_'),
+        "canonical nonempty Linux label type required",
+    )?;
+    let mut raw = line.as_bytes().to_vec();
+    raw.push(0);
+    Ok(raw)
+}
+
+// Kept opaque and live. It can be retained by the sealed once owner across its
+// normal package transaction; creating this source object never applies labels.
+pub(crate) struct OriginalLabelSources {
+    report: Value,
+    source_record: FilePin,
+    work: PathBuf,
+    guards: Vec<Guard>,
+    matcher: FilePin,
+    contexts: FilePin,
+    policy: FilePin,
+    environment: BTreeMap<String, String>,
+}
+impl OriginalLabelSources {
+    pub(crate) fn admit(prepared: &FilePin, tools: &LabelTools, work: &Path) -> Result<Self> {
+        source_work(work)?;
+        let report =
+            crate::cold_original_initramfs::verify_prepared_original_initramfs(prepared, work)?;
+        let source_record = pin(&work.join("ORIGINAL-INITRAMFS-READBACK.json"))?;
+        let package_rows = report["normal_materials"]["packages"]
+            .as_array()
+            .ok_or("admitted complete packages missing")?;
+        let selected = package_rows
+            .iter()
+            .filter(|p| p["role"] == "host")
+            .collect::<Vec<_>>();
+        ensure(
+            selected.len() == 1,
+            "one normally admitted host package is required for labels",
+        )?;
+        let host: FilePin = serde_json::from_value(selected[0]["package"].clone())?;
+        let mut guards = vec![Guard::open(&source_record)?, Guard::open(&host)?];
+        let extract_tool = pin(Path::new("/usr/bin/dpkg-deb"))?;
+        guards.push(Guard::open(&extract_tool)?);
+        let host_root = work.join("normal-host-payload");
+        files::private_dir(&host_root)?;
+        let extract = files::run_logged(
+            work,
+            "normal-label-host-package-extract",
+            &fs::absolute_string(&extract_tool.path)?,
+            &[
+                "--extract".into(),
+                fs::absolute_string(&host.path)?,
+                fs::absolute_string(&host_root)?,
+            ],
+            180,
+        )?;
+        let contexts = pin(&host_root.join("etc/selinux/droidloom/contexts/files/file_contexts"))?;
+        let policy =
+            pin(&host_root.join("usr/lib/droidloom/production/current/board-policy/joint.policy"))?;
+        guards.push(Guard::open(&contexts)?);
+        guards.push(Guard::open(&policy)?);
+        let tool_root = work.join("original-label-tools");
+        files::private_dir(&tool_root)?;
+        let mut tool_pins = Vec::new();
+        for ((name, bytes, digest, mode), source) in TOOLS.iter().zip([
+            &tools.setfiles,
+            &tools.matchpathcon,
+            &tools.producer_libsepol,
+        ]) {
+            ensure(
+                source.bytes == *bytes && source.sha256 == *digest,
+                "original label matcher/source library is outside its fixed normal producer",
+            )?;
+            guards.push(Guard::open(source)?);
+            let destination = tool_root.join(name);
+            files::copy_pin(source, &destination, *mode)?;
+            let pinned = pin(&destination)?;
+            guards.push(Guard::open(&pinned)?);
+            tool_pins.push(pinned);
+        }
+        let environment = BTreeMap::from([
+            ("LD_LIBRARY_PATH".into(), fs::absolute_string(&tool_root)?),
+            ("LANG".into(), "C".into()),
+            ("LC_ALL".into(), "C".into()),
+        ]);
+        let empty = work.join("empty-policy-validation-root");
+        files::private_dir(&empty)?;
+        // -n is mandatory: normal setfiles validates all contexts against the
+        // actual selected policy, and never labels even this disposable root.
+        let validation = files::run_logged_env(
+            work,
+            "normal-label-context-policy-check",
+            &fs::absolute_string(&tool_root.join("setfiles"))?,
+            &[
+                "-n".into(),
+                "-F".into(),
+                "-E".into(),
+                "-m".into(),
+                "-r".into(),
+                fs::absolute_string(&empty)?,
+                "-c".into(),
+                fs::absolute_string(&policy.path)?,
+                fs::absolute_string(&contexts.path)?,
+                fs::absolute_string(&empty)?,
+            ],
+            60,
+            &environment,
+        )?;
+        for guard in &guards {
+            guard.revalidate()?;
+        }
+        let source = save(
+            &work.join("ORIGINAL-LABEL-SOURCES.json"),
+            &json!({"schema":"droidloom.original-label-sources.v1",
+            "fresh_normal_initramfs_readback":source_record,"host_package":host,"host_extract":extract,
+            "contexts":contexts,"joint_policy":policy,"normal_label_tools":tool_pins,"context_policy_validation":validation,
+            "host_source_commit":report["host_source_commit"],"host_source_tree":report["host_source_tree"],
+            "normal_materials":report["normal_materials"],"physical_labels_applied":false}),
+        )?;
+        guards.push(Guard::open(&source)?);
+        let matcher = tool_pins[1].clone();
+        Ok(Self {
+            report,
+            source_record: source,
+            work: work.to_owned(),
+            guards,
+            matcher,
+            contexts,
+            policy,
+            environment,
+        })
+    }
+    fn revalidate(&self) -> Result<()> {
+        for guard in &self.guards {
+            guard.revalidate()?;
+        }
+        Ok(())
+    }
+    fn lookup(&self, inventory: &Inventory, work: &Path) -> Result<(Vec<Vec<u8>>, FilePin)> {
+        self.revalidate()?;
+        let mut groups: BTreeMap<&str, Vec<usize>> = BTreeMap::new();
+        for (index, entry) in inventory.entries.iter().enumerate() {
+            groups.entry(&entry.matcher_type).or_default().push(index);
+        }
+        let mut labels = vec![Vec::new(); inventory.entries.len()];
+        let mut commands = Vec::new();
+        for (kind, indices) in groups {
+            for (batch, chunk) in indices.chunks(32).enumerate() {
+                let mut args = vec![
+                    "-N".into(),
+                    "-n".into(),
+                    "-m".into(),
+                    kind.into(),
+                    "-f".into(),
+                    fs::absolute_string(&self.contexts.path)?,
+                ];
+                for index in chunk {
+                    args.push(fs::absolute_string(&inventory.entries[*index].path)?);
+                }
+                ensure(
+                    args.iter().map(String::len).sum::<usize>() <= 160 * 1024,
+                    "bounded normal matcher argument vector required",
+                )?;
+                let command = files::run_logged_env(
+                    work,
+                    &format!("normal-contexts-{kind}-{batch:06}"),
+                    &fs::absolute_string(&self.matcher.path)?,
+                    &args,
+                    30,
+                    &self.environment,
+                )?;
+                let log = String::from_utf8(files::read_pin(&command.log, 256 * 1024)?)?;
+                let rows = log.lines().collect::<Vec<_>>();
+                ensure(
+                    rows.len() == chunk.len(),
+                    "normal matcher returned missing/ambiguous contexts",
+                )?;
+                for (index, row) in chunk.iter().zip(rows) {
+                    labels[*index] = raw_context(row)?;
+                }
+                commands.push(command);
+            }
+        }
+        ensure(
+            labels.iter().all(|v| !v.is_empty()),
+            "complete original root label coverage is required",
+        )?;
+        self.revalidate()?;
+        Ok((
+            labels,
+            save(&work.join("NORMAL-CONTEXT-LOOKUPS.json"), &commands)?,
+        ))
+    }
+    pub(crate) fn inspect(&self, cold_clone: &FilePin) -> Result<Value> {
+        self.revalidate()?;
+        let scope = RootScope::original(cold_clone)?;
+        let inventory = scope.collect()?;
+        let matched = self.work.join("root-context-lookups");
+        files::private_dir(&matched)?;
+        let (labels, commands) = self.lookup(&inventory, &matched)?;
+        verify_hardlink_labels(
+            &inventory
+                .entries
+                .iter()
+                .map(|e| (&e.snapshot, e.path.as_path()))
+                .collect::<Vec<_>>(),
+            &labels,
+        )?;
+        self.revalidate()?;
+        let final_readback = scope.verify_inventory(&inventory)?;
+        let rows = inventory
+            .entries
+            .iter()
+            .zip(&labels)
+            .map(|(entry, label)| {
+                json!({"path":entry.path,"before":entry.snapshot,
+            "expected_selinux":label,"matcher_type":entry.matcher_type})
+            })
+            .collect::<Vec<_>>();
+        let complete = save(
+            &self.work.join("ORIGINAL-ROOT-LABEL-PLAN.json"),
+            &json!({
+            "schema":"droidloom.original-root-label-plan.v1","normal_sources":self.source_record,
+            "root_uuid":inventory.root_uuid,"root_identity":inventory.root_identity,"root_handle":inventory.root_handle,
+            "scope":inventory,"matched_entries":rows,"actual_lookup_commands":commands,"complete_final_readback":final_readback,
+            "normal_materials":self.report["normal_materials"],"policy":self.policy,"contexts":self.contexts,
+            "read_only_inspection":true,"physical_labels_applied":false,"physical_boot_authorized":false,
+            "original_image_bodies_read":false,"home_file_bodies_read":false}),
+        )?;
+        Ok(
+            json!({"plan":complete,"entries":labels.len(),"normal_sources":self.source_record,
+            "physical_labels_applied":false,"physical_boot_authorized":false}),
+        )
+    }
+}
+fn verify_hardlink_labels(entries: &[(&Snapshot, &Path)], labels: &[Vec<u8>]) -> Result<()> {
+    ensure(
+        entries.len() == labels.len(),
+        "complete label/member association required",
+    )?;
+    let mut groups: BTreeMap<(u64, u64), Vec<usize>> = BTreeMap::new();
+    let mut paths = BTreeSet::new();
+    for (index, (snapshot, path)) in entries.iter().enumerate() {
+        ensure(paths.insert(*path), "duplicate original label pathname")?;
+        if FileType::from_raw_mode(snapshot.identity.mode) != FileType::Directory {
+            groups
+                .entry((snapshot.identity.dev, snapshot.identity.ino))
+                .or_default()
+                .push(index);
+        }
+    }
+    for indices in groups.values() {
+        let first = indices[0];
+        let source = entries[first].0;
+        ensure(
+            indices.len() as u64 == source.identity.nlink,
+            "an included inode has an uninspected hardlink, potentially inside an excluded tree",
+        )?;
+        for index in indices {
+            ensure(
+                entries[*index].0 == source && labels[*index] == labels[first],
+                "hardlink aliases require the same full preimage and source context",
+            )?;
+        }
+    }
+    Ok(())
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct InspectionPlan {
+    schema: String,
+    work_directory: PathBuf,
+    prepared_initramfs: FilePin,
+    cold_clone: FilePin,
+    label_tools: LabelTools,
+}
+pub(crate) fn inspect_files(path: &Path, expected: &str) -> Result<()> {
+    ensure(
+        fs::valid_digest(expected),
+        "complete original label inspection plan hash required",
+    )?;
+    let input = pin(path)?;
+    ensure(
+        input.sha256 == expected,
+        "original label inspection input hash differs",
+    )?;
+    let plan: InspectionPlan = serde_json::from_slice(&files::read_pin(&input, 1024 * 1024)?)?;
+    ensure(
+        plan.schema == "droidloom.original-label-inspection-plan.v1",
+        "original label inspection schema differs",
+    )?;
+    let source = OriginalLabelSources::admit(
+        &plan.prepared_initramfs,
+        &plan.label_tools,
+        &plan.work_directory,
+    )?;
+    let result = source.inspect(&plan.cold_clone)?;
+    Guard::open(&input)?;
+    println!("{result}");
+    Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn raw_matcher_contexts_cannot_carry_an_empty_or_ambiguous_label() {
+        assert_eq!(
+            raw_context("u:object_r:p4_linux_product_store_t:s0")
+                .unwrap()
+                .last(),
+            Some(&0)
+        );
+        for value in [
+            "<<none>>",
+            "u:object_r:t:s0\nother",
+            "u:object_r:t:s0\0",
+            "u:object_r:t:s0:c1",
+            "",
+            "system_u:object_r:t:s0",
+        ] {
+            assert!(raw_context(value).is_err());
+        }
+    }
+    #[test]
+    fn original_label_work_cannot_target_evidence_or_a_generic_caller_directory() {
+        assert!(
+            source_work(Path::new(
+                "/var/lib/droidloom-qualification/original-initramfs-label-a1"
+            ))
+            .is_ok()
+        );
+        for path in [
+            "/home/alex/work/original-initramfs-label-a1",
+            "/var/lib/droidloom-qualification/../original-initramfs-label-a1",
+            "/var/lib/droidloom-qualification/original-initramfs-other-a1",
+        ] {
+            assert!(source_work(Path::new(path)).is_err());
+        }
+    }
+    #[test]
+    fn actual_hardlinks_need_every_alias_and_identical_source_labels() {
+        let area = tempfile::Builder::new()
+            .prefix(".p4-alias-label-")
+            .tempdir_in(std::env::current_dir().unwrap())
+            .unwrap();
+        let one = area.path().join("one");
+        let two = area.path().join("two");
+        std::fs::write(&one, b"public test inode").unwrap();
+        std::fs::hard_link(&one, &two).unwrap();
+        let held = File::from(
+            rustix::fs::open(
+                &one,
+                rustix::fs::OFlags::PATH
+                    | rustix::fs::OFlags::NOFOLLOW
+                    | rustix::fs::OFlags::CLOEXEC,
+                rustix::fs::Mode::empty(),
+            )
+            .unwrap(),
+        );
+        let before = super::super::snapshot(&held).unwrap();
+        let label = raw_context("u:object_r:p4_linux_native_data_t:s0").unwrap();
+        assert!(verify_hardlink_labels(&[(&before, one.as_path())], &[label.clone()]).is_err());
+        verify_hardlink_labels(
+            &[(&before, one.as_path()), (&before, two.as_path())],
+            &[label.clone(), label.clone()],
+        )
+        .unwrap();
+        assert!(
+            verify_hardlink_labels(
+                &[(&before, one.as_path()), (&before, two.as_path())],
+                &[
+                    label,
+                    raw_context("u:object_r:p4_linux_auth_data_t:s0").unwrap()
+                ]
+            )
+            .is_err()
+        );
+    }
+}

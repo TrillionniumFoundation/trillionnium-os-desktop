@@ -652,3 +652,48 @@ home inode/type/mode/owner must remain, while its directory length/link count
 and clocks may reflect continued use. Every other machine/account/package
 field remains exact. Both complete observations are retained; normal physical
 preparation and its fresh context gates are unchanged.
+
+### Complete original label source inspection
+
+`inspect-original-labels` takes a protected
+`droidloom.original-label-inspection-plan.v1` input with `work_directory`,
+`prepared_initramfs`, `cold_clone` and the existing `label_tools` pins. The new
+work must be an `original-initramfs-label-...` direct child of the qualification
+directory. Admission reruns the complete normal initramfs/package verifier,
+extracts only the admitted normal host package into private work, and validates
+its file-contexts against its own joint policy with the normal `setfiles -n`.
+The actual normal `matchpathcon` and source libsepol resolve every included
+inode's context without changing any original label.
+
+The scope is the original UUID's ext4 root, with fixed exclusions for the
+historical `/home/alex/work` tree, qualification/evidence/rollback tree and
+the fixed data pair (which has its separate exact-member transaction). Exact
+retained cold-clone directories are also recorded and reread, even beneath
+an already excluded ancestor. Original device/process/system/runtime/tmp mounts,
+the actual EFI mount and normal readonly Snap mounts are separately recorded;
+an unknown mount cannot become an arbitrary caller exclusion. Normal homes
+and service homes remain in scope. The metadata walk never reads their bodies.
+
+Included pathnames bind held inodes, complete metadata/xattrs and ext4
+generation handles. All hardlink aliases must be inspected and must resolve to
+the same label, so a hardlink into an excluded tree cannot silently change a
+protected inode. The full inventory is read again after context lookup, and
+excluded roots retain their original labels. Output is a read-only
+`ORIGINAL-ROOT-LABEL-PLAN.json`; it grants no physical write authority.
+
+Generation recovery requires actual `CAP_DAC_READ_SEARCH`, including for
+`O_PATH` handles. The original-kernel root owner records and checks its real
+capabilities and namespace custody. A candidate return helper with no effective
+capabilities never receives the label/data recovery API or additional capability
+authority. Across boots, the original owner reopens the actual UUID-bound root
+mount and verifies the saved generation and normal pathname again.
+
+Each durable label attempt now synchronizes the target filesystem through an
+ordinary held same-filesystem directory FD before publishing APPLIED or
+RESTORED. Complete target metadata and xattrs are read before and after that
+`syncfs`; fsync of the evidence journal alone is insufficient. The opaque
+`OriginalLabelDerivation` retains the held inode, sealed complete source plan
+and actual durable result for the once owner's narrow lock-ctime rebind. It
+has no public constructor, deserializer or physical CLI. The complete typed
+apply and post-runtime retirement adapter must still admit the candidate and
+actual mutable-inode restoration before it can grant physical label mutation.
