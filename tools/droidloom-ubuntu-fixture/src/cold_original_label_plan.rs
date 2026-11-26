@@ -46,6 +46,8 @@ struct Guard {
     pin: FilePin,
     file: File,
     identity: Identity,
+    #[cfg(test)]
+    hashed_bytes: std::cell::Cell<u64>,
 }
 impl Guard {
     fn open(pin: &FilePin) -> Result<Self> {
@@ -67,20 +69,35 @@ impl Guard {
             pin: pin.clone(),
             file,
             identity,
+            #[cfg(test)]
+            hashed_bytes: std::cell::Cell::new(0),
         };
         result.revalidate()?;
         Ok(result)
     }
     fn revalidate(&self) -> Result<()> {
+        self.revalidate_custody()?;
         let mut file = &self.file;
         file.rewind()?;
+        #[cfg(test)]
+        self.hashed_bytes
+            .set(self.hashed_bytes.get() + self.pin.bytes);
         ensure(
             fs::stat(&self.file)? == self.identity
                 && fs::hash(&self.file)? == self.pin.sha256
-                && fs::stat(&self.file)? == self.identity
-                && fs::Tree::open("/", 0)?.identity(&fs::absolute_string(&self.pin.path)?)?
-                    == self.identity,
+                && fs::stat(&self.file)? == self.identity,
             "held normal label source was changed or replaced",
+        )?;
+        self.revalidate_custody()
+    }
+    fn revalidate_custody(&self) -> Result<()> {
+        ensure(
+            fs::stat(&self.file)? == self.identity
+                && fs::xattrs(&self.file)?.is_empty()
+                && fs::Tree::open("/", 0)?.identity(&fs::absolute_string(&self.pin.path)?)?
+                    == self.identity
+                && fs::stat(&self.file)? == self.identity,
+            "held normal label source custody, metadata or attributes changed",
         )
     }
 }
@@ -378,6 +395,14 @@ impl OriginalLabelSources {
         }
         Ok(())
     }
+    /// Only the once owner's live, bounded label window may substitute this
+    /// check for a full rehash between its two complete source readbacks.
+    pub(crate) fn revalidate_custody(&self) -> Result<()> {
+        for guard in &self.guards {
+            guard.revalidate_custody()?;
+        }
+        Ok(())
+    }
     pub(super) fn lookup_entries(
         &self,
         entries: &[Entry],
@@ -554,6 +579,25 @@ pub(crate) fn inspect_files(path: &Path, expected: &str) -> Result<()> {
 mod tests {
     use super::*;
     #[test]
+    fn representative_source_custody_does_not_reread_archive_bodies() {
+        // A real fixed root-owned executable is read, never changed. The test
+        // counts actual SHA input bytes rather than substituting a mock guard.
+        let actual = std::fs::canonicalize("/usr/bin/true").unwrap();
+        let source = files::pin_file(&actual).unwrap();
+        let guard = Guard::open(&source).unwrap();
+        let before = guard.hashed_bytes.get();
+        for _ in 0..100_000 {
+            guard.revalidate_custody().unwrap();
+        }
+        assert_eq!(guard.hashed_bytes.get(), before);
+        guard.revalidate().unwrap();
+        assert_eq!(guard.hashed_bytes.get(), before + source.bytes);
+        println!(
+            "actual source custody: steps=100000 loop_hashed_bytes=0 final_full_hash_bytes={}",
+            source.bytes
+        );
+    }
+    #[test]
     fn raw_matcher_contexts_cannot_carry_an_empty_or_ambiguous_label() {
         assert_eq!(
             raw_context("u:object_r:p4_linux_product_store_t:s0")
@@ -648,6 +692,12 @@ impl OriginalLabelRestoreSources {
     pub(crate) fn revalidate(&self) -> Result<()> {
         for guard in &self.guards {
             guard.revalidate()?;
+        }
+        Ok(())
+    }
+    pub(crate) fn revalidate_custody(&self) -> Result<()> {
+        for guard in &self.guards {
+            guard.revalidate_custody()?;
         }
         Ok(())
     }

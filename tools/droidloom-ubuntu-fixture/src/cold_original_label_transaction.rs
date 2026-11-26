@@ -76,6 +76,65 @@ pub(crate) struct OriginalLabelsApplied {
     // untrusted aggregate list or `labels_applied` boolean is never a source.
     targets: Vec<Target>,
     applications: Vec<FilePin>,
+    paths: BTreeMap<PathBuf, usize>,
+}
+fn path_index(targets: &[Target]) -> Result<BTreeMap<PathBuf, usize>> {
+    let mut paths = BTreeMap::new();
+    for (index, target) in targets.iter().enumerate() {
+        ensure(
+            target.ordinal as usize == index,
+            "label target ordinal differs from its complete plan",
+        )?;
+        for alias in &target.aliases {
+            ensure(
+                paths.insert(alias.logical.clone(), index).is_none(),
+                "ambiguous source label path",
+            )?;
+        }
+    }
+    Ok(paths)
+}
+#[cfg(test)]
+mod index_tests {
+    use super::*;
+    #[test]
+    fn complete_representative_target_index_is_unique_and_linear_to_visit() {
+        let tmp = tempfile::Builder::new()
+            .prefix(".p4-label-index-")
+            .tempdir_in(std::env::current_dir().unwrap())
+            .unwrap();
+        let file = File::from(
+            rustix::fs::open(
+                tmp.path(),
+                OFlags::PATH | OFlags::DIRECTORY | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+                Mode::empty(),
+            )
+            .unwrap(),
+        );
+        let before = snapshot(&file).unwrap();
+        let mut targets = (0..100_000)
+            .map(|n| Target {
+                ordinal: n,
+                aliases: vec![Alias {
+                    logical: PathBuf::from(format!("/usr/source/{n}")),
+                    physical: PathBuf::from(format!("/usr/source/{n}")),
+                    placement: Placement::Root,
+                }],
+                before: before.clone(),
+                desired: b"u:object_r:p4_linux_root_t:s0\0".to_vec(),
+            })
+            .collect::<Vec<_>>();
+        let index = path_index(&targets).unwrap();
+        assert_eq!(index.len(), targets.len());
+        for (n, target) in targets.iter().enumerate() {
+            assert_eq!(index.get(&target.aliases[0].logical), Some(&n));
+        }
+        targets[99_999].aliases[0].logical = targets[0].aliases[0].logical.clone();
+        assert!(path_index(&targets).is_err());
+        println!(
+            "actual indexed complete plan: targets=100000 indexed_lookups=100000 duplicate_rejected=true"
+        );
+    }
 }
 fn pin_equal(a: &FilePin, b: &FilePin) -> bool {
     a.path == b.path && a.bytes == b.bytes && a.sha256 == b.sha256
@@ -577,6 +636,7 @@ impl<'a> OriginalLabelTransaction<'a> {
             pair_intent: self.plan.pair_intent.clone(),
             plan: self.seal.clone(),
             report,
+            paths: path_index(&self.plan.targets)?,
             targets: self.plan.targets.clone(),
             applications,
         };
@@ -637,17 +697,23 @@ impl OriginalLabelsApplied {
     }
     fn applied_snapshot(&self, path: &Path) -> Result<Snapshot> {
         self.plan.revalidate()?;
-        let matches = self
+        let index = *self
+            .paths
+            .get(path)
+            .ok_or("source-bound label target is missing")?;
+        let target = self
             .targets
-            .iter()
-            .zip(&self.applications)
-            .filter(|(target, _)| target.aliases.iter().any(|alias| alias.logical == path))
-            .collect::<Vec<_>>();
+            .get(index)
+            .ok_or("indexed label target missing")?;
+        let pin = self
+            .applications
+            .get(index)
+            .ok_or("indexed actual label application missing")?;
         ensure(
-            matches.len() == 1,
-            "source-bound label target is missing or ambiguous",
+            target.ordinal as usize == index
+                && target.aliases.iter().any(|alias| alias.logical == path),
+            "source label index differs from its exact complete target",
         )?;
-        let (target, pin) = matches[0];
         let value: Value = serde_json::from_slice(&data::root_pin(pin, 32 * 1024 * 1024)?)?;
         let after: Snapshot = serde_json::from_value(value["after"].clone())?;
         let mut attrs = target.before.attributes.clone();
