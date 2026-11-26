@@ -21,6 +21,11 @@ SOURCE_PATHS = (
     "android/framework/droidloom-readiness/board-policy/apparmor/droidloom-original-once-return",
     "android/framework/droidloom-readiness/board-policy/derive_native_console_policy.py",
     "android/framework/droidloom-readiness/board-policy/native-console-setup.json",
+    "android/framework/droidloom-readiness/board-policy/derive_native_kmod_static_policy.py",
+    "android/framework/droidloom-readiness/board-policy/derive_native_journal_catalog_policy.py",
+    "android/framework/droidloom-readiness/board-policy/derive_native_random_seed_policy.py",
+    "android/framework/droidloom-readiness/board-policy/derive_native_timesync_policy.py",
+    "android/framework/droidloom-readiness/board-policy/derive_native_ldconfig_policy.py",
 )
 DIRECTORY = ("ioctl read write create getattr setattr lock relabelfrom relabelto "
              "append map unlink link rename execute quotaon mounton audit_access "
@@ -37,6 +42,91 @@ CONSOLE_SOURCE_AV = {
     ("p4_linux_runtime_lib_t", "file"): "getattr open read execute map".split(),
     ("p4_linux_rootdir_t", "dir"): ["getattr", "search"],
 }
+
+
+# These original vectors were checked independently against the immutable
+# pre-component policy. Keep the seven source/class pairs explicit: the final
+# alias policy cannot supply its own expectation. The existing console table
+# above also retains its original native_bin:file zero vector.
+FIXED_ALIAS_SOURCE_AV = {
+    ("p4_linux_setup_exec_t", "file"): [],
+    ("p4_linux_native_data_t", "file"): [],
+    ("p4_linux_runtime_lib_t", "file"): "getattr open read execute map".split(),
+    ("p4_linux_rootdir_t", "dir"): ["getattr", "search"],
+    ("p4_linux_native_config_t", "file"): [],
+    ("p4_linux_etc_dir_t", "dir"): ["getattr", "search"],
+    ("port", "tcp_socket"): [],
+}
+TCP_SOCKET = ("ioctl read write create getattr setattr lock relabelfrom relabelto "
+              "append map bind connect listen accept getopt setopt shutdown "
+              "recvfrom sendto name_bind node_bind name_connect").split()
+FIXED_NATIVE_ALIAS_ROWS = (
+    ("derive_native_kmod_static_policy.py", (
+        ("p4_linux_rootdir_t", "p4_linux_kmod_tmpfiles_dir_t", "dir"),
+        ("p4_linux_native_data_t", "p4_linux_kmod_static_nodes_t", "file"),
+    )),
+    ("derive_native_journal_catalog_policy.py", (
+        ("p4_linux_rootdir_t", "p4_linux_journal_catalog_dir_t", "dir"),
+        ("p4_linux_native_data_t", "p4_linux_journal_catalog_file_t", "file"),
+    )),
+    ("derive_native_random_seed_policy.py", (
+        ("p4_linux_setup_exec_t", "p4_linux_random_seed_exec_t", "file"),
+        ("p4_linux_native_data_t", "p4_linux_random_seed_file_t", "file"),
+    )),
+    ("derive_native_timesync_policy.py", (
+        ("p4_linux_runtime_lib_t", "p4_linux_timesyncd_exec_t", "file"),
+        ("p4_linux_rootdir_t", "p4_linux_timesyncd_run_t", "dir"),
+        ("p4_linux_native_data_t", "p4_linux_timesyncd_run_t", "file"),
+        ("p4_linux_rootdir_t", "p4_linux_timesyncd_state_t", "dir"),
+        ("p4_linux_native_data_t", "p4_linux_timesyncd_state_t", "file"),
+        ("p4_linux_native_config_t", "p4_linux_timesyncd_config_t", "file"),
+        ("p4_linux_native_config_t", "p4_linux_timesyncd_nsswitch_t", "file"),
+        ("p4_linux_rootdir_t", "p4_linux_timesyncd_netif_t", "dir"),
+        ("p4_linux_native_data_t", "p4_linux_timesyncd_netif_t", "file"),
+        ("port", "p4_linux_timesyncd_dns_port_t", "tcp_socket"),
+    )),
+    ("derive_native_ldconfig_policy.py", (
+        ("p4_linux_setup_exec_t", "p4_linux_ldconfig_exec_t", "file"),
+        ("p4_linux_native_config_t", "p4_linux_ldconfig_config_t", "file"),
+        ("p4_linux_rootdir_t", "p4_linux_ldconfig_config_dir_t", "dir"),
+        ("p4_linux_rootdir_t", "p4_linux_ldconfig_aux_dir_t", "dir"),
+        ("p4_linux_native_data_t", "p4_linux_ldconfig_aux_t", "file"),
+    )),
+)
+
+
+def fixed_native_aliases():
+    # Import only the five reviewed providers, then compare their complete
+    # rows to this independent list. Unknown providers, added rows, changed
+    # source types/classes and repeated target/class pairs all fail closed.
+    from derive_native_kmod_static_policy import ALIASES as kmod
+    from derive_native_journal_catalog_policy import ALIASES as catalog
+    from derive_native_random_seed_policy import ALIASES as seed
+    from derive_native_timesync_policy import ALIASES as timesync, PORT_ALIAS
+    from derive_native_ldconfig_policy import ALIASES as ldconfig
+    actual = {
+        "derive_native_kmod_static_policy.py": kmod,
+        "derive_native_journal_catalog_policy.py": catalog,
+        "derive_native_random_seed_policy.py": seed,
+        "derive_native_timesync_policy.py": timesync + [PORT_ALIAS],
+        "derive_native_ldconfig_policy.py": ldconfig,
+    }
+    expected = {
+        provider: [{"source": source, "target": target, "class": cls}
+                   for source, target, cls in aliases]
+        for provider, aliases in FIXED_NATIVE_ALIAS_ROWS
+    }
+    if actual != expected:
+        raise ValueError("The fixed original-return native alias providers differ")
+    rows = [row for aliases in expected.values() for row in aliases]
+    seen = set()
+    for row in rows:
+        source = row["source"], row["class"]
+        target = row["target"], row["class"]
+        if source not in FIXED_ALIAS_SOURCE_AV or target in seen:
+            raise ValueError("Unknown or repeated original-return native alias")
+        seen.add(target)
+    return rows
 
 
 def source_inputs(here):
@@ -158,6 +248,14 @@ def verify_original_once(library, binary, export, export_binary_policy, here):
             expected = ["getattr", "open", "read", "map"]
         exact(own, obj(row["target"]), row["class"],
               FILE if row["class"] == "file" else DIRECTORY, expected)
+    native_aliases = fixed_native_aliases()
+    permissions_by_class = {"file": FILE, "dir": DIRECTORY, "tcp_socket": TCP_SOCKET}
+    for (source, cls), expected in FIXED_ALIAS_SOURCE_AV.items():
+        exact(own, obj(source), cls, permissions_by_class[cls], expected)
+    for row in native_aliases:
+        exact(own, obj(row["target"]), row["class"],
+              permissions_by_class[row["class"]],
+              FIXED_ALIAS_SOURCE_AV[row["source"], row["class"]])
     exact(own, obj("p4_linux_root_block_t"), "blk_file", "getattr open read write ioctl map".split(), ["getattr"])
     exact(own, own, "unix_stream_socket", "create connect connectto bind listen accept".split(), [])
     exact(own, own, "unix_dgram_socket", "create connect bind sendto".split(), [])
@@ -194,6 +292,9 @@ def verify_original_once(library, binary, export, export_binary_policy, here):
     return {"schema": "droidloom.original-once-policy-readback.v1", "source_files": sources,
             "actor_contexts_checked": len(names), "permission_checks": len(checks),
             "normal_console_aliases_checked": len(alias_names),
+            "fixed_native_aliases_checked": len(native_aliases),
+            "fixed_native_alias_sources_checked": len(FIXED_ALIAS_SOURCE_AV),
+            "fixed_native_alias_providers": [name for name, _ in FIXED_NATIVE_ALIAS_ROWS],
             "exact_transitions": len(required), "matrix_sha256": hashlib.sha256(
                 json.dumps(checks, separators=(",", ":")).encode()).hexdigest(),
             "runtime_qualified": False, "physical_arm_authorized": False}
