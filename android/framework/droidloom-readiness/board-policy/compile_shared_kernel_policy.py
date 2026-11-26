@@ -388,6 +388,13 @@ def verify_native_boot_observations(lines, check, obj, role_types):
         check(f"u:system_r:{actor}:s0", obj("p4_kernel_pid_handle_t"),
               "filesystem", ["getattr"], True)
         count += 1
+        for permission in ("open", "read", "write", "append", "ioctl", "map",
+                           "execute", "execute_no_trans", "entrypoint"):
+            check(f"u:system_r:{actor}:s0", obj("p4_kernel_pid_handle_t"),
+                  "file", [permission], False)
+            count += 1
+    check("u:system_r:p4_linux_generator_t:s0", obj("proc"), "dir", ["search"], True)
+    count += 1
     check("u:system_r:init_t:s0", obj("proc"), "filesystem", ["getattr"], True)
     count += 1
     return {"permission_checks": count, "public_proc_matrix": {
