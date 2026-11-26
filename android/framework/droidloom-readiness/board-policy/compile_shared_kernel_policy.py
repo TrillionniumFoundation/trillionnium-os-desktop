@@ -14,6 +14,7 @@ from derive_native_uevent_policy import (derive_android as derive_uevent_android
     derive_native as derive_uevent_native, verify as verify_uevent)
 from derive_native_kmod_static_policy import (derive as derive_kmod_static, verify as verify_kmod_static,
     source_inputs as kmod_static_source_inputs)
+from derive_native_tmpfiles_policy import derive as derive_tmpfiles, verify as verify_tmpfiles, source_inputs as tmpfiles_source_inputs
 from derive_native_journal_catalog_policy import derive as derive_journal_catalog, verify as verify_journal_catalog
 from derive_native_update_done_policy import derive as derive_update_done, verify as verify_update_done
 from derive_native_random_seed_policy import derive as derive_random_seed, verify as verify_random_seed
@@ -1735,6 +1736,7 @@ def main():
                here.parents[3] / "runtime/droidloom-early-boot/selected.c",
                here.parents[3] / "runtime/droidloom-early-boot/tests/systemd_identity.c",
                here / "derive_native_kmod_static_policy.py", *kmod_static_source_inputs(here),
+               here / "derive_native_tmpfiles_policy.py", *tmpfiles_source_inputs(here),
                here / "derive_native_journal_catalog_policy.py", here / "native-journal-catalog-source.json",
                here / "derive_native_update_done_policy.py", here / "native-update-done-source.json",
                here / "derive_native_random_seed_policy.py", here / "native-random-seed-source.json",
@@ -1796,70 +1798,78 @@ def main():
         compile_policy(compiler, [*args.android_cil, board, *components, shared,
                                  uevent_android, uevent_native, kmod_aliases],
                        linked, contexts, environment)
+        tmpfiles_aliases = work / "native-tmpfiles-aliases.cil"
+        tmpfiles_contract = derive_tmpfiles(library, linked, work / "tmpfiles-before.cil",
+                                            here, tmpfiles_aliases, export_binary_policy)
+        compile_policy(compiler, [*args.android_cil, board, *components, shared,
+                                 uevent_android, uevent_native, kmod_aliases, tmpfiles_aliases],
+                       linked, contexts, environment)
         journal_catalog_aliases = work / "native-journal-catalog-aliases.cil"
         journal_catalog_contract = derive_journal_catalog(library, linked, work / "journal-catalog-before.cil",
                                                          here, journal_catalog_aliases, export_binary_policy)
         compile_policy(compiler, [*args.android_cil, board, *components, shared,
-                                 uevent_android, uevent_native, kmod_aliases, journal_catalog_aliases],
+                                 uevent_android, uevent_native, kmod_aliases, tmpfiles_aliases, journal_catalog_aliases],
                        linked, contexts, environment)
         update_done_aliases = work / "native-update-done-aliases.cil"
         update_done_contract = derive_update_done(library, linked, work / "update-done-before.cil",
                                                   here, update_done_aliases, export_binary_policy)
         compile_policy(compiler, [*args.android_cil, board, *components, shared,
-                                 uevent_android, uevent_native, kmod_aliases, journal_catalog_aliases, update_done_aliases],
+                                 uevent_android, uevent_native, kmod_aliases, tmpfiles_aliases, journal_catalog_aliases, update_done_aliases],
                        linked, contexts, environment)
         random_seed_aliases = work / "native-random-seed-aliases.cil"
         random_seed_contract = derive_random_seed(library, linked, work / "random-seed-before.cil",
                                                  here, random_seed_aliases, export_binary_policy)
         compile_policy(compiler, [*args.android_cil, board, *components, shared,
-                                 uevent_android, uevent_native, kmod_aliases, journal_catalog_aliases, update_done_aliases, random_seed_aliases],
+                                 uevent_android, uevent_native, kmod_aliases, tmpfiles_aliases, journal_catalog_aliases, update_done_aliases, random_seed_aliases],
                        linked, contexts, environment)
         timesync_aliases = work / "native-timesync-aliases.cil"
         timesync_contract = derive_timesync(library, linked, work / "timesync-before.cil",
                                             here, timesync_aliases, export_binary_policy)
         compile_policy(compiler, [*args.android_cil, board, *components, shared,
-                                 uevent_android, uevent_native, kmod_aliases, journal_catalog_aliases, update_done_aliases, random_seed_aliases, timesync_aliases],
+                                 uevent_android, uevent_native, kmod_aliases, tmpfiles_aliases, journal_catalog_aliases, update_done_aliases, random_seed_aliases, timesync_aliases],
                        linked, contexts, environment)
         ldconfig_aliases = work / "native-ldconfig-aliases.cil"
         ldconfig_contract = derive_ldconfig(library, linked, work / "ldconfig-before.cil",
                                             here, ldconfig_aliases, export_binary_policy)
         compile_policy(compiler, [*args.android_cil, board, *components, shared,
-                                 uevent_android, uevent_native, kmod_aliases, journal_catalog_aliases, update_done_aliases, random_seed_aliases, timesync_aliases, ldconfig_aliases],
+                                 uevent_android, uevent_native, kmod_aliases, tmpfiles_aliases, journal_catalog_aliases, update_done_aliases, random_seed_aliases, timesync_aliases, ldconfig_aliases],
                        linked, contexts, environment)
         console_aliases = work / "native-console-aliases.cil"
         console_contract = derive_console(library, linked, work / "console-before.cil",
                                            here, console_aliases, export_binary_policy)
         compile_policy(compiler, [*args.android_cil, board, *components, shared,
-                                 uevent_android, uevent_native, kmod_aliases, journal_catalog_aliases, update_done_aliases, random_seed_aliases, timesync_aliases, ldconfig_aliases, console_aliases],
+                                 uevent_android, uevent_native, kmod_aliases, tmpfiles_aliases, journal_catalog_aliases, update_done_aliases, random_seed_aliases, timesync_aliases, ldconfig_aliases, console_aliases],
                        linked, contexts, environment)
         remount_aliases = work / "native-remount-aliases.cil"
         remount_contract = derive_remount(library, linked, work / "remount-before.cil",
                                           here, remount_aliases, export_binary_policy)
         compile_policy(compiler, [*args.android_cil, board, *components, shared,
-                                 uevent_android, uevent_native, kmod_aliases, journal_catalog_aliases, update_done_aliases, random_seed_aliases, timesync_aliases, ldconfig_aliases, console_aliases, remount_aliases],
+                                 uevent_android, uevent_native, kmod_aliases, tmpfiles_aliases, journal_catalog_aliases, update_done_aliases, random_seed_aliases, timesync_aliases, ldconfig_aliases, console_aliases, remount_aliases],
                        linked, contexts, environment)
         logind_aliases = work / "native-logind-state-aliases.cil"
         logind_contract = derive_logind_state(library, linked, work / "logind-state-before.cil",
                                               here, logind_aliases, export_binary_policy)
         compile_policy(compiler, [*args.android_cil, board, *components, shared,
-                                 uevent_android, uevent_native, kmod_aliases, journal_catalog_aliases, update_done_aliases, random_seed_aliases, timesync_aliases, ldconfig_aliases, console_aliases, remount_aliases,
+                                 uevent_android, uevent_native, kmod_aliases, tmpfiles_aliases, journal_catalog_aliases, update_done_aliases, random_seed_aliases, timesync_aliases, ldconfig_aliases, console_aliases, remount_aliases,
                                  logind_aliases], linked, contexts, environment)
         netplan_aliases = work / "native-netplan-aliases.cil"
         netplan_contract = derive_netplan(library, linked, work / "netplan-before.cil",
                                           here, netplan_aliases, export_binary_policy)
         compile_policy(compiler, [*args.android_cil, board, *components, shared,
-                                 uevent_android, uevent_native, kmod_aliases, journal_catalog_aliases, update_done_aliases, random_seed_aliases, timesync_aliases, ldconfig_aliases, console_aliases, remount_aliases,
+                                 uevent_android, uevent_native, kmod_aliases, tmpfiles_aliases, journal_catalog_aliases, update_done_aliases, random_seed_aliases, timesync_aliases, ldconfig_aliases, console_aliases, remount_aliases,
                                  logind_aliases, netplan_aliases], linked, contexts, environment)
         sysusers_aliases = work / "native-sysusers-aliases.cil"
         sysusers_contract = derive_sysusers(library, linked, work / "sysusers-before.cil",
                                            here, sysusers_aliases, export_binary_policy)
         compile_policy(compiler, [*args.android_cil, board, *components, shared,
-                                 uevent_android, uevent_native, kmod_aliases, journal_catalog_aliases, update_done_aliases, random_seed_aliases, timesync_aliases, ldconfig_aliases, console_aliases, remount_aliases,
+                                 uevent_android, uevent_native, kmod_aliases, tmpfiles_aliases, journal_catalog_aliases, update_done_aliases, random_seed_aliases, timesync_aliases, ldconfig_aliases, console_aliases, remount_aliases,
                                  logind_aliases, netplan_aliases, sysusers_aliases], linked, contexts, environment)
         host_control = verify_host_control(library, linked, work / "host-control-binary.cil", contract)
         tcgets2_audit = verify_native_tcgets2_audit(work / "host-control-binary.cil")
         kmod_access = verify_kmod_static(library, linked, work / "kmod-static-after.cil",
                                          here, kmod_contract, export_binary_policy)
+        tmpfiles_access = verify_tmpfiles(library, linked, work / "tmpfiles-after.cil",
+                                         here, tmpfiles_contract, export_binary_policy)
         timesync_access = verify_timesync(library, linked, work / "timesync-after.cil",
                                             here, timesync_contract, export_binary_policy)
         logind_access = verify_logind_state(library, linked, work / "logind-state-after.cil",
@@ -1911,6 +1921,7 @@ def main():
             "native_tcgets2_audit_verifier": sha256(here / "verify_native_tcgets2_audit.py"),
             "native_uevent": uevent_access,
             "native_kmod_static_nodes": kmod_access,
+            "native_tmpfiles": tmpfiles_access,
             "native_console": console_access,
             "native_journal_catalog": journal_catalog_access,
             "native_update_done": update_done_access,

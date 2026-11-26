@@ -43,7 +43,9 @@
 ; The remount constructor only recognizes an existing selinuxfs mount.
 (typeattribute p4_nonboard_except_native_selinux_metadata_dirs)
 (typeattributeset p4_nonboard_except_native_selinux_metadata_dirs (and (p4_all_nonboard) (not (or (device) (or (proc) (or (sysfs) (selinuxfs)))))))
-(neverallow p4_native_selinux_metadata_clients p4_nonboard_except_native_selinux_metadata_dirs (dir (search)))
+(typeattribute p4_native_selinux_metadata_without_tmpfiles)
+(typeattributeset p4_native_selinux_metadata_without_tmpfiles (and (p4_native_selinux_metadata_clients) (not (p4_linux_tmpfiles_t))))
+(neverallow p4_native_selinux_metadata_without_tmpfiles p4_nonboard_except_native_selinux_metadata_dirs (dir (search)))
 (allow p4_linux_hardware_label_t proc (dir (getattr search)))
 (allow p4_linux_hardware_label_t proc (lnk_file (getattr read)))
 (allow p4_linux_hardware_label_t self (dir (getattr search)))

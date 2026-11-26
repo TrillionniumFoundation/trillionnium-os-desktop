@@ -1,0 +1,1365 @@
+{
+  "aliases": [
+    {
+      "class": "file",
+      "source": "p4_linux_setup_exec_t",
+      "target": "p4_linux_tmpfiles_exec_t"
+    },
+    {
+      "class": "file",
+      "source": "p4_linux_runtime_lib_t",
+      "target": "p4_linux_tmpfiles_usr_config_t"
+    },
+    {
+      "class": "file",
+      "source": "p4_linux_native_config_t",
+      "target": "p4_linux_tmpfiles_etc_config_t"
+    },
+    {
+      "class": "dir",
+      "source": "p4_linux_rootdir_t",
+      "target": "p4_linux_tmpfiles_config_dir_t"
+    },
+    {
+      "class": "dir",
+      "source": "p4_linux_rootdir_t",
+      "target": "p4_linux_tmpfiles_runtime_dir_t"
+    },
+    {
+      "class": "file",
+      "source": "p4_linux_native_data_t",
+      "target": "p4_linux_tmpfiles_nologin_t"
+    },
+    {
+      "class": "lnk_file",
+      "source": "p4_linux_usrmerge_link_t",
+      "target": "p4_linux_tmpfiles_shm_link_t"
+    }
+  ],
+  "board_rules": {
+    "bytes": 454,
+    "installed_path": "/usr/lib/tmpfiles.d/droidloom-production.conf",
+    "sha256": "8bfcaa1829f63e248944484cd70594610248cde87fe83f97833a146a76740c97",
+    "source_path": "packaging/tmpfiles/droidloom-production.conf"
+  },
+  "capabilities": [
+    "chown",
+    "fowner",
+    "fsetid",
+    "mknod"
+  ],
+  "capability_source": "normal uid/gid/mode enforcement, retained sgid journal mode, and selected c! mknodat; CAP_SYS_ADMIN and CAP_SYS_MODULE remain absent",
+  "credentials_directory": {
+    "directory_listing_granted": false,
+    "file_permissions": [],
+    "lnk_file_permissions": [],
+    "permissions": [
+      "getattr",
+      "search"
+    ],
+    "source": "normal read_credential_lines -> get_credentials_dir -> fixed tmpfiles.extra path -> read_config_file(ignore_enoent=true); no directory enumeration",
+    "target": "p4_linux_setup_credentials_t"
+  },
+  "device_body_access_added": false,
+  "device_view_preservation": {
+    "complete_actual_prelink_actor_roster": true,
+    "hardware_identity_relabel_equivalence_claimed": false,
+    "hotplug_runtime_qualified": false,
+    "independent_board_metadata": {
+      "actors": [
+        "droidloom_metadata_observer",
+        "droidloom_query_io"
+      ],
+      "class": "dir",
+      "device_identity_equivalence_claimed": false,
+      "new_prelink_equals_reference_all_category_pairs": true,
+      "original_generic_device_permissions": {
+        "droidloom_metadata_observer": [],
+        "droidloom_query_io": [
+          "getattr",
+          "search"
+        ]
+      },
+      "original_raw_and_all_category_vectors_unchanged": true,
+      "permissions": [
+        "getattr",
+        "search"
+      ],
+      "reference": "p4_linux_rootdir_t",
+      "targets": [
+        "p4_linux_tmpfiles_static_dir_t",
+        "p4_linux_tmpfiles_static_node_t"
+      ]
+    },
+    "kernel_device_creation_grants_added": false,
+    "kernel_fallback_source": "selected devtmpfs handle_create -> vfs_mknod; SELinux default nonprocess type is the parent without a transition",
+    "kernel_fallback_transition": "(typetransition kernel p4_linux_tmpfiles_static_dir_t chr_file device)",
+    "new_helper_takeover_claimed": false,
+    "old_and_new_raw_and_all_category_vectors": true,
+    "ordinary_classes": [
+      {
+        "class": "dir",
+        "source": "device",
+        "target": "p4_linux_tmpfiles_static_dir_t"
+      },
+      {
+        "class": "chr_file",
+        "source": "device",
+        "target": "p4_linux_tmpfiles_static_node_t"
+      }
+    ]
+  },
+  "existing_device_labels_preserved": [
+    "/dev/loop-control",
+    "/dev/net/tun",
+    "/dev/fuse",
+    "/dev/kvm"
+  ],
+  "file_context_cases": [
+    [
+      "/usr/lib/tmpfiles.d/20-systemd-osc-context.conf",
+      "--",
+      "p4_linux_tmpfiles_usr_config_t"
+    ],
+    [
+      "/usr/lib/tmpfiles.d/20-systemd-shell-extra.conf",
+      "--",
+      "p4_linux_tmpfiles_usr_config_t"
+    ],
+    [
+      "/usr/lib/tmpfiles.d/20-systemd-ssh-generator.conf",
+      "--",
+      "p4_linux_tmpfiles_usr_config_t"
+    ],
+    [
+      "/usr/lib/tmpfiles.d/20-systemd-stub.conf",
+      "--",
+      "p4_linux_tmpfiles_usr_config_t"
+    ],
+    [
+      "/usr/lib/tmpfiles.d/colord.conf",
+      "--",
+      "p4_linux_tmpfiles_usr_config_t"
+    ],
+    [
+      "/usr/lib/tmpfiles.d/credstore.conf",
+      "--",
+      "p4_linux_tmpfiles_usr_config_t"
+    ],
+    [
+      "/usr/lib/tmpfiles.d/cron-daemon-common.conf",
+      "--",
+      "p4_linux_tmpfiles_usr_config_t"
+    ],
+    [
+      "/usr/lib/tmpfiles.d/dbus.conf",
+      "--",
+      "p4_linux_tmpfiles_usr_config_t"
+    ],
+    [
+      "/usr/lib/tmpfiles.d/debian.conf",
+      "--",
+      "p4_linux_tmpfiles_usr_config_t"
+    ],
+    [
+      "/usr/lib/tmpfiles.d/gvfsd-fuse-tmpfiles.conf",
+      "--",
+      "p4_linux_tmpfiles_usr_config_t"
+    ],
+    [
+      "/usr/lib/tmpfiles.d/home.conf",
+      "--",
+      "p4_linux_tmpfiles_usr_config_t"
+    ],
+    [
+      "/usr/lib/tmpfiles.d/journal-nocow.conf",
+      "--",
+      "p4_linux_tmpfiles_usr_config_t"
+    ],
+    [
+      "/usr/lib/tmpfiles.d/legacy.conf",
+      "--",
+      "p4_linux_tmpfiles_usr_config_t"
+    ],
+    [
+      "/usr/lib/tmpfiles.d/libselinux1.conf",
+      "--",
+      "p4_linux_tmpfiles_usr_config_t"
+    ],
+    [
+      "/usr/lib/tmpfiles.d/man-db.conf",
+      "--",
+      "p4_linux_tmpfiles_usr_config_t"
+    ],
+    [
+      "/usr/lib/tmpfiles.d/openssh-client.conf",
+      "--",
+      "p4_linux_tmpfiles_usr_config_t"
+    ],
+    [
+      "/usr/lib/tmpfiles.d/openssh-server.conf",
+      "--",
+      "p4_linux_tmpfiles_usr_config_t"
+    ],
+    [
+      "/usr/lib/tmpfiles.d/passwd.conf",
+      "--",
+      "p4_linux_tmpfiles_usr_config_t"
+    ],
+    [
+      "/usr/lib/tmpfiles.d/polkit-tmpfiles.conf",
+      "--",
+      "p4_linux_tmpfiles_usr_config_t"
+    ],
+    [
+      "/usr/lib/tmpfiles.d/provision.conf",
+      "--",
+      "p4_linux_tmpfiles_usr_config_t"
+    ],
+    [
+      "/usr/lib/tmpfiles.d/screen-cleanup.conf",
+      "--",
+      "p4_linux_tmpfiles_usr_config_t"
+    ],
+    [
+      "/usr/lib/tmpfiles.d/snapd.conf",
+      "--",
+      "p4_linux_tmpfiles_usr_config_t"
+    ],
+    [
+      "/usr/lib/tmpfiles.d/spice-vdagentd.conf",
+      "--",
+      "p4_linux_tmpfiles_usr_config_t"
+    ],
+    [
+      "/usr/lib/tmpfiles.d/static-nodes-permissions.conf",
+      "--",
+      "p4_linux_tmpfiles_usr_config_t"
+    ],
+    [
+      "/usr/lib/tmpfiles.d/sudo.conf",
+      "--",
+      "p4_linux_tmpfiles_usr_config_t"
+    ],
+    [
+      "/usr/lib/tmpfiles.d/systemd-network.conf",
+      "--",
+      "p4_linux_tmpfiles_usr_config_t"
+    ],
+    [
+      "/usr/lib/tmpfiles.d/systemd-nologin.conf",
+      "--",
+      "p4_linux_tmpfiles_usr_config_t"
+    ],
+    [
+      "/usr/lib/tmpfiles.d/systemd-pstore.conf",
+      "--",
+      "p4_linux_tmpfiles_usr_config_t"
+    ],
+    [
+      "/usr/lib/tmpfiles.d/systemd-resolve.conf",
+      "--",
+      "p4_linux_tmpfiles_usr_config_t"
+    ],
+    [
+      "/usr/lib/tmpfiles.d/systemd-tmp.conf",
+      "--",
+      "p4_linux_tmpfiles_usr_config_t"
+    ],
+    [
+      "/usr/lib/tmpfiles.d/systemd.conf",
+      "--",
+      "p4_linux_tmpfiles_usr_config_t"
+    ],
+    [
+      "/usr/lib/tmpfiles.d/tmp.conf",
+      "--",
+      "p4_linux_tmpfiles_usr_config_t"
+    ],
+    [
+      "/usr/lib/tmpfiles.d/udisks2.conf",
+      "--",
+      "p4_linux_tmpfiles_usr_config_t"
+    ],
+    [
+      "/usr/lib/tmpfiles.d/var.conf",
+      "--",
+      "p4_linux_tmpfiles_usr_config_t"
+    ],
+    [
+      "/usr/lib/tmpfiles.d/x11.conf",
+      "--",
+      "p4_linux_tmpfiles_usr_config_t"
+    ],
+    [
+      "/etc/tmpfiles.d/screen-cleanup.conf",
+      "--",
+      "p4_linux_tmpfiles_etc_config_t"
+    ],
+    [
+      "/usr/bin/systemd-tmpfiles",
+      "--",
+      "p4_linux_tmpfiles_exec_t"
+    ],
+    [
+      "/run/nologin",
+      "--",
+      "p4_linux_tmpfiles_nologin_t"
+    ],
+    [
+      "/run/shm",
+      "-l",
+      "p4_linux_tmpfiles_shm_link_t"
+    ],
+    [
+      "/etc/tmpfiles.d",
+      "-d",
+      "p4_linux_tmpfiles_config_dir_t"
+    ],
+    [
+      "/usr/lib/tmpfiles.d",
+      "-d",
+      "p4_linux_tmpfiles_config_dir_t"
+    ],
+    [
+      "/usr/local/lib/tmpfiles.d",
+      "-d",
+      "p4_linux_tmpfiles_config_dir_t"
+    ],
+    [
+      "/run/lock",
+      "-d",
+      "p4_linux_tmpfiles_runtime_dir_t"
+    ],
+    [
+      "/run/lock/subsys",
+      "-d",
+      "p4_linux_tmpfiles_runtime_dir_t"
+    ],
+    [
+      "/run/sendsigs.omit.d",
+      "-d",
+      "p4_linux_tmpfiles_runtime_dir_t"
+    ],
+    [
+      "/run/setrans",
+      "-d",
+      "p4_linux_tmpfiles_runtime_dir_t"
+    ],
+    [
+      "/run/screen",
+      "-d",
+      "p4_linux_tmpfiles_runtime_dir_t"
+    ],
+    [
+      "/run/spice-vdagentd",
+      "-d",
+      "p4_linux_tmpfiles_runtime_dir_t"
+    ],
+    [
+      "/run/sudo",
+      "-d",
+      "p4_linux_tmpfiles_runtime_dir_t"
+    ],
+    [
+      "/run/media",
+      "-d",
+      "p4_linux_tmpfiles_runtime_dir_t"
+    ],
+    [
+      "/run/systemd/machines",
+      "-d",
+      "p4_linux_tmpfiles_runtime_dir_t"
+    ],
+    [
+      "/run/systemd/netif/leases",
+      "-d",
+      "p4_linux_tmpfiles_runtime_dir_t"
+    ],
+    [
+      "/dev/snd",
+      "-d",
+      "p4_linux_tmpfiles_static_dir_t"
+    ],
+    [
+      "/dev/vfio",
+      "-d",
+      "p4_linux_tmpfiles_static_dir_t"
+    ],
+    [
+      "/dev/cuse",
+      "-c",
+      "p4_linux_tmpfiles_static_node_t"
+    ],
+    [
+      "/dev/autofs",
+      "-c",
+      "p4_linux_tmpfiles_static_node_t"
+    ],
+    [
+      "/dev/btrfs-control",
+      "-c",
+      "p4_linux_tmpfiles_static_node_t"
+    ],
+    [
+      "/dev/nvram",
+      "-c",
+      "p4_linux_tmpfiles_static_node_t"
+    ],
+    [
+      "/dev/userio",
+      "-c",
+      "p4_linux_tmpfiles_static_node_t"
+    ],
+    [
+      "/dev/uhid",
+      "-c",
+      "p4_linux_tmpfiles_static_node_t"
+    ],
+    [
+      "/dev/vfio/vfio",
+      "-c",
+      "p4_linux_tmpfiles_static_node_t"
+    ],
+    [
+      "/dev/vhci",
+      "-c",
+      "p4_linux_tmpfiles_static_node_t"
+    ],
+    [
+      "/dev/vhost-net",
+      "-c",
+      "p4_linux_tmpfiles_static_node_t"
+    ],
+    [
+      "/dev/vhost-vsock",
+      "-c",
+      "p4_linux_tmpfiles_static_node_t"
+    ],
+    [
+      "/dev/snd/timer",
+      "-c",
+      "p4_linux_tmpfiles_static_node_t"
+    ],
+    [
+      "/dev/snd/seq",
+      "-c",
+      "p4_linux_tmpfiles_static_node_t"
+    ],
+    [
+      "/usr/lib/tmpfiles.d/droidloom-production.conf",
+      "--",
+      "p4_linux_tmpfiles_usr_config_t"
+    ]
+  ],
+  "ioctl_source": "normal h +C rule uses chattr_full on the fixed persistent journal directories; no generic rootdir or device ioctl",
+  "ioctls": [
+    {
+      "class": "dir",
+      "commands": [
+        "0x6601",
+        "0x6602"
+      ],
+      "target": "p4_linux_journal_store_t"
+    },
+    {
+      "class": "dir",
+      "commands": [
+        "0x6601",
+        "0x6602"
+      ],
+      "target": "p4_linux_journal_machine_t"
+    }
+  ],
+  "kernel_basename_confinement": false,
+  "kernel_runtime_qualified": false,
+  "label_lookup": {
+    "api": "selabel_lookup_raw",
+    "create_label_api": "lsm_set_self_attr(LSM_ATTR_FSCREATE, LSM_ID_SELINUX)",
+    "existing_label_fix": "normal setfilecon idempotent equality returns before any relabel",
+    "legacy_procattr_fallback_admitted": false,
+    "netlink_permissions": [],
+    "reset_create_label": true,
+    "security_permissions": [],
+    "selinuxfs_file_permissions": [
+      "getattr",
+      "map",
+      "open",
+      "read"
+    ],
+    "validation_option": false
+  },
+  "libselinux_source_admission": {
+    "bytes": 3721,
+    "path": "/home/qq/work/p4-libselinux-constructor-audit-4b91-r2/SOURCE.json",
+    "sha256": "7b25ebfb73b6cd6ee1a49ba3a357ff157672b7cddb0fdbf66b86e43afd5b01a6"
+  },
+  "new_types": [
+    "p4_linux_tmpfiles_config_dir_t",
+    "p4_linux_tmpfiles_etc_config_t",
+    "p4_linux_tmpfiles_exec_t",
+    "p4_linux_tmpfiles_nologin_t",
+    "p4_linux_tmpfiles_runtime_dir_t",
+    "p4_linux_tmpfiles_shm_link_t",
+    "p4_linux_tmpfiles_static_dir_t",
+    "p4_linux_tmpfiles_static_node_t",
+    "p4_linux_tmpfiles_t",
+    "p4_linux_tmpfiles_usr_config_t"
+  ],
+  "normal_files": [
+    {
+      "admission": "normal-complete-root",
+      "bytes": 431,
+      "path": "/usr/lib/tmpfiles.d/20-systemd-osc-context.conf",
+      "sha256": "8052bc32765fa96b831d414256e5d9c8369c185bc61d10fb4088d6871cba3ffb"
+    },
+    {
+      "admission": "normal-complete-root",
+      "bytes": 431,
+      "path": "/usr/lib/tmpfiles.d/20-systemd-shell-extra.conf",
+      "sha256": "2239913f1b4d343818aef1ba684219c46c3e291c89b1cf2dec1bb2f5e1ff29f6"
+    },
+    {
+      "admission": "normal-complete-root",
+      "bytes": 458,
+      "path": "/usr/lib/tmpfiles.d/20-systemd-ssh-generator.conf",
+      "sha256": "2e88fa5994e730a51a6a11d11ba4c394035cf1625dd1656bf88adec091236a0b"
+    },
+    {
+      "admission": "normal-complete-root",
+      "bytes": 779,
+      "path": "/usr/lib/tmpfiles.d/20-systemd-stub.conf",
+      "sha256": "86f8ba2ce3c7a56aad8e8f4fae0998a4920b34ff3f62e5ce727b3b797a99c715"
+    },
+    {
+      "admission": "normal-complete-root",
+      "bytes": 112,
+      "path": "/usr/lib/tmpfiles.d/colord.conf",
+      "sha256": "81e06f312b30f164803291d20ff7f13f7bed0b221594ac7048d0bed6fe0223a9"
+    },
+    {
+      "admission": "normal-complete-root",
+      "bytes": 474,
+      "path": "/usr/lib/tmpfiles.d/credstore.conf",
+      "sha256": "2bafed09323dcb75c9c59ffd863510c2d05b6939fbcda267a82198875d1b4ddb"
+    },
+    {
+      "admission": "normal-complete-root",
+      "bytes": 45,
+      "path": "/usr/lib/tmpfiles.d/cron-daemon-common.conf",
+      "sha256": "f71fe381e57ef0980cb256000c25e20fdd798cf0d5d0da712dbc8bd998c5cf72"
+    },
+    {
+      "admission": "normal-complete-root",
+      "bytes": 365,
+      "path": "/usr/lib/tmpfiles.d/dbus.conf",
+      "sha256": "d1b15f34a0590f6535dbff91727dd6bbf10752e8abb2cab73fa66a6184f9df1a"
+    },
+    {
+      "admission": "normal-complete-root",
+      "bytes": 726,
+      "path": "/usr/lib/tmpfiles.d/debian.conf",
+      "sha256": "7535c23784ea5b81b6d8d8841e1b4ee17ebaac094e38f23f003ecdef454efb8c"
+    },
+    {
+      "admission": "normal-complete-root",
+      "bytes": 595,
+      "path": "/usr/lib/tmpfiles.d/gvfsd-fuse-tmpfiles.conf",
+      "sha256": "df341f1a5b7da2e9624e2eddbd1ba074f94a87cc916ffe8357e018d0223518b2"
+    },
+    {
+      "admission": "normal-complete-root",
+      "bytes": 363,
+      "path": "/usr/lib/tmpfiles.d/home.conf",
+      "sha256": "fcc7434662a40ed081eec2c608dd1a3ac8c909440359a7890c08175fb685ff68"
+    },
+    {
+      "admission": "normal-complete-root",
+      "bytes": 1097,
+      "path": "/usr/lib/tmpfiles.d/journal-nocow.conf",
+      "sha256": "b0cfe7fb70a62747fd4002a8c5945f7b2a1784a7b482e65da6512987d0ba307d"
+    },
+    {
+      "admission": "normal-complete-root",
+      "bytes": 795,
+      "path": "/usr/lib/tmpfiles.d/legacy.conf",
+      "sha256": "c353525a3c1b4d88e0681bd3ce73806946dbf7f7bf54e2be6d620f450f78181a"
+    },
+    {
+      "admission": "normal-complete-root",
+      "bytes": 112,
+      "path": "/usr/lib/tmpfiles.d/libselinux1.conf",
+      "sha256": "bb7c285a572a99cd0691bc27fb7754b0f696563dc0e954f039e6d9a5cef761f6"
+    },
+    {
+      "admission": "normal-complete-root",
+      "bytes": 85,
+      "path": "/usr/lib/tmpfiles.d/man-db.conf",
+      "sha256": "e490f1f7e88b0e24491ddcb88c6e5780f71c37d06e11b9954f6d718a562d50df"
+    },
+    {
+      "admission": "normal-complete-root",
+      "bytes": 13,
+      "path": "/usr/lib/tmpfiles.d/openssh-client.conf",
+      "sha256": "b424e86e7fe590f50a5e7c2a83bb760335ee60ebb69beb2834d7cdf6ec36b1ae"
+    },
+    {
+      "admission": "normal-complete-root",
+      "bytes": 17,
+      "path": "/usr/lib/tmpfiles.d/openssh-server.conf",
+      "sha256": "7c3984cb99bc2b6a74508fe3aa8177913865bd3491d0ad4e965b4068eb289a08"
+    },
+    {
+      "admission": "normal-complete-root",
+      "bytes": 239,
+      "path": "/usr/lib/tmpfiles.d/passwd.conf",
+      "sha256": "1a3b927102b44454eb4c47e4fe659de2f5283f364ba27408329a54d4ad47e310"
+    },
+    {
+      "admission": "normal-complete-root",
+      "bytes": 268,
+      "path": "/usr/lib/tmpfiles.d/polkit-tmpfiles.conf",
+      "sha256": "50f4e9c849bee5120546109b288ff7a631004dd2a7bfb27062181aa684b517c2"
+    },
+    {
+      "admission": "normal-complete-root",
+      "bytes": 852,
+      "path": "/usr/lib/tmpfiles.d/provision.conf",
+      "sha256": "dbb85f57c2e24e703d2cc103b21634a4b53aa4d0f58dac59af74a3f12cddc73a"
+    },
+    {
+      "admission": "normal-complete-root",
+      "bytes": 29,
+      "path": "/usr/lib/tmpfiles.d/screen-cleanup.conf",
+      "sha256": "0250534a2cb7f9f81897e18b59deacbbb9d15d81c7551180ace35d95acbb4ee4"
+    },
+    {
+      "admission": "normal-complete-root",
+      "bytes": 260,
+      "path": "/usr/lib/tmpfiles.d/snapd.conf",
+      "sha256": "0973f9f4204fbc4d87c719c6c26abf4816326b880f7cff06b20d8c2e4bbdede1"
+    },
+    {
+      "admission": "normal-complete-root",
+      "bytes": 97,
+      "path": "/usr/lib/tmpfiles.d/spice-vdagentd.conf",
+      "sha256": "2f8a97c120fd0b65101495fc48bbcdd54689e097a159224e85fb634c510c1057"
+    },
+    {
+      "admission": "normal-complete-root",
+      "bytes": 798,
+      "path": "/usr/lib/tmpfiles.d/static-nodes-permissions.conf",
+      "sha256": "ca4849c27428fd648f6377dd51a3ab0eb79de69fce1bdc910670012c0cf26f85"
+    },
+    {
+      "admission": "normal-complete-root",
+      "bytes": 27,
+      "path": "/usr/lib/tmpfiles.d/sudo.conf",
+      "sha256": "eed7eb9d7ddaccb3ae13d3225de1302a96754938fea4dc305c43b64cbcb5d0bc"
+    },
+    {
+      "admission": "normal-complete-root",
+      "bytes": 598,
+      "path": "/usr/lib/tmpfiles.d/systemd-network.conf",
+      "sha256": "4e60ef3d3cc3466ebab75561d70f6e58b7e22cc0a2b7e7e3dfbd083d24b988b6"
+    },
+    {
+      "admission": "normal-complete-root",
+      "bytes": 538,
+      "path": "/usr/lib/tmpfiles.d/systemd-nologin.conf",
+      "sha256": "b97c3f92a569dd84957eb263f3438cc7d98ea2a4ffe5f5e9d090c04d14b725b9"
+    },
+    {
+      "admission": "normal-complete-root",
+      "bytes": 1512,
+      "path": "/usr/lib/tmpfiles.d/systemd-pstore.conf",
+      "sha256": "cdb3efb34ea12ef62140dc86ffbe90045729f3e8227698848e44bed4fdd5fe2f"
+    },
+    {
+      "admission": "normal-complete-root",
+      "bytes": 394,
+      "path": "/usr/lib/tmpfiles.d/systemd-resolve.conf",
+      "sha256": "12e573ce01b47cde7cf7867a74d0ca04152fb083962a9ae5ba4989eb305a84ca"
+    },
+    {
+      "admission": "normal-complete-root",
+      "bytes": 824,
+      "path": "/usr/lib/tmpfiles.d/systemd-tmp.conf",
+      "sha256": "224e8d4145ed4a049d7a0ffb7c7d20f5278c60f08eff6369f4e82f2397abc2bc"
+    },
+    {
+      "admission": "normal-complete-root",
+      "bytes": 1740,
+      "path": "/usr/lib/tmpfiles.d/systemd.conf",
+      "sha256": "17906b482927ed65b48239f6dc8b7e555a76a75dec76a67925e60764d3f93bbc"
+    },
+    {
+      "admission": "normal-complete-root",
+      "bytes": 450,
+      "path": "/usr/lib/tmpfiles.d/tmp.conf",
+      "sha256": "a1dae3c409fab42c6e48d93ad36364cd6b35ac4705488f1e91b8593ef41ea931"
+    },
+    {
+      "admission": "normal-complete-root",
+      "bytes": 28,
+      "path": "/usr/lib/tmpfiles.d/udisks2.conf",
+      "sha256": "27a7496ddf7e465995059a0410d47387b9e82ccd7aac9c3763f2ac6659ca9c21"
+    },
+    {
+      "admission": "normal-complete-root",
+      "bytes": 467,
+      "path": "/usr/lib/tmpfiles.d/var.conf",
+      "sha256": "87ee9655436403e91489d3f19ef01b70528539ac76b65435bedd7dc02db4df0e"
+    },
+    {
+      "admission": "normal-complete-root",
+      "bytes": 618,
+      "path": "/usr/lib/tmpfiles.d/x11.conf",
+      "sha256": "e541aecc6303f5a3d7027f85307380b0114fad977346c2106585c8cffaf7854e"
+    },
+    {
+      "admission": "normal-complete-root",
+      "bytes": 119,
+      "path": "/etc/tmpfiles.d/screen-cleanup.conf",
+      "sha256": "b01ca3262f1ac0b97486dce16c9e932d684279ea98cd4a8bddd0c849cf4123da"
+    },
+    {
+      "admission": "normal-complete-root",
+      "bytes": 121544,
+      "path": "/usr/bin/systemd-tmpfiles",
+      "sha256": "a647746774851ef136cea5ea1862c77e2b0ff0bd962629ce07da029ff5bd8cc8"
+    },
+    {
+      "admission": "normal-complete-root",
+      "bytes": 1023,
+      "path": "/usr/lib/systemd/system/systemd-tmpfiles-setup.service",
+      "sha256": "f22a7dc686fc61d586bc8e44f46e76eb6d926c7919249b10848830eb4bf90c28"
+    },
+    {
+      "admission": "normal-complete-root",
+      "bytes": 877,
+      "path": "/usr/lib/systemd/system/systemd-tmpfiles-setup-dev.service",
+      "sha256": "9f0a6b2414d3b398357b7508f6a841acae0d8f0ff079e096c0bed78f0572122e"
+    },
+    {
+      "admission": "normal-complete-root",
+      "bytes": 852,
+      "path": "/usr/lib/systemd/system/systemd-tmpfiles-setup-dev-early.service",
+      "sha256": "6c9429db294f317608868337ca1befd1fc961886e0d4accf8997dfd33e1a61de"
+    },
+    {
+      "admission": "normal-complete-root",
+      "bytes": 594,
+      "path": "/etc/nsswitch.conf",
+      "sha256": "f053e77f9d706a20cb52deecdf9602b1635ea64a3be77a4cb32205bfebb17d3e"
+    }
+  ],
+  "normal_implementation_changed": false,
+  "normal_journal_acl_metadata": {
+    "content_write_permissions": [],
+    "file_permissions": [
+      "getattr",
+      "setattr"
+    ],
+    "file_targets": [
+      "p4_linux_journal_database_t",
+      "p4_linux_volatile_journal_database_t"
+    ],
+    "lifecycle_permissions": [],
+    "source": "normal systemd.conf recursive A+ and tmpfiles RECURSIVE_SET_ACL -> fd_set_acls"
+  },
+  "normal_metadata_observations": {
+    "archive_shape_only": true,
+    "evidence": "/home/qq/work/p4-native-tmpfiles-4b91-r1/EXTRA-SOURCE-METADATA-r1.json",
+    "runtime_absence_proven": false
+  },
+  "normal_probe_dontauditx": {
+    "base_ioctl_allowed": false,
+    "class": "file",
+    "command": "0x542a",
+    "direct_r13_new_role_event_observed": false,
+    "extended_ioctl_allowed": false,
+    "source_cause": "normal tmpfiles read_config_file -> read_line -> isatty_safe; EACCES and ENOTTY both mean false",
+    "targets": [
+      "p4_linux_tmpfiles_usr_config_t",
+      "p4_linux_tmpfiles_etc_config_t",
+      "p4_linux_kmod_static_nodes_t"
+    ]
+  },
+  "normal_rule_paths": [
+    "/usr/lib/tmpfiles.d/20-systemd-osc-context.conf",
+    "/usr/lib/tmpfiles.d/20-systemd-shell-extra.conf",
+    "/usr/lib/tmpfiles.d/20-systemd-ssh-generator.conf",
+    "/usr/lib/tmpfiles.d/20-systemd-stub.conf",
+    "/usr/lib/tmpfiles.d/colord.conf",
+    "/usr/lib/tmpfiles.d/credstore.conf",
+    "/usr/lib/tmpfiles.d/cron-daemon-common.conf",
+    "/usr/lib/tmpfiles.d/dbus.conf",
+    "/usr/lib/tmpfiles.d/debian.conf",
+    "/usr/lib/tmpfiles.d/gvfsd-fuse-tmpfiles.conf",
+    "/usr/lib/tmpfiles.d/home.conf",
+    "/usr/lib/tmpfiles.d/journal-nocow.conf",
+    "/usr/lib/tmpfiles.d/legacy.conf",
+    "/usr/lib/tmpfiles.d/libselinux1.conf",
+    "/usr/lib/tmpfiles.d/man-db.conf",
+    "/usr/lib/tmpfiles.d/openssh-client.conf",
+    "/usr/lib/tmpfiles.d/openssh-server.conf",
+    "/usr/lib/tmpfiles.d/passwd.conf",
+    "/usr/lib/tmpfiles.d/polkit-tmpfiles.conf",
+    "/usr/lib/tmpfiles.d/provision.conf",
+    "/usr/lib/tmpfiles.d/screen-cleanup.conf",
+    "/usr/lib/tmpfiles.d/snapd.conf",
+    "/usr/lib/tmpfiles.d/spice-vdagentd.conf",
+    "/usr/lib/tmpfiles.d/static-nodes-permissions.conf",
+    "/usr/lib/tmpfiles.d/sudo.conf",
+    "/usr/lib/tmpfiles.d/systemd-network.conf",
+    "/usr/lib/tmpfiles.d/systemd-nologin.conf",
+    "/usr/lib/tmpfiles.d/systemd-pstore.conf",
+    "/usr/lib/tmpfiles.d/systemd-resolve.conf",
+    "/usr/lib/tmpfiles.d/systemd-tmp.conf",
+    "/usr/lib/tmpfiles.d/systemd.conf",
+    "/usr/lib/tmpfiles.d/tmp.conf",
+    "/usr/lib/tmpfiles.d/udisks2.conf",
+    "/usr/lib/tmpfiles.d/var.conf",
+    "/usr/lib/tmpfiles.d/x11.conf",
+    "/etc/tmpfiles.d/screen-cleanup.conf"
+  ],
+  "normal_rules_sha256": "b09687a1e7eaefce4a784b3f95abb0a34d516fe0e8795958f5000efe937e4d6b",
+  "package": "systemd:amd64",
+  "production_qualified": false,
+  "required_runtime_observations": [
+    "three raw ExecStart exit codes",
+    "all parse/specifier and path operation failures",
+    "actual generated static-nodes.conf",
+    "actual selected device inode/rdev/mode/uid/gid/labels",
+    "runtime tmpfs results cannot be inferred from ended ext4"
+  ],
+  "role": "p4_linux_tmpfiles_t",
+  "schema": "droidloom.native-tmpfiles-source.v1",
+  "selected_device_names": [
+    "/dev/cuse",
+    "/dev/autofs",
+    "/dev/btrfs-control",
+    "/dev/nvram",
+    "/dev/userio",
+    "/dev/uhid",
+    "/dev/vfio/vfio",
+    "/dev/vhci",
+    "/dev/vhost-net",
+    "/dev/vhost-vsock",
+    "/dev/snd/timer",
+    "/dev/snd/seq"
+  ],
+  "selected_device_records": [
+    {
+      "device": "/dev/cuse",
+      "input_line": 2,
+      "kind": "c",
+      "major": 10,
+      "minor": 203,
+      "mode": "0600",
+      "module": "cuse"
+    },
+    {
+      "device": "/dev/autofs",
+      "input_line": 3,
+      "kind": "c",
+      "major": 10,
+      "minor": 235,
+      "mode": "0600",
+      "module": "autofs4"
+    },
+    {
+      "device": "/dev/btrfs-control",
+      "input_line": 4,
+      "kind": "c",
+      "major": 10,
+      "minor": 234,
+      "mode": "0600",
+      "module": "btrfs"
+    },
+    {
+      "device": "/dev/nvram",
+      "input_line": 5,
+      "kind": "c",
+      "major": 10,
+      "minor": 144,
+      "mode": "0600",
+      "module": "nvram"
+    },
+    {
+      "device": "/dev/userio",
+      "input_line": 6,
+      "kind": "c",
+      "major": 10,
+      "minor": 240,
+      "mode": "0600",
+      "module": "userio"
+    },
+    {
+      "device": "/dev/uhid",
+      "input_line": 7,
+      "kind": "c",
+      "major": 10,
+      "minor": 239,
+      "mode": "0600",
+      "module": "uhid"
+    },
+    {
+      "device": "/dev/vfio/vfio",
+      "input_line": 8,
+      "kind": "c",
+      "major": 10,
+      "minor": 196,
+      "mode": "0600",
+      "module": "vfio"
+    },
+    {
+      "device": "/dev/vhci",
+      "input_line": 9,
+      "kind": "c",
+      "major": 10,
+      "minor": 137,
+      "mode": "0600",
+      "module": "hci_vhci"
+    },
+    {
+      "device": "/dev/vhost-net",
+      "input_line": 10,
+      "kind": "c",
+      "major": 10,
+      "minor": 238,
+      "mode": "0600",
+      "module": "vhost_net"
+    },
+    {
+      "device": "/dev/vhost-vsock",
+      "input_line": 11,
+      "kind": "c",
+      "major": 10,
+      "minor": 241,
+      "mode": "0600",
+      "module": "vhost_vsock"
+    },
+    {
+      "device": "/dev/snd/timer",
+      "input_line": 12,
+      "kind": "c",
+      "major": 116,
+      "minor": 33,
+      "mode": "0600",
+      "module": "snd_timer"
+    },
+    {
+      "device": "/dev/snd/seq",
+      "input_line": 13,
+      "kind": "c",
+      "major": 116,
+      "minor": 1,
+      "mode": "0600",
+      "module": "snd_seq"
+    }
+  ],
+  "selected_device_source": {
+    "bytes": 13160,
+    "path": "/home/qq/work/p4-native-tmpfiles-inputs-4b91-r1/SELECTED-STATIC-NODES-SOURCE-r1.json",
+    "sha256": "72b498c5ed795a655fa6268342b50fca8d80264f758932104829be26136c86ca"
+  },
+  "selected_device_source_derived_only": true,
+  "source_documents": [
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 180129,
+      "path": "src/tmpfiles/tmpfiles.c",
+      "sha256": "f3aa633ad113f8ef4e98a3401a8b3403cb1af253ffb6cbcfc748ace70b9619e9"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 13783,
+      "path": "src/shared/specifier.c",
+      "sha256": "4bfa8160483ac24a23992904798e2860fc3bce639d2ba870d5fee868a2d5fff0"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 10893,
+      "path": "src/libsystemd/sd-id128/sd-id128.c",
+      "sha256": "bf74543265c55b291f42d9c9a28518d1f5ecc7d4e4e87e28c303ba000cd7dd6b"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 10036,
+      "path": "src/libsystemd/sd-id128/id128-util.c",
+      "sha256": "de7e86034d0c1935a8c583501f82f7989e419d5f5cc6ecf9636d89847179551a"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 25770,
+      "path": "src/shared/selinux-util.c",
+      "sha256": "241a1cdb353d954a1a771e4b33709860a2df729bb7512130b5fb985fe1105df7"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 1389,
+      "path": "src/shared/mkdir-label.c",
+      "sha256": "cb5470df867959d3668f22c41ef2d6a514e996f6c2348b8eee3f1c07800d6e5a"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 3109,
+      "path": "src/shared/label-util.c",
+      "sha256": "69733a82b73b3a095aae75afa276488de45fa1db797a488a7634264a56fe978b"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 25275,
+      "path": "src/shared/acl-util.c",
+      "sha256": "130f0879a1c17a3de5071022cdc8f8c2f86d9ef7fea49dbba985bedda952fddd"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 8624,
+      "path": "src/basic/chattr-util.c",
+      "sha256": "101c3ddab4e490380e3604efb0406eebb43dd6d1c09874f83cc7f80400fdc9cf"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 9880,
+      "path": "src/basic/mkdir.c",
+      "sha256": "88a9ce00bc2c05c0c5d329653c29846622356efcbc207639a5877b323d102756"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 41483,
+      "path": "src/basic/fd-util.c",
+      "sha256": "cb60ffa3bbe82f099d62dac6d7b37102cb56ab69e46b75483bf5f7dcfdfd0311"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 42576,
+      "path": "src/basic/user-util.c",
+      "sha256": "d24df80e7a5b91aa0bdc1740a3d9e12a3444758662fa04d89dbed11e86ba2085"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 55754,
+      "path": "src/basic/fileio.c",
+      "sha256": "691d77b7655f522473d2c0baba78f285bfe5ff344e3ebd4357b63a7b87402d86"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 20541,
+      "path": "src/basic/capability-util.c",
+      "sha256": "12f3b6c2dd3da6a09ee9038a227ede9be0120b4ed39c457f0cb316c6c406bacb"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 52249,
+      "path": "src/basic/fs-util.c",
+      "sha256": "de38f495f3be7fc9e80051487bac1242c71f2f38cffa4fba2d8f11380d3794d4"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 48522,
+      "path": "src/basic/chase.c",
+      "sha256": "80ba22ad54294b37d0add785c0c67f6385225ee5a402850d323d56b6c3eb301a"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 5218,
+      "path": "src/basic/glob-util.c",
+      "sha256": "fd1b0c6db2621a6469931167ea6b34e9649d1276554421d79703ae742a79ee07"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 20524,
+      "path": "src/basic/stat-util.c",
+      "sha256": "51dc55061e114cd2aae99ec74c2987ef366b2ce8e773c9fa39cf74d4892e04f8"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 47226,
+      "path": "src/basic/path-util.c",
+      "sha256": "bdf1ddb4de9ca9339ad75e60844a4221c0ba804b0fbf13889a1a087f3b179549"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 7868,
+      "path": "src/basic/procfs-util.c",
+      "sha256": "cc959733429a0bd60d78d475c033ef344bef962d3910f6ad1c0f3831c262233c"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 75697,
+      "path": "src/shared/btrfs-util.c",
+      "sha256": "954a43b0f35aa4f43ea25a0f0f9e0a0c9e453de2d064c429b10e9cf8caa85a44"
+    },
+    {
+      "admission": "normal-dpkg-source-quilt",
+      "bytes": 2913,
+      "kind": "libselinux",
+      "package": "libselinux",
+      "path": "src/init.c",
+      "sha256": "c7e545e2e87322738a55f55fd7b4ebf8957c44a3d9f87f52a2c359e4ad865ba3",
+      "version": "3.9-4build1+p4lsmexec4"
+    },
+    {
+      "admission": "normal-dpkg-source-quilt",
+      "bytes": 10196,
+      "kind": "libselinux",
+      "package": "libselinux",
+      "path": "src/selinux_config.c",
+      "sha256": "40a1f0b4f0a0bba99c64a77fa952fde889d68927360dcf2aef927c662cf845ea",
+      "version": "3.9-4build1+p4lsmexec4"
+    },
+    {
+      "admission": "normal-dpkg-source-quilt",
+      "bytes": 8487,
+      "kind": "libselinux",
+      "package": "libselinux",
+      "path": "src/label.c",
+      "sha256": "e98ece15f3e9b13a888adf9bd1cda4adfdd0e7779425f6bc9823b861e8d5b630",
+      "version": "3.9-4build1+p4lsmexec4"
+    },
+    {
+      "admission": "normal-dpkg-source-quilt",
+      "bytes": 61312,
+      "kind": "libselinux",
+      "package": "libselinux",
+      "path": "src/label_file.c",
+      "sha256": "f2bc93e276a35a2d4c9b1dd49afd17f4e2a59831fdc784ce0b57b2eb9e20a9bf",
+      "version": "3.9-4build1+p4lsmexec4"
+    },
+    {
+      "admission": "normal-dpkg-source-quilt",
+      "bytes": 5087,
+      "kind": "libselinux",
+      "package": "libselinux",
+      "path": "src/label_support.c",
+      "sha256": "523dd3a10f8f23f1db7017217db643d8d5aeb14eb8a104ab1863e141c41b7482",
+      "version": "3.9-4build1+p4lsmexec4"
+    },
+    {
+      "admission": "normal-dpkg-source-quilt",
+      "bytes": 11713,
+      "kind": "libselinux",
+      "package": "libselinux",
+      "path": "src/procattr.c",
+      "sha256": "b135fe619e7eaa4d68ee48c190b8ec00d27763b42604be65667b63f9dba294d4",
+      "version": "3.9-4build1+p4lsmexec4"
+    },
+    {
+      "admission": "normal-dpkg-source-quilt",
+      "bytes": 802,
+      "kind": "libselinux",
+      "package": "libselinux",
+      "path": "src/lsetfilecon.c",
+      "sha256": "9195f4ba102d5f6c97928a75475f69b058077205f8703caf7ddadea06936d7fe",
+      "version": "3.9-4build1+p4lsmexec4"
+    },
+    {
+      "admission": "normal-dpkg-source-quilt",
+      "bytes": 1217,
+      "kind": "libselinux",
+      "package": "libselinux",
+      "path": "src/lgetfilecon.c",
+      "sha256": "5e9d414ca14ab354c5f88138f0258402f2253f9146457632cb2f1e2d742ee419",
+      "version": "3.9-4build1+p4lsmexec4"
+    },
+    {
+      "admission": "normal-dpkg-source-quilt",
+      "bytes": 796,
+      "kind": "libselinux",
+      "package": "libselinux",
+      "path": "src/setfilecon.c",
+      "sha256": "d8577792273cc92bd73912b7f6a149370ed55a488134b0a7447ccb0072039c6a",
+      "version": "3.9-4build1+p4lsmexec4"
+    },
+    {
+      "admission": "normal-dpkg-source-quilt",
+      "bytes": 1212,
+      "kind": "libselinux",
+      "package": "libselinux",
+      "path": "src/getfilecon.c",
+      "sha256": "6433c00d24cc471f5a79cda3fb80277352ae746d82567150e472e396fb128cee",
+      "version": "3.9-4build1+p4lsmexec4"
+    },
+    {
+      "admission": "normal-dpkg-source-quilt",
+      "bytes": 38504,
+      "kind": "libselinux",
+      "package": "libselinux",
+      "path": "src/selinux_restorecon.c",
+      "sha256": "0829993163d9cf4af56d7b2679a9fb436c96267e58668278985c92611530a325",
+      "version": "3.9-4build1+p4lsmexec4"
+    },
+    {
+      "admission": "selected-kernel-source",
+      "bytes": 212133,
+      "kind": "kernel",
+      "package": "linux",
+      "path": "security/selinux/hooks.c",
+      "sha256": "4fa2a20bff2788fffc1f6bc95d49af3e1145e6a679f69ff5aa2d5a1bd85272a0",
+      "version": "6.18.64-p4ctx6181-fusectl-aafs-peer-r1"
+    },
+    {
+      "admission": "selected-kernel-source",
+      "bytes": 153602,
+      "kind": "kernel",
+      "package": "linux",
+      "path": "fs/namei.c",
+      "sha256": "d8fe89b24c757861906d4b7fbcbe04b3d66736f8df813a21544d0f8f5f93dc63",
+      "version": "6.18.64-p4ctx6181-fusectl-aafs-peer-r1"
+    },
+    {
+      "admission": "selected-kernel-source",
+      "bytes": 17500,
+      "kind": "kernel",
+      "package": "linux",
+      "path": "fs/attr.c",
+      "sha256": "4b38adeaec03fdc8924670aa1e7158fdeb33451c4da35ae17493567b6b16db3b",
+      "version": "6.18.64-p4ctx6181-fusectl-aafs-peer-r1"
+    },
+    {
+      "admission": "selected-kernel-source",
+      "bytes": 41618,
+      "kind": "kernel",
+      "package": "linux",
+      "path": "fs/xattr.c",
+      "sha256": "f0211a15f0e3e2bec046ae01f27e7a87982fa96465454faeddcb7bc4d6cdfdde",
+      "version": "6.18.64-p4ctx6181-fusectl-aafs-peer-r1"
+    },
+    {
+      "admission": "selected-kernel-source",
+      "bytes": 32109,
+      "kind": "kernel",
+      "package": "linux",
+      "path": "fs/posix_acl.c",
+      "sha256": "52e61b0203a3315ddffc607939e17d690920bef842fec837020ecf5ce8e153fd",
+      "version": "6.18.64-p4ctx6181-fusectl-aafs-peer-r1"
+    },
+    {
+      "admission": "selected-kernel-source",
+      "bytes": 3514,
+      "kind": "kernel",
+      "package": "linux",
+      "path": "include/linux/miscdevice.h",
+      "sha256": "00c7cb5ad33dd51e448843c6c4e828afb6583431152b8218d8a40b2c4601eeb7",
+      "version": "6.18.64-p4ctx6181-fusectl-aafs-peer-r1"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 20841,
+      "path": "src/shared/rm-rf.c",
+      "sha256": "a889bb216d281264d9e844342d1f174a72eff2a463de127c00b07b4ee885996a"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 2299,
+      "path": "src/shared/rm-rf.h",
+      "sha256": "90cefada6f62158d54b548081d0e0615ffdd24ff793a47a9a619b1f6e178b198"
+    },
+    {
+      "admission": "selected-kernel-source",
+      "bytes": 83009,
+      "kind": "kernel",
+      "package": "linux",
+      "path": "fs/inode.c",
+      "sha256": "406d3939250b61bcde4e7eb71f6c6549d6a6b49b73ec4734775113df7ea0ac23",
+      "version": "6.18.64-p4ctx6181-fusectl-aafs-peer-r1"
+    },
+    {
+      "admission": "selected-kernel-source",
+      "bytes": 11280,
+      "kind": "kernel",
+      "package": "linux",
+      "path": "drivers/base/devtmpfs.c",
+      "sha256": "6ae711234e2a65352d87a332467763d397097a61158ab3305a0d2960bb196012",
+      "version": "6.18.64-p4ctx6181-fusectl-aafs-peer-r1"
+    },
+    {
+      "admission": "selected-kernel-source",
+      "bytes": 96491,
+      "kind": "kernel",
+      "package": "linux",
+      "path": "security/selinux/ss/services.c",
+      "sha256": "a3dc132fceec9f42a8d1728cef1b45685d5d2e0f3b5dcb812bec4049c5c19f67",
+      "version": "6.18.64-p4ctx6181-fusectl-aafs-peer-r1"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 96897,
+      "path": "src/basic/terminal-util.c",
+      "sha256": "29d7fcb01a7dfcd1cb03b69772a4bedd98021881f1d3e46378f0abb4529767d1"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 85204,
+      "path": "src/shared/creds-util.c",
+      "sha256": "7df980bb85976b4ee07f06ab81669f666bf7e2334ab25d0e42af4104118dc20d"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 34859,
+      "path": "src/basic/conf-files.c",
+      "sha256": "ee1d150afbc9ab9ec3714c67bf49a15ec452ff01368a4d61b2e9f84a969c1619"
+    }
+  ],
+  "type_boundary": "The immutable normal ELF and admitted ordinary rules use the normal raw fscreate API. The role can create the allowed object classes within allowed parent types; named transitions are not an independent pathname confinement guarantee.",
+  "unit_success_status_changed": false,
+  "units": [
+    {
+      "argv": [
+        "/usr/bin/systemd-tmpfiles",
+        "--prefix=/dev",
+        "--create",
+        "--boot",
+        "--graceful"
+      ],
+      "path": "/usr/lib/systemd/system/systemd-tmpfiles-setup-dev-early.service",
+      "raw_exit_and_complete_messages_required": true,
+      "success_exit_status": [
+        "DATAERR",
+        "CANTCREAT"
+      ],
+      "unit_modified": false
+    },
+    {
+      "argv": [
+        "/usr/bin/systemd-tmpfiles",
+        "--prefix=/dev",
+        "--create",
+        "--boot"
+      ],
+      "path": "/usr/lib/systemd/system/systemd-tmpfiles-setup-dev.service",
+      "raw_exit_and_complete_messages_required": true,
+      "success_exit_status": [
+        "DATAERR",
+        "CANTCREAT"
+      ],
+      "unit_modified": false
+    },
+    {
+      "argv": [
+        "/usr/bin/systemd-tmpfiles",
+        "--create",
+        "--remove",
+        "--boot",
+        "--exclude-prefix=/dev"
+      ],
+      "path": "/usr/lib/systemd/system/systemd-tmpfiles-setup.service",
+      "raw_exit_and_complete_messages_required": true,
+      "success_exit_status": [
+        "DATAERR",
+        "CANTCREAT"
+      ],
+      "unit_modified": false
+    }
+  ],
+  "version": "259.9-0ubuntu0.1+p4gentmp2",
+  "z_only_device_names": [
+    "/dev/loop-control",
+    "/dev/net/tun",
+    "/dev/fuse",
+    "/dev/kvm"
+  ]
+}
