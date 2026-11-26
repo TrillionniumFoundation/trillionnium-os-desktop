@@ -13,8 +13,11 @@ mod labels;
 mod materials;
 #[path = "cold_original_once_owner.rs"]
 mod owner;
+#[path = "cold_original_once_retirement.rs"]
+mod retirement;
 #[path = "cold_original_once_state.rs"]
 mod state;
+pub(super) use retirement::OriginalRetirement;
 
 use crate::{Result, boot_files as files, cold_original_data, ensure, fs, model::Identity};
 use files::FilePin;
@@ -51,7 +54,10 @@ fn data_phase_allowed(phase: Phase, step: OriginalDataStep) -> bool {
                 Phase::SelectionWithdrawIntent | Phase::Aborting,
                 WithdrawSelection
             )
-            | (Phase::SelectionWithdrawn | Phase::Aborting, RetireWorking)
+            | (
+                Phase::SelectionWithdrawn | Phase::PairRestored | Phase::Aborting,
+                RetireWorking
+            )
             | (Phase::SelectionWithdrawn | Phase::Aborting, Restore)
     )
 }
@@ -106,7 +112,9 @@ fn root_file_matches(pin: &FilePin) -> Result<bool> {
 }
 
 impl OriginalQualificationAuthority {
-    pub(super) fn label_sources(&self) -> &cold_original_data::labels::OriginalLabelSources {
+    pub(super) fn label_sources(
+        &self,
+    ) -> Result<&cold_original_data::labels::OriginalLabelSources> {
         self.materials.sources()
     }
 
@@ -430,6 +438,18 @@ mod operation_tests {
         assert!(data_phase_allowed(
             Phase::SelectionWithdrawn,
             OriginalDataStep::RetireWorking
+        ));
+        assert!(data_phase_allowed(
+            Phase::PairRestored,
+            OriginalDataStep::RetireWorking
+        ));
+        assert!(!data_phase_allowed(
+            Phase::PairRestored,
+            OriginalDataStep::Exchange
+        ));
+        assert!(!data_phase_allowed(
+            Phase::PairRestored,
+            OriginalDataStep::PublishSelection
         ));
     }
 }

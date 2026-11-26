@@ -10,7 +10,10 @@ use crate::{
     Result,
     boot_files::{self as files, FilePin},
     boot_runtime::LabelTools,
-    cold_original_data::{self, labels::OriginalLabelSources},
+    cold_original_data::{
+        self,
+        labels::{OriginalLabelRestoreSources, OriginalLabelSources},
+    },
     cold_original_once_recovery::contract::{self, EarlyConfiguration, RecoveryBootSpec},
     ensure, fs,
     model::Identity,
@@ -106,8 +109,26 @@ impl Guard {
 
 /// Retained by the sole authority. In particular the real normal label factory
 /// stays alive; its source-pin JSON is not substituted for that custody.
+enum SourceCustody {
+    Initial(OriginalLabelSources),
+    Restore(OriginalLabelRestoreSources),
+}
+impl SourceCustody {
+    fn pin(&self) -> &FilePin {
+        match self {
+            Self::Initial(v) => v.source_pin(),
+            Self::Restore(v) => v.source_pin(),
+        }
+    }
+    fn revalidate(&self) -> Result<()> {
+        match self {
+            Self::Initial(v) => v.revalidate(),
+            Self::Restore(v) => v.revalidate(),
+        }
+    }
+}
 pub(super) struct Materials {
-    sources: OriginalLabelSources,
+    sources: SourceCustody,
     guards: Vec<Guard>,
     report: SealedInput,
     recovery: RecoveryBootSpec,
@@ -116,8 +137,16 @@ pub(super) struct Materials {
     mac_files: Vec<SealedInput>,
 }
 impl Materials {
-    pub(super) fn sources(&self) -> &OriginalLabelSources {
-        &self.sources
+    pub(super) fn sources(&self) -> Result<&OriginalLabelSources> {
+        match &self.sources {
+            SourceCustody::Initial(v) => Ok(v),
+            SourceCustody::Restore(_) => {
+                Err("returned source custody cannot authorize initial label application".into())
+            }
+        }
+    }
+    pub(super) fn source_pin(&self) -> &FilePin {
+        self.sources.pin()
     }
     pub(super) fn report(&self) -> &FilePin {
         self.report.pin()
@@ -700,7 +729,8 @@ pub(super) fn admit(input: &FilePin) -> Result<Rc<OriginalQualificationAuthority
         "original_grub":grub,"original_cell":original_cell_pin,"actual_original_cell":actual_cell,
         "actual_original_cell_identity":actual_cell_guard.identity,"candidate_cell":new_cell,"selection":selection,
         "preserved_cell_fields":derived.preserved_fields,"changed_cell_fields":derived.changed_fields,
-        "actual_owner":owner.evidence(),"runtime_or_migration_accepted":false,"production_ready":false}),
+        "actual_owner":owner.evidence(),"retained_sources":guards.iter().map(|g|json!({"source":g.pin,"identity":g.identity})).collect::<Vec<_>>(),
+        "runtime_or_migration_accepted":false,"production_ready":false}),
     )?;
     let recovery = RecoveryBootSpec {
         schema: "droidloom.original-once-recovery-boot.v1".into(),
@@ -774,7 +804,7 @@ pub(super) fn admit(input: &FilePin) -> Result<Rc<OriginalQualificationAuthority
         SealedInput::open(sources.source_pin())?,
     ];
     let materials = Materials {
-        sources,
+        sources: SourceCustody::Initial(sources),
         guards,
         report: SealedInput::open(&report)?,
         recovery,
@@ -798,6 +828,322 @@ pub(super) fn admit(input: &FilePin) -> Result<Rc<OriginalQualificationAuthority
         retirement: RefCell::new(RetirementSource::Initial),
         journal: RefCell::new(journal),
         label_plan: RefCell::new(None::<labels::LabelPlanBinding>),
+        materials,
+    });
+    result.verify_current_owner()?;
+    Ok(result)
+}
+
+/// Reopen the same sealed preparation under a newly verified original owner.
+/// The historical package/image admission is not repeated against today's
+/// intentionally changed dpkg database. Its separately typed archive-only
+/// factory cannot be used to apply labels or authorize another candidate.
+pub(super) fn resume(intent_pin: &FilePin) -> Result<Rc<OriginalQualificationAuthority>> {
+    let intent_guard = SealedInput::open(intent_pin)?;
+    let intent: Value = serde_json::from_slice(&intent_guard.read()?)?;
+    let candidate = text(&intent, "candidate_id")?.to_owned();
+    ensure(
+        fs::valid_digest(&candidate),
+        "returned once candidate identity is invalid",
+    )?;
+    let work = Path::new(BASE).join(format!("original-once-{candidate}"));
+    ensure(
+        intent_pin.path == work.join("INTENT.json")
+            && intent["schema"] == "droidloom.original-once-intent.v1"
+            && intent["work_directory"] == work.to_string_lossy().as_ref()
+            && intent["root_uuid"] == contract::ROOT_UUID
+            && intent["original_kernel"] == contract::ORIGINAL_KERNEL
+            && intent["original_entry"] == contract::ORIGINAL_ENTRY,
+        "returned once intent lost its fixed original machine binding",
+    )?;
+    let boot = std::fs::read_to_string("/proc/sys/kernel/random/boot_id")?;
+    let owner = OriginalOwner::acquire(boot.trim(), &candidate)?;
+    let work_fd = File::from(rustix::fs::open(
+        &work,
+        OFlags::PATH | OFlags::DIRECTORY | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+        Mode::empty(),
+    )?);
+    let work_identity = fs::stat(&work_fd)?;
+    let journal = Journal::reopen(&work.join("journal"), &candidate, &intent_pin.sha256)?;
+    let admitted = journal
+        .observation(Phase::Admitted)?
+        .ok_or("actual once admission event is absent")?;
+    let report_pin = pin(&intent["admitted_materials"])?;
+    ensure(
+        super::same_pin(&report_pin, &pin(&admitted["materials"])?),
+        "once intent and admission material pins differ",
+    )?;
+    let report_guard = SealedInput::open(&report_pin)?;
+    let report: Value = serde_json::from_slice(&report_guard.read()?)?;
+    ensure(
+        report_pin.path == work.join("ADMITTED-MATERIALS.json")
+            && report["schema"] == "droidloom.original-once-admitted-materials.v1"
+            && report["candidate_id"] == candidate,
+        "returned material record is outside the original candidate",
+    )?;
+    let input = SealedInput::open(&pin(&report["input"])?)?;
+    let plan: Plan = serde_json::from_slice(&input.read()?)?;
+    ensure(
+        plan.schema == "droidloom.original-once-plan.v1"
+            && plan.candidate_id == candidate
+            && intent["original_boot_id"] == plan.original_boot_id
+            && super::same_pin(&pin(&intent["normal_producer"])?, &plan.normal_producer),
+        "returned intent differs from its original source plan",
+    )?;
+    let source_pin = pin(&intent["normal_sources"])?;
+    ensure(
+        super::same_pin(&source_pin, &pin(&report["normal_sources"])?),
+        "normal source selection changed after boot",
+    )?;
+    let sources = OriginalLabelRestoreSources::reopen(&source_pin)?;
+    compare_candidates(
+        &candidate,
+        sources.historical_initramfs_readback(),
+        &report["fresh_owned"],
+        &plan.normal_producer,
+    )?;
+    ensure(
+        report["normal_initramfs"] == *sources.historical_initramfs_readback(),
+        "returned normal source history differs",
+    )?;
+    let owned_receipt = Guard::open(&pin(&report["fresh_owned"]["receipt"])?)?;
+    let actual_owned: Value =
+        serde_json::from_slice(&files::read_pin(&owned_receipt.pin, 16 * 1024 * 1024)?)?;
+    ensure(
+        actual_owned == report["fresh_owned"]["actual"],
+        "preserved actual full-guest proof differs from the admitted body",
+    )?;
+    let mut expected = vec![
+        plan.normal_producer.clone(),
+        plan.prepared_initramfs.clone(),
+        plan.owned_verification_input.clone(),
+        plan.cold_clone.clone(),
+        plan.original_ext4_metadata.clone(),
+    ];
+    let five_pin = pin(&report["five_mac_files"])?;
+    let five_guard = SealedInput::open(&five_pin)?;
+    let five: Value = serde_json::from_slice(&five_guard.read()?)?;
+    ensure(
+        five_pin.path == work.join("FIVE-MAC-PREPARED.json")
+            && five["schema"] == "droidloom.original-once-five-mac-prepared.v1"
+            && five["fresh_owned_receipt"] == report["fresh_owned"]["receipt"],
+        "preserved five-MAC producer differs",
+    )?;
+    expected.extend([
+        pin(&five["normal_host_manifest"])?,
+        pin(&five["normal_producer"])?,
+        pin(&five["actual_capture"])?,
+    ]);
+    for (name, body) in crate::boot_host::cold_modules::FILES {
+        expected.push(FilePin {
+            path: work.join("cold-source").join(
+                Path::new(name)
+                    .file_name()
+                    .ok_or("normal cold source basename absent")?,
+            ),
+            bytes: body.len() as u64,
+            sha256: fs::digest(body),
+        });
+    }
+    let grub_pin = pin(&intent["original_grub"])?;
+    ensure(
+        super::same_pin(&grub_pin, &pin(&report["original_grub"])?),
+        "original GRUB preimage selection changed",
+    )?;
+    let grub_guard = SealedInput::open(&grub_pin)?;
+    let grub: Value = serde_json::from_slice(&grub_guard.read()?)?;
+    let originals = grub["preserved"]
+        .as_array()
+        .ok_or("original GRUB preimage members absent")?;
+    ensure(
+        originals.len() == 4,
+        "complete original GRUB and kernel preimages required",
+    )?;
+    for row in originals {
+        let original = pin(&row["source"])?;
+        let preserved = pin(&row["preserved"])?;
+        ensure(
+            preserved.path
+                == work.join(format!(
+                    "ORIGINAL-{}",
+                    original
+                        .path
+                        .file_name()
+                        .ok_or("original boot basename absent")?
+                        .to_string_lossy()
+                ))
+                && same_bytes(&original, &preserved),
+            "independent original boot preimage changed",
+        )?;
+        expected.push(preserved);
+    }
+    let recorded = report["retained_sources"]
+        .as_array()
+        .ok_or("returned complete source identities are absent")?;
+    ensure(
+        recorded.len() == expected.len(),
+        "returned source custody differs from the exact normal producer roster",
+    )?;
+    let mut guards = Vec::new();
+    for (row, expected) in recorded.iter().zip(&expected) {
+        let observed = pin(&row["source"])?;
+        let identity: Identity = serde_json::from_value(row["identity"].clone())?;
+        ensure(
+            super::same_pin(&observed, expected),
+            "returned source pin changed from its normal producer roster",
+        )?;
+        let guard = Guard::open(&observed)?;
+        ensure(
+            guard.identity == identity,
+            "immutable once source was replaced or changed across the original return",
+        )?;
+        guards.push(guard);
+    }
+    guards.push(owned_receipt);
+    let executable = File::open("/proc/self/exe")?;
+    ensure(
+        fs::stat(&executable)? == guards[0].identity
+            && fs::hash(&executable)? == plan.normal_producer.sha256,
+        "original return is not executing the same admitted normal producer",
+    )?;
+    let original_cell = SealedInput::open(&pin(&intent["original_cell"])?)?;
+    let new_cell = SealedInput::open(&pin(&intent["candidate_cell"])?)?;
+    let selection = SealedInput::open(&pin(&intent["selection"])?)?;
+    let cold_clone = SealedInput::open(&pin(&intent["cold_clone"])?)?;
+    for (item, name, field) in [
+        (&original_cell, "ORIGINAL-CELL.json", "original_cell"),
+        (&new_cell, "CANDIDATE-CELL.json", "candidate_cell"),
+        (&selection, "SELECTION.json", "selection"),
+    ] {
+        ensure(
+            item.pin().path == work.join(name)
+                && super::same_pin(item.pin(), &pin(&report[field])?),
+            "returned cell or selected input changed",
+        )?;
+    }
+    ensure(
+        super::same_pin(cold_clone.pin(), &plan.cold_clone),
+        "returned original data source changed",
+    )?;
+    let ext4_pin = pin(&report["original_ext4"])?;
+    let ext4_guard = SealedInput::open(&ext4_pin)?;
+    let ext4: Value = serde_json::from_slice(&ext4_guard.read()?)?;
+    ensure(
+        ext4["schema"] == "droidloom.original-once-ext4-readback.v1"
+            && ext4["historical"]["sha256"] == EXT4_SHA,
+        "returned original filesystem policy lost its actual cold-clone observation",
+    )?;
+    let persistent: cell::PersistentData = serde_json::from_value(ext4["persistent_data"].clone())?;
+    let normal = sources.historical_initramfs_readback();
+    let m = &normal["normal_materials"];
+    let derived = cell::derive_original(
+        &original_cell.read()?,
+        text(m, "cohort_sha256")?,
+        text(m, "runtime_sha256")?,
+        &persistent,
+    )?;
+    ensure(
+        new_cell.read()? == derived.cell && selection.read()? == derived.selection,
+        "returned candidate configuration differs from the fixed original identity derivation",
+    )?;
+    let recipe = SealedInput::open(&pin(&admitted["recovery_recipe"])?)?;
+    ensure(
+        recipe.pin().path == work.join("RECOVERY-RECIPE.json"),
+        "returned recovery recipe path differs",
+    )?;
+    let recipe_body: Value = serde_json::from_slice(&recipe.read()?)?;
+    ensure(
+        super::same_pin(&pin(&recipe_body["base_intent"])?, intent_pin),
+        "recovery recipe is bound to a different original intent",
+    )?;
+    let early = SealedInput::open(&pin(&recipe_body["early_configuration"])?)?;
+    let early_body: EarlyConfiguration = serde_json::from_slice(&early.read()?)?;
+    let recovery: RecoveryBootSpec = serde_json::from_value(intent["recovery"].clone())?;
+    recovery.validate()?;
+    ensure(
+        early.pin().path == work.join("EARLY.json")
+            && early_body.intent_sha256 == intent_pin.sha256
+            && serde_json::to_value(&early_body.recovery)? == serde_json::to_value(&recovery)?,
+        "returned early recovery source changed",
+    )?;
+    let mac_pins: Vec<FilePin> = serde_json::from_value(five["files"].clone())?;
+    ensure(
+        mac_pins.len() == MAC_NAMES.len()
+            && mac_pins
+                .iter()
+                .zip(MAC_NAMES)
+                .all(|(p, n)| p.path == work.join("five-mac-files/etc/droidloom/host-mac").join(n)),
+        "returned five-file MAC roster changed",
+    )?;
+    let mac_files = mac_pins
+        .iter()
+        .map(SealedInput::open)
+        .collect::<Result<Vec<_>>>()?;
+    let retirement = match std::fs::symlink_metadata(work.join("DATA-EXCHANGE-INTENT.json")) {
+        Ok(_) => {
+            let pair =
+                SealedInput::open(&files::pin_file(&work.join("DATA-EXCHANGE-INTENT.json"))?)?;
+            let body: Value = serde_json::from_slice(&pair.read()?)?;
+            ensure(
+                body["candidate_id"] == candidate
+                    && body["original_boot_id"] == plan.original_boot_id
+                    && body["work"] == work.to_string_lossy().as_ref()
+                    && super::same_pin(&pin(&body["selection"])?, selection.pin())
+                    && super::same_pin(&pin(&body["cold_clone"])?, cold_clone.pin())
+                    && body["expected_cell"]["path"] == "/etc/droidloom/cell.json"
+                    && same_bytes(&pin(&body["expected_cell"])?, new_cell.pin()),
+                "reopened pair intent lost its original fixed inputs",
+            )?;
+            cold_original_data::assert_prepared_pair_retired(pair.pin())?;
+            RetirementSource::Prepared(pair)
+        }
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+            ensure(
+                journal.observation(Phase::PairExchangeIntent)?.is_none()
+                    && journal.observation(Phase::LabelsIntent)?.is_none(),
+                "a mutated once transaction lost its actual pair intent",
+            )?;
+            cold_original_data::assert_initial_pair_retired(cold_clone.pin())?;
+            RetirementSource::Initial
+        }
+        Err(e) => return Err(e.into()),
+    };
+    let expected_cell = FilePin {
+        path: "/etc/droidloom/cell.json".into(),
+        bytes: new_cell.pin().bytes,
+        sha256: new_cell.pin().sha256.clone(),
+    };
+    let materials = Materials {
+        sources: SourceCustody::Restore(sources),
+        guards,
+        report: report_guard,
+        recovery,
+        early_configuration: early,
+        recovery_recipe: recipe,
+        mac_files,
+    };
+    let result = Rc::new(OriginalQualificationAuthority {
+        owner: RefCell::new(owner),
+        candidate_id: candidate,
+        work,
+        work_fd,
+        work_identity,
+        intent: intent_guard,
+        admitted_inputs: vec![
+            input,
+            grub_guard,
+            ext4_guard,
+            five_guard,
+            SealedInput::open(&source_pin)?,
+        ],
+        original_cell,
+        new_cell,
+        expected_cell,
+        selection,
+        cold_clone,
+        retirement: RefCell::new(retirement),
+        journal: RefCell::new(journal),
+        label_plan: RefCell::new(None),
         materials,
     });
     result.verify_current_owner()?;
