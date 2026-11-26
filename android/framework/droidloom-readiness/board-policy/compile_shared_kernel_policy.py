@@ -481,8 +481,10 @@ def verify_native_executor_accounts(check, obj, file_permissions):
     for permission in ("open", "read"):
         check(actor, obj("p4_linux_systemd_run_t"), "dir", [permission], False)
         count += 1
-    for cls in ("unix_dgram_socket", "unix_stream_socket"):
-        check(actor, actor, cls, ["create"], False)
+    # Preserve the stock executor's pre-existing journal stream transport
+    # (ubuntu-native-service-runtime.cil); no new datagram fallback is granted.
+    for cls, permitted in (("unix_dgram_socket", False), ("unix_stream_socket", True)):
+        check(actor, actor, cls, ["create"], permitted)
         count += 1
     return {"reader": "p4_linux_service_executor_t",
             "public_paths": ["/etc/passwd", "/etc/group"],
