@@ -28,6 +28,7 @@ SOURCE_PATHS = (
     "android/framework/droidloom-readiness/board-policy/derive_native_ldconfig_policy.py",
     "android/framework/droidloom-readiness/board-policy/derive_native_update_done_policy.py",
     "android/framework/droidloom-readiness/board-policy/derive_native_tmpfiles_policy.py",
+    "runtime/droidloom-supervisor/src/native_original_copy_policy.rs",
 )
 DIRECTORY = ("ioctl read write create getattr setattr lock relabelfrom relabelto "
              "append map unlink link rename execute quotaon mounton audit_access "
