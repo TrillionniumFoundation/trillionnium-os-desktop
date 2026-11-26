@@ -20,13 +20,10 @@ use std::{
     collections::{BTreeMap, BTreeSet},
     fs::File,
     io::Seek,
-    os::fd::AsRawFd,
     path::{Path, PathBuf},
     rc::Rc,
 };
 
-const PYTHON_BYTES: u64 = 7_477_160;
-const PYTHON_SHA: &str = "52e0a13e60a981d8c4b6478be2ba5176f69da07948a056bf49cf6f077e30cb41";
 const PID1_STOPPED: &str = "9d1aaa27d60140bd96365438aad20286";
 const PID1_STARTED: &str = "39f53479d3a045ac8e11786248231fbf";
 const REQUIRED_STOPPED: [&str; 5] = [
@@ -42,6 +39,7 @@ enum Kind {
     NormalReturn,
     FailedReturn,
     UnbootedAbort,
+    PreparationInterrupted,
 }
 impl Kind {
     fn name(self) -> &'static str {
@@ -49,6 +47,7 @@ impl Kind {
             Self::NormalReturn => "verified-normal-return",
             Self::FailedReturn => "verified-failed-return",
             Self::UnbootedAbort => "verified-unbooted-abort",
+            Self::PreparationInterrupted => "verified-preparation-interrupted-return",
         }
     }
 }
@@ -127,17 +126,26 @@ impl Readback {
         v.revalidate()?;
         Ok(v)
     }
-    fn revalidate(&self) -> Result<()> {
-        (&self.held).rewind()?;
+    fn revalidate_custody(&self) -> Result<()> {
+        let (named, id) = files::open_pin(&self.pin)?;
         ensure(
-            fs::stat(&self.held)? == self.identity
+            id == self.identity
+                && fs::stat(&self.held)? == id
                 && attributes(&self.held)? == self.attributes
-                && fs::hash(&self.held)? == self.pin.sha256
-                && fs::stat(&self.held)? == self.identity
-                && fs::Tree::open("/", 0)?.identity(&fs::absolute_string(&self.pin.path)?)?
-                    == self.identity,
+                && attributes(&named)? == self.attributes
+                && fs::stat(&named)? == id
+                && fs::stat(&self.held)? == id,
             "held return evidence was changed or replaced",
         )
+    }
+    fn revalidate(&self) -> Result<()> {
+        self.revalidate_custody()?;
+        (&self.held).rewind()?;
+        ensure(
+            fs::hash(&self.held)? == self.pin.sha256,
+            "return evidence body changed",
+        )?;
+        self.revalidate_custody()
     }
     fn bytes(&self) -> Result<Vec<u8>> {
         self.revalidate()?;
@@ -148,7 +156,7 @@ impl Readback {
     fn json(&self) -> Result<Value> {
         Ok(serde_json::from_slice(&self.bytes()?)?)
     }
-    fn accept(&mut self, restoration: &OriginalLabelRestoration) -> Result<()> {
+    fn accept_custody(&mut self, restoration: &OriginalLabelRestoration) -> Result<()> {
         if self.pin.path != restoration.path() {
             return Ok(());
         }
@@ -161,7 +169,7 @@ impl Readback {
         only_label_clock(restoration.before_identity(), restoration.after_identity())?;
         self.identity = restoration.after_identity().clone();
         self.attributes = attributes(&self.held)?;
-        self.revalidate()
+        self.revalidate_custody()
     }
 }
 
@@ -292,7 +300,7 @@ impl RuntimeEvidence {
         result.revalidate()?;
         Ok(Some(result))
     }
-    fn revalidate(&self) -> Result<()> {
+    fn revalidate_custody(&self) -> Result<()> {
         let tree = fs::Tree::open(&fs::absolute_string(&self.directory)?, 0)?;
         let now = fs::stat(&tree.root)?;
         ensure(
@@ -304,11 +312,11 @@ impl RuntimeEvidence {
         )?;
         rustix::fs::flock(&self.lock, FlockOperation::NonBlockingLockExclusive)?;
         for f in self.files.borrow().values() {
-            f.revalidate()?;
+            f.revalidate_custody()?;
         }
         Ok(())
     }
-    fn accept(&self, restoration: &OriginalLabelRestoration) -> Result<()> {
+    fn accept_custody(&self, restoration: &OriginalLabelRestoration) -> Result<()> {
         for (path, held, identity) in [
             (&self.directory, &self.held_directory, &self.identity),
             (
@@ -330,9 +338,16 @@ impl RuntimeEvidence {
             }
         }
         for f in self.files.borrow_mut().values_mut() {
-            f.accept(restoration)?;
+            f.accept_custody(restoration)?;
         }
-        self.revalidate()
+        self.revalidate_custody()
+    }
+    fn revalidate(&self) -> Result<()> {
+        self.revalidate_custody()?;
+        for f in self.files.borrow().values() {
+            f.revalidate()?;
+        }
+        self.revalidate_custody()
     }
     fn command(&self, verb: &str, intent: &str, boot: &str) -> Result<Option<Value>> {
         let Some(result) = self.json.get(&format!("{verb}-RESULT.json")) else {
@@ -373,107 +388,71 @@ impl RuntimeEvidence {
     }
 }
 
-const ORIGINAL_READBACK: &str = r#"import sys,json,os,hashlib
-from pathlib import Path
-sys.path.insert(0,sys.argv[1])
-from release import fixed_command,held,hash_fd,verify_original_grub_entry,original_grub_entry,ORIGINAL_ROOT_UUID,ORIGINAL_KERNEL
-boot=sys.argv[2]
-with held('/boot/grub/grub.cfg',root=True,maximum=16*1024*1024) as (fd,st):
- body=os.pread(fd,st.st_size+1,0)
- grub=verify_original_grub_entry(body,ORIGINAL_ROOT_UUID,original_grub_entry(ORIGINAL_ROOT_UUID),ORIGINAL_KERNEL)
- cfg={'path':'/boot/grub/grub.cfg','bytes':st.st_size,'sha256':hashlib.sha256(body).hexdigest()}
-with held('/boot/grub/grubenv',root=True,maximum=4096) as (fd,st):
- env=os.pread(fd,4096,0)
- listed=fixed_command('grub-editenv',[f'/proc/self/fd/{fd}','list'],maximum=65536,borrowed=(fd,))
- envpin={'path':'/boot/grub/grubenv','bytes':len(env),'sha256':hashlib.sha256(env).hexdigest()}
-journal=None
-if boot:
- fields='_BOOT_ID,_PID,_UID,_EXE,_COMM,_SYSTEMD_UNIT,_SYSTEMD_USER_UNIT,_SYSTEMD_INVOCATION_ID,__MONOTONIC_TIMESTAMP,__REALTIME_TIMESTAMP,MESSAGE_ID,MESSAGE,UNIT,USER_UNIT,UNIT_RESULT,JOB_RESULT,INVOCATION_ID'
- verified=fixed_command('journalctl',['--directory=/var/log/journal','--verify'],seconds=60,maximum=8*1024*1024)
- rows=fixed_command('journalctl',['--directory=/var/log/journal','--boot='+boot,'--no-pager','--all','--output=json','--output-fields='+fields,'_PID=1','+','_SYSTEMD_UNIT=systemd-journald.service'],seconds=60,maximum=16*1024*1024)
- journal={'verify_exit':verified['exit'],'verify_stdout':verified['stdout'].decode('utf-8','strict'),'verify_stderr':verified['stderr'].decode('utf-8','strict'),'exit':rows['exit'],'stderr':rows['stderr'].decode('utf-8','strict'),'rows':[json.loads(line) for line in rows['stdout'].splitlines()]}
-print(json.dumps({'schema':'droidloom.actual-original-return-observation.v1','original_kernel':os.uname().release,'original_boot_id':Path('/proc/sys/kernel/random/boot_id').read_text().strip(),'grub':grub,'grub_cfg':cfg,'grubenv':envpin,'grubenv_list_exit':listed['exit'],'grubenv_fields':listed['stdout'].decode('utf-8','strict'),'journal':journal},sort_keys=True))
-"#;
-
 fn original_readback(
     authority: &OriginalQualificationAuthority,
     work: &Path,
     boot: Option<&str>,
 ) -> Result<(Value, SealedInput)> {
     authority.verify_current_owner()?;
-    let modules = authority.work().join("cold-source");
-    for (name, body) in crate::boot_host::cold_modules::FILES {
-        let file = Readback::open(
-            &modules.join(
-                Path::new(name)
-                    .file_name()
-                    .ok_or("normal source basename absent")?,
-            ),
-            0o444,
-            1024 * 1024,
-        )?;
-        ensure(
-            file.pin.bytes == body.len() as u64 && file.pin.sha256 == fs::digest(body),
-            "returned normal cold module source changed",
-        )?;
-    }
-    let python = Readback::open(Path::new("/usr/bin/python3.14"), 0o755, 16 * 1024 * 1024)?;
-    ensure(
-        python.pin.bytes == PYTHON_BYTES && python.pin.sha256 == PYTHON_SHA,
-        "normal returned interpreter differs",
+    let source: Value = serde_json::from_slice(&authority.intent.read()?)?;
+    let grub_pin: FilePin = serde_json::from_value(source["original_grub"].clone())?;
+    let original: Value = serde_json::from_slice(&files::read_pin(&grub_pin, 1024 * 1024)?)?;
+    let cfg = original["preserved"]
+        .as_array()
+        .ok_or("original GRUB preimage inventory")?
+        .iter()
+        .find(|v| v["source"]["path"] == "/boot/grub/grub.cfg")
+        .ok_or("original grub.cfg source")?["source"]
+        .clone();
+    let suffix = work
+        .file_name()
+        .and_then(|s| s.to_str())
+        .ok_or("retirement work name")?;
+    let read = super::commands::call(
+        authority,
+        &format!("{suffix}-grub"),
+        "grub-read",
+        json!({"original_cfg_sha256":cfg["sha256"]}),
+        45,
     )?;
-    if let Some(boot) = boot {
-        ensure(c::uuid(boot), "candidate boot identity is not canonical")?;
-    }
-    let result = files::run_logged(
-        work,
-        "normal-return-grub-journal",
-        &format!(
-            "/proc/{}/fd/{}",
-            std::process::id(),
-            python.held.as_raw_fd()
-        ),
-        &[
-            "-I".into(),
-            "-B".into(),
-            "-c".into(),
-            ORIGINAL_READBACK.into(),
-            fs::absolute_string(&modules)?,
-            boot.unwrap_or("").into(),
-        ],
-        150,
-    )?;
-    python.revalidate()?;
-    authority.verify_current_owner()?;
-    let actual: Value = serde_json::from_slice(&files::read_pin(&result.log, 32 * 1024 * 1024)?)?;
     ensure(
-        actual["schema"] == "droidloom.actual-original-return-observation.v1"
-            && actual["original_kernel"] == c::ORIGINAL_KERNEL
-            && actual["original_boot_id"] == authority.owner.borrow().boot_id()
-            && actual["grub"]["original_entry"] == c::ORIGINAL_ENTRY
+        read.report["after_fields"]
+            .as_object()
+            .ok_or("actual GRUB fields")?
+            .get("next_entry")
+            .is_none_or(|v| v == ""),
+        "original return still has an armed one-shot selection",
+    )?;
+    let journal = if let Some(boot) = boot {
+        ensure(c::uuid(boot), "actual candidate boot identity")?;
+        Some(super::commands::call(
+            authority,
+            &format!("{suffix}-journal"),
+            "retirement-journal",
+            json!({"boot":boot}),
+            150,
+        )?)
+    } else {
+        None
+    };
+    let actual = json!({"schema":"droidloom.actual-original-return-observation.v1",
+        "original_kernel":c::ORIGINAL_KERNEL,"original_boot_id":authority.owner.borrow().boot_id(),
+        "grub":read.report["original"],"grub_cfg":cfg,
+        "grubenv":{"path":"/boot/grub/grubenv","bytes":1024,"sha256":read.report["after"]["sha256"]},
+        "grubenv_list_exit":read.report["readback"]["exit"],"grubenv_fields":read.report["after_fields"],
+        "journal":journal.as_ref().map(|v|&v.report)});
+    ensure(
+        actual["grub"]["original_entry"] == c::ORIGINAL_ENTRY
             && actual["grub"]["original_default"] == c::ORIGINAL_ENTRY
-            && actual["grubenv_list_exit"] == 0
-            && actual["grubenv"]["bytes"] == 1024,
-        "real original kernel, boot or GRUB return binding differs",
+            && actual["grubenv_list_exit"] == 0,
+        "actual normal original boot target differs",
     )?;
-    let fields = field(&actual, "grubenv_fields")?;
-    let mut seen = BTreeSet::new();
-    for line in fields.lines() {
-        let (name, value) = line
-            .split_once('=')
-            .ok_or("malformed normal GRUB environment readback")?;
-        ensure(seen.insert(name), "duplicate normal GRUB environment key")?;
-        ensure(
-            name != "next_entry" || value.is_empty(),
-            "original return still has an armed one-shot selection",
-        )?;
-    }
     let proof = save(
         &work.join("ORIGINAL-RETURN-OBSERVATION.json"),
         &json!({"schema":"droidloom.original-once-original-readback.v1",
-        "intent":authority.intent.pin(),"command":result,"normal_python":python.pin,"normal_python_identity":python.identity,
-        "actual":actual}),
+        "intent":authority.intent.pin(),"normal_grub_command":read.pin,"normal_journal_command":journal.as_ref().map(|v|&v.pin),"actual":actual}),
     )?;
+    authority.verify_current_owner()?;
     Ok((actual, proof))
 }
 
@@ -652,7 +631,7 @@ impl OriginalRetirement {
             "GRUB evolution is not the actually read returned inode",
         )
     }
-    pub(crate) fn accept_label_restoration(
+    pub(super) fn accept_label_restoration_custody(
         &self,
         restoration: &OriginalLabelRestoration,
     ) -> Result<()> {
@@ -665,18 +644,62 @@ impl OriginalRetirement {
             "restoration belongs to another retired candidate",
         )?;
         self.authority
-            .verify_label_plan(restoration.source_plan())?;
-        self.working.accept_label_restoration(restoration)?;
+            .label_plan
+            .borrow()
+            .as_ref()
+            .ok_or("held restore plan absent")?
+            .verify_pin(restoration.source_plan())?;
+        self.working.accept_label_restoration_custody(restoration)?;
         self.authority.owner.borrow_mut().accept_lock_label(
             restoration.path(),
             restoration.before_identity(),
             restoration.after_identity(),
         )?;
-        self.grubenv.borrow_mut().accept(restoration)?;
+        self.grubenv.borrow_mut().accept_custody(restoration)?;
         if let Some(runtime) = &self.runtime {
-            runtime.accept(restoration)?;
+            runtime.accept_custody(restoration)?;
         }
+        self.revalidate_custody()
+    }
+    pub(crate) fn accept_label_restoration(
+        &self,
+        restoration: &OriginalLabelRestoration,
+    ) -> Result<()> {
+        self.authority
+            .verify_label_plan(restoration.source_plan())?;
+        self.accept_label_restoration_custody(restoration)?;
         self.revalidate()
+    }
+    pub(super) fn revalidate_custody(&self) -> Result<()> {
+        ensure(
+            self.pid == std::process::id(),
+            "retirement custody crossed its original process",
+        )?;
+        super::window::verify_authority_custody(&self.authority)?;
+        self.sources.revalidate_custody()?;
+        self.working.revalidate_custody()?;
+        self.sealed.revalidate_custody()?;
+        self.observation.revalidate_custody()?;
+        self.grubenv.borrow().revalidate_custody()?;
+        if let Some(r) = &self.runtime {
+            r.revalidate_custody()?;
+        }
+        ensure(
+            self.report["scope"] == self.kind.name()
+                && self.report["original_boot_id"] == self.authority.owner.borrow().boot_id(),
+            "retirement original boot/scope changed",
+        )
+    }
+    pub(super) fn verify_working_identity_custody(&self, id: &Identity) -> Result<()> {
+        self.revalidate_custody()?;
+        self.working.verify_working_identity_custody(id)
+    }
+    pub(super) fn verify_grubenv_identity_custody(&self, id: &Identity) -> Result<()> {
+        self.revalidate_custody()?;
+        ensure(
+            self.grubenv.borrow().identity == *id,
+            "returned GRUB inode differs from actual readback",
+        )
     }
 }
 
@@ -706,14 +729,6 @@ pub(super) fn prove(
     let armed = authority.journal.borrow().observation(Phase::Armed)?;
     let arm_intent = authority.journal.borrow().observation(Phase::ArmIntent)?;
     let initial_abort = now == original;
-    ensure(
-        !initial_abort || armed.is_none(),
-        "an armed boot cannot be treated as an unbooted abort",
-    )?;
-    ensure(
-        initial_abort || arm_intent.is_some(),
-        "new boot cannot fabricate an unobserved arm intent",
-    )?;
     let runtime = RuntimeEvidence::read(&authority)?;
     let observed = runtime
         .as_ref()
@@ -751,6 +766,12 @@ pub(super) fn prove(
     let (actual, observation) = original_readback(&authority, &work, boot.as_deref())?;
     let kind = if initial_abort {
         Kind::UnbootedAbort
+    } else if arm_intent.is_none() {
+        ensure(
+            observed.is_none() && armed.is_none(),
+            "interrupted preparation cannot contain candidate/armed evidence",
+        )?;
+        Kind::PreparationInterrupted
     } else if let (Some(r), Some(b)) = (&runtime, &boot) {
         if armed.is_some() && normal_chain(r, &authority.intent.pin().sha256, b, &actual)? {
             Kind::NormalReturn
@@ -789,7 +810,7 @@ pub(super) fn prove(
         "original_boot_id":now,"admitted_original_boot_id":original,"candidate_boot_id":boot,
         "original_kernel":c::ORIGINAL_KERNEL,"root_uuid":c::ROOT_UUID,"original_entry":c::ORIGINAL_ENTRY,
         "actual_original_return":!initial_abort,"normal_maintenance_and_pid1_shutdown_observed":kind==Kind::NormalReturn,
-        "failed_return_preserved":kind==Kind::FailedReturn,"unbooted_abort":initial_abort,
+        "failed_return_preserved":kind==Kind::FailedReturn,"preparation_interrupted":kind==Kind::PreparationInterrupted,"unbooted_abort":initial_abort,"arm_was_observed":armed.is_some(),
         "actual_owner":authority.owner.borrow().evidence(),"original_observation":observation.pin(),
         "working_data":working.evidence(),"runtime_files":runtime.as_ref().map(|r|r.files.borrow().iter().map(|(name,f)|json!({"name":name,"pin":f.pin,"identity":f.identity})).collect::<Vec<_>>()),
         "grubenv":grubenv.pin,"grubenv_identity":grubenv.identity,"production_ready":false,"private_business_accepted":false});

@@ -8,7 +8,7 @@ use super::{
 use crate::{
     Result,
     boot_files::{self as files, FilePin},
-    cold_original_data::labels::OriginalLabelDerivation,
+    cold_original_data::labels::{OriginalLabelDerivation, OriginalLabelRestoration},
     ensure, fs,
     model::Identity,
 };
@@ -82,6 +82,36 @@ impl CellCustody {
         *self.attrs.borrow_mut() = attrs;
         self.verify()
     }
+    fn accept_restoration(&self, actual: &OriginalLabelRestoration) -> Result<()> {
+        if actual.path() != self.pin.path {
+            return Ok(());
+        }
+        actual.revalidate()?;
+        let before = actual.before_identity();
+        let after = actual.after_identity();
+        let mut same = after.clone();
+        same.ctime_sec = before.ctime_sec;
+        same.ctime_nsec = before.ctime_nsec;
+        ensure(
+            same == *before
+                && (*self.identity.borrow() == *before || *self.identity.borrow() == *after)
+                && fs::stat(&self.held)? == *after,
+            "restored cell changed its original body/inode",
+        )?;
+        let attrs = fs::xattrs(&self.held)?;
+        let old = self.attrs.borrow();
+        ensure(
+            attrs
+                .iter()
+                .filter(|(k, _)| k.as_str() != "security.selinux")
+                .eq(old.iter().filter(|(k, _)| k.as_str() != "security.selinux")),
+            "restored cell changed unrelated attributes",
+        )?;
+        drop(old);
+        *self.identity.borrow_mut() = after.clone();
+        *self.attrs.borrow_mut() = attrs;
+        self.verify()
+    }
 }
 
 pub(crate) struct OriginalLabelWindow<'a> {
@@ -137,43 +167,11 @@ impl<'a> OriginalLabelWindow<'a> {
     pub(crate) fn verify_step(&self) -> Result<()> {
         self.frozen.verify()?;
         let a = self.authority;
-        a.owner.borrow().revalidate()?;
-        a.materials.revalidate_custody()?;
-        for v in [
-            &a.intent,
-            &a.original_cell,
-            &a.new_cell,
-            &a.selection,
-            &a.cold_clone,
-        ] {
-            v.revalidate_custody()?;
-        }
-        for v in &a.admitted_inputs {
-            v.revalidate_custody()?;
-        }
-        a.journal.borrow().revalidate_custody()?;
+        verify_authority_custody(a)?;
         ensure(
             a.journal.borrow().phase() == Some(Phase::LabelsIntent),
             "label window phase advanced",
         )?;
-        let named = fs::Tree::open(&fs::absolute_string(a.work())?, 0)?;
-        for id in [fs::stat(&named.root)?, fs::stat(&a.work_fd)?] {
-            ensure(
-                (id.dev, id.ino, id.mode, id.uid, id.gid)
-                    == (
-                        a.work_identity.dev,
-                        a.work_identity.ino,
-                        a.work_identity.mode,
-                        a.work_identity.uid,
-                        a.work_identity.gid,
-                    ),
-                "label window work identity changed",
-            )?;
-        }
-        match &*a.retirement.borrow() {
-            RetirementSource::Prepared(v) => v.revalidate_custody()?,
-            RetirementSource::Initial => return Err("label window lacks actual pair intent".into()),
-        }
         a.label_plan
             .borrow()
             .as_ref()
@@ -216,6 +214,144 @@ impl<'a> OriginalLabelWindow<'a> {
             .ok_or("label plan absent")?
             .full_readback()?;
         self.authority.verify_current_owner()?;
+        self.frozen.verify()
+    }
+}
+
+/// Shared immutable custody; full source bytes and whole-system reference
+/// observation are separately repeated at each bounded window boundary.
+pub(super) fn verify_authority_custody(a: &OriginalQualificationAuthority) -> Result<()> {
+    a.owner.borrow().revalidate()?;
+    a.materials.revalidate_custody()?;
+    for v in [
+        &a.intent,
+        &a.original_cell,
+        &a.new_cell,
+        &a.selection,
+        &a.cold_clone,
+    ] {
+        v.revalidate_custody()?;
+    }
+    for v in &a.admitted_inputs {
+        v.revalidate_custody()?;
+    }
+    a.journal.borrow().revalidate_custody()?;
+    let named = fs::Tree::open(&fs::absolute_string(a.work())?, 0)?;
+    for id in [fs::stat(&named.root)?, fs::stat(&a.work_fd)?] {
+        ensure(
+            (id.dev, id.ino, id.mode, id.uid, id.gid)
+                == (
+                    a.work_identity.dev,
+                    a.work_identity.ino,
+                    a.work_identity.mode,
+                    a.work_identity.uid,
+                    a.work_identity.gid,
+                ),
+            "label window work identity changed",
+        )?;
+    }
+    match &*a.retirement.borrow() {
+        RetirementSource::Prepared(v) => v.revalidate_custody()?,
+        RetirementSource::Initial => return Err("label window lacks actual pair intent".into()),
+    }
+    Ok(())
+}
+
+/// A separate restoration window borrows the actual returned-original proof.
+/// It cannot be created with initial preparation authority or a JSON mode.
+pub(crate) struct OriginalRestoreLabelWindow<'a> {
+    retirement: &'a super::OriginalRetirement,
+    frozen: &'a Quiescence,
+    plan: FilePin,
+    cell: CellCustody,
+}
+impl<'a> OriginalRestoreLabelWindow<'a> {
+    pub(super) fn open(
+        retirement: &'a super::OriginalRetirement,
+        frozen: &'a Quiescence,
+    ) -> Result<Self> {
+        retirement.revalidate()?;
+        frozen.verify()?;
+        let a = retirement.authority();
+        ensure(
+            frozen.candidate_id() == retirement.candidate_id()
+                && a.journal.borrow().phase() == Some(Phase::PairRestored),
+            "restore label window requires actual restored pair",
+        )?;
+        let event = a
+            .journal
+            .borrow()
+            .observation(Phase::LabelsIntent)?
+            .ok_or("original label plan absent")?;
+        let plan: FilePin = serde_json::from_value(event["label_plan"].clone())?;
+        a.verify_label_plan(&plan)?;
+        a.label_plan
+            .borrow()
+            .as_ref()
+            .ok_or("held original label plan absent")?
+            .full_readback()?;
+        let result = Self {
+            retirement,
+            frozen,
+            plan,
+            cell: CellCustody::open(a)?,
+        };
+        result.verify_step()?;
+        Ok(result)
+    }
+    pub(crate) fn candidate_id(&self) -> &str {
+        self.retirement.candidate_id()
+    }
+    pub(crate) fn source_plan(&self) -> &FilePin {
+        &self.plan
+    }
+    pub(crate) fn verify_step(&self) -> Result<()> {
+        self.frozen.verify()?;
+        self.retirement.revalidate_custody()?;
+        let a = self.retirement.authority();
+        ensure(
+            a.journal.borrow().phase() == Some(Phase::PairRestored),
+            "restore label window phase advanced",
+        )?;
+        a.label_plan
+            .borrow()
+            .as_ref()
+            .ok_or("restore plan custody lost")?
+            .verify_pin(&self.plan)?;
+        self.cell.verify()?;
+        self.frozen.verify()
+    }
+    pub(crate) fn accept_restoration(&self, actual: &OriginalLabelRestoration) -> Result<()> {
+        self.frozen.verify()?;
+        actual.revalidate()?;
+        ensure(
+            actual.candidate_id() == self.candidate_id()
+                && same_pin(actual.source_plan(), &self.plan),
+            "restore belongs to another actual label window",
+        )?;
+        self.retirement.accept_label_restoration_custody(actual)?;
+        self.cell.accept_restoration(actual)?;
+        self.verify_step()?;
+        actual.revalidate()
+    }
+    pub(crate) fn verify_working_identity(&self, identity: &Identity) -> Result<()> {
+        self.verify_step()?;
+        self.retirement.verify_working_identity_custody(identity)
+    }
+    pub(crate) fn verify_grubenv_identity(&self, identity: &Identity) -> Result<()> {
+        self.verify_step()?;
+        self.retirement.verify_grubenv_identity_custody(identity)
+    }
+    pub(crate) fn finish(self) -> Result<()> {
+        self.verify_step()?;
+        self.retirement
+            .authority()
+            .label_plan
+            .borrow()
+            .as_ref()
+            .ok_or("restore source plan absent")?
+            .full_readback()?;
+        self.retirement.revalidate()?;
         self.frozen.verify()
     }
 }

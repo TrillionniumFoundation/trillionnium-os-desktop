@@ -236,12 +236,30 @@ impl Group {
     }
 }
 
+#[derive(Clone, Copy, Debug, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "kebab-case")]
+enum FreezePurpose {
+    Forward,
+    Restore,
+}
+impl FreezePurpose {
+    fn name(self) -> &'static str {
+        match self {
+            Self::Forward => "forward",
+            Self::Restore => "restore",
+        }
+    }
+}
+
 #[derive(Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 struct FreezeIntent {
     schema: String,
     candidate_id: String,
     original_boot_id: String,
+    admitted_original_boot_id: String,
+    owner_invocation: String,
+    purpose: FreezePurpose,
     base_intent: FilePin,
     producer: FilePin,
     owner_pid: u32,
@@ -357,18 +375,43 @@ pub(super) struct Quiescence {
     reaper_pid: u32,
     reaper_starttime: u64,
     reaper_pidfd: OwnedFd,
+    reaper_exe: Identity,
+    reaper_namespaces: std::collections::BTreeMap<String, String>,
     finished: bool,
 }
 impl Quiescence {
     pub(super) fn begin(a: &OriginalQualificationAuthority) -> Result<Self> {
+        Self::begin_inner(a, FreezePurpose::Forward)
+    }
+    pub(super) fn begin_restore(retirement: &super::OriginalRetirement) -> Result<Self> {
+        retirement.revalidate()?;
+        let result = Self::begin_inner(retirement.authority(), FreezePurpose::Restore)?;
+        retirement.revalidate()?;
+        Ok(result)
+    }
+    fn begin_inner(a: &OriginalQualificationAuthority, purpose: FreezePurpose) -> Result<Self> {
         a.verify_current_owner()?;
         ensure(
-            a.journal.borrow().phase() == Some(Phase::GrubPublished),
-            "freeze is only after public/recovery/GRUB publication",
+            a.journal.borrow().phase()
+                == Some(match purpose {
+                    FreezePurpose::Forward => Phase::GrubPublished,
+                    FreezePurpose::Restore => Phase::PairRestored,
+                }),
+            "freeze phase differs from actual label operation",
         )?;
+        let observed = a.owner.borrow().evidence();
+        let invocation = observed["actual_original"]["invocation_id"]
+            .as_str()
+            .ok_or("freeze owner invocation")?
+            .to_owned();
+        ensure(
+            invocation.len() == 32 && invocation.bytes().all(|b| b.is_ascii_hexdigit()),
+            "actual freeze owner invocation format",
+        )?;
+        let prefix = format!("{}-{invocation}", purpose.name());
         let inventory = commands::call(
             a,
-            "label-writer-inventory",
+            &format!("label-writer-inventory-{prefix}"),
             "quiescence-inventory",
             json!({}),
             90,
@@ -394,6 +437,12 @@ impl Quiescence {
             schema: "droidloom.original-once-freeze-intent.v1".into(),
             candidate_id: a.candidate_id().into(),
             original_boot_id: a.owner.borrow().boot_id().into(),
+            admitted_original_boot_id: base["original_boot_id"]
+                .as_str()
+                .ok_or("admitted original boot absent")?
+                .into(),
+            owner_invocation: invocation,
+            purpose,
             base_intent: a.intent.pin().clone(),
             producer: producer.clone(),
             owner_pid: std::process::id(),
@@ -422,7 +471,7 @@ impl Quiescence {
                 })
                 .collect::<Result<_>>()?,
         };
-        let dir = a.work().join("quiescence");
+        let dir = a.work().join(format!("quiescence-{prefix}"));
         files::private_dir(&dir)?;
         let path = dir.join("FREEZE-INTENT.json");
         files::write_new(&path, &serde_json::to_vec_pretty(&intent)?, 0o400)?;
@@ -430,7 +479,7 @@ impl Quiescence {
         let pin = files::pin_file(&path)?;
         commands::call(
             a,
-            "label-thaw-guard-start",
+            &format!("label-thaw-guard-start-{prefix}"),
             "quiescence-reaper",
             json!({"producer":producer,"freeze_intent":pin}),
             45,
@@ -469,6 +518,8 @@ impl Quiescence {
             reaper_pid,
             reaper_starttime,
             reaper_pidfd,
+            reaper_exe: serde_json::from_value(value["executable"].clone())?,
+            reaper_namespaces: serde_json::from_value(value["namespaces"].clone())?,
             finished: false,
         };
         result.verify_guard()?;
@@ -496,6 +547,18 @@ impl Quiescence {
             clock_ms()? < self.deadline && starttime(self.reaper_pid)? == self.reaper_starttime,
             "label window deadline or independent guard custody ended",
         )?;
+        let exe = File::open(format!("/proc/{}/exe", self.reaper_pid))?;
+        ensure(
+            fs::stat(&exe)? == self.reaper_exe,
+            "thaw guard executable custody changed",
+        )?;
+        for kind in ["user", "pid", "mnt", "net", "ipc", "uts"] {
+            let actual = std::fs::read_link(format!("/proc/{}/ns/{kind}", self.reaper_pid))?;
+            ensure(
+                actual.to_str() == self.reaper_namespaces.get(kind).map(String::as_str),
+                "thaw guard namespace custody changed",
+            )?;
+        }
         let fd = rustix::fs::fstat(&self.reaper_pidfd)?;
         ensure(fd.st_nlink == 1, "thaw process descriptor differs")?;
         Ok(())
@@ -559,19 +622,23 @@ pub(super) fn run_thaw_guard(config: &Path, expected: &str) -> Result<()> {
             && fs::valid_digest(&v.candidate_id)
             && config
                 == Path::new("/var/lib/droidloom-qualification").join(format!(
-                    "original-once-{}/quiescence/FREEZE-INTENT.json",
-                    v.candidate_id
+                    "original-once-{}/quiescence-{}-{}/FREEZE-INTENT.json",
+                    v.candidate_id,
+                    v.purpose.name(),
+                    v.owner_invocation
                 ))
             && v.owner_control_group
                 == format!(
                     "/system.slice/droidloom-original-qualification@{}.service",
                     v.candidate_id
                 )
+            && v.owner_invocation.len() == 32
+            && v.owner_invocation.bytes().all(|b| b.is_ascii_hexdigit())
             && v.groups.len() <= 64
             && !v.groups.is_empty(),
         "thaw intent scope differs",
     )?;
-    owner::verify_thaw_owner(&v.candidate_id, &v.original_boot_id)?;
+    let thaw_owner = owner::verify_thaw_owner(&v.candidate_id, &v.original_boot_id)?;
     let initial = clock_ms()?;
     ensure(
         v.deadline_boot_ms > initial && v.deadline_boot_ms - initial <= MAX_SECONDS * 1000,
@@ -587,7 +654,7 @@ pub(super) fn run_thaw_guard(config: &Path, expected: &str) -> Result<()> {
     let base_value: Value = serde_json::from_slice(&base.read()?)?;
     ensure(
         base_value["candidate_id"] == v.candidate_id
-            && base_value["original_boot_id"] == v.original_boot_id
+            && base_value["original_boot_id"] == v.admitted_original_boot_id
             && base_value["normal_producer"] == serde_json::to_value(&v.producer)?,
         "thaw base identity differs",
     )?;
@@ -617,60 +684,165 @@ pub(super) fn run_thaw_guard(config: &Path, expected: &str) -> Result<()> {
         "thaw's original owner is not the selected process",
     )?;
     let directory = config.parent().ok_or("thaw parent")?;
-    files::write_new(
-        &directory.join("READY.json"),
-        &serde_json::to_vec(
-            &json!({"schema":"droidloom.original-once-thaw-ready.v1","candidate_id":v.candidate_id,"freeze_intent":pin,"pid":std::process::id(),"starttime":starttime(std::process::id())?,"deadline_boot_ms":v.deadline_boot_ms}),
-        )?,
-        0o400,
-    )?;
-    File::open(directory)?.sync_all()?;
-    let reason = loop {
-        sealed.revalidate_custody()?;
-        base.revalidate_custody()?;
-        owner::verify_thaw_owner(&v.candidate_id, &v.original_boot_id)?;
-        if directory.join("RELEASED.json").exists() {
-            let release = SealedInput::open(&files::pin_file(&directory.join("RELEASED.json"))?)?;
-            let actual: Value = serde_json::from_slice(&release.read()?)?;
+    let mut cleanup = ThawCleanup::new(groups, directory, &pin)?;
+    let monitored = (|| -> Result<&'static str> {
+        files::write_new(
+            &directory.join("READY.json"),
+            &serde_json::to_vec(
+                &json!({"schema":"droidloom.original-once-thaw-ready.v1","candidate_id":v.candidate_id,"freeze_intent":pin,
+            "pid":std::process::id(),"starttime":starttime(std::process::id())?,"deadline_boot_ms":v.deadline_boot_ms,
+            "executable":fs::stat(&exe)?,"namespaces":thaw_owner["namespaces"]}),
+            )?,
+            0o400,
+        )?;
+        File::open(directory)?.sync_all()?;
+        let reason = loop {
+            sealed.revalidate_custody()?;
+            base.revalidate_custody()?;
+            inventory.revalidate_custody()?;
+            owner::verify_thaw_owner(&v.candidate_id, &v.original_boot_id)?;
             ensure(
-                actual["freeze_intent"] == serde_json::to_value(&pin)?
-                    && groups.iter().all(|g| g.is_frozen().is_ok_and(|x| !x)),
-                "release did not actually thaw selected cgroups",
+                fs::stat(&exe)? == source,
+                "guard executable identity changed",
             )?;
-            break "released";
-        }
-        if starttime(v.owner_pid).ok() != Some(v.owner_starttime) {
-            break "owner-retired";
-        }
-        if clock_ms()? >= v.deadline_boot_ms {
-            break "deadline";
-        }
-        std::thread::sleep(Duration::from_millis(200));
+            if directory.join("RELEASED.json").exists() {
+                let release =
+                    SealedInput::open(&files::pin_file(&directory.join("RELEASED.json"))?)?;
+                let actual: Value = serde_json::from_slice(&release.read()?)?;
+                ensure(
+                    actual["freeze_intent"] == serde_json::to_value(&pin)?
+                        && cleanup
+                            .groups
+                            .iter()
+                            .all(|g| g.is_frozen().is_ok_and(|x| !x)),
+                    "release did not actually thaw selected cgroups",
+                )?;
+                break "released";
+            }
+            if starttime(v.owner_pid).ok() != Some(v.owner_starttime) {
+                break "owner-retired";
+            }
+            if clock_ms()? >= v.deadline_boot_ms {
+                break "deadline";
+            }
+            std::thread::sleep(Duration::from_millis(200));
+        };
+        sealed.revalidate()?;
+        base.revalidate()?;
+        inventory.revalidate()?;
+        ensure(
+            fs::stat(&exe)? == source
+                && fs::hash(&exe)? == v.producer.sha256
+                && fs::stat(&exe)? == source,
+            "guard source changed during frozen window",
+        )?;
+        Ok(reason)
+    })();
+    let reason = monitored
+        .as_ref()
+        .copied()
+        .unwrap_or("guard-validation-failed");
+    let cause = monitored.as_ref().err().map(ToString::to_string);
+    // Always try every exact held group before propagating any observer error.
+    // Durable reporting uses the held private directory, never a replacement.
+    let thaw = cleanup.finish(reason, cause.as_deref());
+    let stop_owner = matches!(reason, "deadline" | "guard-validation-failed")
+        && starttime(v.owner_pid).ok() == Some(v.owner_starttime);
+    let stop: Result<()> = if stop_owner {
+        rustix::process::pidfd_send_signal(&owner_fd, rustix::process::Signal::KILL)
+            .map_err(Into::into)
+    } else {
+        Ok(())
     };
-    let mut failures = Vec::new();
-    for g in groups.iter().rev() {
-        if let Err(e) = g.set(false) {
-            failures.push(format!("{}: {e}", g.record.path));
+    if let Err(e) = monitored {
+        if let Err(t) = &thaw {
+            eprintln!("original thaw recovery error: {t}");
+        }
+        if let Err(t) = &stop {
+            eprintln!("original held-owner termination error: {t}");
+        }
+        return Err(e);
+    }
+    thaw?;
+    stop?;
+    Ok(())
+}
+
+/// Error-safe finalization owns already verified handles, not a request to find
+/// arbitrary groups. The fallback is installed before READY is published.
+struct ThawCleanup {
+    groups: Vec<Group>,
+    directory: File,
+    identity: Identity,
+    pin: FilePin,
+    completed: bool,
+}
+impl ThawCleanup {
+    fn new(groups: Vec<Group>, directory: &Path, pin: &FilePin) -> Result<Self> {
+        let held = fs::Tree::open("/", 0)?.dir(&fs::absolute_string(directory)?)?;
+        let identity = fs::stat(&held)?;
+        ensure(
+            identity.uid == 0 && identity.gid == 0 && identity.mode & 0o7777 == 0o700,
+            "thaw evidence directory custody",
+        )?;
+        Ok(Self {
+            groups,
+            directory: held,
+            identity,
+            pin: pin.clone(),
+            completed: false,
+        })
+    }
+    fn finish(&mut self, reason: &str, cause: Option<&str>) -> Result<()> {
+        let mut failures = Vec::new();
+        let mut thawed = Vec::new();
+        for group in self.groups.iter().rev() {
+            match group.set(false) {
+                Ok(()) => thawed.push(group.record.path.clone()),
+                Err(e) => failures.push(format!("{}: {e}", group.record.path)),
+            }
+        }
+        let result = json!({"schema":"droidloom.original-once-thaw-result.v1","freeze_intent":self.pin,
+            "reason":reason,"observed_error":cause,"actual_thawed":thawed,"failures":failures,
+            "boot_ms":clock_ms().ok(),"qualification_pass":false});
+        let write = (|| -> Result<()> {
+            ensure(
+                same_object(&fs::stat(&self.directory)?, &self.identity),
+                "held thaw evidence directory changed",
+            )?;
+            let mut f = File::from(rustix::fs::openat(
+                &self.directory,
+                "THAWED.json",
+                OFlags::WRONLY | OFlags::CREATE | OFlags::EXCL | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+                Mode::from_raw_mode(0o400),
+            )?);
+            f.write_all(&serde_json::to_vec(&result)?)?;
+            f.sync_all()?;
+            self.directory.sync_all()?;
+            Ok(())
+        })();
+        // A failed report is not success. Drop still performs exact thaw again.
+        if write.is_ok() && failures.is_empty() {
+            self.completed = true;
+        }
+        write?;
+        ensure(
+            failures.is_empty(),
+            "same-inode automatic thaw did not complete",
+        )
+    }
+}
+impl Drop for ThawCleanup {
+    fn drop(&mut self) {
+        if !self.completed {
+            if let Err(e) = self.finish(
+                "guard-unwind",
+                Some("observer left before confirmed cleanup"),
+            ) {
+                eprintln!("original thaw fallback failed: {e}");
+            }
         }
     }
-    let result = json!({"schema":"droidloom.original-once-thaw-result.v1","freeze_intent":pin,"reason":reason,"failures":failures,"boot_ms":clock_ms()?,"qualification_pass":false});
-    files::write_new(
-        &directory.join("THAWED.json"),
-        &serde_json::to_vec(&result)?,
-        0o400,
-    )?;
-    File::open(directory)?.sync_all()?;
-    ensure(
-        failures.is_empty(),
-        "same-inode automatic thaw did not complete",
-    )?;
-    if reason == "deadline" && starttime(v.owner_pid).ok() == Some(v.owner_starttime) {
-        // The observed normal owner has Restart=on-failure. Kill only its held
-        // pidfd after all selected groups are confirmed thawed. Its dispatcher
-        // resumes the durable intent rather than reapplying initial mutations.
-        rustix::process::pidfd_send_signal(&owner_fd, rustix::process::Signal::KILL)?;
-    }
-    Ok(())
 }
 
 #[cfg(test)]
@@ -703,6 +875,57 @@ mod tests {
         for s in ["frozen 1\nfrozen 1\n", "freeze 1\n", "frozen 2\n"] {
             assert!(events_frozen(s).is_err());
         }
+    }
+
+    #[test]
+    #[ignore = "root only; own new cgroup and private evidence directory"]
+    fn guard_error_unwinds_through_real_held_freezer_and_durable_result() {
+        let own = std::fs::read_to_string("/proc/self/cgroup").unwrap();
+        let name = format!(
+            "/droidloom-once-freezer-error-test-{}-{}",
+            std::process::id(),
+            clock_ms().unwrap()
+        );
+        let path = PathBuf::from(format!("{BASE}{name}"));
+        std::fs::create_dir(&path).unwrap();
+        let directory = Path::new("/var/lib/droidloom-qualification")
+            .join(format!("droidloom-thaw-error-{}", std::process::id()));
+        std::fs::create_dir(&directory).unwrap();
+        use std::os::unix::fs::PermissionsExt;
+        std::fs::set_permissions(&directory, std::fs::Permissions::from_mode(0o700)).unwrap();
+        let mut child = std::process::Command::new("/usr/bin/sleep")
+            .arg("20")
+            .spawn()
+            .unwrap();
+        std::fs::write(path.join("cgroup.procs"), child.id().to_string()).unwrap();
+        let group = Group::open(&name, "isolated-error-test.service").unwrap();
+        let pin = FilePin {
+            path: directory.join("INTENT.json"),
+            bytes: 1,
+            sha256: "a".repeat(64),
+        };
+        let cleanup = ThawCleanup::new(vec![group], &directory, &pin).unwrap();
+        cleanup.groups[0].set(true).unwrap();
+        let result = (|| -> Result<()> {
+            let _cleanup = cleanup;
+            Err("injected exact observation failure".into())
+        })();
+        assert!(result.is_err());
+        let actual: Value =
+            serde_json::from_slice(&std::fs::read(directory.join("THAWED.json")).unwrap()).unwrap();
+        assert_eq!(actual["reason"], "guard-unwind");
+        assert_eq!(actual["failures"], json!([]));
+        assert_eq!(
+            std::fs::read_to_string(path.join("cgroup.freeze"))
+                .unwrap()
+                .trim(),
+            "0"
+        );
+        assert_eq!(std::fs::read_to_string("/proc/self/cgroup").unwrap(), own);
+        child.kill().unwrap();
+        child.wait().unwrap();
+        std::fs::remove_dir(&path).unwrap();
+        std::fs::remove_dir_all(directory).unwrap();
     }
 
     #[test]

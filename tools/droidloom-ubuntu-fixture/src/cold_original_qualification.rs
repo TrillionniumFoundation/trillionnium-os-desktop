@@ -23,7 +23,7 @@ mod quiescence;
 mod retirement;
 #[path = "cold_original_once_window.rs"]
 mod window;
-pub(super) use window::OriginalLabelWindow;
+pub(super) use window::{OriginalLabelWindow, OriginalRestoreLabelWindow};
 #[path = "cold_original_once_state.rs"]
 mod state;
 pub(super) use retirement::OriginalRetirement;
