@@ -30,6 +30,10 @@ pub(crate) use plan::{
     inspect_files as inspect_original_labels_files,
 };
 
+#[cfg(test)]
+#[path = "cold_original_label_snapshot_tests.rs"]
+mod snapshot_custody_tests;
+
 const LABEL: &str = "security.selinux";
 const MAX_NAMES: usize = 65_536;
 const MAX_VALUE: usize = 65_536;
@@ -178,8 +182,8 @@ impl<'a> DescriptorAlias<'a> {
         )
     }
 }
-fn list(file: &File, value: &mut [u8]) -> Result<usize> {
-    let alias = DescriptorAlias::new(file)?;
+fn list(alias: &DescriptorAlias<'_>, value: &mut [u8]) -> Result<usize> {
+    alias.validate()?;
     let result = if value.is_empty() {
         rustix::fs::listxattr_query(alias.path.as_str())?
     } else {
@@ -188,8 +192,8 @@ fn list(file: &File, value: &mut [u8]) -> Result<usize> {
     alias.validate()?;
     Ok(result)
 }
-fn get(file: &File, name: &str, value: &mut [u8]) -> Result<usize> {
-    let alias = DescriptorAlias::new(file)?;
+fn get(alias: &DescriptorAlias<'_>, name: &str, value: &mut [u8]) -> Result<usize> {
+    alias.validate()?;
     let name = CString::new(name)?;
     let result = if value.is_empty() {
         rustix::fs::getxattr_query(alias.path.as_str(), name.as_c_str())?
@@ -216,11 +220,16 @@ fn set(file: &File, name: &str, value: Option<&[u8]>) -> Result<()> {
 
 fn attributes(file: &File) -> Result<BTreeMap<String, Vec<u8>>> {
     let before = fs::stat(file)?;
-    let count = list(file, &mut [])?;
+    // Bind one complete attribute snapshot to the same held process, procfd
+    // directory and namespace identities. Each individual list/get still
+    // validates that full custody before and after its actual syscall.
+    // Nothing is cached across snapshots, and attribute bytes are never cached.
+    let alias = DescriptorAlias::new(file)?;
+    let count = list(&alias, &mut [])?;
     ensure(count <= MAX_NAMES, "inode has too many xattr name bytes")?;
     let mut names = vec![0; count];
     ensure(
-        list(file, &mut names)? == count,
+        list(&alias, &mut names)? == count,
         "xattr name inventory changed",
     )?;
     ensure(
@@ -231,7 +240,7 @@ fn attributes(file: &File) -> Result<BTreeMap<String, Vec<u8>>> {
     let mut total = 0usize;
     for raw in names.split(|v| *v == 0).filter(|v| !v.is_empty()) {
         let name = std::str::from_utf8(raw)?.to_owned();
-        let count = get(file, &name, &mut [])?;
+        let count = get(&alias, &name, &mut [])?;
         ensure(count <= MAX_VALUE, "inode xattr exceeds the Linux bound")?;
         total = total.checked_add(count).ok_or("xattr size overflow")?;
         ensure(
@@ -240,14 +249,14 @@ fn attributes(file: &File) -> Result<BTreeMap<String, Vec<u8>>> {
         )?;
         let mut value = vec![0; count];
         ensure(
-            get(file, &name, &mut value)? == count,
+            get(&alias, &name, &mut value)? == count,
             "inode xattr value changed",
         )?;
         ensure(rows.insert(name, value).is_none(), "duplicate xattr name")?;
     }
     let mut again = vec![0; names.len()];
     ensure(
-        list(file, &mut again)? == names.len() && again == names && fs::stat(file)? == before,
+        list(&alias, &mut again)? == names.len() && again == names && fs::stat(file)? == before,
         "inode identity or xattr names changed during the descriptor readback",
     )?;
     Ok(rows)
