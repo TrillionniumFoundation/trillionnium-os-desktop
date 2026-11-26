@@ -1,0 +1,86 @@
+{
+  "actor": "p4_linux_service_executor_t",
+  "consumer_user": "systemd-resolve",
+  "kernel_documents": {
+    "fs/posix_acl.c": {
+      "bytes": 32109,
+      "sha256": "52e61b0203a3315ddffc607939e17d690920bef842fec837020ecf5ce8e153fd"
+    },
+    "security/selinux/hooks.c": {
+      "bytes": 212133,
+      "sha256": "4fa2a20bff2788fffc1f6bc95d49af3e1145e6a679f69ff5aa2d5a1bd85272a0"
+    }
+  },
+  "normal_files": {
+    "usr/lib/systemd/system/systemd-resolved-monitor.socket": {
+      "bytes": 713,
+      "sha256": "3fd777a3c0703fd42453370d57a942733eaa6ca9d1cf0fbe18ceaa5044db5b08"
+    },
+    "usr/lib/systemd/system/systemd-resolved-varlink.socket": {
+      "bytes": 697,
+      "sha256": "6aa37d888c12e929b8bc0958e765a4c10735984a4116881adfe2d170ad545bf8"
+    },
+    "usr/lib/systemd/system/systemd-resolved.service": {
+      "bytes": 1991,
+      "sha256": "6e66096d01f2b41865f2ee25334d595316d425ea433f03e5eef9870676f8b58a"
+    }
+  },
+  "normal_socket_owner": {
+    "gid": 0,
+    "uid": 0
+  },
+  "old_raw": {
+    "dir": [
+      "create",
+      "getattr",
+      "open",
+      "read",
+      "search",
+      "setattr"
+    ],
+    "file": [],
+    "lnk_file": [],
+    "sock_file": []
+  },
+  "operation": {
+    "acl_lsm_check_precedes_absence_result": true,
+    "metadata": [
+      "fstat",
+      "remove_posix_acl",
+      "fchownat",
+      "fchmod"
+    ],
+    "path": "setup_exec_directory -> path_chown_recursive -> chown_one",
+    "socket_create": false,
+    "socket_io": false
+  },
+  "runtime_directory": "/run/systemd/resolve",
+  "schema": "droidloom.native-resolved-runtime-source.v1",
+  "socket_paths": [
+    "/run/systemd/resolve/io.systemd.Resolve",
+    "/run/systemd/resolve/io.systemd.Resolve.Monitor"
+  ],
+  "source_documents": {
+    "src/basic/fs-util.c": {
+      "bytes": 52249,
+      "sha256": "de38f495f3be7fc9e80051487bac1242c71f2f38cffa4fba2d8f11380d3794d4"
+    },
+    "src/basic/xattr-util.c": {
+      "bytes": 16448,
+      "sha256": "ee53c486072ca48c2a371d29154f5cebfe628eff71648f5fcb70330c08373793"
+    },
+    "src/core/exec-invoke.c": {
+      "bytes": 276788,
+      "sha256": "24eda88ee0914d0c43d30ebfb13f0f3aadd00391b5820fb6d6509278f0925dfe"
+    },
+    "src/core/socket.c": {
+      "bytes": 133742,
+      "sha256": "3f0337bb9b869b37e79df05c28efe293a9005ea7c7c03d98e54ffc3996d7e54e"
+    },
+    "src/shared/chown-recursive.c": {
+      "bytes": 5635,
+      "sha256": "ce5d1a8d79b32011c479fdb78bd75faabdf3107bdffcd6bc5b1793967edf189f"
+    }
+  },
+  "target": "p4_linux_resolved_run_t"
+}

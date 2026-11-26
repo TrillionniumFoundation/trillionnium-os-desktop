@@ -1054,3 +1054,13 @@ parent-directory vectors and every other ioctl remain unchanged. The source
 contract includes the normal `chattr-util.c` and `errno-util.h`: permission
 failures remain fatal and are not reclassified as unsupported quota operations.
 These source and linked-policy checks still require a new enforcing boot.
+
+The selected resolved service prepares its runtime directory after its two
+normal varlink socket units have created root-owned socket inodes. The executor
+may only stat those typed socket files and perform the normal ACL/owner/mode
+preparation. The independent resolved runtime verifier checks all socket-file
+permissions, retains the original six directory permissions, and keeps regular
+file/link access and socket I/O absent. Its normal source contract includes the
+selected kernel's ACL permission check before the absent-ACL result. The exact
+normal source/unit readback remains a required producer input, and this source
+change is not evidence of a successful boot.

@@ -448,3 +448,13 @@
 (neverallow p4_linux_native_without_package_invoker droidloom_package_helper (process (transition)))
 (neverallow p4_linux_native_processes p4_linux_native_executables (file (create write append setattr rename unlink relabelto relabelfrom)))
 (neverallow p4_linux_native_processes kernel (security (load_policy setenforce setbool setsecparam setcheckreqprot)))
+
+; The selected resolved socket units create two root-owned varlink inodes.
+; RuntimeDirectory=systemd/resolve then runs the normal executor's recursive
+; ownership preparation. It fstats each O_PATH child and removes POSIX ACLs
+; before fchown/fchmod. Even absent ACL removal checks SETATTR before ENODATA.
+; This grants no socket creation, data I/O, connection, or generic tree write.
+(allow p4_linux_service_executor_t p4_linux_resolved_run_t (sock_file (getattr setattr)))
+(neverallow p4_linux_service_executor_t p4_linux_resolved_run_t (sock_file (not (getattr setattr))))
+(neverallow p4_linux_service_executor_t p4_linux_resolved_run_t (file (all)))
+(neverallow p4_linux_service_executor_t p4_linux_resolved_run_t (lnk_file (all)))
