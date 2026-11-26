@@ -17,13 +17,39 @@ from derive_shared_payload_cgroup_policy import parse_expression, original_xperm
 ROLE = "p4_linux_console_setup_t"
 SCHEMA = "droidloom.native-console-source-closure.v1"
 
-TTY_TYPES = ("tty_device", "owntty_device", "console_device", "p4_linux_console_t")
+TTY_TYPES = ("tty_device", "owntty_device", "console_device", "p4_linux_console_t",
+             "p4_linux_console_vt_t")
 IOCTLS = {
     "KDGKBTYPE": 0x4b33, "KDGETMODE": 0x4b3b, "KDGKBMODE": 0x4b44,
     "KDSKBMODE": 0x4b45, "KDSKBENT": 0x4b47, "KDSKBSENT": 0x4b49,
     "GIO_UNIMAP": 0x4b66, "PIO_UNIMAP": 0x4b67, "PIO_UNIMAPCLR": 0x4b68,
     "PIO_CMAP": 0x4b71, "KDFONTOP": 0x4b72, "KDSKBDIACRUC": 0x4bfb,
     "TIOCGWINSZ": 0x5413, "TCGETS2": 0x542a,
+}
+# These normal host ELFs already use the admitted native dynamic loader.
+# Keep this list explicit: an unrelated actor never gains cache access merely
+# by joining an attribute. Existing native-service cache permissions are kept.
+CACHE_LOADERS = {
+    "p4_linux_early_t", "p4_linux_service_executor_t",
+    "p4_linux_journald_t", "p4_linux_journalctl_t", "p4_linux_udev_t",
+    "p4_linux_hardware_label_t", "p4_linux_uevent_label_t",
+    "p4_linux_maintenance_journal_t", "droidloom_container_entry_t",
+}
+INTERPRETER_OPENERS = {"p4_linux_service_executor_t", "p4_linux_udev_t"}
+NULL_TYPES = ("null_device", "p4_linux_standardio_t")
+IOCTL_TARGETS = {target: set(IOCTLS.values()) for target in TTY_TYPES}
+IOCTL_TARGETS.update({target: {IOCTLS["TCGETS2"]} for target in NULL_TYPES})
+VT_TYPE = "p4_linux_console_vt_t"
+PID1_IOCTLS = {0x4b45, 0x540b, 0x540d, 0x5413, 0x542a, 0x542b}
+LOGIND_IOCTLS = {0x4b3a, 0x4b45, 0x542a, 0x5602, 0x5603, 0x5605, 0x5606}
+VT_PERMISSIONS = {
+    "kernel": {"getattr"},
+    "p4_linux_early_t": {"getattr"},
+    "init_t": set("getattr open read write lock ioctl".split()),
+    "p4_linux_service_executor_t": set("getattr open read write ioctl".split()),
+    ROLE: set("getattr open read write ioctl".split()),
+    "p4_linux_udev_t": set("getattr setattr relabelfrom relabelto".split()),
+    "p4_linux_logind_t": set("getattr open read write setattr ioctl".split()),
 }
 TRANSITION_OPS = ("(typetransition ", "(typechange ", "(typemember ", "(roletransition ")
 
@@ -85,7 +111,7 @@ def _ioctl_mask(expression):
 
 def _verify_ioctl_filters(lines, text, objects):
     members = Membership(text)
-    result = {target: 0 for target in TTY_TYPES}
+    result = {target: 0 for target in IOCTL_TARGETS}
     for line in lines:
         if not line.startswith("(allowx "):
             continue
@@ -97,15 +123,59 @@ def _verify_ioctl_filters(lines, text, objects):
         targets = ({ROLE} if form[2] == "self" else
                    {target for target in objects if members.member(form[2], target)})
         if (form[3][:2] != ["ioctl", "chr_file"] or not targets or
-                not targets.issubset(TTY_TYPES)):
-            raise ValueError("Console ioctl filter extends beyond the four fixed VT types")
+                not targets.issubset(IOCTL_TARGETS)):
+            raise ValueError("Console ioctl filter extends beyond the fixed VT and null types")
         mask = _ioctl_mask(form[3][2])
         for target in targets:
             result[target] |= mask
-    wanted = sum(1 << number for number in IOCTLS.values())
-    if any(mask != wanted for mask in result.values()):
-        raise ValueError("Console VT ioctl set differs from the normal call closure")
-    return {target: sorted(IOCTLS.values()) for target in TTY_TYPES}
+    if any(mask != sum(1 << number for number in IOCTL_TARGETS[target])
+           for target, mask in result.items()):
+        raise ValueError("Console ioctl set differs from the normal VT/null call closure")
+    return {target: sorted(numbers) for target, numbers in IOCTL_TARGETS.items()}
+
+
+
+def _verify_native_terminals(policy, lines, text, classes):
+    """All concrete actors and every chr permission on the new Linux-only VT."""
+    members = Membership(text)
+    names = classes["chr_file"]
+    _, bits = policy.permissions("chr_file", names)
+    vectors = []
+    for role, actor in _roles(lines):
+        actual = policy.context_av(_context(role, actor),
+            _context("object_r", VT_TYPE), "chr_file", names)
+        permissions = {name for name, bit in bits.items() if actual & bit}
+        expected = VT_PERMISSIONS.get(actor)
+        if expected is None:
+            # Pre-existing metadata observers may retain only getattr.
+            if permissions - {"getattr"}:
+                raise ValueError("Unselected actor has Linux VT authority: " + actor)
+        elif permissions != expected:
+            raise ValueError("Linux VT actor permission differs: " + actor + " " +
+                             repr(sorted(permissions)) + "/" + repr(sorted(expected)))
+        vectors.append([role, actor, sorted(permissions)])
+    filters = {}
+    for actor, targets, wanted in (
+        ("init_t", ("p4_linux_console_t", VT_TYPE), PID1_IOCTLS),
+        ("p4_linux_service_executor_t", ("p4_linux_console_t", VT_TYPE), {0x542a}),
+        ("p4_linux_logind_t", (VT_TYPE,), LOGIND_IOCTLS),
+    ):
+        for target in targets:
+            actual = 0
+            for line in lines:
+                if not line.startswith("(allowx "):
+                    continue
+                form = parse_expression(line)
+                if (members.member(form[1], actor) and members.member(form[2], target) and
+                        form[3][:2] == ["ioctl", "chr_file"]):
+                    actual |= _ioctl_mask(form[3][2])
+            if actual != sum(1 << number for number in wanted):
+                raise ValueError("Native terminal ioctl boundary differs: " + actor + " " + target)
+            filters[actor + ":" + target] = sorted(wanted)
+    return {"fixed_kernel_nodes": 65, "all_actor_vectors": len(vectors),
+            "vector_sha256": hashlib.sha256(json.dumps(vectors, sort_keys=True).encode()).hexdigest(),
+            "fixed_ioctl_filters": filters,
+            "runtime_qualified": False}
 
 
 def contract(here):
@@ -120,6 +190,22 @@ def contract(here):
                 row["uid"] != 0 or row["gid"] != 0 or row["mode"] & 0o022 or
                 not re.fullmatch(r"[0-9a-f]{64}", row["sha256"])):
             raise ValueError("Invalid normal console inode identity")
+        if row["category"] == "interpreter" and not (
+                row["paths"] == ["/usr/bin/dash"] and row["mode"] == 0o755 and
+                row["nlink"] == 1 and row["source_type"] == "p4_linux_native_bin_t" and
+                row["target_type"] == "p4_linux_console_interpreter_native_bin_t"):
+            raise ValueError("Console interpreter is not the fixed normal dash inode")
+        if row["category"] == "mmap_data":
+            cache = (row["paths"] == ["/etc/ld.so.cache"] and
+                     row["source_type"] == "p4_linux_native_config_t" and
+                     row["target_type"] == "p4_linux_console_ld_cache_native_config_t")
+            locale = (len(row["paths"]) == 1 and
+                      (row["paths"][0] == "/usr/lib/locale/locale-archive" or
+                       row["paths"][0].startswith("/usr/lib/locale/C.utf8/")) and
+                      row["source_type"] == "p4_linux_runtime_lib_t" and
+                      row["target_type"] == "p4_linux_console_locale_runtime_lib_t")
+            if not (row["mode"] == 0o644 and row["nlink"] == 1 and (cache or locale)):
+                raise ValueError("Mapped console data selects an executable or arbitrary path")
         for path in row["paths"]:
             if (not path.startswith(("/usr/", "/etc/")) or "/../" in path or
                     path in seen):
@@ -149,7 +235,14 @@ def _context(role, actor, level="s0"):
 
 
 def _extra(actor, target):
-    """Only real unit/udev entry permissions may differ for old actors."""
+    """Only fixed entry/interpreter/cache operations differ for old actors."""
+    if (target == "p4_linux_console_interpreter_native_bin_t" and
+            actor in INTERPRETER_OPENERS):
+        # open_exec under the old SID; bprm still selects the script's SID.
+        # No execute_no_trans, entrypoint, or arbitrary helper execution.
+        return {"getattr", "open", "read", "execute"}
+    if target == "p4_linux_console_ld_cache_native_config_t" and actor in CACHE_LOADERS:
+        return {"getattr", "open", "read", "map"}
     if target in ("p4_linux_console_entry_runtime_lib_t",
                   "p4_linux_console_vtrgb_native_bin_t"):
         if actor in ("init_t", "p4_linux_service_executor_t"):
@@ -244,6 +337,7 @@ def verify(library, binary, exported, here, expected, export):
     text = exported.read_text()
     objects = sorted(re.findall(r"\(roletype object_r (\w+)\)", text))
     ioctls = _verify_ioctl_filters(lines, text, objects)
+    native_terminals = _verify_native_terminals(policy, lines, text, expected["classes"])
     checks = []
     for role, actor, old, new, cls, vals, wanted in expected["samples"]:
         names = expected["classes"][cls]
@@ -272,21 +366,44 @@ def verify(library, binary, exported, here, expected, export):
     for row in value["files"]:
         target = row["target_type"]
         category = row["category"]
-        if category in ("helper", "entry", "vtrgb", "cache_exec"):
+        if category in ("helper", "interpreter", "entry", "vtrgb", "cache_exec"):
             av(target, "file", ["open", "read", "execute", "execute_no_trans", "map"],
                ["open", "read", "execute", "execute_no_trans", "map"])
+        elif category == "mmap_data":
+            av(target, "file", ["open", "read", "map", "execute", "execute_no_trans",
+                                "entrypoint", "write", "append"], ["open", "read", "map"])
         elif category == "library":
             av(target, "file", ["open", "read", "execute", "execute_no_trans", "map"],
                ["open", "read", "execute", "map"])
         else:
             av(target, "file", ["open", "read", "execute", "execute_no_trans"], ["open", "read"])
+    # Exact old-actor interpreter gates: a direct dash exec cannot stay in
+    # the executor/udev domain; only the initial fixed script chooses console.
+    for actor in sorted(INTERPRETER_OPENERS):
+        target = "p4_linux_console_interpreter_native_bin_t"
+        names = ["execute", "execute_no_trans", "entrypoint", "write", "append"]
+        actual = policy.context_av(_context("system_r", actor),
+                                   _context("object_r", target), "file", names)
+        _, bits = policy.permissions("file", names)
+        if actual != bits["execute"]:
+            raise ValueError("Console interpreter permits a direct shell or write: " + actor)
+        checks.append([actor, target, "file", ["execute"]])
+    for actor in sorted(CACHE_LOADERS):
+        # The exception is justified by the already admitted loader edge.
+        names = ["open", "read", "execute", "map"]
+        actual = policy.context_av(_context("system_r", actor),
+            _context("object_r", "p4_linux_elf_interpreter_t"), "file", names)
+        _, bits = policy.permissions("file", names)
+        if actual != sum(bits.values()):
+            raise ValueError("Cache reader is not an admitted native loader: " + actor)
     # Whole-class readback rejects inheritance to every other character device.
     # Null/random retain only the exact normal helper operations; no serial,
     # input, DRM, framebuffer body or arbitrary ioctl access is added.
     for target in objects:
         wanted = {
             "device": ["getattr"],
-            "null_device": ["getattr", "open", "read", "write"],
+            "null_device": ["getattr", "open", "read", "write", "ioctl"],
+            "p4_linux_standardio_t": ["getattr", "open", "read", "write", "ioctl"],
             "random_device": ["getattr", "open", "read"],
         }.get(target, [])
         if target in TTY_TYPES:
@@ -310,7 +427,11 @@ def verify(library, binary, exported, here, expected, export):
             "derived_alias_policy_sha256": expected["derived_sha256"],
             "verifier_sha256": hashlib.sha256((here / "derive_native_console_policy.py").read_bytes()).hexdigest(),
             "complete_console_transition_count": transitions,
-            "fixed_vt_ioctl_filters": ioctls,
+            "fixed_vt_ioctl_filters": {target: ioctls[target] for target in TTY_TYPES},
+            "fixed_null_ioctl_filters": {target: ioctls[target] for target in NULL_TYPES},
+            "fixed_interpreter_openers": sorted(INTERPRETER_OPENERS),
+            "fixed_native_cache_readers": sorted(CACHE_LOADERS),
+            "fixed_linux_vt_inventory": native_terminals,
             "all_character_device_objects_checked": len(objects),
             "preserved_actor_object_vectors": len(expected["samples"]),
             "preserved_transitions": len(expected["transitions"]),
@@ -359,6 +480,29 @@ def verify_file_contexts(here, work):
                     if lookup(filename, other).startswith("p4_linux_console_"):
                         raise ValueError("Console executable context matched a different inode class")
                 checked.append([filename, actual])
+        for filename in ["/dev/tty", *("/dev/tty" + str(n) for n in range(64))]:
+            if lookup(filename, stat.S_IFCHR) != VT_TYPE:
+                raise ValueError("Linux VT context missing: " + filename)
+            for other in (stat.S_IFREG, stat.S_IFLNK, stat.S_IFDIR):
+                try:
+                    actual = lookup(filename, other)
+                except OSError as error:
+                    if error.errno != 2:
+                        raise
+                else:
+                    if actual == VT_TYPE:
+                        raise ValueError("Linux VT context accepted a non-character inode")
+            checked.append([filename, VT_TYPE])
+        for filename in ("/dev/tty64", "/dev/ttyS0", "/dev/tty063",
+                         "/dev/tty-1", "/dev/tty/child", "/dev/pts/0"):
+            try:
+                actual = lookup(filename, stat.S_IFCHR)
+            except OSError as error:
+                if error.errno != 2:
+                    raise
+            else:
+                if actual == VT_TYPE:
+                    raise ValueError("Linux VT context extends to an unselected node")
         for filename, mode, expected in [
             ("/etc/console-setup", stat.S_IFDIR, "p4_linux_console_cache_dir_t"),
             ("/etc/console-setup/unselected.sh", stat.S_IFREG, "p4_linux_native_config_t"),

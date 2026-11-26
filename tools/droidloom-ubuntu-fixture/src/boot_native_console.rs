@@ -98,6 +98,8 @@ fn valid_contract(c: &Closure) -> Result<()> {
                 && matches!(
                     row.category.as_str(),
                     "entry"
+                        | "interpreter"
+                        | "mmap_data"
                         | "vtrgb"
                         | "helper"
                         | "library"
@@ -108,6 +110,30 @@ fn valid_contract(c: &Closure) -> Result<()> {
                 ),
             "normal console inode has an unexpected authority or category",
         )?;
+        if row.category == "interpreter" {
+            ensure(
+                row.paths == ["/usr/bin/dash"]
+                    && row.source_type == "p4_linux_native_bin_t"
+                    && row.target_type == "p4_linux_console_interpreter_native_bin_t"
+                    && row.mode == 0o755
+                    && row.nlink == 1,
+                "console interpreter is not the fixed normal dash inode",
+            )?;
+        }
+        if row.category == "mmap_data" {
+            let cache = row.paths == ["/etc/ld.so.cache"]
+                && row.source_type == "p4_linux_native_config_t"
+                && row.target_type == "p4_linux_console_ld_cache_native_config_t";
+            let locale = row.paths.len() == 1
+                && (row.paths[0] == "/usr/lib/locale/locale-archive"
+                    || row.paths[0].starts_with("/usr/lib/locale/C.utf8/"))
+                && row.source_type == "p4_linux_runtime_lib_t"
+                && row.target_type == "p4_linux_console_locale_runtime_lib_t";
+            ensure(
+                row.mode == 0o644 && row.nlink == 1 && (cache || locale),
+                "mapped console data cannot select an executable or arbitrary path",
+            )?;
+        }
     }
     ensure(
         c.directory.path == "/etc/console-setup"
@@ -212,6 +238,7 @@ fn verify_packages(c: &Closure, packages: &[crate::complete_native::Package]) ->
             | "console-setup-linux"
             | "coreutils"
             | "keyboard-configuration"
+            | "locales"
             | "xkb-data" => "all",
             _ => "amd64",
         };
@@ -342,6 +369,41 @@ mod tests {
                 .iter()
                 .any(|l| l.path == "/usr/bin/sh" && l.target == "dash")
         );
+    }
+
+    #[test]
+    fn mapped_data_and_binfmt_interpreter_cannot_be_swapped_with_helpers() {
+        for selected in [
+            "/etc/ld.so.cache",
+            "/usr/lib/locale/locale-archive",
+            "/usr/bin/dash",
+        ] {
+            let mut c: Closure = serde_json::from_str(SOURCE).unwrap();
+            valid_contract(&c).unwrap();
+            let row = c
+                .files
+                .iter_mut()
+                .find(|r| r.paths.iter().any(|p| p == selected))
+                .unwrap();
+            row.target_type = "p4_linux_console_helper_native_bin_t".into();
+            assert!(valid_contract(&c).is_err());
+        }
+        let mut c: Closure = serde_json::from_str(SOURCE).unwrap();
+        let row = c
+            .files
+            .iter_mut()
+            .find(|r| r.paths == ["/etc/ld.so.cache"])
+            .unwrap();
+        row.paths = vec!["/etc/unselected-cache".into()];
+        assert!(valid_contract(&c).is_err());
+        let mut c: Closure = serde_json::from_str(SOURCE).unwrap();
+        let row = c
+            .files
+            .iter_mut()
+            .find(|r| r.paths == ["/usr/lib/locale/locale-archive"])
+            .unwrap();
+        row.mode = 0o755;
+        assert!(valid_contract(&c).is_err());
     }
 
     #[test]

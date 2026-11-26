@@ -116,14 +116,14 @@
 /run/systemd/inaccessible(/.*)? u:object_r:p4_linux_inaccessible_t:s0
 /dev -d u:object_r:p4_linux_native_dev_root_t:s0
 # The complete normal root retains these eight original bootstrap character nodes.
-# Keep the selected Android platform types; /dev/full uses the existing native
+# Keep the selected platform types except the fixed Linux VT; /dev/full uses the existing native
 # standard-I/O type also assigned to the board's fixed full backing node.
 /dev/console -c u:object_r:console_device:s0
 /dev/full -c u:object_r:p4_linux_standardio_t:s0
 /dev/null -c u:object_r:null_device:s0
 /dev/ptmx -c u:object_r:ptmx_device:s0
 /dev/random -c u:object_r:random_device:s0
-/dev/tty -c u:object_r:owntty_device:s0
+/dev/tty -c u:object_r:p4_linux_console_vt_t:s0
 /dev/urandom -c u:object_r:random_device:s0
 /dev/zero -c u:object_r:zero_device:s0
 
@@ -177,7 +177,7 @@
 /etc/console\-setup/vtrgb -- u:object_r:p4_linux_console_public_native_config_t:s0
 /etc/default/console\-setup -- u:object_r:p4_linux_console_config_native_config_t:s0
 /etc/default/keyboard -- u:object_r:p4_linux_console_config_native_config_t:s0
-/etc/ld\.so\.cache -- u:object_r:p4_linux_console_config_native_config_t:s0
+/etc/ld\.so\.cache -- u:object_r:p4_linux_console_ld_cache_native_config_t:s0
 /etc/locale\.conf -- u:object_r:p4_linux_console_config_native_config_t:s0
 /usr/bin/ckbcomp -- u:object_r:p4_linux_console_helper_native_bin_t:s0
 /usr/bin/coreutils -- u:object_r:p4_linux_console_helper_native_bin_t:s0
@@ -296,7 +296,7 @@
 /usr/lib/cargo/bin/coreutils/who -- u:object_r:p4_linux_console_helper_native_bin_t:s0
 /usr/lib/cargo/bin/coreutils/whoami -- u:object_r:p4_linux_console_helper_native_bin_t:s0
 /usr/lib/cargo/bin/coreutils/yes -- u:object_r:p4_linux_console_helper_native_bin_t:s0
-/usr/bin/dash -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/bin/dash -- u:object_r:p4_linux_console_interpreter_native_bin_t:s0
 /usr/bin/gnurm -- u:object_r:p4_linux_console_helper_native_bin_t:s0
 /usr/bin/gzip -- u:object_r:p4_linux_console_helper_native_bin_t:s0
 /usr/bin/kbd_mode -- u:object_r:p4_linux_console_helper_native_bin_t:s0
@@ -334,3 +334,19 @@
 /run/console-setup/(boot_completed|font-loaded|keymap_loaded) -- u:object_r:p4_linux_console_run_t:s0
 /usr/bin/gnucp -- u:object_r:p4_linux_console_helper_native_bin_t:s0
 /usr/lib/x86_64\-linux\-gnu/libattr\.so\.1\.1\.2502 -- u:object_r:p4_linux_console_library_runtime_lib_t:s0
+/usr/lib/locale/C\.utf8/LC_ADDRESS -- u:object_r:p4_linux_console_locale_runtime_lib_t:s0
+/usr/lib/locale/C\.utf8/LC_COLLATE -- u:object_r:p4_linux_console_locale_runtime_lib_t:s0
+/usr/lib/locale/C\.utf8/LC_CTYPE -- u:object_r:p4_linux_console_locale_runtime_lib_t:s0
+/usr/lib/locale/C\.utf8/LC_IDENTIFICATION -- u:object_r:p4_linux_console_locale_runtime_lib_t:s0
+/usr/lib/locale/C\.utf8/LC_MEASUREMENT -- u:object_r:p4_linux_console_locale_runtime_lib_t:s0
+/usr/lib/locale/C\.utf8/LC_MESSAGES/SYS_LC_MESSAGES -- u:object_r:p4_linux_console_locale_runtime_lib_t:s0
+/usr/lib/locale/C\.utf8/LC_MONETARY -- u:object_r:p4_linux_console_locale_runtime_lib_t:s0
+/usr/lib/locale/C\.utf8/LC_NAME -- u:object_r:p4_linux_console_locale_runtime_lib_t:s0
+/usr/lib/locale/C\.utf8/LC_NUMERIC -- u:object_r:p4_linux_console_locale_runtime_lib_t:s0
+/usr/lib/locale/C\.utf8/LC_PAPER -- u:object_r:p4_linux_console_locale_runtime_lib_t:s0
+/usr/lib/locale/C\.utf8/LC_TELEPHONE -- u:object_r:p4_linux_console_locale_runtime_lib_t:s0
+/usr/lib/locale/C\.utf8/LC_TIME -- u:object_r:p4_linux_console_locale_runtime_lib_t:s0
+/usr/lib/locale/locale\-archive -- u:object_r:p4_linux_console_locale_runtime_lib_t:s0
+
+# Only the 65 kernel-created Linux VT character inodes, not serial or PTY nodes.
+/dev/tty([0-9]|[1-5][0-9]|6[0-3]) -c u:object_r:p4_linux_console_vt_t:s0

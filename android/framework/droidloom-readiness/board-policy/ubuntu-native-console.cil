@@ -10,6 +10,14 @@
 (roletype object_r p4_linux_console_helper_native_bin_t)
 (typeattributeset p4_linux_data (p4_linux_console_helper_native_bin_t))
 (typeattributeset p4_linux_native_executables (p4_linux_console_helper_native_bin_t))
+; Binfmt opens this one normal dash ELF while the old executor still owns
+; current credentials. Script entrypoint selection remains the role authority.
+(type p4_linux_console_interpreter_native_bin_t)
+(roletype object_r p4_linux_console_interpreter_native_bin_t)
+(typeattributeset p4_linux_data (p4_linux_console_interpreter_native_bin_t))
+(typeattributeset p4_linux_native_executables (p4_linux_console_interpreter_native_bin_t))
+(neverallow p4_linux_service_executor_t p4_linux_console_interpreter_native_bin_t (file (execute_no_trans entrypoint write append)))
+(neverallow p4_linux_udev_t p4_linux_console_interpreter_native_bin_t (file (execute_no_trans entrypoint write append)))
 (type p4_linux_console_vtrgb_native_bin_t)
 (roletype object_r p4_linux_console_vtrgb_native_bin_t)
 (typeattributeset p4_linux_data (p4_linux_console_vtrgb_native_bin_t))
@@ -26,6 +34,14 @@
 (roletype object_r p4_linux_console_config_native_config_t)
 (typeattributeset p4_linux_data (p4_linux_console_config_native_config_t))
 (typeattributeset p4_linux_native_public_files (p4_linux_console_config_native_config_t))
+; Loader cache and locale bytes are read-only mapped data, not executables.
+(type p4_linux_console_ld_cache_native_config_t)
+(roletype object_r p4_linux_console_ld_cache_native_config_t)
+(typeattributeset p4_linux_data (p4_linux_console_ld_cache_native_config_t))
+(typeattributeset p4_linux_native_public_files (p4_linux_console_ld_cache_native_config_t))
+(type p4_linux_console_locale_runtime_lib_t)
+(roletype object_r p4_linux_console_locale_runtime_lib_t)
+(typeattributeset p4_linux_data (p4_linux_console_locale_runtime_lib_t))
 (type p4_linux_console_public_native_config_t)
 (roletype object_r p4_linux_console_public_native_config_t)
 (typeattributeset p4_linux_data (p4_linux_console_public_native_config_t))
@@ -54,6 +70,36 @@
 (roletype object_r p4_linux_console_tmp_t)
 (typeattributeset p4_linux_data (p4_linux_console_tmp_t))
 (allow p4_linux_console_tmp_t tmpfs (filesystem (associate)))
+; The fixed 65 Linux devtmpfs nodes are labelled before the first policy load.
+; They retain the normal inode, mode, group and ACLs. Android device types and
+; generic device body access are not extended.
+(type p4_linux_console_vt_t)
+(roletype object_r p4_linux_console_vt_t)
+(typeattributeset p4_linux_data (p4_linux_console_vt_t))
+(allow p4_linux_console_vt_t tmpfs (filesystem (associate)))
+(allow kernel p4_linux_console_vt_t (chr_file (getattr)))
+(allow p4_linux_early_t p4_linux_console_vt_t (chr_file (getattr)))
+; normal udev-node applies the exact distro mode/group and restorecon label.
+(allow p4_linux_udev_t p4_linux_console_vt_t (chr_file (getattr setattr relabelfrom relabelto)))
+; logind session_prepare_vt / vt_restore / vt_release and positive chvt.
+(allow p4_linux_logind_t p4_linux_console_vt_t (chr_file (getattr open read write setattr ioctl)))
+(allowx p4_linux_logind_t p4_linux_console_vt_t (ioctl chr_file (0x4b3a 0x4b45 0x542a 0x5602 0x5603 0x5605 0x5606)))
+(neverallowx p4_linux_logind_t p4_linux_console_vt_t (ioctl chr_file (not (0x4b3a 0x4b45 0x542a 0x5602 0x5603 0x5605 0x5606))))
+; PID 1's normal terminal reset and winsize readback, plus its console lock.
+; TCGETS2, TCSETS2, TIOCGWINSZ, TIOCNXCL, KDSKBMODE and TCFLSH only.
+(allow init_t p4_linux_console_t (chr_file (lock ioctl)))
+(allowx init_t p4_linux_console_t (ioctl chr_file (0x4b45 0x540b 0x540d 0x5413 0x542a 0x542b)))
+(neverallowx init_t p4_linux_console_t (ioctl chr_file (not (0x4b45 0x540b 0x540d 0x5413 0x542a 0x542b))))
+(allow init_t p4_linux_console_vt_t (chr_file (getattr open read write lock ioctl)))
+(allowx init_t p4_linux_console_vt_t (ioctl chr_file (0x4b45 0x540b 0x540d 0x5413 0x542a 0x542b)))
+(neverallowx init_t p4_linux_console_vt_t (ioctl chr_file (not (0x4b45 0x540b 0x540d 0x5413 0x542a 0x542b))))
+; The executor only probes its inherited/selected terminal with isatty here.
+(allow p4_linux_service_executor_t p4_linux_console_t (chr_file (read ioctl)))
+(allowx p4_linux_service_executor_t p4_linux_console_t (ioctl chr_file (0x542a)))
+(neverallowx p4_linux_service_executor_t p4_linux_console_t (ioctl chr_file (not (0x542a))))
+(allow p4_linux_service_executor_t p4_linux_console_vt_t (chr_file (getattr open read write ioctl)))
+(allowx p4_linux_service_executor_t p4_linux_console_vt_t (ioctl chr_file (0x542a)))
+(neverallowx p4_linux_service_executor_t p4_linux_console_vt_t (ioctl chr_file (not (0x542a))))
 (call p4_ubuntu_system_service (p4_linux_console_setup_t p4_linux_console_entry_runtime_lib_t))
 (call p4_ubuntu_system_service (p4_linux_console_setup_t p4_linux_console_vtrgb_native_bin_t))
 ; The distribution udev rule executes only the generated font/terminal cache type.
@@ -82,6 +128,11 @@
 (allow p4_linux_console_setup_t p4_linux_usrmerge_link_t (lnk_file (getattr read)))
 (allow p4_linux_console_setup_t p4_linux_elf_interpreter_t (file (getattr open read execute map)))
 (allow p4_linux_console_setup_t p4_linux_console_helper_native_bin_t (file (getattr open read execute execute_no_trans map)))
+(allow p4_linux_console_setup_t p4_linux_console_interpreter_native_bin_t (file (getattr open read execute execute_no_trans map)))
+(allow p4_linux_console_setup_t p4_linux_console_ld_cache_native_config_t (file (getattr open read map)))
+(allow p4_linux_console_setup_t p4_linux_console_locale_runtime_lib_t (file (getattr open read map)))
+(neverallow p4_linux_console_setup_t p4_linux_console_ld_cache_native_config_t (file (execute execute_no_trans entrypoint write append)))
+(neverallow p4_linux_console_setup_t p4_linux_console_locale_runtime_lib_t (file (execute execute_no_trans entrypoint write append)))
 (allow p4_linux_console_setup_t p4_linux_console_vtrgb_native_bin_t (file (getattr open read execute execute_no_trans map)))
 (allow p4_linux_console_setup_t p4_linux_console_cache_exec_native_config_t (file (getattr open read execute execute_no_trans map)))
 (allow p4_linux_console_setup_t p4_linux_console_cache_native_config_t (file (getattr open read)))
@@ -117,7 +168,14 @@
 (allow p4_linux_console_setup_t p4_linux_console_tmp_t (file (getattr open read write create setattr unlink)))
 (allow p4_linux_console_setup_t device (dir (getattr search open read)))
 (allow p4_linux_console_setup_t device (chr_file (getattr)))
-(allow p4_linux_console_setup_t null_device (chr_file (getattr open read write)))
+; Preserve inherited normal /dev/null FDs through the role transition.
+; glibc isatty probes only TCGETS2; the null driver returns normal ENOTTY.
+(allow p4_linux_console_setup_t p4_linux_standardio_t (chr_file (getattr open read write ioctl)))
+(allowx p4_linux_console_setup_t p4_linux_standardio_t (ioctl chr_file (0x542a)))
+(neverallowx p4_linux_console_setup_t p4_linux_standardio_t (ioctl chr_file (not (0x542a))))
+(allow p4_linux_console_setup_t null_device (chr_file (getattr open read write ioctl)))
+(allowx p4_linux_console_setup_t null_device (ioctl chr_file (0x542a)))
+(neverallowx p4_linux_console_setup_t null_device (ioctl chr_file (not (0x542a))))
 (allow p4_linux_console_setup_t random_device (chr_file (getattr open read)))
 ; Normal glibc 2.43 isatty/tcgetattr issue TCGETS2 (0x802c542a; low 16 bits).
 ; The selected normal stty -a readback likewise issues TCGETS2, not TCGETS.
@@ -133,6 +191,9 @@
 (allow p4_linux_console_setup_t p4_linux_console_t (chr_file (getattr open read write ioctl)))
 (allowx p4_linux_console_setup_t p4_linux_console_t (ioctl chr_file (0x4b33 0x4b3b 0x4b44 0x4b45 0x4b47 0x4b49 0x4b66 0x4b67 0x4b68 0x4b71 0x4b72 0x4bfb 0x5413 0x542a)))
 (neverallowx p4_linux_console_setup_t p4_linux_console_t (ioctl chr_file (not (0x4b33 0x4b3b 0x4b44 0x4b45 0x4b47 0x4b49 0x4b66 0x4b67 0x4b68 0x4b71 0x4b72 0x4bfb 0x5413 0x542a))))
+(allow p4_linux_console_setup_t p4_linux_console_vt_t (chr_file (getattr open read write ioctl)))
+(allowx p4_linux_console_setup_t p4_linux_console_vt_t (ioctl chr_file (0x4b33 0x4b3b 0x4b44 0x4b45 0x4b47 0x4b49 0x4b66 0x4b67 0x4b68 0x4b71 0x4b72 0x4bfb 0x5413 0x542a)))
+(neverallowx p4_linux_console_setup_t p4_linux_console_vt_t (ioctl chr_file (not (0x4b33 0x4b3b 0x4b44 0x4b45 0x4b47 0x4b49 0x4b66 0x4b67 0x4b68 0x4b71 0x4b72 0x4bfb 0x5413 0x542a))))
 (allow p4_linux_console_setup_t self (capability (sys_tty_config)))
 (neverallow p4_linux_console_setup_t self (capability (not (sys_tty_config))))
 (neverallow p4_linux_console_setup_t self (capability2 (all)))

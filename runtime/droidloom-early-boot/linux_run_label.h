@@ -3,6 +3,10 @@
 #define DROIDLOOM_LINUX_RUN_LABEL_H
 
 #include <sys/types.h>
+#include <sys/stat.h>
+#include <stdint.h>
+#include <stddef.h>
+#include <stdbool.h>
 
 /* Owned by the board's policy installer. Keep the same open directory across
  * the initial policy load and close it before the handoff to Linux PID 1. */
@@ -65,4 +69,26 @@ int droidloom_label_readiness_paths(const struct droidloom_readiness_paths *path
 
 int droidloom_project_linux_standard_devices(void);
 int droidloom_linux_console_descriptors(void);
+
+/* All 65 original Linux VT nodes remain writable devtmpfs inodes. */
+#define DROIDLOOM_LINUX_VT_COUNT 65U
+struct droidloom_linux_vt {
+    int fd;
+    int label_kind;
+    struct stat identity;
+};
+struct droidloom_linux_vts {
+    int dev;
+    int proc_fds;
+    uint64_t dev_mount;
+    uint64_t proc_mount;
+    struct stat dev_identity;
+    struct stat proc_identity;
+    size_t held_count;
+    bool prepared;
+    struct droidloom_linux_vt nodes[DROIDLOOM_LINUX_VT_COUNT];
+};
+int droidloom_prepare_linux_vts(struct droidloom_linux_vts *held);
+int droidloom_verify_linux_vts(const struct droidloom_linux_vts *held);
+void droidloom_close_linux_vts(struct droidloom_linux_vts *held);
 #endif

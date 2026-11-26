@@ -550,11 +550,11 @@ def verify_manager_file_contexts(here, work):
         ("/run/systemd/temporary-credentials/unselected.service", stat.S_IFDIR, "p4_linux_rootdir_t"),
     ])
     # Normal debootstrap character nodes survive complete-root capture. Keep the
-    # original class-specific labels without assigning device types to other kinds.
+    # class-specific labels, including the fixed Linux VT, never other inode kinds.
     for name, device_type in [
         ("console", "console_device"), ("full", "p4_linux_standardio_t"),
         ("null", "null_device"), ("ptmx", "ptmx_device"),
-        ("random", "random_device"), ("tty", "owntty_device"),
+        ("random", "random_device"), ("tty", "p4_linux_console_vt_t"),
         ("urandom", "random_device"), ("zero", "zero_device"),
     ]:
         cases.extend([

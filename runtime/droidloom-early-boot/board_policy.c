@@ -290,6 +290,7 @@ int droidloom_board_activate_policy(gid_t observer_gid, const char *cohort)
     struct droidloom_apparmor_measurement observation = {0};
     struct droidloom_raw_profile selected_profiles[4] = {0};
     int status = -1, epoch_directory = -1;
+    struct droidloom_linux_vts vts = { .dev = -1, .proc_fds = -1 };
     struct droidloom_linux_init_scope scope = { .root.fd = -1, .scope.fd = -1, .procs.fd = -1, .controllers.fd = -1, .system_slice.fd = -1, .root_membership.fd = -1, .root_subtree_control.fd = -1 };
     struct droidloom_linux_run run = {.fd = -1}, shm = {.fd = -1};
     struct droidloom_linux_journal_store log_store = { .log.fd = -1, .journal.fd = -1 };
@@ -314,6 +315,7 @@ int droidloom_board_activate_policy(gid_t observer_gid, const char *cohort)
      * launcher after this boot-wide policy epoch has been sealed. */
     (void)cohort;
     if (rc == 0) { stage = "project the exact Ubuntu console, null, full and kernel-log device nodes"; rc = droidloom_project_linux_standard_devices(); }
+    if (rc == 0) { stage = "label all held original Linux VT inodes before initial policy"; rc = droidloom_prepare_linux_vts(&vts); }
     if (rc == 0) {
         stage = "prepare the protected read-only kernel measurement directory";
         epoch_directory = droidloom_prepare_epoch_directory(paths.handoff.fd);
@@ -330,6 +332,7 @@ int droidloom_board_activate_policy(gid_t observer_gid, const char *cohort)
         if (status < 0) rc = -1;
     }
     if (rc == 0) { stage = "load initial selected joint SELinux policy"; rc = submit(SELINUX_DIR "/load", policy.data, policy.size); }
+    if (rc == 0) { stage = "verify all original Linux VT identities and loaded labels"; rc = droidloom_verify_linux_vts(&vts); }
     if (rc == 0) { stage = "label the held Ubuntu cgroup root and its initial scope"; rc = droidloom_label_linux_init_scope(&scope); }
     if (rc == 0) { stage = "label the original Ubuntu shared memory root"; rc = droidloom_label_linux_shm(&shm); }
     if (rc == 0) { stage = "label the held Ubuntu /run inode"; rc = droidloom_label_linux_run(&run); }
@@ -348,6 +351,7 @@ int droidloom_board_activate_policy(gid_t observer_gid, const char *cohort)
         close(paths.readiness.fd);
     if (paths.handoff.fd >= 0)
         close(paths.handoff.fd);
+    droidloom_close_linux_vts(&vts);
     droidloom_close_linux_init_scope(&scope);
     if (shm.fd >= 0)
         close(shm.fd);
