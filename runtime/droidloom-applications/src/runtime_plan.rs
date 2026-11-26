@@ -33,6 +33,16 @@ use launch_route::{LaunchObservation, LaunchPlan};
 #[path = "runtime_prepare.rs"]
 mod runtime_prepare;
 pub use runtime_prepare::{PreparationReport, prepare_files};
+#[path = "runtime_identity.rs"]
+mod runtime_identity;
+
+/// Prepare the next normal material batch for source review. The result cannot
+/// extend the compiled admission table or authorize an application.
+pub fn prepare_identity_material_admission(
+    path: &Path, expected_sha256: &str,
+) -> Result<serde_json::Value, String> {
+    runtime_identity::prepare_admission_files(path, expected_sha256)
+}
 
 /// Execute only a root content-addressed single-app plan in its fixed installed
 /// unit. This preserves the original dispatcher and never grants acceptance.
@@ -178,6 +188,8 @@ struct AppDispatch {
     prerequisites: Vec<String>,
     gate_assertions: Vec<GateAssertion>,
     inspection: Option<ApplicationInspection>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    identity_observation: Option<runtime_identity::IdentityObservation>,
     invocation_output: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     firefox_activity_start: Option<FirefoxActivityStart>,
@@ -206,6 +218,9 @@ pub struct RuntimeReport {
     partial_leaf_invocations: usize,
     launch_only_invocations: usize,
     accepted_applications: usize,
+    material_identity_observations: usize,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    native_inspection_peer: Option<control::NativeInspectionPeer>,
     runtime_qualified: bool,
     production_ready: bool,
     automatic_retry: bool,
@@ -287,6 +302,37 @@ impl RuntimeClient for SocketClient<'_> {
         let after = self.inspect(&expected.package, expected.user)?;
         if after != *expected {
             return Err("Main or complete installed identity changed after the original leaf; retained result cannot qualify this plan".into());
+        }
+        Ok((after, result))
+    }
+}
+
+// Only the source-admitted material path upgrades observations. It uses the
+// fixed normal executable/peer factory; ordinary user sockets remain metadata
+// transport for older partial flows and cannot obtain identity-facet credit.
+struct MaterialClient<'a> {
+    socket: &'a Path,
+    inspector: control::NativeApplicationInspector,
+}
+impl RuntimeClient for MaterialClient<'_> {
+    fn inspect(&mut self, package: &str, user: u32) -> Result<ApplicationInspection, String> {
+        let reply = self.inspector.inspect(package, user).map_err(|error| error.to_string())?;
+        consume_inspection(reply, package, user).map(|(application, _)| application)
+    }
+    fn launch(&mut self, expected: &ApplicationInspection, plan: &LaunchPlan,
+        source: &FilePin) -> Result<(ApplicationInspection, LaunchObservation), String> {
+        SocketClient { socket: self.socket }.launch(expected, plan, source)
+    }
+    fn browser(&mut self, expected: &ApplicationInspection,
+        url: &str) -> Result<(ApplicationInspection, String), String> {
+        SocketClient { socket: self.socket }.browser(expected, url)
+    }
+    fn leaf(&mut self, expected: &ApplicationInspection, plan: &LeafPlan,
+        selection: &FilePin) -> Result<(ApplicationInspection, LeafObservation), String> {
+        let result = leaf_routes::execute(plan, selection, expected)?;
+        let after = self.inspect(&expected.package, expected.user)?;
+        if &after != expected {
+            return Err("original leaf returned to a different live Main or installed identity".into());
         }
         Ok((after, result))
     }
@@ -438,10 +484,21 @@ fn source_matches(actual: &ApplicationInspection, expected: &ExpectedInput) -> b
     actual.version_code == expected.version_code && actual.apks.len() == got.len() && got == wanted
 }
 
+#[cfg(test)]
 fn dispatch(
     plan: &RuntimePlan,
     gates: &GateRegistry,
     client: &mut impl RuntimeClient,
+) -> RuntimeReport {
+    dispatch_with_materials(plan, gates, client, None, false)
+}
+
+fn dispatch_with_materials(
+    plan: &RuntimePlan,
+    gates: &GateRegistry,
+    client: &mut impl RuntimeClient,
+    materials: Option<&runtime_identity::VerifiedMaterialBatch>,
+    identity_only: bool,
 ) -> RuntimeReport {
     let mut applications = Vec::new();
     for app in &plan.applications {
@@ -466,6 +523,7 @@ fn dispatch(
             prerequisites: package.prerequisites.clone(),
             gate_assertions: pending_assertions(gates, &package.profile),
             inspection: None,
+            identity_observation: None,
             invocation_output: None,
             firefox_activity_start: None,
             leaf_observation: None,
@@ -494,6 +552,9 @@ fn dispatch(
                     app.expected_input.as_ref().expect("checked above"),
                 ) {
                     row.reason = "installed version or complete APK byte identities differ from the reviewed official input".into();
+                } else if identity_only {
+                    row.status = "identity_observation_only";
+                    row.reason = "The explicit readonly identity command invokes no launch, leaf or browser. Complete business and unobserved common gates remain pending.".into();
                 } else if let Some(launch) = &app.launch {
                     let source = &app.expected_input.as_ref().expect("checked above").source_receipt;
                     match client.launch(&actual, launch, source) {
@@ -571,6 +632,36 @@ fn dispatch(
                 row.inspection = Some(actual);
             }
         }
+        if row.status != "blocked" {
+            if let (Some(materials), Some(before)) = (materials, row.inspection.as_ref()) {
+                let observation = client.inspect(&app.package, plan.android_user)
+                    .and_then(|after| materials.observe(
+                        app, plan.android_user, &plan.expected_epoch, before, &after,
+                    ));
+                match observation {
+                    Ok(observation) => {
+                        row.identity_observation = Some(observation);
+                        if let Some(gate) = row.gate_assertions.iter_mut()
+                            .find(|gate| gate.scope == "common" && gate.id == "identity")
+                        {
+                            gate.status = "partial";
+                            gate.reason = "Live package/user/UID/version and the complete base/split bytes are unchanged and bound to source-admitted normal SDK signer evidence. Engine mapping and independent Main qualification semantics remain unsupported; this is not the complete identity gate.".into();
+                        }
+                    }
+                    Err(error) => {
+                        row.status = "blocked";
+                        row.reason = format!("live identity factory rejected the final observation: {error}");
+                        // A saved leaf result does not qualify another installed
+                        // identity or Main epoch after this invocation.
+                        for gate in &mut row.gate_assertions {
+                            gate.status = "blocked";
+                            gate.reason = row.reason.clone();
+                            gate.evidence = None;
+                        }
+                    }
+                }
+            }
+        }
         for assertion in &mut row.gate_assertions {
             if assertion.status == "passed" { continue; }
             if row.status == "blocked" {
@@ -621,11 +712,14 @@ fn dispatch(
             row.status != "blocked" && !row.gate_assertions.is_empty()
                 && row.gate_assertions.iter().all(|gate| gate.status == "passed")
         }).count(),
+        material_identity_observations: applications.iter()
+            .filter(|row| row.identity_observation.is_some()).count(),
+        native_inspection_peer: None,
         runtime_qualified: false,
         production_ready: false,
         automatic_retry: false,
         main_qualification_semantics_checked: false,
-        meaning: "Live Package Manager/APK observations and actual bounded entry results. Only business assertions explicitly verified by the original leaf carry scoped evidence; untested common/business gates remain incomplete. Neither Main qualification nor whole-application production readiness is granted.",
+        meaning: "Live Package Manager/APK observations and actual bounded entry results. Source-admitted normal material batches can prove the recorded installed identity facets using fresh before/after observations; the full identity gate still requires engine and Main qualification. Only scoped original-leaf business assertions are credited. Untested gates and whole-application readiness remain incomplete.",
         applications,
     }
 }
@@ -668,12 +762,12 @@ fn consume_inspection(
     if package == "com.android.gallery3d" && user == 0 && reply.image_custody.is_none() {
         return Err("Gallery requires the actual owned whole-image inspection; an APK-only or historical install result is insufficient".into());
     }
+    if reply.state != control::CellState::Running
+        || reply.host_pid != Some(application.epoch.cell_host_pid)
+    {
+        return Err("Application inspection does not belong to the current running daemon owner".into());
+    }
     if let Some(custody) = &reply.image_custody {
-        if reply.state != control::CellState::Running
-            || reply.host_pid != Some(application.epoch.cell_host_pid)
-        {
-            return Err("Image custody does not belong to the current running daemon owner".into());
-        }
         custody.validate(&application)?;
     }
     Ok((application, reply.image_custody))
@@ -714,6 +808,16 @@ mod image_custody_consumer_tests {
     }
 
     #[test]
+    fn all_inspections_require_the_current_running_daemon_owner() {
+        let mut wrong_owner = reply("org.mozilla.firefox");
+        wrong_owner.host_pid = Some(999);
+        assert!(consume_inspection(wrong_owner, "org.mozilla.firefox", 0).is_err());
+        let mut no_owner = reply("org.mozilla.firefox");
+        no_owner.host_pid = None;
+        assert!(consume_inspection(no_owner, "org.mozilla.firefox", 0).is_err());
+    }
+
+    #[test]
     fn consumer_rejects_a_different_actual_package_or_user() {
         assert!(consume_inspection(reply("org.mozilla.firefox"), "com.android.gallery3d", 0).is_err());
         assert!(consume_inspection(reply("org.mozilla.firefox"), "org.mozilla.firefox", 1).is_err());
@@ -726,6 +830,27 @@ pub fn run_files(
     path: &Path,
     expected_sha256: &str,
     expected_count: usize,
+) -> Result<RuntimeReport, String> {
+    run_files_mode(socket, path, expected_sha256, expected_count, false)
+}
+
+/// Execute only the actual material-identity observer for every selected row.
+/// Routes retained in the pinned plan are not invoked by this readonly command.
+pub fn verify_material_identity_files(
+    socket: &Path,
+    path: &Path,
+    expected_sha256: &str,
+    expected_count: usize,
+) -> Result<RuntimeReport, String> {
+    run_files_mode(socket, path, expected_sha256, expected_count, true)
+}
+
+fn run_files_mode(
+    socket: &Path,
+    path: &Path,
+    expected_sha256: &str,
+    expected_count: usize,
+    identity_only: bool,
 ) -> Result<RuntimeReport, String> {
     let raw = crate::release::read_frozen(path, INPUT_LIMIT).map_err(|e| e.to_string())?;
     if !crate::release::valid_sha(expected_sha256)
@@ -750,7 +875,27 @@ pub fn run_files(
             pinned(&launch.specification)?;
         }
     }
-    let mut report = dispatch(&plan, &gates, &mut SocketClient { socket });
+    let materials = runtime_identity::admit_plan(&plan)?;
+    if identity_only && materials.is_none() {
+        return Err("this source release has not admitted the selected normal material batch; prepare and review its exact normal provenance before publishing an updated tool".into());
+    }
+    let mut report = if let Some(materials) = &materials {
+        let mut client = MaterialClient {
+            socket,
+            inspector: control::NativeApplicationInspector::acquire(socket)
+                .map_err(|error| error.to_string())?,
+        };
+        let mut report = dispatch_with_materials(
+            &plan, &gates, &mut client, Some(materials), identity_only,
+        );
+        report.native_inspection_peer = Some(
+            client.inspector.observation().map_err(|error| error.to_string())?,
+        );
+        materials.revalidate()?;
+        report
+    } else {
+        dispatch_with_materials(&plan, &gates, &mut SocketClient { socket }, None, false)
+    };
     for row in &mut report.applications {
         row.source_context = source_annotations.remove(&row.package);
     }

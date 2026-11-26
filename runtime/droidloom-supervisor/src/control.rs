@@ -50,6 +50,10 @@ pub(crate) mod apk_payload;
 #[path = "control_progress.rs"]
 mod progress;
 
+#[path = "control_identity.rs"]
+mod identity;
+pub use identity::{NativeApplicationInspector, NativeInspectionPeer};
+
 #[cfg(target_os = "linux")]
 #[path = "production_package.rs"]
 pub mod package;

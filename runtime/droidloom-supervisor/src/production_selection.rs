@@ -30,6 +30,7 @@ const SCHEMA: &str = "droidloom-production-selection-v1";
 #[path = "production_launcher.rs"]
 mod launcher;
 pub use launcher::{ContainerLibraryMount, PreparedContainerSelection, SharedKernelLauncher};
+pub(crate) use launcher::PublishedServiceProgram;
 
 #[path = "production_early_generation.rs"]
 pub(crate) mod early_generation;

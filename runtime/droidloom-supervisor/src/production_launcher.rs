@@ -129,6 +129,7 @@ impl SharedKernelLauncher {
 
     /// True when Android PID 1 was created during the host kernel boot.
     pub fn early_kernel_boot(&self)->bool {self.early}
+    pub(crate) fn public_selector_sha256(&self) -> &str { &self.sealed.sha256 }
     pub(super) fn matches_private_early(&self,digest:&str)->bool {self.early && self.selected_digest==digest}
 
     /// Hold the fixed, byte-verified package entry until the transaction ends.
@@ -168,6 +169,16 @@ impl SharedKernelLauncher {
 pub struct PublishedServiceProgram(SealedFile);
 
 impl PublishedServiceProgram {
+    pub(crate) fn matches_executable(&self, actual: &File) -> io::Result<bool> {
+        self.revalidate()?;
+        let matches = Node::from(&actual.metadata()?) == self.0.node;
+        self.revalidate()?;
+        Ok(matches)
+    }
+    pub(crate) fn content_identity(&self) -> (u64, String) {
+        (self.0.node.bytes, self.0.sha256.clone())
+    }
+
     pub(super) fn matches_current_process(&self)->io::Result<bool> {
         let active=std::fs::metadata("/proc/self/exe")?;
         Ok((active.dev(),active.ino())==(self.0.node.device,self.0.node.inode))

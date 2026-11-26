@@ -162,8 +162,26 @@ mod cli_tests {
 
 #[derive(Debug, Parser)]
 #[command(name = "droidloom-applications", version, about)]
-#[command(group(clap::ArgGroup::new("release_action").args(["release_check", "runtime_plan", "prepare_runtime_plan"])))]
+#[command(group(clap::ArgGroup::new("release_action").args(["release_check", "runtime_plan", "prepare_runtime_plan", "verify_material_identity"])))]
 struct Cli {
+    /// Verify live installed material identity only; never execute routes in the plan.
+    #[arg(long, requires_all = ["expect_identity_plan_sha256", "expect_app_count"],
+        conflicts_with_all = ["owned_leaf_profile", "adopt_native_leaf_release", "release_check",
+        "runtime_plan", "prepare_runtime_plan", "prepare_material_admission", "inspect_package",
+        "inspect_contacts_fixture", "remove_managed", "user", "once", "refresh_seconds"])]
+    verify_material_identity: Option<PathBuf>,
+    /// Exact complete runtime plan used only for its identity inputs.
+    #[arg(long, requires = "verify_material_identity")]
+    expect_identity_plan_sha256: Option<String>,
+    /// Prepare a normal material admission row for source review; never admits or runs Android.
+    #[arg(long, requires = "expect_material_admission_sha256",
+        conflicts_with_all = ["owned_leaf_profile", "adopt_native_leaf_release", "release_check",
+        "runtime_plan", "prepare_runtime_plan", "inspect_package", "inspect_contacts_fixture",
+        "remove_managed", "socket", "user", "once", "refresh_seconds", "expect_app_count"])]
+    prepare_material_admission: Option<PathBuf>,
+    /// Exact candidate input pin; this cannot extend the source-owned admission table.
+    #[arg(long, requires = "prepare_material_admission")]
+    expect_material_admission_sha256: Option<String>,
     /// Run one content-addressed root plan in its exact installed owned unit.
     #[arg(long, value_parser = ["calendar-reminder", "gallery", "settings-pages"], requires = "owned_leaf_plan_sha256",
         conflicts_with_all = ["adopt_native_leaf_release", "release_check", "runtime_plan", "inspect_package", "inspect_contacts_fixture", "remove_managed", "socket", "user", "once", "refresh_seconds", "expect_app_count"])]
@@ -240,6 +258,23 @@ fn main() {
 
 fn run() -> Result<(), Box<dyn std::error::Error>> {
     let cli = Cli::parse();
+    if let Some(path) = &cli.prepare_material_admission {
+        let candidate = droidloom_applications::runtime_plan::prepare_identity_material_admission(
+            path, cli.expect_material_admission_sha256.as_deref()
+                .ok_or("missing normal material admission candidate pin")?,
+        )?;
+        println!("{}", serde_json::to_string_pretty(&candidate)?);
+        return Ok(());
+    }
+    if let Some(path) = &cli.verify_material_identity {
+        let report = droidloom_applications::runtime_plan::verify_material_identity_files(
+            &cli.socket, path, cli.expect_identity_plan_sha256.as_deref()
+                .ok_or("missing complete identity plan pin")?,
+            cli.expect_app_count.ok_or("missing complete selected count")?,
+        )?;
+        println!("{}", serde_json::to_string_pretty(&report)?);
+        return Err("complete identity, business and activation acceptance remain incomplete; inspect every selected row".into());
+    }
     if let Some(profile) = &cli.owned_leaf_profile {
         droidloom_applications::runtime_plan::run_owned_leaf_plan(profile,
             cli.owned_leaf_plan_sha256.as_deref().ok_or("missing owned root plan pin")?)?;
@@ -376,5 +411,21 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             return Ok(());
         }
         thread::sleep(Duration::from_secs(cli.refresh_seconds));
+    }
+}
+
+#[cfg(test)]
+mod identity_admission_cli_tests {
+    use super::*;
+    #[test]
+    fn preparation_requires_its_pin_and_never_combines_with_runtime_operations() {
+        assert!(Cli::try_parse_from(["apps", "--prepare-material-admission", "/input"]).is_err());
+        let hash = "a".repeat(64);
+        assert!(Cli::try_parse_from(["apps", "--prepare-material-admission", "/input",
+            "--expect-material-admission-sha256", &hash]).is_ok());
+        assert!(Cli::try_parse_from(["apps", "--prepare-material-admission", "/input",
+            "--expect-material-admission-sha256", &hash, "--inspect-package", "org.example.app"]).is_err());
+        assert!(Cli::try_parse_from(["apps", "--prepare-material-admission", "/input",
+            "--expect-material-admission-sha256", &hash, "--remove-managed"]).is_err());
     }
 }
