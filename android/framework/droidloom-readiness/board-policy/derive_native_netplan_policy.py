@@ -14,6 +14,7 @@ from derive_native_uevent_policy import ContextPolicy, Membership, LEVELS
 from derive_native_console_policy import contract as console_contract
 from derive_native_sysusers_policy import ALIASES as SYSUSERS_ALIASES
 from derive_native_logind_state_policy import ALIASES as LOGIND_ALIASES
+from derive_native_timesync_policy import ALIASES as TIMESYNC_ALIASES
 from derive_preserved_alias_policy import (
     _roles, _context, _preserved_xperm_rules,
     derive_preserved_aliases, verify_preserved_aliases)
@@ -530,6 +531,7 @@ def verify(library, binary, exported, here, expected, export):
         CACHE: read | {"map"}, YAML: read,
         OUTPUT: read | {"write", "create", "rename", "unlink", "setattr"},
         PRIVATE_INPUT: read, "p4_linux_public_accounts_t": read,
+        "p4_linux_timesyncd_nsswitch_t": read,
         GENERATED: read | {"write", "create", "rename", "unlink", "setattr"},
     }
     directories = {
@@ -547,7 +549,7 @@ def verify(library, binary, exported, here, expected, export):
     }
     # These are explicit, source-owned alias sets, never a discovered directory
     # or an automatic permit for a previously unknown type.
-    for row in console_contract(here)["aliases"] + SYSUSERS_ALIASES + LOGIND_ALIASES:
+    for row in console_contract(here)["aliases"] + SYSUSERS_ALIASES + LOGIND_ALIASES + TIMESYNC_ALIASES:
         table = file_access if row["class"] == "file" else directories if row["class"] == "dir" else {}
         if row["source"] in table:
             table.setdefault(row["target"], set()).update(table[row["source"]])
@@ -650,11 +652,14 @@ def verify_file_contexts(here, work):
                 raise ValueError("Netplan input directory label differs")
             checked.append([row["path"], stat.S_IFDIR, INPUT_DIR])
         private = private_contract(here)
-        for row in private["profiles"] + [r for r in private["public_inputs"]
-                                          if r["path"] == "/etc/nsswitch.conf"]:
+        for row in private["profiles"]:
             if lookup(row["path"], stat.S_IFREG) != PRIVATE_INPUT:
                 raise ValueError("Netplan private input file label differs")
             checked.append([row["path"], stat.S_IFREG, PRIVATE_INPUT])
+        nss = "p4_linux_timesyncd_nsswitch_t"
+        if lookup("/etc/nsswitch.conf", stat.S_IFREG) != nss:
+            raise ValueError("Netplan public NSS input file label differs")
+        checked.append(["/etc/nsswitch.conf", stat.S_IFREG, nss])
         for filename, wanted in [
                 ("/run/NetworkManager/system-connections", PROFILE_DIR),
                 ("/run/systemd/network", LINK_DIR),

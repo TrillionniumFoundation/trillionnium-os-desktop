@@ -390,7 +390,7 @@
 /etc/netplan/90\-NM\-d732669d\-d34a\-4baa\-b97e\-bd2563bdd648\.yaml -- u:object_r:p4_linux_netplan_private_config_t:s0
 /etc/netplan/90\-NM\-e80414a4\-1077\-49d3\-953e\-aaccddb3bf21\.yaml -- u:object_r:p4_linux_netplan_private_config_t:s0
 /etc/netplan/90\-NM\-f84d0c1a\-dcde\-4634\-bf39\-13ace1617de3\.yaml -- u:object_r:p4_linux_netplan_private_config_t:s0
-/etc/nsswitch\.conf -- u:object_r:p4_linux_netplan_private_config_t:s0
+/etc/nsswitch\.conf -- u:object_r:p4_linux_timesyncd_nsswitch_t:s0
 /run/NetworkManager/system\-connections -d u:object_r:p4_linux_netplan_profiles_dir_t:s0
 /run/systemd/network -d u:object_r:p4_linux_netplan_link_dir_t:s0
 /run/udev/rules\.d -d u:object_r:p4_linux_netplan_rule_dir_t:s0
@@ -398,3 +398,15 @@
 /run/NetworkManager/system\-connections/netplan\-[^/]+\.nmconnection(\.[A-Za-z0-9]{6})? -- u:object_r:p4_linux_netplan_output_t:s0
 /run/systemd/network/10\-netplan\-[^/]+\.link(\.[A-Za-z0-9]{6})? -- u:object_r:p4_linux_netplan_link_rule_t:s0
 /run/udev/rules\.d/90\-netplan\.rules(\.[A-Za-z0-9]{6})? -- u:object_r:p4_linux_netplan_link_rule_t:s0
+
+# Unmodified normal timesyncd: one entry, two files it owns, and fixed public inputs.
+/usr/lib/systemd/systemd-timesyncd -- u:object_r:p4_linux_timesyncd_exec_t:s0
+/run/systemd/timesync -d u:object_r:p4_linux_timesyncd_run_t:s0
+/run/systemd/timesync/synchronized -- u:object_r:p4_linux_timesyncd_run_t:s0
+/var/lib/systemd/timesync -d u:object_r:p4_linux_timesyncd_state_t:s0
+/var/lib/systemd/timesync/clock -- u:object_r:p4_linux_timesyncd_state_t:s0
+/etc/(hosts|host\.conf|gai\.conf|adjtime) -- u:object_r:p4_linux_timesyncd_config_t:s0
+/etc/systemd/timesyncd\.conf -- u:object_r:p4_linux_timesyncd_config_t:s0
+/etc/systemd/timesyncd\.conf\.d/[^/]+\.conf -- u:object_r:p4_linux_timesyncd_config_t:s0
+/run/systemd/netif(/links)? -d u:object_r:p4_linux_timesyncd_netif_t:s0
+/run/systemd/netif/(state|links/[0-9]+) -- u:object_r:p4_linux_timesyncd_netif_t:s0

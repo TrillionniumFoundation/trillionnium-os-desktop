@@ -1,0 +1,475 @@
+{
+  "actor": "p4_linux_timesyncd_t",
+  "address_families": [
+    "AF_UNIX",
+    "AF_INET",
+    "AF_INET6"
+  ],
+  "aliases": [
+    {
+      "class": "file",
+      "source": "p4_linux_runtime_lib_t",
+      "target": "p4_linux_timesyncd_exec_t"
+    },
+    {
+      "class": "dir",
+      "source": "p4_linux_rootdir_t",
+      "target": "p4_linux_timesyncd_run_t"
+    },
+    {
+      "class": "file",
+      "source": "p4_linux_native_data_t",
+      "target": "p4_linux_timesyncd_run_t"
+    },
+    {
+      "class": "dir",
+      "source": "p4_linux_rootdir_t",
+      "target": "p4_linux_timesyncd_state_t"
+    },
+    {
+      "class": "file",
+      "source": "p4_linux_native_data_t",
+      "target": "p4_linux_timesyncd_state_t"
+    },
+    {
+      "class": "file",
+      "source": "p4_linux_native_config_t",
+      "target": "p4_linux_timesyncd_config_t"
+    },
+    {
+      "class": "file",
+      "source": "p4_linux_native_config_t",
+      "target": "p4_linux_timesyncd_nsswitch_t"
+    },
+    {
+      "class": "dir",
+      "source": "p4_linux_rootdir_t",
+      "target": "p4_linux_timesyncd_netif_t"
+    },
+    {
+      "class": "file",
+      "source": "p4_linux_native_data_t",
+      "target": "p4_linux_timesyncd_netif_t"
+    }
+  ],
+  "capabilities": [
+    "CAP_SYS_TIME"
+  ],
+  "dns_normal_elf_proof": {
+    "bytes": 5875,
+    "sha256": "280af455c5f5c0415b05cad573dd4bf1bb2a9838942cc1340de77cc9e92fea2f"
+  },
+  "dns_tcp_fallback_port": 53,
+  "glibc_source_admission": {
+    "bytes": 19073,
+    "sha256": "8b1d42efa9e602dbf104c7ca3b255c1e846f85f3e77e0eac10166095cad10081"
+  },
+  "netlink_probe_can_fail": true,
+  "normal_account": {
+    "group": [
+      "systemd-timesync",
+      "x",
+      "996",
+      ""
+    ],
+    "name": "systemd-timesync",
+    "passwd": [
+      "systemd-timesync",
+      "x",
+      "996",
+      "996",
+      "systemd Time Synchronization",
+      "/",
+      "/usr/sbin/nologin"
+    ]
+  },
+  "normal_files": [
+    {
+      "bytes": 2584,
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "path": "/etc/gai.conf",
+      "sha256": "76a5771adee7b9f36c7ae66eae78d72f325557500269107f2d98a7e3560a1808",
+      "uid": 0
+    },
+    {
+      "bytes": 778,
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "path": "/etc/group",
+      "sha256": "616dc70184ac71bf87f6cf7a9fd26f0cd7b9e416d8a993eac044998991f96518",
+      "uid": 0
+    },
+    {
+      "bytes": 92,
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "path": "/etc/host.conf",
+      "sha256": "02a6e65b457fb589ef212bb09b2a985b7181987b3e8782fd9be81abead1c776d",
+      "uid": 0
+    },
+    {
+      "bytes": 109,
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "path": "/etc/hosts",
+      "sha256": "9adb29b748caaeec3f9086e01443e5520e7d9c00ea6a5bacd73249c4c504628a",
+      "uid": 0
+    },
+    {
+      "bytes": 594,
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "path": "/etc/nsswitch.conf",
+      "sha256": "f053e77f9d706a20cb52deecdf9602b1635ea64a3be77a4cb32205bfebb17d3e",
+      "uid": 0
+    },
+    {
+      "bytes": 1620,
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "path": "/etc/passwd",
+      "sha256": "0417da93e253f377a7de2e9eab2268889ac96c2292457e0c931e24237dee937b",
+      "uid": 0
+    },
+    {
+      "bytes": 1003,
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "path": "/etc/systemd/timesyncd.conf",
+      "sha256": "e6734751f8aaf19fddfff891ad246387f5f59bd9ff1a5f0cac2c34bc81941c62",
+      "uid": 0
+    },
+    {
+      "bytes": 1775,
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "path": "/usr/lib/systemd/system/systemd-timesyncd.service",
+      "sha256": "a26f8693ba1a3c2af252bda0c24cda0679f85d3f1a327d1f3dffa919b8ca12e2",
+      "uid": 0
+    },
+    {
+      "bytes": 59880,
+      "gid": 0,
+      "mode": 493,
+      "nlink": 1,
+      "path": "/usr/lib/systemd/systemd-timesyncd",
+      "sha256": "3c4d0aa38af8b4f594dbab42c3d8eafd02e93969c96d86d8e24944f3780cf630",
+      "uid": 0
+    },
+    {
+      "bytes": 345,
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "path": "/usr/lib/sysusers.d/systemd-timesync.conf",
+      "sha256": "bab41de8c13324ce019aade88c34b7a42f8de52792bc1f1f188e79a1046a1851",
+      "uid": 0
+    },
+    {
+      "bytes": 2190608,
+      "gid": 0,
+      "mode": 493,
+      "nlink": 1,
+      "path": "/usr/lib/x86_64-linux-gnu/libc.so.6",
+      "sha256": "9941dc28e68bc5fd788d9cd024c69e68c791d63799e7538a97b6040dd9f50fb6",
+      "uid": 0
+    },
+    {
+      "bytes": 199120,
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "path": "/usr/lib/x86_64-linux-gnu/libselinux.so.1",
+      "sha256": "c977b03dbb29e45ca7206ff0937cfda419dcacc0fbbe72be1f0a72cfc8c1b218",
+      "uid": 0
+    },
+    {
+      "bytes": 5017728,
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "path": "/usr/lib/x86_64-linux-gnu/systemd/libsystemd-shared-259.so",
+      "sha256": "21ddd09d02a864c40139986fdc89c3f2a428ad1adcc201c8276bc9590c2c98fd",
+      "uid": 0
+    },
+    {
+      "bytes": 1818,
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "path": "/usr/share/dbus-1/system.d/org.freedesktop.timesync1.conf",
+      "sha256": "a584cde247521c0ba6cec45082ba2552cecfc82d777c0e8d4d2fd81475b75601",
+      "uid": 0
+    }
+  ],
+  "normal_ntp_destination_port": 123,
+  "normal_udp_bind": [
+    "0.0.0.0:0",
+    "[::]:0"
+  ],
+  "original_policy_sha256": "334f85991aa8b821efbd8ee793083d0031ff1ffbb9bddac7e928c5fa2092d42c",
+  "port_alias": {
+    "class": "tcp_socket",
+    "source": "port",
+    "target": "p4_linux_timesyncd_dns_port_t"
+  },
+  "runtime_qualified": false,
+  "schema": "droidloom.native-timesync-source-closure.v1",
+  "source_documents": [
+    {
+      "admission": "normal-signed-apt-quilt-source",
+      "bytes": 67252,
+      "package": "glibc",
+      "path": "nss/getaddrinfo.c",
+      "sha256": "81b0a0ee820966377a4313198e784929960caf4df2edf8f5b521becf82995f4d",
+      "version": "2.43-2ubuntu2.7"
+    },
+    {
+      "admission": "normal-signed-apt-quilt-source",
+      "bytes": 15667,
+      "package": "glibc",
+      "path": "nss/nss_database.c",
+      "sha256": "3bb231fcd486ac4f87d05be4e5e49967527d57049931bbe5b441f53c6553848a",
+      "version": "2.43-2ubuntu2.7"
+    },
+    {
+      "admission": "normal-signed-apt-quilt-source",
+      "bytes": 42776,
+      "package": "glibc",
+      "path": "resolv/res_send.c",
+      "sha256": "cbb64dc9ffeb4569ca1d869ce289e73bf0f0c864cd26c2376aa3c255fbb90f96",
+      "version": "2.43-2ubuntu2.7"
+    },
+    {
+      "admission": "normal-signed-apt-quilt-source",
+      "bytes": 8882,
+      "package": "glibc",
+      "path": "sysdeps/unix/sysv/linux/check_pf.c",
+      "sha256": "7dfae86eedea56688f13d2c25e0a67eb4002dae3928d934ab6b3ee8eb368c676",
+      "version": "2.43-2ubuntu2.7"
+    },
+    {
+      "admission": "selected-kernel-source",
+      "bytes": 212133,
+      "package": "linux",
+      "path": "security/selinux/hooks.c",
+      "sha256": "4fa2a20bff2788fffc1f6bc95d49af3e1145e6a679f69ff5aa2d5a1bd85272a0",
+      "version": "6.18.64-p4ctx6181-fusectl-aafs-peer-r1"
+    },
+    {
+      "admission": "normal-dsc-roundtrip-source",
+      "bytes": 8624,
+      "package": "systemd",
+      "path": "src/basic/chattr-util.c",
+      "sha256": "101c3ddab4e490380e3604efb0406eebb43dd6d1c09874f83cc7f80400fdc9cf",
+      "version": "259.9-0ubuntu0.1+p4gentmp2"
+    },
+    {
+      "admission": "normal-dsc-roundtrip-source",
+      "bytes": 8707,
+      "package": "systemd",
+      "path": "src/basic/errno-util.h",
+      "sha256": "a7f4c19c4f1a24136f8451580a16f97c36fe516d2dd862480fefb1ecfa326e3b",
+      "version": "259.9-0ubuntu0.1+p4gentmp2"
+    },
+    {
+      "admission": "normal-dsc-roundtrip-source",
+      "bytes": 52249,
+      "package": "systemd",
+      "path": "src/basic/fs-util.c",
+      "sha256": "de38f495f3be7fc9e80051487bac1242c71f2f38cffa4fba2d8f11380d3794d4",
+      "version": "259.9-0ubuntu0.1+p4gentmp2"
+    },
+    {
+      "admission": "normal-dsc-roundtrip-source",
+      "bytes": 56820,
+      "package": "systemd",
+      "path": "src/basic/log.c",
+      "sha256": "2d578efd6b1f5a1acb85f82ad88901e44b9a6845496f15c470fbbd153355fd42",
+      "version": "259.9-0ubuntu0.1+p4gentmp2"
+    },
+    {
+      "admission": "normal-dsc-roundtrip-source",
+      "bytes": 9880,
+      "package": "systemd",
+      "path": "src/basic/mkdir.c",
+      "sha256": "88a9ce00bc2c05c0c5d329653c29846622356efcbc207639a5877b323d102756",
+      "version": "259.9-0ubuntu0.1+p4gentmp2"
+    },
+    {
+      "admission": "normal-dsc-roundtrip-source",
+      "bytes": 63762,
+      "package": "systemd",
+      "path": "src/basic/socket-util.c",
+      "sha256": "a3971ff7af479ee45187e63266d97d1166c5debb929e1f4936d73779f2eb4a34",
+      "version": "259.9-0ubuntu0.1+p4gentmp2"
+    },
+    {
+      "admission": "normal-dsc-roundtrip-source",
+      "bytes": 16448,
+      "package": "systemd",
+      "path": "src/basic/xattr-util.c",
+      "sha256": "ee53c486072ca48c2a371d29154f5cebfe628eff71648f5fcb70330c08373793",
+      "version": "259.9-0ubuntu0.1+p4gentmp2"
+    },
+    {
+      "admission": "normal-dsc-roundtrip-source",
+      "bytes": 276788,
+      "package": "systemd",
+      "path": "src/core/exec-invoke.c",
+      "sha256": "24eda88ee0914d0c43d30ebfb13f0f3aadd00391b5820fb6d6509278f0925dfe",
+      "version": "259.9-0ubuntu0.1+p4gentmp2"
+    },
+    {
+      "admission": "normal-dsc-roundtrip-source",
+      "bytes": 51109,
+      "package": "systemd",
+      "path": "src/libsystemd/sd-bus/bus-socket.c",
+      "sha256": "bc690b06569e49be5682ba6479d43a422107d24bd4372a65beeac8d005e8334d",
+      "version": "259.9-0ubuntu0.1+p4gentmp2"
+    },
+    {
+      "admission": "normal-dsc-roundtrip-source",
+      "bytes": 138443,
+      "package": "systemd",
+      "path": "src/libsystemd/sd-bus/sd-bus.c",
+      "sha256": "0147037ff2850e58bd0118111b71672d4aa7cb0b5991869286dc7e89911d5c09",
+      "version": "259.9-0ubuntu0.1+p4gentmp2"
+    },
+    {
+      "admission": "normal-dsc-roundtrip-source",
+      "bytes": 26553,
+      "package": "systemd",
+      "path": "src/libsystemd/sd-daemon/sd-daemon.c",
+      "sha256": "927a56f59e2e2a3fe0a239ee2c9b22ba4b0274f9993a4abeb899212317fdfa66",
+      "version": "259.9-0ubuntu0.1+p4gentmp2"
+    },
+    {
+      "admission": "normal-dsc-roundtrip-source",
+      "bytes": 178390,
+      "package": "systemd",
+      "path": "src/libsystemd/sd-event/sd-event.c",
+      "sha256": "c11f4a3859410f4e57fd6025e643f4becbbc955622b7689ce17e91bff0920c27",
+      "version": "259.9-0ubuntu0.1+p4gentmp2"
+    },
+    {
+      "admission": "normal-dsc-roundtrip-source",
+      "bytes": 13416,
+      "package": "systemd",
+      "path": "src/libsystemd/sd-network/sd-network.c",
+      "sha256": "1581889d77b3d15f359ca7939d17663be57c50c7d99c164a763ec167ed41ca0f",
+      "version": "259.9-0ubuntu0.1+p4gentmp2"
+    },
+    {
+      "admission": "normal-dsc-roundtrip-source",
+      "bytes": 37107,
+      "package": "systemd",
+      "path": "src/libsystemd/sd-resolve/sd-resolve.c",
+      "sha256": "57fa5e922cd1c0c67c73f72fe5ef871798b02a6b91b995a3ddd1a34b185b6900",
+      "version": "259.9-0ubuntu0.1+p4gentmp2"
+    },
+    {
+      "admission": "normal-dsc-roundtrip-source",
+      "bytes": 29153,
+      "package": "systemd",
+      "path": "src/shared/bus-util.c",
+      "sha256": "51af618075b5b640633358ce0a53253ed3d7b14222e4b80f2cba490666d7337f",
+      "version": "259.9-0ubuntu0.1+p4gentmp2"
+    },
+    {
+      "admission": "normal-dsc-roundtrip-source",
+      "bytes": 5635,
+      "package": "systemd",
+      "path": "src/shared/chown-recursive.c",
+      "sha256": "ce5d1a8d79b32011c479fdb78bd75faabdf3107bdffcd6bc5b1793967edf189f",
+      "version": "259.9-0ubuntu0.1+p4gentmp2"
+    },
+    {
+      "admission": "normal-dsc-roundtrip-source",
+      "bytes": 2234,
+      "package": "systemd",
+      "path": "src/shared/clock-util.c",
+      "sha256": "5ca682535d5c9f11ea44c2bbfbcdab723e9c7666c1b02eac63d64e3fb8ee0140",
+      "version": "259.9-0ubuntu0.1+p4gentmp2"
+    },
+    {
+      "admission": "normal-dsc-roundtrip-source",
+      "bytes": 902,
+      "package": "systemd",
+      "path": "src/shared/main-func.c",
+      "sha256": "769b38139dba56cfa49286da4f58f9b91855973375f13a71d8c861821c29f1d9",
+      "version": "259.9-0ubuntu0.1+p4gentmp2"
+    },
+    {
+      "admission": "normal-dsc-roundtrip-source",
+      "bytes": 1646,
+      "package": "systemd",
+      "path": "src/shared/main-func.h",
+      "sha256": "c253c69d7afc2602f61c1a2f7347802a9c86e9d7f0323d785f14ecd00f79403a",
+      "version": "259.9-0ubuntu0.1+p4gentmp2"
+    },
+    {
+      "admission": "normal-dsc-roundtrip-source",
+      "bytes": 1389,
+      "package": "systemd",
+      "path": "src/shared/mkdir-label.c",
+      "sha256": "cb5470df867959d3668f22c41ef2d6a514e996f6c2348b8eee3f1c07800d6e5a",
+      "version": "259.9-0ubuntu0.1+p4gentmp2"
+    },
+    {
+      "admission": "normal-dsc-roundtrip-source",
+      "bytes": 25770,
+      "package": "systemd",
+      "path": "src/shared/selinux-util.c",
+      "sha256": "241a1cdb353d954a1a771e4b33709860a2df729bb7512130b5fb985fe1105df7",
+      "version": "259.9-0ubuntu0.1+p4gentmp2"
+    },
+    {
+      "admission": "normal-dsc-roundtrip-source",
+      "bytes": 9799,
+      "package": "systemd",
+      "path": "src/timesync/timesyncd-bus.c",
+      "sha256": "f247d04293eb4eccfd56502addd62303b9af8a22c6ce79da9d822d6c61a18d86",
+      "version": "259.9-0ubuntu0.1+p4gentmp2"
+    },
+    {
+      "admission": "normal-dsc-roundtrip-source",
+      "bytes": 4332,
+      "package": "systemd",
+      "path": "src/timesync/timesyncd-conf.c",
+      "sha256": "655a8c2e2ed67f5a9638346bd200fbba949a00de63a0c747855fe13fe93231cc",
+      "version": "259.9-0ubuntu0.1+p4gentmp2"
+    },
+    {
+      "admission": "normal-dsc-roundtrip-source",
+      "bytes": 46195,
+      "package": "systemd",
+      "path": "src/timesync/timesyncd-manager.c",
+      "sha256": "6176f0d1c3a6ef03ad1cbd8e57c14f6e24a1369b598f251c3c6322f0f5d7137d",
+      "version": "259.9-0ubuntu0.1+p4gentmp2"
+    },
+    {
+      "admission": "normal-dsc-roundtrip-source",
+      "bytes": 9588,
+      "package": "systemd",
+      "path": "src/timesync/timesyncd.c",
+      "sha256": "8bc989d79893a3e08d0c64f1c8e4cdb54c1fab3accb4d3705b092704201c31bb",
+      "version": "259.9-0ubuntu0.1+p4gentmp2"
+    }
+  ],
+  "uid_gid": [
+    996,
+    996
+  ],
+  "unit": "/usr/lib/systemd/system/systemd-timesyncd.service",
+  "unit_changed": false
+}

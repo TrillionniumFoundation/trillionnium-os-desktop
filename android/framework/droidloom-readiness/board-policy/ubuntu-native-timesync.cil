@@ -1,0 +1,130 @@
+; The unchanged systemd-timesyncd package runs as UID/GID 996, with only
+; CAP_SYS_TIME and its existing AF_UNIX/AF_INET/AF_INET6 unit restriction.
+; This role is deliberately outside p4_linux_native_processes.
+(type p4_linux_timesyncd_t)
+(roletype system_r p4_linux_timesyncd_t)
+(typeattributeset p4_linux_procs (p4_linux_timesyncd_t))
+(typeattributeset p4_native_selinux_metadata_clients (p4_linux_timesyncd_t))
+(allow p4_linux_timesyncd_t sysfs (dir (search)))
+(allow p4_linux_timesyncd_t selinuxfs (dir (search)))
+(allow p4_linux_timesyncd_t selinuxfs (filesystem (getattr)))
+(type p4_linux_timesyncd_exec_t)
+(type p4_linux_timesyncd_run_t)
+(type p4_linux_timesyncd_state_t)
+(type p4_linux_timesyncd_config_t)
+(type p4_linux_timesyncd_nsswitch_t)
+(type p4_linux_timesyncd_netif_t)
+(type p4_linux_timesyncd_dns_port_t)
+(roletype object_r p4_linux_timesyncd_exec_t)
+(roletype object_r p4_linux_timesyncd_run_t)
+(roletype object_r p4_linux_timesyncd_state_t)
+(roletype object_r p4_linux_timesyncd_config_t)
+(roletype object_r p4_linux_timesyncd_nsswitch_t)
+(roletype object_r p4_linux_timesyncd_netif_t)
+(roletype object_r p4_linux_timesyncd_dns_port_t)
+(typeattributeset p4_linux_data (p4_linux_timesyncd_exec_t p4_linux_timesyncd_run_t p4_linux_timesyncd_state_t p4_linux_timesyncd_config_t p4_linux_timesyncd_nsswitch_t p4_linux_timesyncd_netif_t))
+; Preserve the original default-port constraint membership. The normal
+; deriver preserves every old actor's complete raw/MCS TCP vector on port 53.
+(typeattributeset port_type (p4_linux_timesyncd_dns_port_t))
+(portcon tcp 53 (u object_r p4_linux_timesyncd_dns_port_t ((s0) (s0))))
+(call p4_ubuntu_system_service (p4_linux_timesyncd_t p4_linux_timesyncd_exec_t))
+
+; Normal executable/library and fixed public inputs, with no generic config,
+; account, private YAML, home, credential, Android, or package database reads.
+(allow p4_linux_timesyncd_t p4_linux_runtime_lib_t (file (getattr open read execute map)))
+(allow p4_linux_timesyncd_t p4_linux_console_ld_cache_native_config_t (file (getattr open read map)))
+(allow p4_linux_timesyncd_t p4_linux_timesyncd_config_t (file (getattr open read)))
+(allow p4_linux_timesyncd_t p4_linux_timesyncd_nsswitch_t (file (getattr open read)))
+(allow p4_linux_timesyncd_t p4_linux_resolved_run_t (file (getattr open read)))
+(allow p4_linux_timesyncd_t p4_linux_resolved_run_t (dir (getattr search)))
+(allow p4_linux_netplan_t p4_linux_timesyncd_nsswitch_t (file (getattr open read)))
+
+; CONF_PATHS and sd-bus's normal watch-bind walk public directory ancestors.
+; These do not confer body access to files beneath those directories.
+(allow p4_linux_timesyncd_t p4_linux_rootdir_t (dir (getattr search open read watch)))
+(allow p4_linux_timesyncd_t p4_linux_etc_dir_t (dir (getattr search open read)))
+(allow p4_linux_timesyncd_t p4_linux_run_t (dir (getattr search watch)))
+(allow p4_linux_timesyncd_t p4_linux_systemd_run_t (dir (getattr search watch)))
+(allow p4_linux_timesyncd_t p4_linux_var_lib_t (dir (getattr search)))
+(allow p4_linux_timesyncd_t p4_linux_systemd_state_parent_t (dir (getattr search)))
+(allow p4_linux_timesyncd_t p4_linux_dbus_run_t (dir (getattr search watch)))
+(allow p4_linux_timesyncd_t p4_linux_system_bus_socket_t (sock_file (getattr write watch)))
+(allow p4_linux_timesyncd_t p4_linux_timesyncd_netif_t (dir (getattr search open read watch)))
+(allow p4_linux_timesyncd_t p4_linux_timesyncd_netif_t (file (getattr open read)))
+(allow p4_linux_timesyncd_t p4_linux_journal_runtime_t (dir (getattr search)))
+(allow p4_linux_timesyncd_t p4_linux_journal_native_socket_t (sock_file (write)))
+(allow p4_linux_timesyncd_t p4_linux_systemd_notify_t (sock_file (write)))
+
+; The original unit creates its two directories before entering UID 996.
+; Source-proven ACL/chown metadata and StateDirectory project-ID query remain
+; exact; no device ioctl or generic /var/lib write is introduced.
+(allow p4_linux_service_executor_t p4_linux_timesyncd_run_t (dir (getattr search open read create setattr)))
+(allow p4_linux_service_executor_t p4_linux_timesyncd_state_t (dir (getattr search open read create setattr ioctl)))
+(allowx p4_linux_service_executor_t p4_linux_timesyncd_state_t (ioctl dir (0x581f)))
+(neverallowx p4_linux_service_executor_t p4_linux_timesyncd_state_t (ioctl dir (not (0x581f))))
+(allow p4_linux_service_executor_t p4_linux_timesyncd_run_t (file (getattr setattr)))
+(allow p4_linux_service_executor_t p4_linux_timesyncd_state_t (file (getattr setattr)))
+(typetransition p4_linux_service_executor_t p4_linux_systemd_run_t dir "timesync" p4_linux_timesyncd_run_t)
+(typetransition p4_linux_service_executor_t p4_linux_systemd_state_parent_t dir "timesync" p4_linux_timesyncd_state_t)
+(allow p4_linux_timesyncd_run_t tmpfs (filesystem (associate)))
+(allow p4_linux_timesyncd_state_t labeledfs (filesystem (associate)))
+(allow init_t p4_linux_timesyncd_run_t (dir (getattr search open read write remove_name rmdir)))
+(allow init_t p4_linux_timesyncd_run_t (file (getattr unlink)))
+
+; load_clock_timestamp/manager_adjust_clock/touch_file touch only these names.
+; An arbitrary new filename instead receives the existing native-data type,
+; to which this role has no write or create permission.
+(typetransition p4_linux_timesyncd_t p4_linux_timesyncd_run_t file p4_linux_native_data_t)
+(typetransition p4_linux_timesyncd_t p4_linux_timesyncd_run_t file "synchronized" p4_linux_timesyncd_run_t)
+(typetransition p4_linux_timesyncd_t p4_linux_timesyncd_state_t file p4_linux_native_data_t)
+(typetransition p4_linux_timesyncd_t p4_linux_timesyncd_state_t file "clock" p4_linux_timesyncd_state_t)
+(allow p4_linux_timesyncd_t p4_linux_timesyncd_run_t (dir (getattr search write add_name)))
+(allow p4_linux_timesyncd_t p4_linux_timesyncd_state_t (dir (getattr search write add_name)))
+(allow p4_linux_timesyncd_t p4_linux_timesyncd_run_t (file (getattr open write create setattr)))
+(allow p4_linux_timesyncd_t p4_linux_timesyncd_state_t (file (getattr open read write create setattr)))
+(allow p4_linux_timesyncd_t self (capability (sys_time)))
+(neverallow p4_linux_timesyncd_t self (capability (not (sys_time))))
+(neverallow p4_linux_timesyncd_t self (capability2 (all)))
+(neverallow p4_linux_timesyncd_t self (cap_userns (all)))
+(neverallow p4_linux_timesyncd_t self (cap2_userns (all)))
+
+; sd-resolve's pthread/socketpairs and normal inherited journal descriptors.
+(allow p4_linux_timesyncd_t self (process (fork getattr getcap)))
+(allow p4_linux_timesyncd_t self (dir (getattr search open read)))
+(allow p4_linux_timesyncd_t self (file (getattr open read)))
+(allow p4_linux_timesyncd_t self (lnk_file (getattr read)))
+(allow p4_linux_timesyncd_t self (fd (use)))
+(allow p4_linux_timesyncd_t init_t (fd (use)))
+(allow p4_linux_timesyncd_t p4_linux_service_executor_t (fd (use)))
+(allow p4_linux_timesyncd_t init_t (process (sigchld)))
+(allow init_t p4_linux_timesyncd_t (process (getattr signull signal sigkill sigstop getsched)))
+(allow p4_linux_timesyncd_t p4_linux_service_executor_t (unix_stream_socket (getattr read write)))
+(allow p4_linux_timesyncd_t p4_linux_standardio_t (chr_file (getattr read write)))
+
+; No listener, raw/packet socket, route/netlink or privileged local port.
+; NTP and DNS UDP use ANY:0; the kernel checks node_bind but not name_bind.
+(allow p4_linux_timesyncd_t self (udp_socket (create getattr bind connect read write getopt setopt)))
+(allow p4_linux_timesyncd_t node (udp_socket (node_bind)))
+(allow p4_linux_timesyncd_t self (tcp_socket (create getattr connect read write getopt setopt shutdown)))
+(allow p4_linux_timesyncd_t p4_linux_timesyncd_dns_port_t (tcp_socket (name_connect)))
+(neverallow p4_linux_timesyncd_t self (udp_socket (not (create getattr bind connect read write getopt setopt))))
+(neverallow p4_linux_timesyncd_t self (tcp_socket (not (create getattr connect read write getopt setopt shutdown))))
+(allow p4_linux_timesyncd_t self (unix_dgram_socket (create getattr read write sendto bind connect getopt setopt)))
+(allow p4_linux_timesyncd_t init_t (unix_dgram_socket (sendto)))
+(allow p4_linux_timesyncd_t self (unix_stream_socket (create getattr bind connect read write getopt setopt shutdown)))
+(allow p4_linux_timesyncd_t p4_linux_dbus_t (unix_stream_socket (connectto)))
+(allow p4_linux_timesyncd_t init_t (unix_stream_socket (connectto)))
+(neverallow p4_linux_timesyncd_t self (unix_dgram_socket (not (create getattr read write sendto bind connect getopt setopt))))
+(neverallow p4_linux_timesyncd_t self (unix_stream_socket (not (create getattr bind connect read write getopt setopt shutdown))))
+(neverallow p4_linux_timesyncd_t self (rawip_socket (all)))
+(neverallow p4_linux_timesyncd_t self (packet_socket (all)))
+(neverallow p4_linux_timesyncd_t self (netlink_route_socket (all)))
+(neverallow p4_linux_timesyncd_t self (netlink_selinux_socket (all)))
+(neverallow p4_linux_timesyncd_t self (netlink_kobject_uevent_socket (all)))
+
+; Keep bus name policy in the unchanged normal XML. Membership here adds only
+; the existing system-bus message/peer/FD contract, never native file authority.
+(typeattributeset p4_native_system_bus_clients (p4_linux_timesyncd_t))
+(neverallow p4_linux_timesyncd_t self (process (transition dyntransition ptrace setexec setcurrent setfscreate setsockcreate setkeycreate)))
+(neverallow p4_linux_timesyncd_t kernel (security (all)))
+(neverallow p4_linux_timesyncd_t p4_linux_data (file (execute_no_trans relabelto relabelfrom)))
