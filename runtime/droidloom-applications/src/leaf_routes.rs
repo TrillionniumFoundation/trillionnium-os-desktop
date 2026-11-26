@@ -4,12 +4,13 @@
 //! package identity, display lease, limits and cleanup checks. A verified leaf
 //! result is scoped progress; it cannot satisfy a whole application release.
 use std::collections::BTreeSet;
+use std::fmt;
 use std::fs::{self, OpenOptions};
 use std::io::Write;
 use std::os::unix::fs::OpenOptionsExt;
 use std::path::{Path, PathBuf};
 use std::process::Command;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use droidloom_supervisor::control::{self, application_probe::ApplicationInspection};
 use serde::{Deserialize, Serialize};
@@ -17,7 +18,8 @@ use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 
 use super::leaf_release::NativeRelease;
-use super::{FilePin, pinned};
+use super::{ApplicationPlan, FilePin, RuntimePlan, pinned};
+use super::runtime_identity::{IdentityObservation, VerifiedMaterialBatch};
 
 const QUALIFICATION: &str = "/var/lib/droidloom/qualification/pocket4";
 const SELECTION_PATH: &str = "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261120-apps-r1/selection/selection-14.json";
@@ -73,6 +75,131 @@ pub(super) fn owned_route_release(
     }
 }
 
+
+/// Held normal Main/copy-origin fact for one exact live package identity.
+/// There is no JSON, boolean, Clone or Deserialize constructor. The only
+/// constructor asks the authenticated normal inspector for its opaque fact.
+pub(super) struct HeldMainCustody {
+    observation: control::MainCustodyObservation,
+    application: ApplicationInspection,
+}
+
+impl fmt::Debug for HeldMainCustody {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("HeldMainCustody")
+            .field("application", &self.application)
+            .field("facts", self.observation.facts())
+            .field("peer", self.observation.peer()).finish()
+    }
+}
+
+impl Serialize for HeldMainCustody {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        use serde::ser::SerializeStruct;
+        let mut out = serializer.serialize_struct("HeldMainCustody", 4)?;
+        out.serialize_field("schema", "droidloom.application-main-custody.v1")?;
+        out.serialize_field("application", &self.application)?;
+        out.serialize_field("facts", self.observation.facts())?;
+        out.serialize_field("peer", self.observation.peer())?;
+        out.end()
+    }
+}
+
+// This comparison helper cannot authenticate the wire projection or construct
+// HeldMainCustody. Authentication and source admission belong to the opaque
+// normal inspector fact; the consumer additionally requires its copy origin.
+fn require_working_origin(
+    origin: Option<&droidloom_supervisor::main_custody::MainOriginalCopyOrigin>,
+    actual: [[u64; 7]; 2],
+) -> Result<(), String> {
+    let origin = origin.ok_or("normal Main has no source-admitted original-copy origin")?;
+    require(origin.working == actual,
+        "normal Main working data/metadata differ from the admitted copy lineage")
+}
+
+impl HeldMainCustody {
+    pub(super) fn observe(
+        inspector: &mut control::NativeApplicationInspector,
+        application: &ApplicationInspection,
+    ) -> Result<Self, String> {
+        let observation = inspector.observe_main(&application.epoch)
+            .map_err(|error| error.to_string())?;
+        let held = Self { observation, application: application.clone() };
+        held.require_application(application)?;
+        Ok(held)
+    }
+
+    pub(super) fn require_application(&self, actual: &ApplicationInspection) -> Result<(), String> {
+        use droidloom_supervisor::main_custody::MainDataRole;
+        let facts = self.observation.facts();
+        let data = &facts.persistent_data;
+        require(&self.application == actual && facts.epoch == actual.epoch
+            && actual.user == 0
+            && data.backings[0].role == MainDataRole::Data
+            && data.backings[1].role == MainDataRole::Metadata,
+            "leaf Main differs in package/user/UID/version/full APKs, epoch or backing roles")?;
+        require_working_origin(data.original_copy_origin.as_ref(),
+            [data.backings[0].backing.stable7(), data.backings[1].backing.stable7()])
+    }
+
+    pub(super) fn revalidate(
+        &self,
+        inspector: &mut control::NativeApplicationInspector,
+        actual: &ApplicationInspection,
+    ) -> Result<(), String> {
+        self.require_application(actual)?;
+        inspector.revalidate_main(&self.observation).map_err(|error| error.to_string())?;
+        self.require_application(actual)
+    }
+
+    pub(super) fn guard_projection(&self) -> Result<(), String> {
+        self.require_application(&self.application)
+    }
+
+    /// Borrow the actual opaque fact for a future normal engine observation.
+    /// Serializing facts()/peer() does not recreate this object.
+    pub(super) fn normal_observation(&self) -> &control::MainCustodyObservation {
+        &self.observation
+    }
+}
+
+/// Only the completed normal leaf factory creates this custody. It retains the
+/// original source/owner lease, Main PIDFD and first-read result FD through the
+/// dispatcher's final package/material bookend and record submission.
+pub(super) struct HeldLeafCustody {
+    main: HeldMainCustody,
+    release: NativeRelease,
+    result: super::clock_timer::ClockResultCustody,
+    final_identity: Option<IdentityObservation>,
+}
+
+impl fmt::Debug for HeldLeafCustody {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("HeldLeafCustody").field("main", &self.main)
+            .field("result", self.result.reference()).finish_non_exhaustive()
+    }
+}
+
+impl Serialize for HeldLeafCustody {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        use serde::ser::SerializeStruct;
+        let mut out = serializer.serialize_struct("HeldLeafCustody", 3)?;
+        out.serialize_field("main", &self.main)?;
+        out.serialize_field("result", self.result.reference())?;
+        out.serialize_field("result_f9",
+            &self.result.identity().map_err(serde::ser::Error::custom)?)?;
+        out.end()
+    }
+}
+
+impl HeldLeafCustody {
+    fn guard(&self) -> Result<(), String> {
+        self.main.require_application(&self.main.application)?;
+        self.release.guard()?;
+        self.result.guard()
+    }
+}
+
 #[derive(Clone, Copy, Debug, Deserialize, Serialize, Eq, PartialEq)]
 #[serde(rename_all = "snake_case")]
 pub(super) enum Route {
@@ -120,6 +247,8 @@ pub(super) struct LeafObservation {
     pub entry_source: FilePin,
     pub result: FilePin,
     pub state: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub(super) custody: Option<HeldLeafCustody>,
     pub original_entry_result_verified: bool,
     pub original_business_success_reported: bool,
     pub business_outcome_unknown: bool,
@@ -132,10 +261,29 @@ pub(super) struct LeafObservation {
 }
 
 impl LeafObservation {
+    pub(super) fn retained_bookends(&self) -> Result<(), String> {
+        self.custody.as_ref().ok_or("leaf has no actual normal Main/result custody")?.guard()
+    }
+
+    pub(super) fn has_main_custody(&self) -> bool { self.custody.is_some() }
+
+    /// Move the one actual final package/material fact, never deserialize or
+    /// synthesize a replacement. The opaque Main and all result FDs stay held.
+    pub(super) fn take_final_identity(&mut self) -> Result<IdentityObservation, String> {
+        self.retained_bookends()?;
+        self.custody.as_mut().ok_or("normal leaf custody missing")?
+            .final_identity.take().ok_or("normal leaf final identity already consumed".into())
+    }
+
+    pub(super) fn main_observation(&self) -> Option<&control::MainCustodyObservation> {
+        self.custody.as_ref().map(|held| held.main.normal_observation())
+    }
+
     /// Only the Settings terminal contract currently verifies entire named
     /// registry assertions. Other cases remain narrower observations.
     pub(super) fn verified_business_gates(&self) -> &'static [&'static str] {
-        if self.route == Route::SettingsSupportedPages
+        if self.custody.is_some()
+            && self.route == Route::SettingsSupportedPages
             && self.state == "SETTINGS_PAGES_ROUNDTRIP_VERIFIED_RESTORED"
             && self.original_entry_result_verified && self.original_business_success_reported
             && !self.business_outcome_unknown && self.main_epoch_unchanged
@@ -561,7 +709,8 @@ fn case_document(plan: &LeafPlan, request: &Value) -> Result<(Option<FilePin>, V
     Ok((Some(pin), case))
 }
 
-fn main_binding(
+// Original leaf protocol comparisons only; no JSON field grants Main authority.
+fn legacy_main_documents(
     case: &Value,
     actual: &ApplicationInspection,
 ) -> Result<(FilePin, FilePin), String> {
@@ -624,6 +773,15 @@ fn main_binding(
         )?;
     }
     Ok((baseline_ref, qualification_ref))
+}
+
+fn main_binding(
+    case: &Value,
+    actual: &ApplicationInspection,
+    main: &HeldMainCustody,
+) -> Result<(FilePin, FilePin), String> {
+    main.require_application(actual)?;
+    legacy_main_documents(case, actual)
 }
 
 fn output_path(plan: &LeafPlan, request: &Value, case: &Value) -> Result<PathBuf, String> {
@@ -975,29 +1133,91 @@ pub(super) fn execute_clock_case(
     plan: &LeafPlan,
     selection: &FilePin,
     actual: &ApplicationInspection,
+    main: &HeldMainCustody,
+    release: &NativeRelease,
 ) -> Result<ExecutedClockCase, String> {
     require(matches!(plan.route, Route::ClockTimerRemaining | Route::ClockExpiry),
         "Clock fact production only accepts original timer15 and expiry06")?;
-    let (observation, _, result_custody) = execute_observed(plan, selection, actual)?;
-    Ok(ExecutedClockCase { observation,
-        result_custody: result_custody.ok_or("actual Clock executor omitted result custody")? })
+    let (observation, _, result_custody) =
+        execute_observed(plan, selection, actual, main, release)?;
+    Ok(ExecutedClockCase { observation, result_custody })
 }
 
-pub(super) fn execute(
+
+fn normal_route_release(plan: &LeafPlan, selection: &FilePin) -> Result<NativeRelease, String> {
+    validate_selection(selection)?;
+    let sources = fixed_sources()?;
+    let source = &sources[plan.route.definition().source];
+    if plan.route.current_gallery() {
+        let request = value(&plan.request)?;
+        NativeRelease::bind(&ref_field(&request, "native_release")?, selection, SOURCE_CATALOG,
+            &source.preparation, &source.entry)
+    } else {
+        NativeRelease::bind_current(selection, SOURCE_CATALOG, &source.preparation, &source.entry)
+    }
+}
+
+fn leaf_window(end: Instant, remaining: u64) -> Result<(), String> {
+    require(end.checked_duration_since(Instant::now())
+        .is_some_and(|left| left >= Duration::from_secs(remaining)),
+        "normal leaf's fixed work/retirement window is exhausted")
+}
+
+/// Every ordinary admitted leaf gets the same real Main/copy-origin path.
+/// Saved qualification JSON remains a protocol comparison, never authority.
+pub(super) fn execute_admitted(
+    inspector: &mut control::NativeApplicationInspector,
+    materials: &VerifiedMaterialBatch,
+    runtime: &RuntimePlan,
+    requested: &ApplicationPlan,
     plan: &LeafPlan,
     selection: &FilePin,
     actual: &ApplicationInspection,
-) -> Result<LeafObservation, String> {
+) -> Result<(ApplicationInspection, LeafObservation), String> {
     require(plan.route != Route::ClockTimerPair,
-        "Clock pair facts require the normal source-admitted peer factory")?;
-    execute_observed(plan, selection, actual).map(|(observation, _, _)| observation)
+        "Clock pair requires its one shared two-case Main and owner factory")?;
+    let seconds = plan.route.definition().seconds;
+    // One unchanged leaf limit, two fixed Main transport allowances, one
+    // normal package inspection, and finite source/retirement bookends.
+    let window = seconds + 2 * 70 + 250 + 120;
+    let release = normal_route_release(plan, selection)?;
+    release.cover_window(window)?;
+    let end = Instant::now() + Duration::from_secs(window);
+    leaf_window(end, seconds + 2 * 70 + 250 + 30)?;
+    materials.revalidate()?;
+    materials.observe(requested, runtime.android_user, &runtime.expected_epoch, actual, actual)?;
+    let main = HeldMainCustody::observe(inspector, actual)?;
+    release.guard()?;
+    leaf_window(end, seconds + 70 + 250 + 30)?;
+    let (mut observation, _, result) = execute_observed(plan, selection, actual, &main, &release)?;
+    result.guard()?;
+    release.guard()?;
+    leaf_window(end, 250 + 70 + 30)?;
+    let reply = inspector.inspect(&actual.package, actual.user).map_err(|error| error.to_string())?;
+    let (after, _) = super::consume_inspection(reply, &actual.package, actual.user)?;
+    main.require_application(&after)?;
+    leaf_window(end, 70 + 30)?;
+    main.revalidate(inspector, &after)?;
+    materials.revalidate()?;
+    let final_identity = materials.observe(requested, runtime.android_user,
+        &runtime.expected_epoch, actual, &after)?;
+    release.guard()?;
+    result.guard()?;
+    leaf_window(end, 0)?;
+    observation.custody = Some(HeldLeafCustody {
+        main, release, result, final_identity: Some(final_identity),
+    });
+    observation.retained_bookends()?;
+    Ok((after, observation))
 }
 
 fn execute_observed(
     plan: &LeafPlan,
     selection: &FilePin,
     actual: &ApplicationInspection,
-) -> Result<(LeafObservation, Value, Option<super::clock_timer::ClockResultCustody>), String> {
+    main: &HeldMainCustody,
+    release: &NativeRelease,
+) -> Result<(LeafObservation, Value, super::clock_timer::ClockResultCustody), String> {
     require(
         plan.route.package() == actual.package,
         "leaf route belongs to a different application",
@@ -1011,28 +1231,8 @@ fn execute_observed(
     let request = value(&plan.request)?;
     let (case_ref, case) = case_document(plan, &request)?;
     validate_case(plan, &request, &case, source, &sources)?;
-    let release = if plan.route.current_gallery() {
-        Some(NativeRelease::bind(
-            &ref_field(&request, "native_release")?,
-            selection,
-            SOURCE_CATALOG,
-            &source.preparation,
-            &source.entry,
-        )?)
-    } else if matches!(
-        plan.route,
-        Route::CalendarReminder | Route::SettingsSupportedPages
-    ) {
-        Some(NativeRelease::bind_current(
-            selection,
-            SOURCE_CATALOG,
-            &source.preparation,
-            &source.entry,
-        )?)
-    } else {
-        None
-    };
-    let (baseline, qualification) = main_binding(&case, actual)?;
+    release.guard()?;
+    let (baseline, qualification) = main_binding(&case, actual, main)?;
     let expected_result = output_path(plan, &request, &case)?;
     let cmd = command(plan, source)?;
     // The trusted selected entry still validates the complete transitive source
@@ -1053,34 +1253,19 @@ fn execute_observed(
     )?;
     let printed: Value = serde_json::from_slice(&output.stdout)
         .map_err(|e| format!("leaf output is not one complete JSON result: {e}"))?;
-    let result_ref = if plan.route == Route::CameraPhoto {
-        require(
-            printed["result"].as_str() == expected_result.to_str(),
-            "camera wrapper output points outside its exact fresh result path",
-        )?;
-        let raw = crate::release::read_frozen(&expected_result, 8 * 1024 * 1024)
-            .map_err(|e| e.to_string())?;
-        FilePin {
-            path: expected_result.clone(),
-            bytes: raw.len() as u64,
-            sha256: hex::encode(Sha256::digest(&raw)),
-        }
+    // Capture every result at its first actual executor body read. The same
+    // descriptor and full F9/SHA travel through Main/package revalidation.
+    let (result_custody, result) = if plan.route == Route::CameraPhoto {
+        require(printed["result"].as_str() == expected_result.to_str(),
+            "camera wrapper output points outside its exact fresh result path")?;
+        super::clock_timer::ClockResultCustody::capture_path(&expected_result)?
     } else {
-        ref_field(&printed, "result")?
+        let reference = ref_field(&printed, "result")?;
+        require(reference.path == expected_result,
+            "leaf returned a receipt outside its exact new case result")?;
+        super::clock_timer::ClockResultCustody::capture(&reference)?
     };
-    require(
-        result_ref.path == expected_result,
-        "leaf returned a receipt outside its exact new case result",
-    )?;
-    // Capture the Clock result at this first actual executor read, and carry
-    // the same descriptor through the typed handoff and complete pair.
-    let (result_custody, result) = if matches!(plan.route,
-        Route::ClockTimerRemaining | Route::ClockExpiry) {
-        let (custody, result) = super::clock_timer::ClockResultCustody::capture(&result_ref)?;
-        (Some(custody), result)
-    } else {
-        (None, value(&result_ref)?)
-    };
+    let result_ref = result_custody.reference().clone();
     terminal_result(
         plan.route,
         &printed,
@@ -1104,15 +1289,12 @@ fn execute_observed(
     if let Some(pin) = case_ref {
         pinned(&pin)?;
     }
-    if let Some(lease) = &release {
-        if plan.route.current_gallery() {
-            require(
-                ref_field(&result, "native_release")? == ref_field(&request, "native_release")?,
-                "Gallery result is not bound to this adopted native release",
-            )?;
-        }
-        lease.guard()?;
+    if plan.route.current_gallery() {
+        require(ref_field(&result, "native_release")? == ref_field(&request, "native_release")?,
+            "Gallery result is not bound to this adopted native release")?;
     }
+    release.guard()?;
+    main.require_application(actual)?;
     let observation = LeafObservation {
         route: plan.route,
         request: plan.request.clone(),
@@ -1123,6 +1305,7 @@ fn execute_observed(
             .as_str()
             .unwrap_or("original_leaf_ok")
             .into(),
+        custody: None,
         original_entry_result_verified: true,
         original_business_success_reported: plan.route != Route::IhgLondon,
         business_outcome_unknown: plan.route == Route::IhgLondon,
@@ -1137,7 +1320,7 @@ fn execute_observed(
             "Only this original bounded case completed. Visual review, untested feature paths, all common release gates and whole-app acceptance remain separately required."
         },
     };
-    if let Some(custody) = &result_custody { custody.guard()?; }
+    result_custody.guard()?;
     Ok((observation, result, result_custody))
 }
 
@@ -1158,6 +1341,29 @@ mod tests {
             sha256: "1".repeat(64),
         }
     }
+
+    #[test]
+    fn main_copy_projection_requires_the_actual_ordered_working_pair_but_grants_no_authority() {
+        use droidloom_supervisor::main_custody::MainOriginalCopyOrigin;
+        let actual = [[1, 2, 0o100600, 0, 0, 1, 4096], [1, 3, 0o100600, 0, 0, 1, 2048]];
+        let comparison = MainOriginalCopyOrigin {
+            schema: "synthetic-comparison-only".into(),
+            working_copy_sha256: "a".repeat(64), cold_clone_sha256: "b".repeat(64),
+            original: [[0; 7]; 2], working: actual,
+        };
+        // This helper only compares values; it cannot create HeldMainCustody.
+        assert!(require_working_origin(Some(&comparison), actual).is_ok());
+        assert!(require_working_origin(None, actual).is_err());
+        assert!(require_working_origin(Some(&comparison), [actual[1], actual[0]]).is_err());
+        for role in 0..2 {
+            for field in 0..7 {
+                let mut changed = actual;
+                changed[role][field] ^= 1;
+                assert!(require_working_origin(Some(&comparison), changed).is_err());
+            }
+        }
+    }
+
     #[test]
     fn settings_pages_terminal_keeps_partial_scope_and_rejects_unknown_or_extra_credit() {
         let source = SelectedSource {
@@ -1643,7 +1849,7 @@ mod tests {
     }
 
     #[test]
-    fn physical_main_binding_rejects_changed_epoch_and_current_apk() {
+    fn legacy_main_documents_only_compare_epoch_and_current_apk_without_minting_authority() {
         use droidloom_supervisor::control::application_probe::{InstalledApk, RuntimeEpoch};
         let dir = tempfile::tempdir().unwrap();
         let mut observed = ApplicationInspection {
@@ -1687,15 +1893,15 @@ mod tests {
         let case = json!({"baseline":baseline,"qualification":qualification,
             "target_profile":{"package":observed.package,"uid":observed.uid,"version_code":2,
                 "apks":[{"bytes":12,"sha256":"a".repeat(64)}]}});
-        assert!(main_binding(&case, &observed).is_ok());
+        assert!(legacy_main_documents(&case, &observed).is_ok());
         observed.epoch.framework_start_ticks = 31;
-        assert!(main_binding(&case, &observed).is_err());
+        assert!(legacy_main_documents(&case, &observed).is_err());
         observed.epoch.framework_start_ticks = 30;
         observed.apks[0].sha256 = "c".repeat(64);
-        assert!(main_binding(&case, &observed).is_err());
+        assert!(legacy_main_documents(&case, &observed).is_err());
         observed.apks[0].sha256 = "a".repeat(64);
         fs::write(&qualification.path, b"{}").unwrap();
-        assert!(main_binding(&case, &observed).is_err());
+        assert!(legacy_main_documents(&case, &observed).is_err());
     }
 
     #[test]

@@ -306,16 +306,11 @@ impl RuntimeClient for SocketClient<'_> {
     }
     fn leaf(
         &mut self,
-        expected: &ApplicationInspection,
-        plan: &LeafPlan,
-        selection: &FilePin,
+        _expected: &ApplicationInspection,
+        _plan: &LeafPlan,
+        _selection: &FilePin,
     ) -> Result<(ApplicationInspection, LeafObservation), String> {
-        let result = leaf_routes::execute(plan, selection, expected)?;
-        let after = self.inspect(&expected.package, expected.user)?;
-        if after != *expected {
-            return Err("Main or complete installed identity changed after the original leaf; retained result cannot qualify this plan".into());
-        }
-        Ok((after, result))
+        Err("Original leaf execution requires source-admitted materials and the normal opaque Main/copy-origin factory; an ordinary socket or saved qualification cannot authorize it".into())
     }
 }
 
@@ -351,12 +346,11 @@ impl RuntimeClient for MaterialClient<'_> {
     }
     fn leaf(&mut self, expected: &ApplicationInspection, plan: &LeafPlan,
         selection: &FilePin) -> Result<(ApplicationInspection, LeafObservation), String> {
-        let result = leaf_routes::execute(plan, selection, expected)?;
-        let after = self.inspect(&expected.package, expected.user)?;
-        if &after != expected {
-            return Err("original leaf returned to a different live Main or installed identity".into());
-        }
-        Ok((after, result))
+        let requested = self.runtime.applications.iter()
+            .find(|app| app.package == expected.package)
+            .ok_or("leaf has no application in this admitted runtime plan")?;
+        leaf_routes::execute_admitted(&mut self.inspector, self.materials,
+            self.runtime, requested, plan, selection, expected)
     }
 }
 
@@ -529,6 +523,9 @@ fn dispatch_with_materials(
 ) -> RuntimeReport {
     let mut applications = Vec::new();
     for app in &plan.applications {
+        // Only an actual completed normal leaf factory supplies this move-only
+        // final fact. Launch/identity-only rows still perform their final query.
+        let mut completed_identity = None;
         let package = &gates.packages[&app.package];
         let mut pending: Vec<_> = gates
             .common_gates
@@ -602,10 +599,25 @@ fn dispatch_with_materials(
                     if leaf.route == leaf_routes::Route::ClockTimerPair {
                         match client.clock_timer_pair(&actual, leaf,
                             plan.preparation_selection.as_ref().expect("validated selection")) {
-                            Ok((after, result)) if after == actual => {
-                                row.status = "partial_leaf_observation";
-                                row.reason = "Both fixed original Clock cases completed under the same normal peer, complete APK identity, epoch and source/owner lease. Main qualification and predeployment data continuity remain unsupported; clock.timer and whole-app acceptance stay pending.".into();
-                                row.clock_timer_observation = Some(result);
+                            Ok((after, mut result)) if after == actual => {
+                                if let Err(error) = result.take_final_identity()
+                                    .map(|identity| completed_identity = Some(identity))
+                                {
+                                    row.reason = format!("Clock pair retained custody failed: {error}");
+                                } else {
+                                    row.status = "partial_leaf_observation";
+                                    row.reason = "Both original Clock cases completed with one actual normal Main/copy-origin fact, complete package identity and unchanged source/owner lease. Only clock.timer is proved; engine and the remaining common/business gates still require their own observations.".into();
+                                    for assertion in &mut row.gate_assertions {
+                                        if assertion.scope == "business"
+                                            && result.verified_business_gates().contains(&assertion.id.as_str())
+                                        {
+                                            assertion.status = "passed";
+                                            assertion.reason = "Actual timer15 and expiry06 under the same opaque normal Main/copy-origin fact, original result FDs and fully retired leaf owners".into();
+                                            assertion.evidence = Some(result.evidence_pin().clone());
+                                        }
+                                    }
+                                    row.clock_timer_observation = Some(result);
+                                }
                             }
                             Ok(_) => row.reason = "Clock pair returned another installed identity or Main epoch".into(),
                             Err(error) => row.reason = format!(
@@ -619,19 +631,25 @@ fn dispatch_with_materials(
                             .as_ref()
                             .expect("validated selection"),
                     ) {
-                        Ok((after, result)) if after == actual => {
-                            row.status = "partial_leaf_observation";
-                            row.reason = "The selected original leaf actually completed with its saved result and retired host owner. Its scoped result does not complete all common or application release gates.".into();
-                            for assertion in &mut row.gate_assertions {
-                                if result.verified_business_gates().contains(&assertion.id.as_str())
-                                    && assertion.scope == "business"
-                                {
-                                    assertion.status = "passed";
-                                    assertion.reason = "Verified by the original finite leaf's saved result, cleanup and unchanged installed identity/Main epoch".into();
-                                    assertion.evidence = Some(result.result.clone());
+                        Ok((after, mut result)) if after == actual => {
+                            if let Err(error) = result.take_final_identity()
+                                .map(|identity| completed_identity = Some(identity))
+                            {
+                                row.reason = format!("leaf retained normal Main/result custody failed: {error}");
+                            } else {
+                                row.status = "partial_leaf_observation";
+                                row.reason = "The original leaf completed with actual normal Main/copy-origin custody, unchanged installed identity, the original held result and retired host owner. Its scoped result does not complete all common or application release gates.".into();
+                                for assertion in &mut row.gate_assertions {
+                                    if result.verified_business_gates().contains(&assertion.id.as_str())
+                                        && assertion.scope == "business"
+                                    {
+                                        assertion.status = "passed";
+                                        assertion.reason = "Verified by the actual original leaf, retained result FD, cleanup, unchanged installed identity and opaque normal Main/copy-origin bookends".into();
+                                        assertion.evidence = Some(result.result.clone());
+                                    }
                                 }
+                                row.leaf_observation = Some(result);
                             }
-                            row.leaf_observation = Some(result);
                         }
                         Ok(_) => {
                             row.reason =
@@ -676,10 +694,21 @@ fn dispatch_with_materials(
         }
         if row.status != "blocked" {
             if let (Some(materials), Some(before)) = (materials, row.inspection.as_ref()) {
-                let observation = client.inspect(&app.package, plan.android_user)
-                    .and_then(|after| materials.observe(
-                        app, plan.android_user, &plan.expected_epoch, before, &after,
-                    ));
+                let observation = if let Some(observation) = completed_identity.take() {
+                    // This is the factory's actual final PM/material fact,
+                    // produced inside its one covered lease. No fourth Clock
+                    // PM query or second ordinary-leaf final query is started.
+                    materials.revalidate().map(|()| observation)
+                } else {
+                    client.inspect(&app.package, plan.android_user)
+                        .and_then(|after| materials.observe(
+                            app, plan.android_user, &plan.expected_epoch, before, &after,
+                        ))
+                }.and_then(|observation| {
+                        if let Some(leaf) = &row.leaf_observation { leaf.retained_bookends()?; }
+                        if let Some(clock) = &row.clock_timer_observation { clock.retained_bookends()?; }
+                        Ok(observation)
+                    });
                 match observation {
                     Ok(observation) => {
                         row.identity_observation = Some(observation);
@@ -687,7 +716,13 @@ fn dispatch_with_materials(
                             .find(|gate| gate.scope == "common" && gate.id == "identity")
                         {
                             gate.status = "partial";
-                            gate.reason = "Live package/user/UID/version and the complete base/split bytes are unchanged and bound to source-admitted normal SDK signer evidence. Engine mapping and independent Main qualification semantics remain unsupported; this is not the complete identity gate.".into();
+                            gate.reason = if row.clock_timer_observation.is_some()
+                                || row.leaf_observation.as_ref().is_some_and(LeafObservation::has_main_custody)
+                            {
+                                "Live package/user/UID/version and complete APKs are bound to admitted SDK signer evidence and actual normal Main/copy-origin custody. Actual per-application engine mapping is still pending; this is not the complete identity gate."
+                            } else {
+                                "Live package/user/UID/version and complete APKs are bound to admitted SDK signer evidence. This row has no actual Main/copy-origin observation or per-application engine mapping; the identity gate remains partial."
+                            }.into();
                         }
                     }
                     Err(error) => {
@@ -761,7 +796,7 @@ fn dispatch_with_materials(
         production_ready: false,
         automatic_retry: false,
         main_qualification_semantics_checked: false,
-        meaning: "Live Package Manager/APK observations and actual bounded entry results. Source-admitted normal material batches can prove the recorded installed identity facets using fresh before/after observations; the full identity gate still requires engine and Main qualification. Only scoped original-leaf business assertions are credited. Untested gates and whole-application readiness remain incomplete.",
+        meaning: "Live Package Manager/APK observations and actual bounded entry results. Successful normal leaves retain an opaque Main/copy-origin fact and actual result custody; other rows cannot inherit it. Complete identity still requires actual per-application engine mapping. Only the specifically proved original-leaf business assertions are credited; untested gates and whole-application readiness remain incomplete.",
         applications,
     }
 }
@@ -1251,6 +1286,17 @@ mod tests {
         assert_eq!(c.opens, 0);
     }
     #[test]
+    fn ordinary_socket_leaf_rejects_before_source_io_or_business_execution() {
+        let (plan, _, client) = fixture();
+        let actual = client.identities["org.mozilla.firefox"].clone();
+        let mut socket = SocketClient { socket: Path::new("/nonexistent-no-contact.sock") };
+        let leaf = LeafPlan { route: leaf_routes::Route::ContactsSearch,
+            request: plan.main_qualification.clone(), output: None };
+        assert!(socket.leaf(&actual, &leaf, &plan.main_qualification)
+            .unwrap_err().contains("normal opaque Main/copy-origin"));
+    }
+
+    #[test]
     fn ordinary_client_cannot_execute_clock_pair_or_mint_its_gate() {
         let (mut p, mut g, mut c) = fixture();
         let old = p.applications[1].package.clone();
@@ -1391,7 +1437,7 @@ mod tests {
     }
 
     #[test]
-    fn only_the_verified_settings_assertions_are_credited_and_the_app_remains_incomplete() {
+    fn saved_settings_success_flags_without_opaque_main_never_credit_business() {
         for unknown in [false, true] {
             let (mut plan, mut gates, mut client) = fixture();
             let old = plan.applications[1].package.clone();
@@ -1415,6 +1461,7 @@ mod tests {
             client.leaf_output = Some(LeafObservation {
                 route: leaf_routes::Route::SettingsSupportedPages, request: pin.clone(), preparation: pin.clone(),
                 entry_source: pin.clone(), result: pin.clone(), state: "SETTINGS_PAGES_ROUNDTRIP_VERIFIED_RESTORED".into(),
+                custody: None,
                 original_entry_result_verified: true, original_business_success_reported: true,
                 business_outcome_unknown: unknown, main_epoch_unchanged: true, owned_host_tree_retired: true,
                 automatic_retry: false, whole_app_business_accepted: false, production_ready: false,
@@ -1423,16 +1470,13 @@ mod tests {
             validate(&plan, &gates, 42).unwrap();
             let report = dispatch(&plan, &gates, &mut client);
             let row = &report.applications[1];
-            assert_eq!(row.accepted_gates, if unknown { 0 } else { 2 });
-            assert_eq!(row.pending_gates.len(), if unknown { 9 } else { 7 });
+            assert_eq!(row.status, "blocked");
+            assert_eq!(row.accepted_gates, 0);
+            assert_eq!(row.pending_gates.len(), 9);
+            assert!(row.leaf_observation.is_none());
             for gate in &row.gate_assertions {
-                if !unknown && ["settings.pages", "settings.roundtrip"].contains(&gate.id.as_str()) {
-                    assert_eq!(gate.status, "passed");
-                    assert_eq!(gate.evidence.as_ref(), Some(&pin));
-                } else {
-                    assert_ne!(gate.status, "passed");
-                    assert!(gate.evidence.is_none());
-                }
+                assert_ne!(gate.status, "passed");
+                assert!(gate.evidence.is_none());
             }
             assert_eq!(report.accepted_applications, 0);
             assert!(!report.production_ready && !row.production_ready);

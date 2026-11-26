@@ -1,10 +1,9 @@
-//! Same-invocation Clock observations; no Main or application qualification.
+//! Actual Clock timer15 + expiry06 observations joined to normal Main/copy custody.
 //!
-//! Only the normal, source-admitted material/peer path can run this factory.
-//! A saved JSON result is never an input to it. The two original entries retain
-//! their claims, deadlines, source witnesses and complete failure cleanup.
-//! The remaining Main/data-continuity authority has no constructor here, so even
-//! a complete pair cannot pass clock.timer.
+//! Only the source-admitted material/peer factory can construct the result.
+//! Saved JSON is never execution authority. One held Main, source/owner lease
+//! and both first-read result FDs span the unchanged cases and their cleanup.
+//! The resulting credit is only clock.timer; engine and whole-app gates remain.
 use std::collections::{BTreeMap, BTreeSet};
 use std::fs::{self, File, OpenOptions};
 use std::os::fd::AsRawFd;
@@ -20,7 +19,7 @@ use serde_json::Value;
 use sha2::{Digest, Sha256};
 
 use super::leaf_release::{self, Inputs, NativeRelease};
-use super::leaf_routes::{self, ExecutedClockCase, LeafObservation, LeafPlan, Route};
+use super::leaf_routes::{self, ExecutedClockCase, HeldMainCustody, LeafObservation, LeafPlan, Route};
 use super::runtime_identity::{IdentityObservation, VerifiedMaterialBatch};
 use super::{ApplicationPlan, FilePin, RuntimePlan, consume_inspection};
 
@@ -29,9 +28,11 @@ const REQUEST_SCHEMA: &str = "droidloom.clock-timer-pair-request.v1";
 const RESULT_SCHEMA: &str = "pocket4-current-clock-original-case-result-v1";
 const UNUSED: i64 = i64::MIN;
 // Two unchanged 510-second original leaf limits, three normal 250-second
-// inspection limits, and 120 seconds for finite source/owner bookends. This
-// checks coverage by the original lease; it never extends that lease.
-const PAIR_WINDOW_SECONDS: u64 = 2 * 510 + 3 * 250 + 120;
+// package inspections, 120 seconds for finite source/owner bookends, and
+// exactly three normal Main transport allowances (observe + two revalidate).
+// This covers 2100 seconds of factory work/retirement on one original lease;
+// it never extends the lease or claims the outer dispatch/transport budget.
+const PAIR_WINDOW_SECONDS: u64 = 2 * 510 + 3 * 250 + 120 + 3 * 70;
 const SOURCE_NAMES: [&str; 27] = [
     "app_common.py", "app_runtime.py", "clock_alarm_flow.py", "clock_alarm_reader.py",
     "clock_api.py", "clock_audio_observe.py", "clock_case.py", "clock_continuation.py",
@@ -137,6 +138,15 @@ pub(super) struct ClockResultCustody {
     inputs: CaseInputs,
 }
 impl ClockResultCustody {
+    pub(super) fn capture_path(path: &Path) -> Result<(Self, Value), String> {
+        let mut inputs = CaseInputs::new();
+        let raw = inputs.read(path, None, super::INPUT_LIMIT)?;
+        let reference = inputs.files.first().ok_or("executed result descriptor missing")?.pin.clone();
+        let result = leaf_release::json(&raw)?;
+        inputs.guard()?;
+        Ok((Self { reference, inputs }, result))
+    }
+    pub(super) fn reference(&self) -> &FilePin { &self.reference }
     pub(super) fn capture(reference: &FilePin) -> Result<(Self, Value), String> {
         let mut inputs = CaseInputs::new();
         let result = read(&mut inputs, reference, super::INPUT_LIMIT)?;
@@ -153,7 +163,7 @@ impl ClockResultCustody {
         leaf_release::json(&raw)
     }
     pub(super) fn guard(&self) -> Result<(),String> { self.inputs.guard() }
-    fn identity(&self) -> Result<[u64;9],String> { self.inputs.identity(&self.reference.path) }
+    pub(super) fn identity(&self) -> Result<[u64;9],String> { self.inputs.identity(&self.reference.path) }
 }
 
 #[derive(Deserialize)]
@@ -483,6 +493,7 @@ fn hold_sources(held: &mut Inputs, preparation: &FilePin) -> Result<(), String> 
 // The lifetime pins both cases to the same still-held normal source/owner lease.
 struct CaseFact<'a> {
     lease: &'a NativeRelease,
+    main: &'a HeldMainCustody,
     result_custody: ClockResultCustody,
     actual: ApplicationInspection,
     observation: LeafObservation,
@@ -493,7 +504,9 @@ struct CaseFact<'a> {
 }
 
 fn case_fact<'a>(executed: ExecutedClockCase, lease: &'a NativeRelease,
-    input: &CaseInput, actual: &ApplicationInspection) -> Result<CaseFact<'a>, String> {
+    main: &'a HeldMainCustody, input: &CaseInput,
+    actual: &ApplicationInspection) -> Result<CaseFact<'a>, String> {
+    main.require_application(actual)?;
     let (observation, result_custody) = executed.into_parts();
     require(observation.result == result_custody.reference,
         "Clock executed result differs from its held file custody")?;
@@ -508,13 +521,31 @@ fn case_fact<'a>(executed: ExecutedClockCase, lease: &'a NativeRelease,
         "Clock execution token does not bind this original case, source and epoch")?;
     let details = validate_case_details(&result, input.kind)?;
     lease.guard()?;
-    Ok(CaseFact { lease, result_custody, actual:actual.clone(), observation, details,
+    Ok(CaseFact { lease, main, result_custody, actual:actual.clone(), observation, details,
         baseline:input.baseline.clone(), qualification:input.qualification.clone(),
         framework_epoch_sha256:input.framework_epoch_sha256.clone() })
 }
 
-/// Output-only observations; this type deliberately has no deserializer, clone,
-/// public fields, public constructor, or method that returns a passed gate.
+struct ClockPairCustody {
+    lease: NativeRelease,
+    timer15: ClockResultCustody,
+    expiry06: ClockResultCustody,
+}
+impl std::fmt::Debug for ClockPairCustody {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ClockPairCustody").finish_non_exhaustive()
+    }
+}
+impl ClockPairCustody {
+    fn guard(&self) -> Result<(), String> {
+        self.lease.guard()?;
+        self.timer15.guard()?;
+        self.expiry06.guard()
+    }
+}
+
+/// Output-only completed facts. No deserializer, clone, public fields or
+/// receipt constructor can mint this scoped gate or its opaque Main custody.
 #[derive(Debug, Serialize)]
 pub(super) struct ClockTimerEvidence {
     schema: &'static str,
@@ -523,7 +554,11 @@ pub(super) struct ClockTimerEvidence {
     original_owner_current: FilePin,
     original_owner_current_f9: [u64; 9],
     selection: FilePin,
-    identity: IdentityObservation,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    identity: Option<IdentityObservation>,
+    main_custody: HeldMainCustody,
+    #[serde(skip)]
+    custody: ClockPairCustody,
     timer15: LeafObservation,
     expiry06: LeafObservation,
     timer15_details: CaseDetails,
@@ -533,12 +568,30 @@ pub(super) struct ClockTimerEvidence {
     same_normal_peer_source_owner_and_epoch: bool,
     original_host_process_trees_retired: bool,
     original_source_and_owner_bookends_verified: bool,
-    missing_authorities: [&'static str; 2],
+    remaining_common_requirements: [&'static str; 2],
     clock_timer_gate_passed: bool,
     application_accepted: bool,
     runtime_qualified: bool,
     production_ready: bool,
     automatic_retry: bool,
+}
+
+impl ClockTimerEvidence {
+    pub(super) fn take_final_identity(&mut self) -> Result<IdentityObservation, String> {
+        self.retained_bookends()?;
+        self.identity.take().ok_or("Clock pair final identity already consumed".into())
+    }
+    pub(super) fn retained_bookends(&self) -> Result<(), String> {
+        self.main_custody.guard_projection()?;
+        self.custody.guard()
+    }
+    pub(super) fn verified_business_gates(&self) -> &'static [&'static str] {
+        if self.clock_timer_gate_passed { &["clock.timer"] } else { &[] }
+    }
+    pub(super) fn evidence_pin(&self) -> &FilePin { &self.timer15.result }
+    pub(super) fn main_observation(&self) -> &control::MainCustodyObservation {
+        self.main_custody.normal_observation()
+    }
 }
 
 fn inspect(inspector: &mut control::NativeApplicationInspector,
@@ -593,33 +646,42 @@ pub(super) fn observe_pair(
     materials.revalidate()?;
     held.guard()?;
     lease.guard()?;
-    window(end, 250 + 2 * 510 + 2 * 250 + 30)?;
+    window(end, 3 * 250 + 2 * 510 + 3 * 70 + 30)?;
     let before = inspect(inspector, expected)?;
     materials.observe(requested, 0, &runtime.expected_epoch, &before, &before)?;
 
+    window(end, 2 * 250 + 2 * 510 + 3 * 70 + 30)?;
+    let main = HeldMainCustody::observe(inspector, &before)?;
+    lease.guard()?;
+
     let timer_plan = LeafPlan { route:Kind::Timer15.route(), request:timer.request.clone(), output:None };
-    window(end, 510 + 2 * 250 + 510 + 30)?;
-    let timer_executed = leaf_routes::execute_clock_case(&timer_plan, selection, &before)?;
-    let timer_fact = case_fact(timer_executed, &lease, &timer, &before)?;
+    window(end, 2 * 510 + 2 * 250 + 2 * 70 + 30)?;
+    let timer_executed = leaf_routes::execute_clock_case(&timer_plan, selection, &before, &main, &lease)?;
+    let timer_fact = case_fact(timer_executed, &lease, &main, &timer, &before)?;
     held.guard()?; materials.revalidate()?; lease.guard()?;
-    window(end, 250 + 510 + 250 + 30)?;
+    window(end, 2 * 250 + 510 + 2 * 70 + 30)?;
     let between = inspect(inspector, &before)?;
     materials.observe(requested, 0, &runtime.expected_epoch, &before, &between)?;
+    window(end, 250 + 510 + 2 * 70 + 30)?;
+    main.revalidate(inspector, &between)?;
 
     let expiry_plan = LeafPlan { route:Kind::Expiry06.route(), request:expiry.request.clone(), output:None };
-    window(end, 510 + 250 + 30)?;
+    window(end, 510 + 250 + 70 + 30)?;
     timer_fact.result_custody.guard()?;
-    let expiry_executed = leaf_routes::execute_clock_case(&expiry_plan, selection, &between)?;
-    let expiry_fact = case_fact(expiry_executed, &lease, &expiry, &between)?;
+    let expiry_executed = leaf_routes::execute_clock_case(&expiry_plan, selection, &between, &main, &lease)?;
+    let expiry_fact = case_fact(expiry_executed, &lease, &main, &expiry, &between)?;
     held.guard()?; materials.revalidate()?; lease.guard()?;
-    window(end, 250 + 30)?;
+    window(end, 250 + 70 + 30)?;
     let after = inspect(inspector, &before)?;
     let identity = materials.observe(requested, 0, &runtime.expected_epoch, &before, &after)?;
+    window(end, 70 + 30)?;
+    main.revalidate(inspector, &after)?;
     held.guard()?; materials.revalidate()?; lease.guard()?;
     window(end, 0)?;
     timer_fact.result_custody.guard()?;
     expiry_fact.result_custody.guard()?;
     require(std::ptr::eq(timer_fact.lease, expiry_fact.lease)
+        && std::ptr::eq(timer_fact.main, expiry_fact.main)
         && timer_fact.actual == expiry_fact.actual
         && timer_fact.baseline == expiry_fact.baseline
         && timer_fact.qualification == expiry_fact.qualification
@@ -628,20 +690,26 @@ pub(super) fn observe_pair(
         && timer_fact.observation.entry_source == expiry_fact.observation.entry_source
         && timer_fact.observation.result.path != expiry_fact.observation.result.path,
         "Clock observations cannot be joined across source, owner, identity or epoch")?;
+    let timer15_result_f9 = timer_fact.result_custody.identity()?;
+    let expiry06_result_f9 = expiry_fact.result_custody.identity()?;
+    let CaseFact { result_custody:timer_result, observation:timer15,
+        details:timer15_details, .. } = timer_fact;
+    let CaseFact { result_custody:expiry_result, observation:expiry06,
+        details:expiry06_details, .. } = expiry_fact;
     let evidence = ClockTimerEvidence {
-        schema:"droidloom.clock-timer-pair-observation.v1", pair_request:leaf.request.clone(),
+        schema:"droidloom.clock-timer-pair-observation.v2", pair_request:leaf.request.clone(),
         native_release, original_owner_current:current, original_owner_current_f9:current_f9,
-        selection:selection.clone(), identity,
-        timer15:timer_fact.observation, expiry06:expiry_fact.observation,
-        timer15_details:timer_fact.details, expiry06_details:expiry_fact.details,
-        timer15_result_f9:timer_fact.result_custody.identity()?,
-        expiry06_result_f9:expiry_fact.result_custody.identity()?,
+        selection:selection.clone(), identity:Some(identity), main_custody:main,
+        custody:ClockPairCustody { lease, timer15:timer_result, expiry06:expiry_result },
+        timer15, expiry06, timer15_details, expiry06_details,
+        timer15_result_f9, expiry06_result_f9,
         same_normal_peer_source_owner_and_epoch:true, original_host_process_trees_retired:true,
         original_source_and_owner_bookends_verified:true,
-        missing_authorities:["normal_main_qualification", "predeployment_data_continuity"],
-        clock_timer_gate_passed:false, application_accepted:false,
+        remaining_common_requirements:["actual_per_application_engine_mapping", "other_registry_gates"],
+        clock_timer_gate_passed:true, application_accepted:false,
         runtime_qualified:false, production_ready:false, automatic_retry:false,
     };
+    evidence.retained_bookends()?;
     Ok((after, evidence))
 }
 
@@ -912,7 +980,11 @@ mod tests {
         let reference=FilePin {path:path.clone(),bytes:raw.len() as u64,
             sha256:hex::encode(Sha256::digest(raw))};
         let (custody,parsed)=ClockResultCustody::capture(&reference).unwrap();
+        let (discovered,from_path)=ClockResultCustody::capture_path(&path).unwrap();
+        assert_eq!(discovered.reference(), &reference);
+        assert_eq!(from_path, parsed);
         assert_eq!(custody.read().unwrap(),parsed);
+        assert_eq!(discovered.read().unwrap(),parsed);
         fs::rename(&path,root.path().join("original-result.json")).unwrap();
         fs::write(&path,raw).unwrap();
         // The pin and bytes still match. Only the retained descriptor/inode
@@ -920,6 +992,8 @@ mod tests {
         assert_eq!(super::super::pinned(&reference).unwrap(),raw);
         assert!(custody.read().is_err());
         assert!(custody.guard().is_err());
+        assert!(discovered.read().is_err());
+        assert!(discovered.guard().is_err());
     }
 
 }
