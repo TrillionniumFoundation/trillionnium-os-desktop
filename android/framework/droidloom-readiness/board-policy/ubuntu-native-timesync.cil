@@ -11,6 +11,7 @@
 ; The existing libselinux mount probe searches only these two metadata
 ; directories. All other nonboard directory traversal remains prohibited.
 (typeattribute p4_timesync_nonboard_without_metadata_dirs)
+(expandtypeattribute (p4_timesync_nonboard_without_metadata_dirs) true)
 (typeattributeset p4_timesync_nonboard_without_metadata_dirs (and (p4_all_nonboard) (not (or (sysfs) (selinuxfs)))))
 (neverallow p4_linux_timesyncd_t p4_timesync_nonboard_without_metadata_dirs (dir (search)))
 (type p4_linux_timesyncd_exec_t)
