@@ -82,6 +82,7 @@ pub(super) enum Route {
     SettingsSupportedPages,
     CameraPhoto,
     ClockTimer,
+    ClockTimerPair,
     ClockTimerRemaining,
     ClockExpiry,
     ClockAlarm,
@@ -222,6 +223,16 @@ impl Route {
                 seconds: 460,
                 state: None,
                 result_schema: "pocket4-final-app-case-coordinator-result-v1",
+            },
+            ClockTimerPair => Definition {
+                source: 4,
+                package: "com.android.deskclock",
+                request_schema: Some("droidloom.clock-timer-pair-request.v1"),
+                plan_schema: None,
+                kind: None,
+                seconds: 0,
+                state: None,
+                result_schema: "droidloom.clock-timer-pair-observation.v1",
             },
             ClockTimerRemaining | ClockExpiry | ClockAlarm => Definition {
                 source: 4,
@@ -934,11 +945,59 @@ fn terminal_result(
     Ok(())
 }
 
+/// Bind the compiled Clock source and the original adopted owner once for
+/// both cases. This is source/lease custody, not Main or business acceptance.
+pub(super) fn clock_pair_release(
+    selection: &FilePin,
+) -> Result<(NativeRelease, FilePin, FilePin), String> {
+    validate_selection(selection)?;
+    let sources = fixed_sources()?;
+    let source = &sources[4];
+    let lease = NativeRelease::bind_current(
+        selection, SOURCE_CATALOG, &source.preparation, &source.entry,
+    )?;
+    Ok((lease, source.preparation.clone(), source.entry.clone()))
+}
+
+/// An unforgeable-in-the-consumer handoff from this actual execute/retire path.
+/// It deliberately has no Clone, Deserialize or receipt-file constructor.
+pub(super) struct ExecutedClockCase {
+    observation: LeafObservation,
+    result_custody: super::clock_timer::ClockResultCustody,
+}
+impl ExecutedClockCase {
+    pub(super) fn into_parts(self) -> (LeafObservation, super::clock_timer::ClockResultCustody) {
+        (self.observation, self.result_custody)
+    }
+}
+
+pub(super) fn execute_clock_case(
+    plan: &LeafPlan,
+    selection: &FilePin,
+    actual: &ApplicationInspection,
+) -> Result<ExecutedClockCase, String> {
+    require(matches!(plan.route, Route::ClockTimerRemaining | Route::ClockExpiry),
+        "Clock fact production only accepts original timer15 and expiry06")?;
+    let (observation, _, result_custody) = execute_observed(plan, selection, actual)?;
+    Ok(ExecutedClockCase { observation,
+        result_custody: result_custody.ok_or("actual Clock executor omitted result custody")? })
+}
+
 pub(super) fn execute(
     plan: &LeafPlan,
     selection: &FilePin,
     actual: &ApplicationInspection,
 ) -> Result<LeafObservation, String> {
+    require(plan.route != Route::ClockTimerPair,
+        "Clock pair facts require the normal source-admitted peer factory")?;
+    execute_observed(plan, selection, actual).map(|(observation, _, _)| observation)
+}
+
+fn execute_observed(
+    plan: &LeafPlan,
+    selection: &FilePin,
+    actual: &ApplicationInspection,
+) -> Result<(LeafObservation, Value, Option<super::clock_timer::ClockResultCustody>), String> {
     require(
         plan.route.package() == actual.package,
         "leaf route belongs to a different application",
@@ -1013,7 +1072,15 @@ pub(super) fn execute(
         result_ref.path == expected_result,
         "leaf returned a receipt outside its exact new case result",
     )?;
-    let result = value(&result_ref)?;
+    // Capture the Clock result at this first actual executor read, and carry
+    // the same descriptor through the typed handoff and complete pair.
+    let (result_custody, result) = if matches!(plan.route,
+        Route::ClockTimerRemaining | Route::ClockExpiry) {
+        let (custody, result) = super::clock_timer::ClockResultCustody::capture(&result_ref)?;
+        (Some(custody), result)
+    } else {
+        (None, value(&result_ref)?)
+    };
     terminal_result(
         plan.route,
         &printed,
@@ -1046,7 +1113,7 @@ pub(super) fn execute(
         }
         lease.guard()?;
     }
-    Ok(LeafObservation {
+    let observation = LeafObservation {
         route: plan.route,
         request: plan.request.clone(),
         preparation: source.preparation.clone(),
@@ -1069,7 +1136,9 @@ pub(super) fn execute(
         } else {
             "Only this original bounded case completed. Visual review, untested feature paths, all common release gates and whole-app acceptance remain separately required."
         },
-    })
+    };
+    if let Some(custody) = &result_custody { custody.guard()?; }
+    Ok((observation, result, result_custody))
 }
 
 #[cfg(test)]

@@ -19,6 +19,8 @@ use firefox_wait_result::{FirefoxActivityStart, firefox_activity_start};
 
 #[path = "leaf_routes.rs"]
 mod leaf_routes;
+#[path = "clock_timer.rs"]
+mod clock_timer;
 #[path = "leaf_release.rs"]
 mod leaf_release;
 #[path = "leaf_adoption.rs"]
@@ -195,6 +197,8 @@ struct AppDispatch {
     firefox_activity_start: Option<FirefoxActivityStart>,
     leaf_observation: Option<LeafObservation>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    clock_timer_observation: Option<clock_timer::ClockTimerEvidence>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     launch_observation: Option<LaunchObservation>,
     pending_gates: Vec<String>,
     accepted_gates: usize,
@@ -242,6 +246,14 @@ trait RuntimeClient {
         plan: &LeafPlan,
         selection: &FilePin,
     ) -> Result<(ApplicationInspection, LeafObservation), String>;
+    fn clock_timer_pair(
+        &mut self,
+        _expected: &ApplicationInspection,
+        _plan: &LeafPlan,
+        _selection: &FilePin,
+    ) -> Result<(ApplicationInspection, clock_timer::ClockTimerEvidence), String> {
+        Err("Clock pair facts require the normal source-admitted material and peer factory".into())
+    }
     fn launch(
         &mut self,
         expected: &ApplicationInspection,
@@ -313,8 +325,18 @@ impl RuntimeClient for SocketClient<'_> {
 struct MaterialClient<'a> {
     socket: &'a Path,
     inspector: control::NativeApplicationInspector,
+    materials: &'a runtime_identity::VerifiedMaterialBatch,
+    runtime: &'a RuntimePlan,
 }
 impl RuntimeClient for MaterialClient<'_> {
+    fn clock_timer_pair(&mut self, expected: &ApplicationInspection, plan: &LeafPlan,
+        selection: &FilePin) -> Result<(ApplicationInspection, clock_timer::ClockTimerEvidence), String> {
+        let requested = self.runtime.applications.iter()
+            .find(|app| app.package == expected.package)
+            .ok_or("Clock pair has no application in this admitted runtime plan")?;
+        clock_timer::observe_pair(&mut self.inspector, self.materials, self.runtime,
+            requested, expected, plan, selection)
+    }
     fn inspect(&mut self, package: &str, user: u32) -> Result<ApplicationInspection, String> {
         let reply = self.inspector.inspect(package, user).map_err(|error| error.to_string())?;
         consume_inspection(reply, package, user).map(|(application, _)| application)
@@ -404,6 +426,11 @@ fn validate(plan: &RuntimePlan, gates: &GateRegistry, expected_count: usize) -> 
             }
         }
         if let Some(leaf) = &app.leaf {
+            if leaf.route == leaf_routes::Route::ClockTimerPair
+                && (plan.schema != 3 || plan.source_selection.is_none() || leaf.output.is_some())
+            {
+                return Err("Clock pair requires schema 3, an admitted source selection and no output override".into());
+            }
             if leaf.route.package() != app.package || app.expected_input.is_none() {
                 return Err(
                     "leaf route package and complete official application source must match".into(),
@@ -527,6 +554,7 @@ fn dispatch_with_materials(
             invocation_output: None,
             firefox_activity_start: None,
             leaf_observation: None,
+            clock_timer_observation: None,
             launch_observation: None,
             pending_gates: pending,
             accepted_gates: 0,
@@ -571,6 +599,19 @@ fn dispatch_with_materials(
                         }
                     }
                 } else if let Some(leaf) = &app.leaf {
+                    if leaf.route == leaf_routes::Route::ClockTimerPair {
+                        match client.clock_timer_pair(&actual, leaf,
+                            plan.preparation_selection.as_ref().expect("validated selection")) {
+                            Ok((after, result)) if after == actual => {
+                                row.status = "partial_leaf_observation";
+                                row.reason = "Both fixed original Clock cases completed under the same normal peer, complete APK identity, epoch and source/owner lease. Main qualification and predeployment data continuity remain unsupported; clock.timer and whole-app acceptance stay pending.".into();
+                                row.clock_timer_observation = Some(result);
+                            }
+                            Ok(_) => row.reason = "Clock pair returned another installed identity or Main epoch".into(),
+                            Err(error) => row.reason = format!(
+                                "Clock pair fact factory failed; retain original claims and logs without replay: {error}"),
+                        }
+                    } else {
                     match client.leaf(
                         &actual,
                         leaf,
@@ -601,6 +642,7 @@ fn dispatch_with_materials(
                                 "selected leaf precondition or execution failed; retain its original claim and logs, with no automatic replay: {error}"
                             )
                         }
+                    }
                     }
                 } else if app.package != "org.mozilla.firefox" {
                     row.status = "unsupported";
@@ -884,6 +926,8 @@ fn run_files_mode(
             socket,
             inspector: control::NativeApplicationInspector::acquire(socket)
                 .map_err(|error| error.to_string())?,
+            materials,
+            runtime: &plan,
         };
         let mut report = dispatch_with_materials(
             &plan, &gates, &mut client, Some(materials), identity_only,
@@ -1206,6 +1250,42 @@ mod tests {
         assert_eq!(dispatch(&p, &g, &mut c).blocked_applications, 1);
         assert_eq!(c.opens, 0);
     }
+    #[test]
+    fn ordinary_client_cannot_execute_clock_pair_or_mint_its_gate() {
+        let (mut p, mut g, mut c) = fixture();
+        let old = p.applications[1].package.clone();
+        let package = "com.android.deskclock".to_string();
+        let mut observed = c.identities.remove(&old).unwrap();
+        observed.package = package.clone();
+        c.identities.insert(package.clone(), observed);
+        let mut profile = g.packages.remove(&old).unwrap();
+        profile.profile = "clock".into();
+        g.profiles.insert("clock".into(), GateProfile {
+            checks: BTreeMap::from([("clock.timer".into(), "Start/pause/resume an owned timer and observe completion.".into())]),
+        });
+        g.packages.insert(package.clone(), profile);
+        p.applications[1].package = package.clone();
+        p.applications[1].leaf = Some(LeafPlan {
+            route: leaf_routes::Route::ClockTimerPair,
+            request: p.main_qualification.clone(),
+            output: None,
+        });
+        p.schema = 3;
+        p.source_selection = Some(p.main_qualification.clone());
+        p.preparation_selection = Some(p.main_qualification.clone());
+        validate(&p, &g, 42).unwrap();
+        let report = dispatch(&p, &g, &mut c);
+        let row = report.applications.iter().find(|r| r.package == package).unwrap();
+        assert_eq!(row.status, "blocked");
+        assert_eq!(row.accepted_gates, 0);
+        assert!(row.clock_timer_observation.is_none());
+        assert!(row.pending_gates.contains(&"clock.timer".into()));
+        assert_eq!(c.leaf_calls, 0);
+        assert_eq!(report.accepted_applications, 0);
+        p.schema = 2;
+        assert!(validate(&p, &g, 42).is_err());
+    }
+
     #[test]
     fn finite_leaf_dispatch_reaches_executor_and_keeps_all_42_gate_rows() {
         let (mut p, mut g, mut c) = fixture();
