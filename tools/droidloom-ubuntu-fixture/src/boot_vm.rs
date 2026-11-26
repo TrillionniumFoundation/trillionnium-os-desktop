@@ -158,13 +158,15 @@ pub(super) fn kernel_command_line(uuid: &str, calibration: bool) -> Result<Strin
             }),
         "invalid root UUID",
     )?;
-    let (unit, manager_log_level) = if calibration {
-        ("droidloom-calibration-qualification.target", "debug")
+    // The selected normal systemd log.c parses this documented switch.
+    // Calibration must retain the first failure while the journal is starting.
+    let (unit, manager_log_level, manager_kmsg_ratelimit) = if calibration {
+        ("droidloom-calibration-qualification.target", "debug", "0")
     } else {
-        ("graphical.target", "info")
+        ("graphical.target", "info", "1")
     };
     Ok(format!(
-        "console=ttyS0,115200 root=UUID={uuid} rootfstype=ext4 rw rootwait loglevel=7 enforcing=1 audit_backlog_limit=32768 sysctl.kernel.printk_ratelimit=0 lsm=lockdown,capability,landlock,yama,selinux,apparmor,bpf,ima,evm audit=1 init=/usr/lib/droidloom/production/current/droidloom-board-init systemd.unit={unit} systemd.log_target=journal-or-kmsg systemd.show_status=1 systemd.log_level={manager_log_level}"
+        "console=ttyS0,115200 root=UUID={uuid} rootfstype=ext4 rw rootwait loglevel=7 enforcing=1 audit_backlog_limit=32768 sysctl.kernel.printk_ratelimit=0 lsm=lockdown,capability,landlock,yama,selinux,apparmor,bpf,ima,evm audit=1 init=/usr/lib/droidloom/production/current/droidloom-board-init systemd.unit={unit} systemd.log_target=journal-or-kmsg systemd.show_status=1 systemd.log_level={manager_log_level} systemd.log_ratelimit_kmsg={manager_kmsg_ratelimit}"
     ))
 }
 

@@ -1,7 +1,10 @@
-Description: Give the shared-kernel native manager a fixed private generator tmpfs context
+Description: Label new native generator and per-unit credential tmpfs roots before use
  Preserve the original clone, slave propagation, nosuid/nodev flags, tmpfs limits,
  generator execution and child wait/error semantics. Only the actual native raw
  SELinux context selects the fixed labels. Other managers keep stock options.
+ The sealed native service executor additionally selects only ten fixed unit root
+ labels before reopening its new noswap tmpfs, then validates the actual xattr
+ against the immutable path mapping. Generic tmpfs directory reads stay denied.
 Origin: vendor
 Forwarded: not-needed
 Last-Update: 2026-11-25
@@ -78,3 +81,196 @@ Last-Update: 2026-11-25
  
          r = safe_fork("(sd-gens)", flags, NULL);
          if (r == 0) {
+
+--- a/src/core/exec-credential.c
++++ b/src/core/exec-credential.c
+@@ -1,6 +1,7 @@
+ /* SPDX-License-Identifier: LGPL-2.1-or-later */
+ 
+ #include <sys/mount.h>
++#include <sys/xattr.h>
+ #include <unistd.h>
+ 
+ #include "acl-util.h"
+@@ -25,6 +26,7 @@
+ #include "random-util.h"
+ #include "recurse-dir.h"
+ #include "rm-rf.h"
++#include "selinux-util.h"
+ #include "siphash24.h"
+ #include "stat-util.h"
+ #include "string-util.h"
+@@ -1006,6 +1008,72 @@
+         return 0;
+ }
+ 
++/* A new native credential filesystem needs its final root inode label before
++ * fd_reopen(O_RDONLY). The generic tmpfs directory remains unreadable to the
++ * sealed executor. These are the same ten immutable unit/path/type bindings as
++ * the normal file_contexts; no environment or caller-provided label is used. */
++static int p4_credentials_rootcontext(const char *unit, const char *cred_dir, const char **ret_context) {
++        _cleanup_freecon_ char *current = NULL;
++        _cleanup_free_ char *expected_path = NULL;
++        const char *context = NULL;
++        int r;
++
++        assert(unit);
++        assert(cred_dir);
++        assert(ret_context);
++        *ret_context = NULL;
++
++        if (!mac_selinux_use())
++                return 0;
++        r = mac_selinux_get_our_label(&current);
++        if (r < 0)
++                return r;
++        if (!streq(current, "u:system_r:p4_linux_service_executor_t:s0"))
++                return 0;
++
++        if (streq(unit, "systemd-journald.service"))
++                context = "u:object_r:p4_linux_journal_credentials_t:s0";
++        else if (STR_IN_SET(unit, "systemd-firstboot.service", "systemd-sysusers.service",
++                           "systemd-tmpfiles-clean.service", "systemd-tmpfiles-setup-dev-early.service",
++                           "systemd-tmpfiles-setup-dev.service", "systemd-tmpfiles-setup.service"))
++                context = "u:object_r:p4_linux_setup_credentials_t:s0";
++        else if (streq(unit, "systemd-udev-load-credentials.service"))
++                context = "u:object_r:p4_linux_udev_credentials_t:s0";
++        else if (streq(unit, "systemd-resolved.service"))
++                context = "u:object_r:p4_linux_resolved_credentials_t:s0";
++        else if (streq(unit, "systemd-sysctl.service"))
++                context = "u:object_r:p4_linux_sysctl_credentials_t:s0";
++        else
++                return -EOPNOTSUPP;
++
++        expected_path = path_join("/run/credentials", unit);
++        if (!expected_path)
++                return -ENOMEM;
++        if (!streq(cred_dir, expected_path))
++                return -EINVAL;
++
++        *ret_context = context;
++        return 1;
++}
++
++static int p4_credentials_verify_rootcontext(int fd, const char *context) {
++        char actual[128];
++        ssize_t n;
++        size_t expected;
++
++        assert(fd >= 0);
++        assert(context);
++        expected = strlen(context) + 1;
++        if (expected > sizeof(actual))
++                return -E2BIG;
++        n = fgetxattr(fd, "security.selinux", actual, sizeof(actual));
++        if (n < 0)
++                return -errno;
++        if ((size_t) n != expected || memcmp(actual, context, expected) != 0)
++                return -ESTALE;
++        return 0;
++}
++
+ static int setup_credentials_internal(
+                 const ExecContext *context,
+                 const CGroupContext *cgroup_context,
+@@ -1016,6 +1084,7 @@
+                 gid_t gid) {
+ 
+         _cleanup_close_ int fs_fd = -EBADF, mfd = -EBADF, dfd = -EBADF;
++        const char *root_context = NULL;
+         bool dir_mounted;
+         int r;
+ 
+@@ -1040,8 +1109,12 @@
+                 return log_debug_errno(r, "Failed to determine if '%s' is a mountpoint: %m", cred_dir);
+         dir_mounted = r > 0;
+ 
+-        mfd = fsmount_credentials_fs(&fs_fd);
+-        if (ERRNO_IS_NEG_PRIVILEGE(mfd) && !dir_mounted) {
++        r = p4_credentials_rootcontext(unit, cred_dir, &root_context);
++        if (r < 0)
++                return log_debug_errno(r, "Failed to select native credential root label: %m");
++
++        mfd = fsmount_credentials_fs_full(&fs_fd, root_context);
++        if (!root_context && ERRNO_IS_NEG_PRIVILEGE(mfd) && !dir_mounted) {
+                 log_debug_errno(mfd, "Lacking privilege to mount credentials fs, falling back to plain directory.");
+                 return setup_credentials_plain_dir(context, cgroup_context, params, unit, cred_dir, uid, gid);
+         }
+@@ -1052,7 +1125,20 @@
+         if (dfd < 0)
+                 return dfd;
+ 
+-        (void) label_fix_full(dfd, /* inode_path= */ NULL, cred_dir, /* flags= */ 0);
++        if (root_context) {
++                r = p4_credentials_verify_rootcontext(dfd, root_context);
++                if (r < 0)
++                        return log_debug_errno(r, "Native credential root label differs before path validation: %m");
++        }
++
++        r = label_fix_full(dfd, /* inode_path= */ NULL, cred_dir, /* flags= */ 0);
++        if (root_context) {
++                if (r < 0)
++                        return log_debug_errno(r, "Failed to validate native credential path label: %m");
++                r = p4_credentials_verify_rootcontext(dfd, root_context);
++                if (r < 0)
++                        return log_debug_errno(r, "Native credential root label differs after path validation: %m");
++        }
+ 
+         r = acquire_credentials(context, cgroup_context, params, unit, dfd, uid, gid, /* ownership_ok= */ true);
+         if (r < 0)
+--- a/src/shared/mount-util.c
++++ b/src/shared/mount-util.c
+@@ -1974,7 +1974,7 @@
+         return MS_NODEV|MS_NOEXEC|MS_NOSUID|ms_nosymfollow_supported()|(ro ? MS_RDONLY : 0);
+ }
+ 
+-int fsmount_credentials_fs(int *ret_fsfd) {
++int fsmount_credentials_fs_full(int *ret_fsfd, const char *root_context) {
+         _cleanup_close_ int fs_fd = -EBADF;
+         char size_str[DECIMAL_STR_MAX(uint64_t)];
+ 
+@@ -1998,7 +1998,9 @@
+                 return -errno;
+ 
+         if (fsconfig(fs_fd, FSCONFIG_SET_FLAG, "noswap", NULL, 0) < 0) {
+-                if (errno != EINVAL)
++                /* The native contract is the selected kernel's new noswap tmpfs,
++                 * never a different filesystem or an unlabelled fallback. */
++                if (root_context || errno != EINVAL)
+                         return -errno;
+ 
+                 int ramfs_fd = fsopen("ramfs", FSOPEN_CLOEXEC);
+@@ -2007,6 +2009,12 @@
+         }
+ 
+         if (fsconfig(fs_fd, FSCONFIG_SET_STRING, "mode", "0700", 0) < 0)
++                return -errno;
++
++        /* rootcontext labels only the new root inode. Unlike context=, it does
++         * not force a single label onto future credential files or directories. */
++        if (root_context &&
++            fsconfig(fs_fd, FSCONFIG_SET_STRING, "rootcontext", root_context, 0) < 0)
+                 return -errno;
+ 
+         if (fsconfig(fs_fd, FSCONFIG_CMD_CREATE, NULL, NULL, 0) < 0)
+@@ -2021,6 +2029,10 @@
+                 *ret_fsfd = TAKE_FD(fs_fd);
+ 
+         return mfd;
++}
++
++int fsmount_credentials_fs(int *ret_fsfd) {
++        return fsmount_credentials_fs_full(ret_fsfd, /* root_context= */ NULL);
+ }
+ 
+ int mount_credentials_fs(const char *path) {
+--- a/src/shared/mount-util.h
++++ b/src/shared/mount-util.h
+@@ -167,6 +167,7 @@
+ int trigger_automount_at(int dir_fd, const char *path);
+ 
+ unsigned long credentials_fs_mount_flags(bool ro);
++int fsmount_credentials_fs_full(int *ret_fsfd, const char *root_context);
+ int fsmount_credentials_fs(int *ret_fsfd);
+ int mount_credentials_fs(const char *path);
+ 

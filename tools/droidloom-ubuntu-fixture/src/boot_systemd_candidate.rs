@@ -26,7 +26,7 @@ const PATCH: &[u8] =
 const PATCH_PATH: &str = "/debian/patches/p4-native-generator-tmpfs.patch";
 const PATCH_NAME: &str = "p4-native-generator-tmpfs.patch";
 const ORIGINAL: &str = "259.9-0ubuntu0.1";
-const CANDIDATE: &str = "259.9-0ubuntu0.1+p4gentmp1";
+const CANDIDATE: &str = "259.9-0ubuntu0.1+p4gentmp2";
 const FAMILY: [&str; 10] = [
     "libnss-systemd",
     "libpam-systemd",

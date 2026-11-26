@@ -36,7 +36,7 @@ observation is returned as failed evidence, not a running/ready unit.
 
 Maintenance selects one exact systemd tool pair for its actual phase. Under the
 shared kernel, the real enforcing maintenance context admits only the normal
-259.9-0ubuntu0.1+p4gentmp1 candidate's `systemctl` and `journalctl` bytes. Their
+259.9-0ubuntu0.1+p4gentmp2 candidate's `systemctl` and `journalctl` bytes. Their
 source package and complete installed payload are checked by the normal
 systemd admission; a caller cannot supply another hash, version, or path. The
 original 7.0.14-p4cred1 cold boot instead reads the protected actual dpkg status

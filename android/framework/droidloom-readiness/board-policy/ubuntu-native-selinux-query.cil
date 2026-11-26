@@ -29,7 +29,7 @@
  (and (p4_all_nonboard) (not (or (device) (or (proc) (or (sysfs) (selinuxfs)))))))
 (typeattribute p4_nonboard_except_native_manager_abi_dirs)
 (typeattributeset p4_nonboard_except_native_manager_abi_dirs
- (and (p4_nonboard_except_kernel_abi_dirs) (not (selinuxfs))))
+ (and (p4_nonboard_except_kernel_abi_dirs) (not (or (selinuxfs) (or (sysfs_type) (proc_random))))))
 
 (allow p4_native_selinux_query_clients p4_linux_board_selinux_config_t (file (getattr open read)))
 (allow p4_native_selinux_query_clients proc (dir (getattr search)))
@@ -42,8 +42,14 @@
 (allow p4_native_dbus_daemons self (netlink_selinux_socket (create bind read)))
 (neverallow p4_native_selinux_query_clients kernel (security (load_policy setenforce setbool setsecparam setcheckreqprot read_policy)))
 (neverallow p4_native_selinux_query_clients p4_nonboard_except_native_selinux_queries (file (write)))
-(neverallow p4_native_selinux_query_clients p4_nonboard_except_native_selinux_read (file (open read)))
-(neverallow p4_native_selinux_query_clients p4_nonboard_except_native_selinux_queries (dir (open read)))
+(neverallow p4_native_selinux_nonmanager_clients p4_nonboard_except_native_selinux_read (file (open read)))
+(typeattribute p4_native_manager_nonboard_without_public_inputs)
+(typeattributeset p4_native_manager_nonboard_without_public_inputs (and (p4_nonboard_except_native_selinux_read) (not (or (sysfs_type) (p4_native_boot_proc_files)))))
+(neverallow init_t p4_native_manager_nonboard_without_public_inputs (file (open read)))
+(neverallow p4_native_selinux_nonmanager_clients p4_nonboard_except_native_selinux_queries (dir (open read)))
+(typeattribute p4_native_manager_nonboard_without_public_dirs)
+(typeattributeset p4_native_manager_nonboard_without_public_dirs (and (p4_nonboard_except_native_selinux_queries) (not (sysfs_type))))
+(neverallow init_t p4_native_manager_nonboard_without_public_dirs (dir (open read)))
 ; PID 1 separately traverses the already mounted device ABI. DBus needs
 ; the original proc self links, SELinux path and ordinary native /dev parent.
 (typeattribute p4_native_selinux_nonmanager_clients)

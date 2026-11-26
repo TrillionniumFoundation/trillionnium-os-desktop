@@ -84,7 +84,8 @@
 (typeattributeset p4_nonboard_except_journal_uts_and_boot_id (and (p4_all_nonboard) (not (or (proc_hostname) (proc_random)))))
 (typeattribute p4_native_nonjournal_without_module_reads)
 (typeattributeset p4_native_nonjournal_without_module_reads (and (p4_linux_nonmac_nonjournal_without_native_selinux_queries) (not (or (p4_native_sysfs_readers) (p4_native_maintenance_actors)))))
-(neverallow p4_native_nonjournal_without_module_reads p4_nonboard_except_kernel_cmdline (file (open read)))
+(neverallow p4_native_nonjournal_without_boot_proc_inputs p4_nonboard_except_kernel_cmdline (file (open read)))
+(neverallow p4_native_nonjournal_boot_proc_inputs p4_nonboard_except_boot_proc_inputs (file (open read)))
 (neverallow p4_linux_journald_t p4_nonboard_except_journal_uts_and_boot_id (file (open read)))
 ; The upstream journal watches its UTS namespace's hostname. Android's same
 ; original proc_hostname type and its own permissions remain intact.
@@ -96,7 +97,7 @@
 (neverallow p4_mac_roles_without_frontend_metadata p4_nonboard_except_mac_read (file (open read)))
 (neverallow droidloom_broker p4_nonboard_except_broker_query_read (file (open read)))
 (typeattribute p4_linux_without_boot_commandline_reader)
-(typeattributeset p4_linux_without_boot_commandline_reader (and (p4_linux_not_pid1_manager) (not (p4_linux_module_loader_t))))
+(typeattributeset p4_linux_without_boot_commandline_reader (and (p4_linux_procs) (not (p4_native_boot_commandline_readers))))
 (neverallow p4_linux_without_boot_commandline_reader proc_cmdline (file (open read)))
 (neverallow init_t proc_cmdline (file (write append map execute execute_no_trans entrypoint ioctl setattr relabelfrom relabelto)))
 (allow init_t proc_cmdline (file (open read getattr)))

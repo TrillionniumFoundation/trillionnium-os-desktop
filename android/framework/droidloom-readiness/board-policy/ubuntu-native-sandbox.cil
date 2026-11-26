@@ -26,7 +26,13 @@
 (allow p4_linux_service_executor_t tmpfs (filesystem (mount)))
 (neverallow p4_linux_service_executor_t p4_nonboard_without_sandbox_filesystems (filesystem (remount unmount)))
 (neverallow p4_linux_service_executor_t p4_nonboard_without_fresh_sandbox_fs (filesystem (mount)))
-(neverallow p4_linux_service_executor_t p4_all_nonboard (filesystem (relabelto relabelfrom)))
+; The fixed credential-root source patch labels only a newly created tmpfs
+; root before its first readable open. Kernel ROOTCONTEXT_MNT checks
+; relabelfrom on the tmpfs superblock and associate for the selected root SID.
+; This is not a filesystem context= override and grants no inode relabel edge.
+(allow p4_linux_service_executor_t tmpfs (filesystem (relabelfrom)))
+(neverallow p4_linux_service_executor_t p4_nonboard_without_fresh_sandbox_fs (filesystem (relabelfrom)))
+(neverallow p4_linux_service_executor_t p4_all_nonboard (filesystem (relabelto)))
 
 ; Only the original PID 1/shutdown executable makes / private and retires native
 ; non-API mounts. systemd's umount.c explicitly skips /proc, /sys and /dev; its

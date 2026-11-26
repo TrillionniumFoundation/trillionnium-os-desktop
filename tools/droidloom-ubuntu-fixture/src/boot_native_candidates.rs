@@ -611,7 +611,7 @@ mod tests {
         let mut rows = status(true);
         rows.push(BTreeMap::from([
             ("Package".into(), "systemd".into()),
-            ("Version".into(), "259.9-0ubuntu0.1+p4gentmp1".into()),
+            ("Version".into(), "259.9-0ubuntu0.1+p4gentmp2".into()),
         ]));
         families(&rows, true)
     }

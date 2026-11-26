@@ -181,6 +181,36 @@ def verify_manager_credentials(lines, check, obj, role_types):
                 check(context, obj(target), "lnk_file", [permission], False)
                 count += 1
     executor = "u:system_r:p4_linux_service_executor_t:s0"
+    object_types = sorted(line[len("(roletype object_r "):-1] for line in lines
+                          if line.startswith("(roletype object_r "))
+    for target in object_types:
+        if not target or any(c.isspace() or c in "()" for c in target):
+            raise ValueError("Unexpected concrete object role in credential verifier")
+        check(executor, obj(target), "filesystem", ["relabelfrom"], target == "tmpfs")
+        check(executor, obj(target), "filesystem", ["relabelto"], False)
+        count += 2
+    for target in CREDENTIAL_DIRECTORY_FAMILIES:
+        check(obj(target), obj("tmpfs"), "filesystem", ["associate"], True)
+        count += 1
+    source_dir = Path(__file__).resolve().parents[4] / "packaging/ubuntu/systemd"
+    source_lock = source_dir / "source.lock.json"
+    source = json.loads(source_lock.read_text())
+    expected_contexts = {unit: f"u:object_r:{target}:s0"
+                         for target, (_, units) in CREDENTIAL_DIRECTORY_FAMILIES.items()
+                         for unit in units}
+    if (source["candidate_source_version"] != "259.9-0ubuntu0.1+p4gentmp2" or
+            source["credential_executor_context"] != executor or
+            source["credential_root_contexts"] != expected_contexts or
+            source["credential_directory_prefix"] != "/run/credentials/" or
+            source["credential_root_label_readback_required"] is not True or
+            source["generic_tmpfs_directory_read_permitted"] is not False or
+            source["native_credential_mount_fallback_permitted"] is not False):
+        raise ValueError("Credential root policy differs from the normal source contract")
+    patch = source_dir / source["patch"]["file"]
+    if (patch.name != "p4-native-generator-tmpfs.patch" or
+            patch.stat().st_size != source["patch"]["bytes"] or
+            sha256(patch) != source["patch"]["sha256"]):
+        raise ValueError("Credential root normal source patch changed")
     check(executor, obj("tmpfs"), "dir", ["open"], True)
     check(executor, obj("tmpfs"), "dir", ["read"], False)
     for permission in ("create", "open", "read", "write", "append", "unlink", "map", "execute", "entrypoint"):
@@ -201,6 +231,10 @@ def verify_manager_credentials(lines, check, obj, role_types):
             "credential_directory_families": len(CREDENTIAL_DIRECTORY_FAMILIES),
             "exact_unit_transitions": len(expected), "credential_bodies_denied": True,
             "tmpfs_directory_enumeration_denied": True, "capabilities_added": [],
+            "credential_root_source_lock": sha256(source_lock),
+            "credential_root_source_patch": sha256(patch),
+            "rootcontext_filesystem_source": "tmpfs",
+            "rootcontext_source_object_checks": len(object_types) * 2,
             "runtime_qualified": False}
 
 
@@ -1333,6 +1367,8 @@ def main():
                here / "verify_native_login_audit.py", here / "verify_native_journal_storage.py",
                here / "verify_greeter_home.py", here / "verify_native_maintenance.py",
                here / "verify_fixed_display.py",
+               here.parents[3] / "packaging/ubuntu/systemd/source.lock.json",
+               here.parents[3] / "packaging/ubuntu/systemd/p4-native-generator-tmpfs.patch",
                here / "ubuntu-native-file_contexts", here / "ubuntu-real-root-file_contexts",
                here / "linux-service-file_contexts", here / "linux-initial-calibration-file_contexts"]
     if any(output.resolve() == path.resolve() for path in sources):

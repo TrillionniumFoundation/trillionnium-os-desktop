@@ -42,7 +42,7 @@ TOOLS = {
 }
 ORIGINAL_KERNEL = "7.0.14-p4cred1"
 SYSTEMD_ORIGINAL_VERSION = "259.9-0ubuntu0.1"
-SYSTEMD_CANDIDATE_VERSION = "259.9-0ubuntu0.1+p4gentmp1"
+SYSTEMD_CANDIDATE_VERSION = "259.9-0ubuntu0.1+p4gentmp2"
 # These two ELF files were read back from the complete normally built systemd
 # candidate (systemd .deb SHA256 01c4a8ecb1eb4ef9af53115fe8591c4f1e9b7e3fa71ac6e214f6ad8aa1e27cd8).
 # A new source package requires a new normal host, not an environment override.
