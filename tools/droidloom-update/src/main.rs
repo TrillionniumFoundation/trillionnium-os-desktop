@@ -7,6 +7,7 @@ mod dependencies;
 mod host_archive;
 mod image_policy;
 mod kernel_first_mac;
+mod native_leaf_sources;
 mod install;
 mod licenses;
 mod native_bridge;
@@ -47,6 +48,15 @@ struct Args {
 }
 #[derive(Subcommand)]
 enum Action {
+    /// Reproduce the fixed recovered leaf sources in fresh staging; never install or execute them.
+    MaterializeNativeLeafSources {
+        /// Exact recovered packet directory containing its original source manifest and bundle.
+        #[arg(long)]
+        input: PathBuf,
+        /// Fresh ordinary-user-owned staging directory; existing paths are rejected.
+        #[arg(long)]
+        output: PathBuf,
+    },
     /// Materialize the five sealed files from a witnessed kernel-first board capture.
     PackageKernelFirstMac {
         #[arg(long)] capture: PathBuf,
@@ -498,6 +508,14 @@ fn execute(args: Args) -> Result<()> {
         return android::official_vendor::resume::run(&repo, work, built_out, out, system_image, references, native_inputs_sha256, vendor_result_sha256, jobs, native_projection_sha256, native_source_sha256, native_producer_commit, *verify_native_only, previous_attempt.as_deref(), previous_attempt_sha256.as_deref());
     }
     match &args.command {
+        Some(Action::MaterializeNativeLeafSources { input, output }) => {
+            if args.clean || args.build_only || args.bootstrapped || args.jobs.is_some() || args.source.is_some() {
+                return fail("leaf source staging accepts no build, cleanup, repository or activation options");
+            }
+            let result = native_leaf_sources::materialize(input, output)?;
+            println!("{}", serde_json::to_string_pretty(&result)?);
+            return Ok(());
+        }
         Some(Action::NativeGenerationPair { product }) => {
             let pair = native_generation::create_product_contract(product)?;
             println!("{}", serde_json::to_string_pretty(&pair)?);

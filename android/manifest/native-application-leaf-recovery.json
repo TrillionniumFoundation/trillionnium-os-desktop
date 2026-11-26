@@ -1,0 +1,149 @@
+{
+  "schema": "droidloom.native-leaf-source-recovery-recipe.v1",
+  "canonical_root": "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261120-apps-r1",
+  "source_packet_provenance": {
+    "path": "SOURCE-PACKET.z",
+    "bytes": 2702806,
+    "sha256": "f4061d04bf0e80cb48bb1fa454dbe555965fc8bdc409fb47e05fbde8949df37e"
+  },
+  "source_manifest": {
+    "path": "BUNDLE-MANIFEST.json",
+    "bytes": 127502,
+    "sha256": "fabbfbcb2ea9a461ba0e15ec236a6a0e66a951442b4832e0a144a10d51d714e8"
+  },
+  "validator": {
+    "path": "validate_source_private_namespace.py",
+    "bytes": 10483,
+    "sha256": "b01da1c5bc6d4bece07c1f1407f6f3d6bb6f78fdcd6e6da54a1a2e8db6605117"
+  },
+  "expected_files": 476,
+  "expected_bytes": 7097884,
+  "current_catalog": {
+    "path": "runtime/droidloom-applications/src/leaf_sources.json",
+    "bytes": 7639,
+    "sha256": "b3c74771a440360b9625f8c854710738119c9e6fdbec86cfe57ea2d1e40940b9"
+  },
+  "current_selection": {
+    "path": "runtime/droidloom-applications/tests/fixtures/selection-14-20261120.json",
+    "bytes": 4669,
+    "sha256": "40ec943537a140b11a055587e9b7bd4bb39f944429e6d509df6241842e9be1c9"
+  },
+  "behavior": [
+    {
+      "index": 0,
+      "preparation": "preparations/system.json",
+      "schema": "pocket4-final-system-case-preparation-v1",
+      "scope": "Contacts search and Calendar core original cases; actual Main, package identity and cleanup remain required.",
+      "current_preparation_available": false,
+      "runtime_credit": false
+    },
+    {
+      "index": 1,
+      "preparation": "preparations/calendar-reminder.json",
+      "schema": "pocket4-final-system-case-preparation-v1",
+      "scope": "Calendar reminder case with a live native release and owned leaf resource scope.",
+      "current_preparation_available": false,
+      "runtime_credit": false
+    },
+    {
+      "index": 2,
+      "preparation": "preparations/camera-photo.json",
+      "schema": "pocket4-final-camera-app-preparation-v1",
+      "scope": "Photo-only Camera: two normal launches, one new photo and persistence; video, audio, recovery and visual acceptance remain pending.",
+      "current_preparation_available": false,
+      "runtime_credit": false
+    },
+    {
+      "index": 3,
+      "preparation": "preparations/camera-display.json",
+      "schema": "pocket4-camera-photo-display-preparation-v1",
+      "scope": "Photo-only Camera plus live normal display lease and independent release observation; same visual and other Camera gates remain pending.",
+      "current_preparation_available": false,
+      "runtime_credit": false
+    },
+    {
+      "index": 4,
+      "preparation": "preparations/clock.json",
+      "schema": "pocket4-final-clock-original-case-preparation-v1",
+      "scope": "Clock timer15, expiry06 with expiry05 observation, and alarm04; materialization grants no clock gate.",
+      "current_preparation_available": false,
+      "runtime_credit": false
+    },
+    {
+      "index": 5,
+      "preparation": "preparations/ihg.json",
+      "schema": "pocket4-final-app-preparation-source-v1",
+      "scope": "Old IHG source identity 5.111.1/code50023808; it is not the current selected 5.112.0 batch and must not silently qualify that batch.",
+      "current_preparation_available": false,
+      "runtime_credit": false
+    },
+    {
+      "index": 6,
+      "preparation": "preparations/documents-saf.json",
+      "schema": "pocket4-final-documents-saf-case-preparation-v1",
+      "scope": "Original SAF11 source and helper factory; actual runtime business, original cleanup and common gates remain required.",
+      "current_preparation_available": false,
+      "runtime_credit": false
+    },
+    {
+      "index": 7,
+      "preparation": "preparations/documents-search.json",
+      "schema": "pocket4-final-documents-case-preparation-v1",
+      "scope": "Original owned Documents search/sort source and helper factory; actual runtime business and common gates remain required.",
+      "current_preparation_available": false,
+      "runtime_credit": false
+    },
+    {
+      "index": 8,
+      "preparation": "preparations/gallery-identity.json",
+      "schema": "pocket4-gallery-image-source-v1",
+      "scope": "Gallery installed-image identity inspection only, with current native custody; no standalone install or business acceptance.",
+      "current_preparation_available": false,
+      "runtime_credit": false
+    },
+    {
+      "index": 9,
+      "preparation": "preparations/gallery-rotation.json",
+      "schema": "pocket4-gallery-image-source-v1",
+      "scope": "Gallery original rotation scope with current image custody and complete cleanup.",
+      "current_preparation_available": false,
+      "runtime_credit": false
+    },
+    {
+      "index": 10,
+      "preparation": "preparations/gallery-video.json",
+      "schema": "pocket4-gallery-image-source-v1",
+      "scope": "Gallery original video scope with current image custody and complete cleanup.",
+      "current_preparation_available": false,
+      "runtime_credit": false
+    },
+    {
+      "index": 11,
+      "preparation": "preparations/gallery-seek.json",
+      "schema": "pocket4-gallery-image-source-v1",
+      "scope": "Gallery original seek scope with current image custody and complete cleanup.",
+      "current_preparation_available": false,
+      "runtime_credit": false
+    },
+    {
+      "index": 12,
+      "preparation": "preparations/gallery-album.json",
+      "schema": "pocket4-gallery-image-source-v1",
+      "scope": "Gallery original album scope with current image custody and complete cleanup.",
+      "current_preparation_available": false,
+      "runtime_credit": false
+    },
+    {
+      "index": 13,
+      "preparation": "preparations/settings.json",
+      "schema": "pocket4-settings-pages-preparation-v1",
+      "scope": "Old Settings pages-only implementation; current pages+roundtrip source and preparation have not been recovered.",
+      "current_preparation_available": false,
+      "runtime_credit": false
+    }
+  ],
+  "source_only": true,
+  "installation_authorized": false,
+  "runtime_qualified": false,
+  "whole_app_business_accepted": false
+}
