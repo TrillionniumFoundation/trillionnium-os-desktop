@@ -181,10 +181,36 @@ def verify_manager_credentials(lines, check, obj, role_types):
                 check(context, obj(target), "lnk_file", [permission], False)
                 count += 1
     executor = "u:system_r:p4_linux_service_executor_t:s0"
-    check(executor, obj("tmpfs"), "dir", ["open"], True)
-    check(executor, obj("tmpfs"), "dir", ["read"], False)
+    check(executor, obj("tmpfs"), "dir", ["open", "read"], False)
     for permission in ("create", "open", "read", "write", "append", "unlink", "map", "execute", "entrypoint"):
         check(executor, obj("tmpfs"), "file", [permission], False)
+    fresh_type = "p4_linux_executor_tmpfs_root_t"
+    fresh = obj(fresh_type)
+    check(executor, fresh, "dir", ["getattr", "search"], True)
+    count += 2
+    for role, actor in role_types:
+        context = f"u:{role}:{actor}:s0"
+        owner = role == "system_r" and actor == "p4_linux_service_executor_t"
+        for permission in ("open", "read", "relabelfrom"):
+            check(context, fresh, "dir", [permission], owner)
+            count += 1
+        for permission in ("create", "write", "add_name", "remove_name", "setattr", "rmdir",
+                           "rename", "reparent", "mounton", "relabelto"):
+            check(context, fresh, "dir", [permission], False)
+            count += 1
+        for permission in ("create", "open", "read", "write", "append", "unlink", "map",
+                           "execute", "execute_no_trans", "entrypoint"):
+            check(context, fresh, "file", [permission], False)
+            count += 1
+        for permission in ("create", "read", "write", "unlink"):
+            check(context, fresh, "lnk_file", [permission], False)
+            count += 1
+    fresh_transition = f"(typetransition p4_linux_service_executor_t tmpfs dir {fresh_type})"
+    fresh_transitions = {line for line in lines if line.startswith("(typetransition ") and
+                         (line.endswith(f" {fresh_type})") or
+                          line.startswith("(typetransition p4_linux_service_executor_t tmpfs dir "))}
+    if fresh_transitions != {fresh_transition}:
+        raise ValueError("Unexpected executor fresh tmpfs root transitions: " + repr(sorted(fresh_transitions)))
     expected = {
         f'(typetransition p4_linux_service_executor_t {parent} dir "{unit}" {target})'
         for target, (_, units) in CREDENTIAL_DIRECTORY_FAMILIES.items()
@@ -200,6 +226,8 @@ def verify_manager_credentials(lines, check, obj, role_types):
     return {"process_role_types": len(role_types), "role_permission_checks": count,
             "credential_directory_families": len(CREDENTIAL_DIRECTORY_FAMILIES),
             "exact_unit_transitions": len(expected), "credential_bodies_denied": True,
+            "fresh_tmpfs_root_transition": fresh_transition, "fresh_tmpfs_root_bodies_denied": True,
+            "generic_tmpfs_directory_open_read_denied": True,
             "tmpfs_directory_enumeration_denied": True, "capabilities_added": [],
             "runtime_qualified": False}
 
@@ -285,8 +313,23 @@ def verify_manager_runtime_metadata(lines, check, obj, role_types):
 def verify_manager_startup(lines, check, obj, role_types):
     """Read generator/status authority from the linked policy for every role."""
     count = 0
+    commandline_readers = ("init_t", "p4_linux_generator_t", "p4_linux_module_loader_t")
     for role, actor in role_types:
         context = f"u:{role}:{actor}:s0"
+        if role == "system_r":
+            check(context, obj("proc_cmdline"), "file", ["open", "read"], actor in commandline_readers)
+            executor = actor == "p4_linux_service_executor_t"
+            check(context, obj("proc_cmdline"), "file", ["getattr"],
+                  actor in commandline_readers or executor)
+            nonread = ["create", "write", "append", "unlink", "link", "rename", "setattr",
+                       "relabelfrom", "relabelto", "map", "execute", "execute_no_trans",
+                       "entrypoint", "ioctl", "mounton"]
+            # Stock ProtectKernel* sandboxing already permits the sealed
+            # executor to hide proc_type files, without reading their bodies.
+            for permission in nonread:
+                check(context, obj("proc_cmdline"), "file", [permission],
+                      executor and permission == "mounton")
+            count += 3 + len(nonread)
         owner = actor in ("init_t", "p4_linux_generator_t")
         for permission in ("create", "write", "add_name", "remove_name", "setattr", "rename", "reparent", "rmdir"):
             check(context, obj("p4_linux_generator_run_t"), "dir", [permission], owner)
@@ -314,7 +357,21 @@ def verify_manager_startup(lines, check, obj, role_types):
         check(f"u:system_r:{actor}:s0", obj("p4_linux_generator_directory_t"),
               "dir", ["getattr", "search", "open", "read"], True)
         check(f"u:system_r:{actor}:s0", obj("p4_linux_rootdir_t"),
-              "dir", ["create", "write", "add_name"], False)
+              "dir", ["getattr", "search", "open", "read"], True)
+        denied = ["create", "write", "add_name", "remove_name", "setattr",
+                  "rename", "reparent", "rmdir", "relabelfrom", "relabelto"]
+        check(f"u:system_r:{actor}:s0", obj("p4_linux_rootdir_t"), "dir", denied, False)
+        check(f"u:system_r:{actor}:s0", obj("proc_cmdline"), "file", ["getattr"], True)
+        count += 5 + len(denied)
+    generator = "u:system_r:p4_linux_generator_t:s0"
+    check(generator, obj("proc"), "dir", ["search"], True)
+    denied = ["getattr", "open", "read", "create", "write", "add_name", "remove_name",
+              "setattr", "rename", "reparent", "rmdir", "mounton", "relabelfrom", "relabelto"]
+    check(generator, obj("proc"), "dir", denied, False)
+    check(generator, obj("proc"), "file", ["open", "read", "write"], False)
+    check(generator, obj("proc"), "lnk_file", ["read"], False)
+    check(generator, obj("sysfs"), "dir", ["search", "open", "read"], False)
+    count += 8 + len(denied)
     check("u:system_r:init_t:s0", obj("p4_linux_systemd_run_t"), "file", ["create", "write"], False)
     check("u:system_r:init_t:s0", obj("p4_linux_generated_unit_t"), "file",
           ["getattr", "open", "read", "map"], True)
@@ -344,6 +401,7 @@ def verify_manager_startup(lines, check, obj, role_types):
     return {"process_role_types": len(role_types), "role_permission_checks": count,
             "fixed_and_nested_transitions": len(required), "capabilities_added": [],
             "generic_root_and_systemd_regular_file_writes_denied": True,
+            "native_commandline_readers": list(commandline_readers),
             "native_generator_tmpfs": verify_manager_tmpfs(lines, check, obj, role_types),
              "native_runtime_metadata": verify_manager_runtime_metadata(lines, check, obj, role_types),
              "native_credentials": verify_manager_credentials(lines, check, obj, role_types),
@@ -909,11 +967,11 @@ def verify_host_control(library, binary, export, original_contract):
     check(executor, obj("p4_linux_cgroup_init_scope_t"), "dir", ["mounton", "relabelto", "relabelfrom"], False)
     check(executor, obj("p4_linux_cgroup_init_tasks_t"), "file", ["open", "write", "relabelto", "relabelfrom"], False)
     check(executor, obj("tmpfs"), "dir", ["relabelfrom"], True)
-    # Stock credential fsmount() reopens the still-unlabelled directory FD
-    # before label_fix_full(); enumeration, content mutation and relabel-to
-    # the generic tmpfs type remain prohibited.
-    check(executor, obj("tmpfs"), "dir", ["open"], True)
-    check(executor, obj("tmpfs"), "dir", ["read", "write", "add_name", "remove_name", "relabelto"], False)
+    # Stock credential fsmount() reopens only an executor-created root with a
+    # private type before label_fix_full(); generic tmpfs stays inaccessible.
+    check(executor, obj("tmpfs"), "dir", ["open", "read", "write", "add_name", "remove_name", "relabelto"], False)
+    check(executor, obj("p4_linux_executor_tmpfs_root_t"), "dir",
+          ["getattr", "search", "open", "read", "relabelfrom"], True)
     for private in ["droidloom_public_apk_input", "p4_linux_product_store_t"]:
         check(executor, obj(private), "file", ["open", "read", "write", "create", "relabelto"], False)
     for actor in [session, udev, setup]:

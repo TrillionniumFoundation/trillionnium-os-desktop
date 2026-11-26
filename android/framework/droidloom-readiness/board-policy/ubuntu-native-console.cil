@@ -10,6 +10,15 @@
 (roletype object_r p4_linux_console_helper_native_bin_t)
 (typeattributeset p4_linux_data (p4_linux_console_helper_native_bin_t))
 (typeattributeset p4_linux_native_executables (p4_linux_console_helper_native_bin_t))
+; Only the fixed dash inode supplies the interpreter for the selected scripts.
+; The executor checks it before the script transition; it cannot run a shell
+; directly in its own domain. Every other helper retains its previous boundary.
+(type p4_linux_console_interpreter_native_bin_t)
+(roletype object_r p4_linux_console_interpreter_native_bin_t)
+(typeattributeset p4_linux_data (p4_linux_console_interpreter_native_bin_t))
+(typeattributeset p4_linux_native_executables (p4_linux_console_interpreter_native_bin_t))
+(allow p4_linux_service_executor_t p4_linux_console_interpreter_native_bin_t (file (open read execute)))
+(neverallow p4_linux_service_executor_t p4_linux_console_interpreter_native_bin_t (file (execute_no_trans entrypoint)))
 (type p4_linux_console_vtrgb_native_bin_t)
 (roletype object_r p4_linux_console_vtrgb_native_bin_t)
 (typeattributeset p4_linux_data (p4_linux_console_vtrgb_native_bin_t))
@@ -82,6 +91,7 @@
 (allow p4_linux_console_setup_t p4_linux_usrmerge_link_t (lnk_file (getattr read)))
 (allow p4_linux_console_setup_t p4_linux_elf_interpreter_t (file (getattr open read execute map)))
 (allow p4_linux_console_setup_t p4_linux_console_helper_native_bin_t (file (getattr open read execute execute_no_trans map)))
+(allow p4_linux_console_setup_t p4_linux_console_interpreter_native_bin_t (file (getattr open read execute execute_no_trans map)))
 (allow p4_linux_console_setup_t p4_linux_console_vtrgb_native_bin_t (file (getattr open read execute execute_no_trans map)))
 (allow p4_linux_console_setup_t p4_linux_console_cache_exec_native_config_t (file (getattr open read execute execute_no_trans map)))
 (allow p4_linux_console_setup_t p4_linux_console_cache_native_config_t (file (getattr open read)))
@@ -117,6 +127,8 @@
 (allow p4_linux_console_setup_t p4_linux_console_tmp_t (file (getattr open read write create setattr unlink)))
 (allow p4_linux_console_setup_t device (dir (getattr search open read)))
 (allow p4_linux_console_setup_t device (chr_file (getattr)))
+; Preserve the executor-owned /dev/null descriptors across secure service exec.
+(allow p4_linux_console_setup_t p4_linux_standardio_t (chr_file (read write)))
 (allow p4_linux_console_setup_t null_device (chr_file (getattr open read write)))
 (allow p4_linux_console_setup_t random_device (chr_file (getattr open read)))
 ; Normal glibc 2.43 isatty/tcgetattr issue TCGETS2 (0x802c542a; low 16 bits).

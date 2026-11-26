@@ -420,6 +420,12 @@ def verify(library, linked, contract, binary_cil, export):
     exact(helper, "u:system_r:p4_linux_service_executor_t:s0", "unix_stream_socket",
           ["getattr", "read", "write", "create", "connect", "connectto", "bind", "listen", "accept"],
           ["getattr", "read", "write"])
+    # Secure exec must preserve the executor's existing null standard streams.
+    # Device opens and disabling the secure-exec checks remain forbidden.
+    exact(helper, "u:object_r:p4_linux_standardio_t:s0", "chr_file",
+          ["getattr", "open", "read", "write", "append", "ioctl", "map", "create", "setattr", "relabelfrom", "relabelto"],
+          ["read", "write"])
+    exact("u:system_r:p4_linux_service_executor_t:s0", helper, "process", ["noatsecure"], [])
     exact(helper, helper, "process", ["fork", "setexec", "setcurrent", "setfscreate", "setsockcreate", "setkeycreate"], [])
     transition = policy.lib.sepol_validate_transition_reason_buffer
     transition.argtypes = [ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32,

@@ -96,7 +96,7 @@
 (neverallow p4_mac_roles_without_frontend_metadata p4_nonboard_except_mac_read (file (open read)))
 (neverallow droidloom_broker p4_nonboard_except_broker_query_read (file (open read)))
 (typeattribute p4_linux_without_boot_commandline_reader)
-(typeattributeset p4_linux_without_boot_commandline_reader (and (p4_linux_not_pid1_manager) (not (p4_linux_module_loader_t))))
+(typeattributeset p4_linux_without_boot_commandline_reader (and (p4_linux_not_pid1_manager) (not (or (p4_linux_module_loader_t) (p4_linux_generator_t)))))
 (neverallow p4_linux_without_boot_commandline_reader proc_cmdline (file (open read)))
 (neverallow init_t proc_cmdline (file (write append map execute execute_no_trans entrypoint ioctl setattr relabelfrom relabelto)))
 (allow init_t proc_cmdline (file (open read getattr)))
@@ -105,16 +105,9 @@
 (neverallow p4_linux_without_native_directory_relabel_actors p4_all_nonboard (dir (relabelfrom)))
 (typeattribute p4_native_nonmac_without_module_dirs)
 (typeattributeset p4_native_nonmac_without_module_dirs (and (p4_linux_nonmac_without_native_selinux_queries) (not (or (p4_linux_console_setup_t) (or (p4_linux_uevent_label_t) (or (p4_native_sysfs_readers) (p4_native_maintenance_actors)))))))
-(neverallow p4_native_nonmac_without_module_dirs p4_all_nonboard (dir (read)))
-; The sealed executor reopens only a newly created tmpfs mount FD before the
-; stock credential label_fix_full(). This is an opaque directory handle, not
-; permission to enumerate it or open any tmpfs file body.
-(typeattribute p4_native_nonmac_without_executor_directory_open)
-(typeattributeset p4_native_nonmac_without_executor_directory_open (and (p4_native_nonmac_without_module_dirs) (not (p4_linux_service_executor_t))))
-(typeattribute p4_nonboard_except_executor_tmpfs_directory)
-(typeattributeset p4_nonboard_except_executor_tmpfs_directory (and (p4_all_nonboard) (not (tmpfs))))
-(neverallow p4_native_nonmac_without_executor_directory_open p4_all_nonboard (dir (open)))
-(neverallow p4_linux_service_executor_t p4_nonboard_except_executor_tmpfs_directory (dir (open)))
+; The executor's new tmpfs roots have a private Linux type before O_RDONLY
+; reopen. No exception permits opening or reading generic tmpfs directories.
+(neverallow p4_native_nonmac_without_module_dirs p4_all_nonboard (dir (open read)))
 (neverallow p4_mac_roles_without_frontend_metadata p4_nonboard_except_mac_api (dir (open read)))
 (neverallow droidloom_broker p4_nonboard_except_broker_metadata_root (dir (open read)))
 (typeattribute p4_linux_without_kernel_directory_traversal)
@@ -145,7 +138,14 @@
 (neverallow p4_native_nontraversing_without_module_dirs p4_all_nonboard (dir (search)))
 (typeattribute p4_native_dev_only_traversers)
 (typeattributeset p4_native_dev_only_traversers (and (and (p4_linux_nontraversing_without_native_selinux_queries) (p4_native_dev_root_traversers)) (not (or (p4_native_sysfs_readers) (or (p4_native_self_fd_metadata_readers) (p4_native_maintenance_actors))))))
-(neverallow p4_native_dev_only_without_user_cgroup p4_nonboard_except_device_directory (dir (search)))
+; The generators reach the single boot-command-line leaf through /proc.
+; Every other original kernel directory remains outside this exception.
+(typeattribute p4_native_dev_only_without_boot_generator)
+(typeattributeset p4_native_dev_only_without_boot_generator (and (p4_native_dev_only_without_user_cgroup) (not (p4_linux_generator_t))))
+(typeattribute p4_nonboard_except_generator_proc_directory)
+(typeattributeset p4_nonboard_except_generator_proc_directory (and (p4_nonboard_except_device_directory) (not (proc))))
+(neverallow p4_native_dev_only_without_boot_generator p4_nonboard_except_device_directory (dir (search)))
+(neverallow p4_linux_generator_t p4_nonboard_except_generator_proc_directory (dir (search)))
 (typeattribute p4_native_sysfs_nonmodule_traversers)
 (typeattributeset p4_native_sysfs_nonmodule_traversers (and (and (p4_linux_nontraversing_without_native_selinux_queries) (p4_native_sysfs_readers)) (not (p4_native_module_readers))))
 (neverallow p4_native_sysfs_nonmodule_traversers p4_nonboard_without_native_sysfs_or_device (dir (search)))

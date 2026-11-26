@@ -16,6 +16,19 @@
 (neverallow init_t self (capability2 (mac_admin mac_override)))
 (neverallow init_t kernel (security (load_policy setenforce setbool setsecparam setcheckreqprot read_policy)))
 
+; Stock PID 1 opens the existing native root and configuration directories
+; with O_RDONLY|O_DIRECTORY while discovering mounts and startup metadata.
+; Their existing label remains immutable; no regular-file authority is added.
+(allow init_t p4_linux_rootdir_t (dir (open read)))
+(neverallow init_t p4_linux_rootdir_t (dir (create write add_name remove_name setattr rename reparent rmdir relabelfrom relabelto)))
+
+; The fixed native generators parse the same original kernel command line
+; as PID 1 and the module loader. All other native readers remain excluded.
+; Reaching /proc/cmdline needs traversal of its original proc parent only.
+(allow p4_linux_generator_t proc (dir (search)))
+(allow p4_linux_generator_t proc_cmdline (file (getattr open read)))
+(neverallow p4_linux_generator_t proc_cmdline (file (create write append unlink link rename setattr relabelfrom relabelto map execute execute_no_trans entrypoint ioctl mounton)))
+
 ; Original systemd 259.9 manager_startup() runs its distribution generators
 ; before loading units. mkdir_label() must select these separate output roots;
 ; the immutable native root directory remains uncreatable and unwritable.
@@ -250,11 +263,24 @@
 (allow p4_native_credential_consumers p4_linux_credentials_root_t (dir (getattr search)))
 (allow p4_linux_service_executor_t p4_native_new_credential_unit_dirs (dir (getattr search open read create write setattr rmdir rename reparent)))
 
-; fsmount_credentials_fs() is a real tmpfs mount, not an assumed fallback.
-; fd_reopen() needs only OPEN on its still-unlabelled root; the existing
-; tmpfs relabel-from edge then selects one exact native credential directory.
-; The original source makes that mount read-only before attaching it.
-(allow p4_linux_service_executor_t tmpfs (dir (open)))
+; FS_USE_TRANS labels each new tmpfs root using its saved creator SID before
+; the stock executor reopens it. O_RDONLY|O_DIRECTORY requires both open and
+; read. Ordinary child creation instead uses the parent inode label, and this
+; temporary root cannot accept children or be assigned to an existing inode.
+; Credentials, PrivateDevices and TemporaryFileSystem then use the original
+; label_fix_full() to select their existing, separately authorized target.
+(type p4_linux_executor_tmpfs_root_t)
+(roletype object_r p4_linux_executor_tmpfs_root_t)
+(typeattributeset p4_linux_data (p4_linux_executor_tmpfs_root_t))
+(typetransition p4_linux_service_executor_t tmpfs dir p4_linux_executor_tmpfs_root_t)
+(allow p4_linux_executor_tmpfs_root_t tmpfs (filesystem (associate)))
+(allow p4_linux_service_executor_t p4_linux_executor_tmpfs_root_t (dir (getattr search open read relabelfrom)))
+(neverallow p4_not_service_executor p4_linux_executor_tmpfs_root_t (dir (open read relabelfrom)))
+(neverallow p4_linux_procs p4_linux_executor_tmpfs_root_t (dir (create write add_name remove_name setattr rmdir rename reparent mounton relabelto)))
+(neverallow p4_linux_procs p4_linux_executor_tmpfs_root_t (file (create open read write append unlink map execute execute_no_trans entrypoint)))
+(neverallow p4_linux_procs p4_linux_executor_tmpfs_root_t (lnk_file (create read write unlink)))
+; The stock credential path makes each exact unit mount read-only before it
+; is attached. Generic tmpfs directory reads and credential bodies stay denied.
 (allow p4_linux_service_executor_t p4_native_credential_unit_dirs (dir (relabelto mounton)))
 (neverallow p4_not_service_executor p4_native_credential_unit_dirs (dir (create write setattr rename reparent relabelto mounton)))
 (neverallow p4_linux_procs p4_native_credential_unit_dirs (dir (add_name remove_name relabelfrom)))

@@ -149,7 +149,10 @@ def _context(role, actor, level="s0"):
 
 
 def _extra(actor, target):
-    """Only real unit/udev entry permissions may differ for old actors."""
+    """Only fixed entrypoints and their exact script interpreter may differ."""
+    if (target == "p4_linux_console_interpreter_native_bin_t" and
+            actor == "p4_linux_service_executor_t"):
+        return {"open", "read", "execute"}
     if target in ("p4_linux_console_entry_runtime_lib_t",
                   "p4_linux_console_vtrgb_native_bin_t"):
         if actor in ("init_t", "p4_linux_service_executor_t"):
@@ -287,6 +290,7 @@ def verify(library, binary, exported, here, expected, export):
         wanted = {
             "device": ["getattr"],
             "null_device": ["getattr", "open", "read", "write"],
+            "p4_linux_standardio_t": ["read", "write"],
             "random_device": ["getattr", "open", "read"],
         }.get(target, [])
         if target in TTY_TYPES:
