@@ -297,6 +297,32 @@ pub(crate) fn verify_prepared_original_initramfs(receipt: &FilePin, work: &Path)
         stage_materials == serde_json::to_value(&old_materials)?,
         "private build material semantics differ from normal source admission",
     )?;
+    let original_status = pin(&before["dpkg_status"])?;
+    let status_before: FilePin = serde_json::from_value(inner["status_before"].clone())?;
+    let status_after: FilePin = serde_json::from_value(inner["status_after"].clone())?;
+    let retained: FilePin = serde_json::from_value(inner["retained_private_status"].clone())?;
+    ensure(
+        same_pin(&status_before, &original_status)
+            && status_after.path == Path::new("/var/lib/dpkg/status")
+            && retained.path == Path::new("/build/PRIVATE-DPKG-STATUS")
+            && retained.bytes == status_after.bytes
+            && retained.sha256 == status_after.sha256,
+        "normal private status source/retained pins differ",
+    )?;
+    let private_status = actual_pin(&build.join("PRIVATE-DPKG-STATUS"))?;
+    ensure(
+        private_status.bytes == retained.bytes && private_status.sha256 == retained.sha256,
+        "retained normal private package database changed",
+    )?;
+    let original_roster = roster(&files::read_pin(&original_status, 32 * 1024 * 1024)?)?;
+    let private_roster = roster(&files::read_pin(&private_status, 32 * 1024 * 1024)?)?;
+    ensure(
+        private_roster == expected_roster(&original_roster, &old_materials.packages)?,
+        "normal private package state does not preserve the complete original roster",
+    )?;
+    let normal_package_state = json!({"original_status":original_status,
+        "retained_private_status":private_status,"original_roster":original_roster,
+        "private_roster":private_roster,"selected_packages":old_materials.packages});
     let producer = producer_identity(&stage.producer)?;
     let image = pin(&prepared["initrd"])?;
     ensure(
@@ -354,12 +380,14 @@ pub(crate) fn verify_prepared_original_initramfs(receipt: &FilePin, work: &Path)
         &public,
         &native,
         &preflight_pin,
+        &private_status,
     ] {
         trusted(p)?;
     }
     let release: Value = read(&public, 2 * 1024 * 1024)?;
     let output = json!({"schema":"droidloom.original-initramfs-readback.v1","source_prepared":receipt,
         "producer_input":input,"producer_stage":stage_pin,"normal_producer":producer,
+        "actual_private_build":inner_pin,"normal_package_state":normal_package_state,
         "original_host":before,"original_files_unchanged":original_files_unchanged,
         "normal_materials":materials,"fresh_admission":admission,"initrd":image,
         "host_source_commit":release["source_commit"],"host_source_tree":release["source_tree"],

@@ -638,3 +638,9 @@ normal Materials, actual producer and host source commit/tree, source receipts,
 image and member pins for the once owner to cross-bind. Old success flags do
 not authorize this readback, and a successful readback does not authorize a
 qualification boot, physical installation or final application acceptance.
+
+The fresh readback also parses both the still-current original dpkg status and
+the normal producer's retained private status. The whole roster must equal the
+original roster with exactly the selected 24 package transactions; retained
+configuration-only and held states cannot disappear. Both actual status pins
+and complete parsed rosters are exposed for the once constructor.
