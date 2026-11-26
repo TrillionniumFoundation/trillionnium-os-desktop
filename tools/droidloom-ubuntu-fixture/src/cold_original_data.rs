@@ -12,6 +12,7 @@ use std::{
     collections::BTreeMap,
     fs::File,
     io::Write,
+    os::fd::AsRawFd,
     os::unix::fs::FileExt,
     path::{Path, PathBuf},
 };
@@ -986,6 +987,10 @@ pub(super) struct WorkingDataRetired {
     pair_intent: FilePin,
     pid: u32,
     backings: std::cell::RefCell<Vec<(File, Identity)>>,
+    snapshots: std::cell::RefCell<Vec<labels::Snapshot>>,
+    names: Vec<String>,
+    intent_file: File,
+    intent_snapshot: labels::Snapshot,
     evidence: Value,
 }
 fn verify_retired_backings(backings: &[(File, Identity)]) -> Result<()> {
@@ -1014,6 +1019,10 @@ impl WorkingDataRetired {
     }
     pub(super) fn verify_working_identity(&self, identity: &Identity) -> Result<()> {
         self.revalidate()?;
+        self.verify_working_identity_custody(identity)
+    }
+    pub(crate) fn verify_working_identity_custody(&self, identity: &Identity) -> Result<()> {
+        self.revalidate_custody()?;
         let backings = self.backings.borrow();
         ensure(
             backings
@@ -1031,6 +1040,13 @@ impl WorkingDataRetired {
         &self,
         derivation: &labels::OriginalLabelRestoration,
     ) -> Result<()> {
+        self.accept_label_restoration_custody(derivation)?;
+        self.revalidate()
+    }
+    pub(crate) fn accept_label_restoration_custody(
+        &self,
+        derivation: &labels::OriginalLabelRestoration,
+    ) -> Result<()> {
         ensure(
             std::process::id() == self.pid && derivation.candidate_id() == self.candidate_id,
             "working retirement restoration belongs to another owner or candidate",
@@ -1042,14 +1058,15 @@ impl WorkingDataRetired {
             .ok()
             .and_then(|p| p.to_str())
         else {
-            return Ok(());
+            return self.revalidate_custody();
         };
         if !IMAGES.contains(&name) {
-            return Ok(());
+            return self.revalidate_custody();
         }
         let mut backings = self.backings.borrow_mut();
+        let mut snapshots = self.snapshots.borrow_mut();
         let mut matched = 0;
-        for (file, expected) in backings.iter_mut() {
+        for (index, (file, expected)) in backings.iter_mut().enumerate() {
             if inode(expected, derivation.before_identity()) {
                 ensure(
                     (expected == derivation.before_identity()
@@ -1057,7 +1074,12 @@ impl WorkingDataRetired {
                         && fs::stat(file)? == *derivation.after_identity(),
                     "working retirement ctime cannot be rebound from an unrelated restoration",
                 )?;
-                rustix::fs::flock(file, FlockOperation::NonBlockingLockExclusive)?;
+                rustix::fs::flock(&*file, FlockOperation::NonBlockingLockExclusive)?;
+                labels::accept_retired_snapshot(&mut snapshots[index], derivation)?;
+                ensure(
+                    labels::data_snapshot(file, derivation.after_identity())? == snapshots[index],
+                    "restored working backing attributes or generation changed",
+                )?;
                 *expected = derivation.after_identity().clone();
                 matched += 1;
             }
@@ -1067,20 +1089,70 @@ impl WorkingDataRetired {
             "working restoration does not identify exactly one synchronized backing",
         )?;
         verify_retired_backings(&backings)?;
-        derivation.revalidate()
+        drop(snapshots);
+        drop(backings);
+        derivation.revalidate()?;
+        self.revalidate_custody()
+    }
+    /// Metadata-only custody inside the real returned owner's bounded freeze
+    /// window. This does not prove reference retirement or grant mutation.
+    pub(crate) fn revalidate_custody(&self) -> Result<()> {
+        ensure(
+            std::process::id() == self.pid,
+            "working retirement descriptor custody changed process",
+        )?;
+        ensure(
+            labels::snapshot(&self.intent_file)? == self.intent_snapshot
+                && fs::Tree::open("/", 0)?
+                    .identity(&fs::absolute_string(&self.pair_intent.path)?)?
+                    == fs::stat(&self.intent_file)?,
+            "held immutable data intent custody changed",
+        )?;
+        let backings = self.backings.borrow();
+        let snapshots = self.snapshots.borrow();
+        verify_retired_backings(&backings)?;
+        ensure(
+            snapshots.len() == 2 && self.names.len() == 2,
+            "complete retired snapshot/name custody required",
+        )?;
+        let work = self
+            .pair_intent
+            .path
+            .parent()
+            .ok_or("retired pair work missing")?;
+        for (index, (file, expected)) in backings.iter().enumerate() {
+            let path = std::fs::read_link(format!("/proc/self/fd/{}", file.as_raw_fd()))?;
+            let allowed = [
+                Path::new(ORIGINAL).join(&self.names[index]),
+                Path::new(WORKING).join(&self.names[index]),
+                work.join(ROLLBACK).join(&self.names[index]),
+            ];
+            ensure(
+                allowed.contains(&path)
+                    && fs::Tree::open("/", 0)?.identity(&fs::absolute_string(&path)?)? == *expected
+                    && labels::data_snapshot(file, expected)? == snapshots[index]
+                    && std::fs::read_link(format!("/proc/self/fd/{}", file.as_raw_fd()))? == path,
+                "retired working descriptor lost its exact named inode, generation or attributes",
+            )?;
+        }
+        verify_retired_backings(&backings)?;
+        ensure(
+            labels::snapshot(&self.intent_file)? == self.intent_snapshot,
+            "retired intent changed during custody readback",
+        )
     }
     pub(super) fn revalidate(&self) -> Result<()> {
         ensure(
             std::process::id() == self.pid,
             "working retirement descriptor custody changed process",
         )?;
-        verify_retired_backings(&self.backings.borrow())?;
+        self.revalidate_custody()?;
         let actual = assert_prepared_pair_retired(&self.pair_intent)?;
         ensure(
             actual["candidate_id"] == self.candidate_id,
             "retired working pair candidate changed",
         )?;
-        verify_retired_backings(&self.backings.borrow())
+        self.revalidate_custody()
     }
 }
 
@@ -1212,11 +1284,34 @@ impl OriginalDataTransaction {
             }
         }
         verify_retired_backings(&backings)?;
+        let mut snapshots = Vec::new();
+        let mut names = Vec::new();
+        for (file, id) in &backings {
+            snapshots.push(labels::data_snapshot(file, id)?);
+            let matches = IMAGES
+                .iter()
+                .filter(|name| {
+                    inode(
+                        id,
+                        &self.transaction.intent.working.members[**name].identity,
+                    )
+                })
+                .collect::<Vec<_>>();
+            ensure(
+                matches.len() == 1,
+                "retired descriptor has no unique fixed working image name",
+            )?;
+            names.push((*matches[0]).to_owned());
+        }
         let result = WorkingDataRetired {
             candidate_id: authority.candidate_id().to_owned(),
             pair_intent: self.intent().clone(),
             pid: std::process::id(),
             backings: std::cell::RefCell::new(backings),
+            snapshots: std::cell::RefCell::new(snapshots),
+            names,
+            intent_file: self.transaction.intent_file.try_clone()?,
+            intent_snapshot: labels::snapshot(&self.transaction.intent_file)?,
             evidence: json!({"schema":"droidloom.actual-working-data-retired.v1",
                 "candidate_id":authority.candidate_id(),"pair_intent":self.intent(),
                 "before_references":first,"actual_synchronization":synchronization,

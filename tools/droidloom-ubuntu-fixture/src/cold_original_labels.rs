@@ -571,6 +571,18 @@ impl OriginalLabelRestoration {
         self.plan.revalidate()
     }
 }
+pub(super) fn accept_retired_snapshot(
+    expected: &mut Snapshot,
+    step: &OriginalLabelRestoration,
+) -> Result<()> {
+    step.revalidate()?;
+    ensure(
+        *expected == step.core.before || *expected == step.core.after,
+        "retired working snapshot is outside the actual complete restoration derivation",
+    )?;
+    *expected = step.core.after.clone();
+    Ok(())
+}
 
 fn apply_one(file: File, before: &Snapshot, desired: &[u8], name: &str) -> Result<LabelDerivation> {
     ensure(
