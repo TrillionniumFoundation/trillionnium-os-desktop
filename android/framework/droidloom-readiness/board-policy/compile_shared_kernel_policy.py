@@ -33,6 +33,62 @@ def sha256(path):
         return hashlib.file_digest(source, "sha256").hexdigest()
 
 
+COMPOSED_FILE_CONTEXT_SOURCES = (
+    "ubuntu-native-file_contexts", "ubuntu-real-root-file_contexts",
+    "linux-service-file_contexts", "linux-initial-calibration-file_contexts",
+)
+
+
+def verify_composed_file_contexts(here):
+    """Reject exact conflicting specifications before any policy compilation.
+
+    This is the byte concatenation used by early_boot_package.rs. It is only
+    an exact (regex, inode-kind) conflict check; the normal setfiles parser,
+    policy validation, and all class-aware matcher checks remain required.
+    """
+    sources = []
+    bodies = []
+    entries = {}
+    rules = 0
+    for name in COMPOSED_FILE_CONTEXT_SOURCES:
+        body = (here / name).read_bytes()
+        if not body or not body.endswith(b"\n"):
+            raise ValueError("Composed file-context source lacks its line boundary: " + name)
+        sources.append({"path": name, "bytes": len(body),
+                        "sha256": hashlib.sha256(body).hexdigest()})
+        bodies.append(body)
+        for number, raw in enumerate(body.decode("utf-8").splitlines(), 1):
+            line = raw.strip()
+            if not line or line.startswith("#"):
+                continue
+            fields = line.split()
+            if len(fields) == 2:
+                expression, context = fields
+                kind = None
+            elif len(fields) == 3 and fields[1] in ("--", "-b", "-c", "-d", "-p", "-l", "-s"):
+                expression, kind, context = fields
+            else:
+                raise ValueError(f"Malformed composed file-context row: {name}:{number}")
+            key = (expression, kind)
+            previous = entries.get(key)
+            if previous is not None and previous[0] != context:
+                raise ValueError(
+                    f"Conflicting composed file-context specifications for {expression} "
+                    f"{kind or '(all inode kinds)'}: "
+                    f"{previous[1]}:{previous[2]} {previous[0]} and {name}:{number} {context}")
+            entries[key] = (context, name, number)
+            rules += 1
+    composed = b"".join(bodies)
+    return {"schema": "droidloom.composed-file-context-preflight.v1",
+            "sources": sources, "bytes": len(composed),
+            "sha256": hashlib.sha256(composed).hexdigest(),
+            "rules": rules, "exact_regex_kind_keys": len(entries),
+            "identical_context_duplicates": rules - len(entries),
+            "conflicting_exact_specifications": 0,
+            "scope": "exact-regex-and-inode-kind-conflicts",
+            "normal_setfiles_required": True, "runtime_qualified": False}
+
+
 def add_namespace_to_board_guard(source):
     original = "(typeattributeset p4_nonboard_except_kernel_cmdline (and (p4_all_nonboard) (not (proc_cmdline))))"
     registered = "(typeattributeset p4_nonboard_except_kernel_cmdline (and (p4_all_nonboard) (not (or (proc_cmdline) (p4_kernel_ns_handle_t)))))"
@@ -1598,6 +1654,7 @@ def main():
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     here = Path(__file__).resolve().parent
+    composed_file_contexts = verify_composed_file_contexts(here)
     release = json.loads((here / "cp3a-kernel-handle-inputs.json").read_text())
     actual = sorted(sha256(path) for path in args.android_cil)
     expected = sorted(item["sha256"] for item in release["android_inputs"])
@@ -1664,8 +1721,7 @@ def main():
                here / "verify_native_stdio.py", *native_stdio_source_inputs(here),
                here.parents[3] / "packaging/ubuntu/systemd/source.lock.json",
                here.parents[3] / "packaging/ubuntu/systemd/p4-native-generator-tmpfs.patch",
-               here / "ubuntu-native-file_contexts", here / "ubuntu-real-root-file_contexts",
-               here / "linux-service-file_contexts", here / "linux-initial-calibration-file_contexts"]
+               *(here / name for name in COMPOSED_FILE_CONTEXT_SOURCES)]
     if any(output.resolve() == path.resolve() for path in sources):
         raise ValueError("The output path is a policy input or build tool")
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -1749,6 +1805,7 @@ def main():
         original_once = verify_original_once(library, linked, work / "original-once-binary.cil", export_binary_policy, here)
         manager_file_contexts = verify_manager_file_contexts(here, work)
         result = {
+            "native_composed_file_contexts": composed_file_contexts,
             "native_uevent": uevent_access,
             "native_console": console_access,
             "native_remount": remount_access,
