@@ -22,6 +22,41 @@ use std::{
 };
 
 const QUALIFICATION: &str = "/var/lib/droidloom-qualification";
+const MATCHER_MAX_PATHS: usize = 512;
+const MATCHER_ARG_BYTES: usize = 160 * 1024;
+fn matcher_batches(
+    paths: &[String],
+    prefix: &[String],
+    program: &str,
+) -> Result<Vec<std::ops::Range<usize>>> {
+    let base = prefix.iter().map(|v| v.len() + 1).sum::<usize>() + program.len() + 1;
+    ensure(
+        base < MATCHER_ARG_BYTES,
+        "normal matcher fixed argv exceeds its byte bound",
+    )?;
+    let mut result = Vec::new();
+    let mut start = 0;
+    let mut bytes = base;
+    for (index, path) in paths.iter().enumerate() {
+        ensure(
+            Path::new(path).is_absolute()
+                && !path.as_bytes().contains(&0)
+                && base + path.len() + 1 <= MATCHER_ARG_BYTES,
+            "one normal matcher pathname exceeds the exact argv bound",
+        )?;
+        if index - start == MATCHER_MAX_PATHS || bytes + path.len() + 1 > MATCHER_ARG_BYTES {
+            result.push(start..index);
+            start = index;
+            bytes = base;
+        }
+        bytes += path.len() + 1;
+    }
+    if start < paths.len() {
+        result.push(start..paths.len());
+    }
+    Ok(result)
+}
+
 const TOOLS: [(&str, u64, &str, u32); 3] = [
     (
         "setfiles",
@@ -415,32 +450,39 @@ impl OriginalLabelSources {
         }
         let mut labels = vec![Vec::new(); entries.len()];
         let mut commands = Vec::new();
+        let program = fs::absolute_string(&self.matcher.path)?;
         for (kind, indices) in groups {
-            for (batch, chunk) in indices.chunks(32).enumerate() {
-                let mut args = vec![
-                    "-N".into(),
-                    "-n".into(),
-                    "-m".into(),
-                    kind.into(),
-                    "-f".into(),
-                    fs::absolute_string(&self.contexts.path)?,
-                ];
-                for index in chunk {
-                    args.push(fs::absolute_string(&entries[*index].path)?);
-                }
-                ensure(
-                    args.iter().map(String::len).sum::<usize>() <= 160 * 1024,
-                    "bounded normal matcher argument vector required",
-                )?;
+            let prefix = vec![
+                "-N".into(),
+                "-n".into(),
+                "-m".into(),
+                kind.into(),
+                "-f".into(),
+                fs::absolute_string(&self.contexts.path)?,
+            ];
+            let paths = indices
+                .iter()
+                .map(|i| fs::absolute_string(&entries[*i].path))
+                .collect::<Result<Vec<_>>>()?;
+            for (batch, range) in matcher_batches(&paths, &prefix, &program)?
+                .into_iter()
+                .enumerate()
+            {
+                let mut args = prefix.clone();
+                args.extend_from_slice(&paths[range.clone()]);
+                let chunk = &indices[range];
                 let command = files::run_logged_env(
                     work,
                     &format!("normal-contexts-{kind}-{batch:06}"),
-                    &fs::absolute_string(&self.matcher.path)?,
+                    &program,
                     &args,
                     30,
                     &self.environment,
                 )?;
-                let log = String::from_utf8(files::read_pin(&command.log, 256 * 1024)?)?;
+                // raw_context permits at most 4096 bytes per row. Preserve a
+                // bounded complete result for every supplied pathname.
+                let limit = ((chunk.len() + 1) * 4097) as u64;
+                let log = String::from_utf8(files::read_pin(&command.log, limit)?)?;
                 let rows = log.lines().collect::<Vec<_>>();
                 ensure(
                     rows.len() == chunk.len(),
@@ -578,6 +620,56 @@ pub(crate) fn inspect_files(path: &Path, expected: &str) -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn complete_matcher_batches_preserve_order_and_both_resource_bounds() {
+        let prefix = vec![
+            "-N".into(),
+            "-n".into(),
+            "-m".into(),
+            "file".into(),
+            "-f".into(),
+            "/normal/file_contexts".into(),
+        ];
+        let program = "/normal/matchpathcon";
+        for paths in [
+            (0..100_000)
+                .map(|i| format!("/usr/share/normal/{i:06}"))
+                .collect::<Vec<_>>(),
+            (0..2000)
+                .map(|i| format!("/{i:04}/{}", "a".repeat(4000)))
+                .collect(),
+        ] {
+            let ranges = matcher_batches(&paths, &prefix, program).unwrap();
+            let mut seen = Vec::new();
+            for range in &ranges {
+                assert!(!range.is_empty() && range.len() <= MATCHER_MAX_PATHS);
+                let bytes = prefix.iter().map(|v| v.len() + 1).sum::<usize>()
+                    + program.len()
+                    + 1
+                    + paths[range.clone()]
+                        .iter()
+                        .map(|v| v.len() + 1)
+                        .sum::<usize>();
+                assert!(bytes <= MATCHER_ARG_BYTES);
+                seen.extend(range.clone());
+            }
+            assert_eq!(seen, (0..paths.len()).collect::<Vec<_>>());
+            if paths.len() == 100_000 {
+                assert_eq!(ranges.len(), 196);
+            }
+        }
+        assert!(
+            matcher_batches(
+                &[format!("/{}", "a".repeat(MATCHER_ARG_BYTES))],
+                &prefix,
+                program
+            )
+            .is_err()
+        );
+        assert!(matcher_batches(&["/path\0other".into()], &prefix, program).is_err());
+        assert!(matcher_batches(&["relative".into()], &prefix, program).is_err());
+        assert!(matcher_batches(&[], &prefix, program).unwrap().is_empty());
+    }
     #[test]
     fn representative_source_custody_does_not_reread_archive_bodies() {
         // A real fixed root-owned executable is read, never changed. The test

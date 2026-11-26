@@ -803,3 +803,9 @@ These are source and isolated filesystem tests. They do not assert that labels
 have been applied to the original device or that a physical boot is authorized.
 The initial and returned owner windows must still retain actual quiescence,
 deadlines and complete source/reference checks at their boundaries.
+
+### Bounded normal context matching
+
+Normal context lookup groups the complete inventory by its actual inode type, then runs the same source-pinned matcher on at most 512 paths and 160 KiB of complete argument bytes per process. Every returned context remains paired with its original path/type and passes the same strict parser; no missing or additional output is accepted. The per-command output bound follows the maximum complete context row count, and the normal runner retains its timeout and total-log limit. This removes repeated process-poll overhead from root-scale preparation without changing file contexts or relaxing any target identity gate.
+
+An actual original-host read-only comparison covered 1,548 recorded normal targets across directories, regular files, symlinks and character devices. All per-path results matched between the former 32-path and new 512-path batches, with every tool/context/source pin unchanged before and after. This checks matcher equivalence; it is not a full-tree frozen-window timing result or a physical label-write acceptance.
