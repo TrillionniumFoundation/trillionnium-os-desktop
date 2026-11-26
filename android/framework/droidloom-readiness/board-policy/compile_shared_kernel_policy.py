@@ -454,6 +454,45 @@ def verify_native_executor_keyring(lines, check, role_types):
             "runtime_qualified": False}
 
 
+def verify_native_executor_accounts(check, obj, file_permissions):
+    """Keep stock executor NSS on the two public, read-only account files."""
+    actor = "u:system_r:p4_linux_service_executor_t:s0"
+    allowed = {"getattr", "open", "read"}
+    if not allowed.issubset(file_permissions):
+        raise ValueError("Original account-file permission vocabulary changed")
+    count = 0
+    for permission in file_permissions:
+        check(actor, obj("p4_linux_public_accounts_t"), "file", [permission],
+              permission in allowed)
+        count += 1
+    # Shadow/gshadow stay inaccessible. The sysusers lock alias preserves the
+    # existing native-config read vector, but acquires no write or lock power.
+    # Neither object is a files-NSS lookup input.
+    for target, permitted in (("p4_linux_auth_data_t", set()),
+                              ("p4_linux_sysusers_passwd_lock_t", allowed)):
+        for permission in file_permissions:
+            check(actor, obj(target), "file", [permission], permission in permitted)
+            count += 1
+    # The selected normal nsswitch orders files before systemd/sss. A denied
+    # public passwd read must not be repaired by opening the fallback userdb
+    # directory or adding an IPC channel to a credential database.
+    check(actor, obj("p4_linux_systemd_run_t"), "dir", ["getattr", "search"], True)
+    count += 2
+    for permission in ("open", "read"):
+        check(actor, obj("p4_linux_systemd_run_t"), "dir", [permission], False)
+        count += 1
+    for cls in ("unix_dgram_socket", "unix_stream_socket"):
+        check(actor, actor, cls, ["create"], False)
+        count += 1
+    return {"reader": "p4_linux_service_executor_t",
+            "public_paths": ["/etc/passwd", "/etc/group"],
+            "allowed_file_permissions": sorted(allowed),
+            "binary_permission_checks": count,
+            "shadow_body_and_password_lock_mutations_denied": True,
+            "userdb_fallback_access_added": False,
+            "runtime_qualified": False}
+
+
 def verify_native_mount_monitor(check, obj, role_types):
     """Only global PID 1 watches the exact held libmount runtime directory."""
     target = obj("p4_linux_mount_monitor_dir_t")
@@ -1358,6 +1397,7 @@ def verify_host_control(library, binary, export, original_contract):
     ])
     transitions.append("(typetransition p4_linux_udev_t droidloom_container_entry_exec_t process p4_linux_hardware_label_t)")
     hardware = verify_native_hardware(policy, lines, check, obj)
+    executor_accounts = verify_native_executor_accounts(check, obj, file_permissions)
     manager_startup = verify_manager_startup(lines, check, obj, role_types)
     camera = verify_camera(policy, lines, check, obj, Path(__file__).resolve().parent)
     fixed_display = verify_fixed_display(lines, check, obj, role_types)
@@ -1389,6 +1429,7 @@ def verify_host_control(library, binary, export, original_contract):
     return {
         "native_hardware": hardware,
         "native_manager_startup": manager_startup,
+        "native_executor_accounts": executor_accounts,
         "native_camera": camera,
         "fixed_display_control": fixed_display,
         "native_executor_keyring": executor_keyring,

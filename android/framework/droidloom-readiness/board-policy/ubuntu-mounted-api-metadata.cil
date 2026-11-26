@@ -420,6 +420,12 @@
 (roletype object_r p4_linux_public_accounts_t)
 (typeattributeset p4_linux_data (p4_linux_public_accounts_t))
 (allow p4_linux_udev_t p4_linux_public_accounts_t (file (getattr open read)))
+; Normal systemd 259.9 exec-invoke::get_fixed_user resolves User= through
+; get_user_creds/getpwnam before dropping credentials or entering the daemon.
+; The normal files NSS backend reads /etc/passwd and /etc/group; these are
+; public identities, separate from shadow/gshadow and the sysusers lock.
+(allow p4_linux_service_executor_t p4_linux_public_accounts_t (file (getattr open read)))
+(neverallow p4_linux_service_executor_t p4_linux_public_accounts_t (file (not (getattr open read))))
 (neverallow p4_linux_udev_t p4_linux_public_accounts_t (file (execute write append create unlink setattr relabelfrom relabelto)))
 (neverallow p4_android_userspace p4_linux_public_accounts_t (file (open read map write append)))
 ; Original PID 1 uses the same read_line_full routine for installed systemd unit files.
