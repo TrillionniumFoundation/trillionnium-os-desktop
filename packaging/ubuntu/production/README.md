@@ -1037,3 +1037,20 @@ by runtime userspace. Calibration keeps systemd's kernel log rate limiting off
 to retain the first failure before journald starts; normal graphical boots
 keep that rate limit enabled. Source checks and policy compilation alone do
 not qualify an enforcing boot, an application, or original-data migration.
+
+
+The fixed calibration consumer observes the original PID 1 through `/proc/1`.
+Its complete directory, regular-file and link vectors allow only directory
+metadata/traversal, the two LSM identity files and following the fixed executable
+and namespace links. Link metadata, directory enumeration, process tracing and
+all writes remain forbidden. The normal producer binds the six actual Rust/unit
+sources and verifies the complete permission complements and category pairs.
+
+Normal systemd queries the logind StateDirectory project ID before checking
+whether quota accounting or enforcement is enabled. The selected executor may
+issue only `FS_IOC_FSGETXATTR` (`0x581f`) on `p4_linux_logind_state_t` directories.
+The original six metadata permissions are preserved; the regular-file body,
+parent-directory vectors and every other ioctl remain unchanged. The source
+contract includes the normal `chattr-util.c` and `errno-util.h`: permission
+failures remain fatal and are not reclassified as unsupported quota operations.
+These source and linked-policy checks still require a new enforcing boot.

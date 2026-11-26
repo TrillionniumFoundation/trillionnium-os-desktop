@@ -37,3 +37,14 @@
 (allow p4_linux_mac_roles p4_linux_mac_setup_lock_t (file (getattr open read lock)))
 (neverallow droidloom_policy_loader p4_linux_mac_release_input_t (file (write append create unlink link rename setattr relabelto relabelfrom)))
 (neverallow droidloom_policy_loader p4_linux_mac_setup_lock_t (file (write append create unlink link rename setattr relabelto relabelfrom)))
+
+; The fixed capture reads the original PID 1 identity via /proc/1: directory
+; fstat/traversal, attr/{,apparmor/}current, and the exe/ns magic links.
+; It does not enumerate that process or acquire process-control authority.
+(allow droidloom_policy_loader init_t (dir (getattr search)))
+(allow droidloom_policy_loader init_t (file (getattr open read)))
+(allow droidloom_policy_loader init_t (lnk_file (read)))
+(neverallow droidloom_policy_loader init_t (dir (not (getattr search))))
+(neverallow droidloom_policy_loader init_t (file (not (getattr open read))))
+(neverallow droidloom_policy_loader init_t (lnk_file (not (read))))
+(neverallow droidloom_policy_loader init_t (process (ptrace)))

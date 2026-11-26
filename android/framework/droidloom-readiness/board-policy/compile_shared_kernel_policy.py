@@ -26,6 +26,7 @@ from verify_original_once import verify_original_once, source_inputs as original
 from verify_native_camera import verify_camera
 from verify_fixed_display import verify_fixed_display
 from verify_native_stdio import verify_native_stdio, source_inputs as native_stdio_source_inputs
+from verify_native_calibration import verify_native_calibration, source_inputs as native_calibration_source_inputs
 
 
 def sha256(path):
@@ -1719,6 +1720,7 @@ def main():
                here / "verify_original_once.py", here / "original-once-source.json",
                *original_once_source_inputs(here),
                here / "verify_native_stdio.py", *native_stdio_source_inputs(here),
+               here / "verify_native_calibration.py", *native_calibration_source_inputs(here),
                here.parents[3] / "packaging/ubuntu/systemd/source.lock.json",
                here.parents[3] / "packaging/ubuntu/systemd/p4-native-generator-tmpfs.patch",
                *(here / name for name in COMPOSED_FILE_CONTEXT_SOURCES)]
@@ -1803,6 +1805,8 @@ def main():
         greeter_home = verify_greeter_home(library, linked, work / "host-control-binary.cil", contract, here / "ubuntu-native-file_contexts")
         native_maintenance = verify_native_maintenance(library, linked, work / "maintenance-binary.cil", export_binary_policy)
         original_once = verify_original_once(library, linked, work / "original-once-binary.cil", export_binary_policy, here)
+        native_calibration = verify_native_calibration(
+            library, linked, work / "host-control-binary.cil", here)
         manager_file_contexts = verify_manager_file_contexts(here, work)
         result = {
             "native_composed_file_contexts": composed_file_contexts,
@@ -1810,6 +1814,7 @@ def main():
             "native_console": console_access,
             "native_remount": remount_access,
             "native_logind_state": logind_access,
+            "native_calibration_manager": native_calibration,
             "native_sysusers_lock": sysusers_access,
             "native_netplan": netplan_access,
             "native_user_cgroups": user_cgroups,

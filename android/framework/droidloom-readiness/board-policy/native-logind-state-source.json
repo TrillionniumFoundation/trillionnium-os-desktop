@@ -51,6 +51,18 @@
       "bytes": 52249,
       "sha256": "de38f495f3be7fc9e80051487bac1242c71f2f38cffa4fba2d8f11380d3794d4",
       "admission": "normal-dsc-roundtrip"
+    },
+    {
+      "path": "src/basic/chattr-util.c",
+      "bytes": 8624,
+      "sha256": "101c3ddab4e490380e3604efb0406eebb43dd6d1c09874f83cc7f80400fdc9cf",
+      "admission": "normal-dsc-roundtrip"
+    },
+    {
+      "path": "src/basic/errno-util.h",
+      "bytes": 8707,
+      "sha256": "a7f4c19c4f1a24136f8451580a16f97c36fe516d2dd862480fefb1ecfa326e3b",
+      "admission": "normal-dsc-roundtrip"
     }
   ],
   "normal_files": [
@@ -107,5 +119,31 @@
     "normal_mode_and_ownership": "unchanged",
     "fallback_transition": false
   },
-  "runtime_qualified": false
+  "runtime_qualified": false,
+  "project_id_query": {
+    "consumer": "apply_exec_quotas",
+    "helper": "read_fs_xattr_fd",
+    "path": "/var/lib/systemd/linger",
+    "type": "p4_linux_logind_state_t",
+    "class": "dir",
+    "operation": "FS_IOC_FSGETXATTR",
+    "selinux_ioctl_command": "0x581f",
+    "before_quota_enabled_check": true,
+    "unsupported_errno_skips": [
+      "EOPNOTSUPP",
+      "ENOTTY",
+      "ENOSYS",
+      "EAFNOSUPPORT",
+      "EPFNOSUPPORT",
+      "EPROTONOSUPPORT",
+      "ESOCKTNOSUPPORT",
+      "ENOPROTOOPT",
+      "EINVAL"
+    ],
+    "permission_errno_fatal": [
+      "EACCES",
+      "EPERM"
+    ],
+    "write_ioctl_allowed": false
+  }
 }

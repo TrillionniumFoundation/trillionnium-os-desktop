@@ -23,3 +23,11 @@
 ; full directory AV/ioctl/transition view. It separately proves the executor's
 ; exact raw additions, full unchanged object vectors and constrained MLS pairs.
 ; There is no new fallback transition: absent/wrong normal label input fails.
+
+; Normal apply_exec_quotas() queries the held StateDirectory project ID before
+; testing whether quota accounting/enforcement is enabled. FSGETXATTR is read-only.
+; All pre-existing metadata permissions stay unchanged; no FSSETXATTR is allowed.
+(allow p4_linux_service_executor_t p4_linux_logind_state_t (dir (ioctl)))
+(allowx p4_linux_service_executor_t p4_linux_logind_state_t (ioctl dir (0x581f)))
+(neverallowx p4_linux_service_executor_t p4_linux_logind_state_t (ioctl dir (not (0x581f))))
+(neverallow p4_linux_service_executor_t p4_linux_logind_state_t (dir (not (getattr search open read create setattr ioctl))))

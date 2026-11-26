@@ -48,6 +48,19 @@ class LogindStateContract(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "unmodified normal unit"):
             contract(self.here)
 
+    def test_project_id_query_cannot_become_a_writer_or_skip_permission_errors(self):
+        for key, value in (("operation", "FS_IOC_FSSETXATTR"),
+                           ("write_ioctl_allowed", True),
+                           ("permission_errno_fatal", [])):
+            with self.subTest(field=key):
+                original = (self.here / "native-logind-state-source.json").read_bytes()
+                try:
+                    self.edit(lambda v: v["project_id_query"].update({key: value}))
+                    with self.assertRaisesRegex(ValueError, "stock read-only operation"):
+                        contract(self.here)
+                finally:
+                    (self.here / "native-logind-state-source.json").write_bytes(original)
+
     def test_parent_alias_cannot_cover_subtree(self):
         p = self.here / "ubuntu-native-file_contexts"
         text = p.read_text().replace(

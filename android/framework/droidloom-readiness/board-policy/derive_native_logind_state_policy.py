@@ -20,6 +20,7 @@ STATE = "p4_linux_logind_state_t"
 ALIASES = [{"source": "p4_linux_rootdir_t", "target": PARENT, "class": "dir"}]
 ORIGINAL = {"getattr", "search", "mounton"}
 ADDITIONS = {"write", "add_name"}
+STATE_METADATA = {"getattr", "search", "open", "read", "create", "setattr"}
 TRANSITIONS = ("(typetransition ", "(typechange ", "(typemember ", "(roletransition ")
 CONSTRAINTS = ("(constrain ", "(mlsconstrain ", "(validatetrans ", "(mlsvalidatetrans ")
 SOURCE_FILES = {
@@ -30,6 +31,8 @@ SOURCE_FILES = {
     "src/shared/mkdir-label.c": (1389, "cb5470df867959d3668f22c41ef2d6a514e996f6c2348b8eee3f1c07800d6e5a"),
     "src/shared/selinux-util.c": (25770, "241a1cdb353d954a1a771e4b33709860a2df729bb7512130b5fb985fe1105df7"),
     "src/basic/fs-util.c": (52249, "de38f495f3be7fc9e80051487bac1242c71f2f38cffa4fba2d8f11380d3794d4"),
+    "src/basic/chattr-util.c": (8624, "101c3ddab4e490380e3604efb0406eebb43dd6d1c09874f83cc7f80400fdc9cf"),
+    "src/basic/errno-util.h": (8707, "a7f4c19c4f1a24136f8451580a16f97c36fe516d2dd862480fefb1ecfa326e3b"),
 }
 NORMAL_FILES = {
     "/usr/lib/systemd/systemd-executor": (154176, "afdc9afa0073871b5b303c7eae2857da727abec5d9cfa5bcb63df96ac53da12f", 0o755, "p4_linux_systemd_executor_t"),
@@ -41,7 +44,7 @@ NORMAL_FILES = {
 def contract(here):
     value = json.loads((here / "native-logind-state-source.json").read_text())
     if (set(value) != {"schema", "package", "version", "aliases", "normal_files",
-                       "source_documents", "parent", "state_directory", "runtime_qualified"}
+                       "source_documents", "parent", "state_directory", "project_id_query", "runtime_qualified"}
             or value["schema"] != "droidloom.native-logind-state-source.v1"
             or value["package"] != "systemd:amd64"
             or value["version"] != "259.9-0ubuntu0.1+p4gentmp2"
@@ -74,6 +77,20 @@ def contract(here):
             "uid": 0, "gid": 0, "creator": ROLE, "operation": "mkdir_label",
             "normal_mode_and_ownership": "unchanged", "fallback_transition": False}:
         raise ValueError("Logind directory must follow the unmodified normal unit")
+    if value["project_id_query"] != {
+            'consumer': 'apply_exec_quotas',
+            'helper': 'read_fs_xattr_fd',
+            'path': '/var/lib/systemd/linger',
+            'type': 'p4_linux_logind_state_t',
+            'class': 'dir',
+            'operation': 'FS_IOC_FSGETXATTR',
+            'selinux_ioctl_command': '0x581f',
+            'before_quota_enabled_check': True,
+            'unsupported_errno_skips': ['EOPNOTSUPP', 'ENOTTY', 'ENOSYS', 'EAFNOSUPPORT', 'EPFNOSUPPORT', 'EPROTONOSUPPORT', 'ESOCKTNOSUPPORT', 'ENOPROTOOPT', 'EINVAL'],
+            'permission_errno_fatal': ['EACCES', 'EPERM'],
+            'write_ioctl_allowed': False,
+    }:
+        raise ValueError("Logind project query is not the stock read-only operation")
     return value
 
 
@@ -124,6 +141,56 @@ def _relabel_constraint(policy, lines):
             "relabel_from_and_to": False}
 
 
+def verify_project_id_query(policy, exported, lines, classes):
+    """Read back the stock executor's single StateDirectory quota query."""
+    members = Membership("\n".join(lines))
+    raw = set()
+    for line in lines:
+        if not line.startswith("(allow "):
+            continue
+        form = parse_expression(line)
+        if len(form) != 4 or not isinstance(form[3], list) or len(form[3]) != 2:
+            raise ValueError("Unmodeled logind project query raw TE rule")
+        actor, target, (kind, names) = form[1:]
+        if (kind == "dir" and members.member(actor, ROLE) and target != "self"
+                and members.member(target, STATE)):
+            if not isinstance(names, list) or not set(names).issubset(classes["dir"]):
+                raise ValueError("Unknown logind project query permission")
+            raw.update(names)
+    wanted = STATE_METADATA | {"ioctl"}
+    if raw != wanted:
+        raise ValueError("Logind project query raw permission/complement differs")
+    masks = original_xperms([exported], [ROLE], STATE, class_names=("dir", "file"))
+    if masks != {"dir": {ROLE: 1 << 0x581f}, "file": {ROLE: 0}}:
+        raise ValueError("Logind project query must allow only directory FSGETXATTR")
+    ioctls = {"dir": ["0x581f"], "file": []}
+    vectors = []
+    _, bits = policy.permissions("dir", classes["dir"])
+    permitted = sum(bits[name] for name in wanted)
+    for source_level in LEVELS:
+        for target_level in LEVELS:
+            actual = policy.context_av(_context("system_r", ROLE, source_level),
+                _context("object_r", STATE, target_level), "dir", classes["dir"])
+            if actual & ~permitted:
+                raise ValueError("Logind project query escaped its directory complement")
+            if source_level == target_level == "s0" and actual != permitted:
+                raise ValueError("Normal StateDirectory project-ID query is denied")
+            vectors.append([source_level, target_level, actual])
+    return {
+        "schema": "droidloom.native-logind-project-id-query.v1",
+        "actor": ROLE, "target": STATE, "class": "dir",
+        "preserved_metadata_permissions": sorted(STATE_METADATA),
+        "new_te_permissions": ["ioctl"],
+        "raw_permissions": sorted(raw),
+        "ioctls": ioctls, "request": "FS_IOC_FSGETXATTR",
+        "selinux_ioctl_command": "0x581f",
+        "quota_write_granted": False,
+        "category_pairs": len(vectors),
+        "effective_vectors": vectors,
+        "matrix_sha256": hashlib.sha256(json.dumps(vectors).encode()).hexdigest(),
+    }
+
+
 def derive(library, baseline, exported, here, output, export):
     contract(here)
     expected = derive_preserved_aliases(library, baseline, exported, ALIASES,
@@ -144,6 +211,7 @@ def derive(library, baseline, exported, here, output, export):
                 preimage = policy.context_av(source, _context("object_r", target), cls, expected["classes"][cls])
                 expected["executor_vectors"].append([target, cls, level, before | preimage])
     expected["executor_raw_vectors"] = _executor_raw(lines, expected["classes"])
+    expected["project_id_query"] = verify_project_id_query(policy, exported, lines, expected["classes"])
     expected["executor_mcs_vectors"] = []
     for source_level in LEVELS:
         for target_level in LEVELS:
@@ -320,7 +388,10 @@ def verify(library, binary, exported, here, expected, export, *, successors=()):
         if got != (sum(bits.values()) if level == "s0" else 0):
             raise ValueError("Logind parent write escaped its normal startup category")
         startup.append([level, got])
-    existing = {"getattr", "search", "open", "read", "create", "setattr"}
+    project_query = verify_project_id_query(policy, exported, lines, expected["classes"])
+    if project_query != expected["project_id_query"]:
+        raise ValueError("Logind project query changed after normal alias derivations")
+    existing = STATE_METADATA | {"ioctl"}
     got = policy.context_av(_context("system_r", ROLE), _context("object_r", STATE), "dir", expected["classes"]["dir"])
     _, bits = policy.permissions("dir", sorted(existing))
     if got != sum(bits.values()):
@@ -341,6 +412,7 @@ def verify(library, binary, exported, here, expected, export, *, successors=()):
         "extra_permissions": [[ROLE, PARENT, "dir", sorted(ADDITIONS)]],
         "startup_write_vectors": startup,
         "normal_state_directory_permissions": sorted(existing),
+        "project_id_query": project_query,
         "file_contexts": verify_file_contexts(here, exported.parent),
         "matrix_sha256": hashlib.sha256(json.dumps(checks, sort_keys=True).encode()).hexdigest(),
         "runtime_qualified": False}
