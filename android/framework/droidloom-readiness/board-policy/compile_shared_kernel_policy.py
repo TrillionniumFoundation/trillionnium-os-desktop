@@ -1727,6 +1727,7 @@ def main():
                *original_once_source_inputs(here),
                here / "verify_native_stdio.py", *native_stdio_source_inputs(here),
                here / "verify_native_tcgets2_audit.py",
+               here / "verify_native_original_projection.py",
                here / "verify_native_calibration.py", *native_calibration_source_inputs(here),
                here / "verify_native_entropy.py", *native_entropy_source_inputs(here),
                here / "verify_native_resolved_runtime.py", here / "native-resolved-runtime-source.json",

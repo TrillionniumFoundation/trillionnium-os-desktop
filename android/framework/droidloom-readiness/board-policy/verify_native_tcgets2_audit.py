@@ -1,19 +1,20 @@
-"""Verify the reviewed native TCGETS2 audit delta and seven fixed startup bits.
+"""Verify TCGETS2 suppression and the exact source-proven native startup delta.
 
-The expected commitments below were generated from the actual R13 normal
-binary and its independently retained CIL export. They are never generated
-from a candidate. This proof intentionally rejects an unrelated access or
-transition change outside the seven source-proven startup bits and one directory
-ioctl listed below. Further changes require an independently reviewed baseline
-or explicit composition, not a regenerated candidate expectation.
+The five commitments remain those of the actual R13 normal binary/export.
+The original concrete types, all 781 original attributes, constraints, transitions,
+and permissions retain those commitments after the fixed fifteen-bit subtraction.
+New source-owned component families have separate complete role/alias verifiers;
+the projection removes only their explicitly declared new-type authority.
+No expected commitment is generated from a candidate.
 """
 import hashlib
 import json
 
 from derive_native_uevent_policy import Membership
 from derive_shared_payload_cgroup_policy import parse_expression
+from verify_native_original_projection import verify_projection
 
-SCHEMA = "droidloom.native-tcgets2-audit.v2"
+SCHEMA = "droidloom.native-tcgets2-audit.v3"
 PROBE = 0x542a
 AUDIT_OPERATIONS = frozenset({"auditallow", "dontaudit", "auditallowx", "dontauditx"})
 TYPE_OPERATIONS = frozenset({
@@ -203,13 +204,19 @@ def _verify_raw_pairs(forms, membership):
 
 
 # These are the separately reviewed normal startup fixes, not caller input.
-# The baseline raw bit is zero for each of the seven permissions. The directory
+# The baseline raw bit is zero for each of the fifteen permissions. The directory
 # tuple also has no prior allowx/auditallowx/dontauditx entry.
 REVIEWED_NATIVE_GRANTS = (
     ("droidloom_policy_loader", "init_t", "dir", ("getattr", "search")),
     ("droidloom_policy_loader", "init_t", "file", ("getattr", "open", "read")),
     ("droidloom_policy_loader", "init_t", "lnk_file", ("read",)),
     ("p4_linux_service_executor_t", "p4_linux_logind_state_t", "dir", ("ioctl",)),
+    ("p4_linux_service_executor_t", "p4_linux_resolved_run_t", "sock_file", ("getattr", "setattr")),
+    ("p4_linux_early_t", "random_device", "chr_file", ("getattr", "relabelto")),
+    ("random_device", "device", "filesystem", ("associate",)),
+    ("p4_linux_module_loader_t", "proc", "lnk_file", ("read",)),
+    ("p4_linux_udev_t", "p4_linux_udev_listener_t", "sock_file", ("write",)),
+    ("p4_linux_udev_t", "p4_linux_udev_t", "unix_stream_socket", ("connectto",)),
 )
 QUOTA_PAIR = ("p4_linux_service_executor_t", "p4_linux_logind_state_t")
 QUOTA_COMMAND = 0x581f
@@ -341,7 +348,8 @@ def _verify_text(text):
     if set(added) != expected:
         raise ValueError("The final policy lacks the exact 28 TCGETS2 audit rules")
     baseline, grants = _subtract_native_grants(remaining, membership)
-    actual = _summaries(baseline)
+    projection = verify_projection(baseline, membership)
+    actual = projection["canonical_original_commitments"]
     for name, wanted in BASELINE_COMMITMENTS.items():
         if actual[name] != wanted:
             raise ValueError("TCGETS2/native grant delta changed baseline " + name)
@@ -352,7 +360,9 @@ def _verify_text(text):
         "baseline_export": BASELINE_EXPORT,
         "baseline_normal_receipt": BASELINE_NORMAL_RECEIPT,
         "canonical_commitments_after_exact_subtraction": actual,
-        "all_other_non_audit_forms_preserved": True,
+        "all_original_type_non_audit_forms_preserved": True,
+        "original_authority_projection": projection,
+        "new_component_runtime_qualified": False,
         "all_original_audit_forms_preserved": True,
         "new_dontaudit_pairs": len(matrix),
         "ioctl_u16": PROBE,
