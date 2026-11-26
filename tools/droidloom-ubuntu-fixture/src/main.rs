@@ -28,6 +28,7 @@ mod capture;
 mod cold_original_data;
 mod cold_original_initramfs;
 mod cold_original_qualification;
+mod cold_original_once_recovery;
 mod complete_native;
 mod complete_snapshot;
 mod fs;
@@ -61,6 +62,8 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Command {
+    #[command(hide = true)]
+    OriginalOnceEarlyRecovery,
     VerifyPublicApkInputs {
         #[arg(long)]
         config: PathBuf,
@@ -223,6 +226,7 @@ fn run() -> Result<()> {
         "real source capture/copy requires existing root rights; no privilege helper is installed",
     )?;
     match cli.command {
+        Command::OriginalOnceEarlyRecovery => cold_original_once_recovery::early()?,
         Command::VerifyPublicApkInputs {
             config,
             config_sha256,

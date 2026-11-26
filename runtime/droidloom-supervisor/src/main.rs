@@ -77,6 +77,13 @@ fn main() {
 
 fn run() -> Result<(), Box<dyn std::error::Error>> {
     #[cfg(target_os = "linux")]
+    if droidloom_supervisor::native_once_return::dispatch(
+        &std::env::args_os().skip(1).collect::<Vec<_>>(),
+    )? {
+        return Ok(());
+    }
+
+    #[cfg(target_os = "linux")]
     if droidloom_supervisor::native_uevent_label::dispatch(
         &std::env::args_os().skip(1).collect::<Vec<_>>(),
     )? {
