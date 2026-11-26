@@ -13,6 +13,10 @@ use std::{
     path::{Path, PathBuf},
 };
 
+#[path = "cold_original_label_runtime.rs"]
+mod runtime;
+pub(super) use runtime::RuntimeRestoreAttempt;
+
 const LIMIT: u64 = 32 * 1024 * 1024;
 
 #[derive(Deserialize, Serialize)]
@@ -312,6 +316,11 @@ impl DurableAttempt {
     }
 
     fn reopen(records: Records, pin: &FilePin, recovery: File) -> Result<Self> {
+        let value = Self::load_unclassified(records, pin, recovery)?;
+        value.classify(value.restored_intent()?)?;
+        Ok(value)
+    }
+    fn load_unclassified(records: Records, pin: &FilePin, recovery: File) -> Result<Self> {
         ensure(
             pin.path == records.path.join("PREIMAGE.json"),
             "label preimage is outside its journal",
@@ -343,7 +352,6 @@ impl DurableAttempt {
             recovery,
         };
         value.validate_intent()?;
-        value.classify(value.restored_intent()?)?;
         Ok(value)
     }
 

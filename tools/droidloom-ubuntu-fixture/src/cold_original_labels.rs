@@ -426,6 +426,89 @@ impl OriginalLabelDerivation {
     }
 }
 
+/// Actual restoration of only our label from a fresh, admitted current
+/// snapshot. It cannot turn mutable runtime metadata into an unchanged-source
+/// claim, and it has no public constructor or serialized authority form.
+pub(crate) struct OriginalLabelRestoration {
+    candidate_id: String,
+    logical_path: PathBuf,
+    plan: Arc<PlanSeal>,
+    original_preimage: crate::boot_files::FilePin,
+    restored: crate::boot_files::FilePin,
+    core: LabelDerivation,
+}
+impl OriginalLabelRestoration {
+    pub(crate) fn candidate_id(&self) -> &str {
+        &self.candidate_id
+    }
+    pub(crate) fn path(&self) -> &Path {
+        &self.logical_path
+    }
+    pub(crate) fn source_plan(&self) -> &crate::boot_files::FilePin {
+        &self.plan.pin
+    }
+    pub(crate) fn before_identity(&self) -> &Identity {
+        &self.core.before.identity
+    }
+    pub(crate) fn after_identity(&self) -> &Identity {
+        &self.core.after.identity
+    }
+    pub(crate) fn revalidate(&self) -> Result<()> {
+        self.plan.revalidate()?;
+        self.core.revalidate()?;
+        let original: serde_json::Value =
+            serde_json::from_slice(&super::root_pin(&self.original_preimage, 32 * 1024 * 1024)?)?;
+        ensure(
+            original["schema"] == "droidloom.original-label-preimage.v1"
+                && original["candidate_id"] == self.candidate_id
+                && original["logical_path"] == self.logical_path.to_string_lossy().as_ref()
+                && original["source_plan"] == serde_json::to_value(&self.plan.pin)?,
+            "restoration preimage is not bound to this actual candidate and source plan",
+        )?;
+        let before: Snapshot = serde_json::from_value(original["before"].clone())?;
+        let mut wanted = self.core.before.attributes.clone();
+        match before.attributes.get(LABEL) {
+            Some(label) => {
+                wanted.insert(LABEL.into(), label.clone());
+            }
+            None => {
+                wanted.remove(LABEL);
+            }
+        }
+        ensure(
+            self.core.before.handle == before.handle
+                && self.core.before.handle == self.core.after.handle
+                && only_ctime_changed(&self.core.before.identity, &self.core.after.identity)
+                && wanted == self.core.after.attributes,
+            "restoration changed another current inode field, generation or extended attribute",
+        )?;
+        let actual: serde_json::Value =
+            serde_json::from_slice(&super::root_pin(&self.restored, 32 * 1024 * 1024)?)?;
+        let current = actual["schema"] == "droidloom.current-label-restored.v1";
+        let strict = actual["schema"] == "droidloom.original-label-restored.v1";
+        ensure(
+            (current || strict)
+                && actual[if current {
+                    "original_preimage"
+                } else {
+                    "preimage"
+                }] == serde_json::to_value(&self.original_preimage)?
+                && actual[if current {
+                    "before"
+                } else {
+                    "observed_before_restore"
+                }] == serde_json::to_value(&self.core.before)?
+                && actual["after"] == serde_json::to_value(&self.core.after)?
+                && actual["target_metadata_durability"]["operation"] == "syncfs"
+                && actual["target_metadata_durability"]["filesystem_dev"]
+                    == self.core.after.identity.dev,
+            "restoration lacks its actual synchronized complete before/after record",
+        )?;
+        self.core.revalidate()?;
+        self.plan.revalidate()
+    }
+}
+
 fn apply_one(file: File, before: &Snapshot, desired: &[u8], name: &str) -> Result<LabelDerivation> {
     ensure(
         name == LABEL || cfg!(test),
@@ -441,6 +524,8 @@ fn apply_one(file: File, before: &Snapshot, desired: &[u8], name: &str) -> Resul
     )?;
     let mut expected = before.attributes.clone();
     expected.insert(name.to_owned(), desired.to_vec());
+    // Already-correct labels have no write side effect. Rewriting the same
+    // value would create an unexplained ctime-only outcome on later recovery.
     if before.attributes.get(name).map(Vec::as_slice) != Some(desired) {
         set(&file, name, Some(desired))?;
     }
@@ -495,6 +580,30 @@ mod tests {
             )
             .unwrap(),
         )
+    }
+    #[test]
+    fn an_already_correct_label_does_not_create_a_new_ctime() {
+        let tmp = tempfile::Builder::new()
+            .prefix(".p4-label-noop-")
+            .tempdir_in(std::env::current_dir().unwrap())
+            .unwrap();
+        let path = tmp.path().join("inode");
+        std::fs::write(&path, b"ordinary public test").unwrap();
+        let file = path_inode(&path);
+        set(&file, "user.droidloom.testlabel", Some(b"already-correct")).unwrap();
+        let before = snapshot(&file).unwrap();
+        let applied = apply_one(
+            file,
+            &before,
+            b"already-correct",
+            "user.droidloom.testlabel",
+        )
+        .unwrap();
+        assert_eq!(applied.before, applied.after);
+        assert_eq!(
+            restore_one(&applied, "user.droidloom.testlabel").unwrap(),
+            before
+        );
     }
     #[test]
     fn actual_descriptor_label_and_rollback_preserve_other_xattrs_and_mtime() {

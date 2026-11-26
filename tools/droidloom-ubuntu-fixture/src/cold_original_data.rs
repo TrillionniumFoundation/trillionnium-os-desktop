@@ -963,7 +963,7 @@ pub(super) struct WorkingDataRetired {
     candidate_id: String,
     pair_intent: FilePin,
     pid: u32,
-    backings: Vec<(File, Identity)>,
+    backings: std::cell::RefCell<Vec<(File, Identity)>>,
     evidence: Value,
 }
 fn verify_retired_backings(backings: &[(File, Identity)]) -> Result<()> {
@@ -990,18 +990,59 @@ impl WorkingDataRetired {
     pub(super) fn evidence(&self) -> &Value {
         &self.evidence
     }
+    pub(super) fn accept_label_restoration(
+        &self,
+        derivation: &labels::OriginalLabelRestoration,
+    ) -> Result<()> {
+        ensure(
+            std::process::id() == self.pid && derivation.candidate_id() == self.candidate_id,
+            "working retirement restoration belongs to another owner or candidate",
+        )?;
+        derivation.revalidate()?;
+        let Some(name) = derivation
+            .path()
+            .strip_prefix(ORIGINAL)
+            .ok()
+            .and_then(|p| p.to_str())
+        else {
+            return Ok(());
+        };
+        if !IMAGES.contains(&name) {
+            return Ok(());
+        }
+        let mut backings = self.backings.borrow_mut();
+        let mut matched = 0;
+        for (file, expected) in backings.iter_mut() {
+            if inode(expected, derivation.before_identity()) {
+                ensure(
+                    expected == derivation.before_identity()
+                        && fs::stat(file)? == *derivation.after_identity(),
+                    "working retirement ctime cannot be rebound from an unrelated restoration",
+                )?;
+                rustix::fs::flock(file, FlockOperation::NonBlockingLockExclusive)?;
+                *expected = derivation.after_identity().clone();
+                matched += 1;
+            }
+        }
+        ensure(
+            matched == 1,
+            "working restoration does not identify exactly one synchronized backing",
+        )?;
+        verify_retired_backings(&backings)?;
+        derivation.revalidate()
+    }
     pub(super) fn revalidate(&self) -> Result<()> {
         ensure(
             std::process::id() == self.pid,
             "working retirement descriptor custody changed process",
         )?;
-        verify_retired_backings(&self.backings)?;
+        verify_retired_backings(&self.backings.borrow())?;
         let actual = assert_prepared_pair_retired(&self.pair_intent)?;
         ensure(
             actual["candidate_id"] == self.candidate_id,
             "retired working pair candidate changed",
         )?;
-        verify_retired_backings(&self.backings)
+        verify_retired_backings(&self.backings.borrow())
     }
 }
 
@@ -1113,7 +1154,7 @@ impl OriginalDataTransaction {
             candidate_id: authority.candidate_id().to_owned(),
             pair_intent: self.intent().clone(),
             pid: std::process::id(),
-            backings,
+            backings: std::cell::RefCell::new(backings),
             evidence: json!({"schema":"droidloom.actual-working-data-retired.v1",
                 "candidate_id":authority.candidate_id(),"pair_intent":self.intent(),
                 "before_references":first,"actual_synchronization":synchronization,

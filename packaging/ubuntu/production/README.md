@@ -719,3 +719,22 @@ from serialized success flags. Original images receive no synchronization call.
 The once constructor can retain the actual OriginalLabelSources object and use
 its source_pin and fresh_initramfs_report accessors, avoiding a second package/image
 admission or trusting a later caller-generated label-source assertion.
+
+
+### Current metadata during original label restoration
+
+The private runtime restoration core records a new, immutable current preimage
+only for fixed normal log, cache, temporary, original user/service-home, and
+same-candidate runtime-evidence paths after the enclosing owner proves actual
+retirement. It preserves their current content identity, metadata, and every
+unrelated xattr; only this transaction's SELinux value is restored. Normal
+package databases and all other paths retain their strict source snapshots.
+Every restoration still requires the same ext4 generation and inode authority,
+a durable preimage, complete readback and a real same-filesystem syncfs barrier.
+
+OriginalLabelRestoration is an opaque held-descriptor result, not a serialized
+grant. WorkingDataRetired may rebind one synchronized backing's ctime only from
+that actual source-plan-bound restoration and revalidates both original OFD
+locks. The core has no physical entry point or retirement constructor. Tests
+exercise real isolated inode writes; they do not claim a physical boot,
+working-copy migration or production acceptance.
