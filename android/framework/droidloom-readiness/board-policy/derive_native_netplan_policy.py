@@ -552,8 +552,9 @@ def verify(library, binary, exported, here, expected, export):
     # or an automatic permit for a previously unknown type.
     from derive_native_ldconfig_policy import ALIASES as LDCONFIG_ALIASES
     from derive_native_journal_catalog_policy import ALIASES as CATALOG_ALIASES
+    from derive_native_update_done_policy import ALIASES as UPDATE_DONE_ALIASES
     for row in (console_contract(here)["aliases"] + SYSUSERS_ALIASES + LOGIND_ALIASES
-                + TIMESYNC_ALIASES + LDCONFIG_ALIASES + CATALOG_ALIASES + KMOD_ALIASES):
+                + TIMESYNC_ALIASES + LDCONFIG_ALIASES + CATALOG_ALIASES + KMOD_ALIASES + UPDATE_DONE_ALIASES):
         table = file_access if row["class"] == "file" else directories if row["class"] == "dir" else {}
         if row["source"] in table:
             table.setdefault(row["target"], set()).update(table[row["source"]])

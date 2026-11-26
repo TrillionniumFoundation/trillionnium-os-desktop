@@ -1,0 +1,335 @@
+{
+  "aliases": [
+    {
+      "class": "file",
+      "source": "p4_linux_setup_exec_t",
+      "target": "p4_linux_update_done_exec_t"
+    },
+    {
+      "class": "dir",
+      "source": "p4_linux_rootdir_t",
+      "target": "p4_linux_update_done_var_dir_t"
+    },
+    {
+      "class": "file",
+      "source": "p4_linux_native_config_t",
+      "target": "p4_linux_update_done_etc_file_t"
+    },
+    {
+      "class": "file",
+      "source": "p4_linux_native_data_t",
+      "target": "p4_linux_update_done_var_file_t"
+    }
+  ],
+  "direct_r13_child_avc_observed": false,
+  "kernel_runtime_qualified": false,
+  "label_lookup": {
+    "api": "selabel_lookup_raw",
+    "create_label_api": "lsm_set_self_attr(LSM_ATTR_FSCREATE, LSM_ID_SELINUX)",
+    "label_key": "final absolute .updated pathname",
+    "legacy_procattr_fallback": "only ENOSYS or EOPNOTSUPP; not admitted by this policy",
+    "netlink_selinux_permissions": [],
+    "reset_create_label": true,
+    "security_permissions": [],
+    "selinuxfs_file_permissions": [
+      "getattr",
+      "map",
+      "open",
+      "read"
+    ],
+    "validation_option": false
+  },
+  "libselinux_source_admission": {
+    "bytes": 3721,
+    "path": "/home/qq/work/p4-libselinux-constructor-audit-4b91-r2/SOURCE.json",
+    "sha256": "7b25ebfb73b6cd6ee1a49ba3a357ff157672b7cddb0fdbf66b86e43afd5b01a6"
+  },
+  "normal_failure_semantics": {
+    "other_write_errors": "propagated",
+    "read_only_parent": "EROFS is ignored by the unchanged program",
+    "sync_flag_added": false
+  },
+  "normal_files": [
+    {
+      "admission": "normal-complete-root",
+      "bytes": 682,
+      "path": "/usr/lib/systemd/system/systemd-update-done.service",
+      "sha256": "5196e3618c02428ed18585ea31fe44574d421b5663bf12ce4e987697d117df62"
+    },
+    {
+      "admission": "normal-complete-root",
+      "bytes": 14912,
+      "path": "/usr/lib/systemd/systemd-update-done",
+      "sha256": "afc329f2d350c3ede76166eac9becdcb4befc21b6daa517a208ae8b97949024e"
+    },
+    {
+      "admission": "normal-complete-root",
+      "bytes": 5017728,
+      "path": "/usr/lib/x86_64-linux-gnu/systemd/libsystemd-shared-259.so",
+      "sha256": "21ddd09d02a864c40139986fdc89c3f2a428ad1adcc201c8276bc9590c2c98fd"
+    },
+    {
+      "admission": "normal-complete-root",
+      "bytes": 254864,
+      "path": "/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+      "sha256": "c0b20d6e1ced12abfe0b1ef2b5b68017950beaaea3df69eb6949d73e0ecf7b40"
+    },
+    {
+      "admission": "normal-complete-root",
+      "bytes": 2190608,
+      "path": "/usr/lib/x86_64-linux-gnu/libc.so.6",
+      "sha256": "9941dc28e68bc5fd788d9cd024c69e68c791d63799e7538a97b6040dd9f50fb6"
+    },
+    {
+      "admission": "normal-complete-root",
+      "bytes": 199120,
+      "path": "/usr/lib/x86_64-linux-gnu/libselinux.so.1",
+      "sha256": "c977b03dbb29e45ca7206ff0937cfda419dcacc0fbbe72be1f0a72cfc8c1b218"
+    },
+    {
+      "admission": "normal-complete-root",
+      "bytes": 699056,
+      "path": "/usr/lib/x86_64-linux-gnu/libpcre2-8.so.0.14.0",
+      "sha256": "1896c0dee31c0b04cf749092fafc383178817b02a2304e9128246108920d5156"
+    }
+  ],
+  "outputs": [
+    {
+      "atomic_rename": true,
+      "cleanup_unlink": true,
+      "creation_mode": 384,
+      "fsync_called": false,
+      "futimens": true,
+      "open_mode": "O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC|O_NOCTTY",
+      "path": "/etc/.updated",
+      "published_mode": 420,
+      "temporary_basename_regex": "\\.#\\.updated[0-9a-f]{16}",
+      "type": "p4_linux_update_done_etc_file_t"
+    },
+    {
+      "atomic_rename": true,
+      "cleanup_unlink": true,
+      "creation_mode": 384,
+      "fsync_called": false,
+      "futimens": true,
+      "open_mode": "O_RDWR|O_CREAT|O_EXCL|O_CLOEXEC|O_NOCTTY",
+      "path": "/var/.updated",
+      "published_mode": 420,
+      "temporary_basename_regex": "\\.#\\.updated[0-9a-f]{16}",
+      "type": "p4_linux_update_done_var_file_t"
+    }
+  ],
+  "package": "systemd:amd64",
+  "parents": [
+    {
+      "create_permission": false,
+      "gid": 0,
+      "mode": 493,
+      "must_already_exist": true,
+      "path": "/etc",
+      "type": "p4_linux_sysusers_etc_root_t",
+      "uid": 0
+    },
+    {
+      "create_permission": false,
+      "gid": 0,
+      "mode": 493,
+      "must_already_exist": true,
+      "path": "/var",
+      "type": "p4_linux_update_done_var_dir_t",
+      "uid": 0
+    }
+  ],
+  "production_qualified": false,
+  "role": "p4_linux_update_done_t",
+  "schema": "droidloom.native-update-done-source.v1",
+  "self_proc_permissions": {
+    "dir": [
+      "search"
+    ],
+    "lnk_file": [
+      "read"
+    ]
+  },
+  "source_documents": [
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 4902,
+      "path": "src/update-done/update-done.c",
+      "sha256": "0eb30e9994490580e405801eb6ca0afc54484e4a62ecb4788bb544ed7e256792"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 55754,
+      "path": "src/basic/fileio.c",
+      "sha256": "691d77b7655f522473d2c0baba78f285bfe5ff344e3ebd4357b63a7b87402d86"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 8415,
+      "path": "src/basic/fileio.h",
+      "sha256": "3961a50339020dc787c7c66eff72d3757af0f9c7eeb7ce65e31d638d1ffc1c6e"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 12703,
+      "path": "src/basic/tmpfile-util.c",
+      "sha256": "a88d08443488a816367a3df2e1022b19a72bd8796377b9fe856174aeb5ceee74"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 2908,
+      "path": "src/basic/tmpfile-util.h",
+      "sha256": "3a49bad2ad1bed76e5bf6032f65f4753bbe436d81c8cb7f6da14eb8be0df302d"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 48522,
+      "path": "src/basic/chase.c",
+      "sha256": "80ba22ad54294b37d0add785c0c67f6385225ee5a402850d323d56b6c3eb301a"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 52249,
+      "path": "src/basic/fs-util.c",
+      "sha256": "de38f495f3be7fc9e80051487bac1242c71f2f38cffa4fba2d8f11380d3794d4"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 41483,
+      "path": "src/basic/fd-util.c",
+      "sha256": "cb60ffa3bbe82f099d62dac6d7b37102cb56ab69e46b75483bf5f7dcfdfd0311"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 7294,
+      "path": "src/basic/fd-util.h",
+      "sha256": "2570e5365fabbe9f26e684d138184f25bf720d081bbb551dde9182958344b962"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 714,
+      "path": "src/basic/label.c",
+      "sha256": "a87d45bd03e6789fc3ea4b1a8babf7fd6cf15bb3a54747d9deb9a4e274f84cb5"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 3109,
+      "path": "src/shared/label-util.c",
+      "sha256": "69733a82b73b3a095aae75afa276488de45fa1db797a488a7634264a56fe978b"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 25770,
+      "path": "src/shared/selinux-util.c",
+      "sha256": "241a1cdb353d954a1a771e4b33709860a2df729bb7512130b5fb985fe1105df7"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 47226,
+      "path": "src/basic/path-util.c",
+      "sha256": "bdf1ddb4de9ca9339ad75e60844a4221c0ba804b0fbf13889a1a087f3b179549"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 680,
+      "path": "units/systemd-update-done.service.in",
+      "sha256": "2ca7b8c06debdf75024eb12a2bb0a7b52422e7e9b8277c8bd36b5a82f36d5a41"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 129384,
+      "path": "meson.build",
+      "sha256": "2425c096d79637a5b2aecf38188682c64f96d554f1a76e2edc0809ca3c198672"
+    },
+    {
+      "admission": "normal-dpkg-source-quilt",
+      "bytes": 11713,
+      "kind": "libselinux",
+      "package": "libselinux",
+      "path": "src/procattr.c",
+      "sha256": "b135fe619e7eaa4d68ee48c190b8ec00d27763b42604be65667b63f9dba294d4",
+      "version": "3.9-4build1+p4lsmexec4"
+    },
+    {
+      "admission": "normal-dpkg-source-quilt",
+      "bytes": 2913,
+      "kind": "libselinux",
+      "package": "libselinux",
+      "path": "src/init.c",
+      "sha256": "c7e545e2e87322738a55f55fd7b4ebf8957c44a3d9f87f52a2c359e4ad865ba3",
+      "version": "3.9-4build1+p4lsmexec4"
+    },
+    {
+      "admission": "normal-dpkg-source-quilt",
+      "bytes": 10196,
+      "kind": "libselinux",
+      "package": "libselinux",
+      "path": "src/selinux_config.c",
+      "sha256": "40a1f0b4f0a0bba99c64a77fa952fde889d68927360dcf2aef927c662cf845ea",
+      "version": "3.9-4build1+p4lsmexec4"
+    },
+    {
+      "admission": "normal-dpkg-source-quilt",
+      "bytes": 8487,
+      "kind": "libselinux",
+      "package": "libselinux",
+      "path": "src/label.c",
+      "sha256": "e98ece15f3e9b13a888adf9bd1cda4adfdd0e7779425f6bc9823b861e8d5b630",
+      "version": "3.9-4build1+p4lsmexec4"
+    },
+    {
+      "admission": "normal-dpkg-source-quilt",
+      "bytes": 4506,
+      "kind": "libselinux",
+      "package": "libselinux",
+      "path": "src/label_internal.h",
+      "sha256": "491dd0f72bc145d3b1c2e60c15c0b9702974d2fa9083961f7285426def18b37a",
+      "version": "3.9-4build1+p4lsmexec4"
+    },
+    {
+      "admission": "normal-dpkg-source-quilt",
+      "bytes": 13687,
+      "kind": "libselinux",
+      "package": "libselinux",
+      "path": "src/matchpathcon.c",
+      "sha256": "ea2962b78e32e6cefca8d8f619c40bcdcc044b52e145d48f80ee9b038299c1b9",
+      "version": "3.9-4build1+p4lsmexec4"
+    },
+    {
+      "admission": "normal-dpkg-source-quilt",
+      "bytes": 61312,
+      "kind": "libselinux",
+      "package": "libselinux",
+      "path": "src/label_file.c",
+      "sha256": "f2bc93e276a35a2d4c9b1dd49afd17f4e2a59831fdc784ce0b57b2eb9e20a9bf",
+      "version": "3.9-4build1+p4lsmexec4"
+    },
+    {
+      "admission": "normal-dpkg-source-quilt",
+      "bytes": 8904,
+      "kind": "libselinux",
+      "package": "libselinux",
+      "path": "src/sestatus.c",
+      "sha256": "fdb7af8c91773b3ede3bc6ed73b22b7d268a1b2e4645ff5d3cde1699272c311c",
+      "version": "3.9-4build1+p4lsmexec4"
+    },
+    {
+      "admission": "selected-kernel-source",
+      "bytes": 212133,
+      "kind": "kernel",
+      "package": "linux",
+      "path": "security/selinux/hooks.c",
+      "sha256": "4fa2a20bff2788fffc1f6bc95d49af3e1145e6a679f69ff5aa2d5a1bd85272a0",
+      "version": "6.18.64-p4ctx6181-fusectl-aafs-peer-r1"
+    }
+  ],
+  "unit": {
+    "argv": [
+      "/usr/lib/systemd/systemd-update-done"
+    ],
+    "path": "/usr/lib/systemd/system/systemd-update-done.service"
+  },
+  "unit_environment_overridden": false,
+  "version": "259.9-0ubuntu0.1+p4gentmp2"
+}

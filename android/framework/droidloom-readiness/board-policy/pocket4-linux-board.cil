@@ -87,7 +87,7 @@
 ; FINISH reads only selinuxfs status and the original nsfs witnesses.
 ; Keep the boot-proc partition, then split this actor with its exact complement.
 (typeattribute p4_native_nonjournal_without_early_reads)
-(typeattributeset p4_native_nonjournal_without_early_reads (and (p4_native_nonjournal_without_boot_proc_inputs) (not (or (p4_linux_early_t) (p4_linux_once_return_t)))))
+(typeattributeset p4_native_nonjournal_without_early_reads (and (p4_native_nonjournal_without_boot_proc_inputs) (not (or (p4_linux_early_t) (p4_linux_once_return_t) (p4_linux_update_done_t)))))
 (typeattribute p4_early_nonboard_without_fixed_reads)
 (typeattributeset p4_early_nonboard_without_fixed_reads (and (p4_all_nonboard) (not (or (selinuxfs) (p4_kernel_ns_handle_t)))))
 (neverallow p4_native_nonjournal_without_early_reads p4_nonboard_except_kernel_cmdline (file (open read)))

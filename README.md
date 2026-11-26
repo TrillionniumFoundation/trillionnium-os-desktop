@@ -120,3 +120,30 @@ exact lifecycle and class-aware neighboring paths. Catalog precedes seed:
 seed explicitly inherits only its original two root-directory metadata bits,
 and no catalog file access. A normal full-policy link and runtime service
 success remain separate qualification requirements.
+
+### Normal update-done markers
+
+The unchanged systemd 259.9 update-done ELF has a separate service domain. It
+reads the public SELinux file-context database and status page, selects each
+final marker's type with the selected kernel's native FSCREATE attribute API,
+and uses the normal O_RDWR temporary-file, fflush, futimens, chmod and rename
+sequence for /etc/.updated and /var/.updated. No SYNC flag, unit environment
+override or pre-created marker is introduced. Both directories must already
+exist. The normal EROFS handling and propagation of other write errors remain.
+
+The exact /var directory and the two regular marker families have preserved
+source aliases; /etc reuses its existing sysusers directory alias. The normal
+service executor alone selects the new update-done entry. The producer retains
+every other actor's complete original raw and constrained alias access and the
+original entry transition; it removes only the copied setup transition on the
+new entry. Six fixed off-class metadata views also retain all 16 source/target
+category pairs. Complete original MLS and relabel constraints remain intact.
+
+The dedicated domain has only its two parent namespaces and marker lifecycle,
+normal libraries and inherited standard I/O, own descriptor-path metadata, and
+read-only label lookup. The permanent verifier independently rejects SELinux
+security requests, netlink fallback, selinuxfs writes, extra ioctl filters,
+capabilities, foreign process reads and generic parent/config/data mutation.
+Source admission separately reads the exact normal systemd/libselinux package
+sources and selected kernel. These source and binary checks do not qualify a
+running kernel or assert successful service completion.

@@ -33,7 +33,7 @@
 
 # Original helper entrypoints from the selected Ubuntu system and user units.
 /usr/lib/systemd/(system|user)-generators/[^/]+ -- u:object_r:p4_linux_generator_exec_t:s0
-/usr/lib/systemd/systemd-(battery-check|binfmt|bsod|factory-reset|hibernate-resume|pcrextend|tpm2-setup|update-done|user-sessions|user-runtime-dir) -- u:object_r:p4_linux_setup_exec_t:s0
+/usr/lib/systemd/systemd-(battery-check|binfmt|bsod|factory-reset|hibernate-resume|pcrextend|tpm2-setup|user-sessions|user-runtime-dir) -- u:object_r:p4_linux_setup_exec_t:s0
 /usr/bin/systemd-(firstboot|hwdb|machine-id-setup|sysusers|tmpfiles|sysext|confext) -- u:object_r:p4_linux_setup_exec_t:s0
 /usr/sbin/ldconfig -- u:object_r:p4_linux_ldconfig_exec_t:s0
 /usr/lib/systemd/systemd-modules-load -- u:object_r:p4_linux_module_loader_exec_t:s0
@@ -433,3 +433,6 @@
 # Fixed generated static-node configuration; all adjacent names keep their old labels.
 /run/tmpfiles\.d -d u:object_r:p4_linux_kmod_tmpfiles_dir_t:s0
 /run/tmpfiles\.d/static-nodes\.conf -- u:object_r:p4_linux_kmod_static_nodes_t:s0
+
+# Unchanged normal update-done, isolated from the broad setup role.
+/usr/lib/systemd/systemd-update-done -- u:object_r:p4_linux_update_done_exec_t:s0

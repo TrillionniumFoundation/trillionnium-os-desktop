@@ -12,7 +12,7 @@
 /etc/systemd -d u:object_r:p4_linux_rootdir_t:s0
 /etc/systemd/system -d u:object_r:p4_linux_unit_directory_t:s0
 /etc/systemd/system\.conf -- u:object_r:p4_linux_systemd_config_t:s0
-/var -d u:object_r:p4_linux_rootdir_t:s0
+/var -d u:object_r:p4_linux_update_done_var_dir_t:s0
 /var/lib -d u:object_r:p4_linux_rootdir_t:s0
 /etc/machine-id -- u:object_r:p4_linux_machine_id_t:s0
 /etc -d u:object_r:p4_linux_sysusers_etc_root_t:s0
@@ -110,3 +110,9 @@
 /run/droidloom-early/host-mount-identity\.json -- u:object_r:p4_linux_host_mount_identity_t:s0
 /usr/share/droidloom/production/droidloom-original-once(\.target|-return\.service|-return\.timer) -- u:object_r:p4_linux_once_unit_t:s0
 /etc/systemd/system/droidloom-original-once(\.target|-return\.service|-return\.timer) -- u:object_r:p4_linux_once_unit_t:s0
+
+# Normal final marker labels also cover exactly its random temporary basenames.
+/etc/\.updated -- u:object_r:p4_linux_update_done_etc_file_t:s0
+/etc/\.#\.updated[0-9a-f]{16} -- u:object_r:p4_linux_update_done_etc_file_t:s0
+/var/\.updated -- u:object_r:p4_linux_update_done_var_file_t:s0
+/var/\.#\.updated[0-9a-f]{16} -- u:object_r:p4_linux_update_done_var_file_t:s0

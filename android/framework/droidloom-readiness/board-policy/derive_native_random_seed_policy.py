@@ -199,6 +199,17 @@ def _predecessor_aliases(here):
         if CATALOG != fixed:
             raise ValueError("The fixed catalog predecessor alias roster changed")
         rows.extend(CATALOG)
+    if (here / "derive_native_update_done_policy.py").exists():
+        from derive_native_update_done_policy import ALIASES as UPDATE_DONE
+        fixed = [
+            {"source": "p4_linux_setup_exec_t", "target": "p4_linux_update_done_exec_t", "class": "file"},
+            {"source": "p4_linux_rootdir_t", "target": "p4_linux_update_done_var_dir_t", "class": "dir"},
+            {"source": "p4_linux_native_config_t", "target": "p4_linux_update_done_etc_file_t", "class": "file"},
+            {"source": "p4_linux_native_data_t", "target": "p4_linux_update_done_var_file_t", "class": "file"},
+        ]
+        if UPDATE_DONE != fixed:
+            raise ValueError("The fixed update-done predecessor alias roster changed")
+        rows.extend(UPDATE_DONE)
     return rows
 
 
@@ -500,7 +511,7 @@ def verify_file_contexts(here, work):
         ("/usr/lib/systemd/systemd-random-seed", stat.S_IFREG, ENTRY),
         ("/var/lib/systemd/random-seed", stat.S_IFREG, FILE),
         ("/var/lib/systemd", stat.S_IFDIR, PARENT),
-        ("/usr/lib/systemd/systemd-update-done", stat.S_IFREG, "p4_linux_setup_exec_t"),
+        ("/usr/lib/systemd/systemd-update-done", stat.S_IFREG, "p4_linux_update_done_exec_t"),
     ]
     for base in ("/usr/lib/systemd/systemd-random-seed", "/var/lib/systemd/random-seed"):
         cases.extend((base, kind, None) for kind in (stat.S_IFDIR, stat.S_IFLNK))

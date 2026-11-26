@@ -37,6 +37,10 @@ ALIASES = [
 # target or infer a permission from candidate output. Final reports list the
 # concrete entries present for the release contract's exact composition gate.
 PRIOR_ALIASES = [
+    {"source": "p4_linux_setup_exec_t", "target": "p4_linux_update_done_exec_t", "class": "file"},
+    {"source": "p4_linux_rootdir_t", "target": "p4_linux_update_done_var_dir_t", "class": "dir"},
+    {"source": "p4_linux_native_config_t", "target": "p4_linux_update_done_etc_file_t", "class": "file"},
+    {"source": "p4_linux_native_data_t", "target": "p4_linux_update_done_var_file_t", "class": "file"},
     {"source": "p4_linux_rootdir_t", "target": "p4_linux_kmod_tmpfiles_dir_t", "class": "dir"},
     {"source": "p4_linux_native_data_t", "target": "p4_linux_kmod_static_nodes_t", "class": "file"},
     {"source": "p4_linux_rootdir_t", "target": "p4_linux_journal_catalog_dir_t", "class": "dir"},
