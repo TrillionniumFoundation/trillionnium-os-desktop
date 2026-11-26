@@ -84,8 +84,15 @@
 (typeattributeset p4_nonboard_except_journal_uts_and_boot_id (and (p4_all_nonboard) (not (or (proc_hostname) (proc_random)))))
 (typeattribute p4_native_nonjournal_without_module_reads)
 (typeattributeset p4_native_nonjournal_without_module_reads (and (p4_linux_nonmac_nonjournal_without_native_selinux_queries) (not (or (p4_native_sysfs_readers) (p4_native_maintenance_actors)))))
-(neverallow p4_native_nonjournal_without_boot_proc_inputs p4_nonboard_except_kernel_cmdline (file (open read)))
+; FINISH reads only selinuxfs status and the original nsfs witnesses.
+; Keep the boot-proc partition, then split this actor with its exact complement.
+(typeattribute p4_native_nonjournal_without_early_reads)
+(typeattributeset p4_native_nonjournal_without_early_reads (and (p4_native_nonjournal_without_boot_proc_inputs) (not (p4_linux_early_t))))
+(typeattribute p4_early_nonboard_without_fixed_reads)
+(typeattributeset p4_early_nonboard_without_fixed_reads (and (p4_all_nonboard) (not (or (selinuxfs) (p4_kernel_ns_handle_t)))))
+(neverallow p4_native_nonjournal_without_early_reads p4_nonboard_except_kernel_cmdline (file (open read)))
 (neverallow p4_native_nonjournal_boot_proc_inputs p4_nonboard_except_boot_proc_inputs (file (open read)))
+(neverallow p4_linux_early_t p4_early_nonboard_without_fixed_reads (file (open read)))
 (neverallow p4_linux_journald_t p4_nonboard_except_journal_uts_and_boot_id (file (open read)))
 ; The upstream journal watches its UTS namespace's hostname. Android's same
 ; original proc_hostname type and its own permissions remain intact.
@@ -122,7 +129,9 @@
 (typeattributeset p4_linux_without_kernel_directory_traversal (and (p4_linux_procs) (not (or (init_t) (or (p4_linux_early_t) (p4_linux_service_executor_t))))))
 (typeattribute p4_nonboard_except_device_directory)
 (typeattributeset p4_nonboard_except_device_directory (and (p4_all_nonboard) (not (device))))
-(neverallow p4_linux_early_t p4_nonboard_except_device_directory (dir (search)))
+(typeattribute p4_early_nonboard_without_fixed_directories)
+(typeattributeset p4_early_nonboard_without_fixed_directories (and (p4_all_nonboard) (not (or (device) (or (proc) (or (sysfs) (selinuxfs)))))))
+(neverallow p4_linux_early_t p4_early_nonboard_without_fixed_directories (dir (search)))
 (allow p4_linux_early_t device (dir (search)))
 (allow init_t device (dir (getattr search)))
 (neverallow p4_linux_early_t binder_device (chr_file (read write open ioctl map)))

@@ -779,7 +779,7 @@ static int vt_label_kind(const struct droidloom_linux_vts *held, size_t index)
     char label[128];
     ssize_t size = vt_raw_label(held, index, false, label, sizeof(label));
     if (size < 0)
-        return errno == ENODATA ? 0 : -1;
+        return -1; /* An initialized devtmpfs inode always has a real SID. */
     if (droidloom_context_matches(label, size, original_vt_context))
         return 1;
     if (droidloom_context_matches(label, size, linux_vt_context))
@@ -805,8 +805,9 @@ void droidloom_close_linux_vts(struct droidloom_linux_vts *held)
 
 int droidloom_prepare_linux_vts(struct droidloom_linux_vts *held)
 {
-    /* The sole production caller has also proved initial namespaces,
-     * enforcing=1 and the empty policy/class directory before this function. */
+    /* FINISH is already p4_linux_early_t and verifies the current first-load
+     * enforcing status and original namespaces before and after this whole
+     * transaction. FS_USE_TRANS devtmpfs requires a post-load relabel. */
     if (getpid() != 1 || geteuid() != 0 || held->held_count ||
         held->dev != -1 || held->proc_fds != -1 || held->prepared)
         return vt_fail(EPERM);
@@ -869,8 +870,8 @@ int droidloom_prepare_linux_vts(struct droidloom_linux_vts *held)
     if (!error)
         held->prepared = true;
     else {
-        /* A partial first-load preparation is fatal; it never continues to
-         * load policy or start services. Close every held descriptor. */
+        /* Any partial post-load relabel is fatal; never start systemd or
+         * services from this transaction. Close every held descriptor. */
         droidloom_close_linux_vts(held);
         return vt_fail(error);
     }
@@ -882,14 +883,25 @@ int droidloom_verify_linux_vts(const struct droidloom_linux_vts *held)
     if (!held->prepared || held->held_count != DROIDLOOM_LINUX_VT_COUNT ||
         held->dev < 0 || held->proc_fds < 0)
         return vt_fail(EINVAL);
-    /* Called only after the exact initial policy is loaded: getxattr now
-     * resolves its real SID. Reject invalid/unmapped labels and changed F9. */
+    /* The same post-load transaction reads each actual SELinux SID.
+     * Reject invalid/unmapped labels and changed F9 before any service. */
     for (size_t n = 0; n < held->held_count; n++) {
         int result = vt_label_kind(held, n);
         if (result != 2)
             return vt_fail(result < 0 ? errno : EACCES);
     }
     return 0;
+}
+
+int droidloom_initialize_linux_vts(void)
+{
+    struct droidloom_linux_vts held = { .dev = -1, .proc_fds = -1 };
+    int result = droidloom_prepare_linux_vts(&held);
+    if (result == 0)
+        result = droidloom_verify_linux_vts(&held);
+    int error = errno;
+    droidloom_close_linux_vts(&held);
+    return result == 0 ? 0 : vt_fail(error);
 }
 
 static int native_ubuntu_shm(int dev, int target)

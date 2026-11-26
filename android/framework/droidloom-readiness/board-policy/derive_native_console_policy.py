@@ -45,8 +45,8 @@ VT_TYPE = "p4_linux_console_vt_t"
 PID1_IOCTLS = {0x4b45, 0x540b, 0x540d, 0x5413, 0x542a, 0x542b}
 LOGIND_IOCTLS = {0x4b3a, 0x4b45, 0x542a, 0x5602, 0x5603, 0x5605, 0x5606}
 VT_PERMISSIONS = {
-    "kernel": {"getattr"},
-    "p4_linux_early_t": {"getattr"},
+    "kernel": set(),
+    "p4_linux_early_t": {"getattr", "relabelto"},
     "init_t": set("getattr open read write lock ioctl".split()),
     "p4_linux_service_executor_t": set("getattr open read write ioctl".split()),
     ROLE: set("getattr open read write ioctl".split()),
@@ -180,6 +180,88 @@ def _verify_native_terminals(policy, lines, text, classes):
             "runtime_qualified": False}
 
 
+
+def _verify_early_vt_metadata(policy, lines, text, classes, objects):
+    """The source-owned FINISH path has no generic device body or MAC authority."""
+    actor = "p4_linux_early_t"
+    rows = []
+    def exact(target, cls, wanted, source=actor, source_role="system_r",
+              target_role="object_r", level="s0"):
+        names = classes[cls]
+        _, bits = policy.permissions(cls, names)
+        actual = policy.context_av(_context(source_role, source, level),
+            _context(target_role, target, level), cls, names)
+        got = {name for name, bit in bits.items() if actual & bit}
+        if got != set(wanted):
+            raise ValueError("FINISH metadata boundary differs: " + source + " " +
+                target + " " + cls + " " + repr(sorted(got)) + "/" + repr(sorted(wanted)))
+        rows.append([source, target, cls, level, sorted(got)])
+    for level in ("s0", "s0:c0,c1", "s0:c0.c1023"):
+        # This independent check includes kernel, which the existing Android
+        # userspace preservation walk deliberately does not enumerate.
+        exact("device", "chr_file", {"getattr"}, source="kernel", source_role="r", level=level)
+        exact("device", "chr_file", {"getattr", "relabelfrom"}, level=level)
+        exact(VT_TYPE, "chr_file", {"getattr", "relabelto"}, level=level)
+    for target, wanted in {
+        "device": {"getattr", "search"},
+        "p4_linux_native_dev_root_t": {"getattr", "search"},
+        "proc": {"search"}, actor: {"getattr", "search"},
+        "sysfs": {"search"}, "selinuxfs": {"search"},
+        "p4_linux_run_t": {"search"},
+        "p4_linux_early_handoff_dir_t": {"getattr", "search", "open", "read"},
+        "p4_linux_policy_epoch_dir_t": {"getattr", "search", "open", "read"},
+    }.items():
+        exact(target, "dir", wanted, target_role="system_r" if target == actor else "object_r")
+    exact(actor, "lnk_file", {"read"}, target_role="system_r")
+    for target in ("device", "proc", "tmpfs", "selinuxfs",
+                   "p4_kernel_ns_handle_t", "p4_kernel_pid_handle_t"):
+        exact(target, "filesystem", {"getattr"})
+    exact("selinuxfs", "file", {"getattr", "open", "read"})
+    exact("p4_linux_apparmor_epoch_t", "file", {"getattr", "open", "read"})
+    exact("p4_kernel_ns_handle_t", "file", {"getattr", "open", "read", "ioctl"})
+    # The selected pidfs inode is S_PRIVATE. Its SELinux open/ioctl hook returns
+    # before AV checks; never grant PID handle body or command rights anyway.
+    exact("p4_kernel_pid_handle_t", "file", set())
+    exact("kernel", "security", set(), target_role="r")
+    exact("device", "filesystem", {"associate"}, source=VT_TYPE, source_role="object_r")
+    exact("tmpfs", "filesystem", set(), source=VT_TYPE, source_role="object_r")
+    members = Membership(text)
+    nonboard_reads = 0
+    names = classes["file"]
+    _, bits = policy.permissions("file", names)
+    for target in objects:
+        if not members.member("p4_all_nonboard", target):
+            continue
+        actual = policy.context_av(_context("system_r", actor),
+            _context("object_r", target), "file", names)
+        wanted = {"open", "read"} if target in ("selinuxfs", "p4_kernel_ns_handle_t") else set()
+        got = {name for name in ("open", "read", "write", "append", "execute",
+                "execute_no_trans", "entrypoint", "map") if actual & bits[name]}
+        if got != wanted:
+            raise ValueError("FINISH acquired an unrelated original file body: " + target)
+        nonboard_reads += 1
+    ioctl = 0
+    for line in lines:
+        if not line.startswith("(allowx "):
+            continue
+        form = parse_expression(line)
+        if members.member(form[1], actor):
+            if (form[3][:2] != ["ioctl", "file"] or
+                    not members.member(form[2], "p4_kernel_ns_handle_t")):
+                raise ValueError("FINISH has an unrelated ioctl filter")
+            ioctl |= _ioctl_mask(form[3][2])
+    if ioctl != (1 << 0xb703):
+        raise ValueError("FINISH namespace ioctl is not only NS_GET_NSTYPE")
+    return {"phase": "post_self_exec_early_before_systemd",
+            "kernel_device_chr_permissions": ["getattr"],
+            "fixed_metadata_vectors": len(rows),
+            "fixed_metadata_vector_sha256": hashlib.sha256(json.dumps(rows, sort_keys=True).encode()).hexdigest(),
+            "original_file_objects_checked": nonboard_reads,
+            "pidfd_private_inode_additional_file_permissions": [],
+            "namespace_ioctl": [0xb703],
+            "cross_exec_vt_descriptors": False,
+            "runtime_qualified": False}
+
 def contract(here):
     value = json.loads((here / "native-console-setup.json").read_text())
     if (value["schema"] != SCHEMA or value["runtime_qualified"] is not False or
@@ -264,6 +346,7 @@ def verify(library, binary, exported, here, expected, export):
     objects = sorted(re.findall(r"\(roletype object_r (\w+)\)", text))
     ioctls = _verify_ioctl_filters(lines, text, objects)
     native_terminals = _verify_native_terminals(policy, lines, text, expected["classes"])
+    finish_metadata = _verify_early_vt_metadata(policy, lines, text, expected["classes"], objects)
     checks = verify_preserved_aliases(policy, exported, value["aliases"], expected)
     def av(target, cls, permissions, wanted, role="object_r"):
         got = policy.context_av(_context("system_r", ROLE), _context(role, target), cls, permissions)
@@ -346,6 +429,7 @@ def verify(library, binary, exported, here, expected, export):
             "fixed_interpreter_openers": sorted(INTERPRETER_OPENERS),
             "fixed_native_cache_readers": sorted(CACHE_LOADERS),
             "fixed_linux_vt_inventory": native_terminals,
+            "postload_vt_metadata": finish_metadata,
             "all_character_device_objects_checked": len(objects),
             "preserved_actor_object_vectors": len(expected["samples"]),
             "preserved_transitions": len(expected["transitions"]),

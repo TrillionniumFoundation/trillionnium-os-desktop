@@ -121,32 +121,10 @@ static void fixed_vt_cases(void)
         held.nodes[n].fd = vt_admit_node(held.dev, held.dev_mount, n, &held.nodes[n].identity);
         assert(held.nodes[n].fd >= 0);
         held.held_count++;
-        int initial_kind = vt_label_kind(&held, n);
-        if (initial_kind != 0) {
-            fprintf(stderr, "VT first raw read index=%zu kind=%d errno=%d\n", n, initial_kind, errno);
-            struct stat d, q, v;
-            uint64_t dm, qm, vm;
-            assert(fstat(held.dev, &d) == 0 && fstat(held.proc_fds, &q) == 0 &&
-                   fstat(held.nodes[n].fd, &v) == 0);
-            assert(vt_mount(held.dev, &dm) == 0 && vt_mount(held.proc_fds, &qm) == 0 &&
-                   vt_mount(held.nodes[n].fd, &vm) == 0);
-            fprintf(stderr, "matches dev=%d proc=%d node=%d mounts=%llu/%llu %llu/%llu %llu\n",
-                vt_same_inode(&d, &held.dev_identity, true),
-                vt_same_inode(&q, &held.proc_identity, true),
-                vt_same_inode(&v, &held.nodes[n].identity, true),
-                (unsigned long long)dm, (unsigned long long)held.dev_mount,
-                (unsigned long long)qm, (unsigned long long)held.proc_mount,
-                (unsigned long long)vm);
-            fprintf(stderr, "proc before size=%lld links=%lu mode=%o uid=%u gid=%u ino=%lu c=%ld.%ld m=%ld.%ld; after size=%lld links=%lu mode=%o uid=%u gid=%u ino=%lu c=%ld.%ld m=%ld.%ld\n",
-                (long long)held.proc_identity.st_size, (unsigned long)held.proc_identity.st_nlink,
-                held.proc_identity.st_mode, held.proc_identity.st_uid, held.proc_identity.st_gid,
-                (unsigned long)held.proc_identity.st_ino, held.proc_identity.st_ctim.tv_sec,
-                held.proc_identity.st_ctim.tv_nsec, held.proc_identity.st_mtim.tv_sec,
-                held.proc_identity.st_mtim.tv_nsec,
-                (long long)q.st_size, (unsigned long)q.st_nlink, q.st_mode, q.st_uid, q.st_gid,
-                (unsigned long)q.st_ino, q.st_ctim.tv_sec,q.st_ctim.tv_nsec,q.st_mtim.tv_sec,q.st_mtim.tv_nsec);
-        }
-        assert(initial_kind == 0);
+        /* This maintenance kernel has no active selected SELinux policy.
+         * A missing raw xattr must no longer pass post-load admission. */
+        assert(vt_label_kind(&held, n) == -1 && errno == ENODATA);
+        ++checks;
     }
     for (size_t n = 0; n < 65; n++) {
         struct stat before = held.nodes[n].identity, after;

@@ -636,6 +636,99 @@ mod tests {
     }
 
     #[test]
+    fn finish_epoch_matches_current_kernel_status() {
+        let work = tempfile::tempdir().unwrap();
+        let dir = work.path();
+        fs::write(
+            dir.join("board_policy_inputs.h"),
+            board_policy_header(&committed_board_inputs().unwrap()),
+        )
+        .unwrap();
+        for (name, source) in [
+            (
+                "board_policy.c",
+                include_bytes!("../../../runtime/droidloom-early-boot/board_policy.c").as_slice(),
+            ),
+            (
+                "board_policy.h",
+                include_bytes!("../../../runtime/droidloom-early-boot/board_policy.h").as_slice(),
+            ),
+            (
+                "apparmor_epoch.h",
+                include_bytes!("../../../runtime/droidloom-early-boot/apparmor_epoch.h").as_slice(),
+            ),
+            (
+                "boot_diagnostics.h",
+                include_bytes!("../../../runtime/droidloom-early-boot/boot_diagnostics.h")
+                    .as_slice(),
+            ),
+            (
+                "linux_run_label.h",
+                include_bytes!("../../../runtime/droidloom-early-boot/linux_run_label.h")
+                    .as_slice(),
+            ),
+            (
+                "device_source.h",
+                include_bytes!("../../../runtime/droidloom-early-boot/device_source.h").as_slice(),
+            ),
+            (
+                "device_template.h",
+                include_bytes!("../../../runtime/droidloom-early-boot/device_template.h")
+                    .as_slice(),
+            ),
+            (
+                "board.h",
+                include_bytes!("../../../runtime/droidloom-early-boot/board.h").as_slice(),
+            ),
+            (
+                "custody.h",
+                include_bytes!("../../../runtime/droidloom-early-boot/custody.h").as_slice(),
+            ),
+            (
+                "policy_epoch_test.c",
+                include_bytes!("../../../runtime/droidloom-early-boot/tests/policy_epoch_test.c")
+                    .as_slice(),
+            ),
+        ] {
+            fs::write(dir.join(name), source).unwrap();
+        }
+        let elf = dir.join("policy-epoch-test");
+        let compile = Command::new("cc")
+            .current_dir(dir)
+            .args([
+                "-std=gnu11",
+                "-O2",
+                "-Wall",
+                "-Wextra",
+                "-Werror",
+                "-ffunction-sections",
+                "-fdata-sections",
+                "policy_epoch_test.c",
+                "-Wl,--gc-sections",
+                "-lcrypto",
+                "-o",
+            ])
+            .arg(&elf)
+            .output()
+            .unwrap();
+        assert!(
+            compile.status.success(),
+            "{}",
+            String::from_utf8_lossy(&compile.stderr)
+        );
+        let result = Command::new(&elf).output().unwrap();
+        assert!(
+            result.status.success(),
+            "stdout={} stderr={}",
+            String::from_utf8_lossy(&result.stdout),
+            String::from_utf8_lossy(&result.stderr)
+        );
+        let result: serde_json::Value = serde_json::from_slice(&result.stdout).unwrap();
+        assert_eq!(result["fixed_epoch_parser_checks"], 21);
+        assert_eq!(result["runtime_qualified"], false);
+    }
+
+    #[test]
     #[ignore = "requires the exact admitted normal AppArmor archive in DROIDLOOM_TEST_APPARMOR_ARCHIVE"]
     fn admitted_apparmor_archive_reaches_original_epoch_roles() {
         let lock = committed_board_inputs().unwrap();

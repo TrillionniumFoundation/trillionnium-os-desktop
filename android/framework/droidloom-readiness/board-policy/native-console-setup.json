@@ -834,7 +834,7 @@
       "paths": [
         "/usr/lib/x86_64-linux-gnu/libsystemd.so.0.42.0"
       ],
-      "sha256": "25693d67ce2571107532b482f1057e3d7401788974c07c2f1b0615a7c07dd334",
+      "sha256": "716def160eb37d6732c60042a5b8b042e483b30ea274c3c6db3af5eb0503033c",
       "source_type": "p4_linux_runtime_lib_t",
       "target_type": "p4_linux_console_library_runtime_lib_t",
       "uid": 0
@@ -1238,7 +1238,7 @@
     "libgcc-s1": "16-20260322-1ubuntu1",
     "libpcre2-8-0": "10.46-1ubuntu0.1",
     "libselinux1": "3.9-4build1+p4lsmexec4",
-    "libsystemd0": "259.9-0ubuntu0.1+p4gentmp1",
+    "libsystemd0": "259.9-0ubuntu0.1+p4gentmp2",
     "locales": "2.43-2ubuntu2.7",
     "perl-base": "5.40.1-7ubuntu0.4",
     "rust-coreutils": "0.10.0-1ubuntu2~26.04.1",
@@ -1352,6 +1352,30 @@
       "bytes": 3311,
       "sha256": "193a6d67a3331f3badf5a9a889887957bbb97cb14fd8301391ccf619925769e1",
       "purpose": "selected kernel fixed VT and held proc-FD xattr semantics"
+    },
+    {
+      "path": "/home/qq/work/p4-lsm-peersec-kernel-20261124-516eec-r1/source/fs/pidfs.c",
+      "bytes": 29306,
+      "sha256": "e94f42e40118fb76c6e1f318bc51c988b84e1ba2fbabca96fd39a21bca387a09",
+      "purpose": "selected post-load VT metadata and original namespace/status admission"
+    },
+    {
+      "path": "/home/qq/work/p4-lsm-peersec-kernel-20261124-516eec-r1/source/fs/nsfs.c",
+      "bytes": 14991,
+      "sha256": "fb1366d38c672d0fdfa0925fb6f89a5f25c31e3bc3b84e5b558643c46174829f",
+      "purpose": "selected post-load VT metadata and original namespace/status admission"
+    },
+    {
+      "path": "/home/qq/work/p4-lsm-peersec-kernel-20261124-516eec-r1/source/security/selinux/selinuxfs.c",
+      "bytes": 48593,
+      "sha256": "e9814f116535bb3418dc3207c9f87a45c74529e5ee194dd329e0b7f560a6aec5",
+      "purpose": "selected post-load VT metadata and original namespace/status admission"
+    },
+    {
+      "path": "/home/qq/work/p4-lsm-peersec-kernel-20261124-516eec-r1/source/security/security.c",
+      "bytes": 191795,
+      "sha256": "3b4afe19e5ba78ee68eff86eccbb1d58328b23e0b2920a2204afd958d4125248",
+      "purpose": "selected post-load VT metadata and original namespace/status admission"
     }
   ],
   "unchanged_inputs": [
