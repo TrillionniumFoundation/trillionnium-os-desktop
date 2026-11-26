@@ -1588,6 +1588,7 @@ def main():
         compile_policy(compiler, [*args.android_cil, board, *components, shared,
                                  uevent_android, uevent_native, console_aliases, remount_aliases,
                                  netplan_aliases, sysusers_aliases], linked, contexts, environment)
+        host_control = verify_host_control(library, linked, work / "host-control-binary.cil", contract)
         netplan_access = verify_netplan(library, linked, work / "netplan-after.cil",
                                        here, netplan_contract, export_binary_policy)
         sysusers_access = verify_sysusers(library, linked, work / "sysusers-after.cil",
@@ -1600,7 +1601,6 @@ def main():
                                      work / "native-uevent-binary.cil", export_binary_policy)
         user_cgroups = verify_user_cgroups(library, linked, here, work / "user-cgroup-binary.cil", export_binary_policy)
         shared_access = verify(library, linked, contract)
-        host_control = verify_host_control(library, linked, work / "host-control-binary.cil", contract)
         native_capabilities = verify_native_service_capabilities(library, linked)
         login_audit = verify_login_audit(library, linked, work / "login-audit-binary.cil", export_binary_policy)
         auxiliary_sockets = verify_native_auxiliary_sockets(
