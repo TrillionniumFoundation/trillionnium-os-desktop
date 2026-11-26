@@ -51,6 +51,9 @@ int droidloom_label_linux_shm(const struct droidloom_linux_run *held);
 int droidloom_hold_linux_run(struct droidloom_linux_run *run);
 int droidloom_label_private_device(const struct droidloom_linux_run *held);
 int droidloom_label_linux_run(const struct droidloom_linux_run *run);
+int droidloom_hold_linux_mount_monitor(const struct droidloom_linux_run *run,
+                                      struct droidloom_linux_run *held);
+int droidloom_label_linux_mount_monitor(const struct droidloom_linux_run *held);
 int droidloom_hold_linux_udev(const struct droidloom_linux_run *run, struct droidloom_linux_run *udev);
 int droidloom_label_linux_udev(const struct droidloom_linux_run *udev);
 int droidloom_hold_linux_udev_data(const struct droidloom_linux_run *udev,
@@ -89,6 +92,7 @@ struct droidloom_linux_vts {
     struct droidloom_linux_vt nodes[DROIDLOOM_LINUX_VT_COUNT];
 };
 int droidloom_initialize_linux_vts(void);
+int droidloom_initialize_linux_root_device(void);
 int droidloom_prepare_linux_vts(struct droidloom_linux_vts *held);
 int droidloom_verify_linux_vts(const struct droidloom_linux_vts *held);
 void droidloom_close_linux_vts(struct droidloom_linux_vts *held);

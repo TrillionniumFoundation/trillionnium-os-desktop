@@ -320,6 +320,22 @@
 (allow p4_linux_udev_t p4_kernel_ns_handle_t (file (getattr)))
 (allow init_t p4_linux_rootdir_t (dir (open read)))
 (allow init_t p4_linux_run_t (dir (open read)))
+
+; The unmodified libmount monitor watches /run/mount for the future
+; utab.event name. Early boot holds and labels that exact existing/new tmpfs
+; directory before PID 1. Without it, libmount falls back to /run and fails
+; its inotify watch; systemd then loses its initial mount table.
+(type p4_linux_mount_monitor_dir_t)
+(roletype object_r p4_linux_mount_monitor_dir_t)
+(typeattributeset p4_linux_data (p4_linux_mount_monitor_dir_t))
+(allow kernel p4_linux_mount_monitor_dir_t (dir (getattr relabelto)))
+(allow p4_linux_mount_monitor_dir_t tmpfs (filesystem (associate)))
+(allow init_t p4_linux_mount_monitor_dir_t (dir (getattr open read search watch)))
+(allow p4_linux_remount_t p4_linux_mount_monitor_dir_t (dir (getattr search)))
+(neverallow init_t p4_linux_run_t (dir (watch)))
+(neverallow init_t p4_linux_mount_monitor_dir_t (dir (write add_name remove_name create setattr rmdir mounton relabelfrom relabelto)))
+(neverallow p4_linux_procs p4_linux_mount_monitor_dir_t (dir (relabelfrom relabelto)))
+(neverallow p4_android_userspace p4_linux_mount_monitor_dir_t (dir (open read search watch write add_name remove_name create setattr rmdir mounton relabelfrom relabelto)))
 (allow init_t p4_linux_kernel_modules_t (file (getattr open read)))
 (allow init_t p4_linux_udev_rules_t (dir (getattr search)))
 (allow p4_linux_setup_t p4_linux_udev_rules_t (dir (getattr)))

@@ -153,6 +153,20 @@ static int hold_runtime_directory(const struct droidloom_linux_run *parent, cons
     return hold_child(parent, name, 0, mode, held);
 }
 
+/* libmount watches this exact directory while utab.event is absent. Holding
+ * it before policy load prevents its normal ancestor fallback from reaching
+ * the unrelated /run root. Keep the original tmpfs inode, owner and mode. */
+int droidloom_hold_linux_mount_monitor(const struct droidloom_linux_run *run,
+                                      struct droidloom_linux_run *held)
+{
+    return hold_runtime_directory(run, "mount", 0755, held);
+}
+
+int droidloom_label_linux_mount_monitor(const struct droidloom_linux_run *held)
+{
+    return apply_label(held, "u:object_r:p4_linux_mount_monitor_dir_t:s0");
+}
+
 int droidloom_hold_ubuntu_log(const struct droidloom_linux_run *run,
                             struct droidloom_linux_journal_store *store)
 {
@@ -1139,4 +1153,346 @@ void droidloom_close_linux_init_scope(struct droidloom_linux_init_scope *held)
         close(held->scope.fd);
     if (held->root.fd >= 0)
         close(held->root.fd);
+}
+
+
+/* The normal mount helper resolves the root UUID through exactly one udev
+ * symlink. Keep device enumeration and every block-device body operation
+ * outside the remount domain. This transaction is called only from FINISH,
+ * between its original-PID1 namespace / enforcing-epoch checks. */
+#define ROOT_FSTAB_LIMIT 16384U
+enum root_hold_index {
+    ROOT_ROOT, ROOT_ETC, ROOT_FSTAB, ROOT_DEV, ROOT_DISK, ROOT_UUID_DIR,
+    ROOT_PROC_FDS, ROOT_LINK, ROOT_BLOCK, ROOT_HOLDS
+};
+struct root_device_hold {
+    int fd[ROOT_HOLDS];
+    struct stat identity[ROOT_HOLDS];
+    uint64_t mount[ROOT_HOLDS];
+    char uuid[37];
+    char name[64];
+    char link[70];
+};
+static const char root_fstab_context[] = "u:object_r:p4_linux_remount_fstab_native_config_t:s0";
+static const char root_link_context[] = "u:object_r:p4_linux_root_uuid_link_t:s0";
+static const char root_block_context[] = "u:object_r:p4_linux_root_block_t:s0";
+
+static bool root_uuid(const char *text)
+{
+    if (strlen(text) != 36)
+        return false;
+    for (size_t i = 0; i < 36; ++i) {
+        if (i == 8 || i == 13 || i == 18 || i == 23) {
+            if (text[i] != '-') return false;
+        } else if (!((text[i] >= '0' && text[i] <= '9') ||
+                     (text[i] >= 'a' && text[i] <= 'f'))) {
+            return false;
+        }
+    }
+    return true;
+}
+
+static int root_fstab_uuid(char *data, size_t size, char uuid[37])
+{
+    if (!size || size >= ROOT_FSTAB_LIMIT || data[size - 1] != '\n')
+        return vt_fail(EINVAL);
+    for (size_t i = 0; i < size; ++i)
+        if ((data[i] < 32 && data[i] != '\n' && data[i] != '\t' && data[i] != '\r') ||
+            (unsigned char)data[i] > 126)
+            return vt_fail(EINVAL);
+    data[size] = 0;
+    bool found = false;
+    char *line_state = NULL;
+    for (char *line = strtok_r(data, "\n", &line_state); line;
+         line = strtok_r(NULL, "\n", &line_state)) {
+        char *words[7], *state = NULL;
+        size_t count = 0;
+        for (char *word = strtok_r(line, " \t\r", &state); word;
+             word = strtok_r(NULL, " \t\r", &state)) {
+            if (word[0] == '#') break;
+            if (count == 7) return vt_fail(EINVAL);
+            words[count++] = word;
+        }
+        if (!count) continue;
+        if (count != 6) return vt_fail(EINVAL);
+        if (strcmp(words[1], "/")) continue;
+        if (found || strcmp(words[2], "ext4") || strcmp(words[3], "defaults") ||
+            strcmp(words[4], "0") || strcmp(words[5], "1"))
+            return vt_fail(EINVAL);
+        const char *value;
+        if (!strncmp(words[0], "UUID=", 5))
+            value = words[0] + 5;
+        else if (!strncmp(words[0], "/dev/disk/by-uuid/", 18))
+            value = words[0] + 18;
+        else
+            return vt_fail(EINVAL);
+        if (!root_uuid(value)) return vt_fail(EINVAL);
+        memcpy(uuid, value, 37);
+        found = true;
+    }
+    return found ? 0 : vt_fail(ENOENT);
+}
+
+static int root_capture(struct root_device_hold *held, size_t index, int fd)
+{
+    if (fd < 0) return -1;
+    held->fd[index] = fd;
+    if (fstat(fd, &held->identity[index]) < 0 ||
+        vt_mount(fd, &held->mount[index]) < 0)
+        return -1;
+    return 0;
+}
+
+static bool root_directory(const struct stat *st)
+{
+    return S_ISDIR(st->st_mode) && st->st_uid == 0 && st->st_gid == 0 &&
+        (st->st_mode & 07777) == 0755;
+}
+
+static bool root_block_metadata(const struct stat *st, dev_t root, dev_t dev)
+{
+    /* Selected kernel devtmpfs_create_node defaults to 0600/root:root.
+     * Normal 50-udev-default.rules sets block GROUP=disk; normal group has
+     * disk gid 6 and udev's nonzero-group default mode is exactly 0660. */
+    return S_ISBLK(st->st_mode) && st->st_uid == 0 &&
+        ((st->st_gid == 0 && (st->st_mode & 07777) == 0600) ||
+         (st->st_gid == 6 && (st->st_mode & 07777) == 0660)) &&
+        st->st_rdev == root && st->st_dev == dev &&
+        st->st_nlink == 1 && st->st_size == 0;
+}
+
+static int root_read_link(const struct root_device_hold *held, char value[70])
+{
+    ssize_t n = readlinkat(held->fd[ROOT_LINK], "", value, 69);
+    if (n < 0) return -1;
+    if (n <= 6 || n >= 69 || strncmp(value, "../../", 6))
+        return vt_fail(EINVAL);
+    value[n] = 0;
+    for (ssize_t i = 6; i < n; ++i)
+        if (!((value[i] >= 'a' && value[i] <= 'z') ||
+              (value[i] >= 'A' && value[i] <= 'Z') ||
+              (value[i] >= '0' && value[i] <= '9') ||
+              value[i] == '_' || value[i] == '-' || value[i] == '.'))
+            return vt_fail(EINVAL);
+    if (!strcmp(value + 6, ".") || !strcmp(value + 6, ".."))
+        return vt_fail(EINVAL);
+    return 0;
+}
+
+static int root_open_named(const struct root_device_hold *held, size_t index)
+{
+    switch (index) {
+    case ROOT_ROOT: return vt_open_path(AT_FDCWD, "/", true);
+    case ROOT_ETC: return vt_open_path(held->fd[ROOT_ROOT], "etc", true);
+    case ROOT_FSTAB: return vt_open_path(held->fd[ROOT_ETC], "fstab", false);
+    case ROOT_DEV: return vt_open_path(held->fd[ROOT_ROOT], "dev", true);
+    case ROOT_DISK: return vt_open_path(held->fd[ROOT_DEV], "disk", true);
+    case ROOT_UUID_DIR: return vt_open_path(held->fd[ROOT_DISK], "by-uuid", true);
+    case ROOT_PROC_FDS: return vt_open_path(AT_FDCWD, "/proc/1/fd", true);
+    case ROOT_LINK: return vt_open_path(held->fd[ROOT_UUID_DIR], held->uuid, false);
+    case ROOT_BLOCK: return vt_open_path(held->fd[ROOT_DEV], held->name, false);
+    default: return vt_fail(EINVAL);
+    }
+}
+
+static int root_stable_inode(struct root_device_hold *held, size_t i, int changed)
+{
+    if (i >= ROOT_HOLDS || held->fd[i] < 0) return vt_fail(EINVAL);
+    struct stat current, named;
+    uint64_t mount, named_mount;
+    int fd = root_open_named(held, i);
+    if (fd < 0) return -1;
+    int error = 0;
+    if (fstat(held->fd[i], &current) < 0 || fstat(fd, &named) < 0 ||
+        vt_mount(held->fd[i], &mount) < 0 || vt_mount(fd, &named_mount) < 0)
+        error = errno;
+    else if (mount != held->mount[i] || named_mount != mount ||
+             (i == ROOT_PROC_FDS ?
+              (!vt_same_proc_directory(&current, &held->identity[i]) ||
+               !vt_same_proc_directory(&named, &current)) :
+              (!vt_same_inode(&current, &held->identity[i], changed != (int)i) ||
+               !vt_same_inode(&named, &current, true))))
+        error = ESTALE;
+    close(fd);
+    if (error) return vt_fail(error);
+    if (changed == (int)i)
+        held->identity[i] = current; /* Only this inode's SELinux ctime changed. */
+    return 0;
+}
+
+static int root_stable(struct root_device_hold *held, int changed)
+{
+    for (size_t i = 0; i < ROOT_HOLDS; ++i)
+        if (root_stable_inode(held, i, changed) < 0) return -1;
+    char link[70];
+    if (root_read_link(held, link) < 0) return -1;
+    if (strcmp(link, held->link) ||
+        !root_block_metadata(&held->identity[ROOT_BLOCK],
+                             held->identity[ROOT_ROOT].st_dev,
+                             held->identity[ROOT_DEV].st_dev))
+        return vt_fail(ESTALE);
+    return 0;
+}
+
+static ssize_t root_raw_label(struct root_device_hold *held, size_t index,
+                              bool write_label, char *value, size_t size)
+{
+    if (index != ROOT_LINK && index != ROOT_BLOCK)
+        return vt_fail(EINVAL);
+    if (root_stable(held, -1) < 0) return -1;
+    char number[32];
+    const char *name = held->uuid;
+    int parent = held->fd[ROOT_UUID_DIR], flags = AT_SYMLINK_NOFOLLOW;
+    if (index == ROOT_BLOCK) {
+        (void)snprintf(number, sizeof(number), "%d", held->fd[ROOT_BLOCK]);
+        parent = held->fd[ROOT_PROC_FDS];
+        name = number;
+        flags = 0; /* Follow only this process's held block FD, never device body. */
+        int duplicate = openat(parent, name, O_PATH | O_CLOEXEC);
+        struct stat st;
+        uint64_t mount;
+        int error = 0;
+        if (duplicate < 0) return -1;
+        if (fstat(duplicate, &st) < 0 || vt_mount(duplicate, &mount) < 0)
+            error = errno;
+        else if (mount != held->mount[ROOT_BLOCK] ||
+                 !vt_same_inode(&st, &held->identity[ROOT_BLOCK], true))
+            error = ESTALE;
+        close(duplicate);
+        if (error) return vt_fail(error);
+    }
+    /* Selected 6.18 fs/xattr.c path_{get,set}xattrat accepts an O_PATH parent
+     * with a nonempty name. The empty-name fdget path rejects O_PATH. */
+    struct vt_xattr_args args = { .value = (uintptr_t)value, .size = size, .flags = 0 };
+    ssize_t result = syscall(write_label ? SYS_setxattrat : SYS_getxattrat,
+        parent, name, flags, "security.selinux", &args, sizeof(args));
+    int error = errno;
+    if (result < 0) return vt_fail(error);
+    if (root_stable(held, write_label ? (int)index : -1) < 0) return -1;
+    return result;
+}
+
+static int root_apply_label(struct root_device_hold *held, size_t index, const char *expected)
+{
+    char context[128];
+    ssize_t n = root_raw_label(held, index, false, context, sizeof(context));
+    if (n < 0) return -1;
+    if (!droidloom_context_matches(context, n, expected)) {
+        if (!droidloom_context_matches(context, n, original_vt_context))
+            return vt_fail(EACCES);
+        if (root_raw_label(held, index, true, (char *)expected, strlen(expected) + 1) < 0)
+            return -1;
+    }
+    n = root_raw_label(held, index, false, context, sizeof(context));
+    if (n < 0) return -1;
+    return droidloom_context_matches(context, n, expected) ? 0 : vt_fail(EACCES);
+}
+
+int droidloom_initialize_linux_root_device(void)
+{
+    struct root_device_hold held = {0};
+    for (size_t i = 0; i < ROOT_HOLDS; ++i) held.fd[i] = -1;
+    int error = 0;
+    struct statfs fs;
+    if (getpid() != 1 || geteuid() != 0) { error = EPERM; goto done; }
+    if (root_capture(&held, ROOT_ROOT, root_open_named(&held, ROOT_ROOT)) < 0 ||
+        root_capture(&held, ROOT_ETC, root_open_named(&held, ROOT_ETC)) < 0)
+        goto failed;
+    if (!root_directory(&held.identity[ROOT_ROOT]) ||
+        !root_directory(&held.identity[ROOT_ETC]) ||
+        held.identity[ROOT_ROOT].st_ino != 2 ||
+        held.identity[ROOT_ETC].st_dev != held.identity[ROOT_ROOT].st_dev ||
+        held.mount[ROOT_ETC] != held.mount[ROOT_ROOT]) {
+        error = EACCES; goto done;
+    }
+    if (fstatfs(held.fd[ROOT_ROOT], &fs) < 0) goto failed;
+    if (fs.f_type != EXT4_SUPER_MAGIC) { error = EACCES; goto done; }
+    struct open_how how = {
+        .flags = O_RDONLY | O_CLOEXEC | O_NOFOLLOW,
+        .resolve = RESOLVE_NO_SYMLINKS | RESOLVE_NO_MAGICLINKS,
+    };
+    if (root_capture(&held, ROOT_FSTAB, (int)syscall(SYS_openat2,
+            held.fd[ROOT_ETC], "fstab", &how, sizeof(how))) < 0)
+        goto failed;
+    const struct stat *fstab = &held.identity[ROOT_FSTAB];
+    if (!S_ISREG(fstab->st_mode) || fstab->st_uid || fstab->st_gid ||
+        fstab->st_nlink != 1 || (fstab->st_mode & 07777) != 0644 ||
+        fstab->st_size <= 0 || fstab->st_size >= ROOT_FSTAB_LIMIT ||
+        fstab->st_dev != held.identity[ROOT_ROOT].st_dev ||
+        held.mount[ROOT_FSTAB] != held.mount[ROOT_ROOT]) {
+        error = EACCES; goto done;
+    }
+    char context[128], data[ROOT_FSTAB_LIMIT + 1];
+    ssize_t n = fgetxattr(held.fd[ROOT_FSTAB], "security.selinux", context, sizeof(context));
+    if (n < 0) goto failed;
+    if (!droidloom_context_matches(context, n, root_fstab_context)) {
+        error = EACCES; goto done;
+    }
+    size_t used = 0;
+    while (used < (size_t)fstab->st_size) {
+        n = pread(held.fd[ROOT_FSTAB], data + used, (size_t)fstab->st_size - used, used);
+        if (n < 0 && errno == EINTR) continue;
+        if (n <= 0) { error = n < 0 ? errno : ESTALE; goto done; }
+        used += (size_t)n;
+    }
+    do { n = pread(held.fd[ROOT_FSTAB], data + used, 1, used); } while (n < 0 && errno == EINTR);
+    if (n != 0) { error = n < 0 ? errno : ESTALE; goto done; }
+    if (root_fstab_uuid(data, used, held.uuid) < 0) goto failed;
+    for (size_t i = ROOT_DEV; i <= ROOT_PROC_FDS; ++i)
+        if (root_capture(&held, i, root_open_named(&held, i)) < 0)
+            goto failed;
+    for (size_t i = ROOT_DEV; i <= ROOT_UUID_DIR; ++i) {
+        if (!root_directory(&held.identity[i]) ||
+            held.identity[i].st_dev != held.identity[ROOT_DEV].st_dev ||
+            held.mount[i] != held.mount[ROOT_DEV]) { error = EACCES; goto done; }
+        if (fstatfs(held.fd[i], &fs) < 0) goto failed;
+        if (fs.f_type != TMPFS_MAGIC || (fs.f_flags & ST_RDONLY)) {
+            error = EACCES; goto done;
+        }
+    }
+    if (fstatfs(held.fd[ROOT_PROC_FDS], &fs) < 0) goto failed;
+    if (fs.f_type != PROC_SUPER_MAGIC || held.identity[ROOT_PROC_FDS].st_uid ||
+        held.identity[ROOT_PROC_FDS].st_gid ||
+        !S_ISDIR(held.identity[ROOT_PROC_FDS].st_mode) ||
+        (held.identity[ROOT_PROC_FDS].st_mode & 07777) != 0500) {
+        error = EACCES; goto done;
+    }
+    if (root_capture(&held, ROOT_LINK, root_open_named(&held, ROOT_LINK)) < 0)
+        goto failed;
+    const struct stat *link = &held.identity[ROOT_LINK];
+    if (!S_ISLNK(link->st_mode) || link->st_uid || link->st_gid ||
+        (link->st_mode & 07777) != 0777 || link->st_nlink != 1 ||
+        link->st_dev != held.identity[ROOT_DEV].st_dev ||
+        held.mount[ROOT_LINK] != held.mount[ROOT_DEV]) { error = EACCES; goto done; }
+    if (root_read_link(&held, held.link) < 0) goto failed;
+    memcpy(held.name, held.link + 6, strlen(held.link + 6) + 1);
+    if (link->st_size != (off_t)strlen(held.link)) { error = ESTALE; goto done; }
+    if (root_capture(&held, ROOT_BLOCK, root_open_named(&held, ROOT_BLOCK)) < 0)
+        goto failed;
+    if (!root_block_metadata(&held.identity[ROOT_BLOCK],
+                             held.identity[ROOT_ROOT].st_dev,
+                             held.identity[ROOT_DEV].st_dev) ||
+        held.mount[ROOT_BLOCK] != held.mount[ROOT_DEV]) { error = EACCES; goto done; }
+    /* Admit both original SIDs before the first label mutation. */
+    for (size_t i = ROOT_LINK; i <= ROOT_BLOCK; ++i) {
+        const char *wanted = i == ROOT_LINK ? root_link_context : root_block_context;
+        n = root_raw_label(&held, i, false, context, sizeof(context));
+        if (n < 0) goto failed;
+        if (!droidloom_context_matches(context, n, original_vt_context) &&
+            !droidloom_context_matches(context, n, wanted)) {
+            error = EACCES; goto done;
+        }
+    }
+    if (root_stable(&held, -1) < 0 ||
+        root_apply_label(&held, ROOT_BLOCK, root_block_context) < 0 ||
+        root_apply_label(&held, ROOT_LINK, root_link_context) < 0 ||
+        root_stable(&held, -1) < 0)
+        goto failed;
+    goto done;
+failed:
+    error = errno;
+done:
+    for (size_t i = 0; i < ROOT_HOLDS; ++i)
+        if (held.fd[i] >= 0) close(held.fd[i]);
+    return error ? vt_fail(error) : 0;
 }

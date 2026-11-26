@@ -325,6 +325,9 @@ static int finish(int argc, char **argv)
     operation = "label and verify the original Linux VTs in the enforcing early role";
     if (droidloom_initialize_linux_vts() < 0)
         return -1;
+    operation = "label the mounted root UUID link and device metadata";
+    if (droidloom_initialize_linux_root_device() < 0)
+        return -1;
     operation = "recheck early role, original namespaces and current policy epoch";
     if (current_linux_role() < 0 || finish_namespaces() < 0 ||
         droidloom_board_verify_policy_epoch() < 0)

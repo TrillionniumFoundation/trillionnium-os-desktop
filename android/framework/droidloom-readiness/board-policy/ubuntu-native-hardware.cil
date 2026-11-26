@@ -35,11 +35,15 @@
 ; Existing libselinux query consumers retain their fixed sysfs/selinuxfs
 ; ancestors when they also inspect their own descriptor metadata.
 (typeattribute p4_native_self_fd_nonquery_readers)
-(typeattributeset p4_native_self_fd_nonquery_readers (and (p4_native_self_fd_metadata_readers) (not (p4_native_selinux_query_clients))))
+(typeattributeset p4_native_self_fd_nonquery_readers (and (p4_native_self_fd_metadata_readers) (not (or (p4_native_selinux_query_clients) (p4_native_selinux_metadata_clients)))))
 (typeattribute p4_native_self_fd_query_readers)
 (typeattributeset p4_native_self_fd_query_readers (and (p4_native_self_fd_metadata_readers) (p4_native_selinux_query_clients)))
 (neverallow p4_native_self_fd_nonquery_readers p4_nonboard_except_native_self_fd_dirs (dir (search)))
 (neverallow p4_native_self_fd_query_readers p4_nonboard_except_native_selinux_dirs (dir (search)))
+; The remount constructor only recognizes an existing selinuxfs mount.
+(typeattribute p4_nonboard_except_native_selinux_metadata_dirs)
+(typeattributeset p4_nonboard_except_native_selinux_metadata_dirs (and (p4_all_nonboard) (not (or (device) (or (proc) (or (sysfs) (selinuxfs)))))))
+(neverallow p4_native_selinux_metadata_clients p4_nonboard_except_native_selinux_metadata_dirs (dir (search)))
 (allow p4_linux_hardware_label_t proc (dir (getattr search)))
 (allow p4_linux_hardware_label_t proc (lnk_file (getattr read)))
 (allow p4_linux_hardware_label_t self (dir (getattr search)))

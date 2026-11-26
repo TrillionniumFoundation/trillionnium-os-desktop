@@ -61,6 +61,7 @@
 # Only the stock core directory families are selected; service-specific
 # namespace, logind, resolver and journal paths keep their independent types.
 /run -d u:object_r:p4_linux_run_t:s0
+/run/mount -d u:object_r:p4_linux_mount_monitor_dir_t:s0
 /run/systemd -d u:object_r:p4_linux_systemd_run_t:s0
 /run/systemd/(chr|blk|propagate)(/.*)? -d u:object_r:p4_linux_systemd_run_t:s0
 /run/systemd/journal -d u:object_r:p4_linux_journal_runtime_t:s0

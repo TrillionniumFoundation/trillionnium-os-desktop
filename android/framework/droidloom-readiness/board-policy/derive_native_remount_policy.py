@@ -1,6 +1,7 @@
 """Source-owned remount admission in the normal strict shared-kernel linker.
 
-Only the two unmodified package inodes receive narrower executable types.
+The two unmodified package inodes receive narrower executable types; the fixed
+fstab and root-device custody outputs receive separate metadata-only types.
 The common alias derivation preserves every old actor's complete AV, MCS,
 transition, constraint and ioctl view; this module proves the new role itself.
 """
@@ -19,10 +20,17 @@ from derive_shared_payload_cgroup_policy import parse_expression
 ROLE = "p4_linux_remount_t"
 ENTRY = "p4_linux_remount_exec_t"
 MOUNT = "p4_linux_remount_mount_exec_t"
+FSTAB = "p4_linux_remount_fstab_native_config_t"
+ROOT_LINK = "p4_linux_root_uuid_link_t"
+ROOT_BLOCK = "p4_linux_root_block_t"
+EARLY = "p4_linux_early_t"
 EXECUTOR = "p4_linux_service_executor_t"
 ALIASES = [
     {"source": "p4_linux_runtime_lib_t", "target": ENTRY, "class": "file"},
     {"source": "p4_linux_native_bin_t", "target": MOUNT, "class": "file"},
+    {"source": "p4_linux_native_config_t", "target": FSTAB, "class": "file"},
+    {"source": "device", "target": ROOT_LINK, "class": "lnk_file"},
+    {"source": "device", "target": ROOT_BLOCK, "class": "blk_file"},
 ]
 FILES = {
     "/usr/lib/systemd/systemd-remount-fs": (0o755, "p4_linux_runtime_lib_t", ENTRY),
@@ -60,6 +68,24 @@ def contract(here):
     if value["command_links"] != [
             {"path": "/etc/mtab", "target": "../proc/self/mounts", "uid": 0, "gid": 0}]:
         raise ValueError("Remount mount-table alias is not the distribution link")
+    repository = here.parents[3]
+    paths = {
+        "runtime/droidloom-early-boot/linux_run_label.c",
+        "runtime/droidloom-early-boot/linux_run_label.h",
+        "runtime/droidloom-early-boot/board_init.c",
+    }
+    rows = [row for row in value["source_documents"]
+            if row.get("admission") == "repository-source-bytes"]
+    if len(rows) != len(paths) or {row.get("path") for row in rows} != paths:
+        raise ValueError("Root-device custody source roster differs")
+    for row in rows:
+        if (set(row) != {"package", "version", "path", "bytes", "sha256", "admission"}
+                or row["package"] != "droidloom-early-boot"
+                or row["version"] != "source"):
+            raise ValueError("Unexpected root-device custody source metadata")
+        data = (repository / row["path"]).read_bytes()
+        if len(data) != row["bytes"] or hashlib.sha256(data).hexdigest() != row["sha256"]:
+            raise ValueError("Root-device custody source bytes differ: " + row["path"])
     return value
 
 
@@ -71,6 +97,9 @@ def derive(library, baseline, exported, here, output, export):
         isolated_roles={ROLE}, extra_permissions={
             ("init_t", ENTRY, "file"): entry_read,
             (EXECUTOR, ENTRY, "file"): entry_read,
+            (EARLY, FSTAB, "file"): {"getattr", "open", "read"},
+            (EARLY, ROOT_LINK, "lnk_file"): {"relabelto"},
+            (EARLY, ROOT_BLOCK, "blk_file"): {"relabelto"},
         }, preamble=("; Preserve the real pre-remount-alias access of all existing actors.",))
     expected["contract_sha256"] = hashlib.sha256(
         (here / "native-remount-source.json").read_bytes()).hexdigest()
@@ -102,6 +131,19 @@ def verify(library, binary, exported, here, expected, export):
                 str(actual) + " != " + str(sorted(wanted)))
         checks.append([actor_role, actor, target_role, target, cls, sorted(wanted)])
 
+    # The FINISH writer may only inspect and relabel the two held root-device
+    # inodes. Compare full class vectors, including absence of every body,
+    # mutation and ioctl permission, from the final linked policy.
+    root_custody = [
+        ("device", "lnk_file", {"getattr", "read", "relabelfrom"}),
+        ("device", "blk_file", {"getattr", "relabelfrom"}),
+        (ROOT_LINK, "lnk_file", {"getattr", "read", "relabelfrom", "relabelto"}),
+        (ROOT_BLOCK, "blk_file", {"getattr", "relabelfrom", "relabelto"}),
+        (FSTAB, "file", {"getattr", "open", "read"}),
+    ]
+    for target, cls, wanted in root_custody:
+        av(target, cls, wanted, actor=EARLY)
+
     # The complete old/source transition forms are already compared above.
     # Any new transition involving either narrower entry or the new role must
     # be one of those preserved forms or the one fixed service transition.
@@ -109,7 +151,7 @@ def verify(library, binary, exported, here, expected, export):
     for line in lines:
         if line.startswith(TRANSITION_OPS):
             form = parse_expression(line)
-            if any(isinstance(token, str) and token in (ROLE, ENTRY, MOUNT)
+            if any(isinstance(token, str) and token in (ROLE, ENTRY, MOUNT, FSTAB, ROOT_LINK, ROOT_BLOCK)
                    for token in form[1:]):
                 observed.add(line)
     fixed = "(typetransition " + EXECUTOR + " " + ENTRY + " process " + ROLE + ")"
@@ -131,6 +173,8 @@ def verify(library, binary, exported, here, expected, export):
         "p4_linux_runtime_lib_t": executable,
         "p4_linux_elf_interpreter_t": executable,
         "p4_linux_native_config_t": read,
+        FSTAB: read,
+        "proc_cmdline": read,
         # object_r also admits process types; AV rules select the concrete type.
         # The same fixed own-proc view is checked under every admitted role.
         ROLE: read,
@@ -149,22 +193,26 @@ def verify(library, binary, exported, here, expected, export):
             "p4_linux_standardio_t": {"getattr", "read", "write"},
             "null_device": {"getattr", "open", "read", "write"},
         }.get(target, set()))
-        av(target, "blk_file", set())
+        av(target, "blk_file", {"getattr"} if target == ROOT_BLOCK else set())
         av(target, "filesystem", {
             "labeledfs": {"getattr", "remount"}, "proc": {"getattr"},
+            "selinuxfs": {"getattr"},
         }.get(target, set()))
 
     directories = {
         "p4_linux_rootdir_t", "p4_linux_etc_dir_t", "p4_linux_run_t",
+        "p4_linux_mount_monitor_dir_t",
         "device", "p4_linux_native_dev_root_t", "proc", ROLE,
     }
     links = {"p4_linux_usrmerge_link_t", "p4_linux_timezone_link_t",
-             "p4_linux_native_config_t", "proc", ROLE}
+             "p4_linux_native_config_t", "proc", ROLE, ROOT_LINK}
     for row in aliases:
         if row["class"] == "dir" and row["source"] in directories:
             directories.add(row["target"])
     for target in objects:
-        av(target, "dir", {"getattr", "search"} if target in directories else set())
+        av(target, "dir", ({"search"} if target in
+            {"sysfs", "selinuxfs", "p4_linux_systemd_run_t"} else
+            {"getattr", "search"} if target in directories else set()))
         av(target, "lnk_file", {"getattr", "read"} if target in links else set())
     for role, target in actors:
         own = role == "system_r" and target == ROLE
@@ -211,6 +259,8 @@ def verify(library, binary, exported, here, expected, export):
         "file_contexts": verify_file_contexts(here, exported.parent),
         "matrix_sha256": hashlib.sha256(
             json.dumps(checks, sort_keys=True, separators=(",", ":")).encode()).hexdigest(),
+        "root_device_custody_vectors": [[target, cls, sorted(wanted)]
+            for target, cls, wanted in root_custody],
         "runtime_qualified": False,
     }
 
@@ -259,15 +309,31 @@ def verify_file_contexts(here, work):
                 if actual in (ENTRY, MOUNT):
                     raise ValueError("Remount execution label accepted another inode class")
                 checked.append([row["path"], mode, actual])
+        if lookup("/etc/fstab", stat.S_IFREG) != FSTAB:
+            raise ValueError("The fixed root fstab lacks its data-only label")
+        checked.append(["/etc/fstab", stat.S_IFREG, FSTAB])
         for filename, expected in [
             ("/usr/lib/systemd/systemd-remount-fs.extra", "p4_linux_runtime_lib_t"),
             ("/usr/lib/systemd/systemd-remount-fs/child", "p4_linux_runtime_lib_t"),
             ("/usr/bin/mount-extra", "p4_linux_native_bin_t"),
             ("/usr/bin/umount", "p4_linux_native_bin_t"),
+            ("/etc/fstab.extra", "p4_linux_native_config_t"),
         ]:
             if lookup(filename, stat.S_IFREG) != expected:
                 raise ValueError("Remount execution label extends to an unselected file")
             checked.append([filename, stat.S_IFREG, expected])
+        for filename, mode in [("/etc/fstab", stat.S_IFLNK),
+                ("/etc/fstab", stat.S_IFDIR),
+                ("/dev/disk/by-uuid/01c27223-3933-481e-9836-7bd0ef1be8c9", stat.S_IFLNK),
+                ("/dev/vda", stat.S_IFBLK), ("/dev/nvme0n1p2", stat.S_IFBLK)]:
+            try:
+                actual = lookup(filename, mode)
+            except OSError as error:
+                if error.errno != 2: raise
+                actual = None
+            if actual in (FSTAB, ROOT_LINK, ROOT_BLOCK):
+                raise ValueError("Root-device custody escaped its held-inode transaction")
+            checked.append([filename, mode, actual])
     finally:
         lib.selabel_close(handle)
     return {"selected_and_negative_cases": len(checked),

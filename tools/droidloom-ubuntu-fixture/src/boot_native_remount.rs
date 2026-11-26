@@ -59,6 +59,9 @@ fn validate(c: &Closure) -> Result<()> {
                 == vec![
                     json!({"source":"p4_linux_runtime_lib_t","target":"p4_linux_remount_exec_t","class":"file"}),
                     json!({"source":"p4_linux_native_bin_t","target":"p4_linux_remount_mount_exec_t","class":"file"}),
+                    json!({"source":"p4_linux_native_config_t","target":"p4_linux_remount_fstab_native_config_t","class":"file"}),
+                    json!({"source":"device","target":"p4_linux_root_uuid_link_t","class":"lnk_file"}),
+                    json!({"source":"device","target":"p4_linux_root_block_t","class":"blk_file"}),
                 ]
             && !c.source_documents.is_empty(),
         "remount source contract is not the compiled normal package selection",
@@ -245,6 +248,105 @@ mod tests {
         std::fs::remove_file(&path).unwrap();
         std::os::unix::fs::symlink("elsewhere", &path).unwrap();
         assert!(verify_files(&tree, &[row]).is_err());
+    }
+
+
+    #[test]
+    fn root_fstab_and_device_custody_reject_ambiguous_or_changed_inputs() {
+        use std::process::Command;
+        let area = tempfile::tempdir().unwrap();
+        let source = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../runtime/droidloom-early-boot");
+        let program = area.path().join("root-custody.c");
+        let executable = area.path().join("root-custody");
+        std::fs::write(&program, r##"
+#include "linux_run_label.c"
+#include <assert.h>
+#include <stdlib.h>
+
+static void parse_case(const char *text, bool accepted) {
+    char data[ROOT_FSTAB_LIMIT + 1], uuid[37];
+    size_t n = strlen(text);
+    memcpy(data, text, n);
+    int result = root_fstab_uuid(data, n, uuid);
+    assert((result == 0) == accepted);
+    if (accepted) assert(!strcmp(uuid, "01c27223-3933-481e-9836-7bd0ef1be8c9"));
+}
+int main(int argc, char **argv) {
+    assert(argc == 2);
+    parse_case("# root\nUUID=01c27223-3933-481e-9836-7bd0ef1be8c9 / ext4 defaults 0 1\n", true);
+    parse_case("/dev/disk/by-uuid/01c27223-3933-481e-9836-7bd0ef1be8c9 / ext4 defaults 0 1\n/swap.img none swap sw 0 0\n", true);
+    parse_case("UUID=01c27223-3933-481e-9836-7bd0ef1be8c9 / ext4 defaults 0 1\nUUID=01c27223-3933-481e-9836-7bd0ef1be8c9 / ext4 defaults 0 1\n", false);
+    parse_case("UUID=01c27223-3933-481e-9836-7bd0ef1be8c9 / xfs defaults 0 1\n", false);
+    parse_case("UUID=01c27223-3933-481e-9836-7bd0ef1be8c9 / ext4 defaults 0 1", false);
+    parse_case("UUID=01c27223-3933-481e-9836-7bd0ef1be8c9 / ext4 defaults 0 1 extra\n", false);
+    parse_case("UUID=01C27223-3933-481e-9836-7bd0ef1be8c9 / ext4 defaults 0 1\n", false);
+    parse_case("UUID=../01c27223-3933-481e-9836-7bd0ef1be8c9 / ext4 defaults 0 1\n", false);
+    parse_case("/dev/vda / ext4 defaults 0 1\n", false);
+    parse_case("/dev/disk/by-uuid/01c27223-3933-481e-9836-7bd0ef1be8c9/child / ext4 defaults 0 1\n", false);
+    parse_case("UUID=01c27223-3933-481e-9836-7bd0ef1be8c9 /boot ext4 defaults 0 1\n", false);
+    char embedded[] = "UUID=01c27223-3933-481e-9836-7bd0ef1be8c9 / ext4 defaults 0 1\0\n";
+    char uuid[37];
+    assert(root_fstab_uuid(embedded, sizeof(embedded) - 1, uuid) < 0);
+    dev_t root = makedev(259, 2), dev = makedev(0, 20);
+    struct stat block = { .st_mode = S_IFBLK | 0600, .st_uid = 0,
+        .st_gid = 0, .st_rdev = root, .st_dev = dev, .st_nlink = 1 };
+    assert(root_block_metadata(&block, root, dev));
+    block.st_gid = 6; block.st_mode = S_IFBLK | 0660;
+    assert(root_block_metadata(&block, root, dev));
+    struct stat good = block;
+    block.st_gid = 7; assert(!root_block_metadata(&block, root, dev)); block = good;
+    block.st_mode |= 0006; assert(!root_block_metadata(&block, root, dev)); block = good;
+    block.st_uid = 1000; assert(!root_block_metadata(&block, root, dev)); block = good;
+    block.st_rdev = makedev(259, 3); assert(!root_block_metadata(&block, root, dev)); block = good;
+    block.st_mode = S_IFCHR | 0660; assert(!root_block_metadata(&block, root, dev)); block = good;
+    block.st_nlink = 2; assert(!root_block_metadata(&block, root, dev)); block = good;
+    block.st_size = 1; assert(!root_block_metadata(&block, root, dev));
+    struct root_device_hold held = {0};
+    for (size_t i = 0; i < ROOT_HOLDS; i++) held.fd[i] = -1;
+    held.fd[ROOT_ETC] = open(argv[1], O_PATH | O_DIRECTORY | O_CLOEXEC);
+    assert(held.fd[ROOT_ETC] >= 0);
+    int file = openat(held.fd[ROOT_ETC], "fstab", O_CREAT | O_EXCL | O_RDWR | O_CLOEXEC, 0600);
+    assert(file >= 0 && write(file, "selected\n", 9) == 9);
+    assert(root_capture(&held, ROOT_FSTAB, file) == 0);
+    assert(root_stable_inode(&held, ROOT_FSTAB, -1) == 0);
+    assert(linkat(held.fd[ROOT_ETC], "fstab", held.fd[ROOT_ETC], "alias", 0) == 0);
+    assert(root_stable_inode(&held, ROOT_FSTAB, -1) < 0);
+    assert(unlinkat(held.fd[ROOT_ETC], "alias", 0) == 0);
+    assert(fstat(file, &held.identity[ROOT_FSTAB]) == 0);
+    assert(renameat(held.fd[ROOT_ETC], "fstab", held.fd[ROOT_ETC], "old-fstab") == 0);
+    int substitute = openat(held.fd[ROOT_ETC], "fstab", O_CREAT | O_EXCL | O_RDWR | O_CLOEXEC, 0600);
+    assert(substitute >= 0 && write(substitute, "selected\n", 9) == 9);
+    assert(root_stable_inode(&held, ROOT_FSTAB, -1) < 0);
+    close(substitute); close(file);
+    assert(unlinkat(held.fd[ROOT_ETC], "fstab", 0) == 0);
+    assert(symlinkat("../../vda", held.fd[ROOT_ETC], "node") == 0);
+    held.fd[ROOT_LINK] = vt_open_path(held.fd[ROOT_ETC], "node", false);
+    assert(held.fd[ROOT_LINK] >= 0);
+    char text[70];
+    assert(root_read_link(&held, text) == 0 && !strcmp(text, "../../vda"));
+    close(held.fd[ROOT_LINK]);
+    assert(unlinkat(held.fd[ROOT_ETC], "node", 0) == 0);
+    assert(symlinkat("../../escape/device", held.fd[ROOT_ETC], "node") == 0);
+    held.fd[ROOT_LINK] = vt_open_path(held.fd[ROOT_ETC], "node", false);
+    assert(held.fd[ROOT_LINK] >= 0 && root_read_link(&held, text) < 0);
+    close(held.fd[ROOT_LINK]); close(held.fd[ROOT_ETC]);
+    puts("root-custody: 12 fstab, 9 block metadata, 3 held-inode, 2 link checks passed");
+    return 0;
+}
+"##).unwrap();
+        let built = Command::new("cc")
+            .args(["-std=gnu11", "-O2", "-Wall", "-Wextra", "-Werror",
+                   "-ffunction-sections", "-fdata-sections"])
+            .arg("-I").arg(&source)
+            .arg(&program).args(["-Wl,--gc-sections", "-o"]).arg(&executable)
+            .output().unwrap();
+        assert!(built.status.success(), "{}", String::from_utf8_lossy(&built.stderr));
+        let ran = Command::new(executable).arg(area.path()).output().unwrap();
+        assert!(ran.status.success(), "stdout={} stderr={}",
+            String::from_utf8_lossy(&ran.stdout), String::from_utf8_lossy(&ran.stderr));
+        assert_eq!(String::from_utf8_lossy(&ran.stdout).trim(),
+            "root-custody: 12 fstab, 9 block metadata, 3 held-inode, 2 link checks passed");
     }
 
     /// Read the committed contract against a complete, normally captured root.

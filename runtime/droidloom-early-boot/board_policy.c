@@ -295,7 +295,7 @@ int droidloom_board_activate_policy(gid_t observer_gid, const char *cohort)
     struct droidloom_raw_profile selected_profiles[4] = {0};
     int status = -1, epoch_directory = -1;
     struct droidloom_linux_init_scope scope = { .root.fd = -1, .scope.fd = -1, .procs.fd = -1, .controllers.fd = -1, .system_slice.fd = -1, .root_membership.fd = -1, .root_subtree_control.fd = -1 };
-    struct droidloom_linux_run run = {.fd = -1}, shm = {.fd = -1};
+    struct droidloom_linux_run run = {.fd = -1}, shm = {.fd = -1}, mount_monitor = {.fd = -1};
     struct droidloom_linux_journal_store log_store = { .log.fd = -1, .journal.fd = -1 };
     struct droidloom_linux_credentials credentials = { .root.fd = -1, .systemd.fd = -1, .staging.fd = -1 };
     struct droidloom_linux_run udev = {.fd = -1}, udev_data = {.fd = -1};
@@ -309,6 +309,7 @@ int droidloom_board_activate_policy(gid_t observer_gid, const char *cohort)
     if (rc == 0) { stage = "hold the original Ubuntu cgroup root and move global PID 1 to its init.scope"; rc = droidloom_hold_linux_init_scope(&scope); }
     if (rc == 0) { stage = "prepare the original Ubuntu shared memory mount"; rc = droidloom_hold_linux_shm(&shm); }
     if (rc == 0) { stage = "hold original Ubuntu /run"; rc = droidloom_hold_linux_run(&run); }
+    if (rc == 0) { stage = "hold the exact Ubuntu mount-monitor directory"; rc = droidloom_hold_linux_mount_monitor(&run, &mount_monitor); }
     if (rc == 0) { stage = "hold the Ubuntu runtime log directory"; rc = droidloom_hold_ubuntu_log(&run, &log_store); }
     if (rc == 0) { stage = "hold the distro credentials root"; rc = droidloom_hold_ubuntu_credentials(&run, &credentials); }
     if (rc == 0) { stage = "hold the root-owned Ubuntu udev directory on the original /run"; rc = droidloom_hold_linux_udev(&run, &udev); }
@@ -337,6 +338,7 @@ int droidloom_board_activate_policy(gid_t observer_gid, const char *cohort)
     if (rc == 0) { stage = "label the held Ubuntu cgroup root and its initial scope"; rc = droidloom_label_linux_init_scope(&scope); }
     if (rc == 0) { stage = "label the original Ubuntu shared memory root"; rc = droidloom_label_linux_shm(&shm); }
     if (rc == 0) { stage = "label the held Ubuntu /run inode"; rc = droidloom_label_linux_run(&run); }
+    if (rc == 0) { stage = "label the held Ubuntu mount-monitor directory"; rc = droidloom_label_linux_mount_monitor(&mount_monitor); }
     if (rc == 0) { stage = "label the held Ubuntu runtime log directory"; rc = droidloom_label_ubuntu_log(&log_store); }
     if (rc == 0) { stage = "label the held distro credentials root"; rc = droidloom_label_ubuntu_credentials(&credentials); }
     if (rc == 0) { stage = "label the held Ubuntu udev directory"; rc = droidloom_label_linux_udev(&udev); }
@@ -361,6 +363,8 @@ int droidloom_board_activate_policy(gid_t observer_gid, const char *cohort)
         close(udev_data.fd);
     if (udev.fd >= 0)
         close(udev.fd);
+    if (mount_monitor.fd >= 0)
+        close(mount_monitor.fd);
     if (run.fd >= 0)
         close(run.fd);
     free(aa.data);

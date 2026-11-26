@@ -354,3 +354,6 @@
 # Two exact normal package inodes for the stock root remount service.
 /usr/lib/systemd/systemd-remount-fs -- u:object_r:p4_linux_remount_exec_t:s0
 /usr/bin/mount -- u:object_r:p4_linux_remount_mount_exec_t:s0
+
+# Fixed root-fstab input for post-policy metadata custody; never an executable.
+/etc/fstab -- u:object_r:p4_linux_remount_fstab_native_config_t:s0

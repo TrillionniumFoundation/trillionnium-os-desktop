@@ -14,6 +14,21 @@
       "source": "p4_linux_native_bin_t",
       "target": "p4_linux_remount_mount_exec_t",
       "class": "file"
+    },
+    {
+      "source": "p4_linux_native_config_t",
+      "target": "p4_linux_remount_fstab_native_config_t",
+      "class": "file"
+    },
+    {
+      "source": "device",
+      "target": "p4_linux_root_uuid_link_t",
+      "class": "lnk_file"
+    },
+    {
+      "source": "device",
+      "target": "p4_linux_root_block_t",
+      "class": "blk_file"
     }
   ],
   "files": [
@@ -67,6 +82,78 @@
       "source": "systemd",
       "version": "259.9-0ubuntu0.1+p4gentmp2",
       "admission": "normal-dsc-roundtrip"
+    },
+    {
+      "package": "util-linux",
+      "version": "2.41.3-3ubuntu2.2",
+      "path": "libblkid/src/evaluate.c",
+      "bytes": 7791,
+      "sha256": "2115054d04313c90760aa9ffd1a2e8c4d6e596fc8545c94c34ebf775e50bf074",
+      "admission": "official-ubuntu-dsc-sha256-quilt"
+    },
+    {
+      "package": "util-linux",
+      "version": "2.41.3-3ubuntu2.2",
+      "path": "libblkid/src/blkidP.h",
+      "bytes": 19166,
+      "sha256": "1ec6cb8160fc263dcaf6e4e1cc27cff5360317cbe345557c99540e490267b2a3",
+      "admission": "official-ubuntu-dsc-sha256-quilt"
+    },
+    {
+      "package": "util-linux",
+      "version": "2.41.3-3ubuntu2.2",
+      "path": "libmount/src/context.c",
+      "bytes": 87933,
+      "sha256": "a5a3008e3c4920cd3dec3dbfe2d8e97803c657694fb9627f82674a1fe256dff8",
+      "admission": "official-ubuntu-dsc-sha256-quilt"
+    },
+    {
+      "package": "util-linux",
+      "version": "2.41.3-3ubuntu2.2",
+      "path": "libmount/src/context_mount.c",
+      "bytes": 50544,
+      "sha256": "5c3a1f0cbc1772545f7a912475071b6c8b6b6ecb247f04cdcd98fe0bb1b453ab",
+      "admission": "official-ubuntu-dsc-sha256-quilt"
+    },
+    {
+      "package": "util-linux",
+      "version": "2.41.3-3ubuntu2.2",
+      "path": "libmount/src/monitor.c",
+      "bytes": 22952,
+      "sha256": "b7c53543b60f5cbf76c77798802f49e658ad8731a865d88443edbb439e142761",
+      "admission": "official-ubuntu-dsc-sha256-quilt"
+    },
+    {
+      "package": "util-linux",
+      "version": "2.41.3-3ubuntu2.2",
+      "path": "libmount/src/hook_selinux.c",
+      "bytes": 4983,
+      "sha256": "f949bb8d857d41a73bcc50f31228d2830b066d3f29c005ba4865cdea243ed64a",
+      "admission": "official-ubuntu-dsc-sha256-quilt"
+    },
+    {
+      "package": "droidloom-early-boot",
+      "version": "source",
+      "path": "runtime/droidloom-early-boot/linux_run_label.c",
+      "bytes": 58498,
+      "sha256": "ebe6a9e962fd5ba6e29e8a98605ec403abda00e89884307ee913ae154dee0eb7",
+      "admission": "repository-source-bytes"
+    },
+    {
+      "package": "droidloom-early-boot",
+      "version": "source",
+      "path": "runtime/droidloom-early-boot/linux_run_label.h",
+      "bytes": 4246,
+      "sha256": "c57cd40944b2c587bf094dc90c069e40ea5719039646017fecdcf4c0223ab952",
+      "admission": "repository-source-bytes"
+    },
+    {
+      "package": "droidloom-early-boot",
+      "version": "source",
+      "path": "runtime/droidloom-early-boot/board_init.c",
+      "bytes": 28703,
+      "sha256": "aa47d299a9c524f0925ebfa05689b9264f612b28920bc73d0781427bae4829af",
+      "admission": "repository-source-bytes"
     }
   ],
   "runtime_qualified": false

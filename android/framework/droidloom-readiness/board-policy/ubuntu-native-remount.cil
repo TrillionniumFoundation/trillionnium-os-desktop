@@ -84,3 +84,43 @@
 (neverallow p4_linux_remount_t kernel (security (load_policy setenforce setbool setsecparam setcheckreqprot read_policy)))
 (neverallow p4_linux_remount_t p4_remount_all_types (unix_stream_socket (create bind listen accept connect connectto sendto)))
 (neverallow p4_linux_remount_t p4_remount_all_types (unix_dgram_socket (create bind connect sendto)))
+
+; Normal libselinux 3.9 init.c checks the mounted selinuxfs with statfs/statvfs.
+; This constructor is metadata-only; it is not a native query client and cannot
+; read/write selinuxfs files or issue a security-server request.
+(typeattribute p4_native_selinux_metadata_clients)
+(typeattributeset p4_native_selinux_metadata_clients (p4_linux_remount_t))
+(allow p4_linux_remount_t sysfs (dir (search)))
+(allow p4_linux_remount_t selinuxfs (dir (search)))
+(allow p4_linux_remount_t selinuxfs (filesystem (getattr)))
+; fstab_enabled honors the public fstab= command-line switch. Container
+; discovery may establish ENOENT below /run/systemd without reading a file.
+(typeattributeset p4_native_boot_commandline_readers (p4_linux_remount_t))
+(allow p4_linux_remount_t p4_linux_systemd_run_t (dir (search)))
+
+; Only the current root UUID link and its same-st_dev block inode are relabeled
+; by the FINISH transaction. No pathname wildcard labels a block device/link.
+(type p4_linux_remount_fstab_native_config_t)
+(type p4_linux_root_uuid_link_t)
+(type p4_linux_root_block_t)
+(roletype object_r p4_linux_remount_fstab_native_config_t)
+(roletype object_r p4_linux_root_uuid_link_t)
+(roletype object_r p4_linux_root_block_t)
+(typeattributeset p4_linux_data (p4_linux_remount_fstab_native_config_t p4_linux_root_uuid_link_t p4_linux_root_block_t))
+(allow p4_linux_root_uuid_link_t device (filesystem (associate)))
+(allow p4_linux_root_block_t device (filesystem (associate)))
+(allow p4_linux_remount_t p4_linux_remount_fstab_native_config_t (file (getattr open read)))
+(allow p4_linux_remount_t p4_linux_root_uuid_link_t (lnk_file (getattr read)))
+(allow p4_linux_remount_t p4_linux_root_block_t (blk_file (getattr)))
+(allow p4_linux_early_t p4_linux_rootdir_t (dir (getattr)))
+(allow p4_linux_early_t p4_linux_etc_dir_t (dir (getattr search)))
+(allow p4_linux_early_t labeledfs (filesystem (getattr)))
+(allow p4_linux_early_t p4_linux_remount_fstab_native_config_t (file (getattr open read)))
+(allow p4_linux_early_t device (lnk_file (getattr read relabelfrom)))
+(allow p4_linux_early_t device (blk_file (getattr relabelfrom)))
+(allow p4_linux_early_t p4_linux_root_uuid_link_t (lnk_file (getattr read relabelto)))
+(allow p4_linux_early_t p4_linux_root_block_t (blk_file (getattr relabelto)))
+(neverallow p4_linux_early_t device (blk_file (open read write append ioctl map setattr create unlink link rename relabelto)))
+(neverallow p4_linux_early_t p4_linux_root_block_t (blk_file (open read write append ioctl map setattr create unlink link rename)))
+(neverallow p4_linux_early_t p4_linux_root_uuid_link_t (lnk_file (create write setattr unlink rename)))
+(neverallow p4_linux_early_t p4_linux_remount_fstab_native_config_t (file (write append create setattr unlink link rename relabelfrom relabelto ioctl map execute execute_no_trans entrypoint)))

@@ -407,6 +407,28 @@ def verify_native_boot_observations(lines, check, obj, role_types):
             "capabilities_added": [], "runtime_qualified": False}
 
 
+def verify_native_mount_monitor(check, obj, role_types):
+    """Only global PID 1 watches the exact held libmount runtime directory."""
+    target = obj("p4_linux_mount_monitor_dir_t")
+    count = 0
+    for role, actor in role_types:
+        context = f"u:{role}:{actor}:s0"
+        check(context, target, "dir", ["watch"], actor == "init_t")
+        count += 1
+        for permission in ("write", "add_name", "remove_name", "create",
+                           "setattr", "rmdir", "mounton"):
+            check(context, target, "dir", [permission], False)
+            count += 1
+    manager = "u:system_r:init_t:s0"
+    check(manager, target, "dir", ["getattr", "open", "read", "search", "watch"], True)
+    check(manager, obj("p4_linux_run_t"), "dir", ["watch"], False)
+    check("u:system_r:p4_linux_remount_t:s0", target, "dir", ["getattr", "search"], True)
+    return {"path": "/run/mount", "role_permission_checks": count + 3,
+            "process_role_types": len(role_types), "watcher": "init_t",
+            "generic_run_watch_denied": True, "directory_mutation_denied": True,
+            "runtime_qualified": False}
+
+
 def verify_manager_startup(lines, check, obj, role_types):
     """Read generator/status authority from the linked policy for every role."""
     count = 0
@@ -473,6 +495,7 @@ def verify_manager_startup(lines, check, obj, role_types):
              "native_runtime_metadata": verify_manager_runtime_metadata(lines, check, obj, role_types),
              "native_credentials": verify_manager_credentials(lines, check, obj, role_types),
               "native_boot_observations": verify_native_boot_observations(lines, check, obj, role_types),
+              "native_mount_monitor": verify_native_mount_monitor(check, obj, role_types),
             "runtime_qualified": False}
 
 
@@ -544,6 +567,11 @@ def verify_manager_file_contexts(here, work):
                 cases.append((parent + unit, stat.S_IFDIR, target))
                 cases.append((parent + unit, stat.S_IFREG, "p4_linux_native_data_t"))
     cases.extend([
+        ("/run/mount", stat.S_IFDIR, "p4_linux_mount_monitor_dir_t"),
+        ("/run/mount", stat.S_IFREG, "p4_linux_native_data_t"),
+        ("/run/mount", stat.S_IFLNK, "p4_linux_usrmerge_link_t"),
+        ("/run/mount-other", stat.S_IFDIR, "p4_linux_rootdir_t"),
+        ("/run/mount/utab", stat.S_IFREG, "p4_linux_native_data_t"),
         ("/run/credentials", stat.S_IFDIR, "p4_linux_credentials_root_t"),
         ("/run/systemd/temporary-credentials", stat.S_IFDIR, "p4_linux_credential_staging_t"),
         ("/run/credentials/unselected.service", stat.S_IFDIR, "p4_linux_rootdir_t"),
