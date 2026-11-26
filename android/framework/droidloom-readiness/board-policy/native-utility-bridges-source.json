@@ -1,0 +1,119 @@
+{
+  "baseline": {
+    "binary": {
+      "bytes": 1378147,
+      "sha256": "334f85991aa8b821efbd8ee793083d0031ff1ffbb9bddac7e928c5fa2092d42c"
+    },
+    "exported": {
+      "bytes": 11026119,
+      "sha256": "87199686510833e1f2424e12faa9510b900646adf3ad89628ebc68899be50e39"
+    }
+  },
+  "module_configuration": {
+    "actor": "p4_linux_module_loader_t",
+    "descriptor_path": "/proc/self/fd/<already-held-config-fd>",
+    "new_configuration_body_access": false,
+    "new_permission": [
+      "proc",
+      "lnk_file",
+      "read"
+    ],
+    "operation": "apply_conf_file -> fopen(FORMAT_PROC_FD_PATH(c->fd), re)",
+    "printed_path_is_original_name": true
+  },
+  "normal_files": {
+    "usr/bin/udevadm": {
+      "bytes": 765648,
+      "sha256": "44b319969bb6a5ba77ce714e0ae9a59a649f625ff1ac7f50650c16fc762bf763"
+    },
+    "usr/lib/systemd/system/netplan-configure.service": {
+      "bytes": 879,
+      "sha256": "6893fca2c14d53951c73f396f7528b0b1baa9f570ca9cf099dc1c71df1aa2724"
+    },
+    "usr/lib/systemd/system/systemd-modules-load.service": {
+      "bytes": 1104,
+      "sha256": "819c930b0a17606b9283b829eb4f2ecdf010ff840ace1029154b3e6b44ba4762"
+    },
+    "usr/lib/systemd/system/systemd-udevd-control.socket": {
+      "bytes": 667,
+      "sha256": "89266858e471de1e9c63d30516e8ab729fecdd910d02756ff6b408cb71889713"
+    },
+    "usr/lib/systemd/system/systemd-udevd-varlink.socket": {
+      "bytes": 672,
+      "sha256": "002ed89b0fed0afa903fe2ccb1a1037c4cbfe87a13af897836a5cc40b5e590b6"
+    },
+    "usr/lib/systemd/system/systemd-udevd.service": {
+      "bytes": 2284,
+      "sha256": "e3c2483b46e14dfb6074e30d4736298c3ff27d9811d3803d05af0cce9a1d3797"
+    },
+    "usr/lib/systemd/systemd-modules-load": {
+      "bytes": 27200,
+      "sha256": "a425bdd228c4c2cb2753dc8dcd274641b704777c2215aac01e677db6c978a32e"
+    }
+  },
+  "schema": "droidloom.native-utility-bridges-source.v1",
+  "source_documents": {
+    "src/basic/fd-util.c": {
+      "bytes": 41483,
+      "sha256": "cb60ffa3bbe82f099d62dac6d7b37102cb56ab69e46b75483bf5f7dcfdfd0311"
+    },
+    "src/basic/fd-util.h": {
+      "bytes": 7294,
+      "sha256": "2570e5365fabbe9f26e684d138184f25bf720d081bbb551dde9182958344b962"
+    },
+    "src/core/service.c": {
+      "bytes": 245395,
+      "sha256": "203fbab879b9a8641e47af58087cc4cfb93541cfc916447f7a0ffe608b9a2b0e"
+    },
+    "src/core/socket.c": {
+      "bytes": 133742,
+      "sha256": "3f0337bb9b869b37e79df05c28efe293a9005ea7c7c03d98e54ffc3996d7e54e"
+    },
+    "src/modules-load/modules-load.c": {
+      "bytes": 15680,
+      "sha256": "8d3dd993a81f4d56b777be13306d884646f15d7236f0375f8727a9b728823b8e"
+    },
+    "src/shared/selinux-util.c": {
+      "bytes": 25770,
+      "sha256": "241a1cdb353d954a1a771e4b33709860a2df729bb7512130b5fb985fe1105df7"
+    },
+    "src/udev/udev-varlink.c": {
+      "bytes": 9021,
+      "sha256": "8a8df942d6b8671460d2b2d891804c2e124fd615e73b8a32a1f6db001acd7c60"
+    },
+    "src/udev/udevadm-control.c": {
+      "bytes": 13910,
+      "sha256": "c9baa968d344061c4fc4e447e8096f09c308ba35386f0a5fdf2d7ca8bbbc6193"
+    }
+  },
+  "udev_control": {
+    "actor": "p4_linux_udev_t",
+    "command": [
+      "udevadm",
+      "control",
+      "--reload"
+    ],
+    "computed_transition": "(typetransition init_t p4_linux_udev_exec_t process p4_linux_udev_t)",
+    "listener_type": "p4_linux_udev_listener_t",
+    "manager_peer_connectto": false,
+    "new_permissions": [
+      [
+        "p4_linux_udev_listener_t",
+        "sock_file",
+        "write"
+      ],
+      [
+        "p4_linux_udev_t",
+        "unix_stream_socket",
+        "connectto"
+      ]
+    ],
+    "new_socket_creation": false,
+    "peer_type": "p4_linux_udev_t",
+    "socket_paths": [
+      "/run/udev/control",
+      "/run/udev/io.systemd.Udev"
+    ],
+    "sysfs_trigger_qualified": false
+  }
+}

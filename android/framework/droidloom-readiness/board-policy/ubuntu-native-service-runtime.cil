@@ -220,3 +220,16 @@
 ; That metadata lookup does not need executable bytes or execution permission.
 (allow init_t p4_linux_native_bin_t (file (getattr)))
 (neverallow init_t p4_linux_native_bin_t (file (open read map execute execute_no_trans entrypoint)))
+
+; Normal held-config and udev control bridges (native-utility-bridges-source.json).
+; modules-load reopens c->fd through /proc/self/fd and prints the original name
+; on error. Its existing config-body and own-proc permissions remain unchanged.
+(allow p4_linux_module_loader_t proc (lnk_file (read)))
+(neverallow p4_linux_module_loader_t proc (lnk_file (not (read))))
+; The existing listener type covers the normal control and varlink sockets.
+; Their service SID is already computed above; PID 1 still cannot execute udev.
+; No generic manager connection, new socket creation or sysfs write is added.
+(allow p4_linux_udev_t p4_linux_udev_listener_t (sock_file (write)))
+(neverallow p4_linux_udev_t p4_linux_udev_listener_t (sock_file (not (write))))
+(allow p4_linux_udev_t self (unix_stream_socket (connectto)))
+(neverallow p4_linux_udev_t self (unix_stream_socket (not (accept bind connect connectto create getattr getopt listen read setopt shutdown write))))
