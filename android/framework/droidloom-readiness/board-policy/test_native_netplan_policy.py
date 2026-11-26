@@ -121,5 +121,62 @@ class NetplanRelabelProofTests(unittest.TestCase):
             netplan._relabel_constraints(LastCategoryRelabel(), self.constraints())
 
 
+class NetplanFixedActorProofTests(unittest.TestCase):
+    def test_category_pairs_are_not_replaced_by_raw_or_union_permissions(self):
+        class CategoryPolicy:
+            def context_av(self, source, target, cls, names):
+                self_source = source.split(":", 3)[3]
+                object_type = target.split(":")[2]
+                target_level = target.split(":", 3)[3]
+                if object_type == netplan.PROFILE_DIR:
+                    return 0
+                return 7 if self_source == target_level else 1
+        policy = CategoryPolicy()
+        for actor in netplan.FIXED_OLD_ACTORS:
+            for source in netplan.LEVELS:
+                for target in netplan.LEVELS:
+                    before, alias = netplan._actor_effective(policy, actor,
+                        netplan.NM_RUN, netplan.PROFILE_DIR, "dir", source, target,
+                        ["getattr", "create", "setattr"])
+                    wanted = 7 if source == target else 1
+                    self.assertEqual((before, alias), (wanted, wanted))
+
+    def test_fixed_entry_preimage_is_required_without_other_extras(self):
+        entry = {"getattr", "open", "read", "execute", "map"}
+        for actor in ("init_t", netplan.EXECUTOR):
+            self.assertEqual(netplan._actor_allowed_raw(
+                actor, netplan.ENTRY, "file", {"getattr"}, entry), entry)
+            for preimage in (entry - {"map"}, entry | {"write"}):
+                with self.assertRaises(ValueError):
+                    netplan._actor_allowed_raw(actor, netplan.ENTRY, "file", set(), preimage)
+            with self.assertRaises(ValueError):
+                netplan._actor_allowed_raw(actor, netplan.PROFILE_DIR, "dir",
+                                          {"getattr"}, {"getattr", "create"})
+        self.assertEqual(netplan._actor_extra(netplan.NM_ROLE, netplan.ENTRY, "file"), set())
+        with self.assertRaises(ValueError):
+            netplan._actor_extra("unselected_actor", netplan.ENTRY, "file")
+
+    def test_raw_reader_preserves_attribute_and_self_rules_and_rejects_bounds(self):
+        actor = "init_t"
+        lines = [
+            "(type " + actor + ")", "(type target)", "(type other)",
+            "(typeattribute selected)", "(typeattributeset selected (" + actor + "))",
+            "(roletype object_r " + actor + ")", "(roletype object_r target)",
+            "(roletype object_r other)",
+            "(allow selected target (dir (getattr create write)))",
+            "(allow " + actor + " self (file (read)))",
+        ]
+        classes = {"dir": ["getattr", "create", "write"], "file": ["read", "write"]}
+        raw = netplan._actor_raw(None, lines, classes, actor)
+        actual = {(target, cls): names for target, cls, names in raw}
+        self.assertEqual(actual[("target", "dir")], ["create", "getattr", "write"])
+        self.assertEqual(actual[(actor, "file")], ["read"])
+        self.assertEqual(actual[("other", "file")], [])
+        with self.assertRaises(ValueError):
+            netplan._actor_raw(None, lines + ["(typebounds init_t other)"], classes, actor)
+        with self.assertRaises(ValueError):
+            netplan._actor_raw(None, lines, classes, "unselected_actor")
+
+
 if __name__ == "__main__":
     unittest.main()

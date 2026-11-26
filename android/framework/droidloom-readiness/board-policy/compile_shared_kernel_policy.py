@@ -1529,6 +1529,7 @@ def main():
                here / "derive_preserved_alias_policy.py",
                here / "derive_native_remount_policy.py", here / "native-remount-source.json",
                here / "derive_native_netplan_policy.py", here / "native-netplan-source.json",
+               here / "native-netplan-private-source.json",
                here / "derive_native_sysusers_policy.py", here / "native-sysusers-source.json",
                *user_cgroup_source_inputs(here),
                here / "verify_native_login_audit.py", here / "verify_native_journal_storage.py",

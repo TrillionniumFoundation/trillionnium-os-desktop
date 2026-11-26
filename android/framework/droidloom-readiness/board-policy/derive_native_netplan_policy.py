@@ -208,11 +208,14 @@ def private_contract(here):
 
 
 NM_ROLE = "p4_linux_network_manager_t"
+FIXED_OLD_ACTORS = ("init_t", EXECUTOR, NM_ROLE)
 CONSTRAINTS = ("(constrain ", "(mlsconstrain ", "(validatetrans ", "(mlsvalidatetrans ")
 
 
-def _manager_raw(policy, lines, classes):
-    """Complete old NM file/directory TE, before category filtering."""
+def _actor_raw(policy, lines, classes, actor):
+    """Complete fixed old actor file/directory TE, before category filtering."""
+    if actor not in FIXED_OLD_ACTORS:
+        raise ValueError("Netplan raw preservation requires a fixed old actor")
     text = "\n".join(lines)
     if re.search(r"\((?:booleanif|tunableif|typebounds)\b", text):
         raise ValueError("Netplan alias preservation needs unconditional, unbounded TE")
@@ -227,21 +230,21 @@ def _manager_raw(policy, lines, classes):
         form = parse_expression(line)
         if (len(form) != 4 or not isinstance(form[3], list) or
                 len(form[3]) != 2 or not isinstance(form[3][1], list)):
-            raise ValueError("Unmodeled normal NetworkManager TE rule")
+            raise ValueError("Unmodeled fixed native actor TE rule")
         source, target, (cls, permissions) = form[1:]
         if cls not in classes or not set(permissions).issubset(classes[cls]):
-            raise ValueError("Unknown normal NetworkManager TE class/permission")
-        if cls in ("file", "dir") and members.member(source, NM_ROLE):
+            raise ValueError("Unknown fixed native actor TE class/permission")
+        if cls in ("file", "dir") and members.member(source, actor):
             selected.append((target, cls, set(permissions)))
     if count != text.count("(allow "):
-        raise ValueError("Normal NetworkManager TE statements are incomplete")
+        raise ValueError("Fixed native actor TE statements are incomplete")
     result = []
     for target in objects:
         for cls in ("file", "dir"):
             actual = set()
             for object_type, rule_class, permissions in selected:
                 if rule_class == cls and (
-                        (object_type == "self" and target == NM_ROLE) or
+                        (object_type == "self" and target == actor) or
                         (object_type != "self" and members.member(object_type, target))):
                     actual.update(permissions)
             result.append([target, cls, sorted(actual)])
@@ -307,78 +310,128 @@ def _relabel_constraints(policy, lines):
     return sorted(proof, key=lambda row: row["alias_type"])
 
 
-def _preserve_manager(policy, lines, exported, classes, output):
-    """Only the fixed old NM writer is category-sensitive; give it no extra."""
-    raw = _manager_raw(policy, lines, classes)
+def _actor_extra(actor, target, cls):
+    """Only the two already-declared fixed entry readers have extra raw TE."""
+    if actor not in FIXED_OLD_ACTORS:
+        raise ValueError("Netplan preservation requires a fixed old actor")
+    if actor in ("init_t", EXECUTOR) and (target, cls) == (ENTRY, "file"):
+        return {"getattr", "open", "read", "execute", "map"}
+    return set()
+
+
+def _actor_allowed_raw(actor, target, cls, source, preimage):
+    extra = _actor_extra(actor, target, cls)
+    wanted = set(source) | extra
+    if not set(preimage).issubset(wanted) or not extra.issubset(preimage):
+        raise ValueError("Fixed native actor alias has an unexplained preimage")
+    return wanted
+
+
+def _actor_effective(policy, actor, original, target, cls,
+                     source_level, target_level, names):
+    """Compare one category pair; never union decisions across categories."""
+    if actor not in FIXED_OLD_ACTORS:
+        raise ValueError("Netplan effective proof requires a fixed old actor")
+    source_context = _context("system_r", actor, source_level)
+    before = policy.context_av(source_context,
+        _context("object_r", original, target_level), cls, names)
+    preimage = policy.context_av(source_context,
+        _context("object_r", target, target_level), cls, names)
+    return before, before | preimage
+
+
+def _preserve_actor(policy, lines, exported, classes, output, actor):
+    """Preserve every old object and alias, with only the fixed entry extras."""
+    raw = _actor_raw(policy, lines, classes, actor)
     raw_map = {(target, cls): set(names) for target, cls, names in raw}
     all_aliases = ALIASES + SYSUSERS_ALIASES
     mapping = {(row["target"], row["class"]): row["source"] for row in all_aliases}
-    expected_raw, effective = [], []
-    for target, cls, before in raw:
+    expected_raw, effective, declared_extras, additional_raw = [], [], [], []
+    for target, cls, preimage in raw:
         original = mapping.get((target, cls), target)
-        wanted = raw_map[(original, cls)]
-        if not set(before).issubset(wanted):
-            raise ValueError("Normal NetworkManager alias has an unexplained preimage")
+        source = raw_map[(original, cls)]
+        wanted = _actor_allowed_raw(actor, target, cls, source, preimage)
         expected_raw.append([target, cls, sorted(wanted)])
+        extra = _actor_extra(actor, target, cls)
+        if extra:
+            declared_extras.append([target, cls, sorted(extra)])
+            additional_raw.append([target, cls, sorted(extra - source)])
         for level in LEVELS:
-            vector = policy.context_av(_context("system_r", NM_ROLE, level),
-                _context("object_r", original), cls, classes[cls])
+            _, vector = _actor_effective(policy, actor, original, target, cls,
+                level, "s0", classes[cls])
             effective.append([target, cls, level, vector])
     mcs = []
     for row in ALIASES:
         if raw_map[(row["source"], row["class"])] & {"relabelfrom", "relabelto"}:
-            raise ValueError("Normal NetworkManager can relabel a selected source")
+            raise ValueError("Fixed native actor can relabel a selected source")
         for source_level in LEVELS:
             for target_level in LEVELS:
-                vector = policy.context_av(_context("system_r", NM_ROLE, source_level),
-                    _context("object_r", row["source"], target_level),
-                    row["class"], classes[row["class"]])
+                before, wanted = _actor_effective(policy, actor,
+                    row["source"], row["target"], row["class"],
+                    source_level, target_level, classes[row["class"]])
                 mcs.append([row["source"], row["target"], row["class"],
-                            source_level, target_level, vector])
-    xperms, rules = _preserved_xperm_rules(exported, ALIASES, [("system_r", NM_ROLE)])
+                            source_level, target_level, before, wanted])
+    xperms, rules = _preserved_xperm_rules(exported, ALIASES, [("system_r", actor)])
     for row in ALIASES:
         cls = row["class"]
-        names = raw_map[(row["source"], cls)]
+        names = raw_map[(row["source"], cls)] | _actor_extra(actor, row["target"], cls)
         for op, selected in (("allow", names), ("neverallow", set(classes[cls]) - names)):
             if selected:
-                rules.append("(" + op + " " + NM_ROLE + " " + row["target"] +
+                rules.append("(" + op + " " + actor + " " + row["target"] +
                              " (" + cls + " (" + " ".join(sorted(selected)) + ")))")
     with output.open("a") as stream:
-        stream.write("; Fixed existing NetworkManager actor: complete raw TE, no extra.\n")
+        stream.write("; Fixed existing actor " + actor + ": complete raw TE and exact entry extras.\n")
         stream.write("\n".join(sorted(set(rules))) + "\n")
-    return {"raw_vectors": expected_raw, "effective_vectors": effective,
+    return {"actor": actor, "raw_vectors": expected_raw, "effective_vectors": effective,
             "mcs_vectors": mcs, "xperms": xperms,
+            "declared_extra_permissions": declared_extras,
+            "additional_raw_permissions": additional_raw,
             "constraint_forms": sorted(line for line in lines if line.startswith(CONSTRAINTS)),
             "relabel_constraints": _relabel_constraints(policy, lines)}
 
 
-def _verify_manager(policy, lines, exported, classes, expected):
+def _verify_actor(policy, lines, exported, classes, expected, actor):
+    if actor not in FIXED_OLD_ACTORS or expected["actor"] != actor:
+        raise ValueError("Netplan changed the fixed original actor")
     if sorted(line for line in lines if line.startswith(CONSTRAINTS)) != expected["constraint_forms"]:
         raise ValueError("Netplan changed a complete existing MLS/relabel constraint")
     if _relabel_constraints(policy, lines) != expected["relabel_constraints"]:
         raise ValueError("Netplan changed the reachable relabel target predicates")
-    if _manager_raw(policy, lines, classes) != expected["raw_vectors"]:
-        raise ValueError("Netplan changed the old NetworkManager complete raw TE boundary")
+    actual_raw = _actor_raw(policy, lines, classes, actor)
+    if actual_raw != expected["raw_vectors"]:
+        raise ValueError("Netplan changed the fixed old actor complete raw TE boundary")
+    raw_map = {(target, cls): set(names) for target, cls, names in actual_raw}
+    additional = [[row["target"], row["class"],
+                   sorted(_actor_extra(actor, row["target"], row["class"]) -
+                          raw_map[(row["source"], row["class"])])]
+                  for row in ALIASES if _actor_extra(actor, row["target"], row["class"])]
+    if sorted(additional) != expected["additional_raw_permissions"]:
+        raise ValueError("Netplan changed the measured fixed entry additions")
+    declared = [[row["target"], row["class"],
+                 sorted(_actor_extra(actor, row["target"], row["class"]))]
+                for row in ALIASES if _actor_extra(actor, row["target"], row["class"])]
+    if sorted(declared) != expected["declared_extra_permissions"]:
+        raise ValueError("Netplan changed the declared fixed entry extras")
     checks = []
     for target, cls, level, wanted in expected["effective_vectors"]:
-        actual = policy.context_av(_context("system_r", NM_ROLE, level),
+        actual = policy.context_av(_context("system_r", actor, level),
             _context("object_r", target), cls, classes[cls])
         if actual != wanted:
-            raise ValueError("Netplan changed the old NetworkManager object view: " + target)
-        checks.append([NM_ROLE, target, cls, level, actual])
-    for old, new, cls, source_level, target_level, wanted in expected["mcs_vectors"]:
-        for target in (old, new):
-            actual = policy.context_av(_context("system_r", NM_ROLE, source_level),
+            raise ValueError("Netplan changed the fixed old actor object view: " + actor + " " + target)
+        checks.append([actor, target, cls, level, actual])
+    for old, new, cls, source_level, target_level, before, wanted in expected["mcs_vectors"]:
+        for target, expected_vector in ((old, before), (new, wanted)):
+            actual = policy.context_av(_context("system_r", actor, source_level),
                 _context("object_r", target, target_level), cls, classes[cls])
-            if actual != wanted:
-                raise ValueError("Netplan changed a constrained NetworkManager alias view")
-        checks.append([NM_ROLE, old, new, cls, source_level, target_level, wanted])
+            if actual != expected_vector:
+                raise ValueError("Netplan changed a constrained fixed old actor alias view")
+        checks.append([actor, old, new, cls, source_level, target_level, before, wanted])
     for row in ALIASES:
         for target in (row["source"], row["target"]):
-            actual = original_xperms([exported], [NM_ROLE], target,
+            actual = original_xperms([exported], [actor], target,
                 class_names=(row["class"],))[row["class"]]
             if actual != expected["xperms"][row["source"]][row["class"]]:
-                raise ValueError("Netplan changed the old NetworkManager complete ioctl mask")
+                raise ValueError("Netplan changed the fixed old actor complete ioctl mask")
     return checks
 
 
@@ -387,17 +440,18 @@ def derive(library, baseline, exported, here, output, export):
     private_contract(here)
     expected = derive_preserved_aliases(
         library, baseline, exported, ALIASES, output, export,
-        prefix="p4_netplan_preserved", isolated_roles={ROLE, NM_ROLE},
+        prefix="p4_netplan_preserved", isolated_roles={ROLE, *FIXED_OLD_ACTORS},
         extra_permissions={
-            ("init_t", ENTRY, "file"): {"getattr", "open", "read", "execute", "map"},
-            (EXECUTOR, ENTRY, "file"): {"getattr", "open", "read", "execute", "map"},
             ("p4_linux_udev_t", LINK_DIR, "dir"): {"getattr", "open", "read", "search"},
             ("p4_linux_udev_t", RULE_DIR, "dir"): {"getattr", "open", "read", "search"},
         }, preamble=("; Preserve the original actors on fixed normal netplan inodes.",))
     policy = ContextPolicy(library, baseline)
     lines = exported.read_text().splitlines()
-    expected["normal_network_manager"] = _preserve_manager(
-        policy, lines, exported, expected["classes"], output)
+    expected["normal_network_manager"] = _preserve_actor(
+        policy, lines, exported, expected["classes"], output, NM_ROLE)
+    expected["normal_native_consumers"] = {
+        actor: _preserve_actor(policy, lines, exported, expected["classes"], output, actor)
+        for actor in ("init_t", EXECUTOR)}
     expected["derived_sha256"] = hashlib.sha256(output.read_bytes()).hexdigest()
     expected["contract_sha256"] = hashlib.sha256((here / "native-netplan-source.json").read_bytes()).hexdigest()
     expected["private_contract_sha256"] = hashlib.sha256((here / "native-netplan-private-source.json").read_bytes()).hexdigest()
@@ -434,9 +488,16 @@ def verify(library, binary, exported, here, expected, export):
     text = exported.read_text()
     classes = expected["classes"]
     checks = verify_preserved_aliases(policy, exported, ALIASES, expected)
-    manager_checks = _verify_manager(policy, lines, exported, classes,
-                                     expected["normal_network_manager"])
+    manager_checks = _verify_actor(policy, lines, exported, classes,
+                                   expected["normal_network_manager"], NM_ROLE)
     checks.extend(manager_checks)
+    if set(expected["normal_native_consumers"]) != {"init_t", EXECUTOR}:
+        raise ValueError("Netplan fixed native consumer set changed")
+    native_consumer_checks = {}
+    for actor in ("init_t", EXECUTOR):
+        native_consumer_checks[actor] = _verify_actor(policy, lines, exported, classes,
+            expected["normal_native_consumers"][actor], actor)
+        checks.extend(native_consumer_checks[actor])
     objects = sorted(set(re.findall(r"\(roletype object_r (\w+)\)", text)))
     actors = _roles(lines)
     def av(target, cls, wanted, target_role="object_r", actor=ROLE,
@@ -530,7 +591,15 @@ def verify(library, binary, exported, here, expected, export):
         "normal_network_manager_raw_vectors": len(expected["normal_network_manager"]["raw_vectors"]),
         "normal_network_manager_effective_vectors": len(manager_checks),
         "normal_network_manager_mcs_vectors": len(expected["normal_network_manager"]["mcs_vectors"]),
-        "normal_network_manager_extra_permissions": [],
+        "normal_network_manager_extra_permissions": expected["normal_network_manager"]["declared_extra_permissions"],
+        "normal_native_consumers": {
+            actor: {
+                "raw_vectors": len(expected["normal_native_consumers"][actor]["raw_vectors"]),
+                "effective_vectors": len(native_consumer_checks[actor]),
+                "mcs_vectors": len(expected["normal_native_consumers"][actor]["mcs_vectors"]),
+                "declared_extra_permissions": expected["normal_native_consumers"][actor]["declared_extra_permissions"],
+                "additional_raw_permissions": expected["normal_native_consumers"][actor]["additional_raw_permissions"],
+            } for actor in ("init_t", EXECUTOR)},
         "whole_object_vector_checks": len(checks),
         "concrete_actors": len(actors), "concrete_objects": len(objects),
         "socket_classes": len(socket_classes), "elf_inputs": len(value["elf_paths"]),
