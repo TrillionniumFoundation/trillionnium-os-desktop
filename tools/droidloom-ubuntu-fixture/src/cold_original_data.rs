@@ -1333,9 +1333,22 @@ impl OriginalDataTransaction {
         &self,
         authority: &crate::cold_original_qualification::OriginalQualificationAuthority,
     ) -> Result<()> {
+        self.binding_custody(authority)?;
+        self.transaction.validate_intent()?;
+        // Actual fixed cell and immutable selection bytes are re-read at each
+        // full phase fence. The bounded label window holds their exact custody
+        // during its inode loop and re-reads complete bytes at both boundaries.
+        selection_input(authority.expected_cell(), authority.selection())?;
+        Ok(())
+    }
+
+    fn binding_custody(
+        &self,
+        authority: &crate::cold_original_qualification::OriginalQualificationAuthority,
+    ) -> Result<()> {
         let tx = &self.transaction;
         tx.require_writer_locks()?;
-        tx.validate_intent()?;
+        tx.validate_intent_custody()?;
         ensure(
             tx.intent.candidate_id == authority.candidate_id()
                 && tx.intent.work == authority.work()
@@ -1343,9 +1356,6 @@ impl OriginalDataTransaction {
                 && same_pin(&tx.intent.selection, authority.selection()),
             "data writer does not belong to the same sealed once owner",
         )?;
-        // Actual fixed cell and immutable selection bytes are re-read at every
-        // fence, in addition to the owner's held evidence and all four locks.
-        selection_input(authority.expected_cell(), authority.selection())?;
         Ok(())
     }
 
@@ -1548,19 +1558,27 @@ impl DataTransaction {
             self.locations.pair(new, &self.intent.working, true)?,
         ))
     }
-    fn validate_intent(&self) -> Result<()> {
+    fn validate_intent_custody(&self) -> Result<()> {
         ensure(
             fs::stat(&self.intent_file)? == self.intent_identity
                 && named(&self.locations.work, INTENT)? == Some(self.intent_identity.clone()),
             "held immutable data intent was changed or replaced",
         )?;
         no_privilege_attributes(&self.intent_file)?;
+        ensure(
+            fs::stat(&self.intent_file)? == self.intent_identity,
+            "immutable data intent changed during custody verification",
+        )
+    }
+    fn validate_intent(&self) -> Result<()> {
+        self.validate_intent_custody()?;
         let bytes = read_small(&self.intent_file, 128 * 1024)?;
         ensure(
             bytes.len() as u64 == self.intent_pin.bytes
                 && fs::digest(&bytes) == self.intent_pin.sha256,
             "held immutable data intent bytes differ",
-        )
+        )?;
+        self.validate_intent_custody()
     }
     fn layout(&self, mutable: bool) -> Result<Layout> {
         let at = |place| {
@@ -2173,6 +2191,7 @@ mod tests {
         for case in 0..3 {
             let f = Fixture::new(false);
             let tx = f.open();
+            tx.validate_intent_custody().unwrap();
             let original = record(&f.root.path().join("original-parent/data"));
             let path = f.root.path().join("work").join(INTENT);
             let bytes = std::fs::read(&path).unwrap();
@@ -2189,6 +2208,7 @@ mod tests {
                 }
                 std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o400)).unwrap();
             }
+            assert!(tx.validate_intent_custody().is_err());
             assert!(tx.apply(&mut okay, &mut point).is_err());
             assert_eq!(
                 record(&f.root.path().join("original-parent/data")),

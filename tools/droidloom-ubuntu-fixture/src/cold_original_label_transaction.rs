@@ -7,7 +7,9 @@ use super::super::{
 };
 use super::*;
 use crate::cold_original_data::{self as data, OriginalDataTransaction};
-use crate::cold_original_qualification::{OriginalDataStep, OriginalQualificationAuthority};
+use crate::cold_original_qualification::{
+    OriginalDataStep, OriginalLabelWindow, OriginalQualificationAuthority,
+};
 use std::{
     collections::{BTreeMap, BTreeSet},
     sync::Arc,
@@ -508,6 +510,26 @@ impl<'a> OriginalLabelTransaction<'a> {
         )?;
         data.binding(authority)
     }
+    fn validate_window(
+        &self,
+        authority: &OriginalQualificationAuthority,
+        data: &OriginalDataTransaction,
+        window: &OriginalLabelWindow<'_>,
+    ) -> Result<()> {
+        window.verify_step()?;
+        self.seal.revalidate()?;
+        self.sources.revalidate_custody()?;
+        ensure(
+            window.candidate_id() == self.plan.candidate_id
+                && pin_equal(window.source_plan(), &self.seal.pin)
+                && self.plan.candidate_id == authority.candidate_id()
+                && self.plan.work_directory == authority.work().join("labels")
+                && pin_equal(&self.plan.pair_intent, data.intent())
+                && pin_equal(&self.plan.normal_sources, self.sources.source_pin()),
+            "bounded label window differs from the exact held source/data plan",
+        )?;
+        data.binding_custody(authority)
+    }
     fn attempt(&self, target: &Target) -> Result<DurableAttempt> {
         let path = record_directory(&self.plan.work_directory, target.ordinal);
         let records = Records::open(&path)?;
@@ -533,6 +555,7 @@ impl<'a> OriginalLabelTransaction<'a> {
         &mut self,
         authority: &OriginalQualificationAuthority,
         data: &OriginalDataTransaction,
+        window: &OriginalLabelWindow<'_>,
     ) -> Result<OriginalLabelsApplied> {
         if let Some(attempt) = self.active_attempt.as_ref() {
             let current = snapshot(&attempt.recovery)?;
@@ -549,20 +572,22 @@ impl<'a> OriginalLabelTransaction<'a> {
                     core,
                 };
                 self.scope.accept_root_label(&step)?;
-                authority.accept_label_derivation(&step)?;
+                window.accept_derivation(&step)?;
             }
         }
         self.validate_owner(authority, data)?;
         self.seal.full_readback()?;
+        self.validate_window(authority, data, window)?;
+        let started = std::time::Instant::now();
         let mut applications = Vec::new();
         let mut updates = BTreeMap::new();
         for target in &self.plan.targets {
-            self.validate_owner(authority, data)?;
+            self.validate_window(authority, data, window)?;
             let path = record_directory(&self.plan.work_directory, target.ordinal);
             let records = match std::fs::symlink_metadata(&path) {
                 Ok(_) => Records::open(&path)?,
                 Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
-                    authority.verify_data_step(OriginalDataStep::Label)?;
+                    self.validate_window(authority, data, window)?;
                     crate::boot_files::private_dir(&path)?;
                     Records::open(&path)?
                 }
@@ -571,7 +596,7 @@ impl<'a> OriginalLabelTransaction<'a> {
             let attempt = if records.exists("PREIMAGE.json")? {
                 self.attempt(target)?
             } else {
-                authority.verify_data_step(OriginalDataStep::Label)?;
+                self.validate_window(authority, data, window)?;
                 self.scope.revalidate()?;
                 for alias in &target.aliases {
                     snapshot_matches_handle(&self.scope, alias, &target.before)?;
@@ -602,7 +627,7 @@ impl<'a> OriginalLabelTransaction<'a> {
                 // restores the precise expected ctime of a held once lock.
                 attempt.applied_readback()?
             } else {
-                authority.verify_data_step(OriginalDataStep::Label)?;
+                self.validate_window(authority, data, window)?;
                 ensure(current == target.before, "unapplied source inode changed")?;
                 attempt.apply()?
             };
@@ -617,18 +642,26 @@ impl<'a> OriginalLabelTransaction<'a> {
             };
             derivation.revalidate()?;
             self.scope.accept_root_label(&derivation)?;
-            authority.accept_label_derivation(&derivation)?;
+            window.accept_derivation(&derivation)?;
             for alias in &target.aliases {
                 snapshot_matches_handle(&self.scope, alias, &derivation.core.after)?;
                 if alias.placement != Placement::PendingSelection {
                     updates.insert(alias.logical.clone(), derivation.core.after.clone());
                 }
             }
-            authority.verify_data_step(OriginalDataStep::Label)?;
-            self.validate_owner(authority, data)?;
+            self.validate_window(authority, data, window)?;
             applications.push(applied);
             self.active_attempt.take();
+            if applications.len() % 1000 == 0 || applications.len() == self.plan.targets.len() {
+                eprintln!(
+                    "original-label-apply targets={}/{} elapsed_ms={}",
+                    applications.len(),
+                    self.plan.targets.len(),
+                    started.elapsed().as_millis()
+                );
+            }
         }
+        self.validate_window(authority, data, window)?;
         self.scope
             .verify_inventory_updates(&self.plan.scope, &updates)?;
         self.seal.full_readback()?;
