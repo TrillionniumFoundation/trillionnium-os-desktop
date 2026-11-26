@@ -956,6 +956,55 @@ fn matches_public(actual: Option<&PublicFile>, expected: Option<&PublicFile>) ->
 /// the live once owner; no deserialized receipt or callback grants authority.
 /// The original pair is never opened for writes. Later label/selection stages
 /// must use this same four-descriptor custody after their source admission.
+/// Actual current-process custody after both working backings were synchronized.
+/// The once module may consume it to construct OriginalRetirement; a JSON
+/// receipt or a caller boolean cannot create this object.
+pub(super) struct WorkingDataRetired {
+    candidate_id: String,
+    pair_intent: FilePin,
+    pid: u32,
+    backings: Vec<(File, Identity)>,
+    evidence: Value,
+}
+fn verify_retired_backings(backings: &[(File, Identity)]) -> Result<()> {
+    ensure(
+        backings.len() == 2,
+        "both synchronized working backing descriptors are required",
+    )?;
+    for (file, expected) in backings {
+        ensure(
+            fs::stat(file)? == *expected,
+            "synchronized working backing changed after retirement",
+        )?;
+        rustix::fs::flock(file, FlockOperation::NonBlockingLockExclusive)?;
+    }
+    Ok(())
+}
+impl WorkingDataRetired {
+    pub(super) fn candidate_id(&self) -> &str {
+        &self.candidate_id
+    }
+    pub(super) fn pair_intent(&self) -> &FilePin {
+        &self.pair_intent
+    }
+    pub(super) fn evidence(&self) -> &Value {
+        &self.evidence
+    }
+    pub(super) fn revalidate(&self) -> Result<()> {
+        ensure(
+            std::process::id() == self.pid,
+            "working retirement descriptor custody changed process",
+        )?;
+        verify_retired_backings(&self.backings)?;
+        let actual = assert_prepared_pair_retired(&self.pair_intent)?;
+        ensure(
+            actual["candidate_id"] == self.candidate_id,
+            "retired working pair candidate changed",
+        )?;
+        verify_retired_backings(&self.backings)
+    }
+}
+
 pub(super) struct OriginalDataTransaction {
     transaction: DataTransaction,
 }
@@ -993,6 +1042,87 @@ impl OriginalDataTransaction {
 
     pub(super) fn intent(&self) -> &FilePin {
         &self.transaction.intent_pin
+    }
+
+    pub(super) fn withdraw_selection(
+        &self,
+        authority: &crate::cold_original_qualification::OriginalQualificationAuthority,
+    ) -> Result<Value> {
+        use crate::cold_original_qualification::OriginalDataStep;
+        self.fence(authority, OriginalDataStep::WithdrawSelection)?;
+        let before = self.transaction.observe(true)?;
+        if before.1 == SelectionState::Candidate {
+            self.transaction.restore_selection()?;
+        }
+        self.fence(authority, OriginalDataStep::WithdrawSelection)?;
+        let after = self.transaction.observe(true)?;
+        ensure(
+            after.0 == before.0 && after.1 == SelectionState::Original,
+            "actual selection withdrawal changed the data layout or retained candidate selection",
+        )?;
+        let actual = self.transaction.locations.public_file(
+            &self.transaction.locations.selected_parent,
+            &self.transaction.locations.selected_name,
+        )?;
+        let report = json!({"schema":"droidloom.original-selection-withdrawn.v1",
+            "pair_intent":self.intent(),"candidate_id":authority.candidate_id(),
+            "actual_original_selection":actual,"data_pair_restored":false,
+            "working_backings_synchronized":false,"runtime_or_migration_accepted":false});
+        const WITHDRAWN: &str = "DATA-SELECTION-WITHDRAWN.json";
+        if named(&self.transaction.locations.work, WITHDRAWN)?.is_none() {
+            self.transaction.locations.write_json(WITHDRAWN, &report)?;
+        } else {
+            let held = open_at(&self.transaction.locations.work, WITHDRAWN, false)?;
+            let current: Value = serde_json::from_slice(&read_small(&held, 128 * 1024)?)?;
+            ensure(
+                current == report,
+                "durable selection withdrawal record differs from actual readback",
+            )?;
+        }
+        self.fence(authority, OriginalDataStep::WithdrawSelection)?;
+        Ok(report)
+    }
+
+    pub(super) fn retire_working(
+        &self,
+        authority: &crate::cold_original_qualification::OriginalQualificationAuthority,
+    ) -> Result<WorkingDataRetired> {
+        use crate::cold_original_qualification::OriginalDataStep;
+        self.fence(authority, OriginalDataStep::RetireWorking)?;
+        let before = self.transaction.observe(true)?;
+        ensure(
+            before.1 == SelectionState::Original,
+            "working synchronization requires actual selected configuration withdrawal",
+        )?;
+        let first = assert_prepared_pair_retired(self.intent())?;
+        let synchronization = self.transaction.sync_working_backings()?;
+        self.fence(authority, OriginalDataStep::RetireWorking)?;
+        ensure(
+            self.transaction.observe(true)? == before,
+            "working pair layout changed during retirement synchronization",
+        )?;
+        let second = assert_prepared_pair_retired(self.intent())?;
+        let mut backings = Vec::new();
+        for (file, _, working) in &self.transaction.images {
+            if *working {
+                backings.push((file.try_clone()?, fs::stat(file)?));
+            }
+        }
+        verify_retired_backings(&backings)?;
+        let result = WorkingDataRetired {
+            candidate_id: authority.candidate_id().to_owned(),
+            pair_intent: self.intent().clone(),
+            pid: std::process::id(),
+            backings,
+            evidence: json!({"schema":"droidloom.actual-working-data-retired.v1",
+                "candidate_id":authority.candidate_id(),"pair_intent":self.intent(),
+                "before_references":first,"actual_synchronization":synchronization,
+                "after_references":second,"original_images_synchronized":false,
+                "runtime_or_migration_accepted":false}),
+        };
+        result.revalidate()?;
+        self.fence(authority, OriginalDataStep::RetireWorking)?;
+        Ok(result)
     }
 
     fn binding(
@@ -1488,6 +1618,23 @@ impl DataTransaction {
 mod tests {
     use super::*;
     use std::os::unix::fs::PermissionsExt;
+    #[test]
+    fn actual_retired_working_backings_reject_a_post_sync_write() {
+        let tmp = tempfile::tempdir().unwrap();
+        let mut held = Vec::new();
+        for name in ["working-data", "working-metadata"] {
+            let path = tmp.path().join(name);
+            std::fs::write(&path, b"isolated test working bytes").unwrap();
+            let file = open_at(&File::open(tmp.path()).unwrap(), name, false).unwrap();
+            rustix::fs::flock(&file, FlockOperation::NonBlockingLockExclusive).unwrap();
+            file.sync_all().unwrap();
+            let expected = fs::stat(&file).unwrap();
+            held.push((file, expected));
+        }
+        verify_retired_backings(&held).unwrap();
+        std::fs::write(tmp.path().join("working-data"), b"actual later write").unwrap();
+        assert!(verify_retired_backings(&held).is_err());
+    }
 
     #[test]
     #[ignore = "requires original Pocket4 and retained private-pair metadata; never writes or reads image bodies"]

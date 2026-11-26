@@ -708,3 +708,14 @@ selects another kernel and cannot stand in for this target. Admission rereads
 the complete pinned normal grub.cfg, including the exact original leaf body.
 Historical targets retain their recorded simple-entry fact and are not rewritten
 to pass a new physical transaction; final candidates need a fresh target.
+
+The typed data adapter now separates durable selection withdrawal from working-image
+synchronization. The owner must enter SelectionWithdrawIntent, observe the real
+atomic withdrawal, then enter SelectionWithdrawn before retire_working can return
+the opaque WorkingDataRetired proof. That proof retains both synchronized read-only
+working OFDs and exact current identities, with complete reference scans before
+and after synchronization. Later changes invalidate it; it cannot be reconstructed
+from serialized success flags. Original images receive no synchronization call.
+The once constructor can retain the actual OriginalLabelSources object and use
+its source_pin and fresh_initramfs_report accessors, avoiding a second package/image
+admission or trusting a later caller-generated label-source assertion.

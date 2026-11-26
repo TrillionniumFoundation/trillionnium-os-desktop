@@ -150,6 +150,13 @@ pub(crate) struct OriginalLabelSources {
     environment: BTreeMap<String, String>,
 }
 impl OriginalLabelSources {
+    pub(crate) fn source_pin(&self) -> &FilePin {
+        &self.source_record
+    }
+    pub(crate) fn fresh_initramfs_report(&self) -> &Value {
+        &self.report
+    }
+
     pub(crate) fn admit(prepared: &FilePin, tools: &LabelTools, work: &Path) -> Result<Self> {
         source_work(work)?;
         let report =
