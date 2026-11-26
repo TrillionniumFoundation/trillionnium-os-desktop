@@ -291,12 +291,12 @@ impl PersistentHandle {
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
-struct Snapshot {
+pub(super) struct Snapshot {
     identity: Identity,
     handle: PersistentHandle,
     attributes: BTreeMap<String, Vec<u8>>,
 }
-fn snapshot(file: &File) -> Result<Snapshot> {
+pub(super) fn snapshot(file: &File) -> Result<Snapshot> {
     let identity = fs::stat(file)?;
     let handle = PersistentHandle::capture(file)?;
     let attributes = attributes(file)?;
@@ -309,6 +309,42 @@ fn snapshot(file: &File) -> Result<Snapshot> {
         handle,
         attributes,
     })
+}
+pub(super) fn verify_data_snapshot(
+    source: &Snapshot,
+    current: &Snapshot,
+    working_observation: bool,
+) -> Result<()> {
+    ensure(
+        source.handle == current.handle
+            && source.identity.dev == current.identity.dev
+            && source.identity.ino == current.identity.ino,
+        "original/working data generation changed",
+    )?;
+    let mut before = source.attributes.clone();
+    let mut after = current.attributes.clone();
+    if working_observation {
+        before.remove(LABEL);
+        after.remove(LABEL);
+    }
+    ensure(
+        before == after,
+        "original data labels or unrelated working xattrs changed",
+    )
+}
+pub(super) fn data_snapshot(file: &File, identity: &Identity) -> Result<Snapshot> {
+    let actual = snapshot(file)?;
+    ensure(
+        actual.identity == *identity,
+        "data label snapshot is not the same complete metadata observation",
+    )?;
+    Ok(actual)
+}
+pub(super) fn verify_snapshot_identity(value: &Snapshot, identity: &Identity) -> Result<()> {
+    ensure(
+        value.identity == *identity,
+        "data intent identity and generation snapshot disagree",
+    )
 }
 pub(super) fn only_ctime_changed(a: &Identity, b: &Identity) -> bool {
     let mut actual = b.clone();

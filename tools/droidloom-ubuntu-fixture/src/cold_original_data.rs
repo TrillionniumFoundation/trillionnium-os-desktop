@@ -201,6 +201,7 @@ fn capture_pair(parent: &File, name: &str, names: &[&str], owner: u32) -> Result
         members.insert(
             (*name).to_owned(),
             Member {
+                label_identity: labels::data_snapshot(&file, &node)?,
                 identity: node,
                 sha256,
             },
@@ -211,6 +212,7 @@ fn capture_pair(parent: &File, name: &str, names: &[&str], owner: u32) -> Result
         "initial data directory changed during snapshot",
     )?;
     Ok(PairRecord {
+        directory_label_identity: labels::data_snapshot(&directory, &id)?,
         directory: id,
         members,
     })
@@ -632,12 +634,14 @@ pub(super) fn assert_prepared_pair_retired(pair_intent: &FilePin) -> Result<Valu
 struct Member {
     identity: Identity,
     sha256: Option<String>,
+    label_identity: labels::Snapshot,
 }
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
 struct PairRecord {
     directory: Identity,
     members: BTreeMap<String, Member>,
+    directory_label_identity: labels::Snapshot,
 }
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
@@ -808,6 +812,12 @@ impl Locations {
             "data directory member set changed",
         )?;
         no_privilege_attributes(&dir)?;
+        let directory_label_identity = labels::data_snapshot(&dir, &before)?;
+        labels::verify_data_snapshot(
+            &expected.directory_label_identity,
+            &directory_label_identity,
+            mutable,
+        )?;
         let mut members = BTreeMap::new();
         for name in names {
             let file = open_at(&dir, &name, false)?;
@@ -838,6 +848,8 @@ impl Locations {
                 "original data member identity changed",
             )?;
             no_privilege_attributes(&file)?;
+            let label_identity = labels::data_snapshot(&file, &id)?;
+            labels::verify_data_snapshot(&old.label_identity, &label_identity, mutable)?;
             let sha256 = if image(&name) {
                 None
             } else {
@@ -854,6 +866,7 @@ impl Locations {
                 Member {
                     identity: id,
                     sha256,
+                    label_identity,
                 },
             );
         }
@@ -864,6 +877,7 @@ impl Locations {
         Ok(PairRecord {
             directory: before,
             members,
+            directory_label_identity,
         })
     }
     fn public_file(&self, parent: &File, name: &str) -> Result<Option<PublicFile>> {
@@ -1331,6 +1345,10 @@ impl DataTransaction {
             "closed original data transaction scope",
         )?;
         for record in [&intent.original, &intent.working] {
+            labels::verify_snapshot_identity(&record.directory_label_identity, &record.directory)?;
+            for member in record.members.values() {
+                labels::verify_snapshot_identity(&member.label_identity, &member.identity)?;
+            }
             ensure(
                 record.directory.dev == fs::stat(&locations.work)?.dev,
                 "data snapshot filesystem differs",
@@ -1779,6 +1797,7 @@ mod tests {
                 name.clone(),
                 Member {
                     identity: fs::stat(&file).unwrap(),
+                    label_identity: labels::snapshot(&file).unwrap(),
                     sha256: if image(&name) {
                         None
                     } else {
@@ -1790,6 +1809,7 @@ mod tests {
         PairRecord {
             directory: fs::stat(&dir).unwrap(),
             members,
+            directory_label_identity: labels::snapshot(&dir).unwrap(),
         }
     }
     fn public(path: &Path) -> PublicFile {
@@ -1800,7 +1820,10 @@ mod tests {
     }
     impl Fixture {
         fn new(old_selection: bool) -> Self {
-            let root = tempfile::tempdir().unwrap();
+            let root = tempfile::Builder::new()
+                .prefix(".p4-data-custody-")
+                .tempdir_in(std::env::current_dir().unwrap())
+                .unwrap();
             for p in [
                 "original-parent",
                 "working-parent",
@@ -1935,6 +1958,21 @@ mod tests {
         Ok(())
     }
 
+    #[test]
+    fn original_rollback_directory_cannot_change_an_unrelated_xattr() {
+        let fixture = Fixture::new(true);
+        let tx = fixture.open();
+        let (parent, name) = tx.locations.at(Place::Original);
+        let directory = open_at(parent, name, true).unwrap();
+        rustix::fs::fsetxattr(
+            &directory,
+            "user.unrelated",
+            b"unreviewed",
+            rustix::fs::XattrFlags::empty(),
+        )
+        .unwrap();
+        assert!(tx.observe(true).is_err());
+    }
     #[test]
     fn real_directory_exchange_and_selection_restore_preserve_original_images_and_mutated_copy() {
         for old_selection in [false, true] {
