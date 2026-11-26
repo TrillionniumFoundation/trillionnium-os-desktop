@@ -100,7 +100,8 @@ def derive(library, baseline, exported, here, output, export):
             (EARLY, FSTAB, "file"): {"getattr", "open", "read"},
             (EARLY, ROOT_LINK, "lnk_file"): {"relabelto"},
             (EARLY, ROOT_BLOCK, "blk_file"): {"relabelto"},
-        }, preamble=("; Preserve the real pre-remount-alias access of all existing actors.",))
+        }, preamble=("; Preserve the real pre-remount-alias access of all existing actors.",),
+        mcs_aliases={(ROOT_LINK, "lnk_file"), (ROOT_BLOCK, "blk_file")})
     expected["contract_sha256"] = hashlib.sha256(
         (here / "native-remount-source.json").read_bytes()).hexdigest()
     return expected
@@ -252,6 +253,9 @@ def verify(library, binary, exported, here, expected, export):
         "fixed_service_transition": fixed,
         "preserved_actor_object_vectors": len(expected["samples"]),
         "preserved_transitions": len(expected["transitions"]),
+        "raw_te_vectors_preserved": len(expected["raw_te_samples"]),
+        "mcs_source_target_samples_preserved": len(expected["mcs_effective_samples"]),
+        "all_ranges_constraint_target_checks": expected["constraint_target_checks"],
         "whole_object_classes_checked": ["file", "dir", "lnk_file", "chr_file",
                                          "blk_file", "filesystem"],
         "concrete_objects": len(objects), "concrete_actors": len(actors),

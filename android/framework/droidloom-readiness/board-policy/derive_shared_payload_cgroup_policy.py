@@ -156,7 +156,12 @@ def parse_expression(text):
     return result
 
 
-def original_xperms(inputs, subjects, target_type="cgroup_v2"):
+def original_xperms(inputs, subjects, target_type="cgroup_v2", *,
+                    class_names=("dir", "file", "lnk_file")):
+    if (isinstance(class_names, str) or not class_names or
+            len(set(class_names)) != len(class_names) or
+            not set(class_names).issubset({"dir", "file", "lnk_file", "chr_file", "blk_file"})):
+        raise ValueError("Explicit filesystem ioctl classes are required")
     text = "\n".join(path.read_text() for path in inputs)
     types = set(re.findall(r"\(type ([A-Za-z0-9_]+)\)", text))
     definitions = defaultdict(list)
@@ -235,7 +240,7 @@ def original_xperms(inputs, subjects, target_type="cgroup_v2"):
             result |= numbers(item)
         return result
     result = {name: {subject: 0 for subject in subjects}
-              for name in ("dir", "file", "lnk_file")}
+              for name in class_names}
     for _, source, target, rule in statements:
         operation, class_name, values = rule
         if operation != "ioctl" or class_name not in result or not member(target, target_type):
