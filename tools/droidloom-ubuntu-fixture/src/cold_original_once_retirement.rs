@@ -578,6 +578,34 @@ pub(crate) struct OriginalRetirement {
     pid: u32,
 }
 impl OriginalRetirement {
+    /// The complete currently held runtime inventory, obtained only after real
+    /// original return and retirement. New runtime files never become original
+    /// label preimages. The dispatcher may archive exactly these members only
+    /// after the full label transaction has finished.
+    pub(super) fn runtime_inventory(&self) -> Result<Value> {
+        self.revalidate()?;
+        let value = if let Some(runtime) = &self.runtime {
+            runtime.revalidate()?;
+            let rows = runtime
+                .files
+                .borrow()
+                .iter()
+                .map(|(name, f)| {
+                    json!({
+                        "name":name,"pin":f.pin,"identity":f.identity,"attributes":f.attributes
+                    })
+                })
+                .collect::<Vec<_>>();
+            json!({"directory":runtime.directory,"directory_identity":runtime.identity.borrow().clone(),
+                "owner_lock_identity":runtime.lock_identity.borrow().clone(),"files":rows})
+        } else {
+            Value::Null
+        };
+        self.revalidate()?;
+        Ok(
+            json!({"schema":"droidloom.original-once-held-runtime-inventory.v1","candidate_id":self.candidate_id(),"actual_retirement":self.report_pin(),"actual":value}),
+        )
+    }
     pub(crate) fn authority(&self) -> &OriginalQualificationAuthority {
         &self.authority
     }

@@ -942,3 +942,48 @@ obsolete tmp predicates, and rejection of unrelated children, replaced directory
 generations and unexplained parent clocks. The selected normal native22 archives
 are also read back completely. These are source and isolated filesystem proofs;
 they do not constitute an original-device package operation or runtime pass.
+
+### Callable original-once dispatcher and interrupted preparation
+
+`droidloom-ubuntu-fixture run-original-once --config PLAN --config-sha256 SHA`
+is the single entry to the original-machine transaction. It obtains the private
+material/owner authority from real normal-source, ended owned-guest, MAC,
+original-host and recovery admission. It has no installation-success or
+qualification Boolean argument. The normal owner unit retains the four original
+locks through every action and remains installed until the final public rollback.
+The public packages, native22 packages, cell and recovery configurations, independent
+working pair, label transaction, selected publication and GRUB one-shot arm all
+use their existing source-bound writers and durable observed events.
+
+On restart, the dispatcher retires an interrupted preparation instead of silently
+resuming forward actions. ArmIntent with an already modified next_entry is
+reconciled by the normal GRUB reader/disarmer before unbooted retirement. A
+preparation that never published its first Admitted event only preserves its
+private directory under a new name after real original-owner checks; it cannot
+invent a pair intent, label plan or public rollback. Later no-pair/no-label paths
+use their actual zero-effect observations. Original cell restoration, native
+rollback, public rollback, writer masks and owner-unit withdrawal remain ordered.
+
+Each package operation captures its exact configuration-parent preimage before
+the command. Normal completion, actual interrupted metadata and a durable result
+whose phase acknowledgement was interrupted follow separate verified paths.
+Source-derived parent changes compose between the corresponding configuration
+groups. Full parent metadata must be unchanged before a rename that has not
+happened; a parent-only touch or foreign create/delete cannot masquerade as the
+intended atomic exchange. Actual already-completed rename recovery retains its
+finite two-inode classification.
+
+Complete label restoration seals the configuration and normal-package metadata
+inputs under the actual label-result hash before publishing LabelsRestored. That
+event binds both seals, so a crash before CellRestoreIntent reopens the exact
+completed checkpoint. Earlier incomplete restoration generations remain intact;
+a new real retirement writes a new seal rather than overwriting prior records.
+Runtime-born evidence is archived only after actual label restoration, with its
+own inode/parent evolution and no synthetic label preimage. The original
+normal-package snapshots are never rewritten.
+
+The CLI wiring and isolated tests do not declare the full original-device
+lifecycle qualified. Normal helper/policy/AppArmor packaging, exact current
+cohort admission, the measured complete frozen windows and selected-kernel
+runtime return proof remain mandatory before physical arm. Permanent enablement
+still requires its separate real application, private-data and maintenance gates.

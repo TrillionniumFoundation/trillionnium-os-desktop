@@ -27,9 +27,9 @@ mod boot_vm;
 mod capture;
 mod cold_original_data;
 mod cold_original_initramfs;
-mod cold_original_qualification;
-mod cold_original_once_recovery;
 mod cold_original_once_initramfs;
+mod cold_original_once_recovery;
+mod cold_original_qualification;
 mod complete_native;
 mod complete_snapshot;
 mod fs;
@@ -63,6 +63,19 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Command {
+    RunOriginalOnce {
+        #[arg(long)]
+        config: PathBuf,
+        #[arg(long)]
+        config_sha256: String,
+    },
+    #[command(name = "__original-once-thaw", hide = true)]
+    OriginalOnceThawGuard {
+        #[arg(long)]
+        config: PathBuf,
+        #[arg(long)]
+        config_sha256: String,
+    },
     #[command(hide = true)]
     OriginalOnceEarlyRecovery,
     VerifyPublicApkInputs {
@@ -239,6 +252,17 @@ fn run() -> Result<()> {
         "real source capture/copy requires existing root rights; no privilege helper is installed",
     )?;
     match cli.command {
+        Command::RunOriginalOnce {
+            config,
+            config_sha256,
+        } => {
+            let actual = cold_original_qualification::run(&config, &config_sha256)?;
+            println!("{}", serde_json::to_string(&actual)?);
+        }
+        Command::OriginalOnceThawGuard {
+            config,
+            config_sha256,
+        } => cold_original_qualification::run_thaw_guard(&config, &config_sha256)?,
         Command::OriginalOnceEarlyRecovery => cold_original_once_recovery::early()?,
         Command::VerifyPublicApkInputs {
             config,

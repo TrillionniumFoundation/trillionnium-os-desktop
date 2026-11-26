@@ -751,8 +751,194 @@ fn original_grub(work: &Path, guards: &mut Vec<Guard>) -> Result<FilePin> {
 }
 
 /// No caller can manufacture the result by deserializing any of the receipts.
-/// This remains a private preparation entry until the physical dispatcher has
-/// every mutation/recovery stage wired to the same retained owner.
+/// The single dispatcher keeps every subsequent mutation and recovery stage
+/// attached to this retained original owner.
+/// Incomplete *private* preparation has never returned the typed authority.
+/// Preserve it under a new name, rather than overwriting its failed receipts
+/// or manufacturing an Admitted event. A real admitted attempt always takes
+/// the normal physical retirement path instead.
+pub(super) fn retire_unadmitted(input: &FilePin) -> Result<Option<Value>> {
+    let sealed = SealedInput::open(input)?;
+    let plan: Plan = serde_json::from_slice(&sealed.read()?)?;
+    ensure(
+        plan.schema == "droidloom.original-once-plan.v1" && fs::valid_digest(&plan.candidate_id),
+        "private preparation plan identity",
+    )?;
+    let work = Path::new(BASE).join(format!("original-once-{}", plan.candidate_id));
+    match std::fs::symlink_metadata(&work) {
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(None),
+        Err(e) => return Err(e.into()),
+        Ok(_) => {}
+    }
+    // This is routing only. The ordinary resume factory reopens and validates
+    // the complete journal under the current original boot and real locks.
+    // Do not demand the initial boot ID, or touch pending journal records,
+    // before that returned-boot owner has been acquired.
+    if work.join("journal/event-0000.json").try_exists()? {
+        ensure(
+            work.join("INTENT.json").try_exists()?,
+            "admission event has no immutable intent",
+        )?;
+        return Ok(None);
+    }
+    let owner = OriginalOwner::acquire(&plan.original_boot_id, &plan.candidate_id)?;
+    let producer = Guard::open(&plan.normal_producer)?;
+    let executable = File::open("/proc/self/exe")?;
+    ensure(
+        fs::stat(&executable)? == producer.identity
+            && fs::hash(&executable)? == plan.normal_producer.sha256,
+        "private preparation retirement is not its actual normal producer",
+    )?;
+    let tree = fs::Tree::open(&fs::absolute_string(&work)?, 0)?;
+    let before = fs::stat(&tree.root)?;
+    ensure(
+        before.uid == 0
+            && before.gid == 0
+            && before.mode & 0o7777 == 0o700
+            && fs::xattrs(&tree.root)?.is_empty(),
+        "unadmitted private directory custody",
+    )?;
+    let intent = work.join("INTENT.json");
+    let journal = work.join("journal");
+    if journal.try_exists()? {
+        ensure(
+            intent.try_exists()?,
+            "private journal exists without its immutable intent",
+        )?;
+        let p = files::pin_file(&intent)?;
+        let g = SealedInput::open(&p)?;
+        let v: Value = serde_json::from_slice(&g.read()?)?;
+        ensure(
+            v["schema"] == "droidloom.original-once-intent.v1"
+                && v["candidate_id"] == plan.candidate_id
+                && v["work_directory"] == work.to_string_lossy().as_ref(),
+            "unadmitted intent identity",
+        )?;
+        let actual = Journal::reopen(&journal, &plan.candidate_id, &p.sha256)?;
+        if actual.observation(Phase::Admitted)?.is_some() {
+            return Ok(None);
+        }
+        ensure(
+            actual.phase().is_none(),
+            "private preparation has later authority events",
+        )?;
+    }
+    let mut names = BTreeSet::new();
+    for e in std::fs::read_dir(&work)? {
+        let name = e?
+            .file_name()
+            .into_string()
+            .map_err(|_| "private preparation nonUTF8 member")?;
+        ensure(
+            names.len() < 64 && private_preparation_name(&name) && names.insert(name),
+            "unadmitted preparation contains a public transaction or unknown output",
+        )?;
+    }
+    let archive = Path::new(BASE).join(format!(
+        "original-once-unadmitted-{}-{}-{}",
+        plan.candidate_id, before.dev, before.ino
+    ));
+    let value = json!({"schema":"droidloom.original-once-unadmitted-preservation.v1","scope":"private-preparation-only",
+        "input":input,"candidate_id":plan.candidate_id,"original_directory":work,"archived_directory":archive,
+        "actual_owner":owner.evidence(),"directory_before":before,"private_members":names,
+        "physical_restoration_performed":false,"qualification_accepted":false});
+    let record = work.join("UNADMITTED-PRESERVATION.json");
+    if record.try_exists()? {
+        let p = files::pin_file(&record)?;
+        let old: Value = serde_json::from_slice(&SealedInput::open(&p)?.read()?)?;
+        ensure(
+            old["input"] == serde_json::to_value(input)?
+                && old["candidate_id"] == plan.candidate_id
+                && old["archived_directory"] == archive.to_string_lossy().as_ref(),
+            "private preservation intent changed",
+        )?;
+    } else {
+        save(&record, &value)?;
+    }
+    owner.revalidate()?;
+    producer.revalidate()?;
+    sealed.revalidate()?;
+    let parent = fs::Tree::open(BASE, 0)?;
+    let current = fs::stat(&tree.root)?;
+    let named = fs::stat(&fs::Tree::open(&fs::absolute_string(&work)?, 0)?.root)?;
+    ensure(
+        current == named
+            && current.dev == before.dev
+            && current.ino == before.ino
+            && current.mode == before.mode
+            && current.uid == before.uid
+            && current.gid == before.gid
+            && fs::xattrs(&tree.root)?.is_empty(),
+        "private preparation directory changed before preservation",
+    )?;
+    let old_name = work
+        .file_name()
+        .and_then(|x| x.to_str())
+        .ok_or("private source name")?;
+    let new_name = archive
+        .file_name()
+        .and_then(|x| x.to_str())
+        .ok_or("private archive name")?;
+    rustix::fs::renameat_with(
+        &parent.root,
+        old_name,
+        &parent.root,
+        new_name,
+        rustix::fs::RenameFlags::NOREPLACE,
+    )?;
+    parent.root.sync_all()?;
+    let after = fs::stat(&tree.root)?;
+    ensure(
+        after == fs::stat(&fs::Tree::open(&fs::absolute_string(&archive)?, 0)?.root)?
+            && after.dev == before.dev
+            && after.ino == before.ino
+            && after.mode == before.mode
+            && after.uid == before.uid
+            && after.gid == before.gid
+            && !work.try_exists()?,
+        "private preparation preservation lost its actual inode",
+    )?;
+    owner.revalidate()?;
+    producer.revalidate()?;
+    sealed.revalidate()?;
+    Ok(Some(
+        json!({"schema":"droidloom.original-once-unadmitted-preserved.v1","original":work,"archived":archive,"actual_directory":after,"physical_restoration_performed":false}),
+    ))
+}
+fn private_preparation_name(name: &str) -> bool {
+    [
+        "COLD-CLONE-SOURCE.json",
+        "OWNED-VERIFY-INPUTS.json",
+        "five-mac-files",
+        "FIVE-MAC-PREPARED.json",
+        "ORIGINAL-EXT4-READBACK.json",
+        "ORIGINAL-CELL.json",
+        "CANDIDATE-CELL.json",
+        "SELECTION.json",
+        "cold-source",
+        "ORIGINAL-grub.cfg",
+        "ORIGINAL-grubenv",
+        "ORIGINAL-vmlinuz-7.0.14-p4cred1",
+        "ORIGINAL-initrd.img-7.0.14-p4cred1",
+        "ORIGINAL-GRUB.json",
+        "ADMITTED-MATERIALS.json",
+        "INTENT.json",
+        "EARLY.json",
+        "RECOVERY-RECIPE.json",
+        "journal",
+        "UNADMITTED-PRESERVATION.json",
+    ]
+    .contains(&name)
+        || [
+            "original-data-root-inode",
+            "original-metadata-root-inode",
+            "normal-five-mac-stage",
+            "normal-original-grub-readback",
+        ]
+        .iter()
+        .any(|stem| name == format!("{stem}.log") || name == format!("{stem}.json"))
+}
+
 pub(super) fn admit(input: &FilePin) -> Result<Rc<OriginalQualificationAuthority>> {
     let input_guard = SealedInput::open(input)?;
     let mut plan: Plan = serde_json::from_slice(&input_guard.read()?)?;
@@ -821,15 +1007,16 @@ pub(super) fn admit(input: &FilePin) -> Result<Rc<OriginalQualificationAuthority
     )?;
     let data_before = cold_original_data::assert_initial_pair_retired(&plan.cold_clone)?;
     let source_work = Path::new(BASE).join(format!(
-        "original-initramfs-label-once-{}",
-        &plan.candidate_id[..24]
+        "original-initramfs-label-once-{}-{}",
+        &plan.candidate_id[..24],
+        work_identity.ino
     ));
     let sources =
         OriginalLabelSources::admit(&plan.prepared_initramfs, &plan.label_tools, &source_work)?;
     let owned = crate::boot_owned_evidence::verify_for_original_once(
         &plan.owned_verification_input,
         &work.join("OWNED-VERIFY-INPUTS.json"),
-        &format!("once-{}", &plan.candidate_id[..24]),
+        &format!("once-{}-{}", &plan.candidate_id[..24], work_identity.ino),
     )?;
     compare_candidates(
         &plan.candidate_id,

@@ -20,11 +20,11 @@ const PYTHON_SHA: &str = "52e0a13e60a981d8c4b6478be2ba5176f69da07948a056bf49cf6f
 // This is an internal adapter to the already source-bound engines, not a new
 // Python CLI. All source files are exact embedded normal-producer bytes. In
 // particular package rollback uses the original durable engine snapshots.
-const DRIVER: &str = r#"import sys,json,os,stat,hashlib,contextlib
+const DRIVER: &str = r#"import sys,json,os,stat,hashlib,contextlib,re
 from pathlib import Path
 sys.path.insert(0,sys.argv[1])
-from release import need,held,hash_fd,file_pin,read_pin,read_json_file,canonical,f9,TOOLS,_fixed_command,verify_original_grub_entry,original_grub_entry,ORIGINAL_ROOT_UUID,ORIGINAL_KERNEL
-from cold_apply import PublicTransaction,original_cold_context
+from release import need,held,hash_fd,file_pin,read_pin,read_json_file,canonical,f9,TOOLS,_fixed_command,verify_original_grub_entry,original_grub_entry,ORIGINAL_ROOT_UUID,ORIGINAL_KERNEL,new_file
+from cold_apply import PublicTransaction,original_cold_context,COLD_OWNER_UNITS
 from cold_native import NativeTransaction
 from native_release import verify_bundle,ORIGINAL_SCHEMA
 request=json.loads(Path(sys.argv[2]).read_text())
@@ -103,13 +103,46 @@ def normal_tool(name,args,seconds=60,maximum=8*1024*1024,borrowed=()):
  path,size,sha=TOOLS[name]
  return _fixed_command(path,size,sha,args,uid=None,seconds=seconds,maximum=maximum,borrowed=borrowed)
 
+def preservation(kind,snapshot,current):
+ proof=arg.get('restored_metadata')
+ if proof is None:
+  need(current==snapshot,'original complete preserved metadata changed');return None
+ v=json.loads(read_pin(proof,16*1024*1024,True))
+ label=v['actual_label_restoration']
+ need(re.fullmatch('[0-9a-f]{64}',label['sha256']) and Path(proof['path'])==Path(request['intent']['path']).parent/('NORMAL-PACKAGE-PRESERVATION-'+label['sha256']+'.json'),'fixed actual restoration preservation source')
+ need(v['schema']=='droidloom.original-once-package-preservation.v1' and v['candidate_id']==request['candidate_id'] and v['intent']==request['intent'],'same actual original-return metadata source')
+ source=v['snapshots'][kind]
+ need(source['snapshot']==arg['snapshot'] and source['original']==snapshot,'original normal package snapshot was not rewritten')
+ need(set(current)==set(snapshot),'fixed preserved metadata roster differs')
+ for name,old in snapshot.items():
+  now=current[name]
+  if kind=='native' and old.get('absent'):
+   need(now==old,'an absent preserved inode appeared');continue
+  path=name if name.startswith('/') else '/'+name
+  row=v['metadata']['paths'][path]
+  def ident(i):return [i['dev'],i['ino'],i['mode'],i['uid'],i['gid'],i['nlink'],i['size'],i['mtime_sec']*10**9+i['mtime_nsec'],i['ctime_sec']*10**9+i['ctime_nsec']]
+  old_id=old if kind=='public' else old['f9'];now_id=now if kind=='public' else now['f9']
+  need(ident(row['prelabel']['identity'])==old_id and ident(row['restored']['identity'])==now_id,'actual preserved metadata is not its observed source-to-restored derivation')
+  if kind=='native':
+   need(old.get('type')==now.get('type') and old.get('target')==now.get('target') and all(old['node'][k]==now['node'][k] for k in ('device','inode','mode','uid','gid')),'normal preserved node type/owner/link contract changed')
+  need({n:list(os.getxattr(path,n,follow_symlinks=False)) for n in os.listxattr(path,follow_symlinks=False)}==row['restored']['attributes'],'actual restored preservation xattrs changed')
+ return proof
+
+class OncePublicTransaction(PublicTransaction):
+ def preserved(self):
+  actual={path:list(f9((self.root/path.lstrip('/')).lstat())) for path in self.snapshot['preserved_metadata_only']}
+  preservation('public',self.snapshot['preserved_metadata_only'],actual)
+class OnceNativeTransaction(NativeTransaction):
+ def verify_private_preservation(self):
+  return preservation('native',self.snapshot['private_metadata'],self.private_metadata())
+
 def public_transaction(existing):
- t=PublicTransaction(Path('/'),public,m['public_release_id'],existing=existing)
+ t=OncePublicTransaction(Path('/'),public,m['public_release_id'],existing=existing)
  if existing:need(t.expected_snapshot==arg['snapshot'],'exact source-owned public snapshot')
  return t
 
 def native_transaction(existing):
- t=NativeTransaction(Path('/'),native,m['native_release_id'],existing=existing)
+ t=OnceNativeTransaction(Path('/'),native,m['native_release_id'],existing=existing)
  if existing:need(file_pin(t.attempt/'SNAPSHOT.json')==arg['snapshot'],'exact source-owned native snapshot')
  return t
 
@@ -147,6 +180,41 @@ elif op in ('native-apply','native-verify','native-rollback'):
   else:t.rollback()
   result=transaction_result(t,'native')
  finally:t.close()
+elif op in ('package-writers-stop','package-writers-restore'):
+ units=arg['units'];expected=['apt-daily.service','apt-daily.timer','apt-daily-upgrade.service','apt-daily-upgrade.timer','unattended-upgrades.service','packagekit.service','packagekit-offline-update.service','snapd.service','snapd.socket','snapd.snap-repair.service','snapd.snap-repair.timer']
+ need(units==expected,'exact source package writer set')
+ def inventory(names):
+  rows=[]
+  for name in names:
+   q=normal_tool('systemctl',['show',name,'--no-pager','--property=Id,LoadState,ActiveState,SubState,MainPID,ControlGroup,FragmentPath,DropInPaths,Transient'])
+   row=dict(line.split('=',1) for line in q['stdout'].decode('utf-8','strict').splitlines() if '=' in line)
+   need(q['exit']==0 or row.get('LoadState')=='not-found' and row.get('ActiveState')=='inactive','actual package writer observation failed')
+   need(row.get('Id')==name and row.get('ActiveState') in ('active','inactive','failed'),'package writer is in an unknown/transitional state')
+   rows.append(row)
+  return rows
+ before=inventory(units)
+ if op=='package-writers-stop':
+  cold=inventory(COLD_OWNER_UNITS)
+  intent={'schema':'droidloom.original-once-package-writers.v1','candidate_id':request['candidate_id'],'intent':request['intent'],'source':m['native_release'],'units':units,'actual_before':before,'actual_cold_before':cold}
+  saved=Path(sys.argv[2]).parent/'WRITERS-INTENT.json';new_file(saved,canonical(intent),0o400)
+  d=os.open(saved.parent,os.O_RDONLY|os.O_DIRECTORY|os.O_CLOEXEC);os.fsync(d);os.close(d)
+  active=[r['Id'] for r in before+cold if r['ActiveState']=='active']
+  change=normal_tool('systemctl',['stop',*active],seconds=90) if active else None
+  need(change is None or change['exit']==0,'normal package writer stop failed')
+  after=inventory(units);cold_after=inventory(COLD_OWNER_UNITS);need(all(r['ActiveState'] in ('inactive','failed') and r.get('MainPID','0')=='0' for r in after+cold_after),'a real package writer did not retire')
+  result={'original':file_pin(saved),'before':before,'after':after,'actual_cold_before':cold,'actual_cold_after':cold_after,'command':change}
+ else:
+  original=arg['original'];v=json.loads(read_pin(original,1024*1024,True))
+  need(v['schema']=='droidloom.original-once-package-writers.v1' and v['candidate_id']==request['candidate_id'] and v['intent']==request['intent'] and v['units']==units,'writer restoration uses another actual original inventory')
+  active=[r['Id'] for r in v['actual_before'] if r['ActiveState']=='active']
+  change=normal_tool('systemctl',['start',*active],seconds=90) if active else None
+  need(change is None or change['exit']==0,'normal original writer restart failed')
+  after=inventory(units);need(all(r['ActiveState']=='active' for r in after if r['Id'] in active),'normal original writer restart was not observed')
+  need(all(r['ActiveState'] in ('inactive','failed') for r in after if r['Id'] not in active),'restoration started an originally inactive writer')
+  cold_active=[r['Id'] for r in v['actual_cold_before'] if r['ActiveState']=='active']
+  cold_request=normal_tool('systemctl',['--no-block','start',*cold_active],seconds=30) if cold_active else None
+  need(cold_request is None or cold_request['exit']==0,'normal original graphical restore request failed')
+  result={'original':original,'before':before,'after':after,'command':change,'cold_original_request':cold_request,'cold_activation_observed':False}
 elif op=='quiescence-inventory':
  fixed=['gdm.service','gdm3.service','systemd-journald.service','rsyslog.service','accounts-daemon.service','user@1000.service','user@120.service','user@981.service','user@997.service','hepta-runtime.service']
  props=['Id','LoadState','ActiveState','SubState','ControlGroup','MainPID','InvocationID','FragmentPath','DropInPaths','Transient','Restart']
@@ -293,6 +361,18 @@ pub(super) fn call(
             && fs::xattrs(&python)?.keys().all(|k| k == "security.selinux"),
         "normal interpreter complete bytes or privilege attributes differ before exec",
     )?;
+    let preservation = if matches!(operation, "public-rollback" | "native-rollback") {
+        arguments
+            .get("restored_metadata")
+            .filter(|v| !v.is_null())
+            .map(|v| {
+                let p: FilePin = serde_json::from_value(v.clone())?;
+                super::configurations::PackagePreservation::open(a, &p)
+            })
+            .transpose()?
+    } else {
+        None
+    };
     let result = files::run_logged(
         &work,
         "normal-command",
@@ -319,6 +399,9 @@ pub(super) fn call(
         "normal interpreter changed across command",
     )?;
     seal.revalidate()?;
+    if let Some(held) = &preservation {
+        held.revalidate()?;
+    }
     a.verify_current_owner()?;
     let actual: Value = serde_json::from_slice(&files::read_pin(&result.log, 64 * 1024 * 1024)?)?;
     ensure(

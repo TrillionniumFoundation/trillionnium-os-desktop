@@ -1,6 +1,8 @@
 //! Durable, finite per-machine configuration publication. Original inodes are
 //! retained by atomic exchange; a restored value is never synthesized from a
 //! convenient matching pathname. Only the once dispatcher supplies entries.
+#[path = "cold_original_once_package_parents.rs"]
+pub(super) mod package_parents;
 use super::{OriginalQualificationAuthority, owner::SealedInput};
 use crate::{
     Result,
@@ -208,7 +210,14 @@ impl DirectoryState {
         ensure(
             expected == actual.members,
             "configuration parent changed an unrelated member",
-        )
+        )?;
+        if expected == self.members {
+            ensure(
+                actual == self,
+                "configuration parent clock/size drift has no actual child transition",
+            )?;
+        }
+        Ok(())
     }
 }
 
@@ -416,6 +425,7 @@ fn allowed(path: &Path, candidate: &str) -> bool {
     let s = path.to_string_lossy();
     if [
         "/etc/droidloom/cell.json",
+        "/etc/droidloom/container-launcher.json",
         "/etc/droidloom-maintenance/installation.json",
         "/etc/droidloom/qualification/early.json",
         "/etc/droidloom/qualification/return.json",
@@ -438,6 +448,13 @@ fn allowed(path: &Path, candidate: &str) -> bool {
     if s == format!("/boot/droidloom/qualification/{candidate}/initrd.img") {
         return true;
     }
+    if s == format!(
+        "/var/lib/droidloom/qualification/original-once-{candidate}/runtime-evidence/owner.lock"
+    ) || s
+        == "/etc/systemd/user/graphical-session.target.wants/droidloom-production-desktop.service"
+    {
+        return true;
+    }
     let owner = format!("droidloom-original-qualification@{candidate}.service");
     if s == format!("/etc/systemd/system/{owner}")
         || s == format!("/etc/systemd/system/multi-user.target.wants/{owner}")
@@ -453,6 +470,7 @@ fn allowed(path: &Path, candidate: &str) -> bool {
                 "droidloom-instance-factory.service",
                 "droidloom-instance-launcher.service",
                 "droidloom-production.service",
+                "droidloom-early-observer.service",
                 "droidloom-original-once.target",
                 "droidloom-original-once-return.service",
                 "droidloom-original-once-return.timer",
@@ -494,7 +512,11 @@ fn parent_directories(path: &Path, work: &Path, candidate: &str, group: &str) ->
         let staging = record.join("payload");
         files::private_dir(&staging)?;
         let pending = staging.join("value");
-        rustix::fs::mkdirat(&File::open(&staging)?, "value", Mode::from_raw_mode(0o755))?;
+        let runtime = Path::new("/var/lib/droidloom/qualification")
+            .join(format!("original-once-{candidate}"))
+            .join("runtime-evidence");
+        let mode = if target == &runtime { 0o700 } else { 0o755 };
+        rustix::fs::mkdirat(&File::open(&staging)?, "value", Mode::from_raw_mode(mode))?;
         File::open(&pending)?.sync_all()?;
         File::open(&staging)?.sync_all()?;
         File::open(&record)?.sync_all()?;
@@ -836,7 +858,16 @@ fn valid_item(i: &Intent, record: &Path, root: &Path, candidate: &str, group: &s
                 && purpose != &i.target
                 && i.original.is_none()
                 && i.prepared.as_ref().is_some_and(|n| {
-                    n.identity.mode == 0o40755
+                    n.identity.mode
+                        == if i.target
+                            == Path::new("/var/lib/droidloom/qualification")
+                                .join(format!("original-once-{candidate}"))
+                                .join("runtime-evidence")
+                        {
+                            0o40700
+                        } else {
+                            0o40755
+                        }
                         && n.identity.uid == 0
                         && n.identity.gid == 0
                         && n.sha256.is_none()
@@ -909,97 +940,197 @@ fn configuration_items(a: &OriginalQualificationAuthority) -> Result<Vec<Item>> 
     }
     Ok(result)
 }
+/// Read the exact source-owned package attempts in their dispatch order. A
+/// missing observation can only be reconciled while its real command remains
+/// the active interrupted operation; historical observations are never
+/// compared to the later, legitimately evolved namespace.
+pub(super) fn native_parent_history(
+    a: &OriginalQualificationAuthority,
+    operation: package_parents::NativeOperation,
+    reconcile: bool,
+) -> Result<Vec<package_parents::Changes>> {
+    let root = a.work().join("native-package-parents");
+    if !root.try_exists()? {
+        return Ok(Vec::new());
+    }
+    let suffix = match operation {
+        package_parents::NativeOperation::Install => "-native-apply",
+        package_parents::NativeOperation::Rollback => "-native-rollback",
+    };
+    let mut names = Vec::new();
+    for e in std::fs::read_dir(&root)? {
+        let name = e?
+            .file_name()
+            .into_string()
+            .map_err(|_| "native parent history nonUTF8 name")?;
+        let rest = name
+            .strip_prefix("dispatch-")
+            .ok_or("native parent history command prefix")?;
+        ensure(
+            rest.len() > 5
+                && rest.is_ascii()
+                && rest.as_bytes()[4] == b'-'
+                && rest[..4].bytes().all(|b| b.is_ascii_digit())
+                && ["native-apply", "native-rollback"].contains(&&rest[5..])
+                && names.len() < 4096,
+            "bounded fixed native parent command roster",
+        )?;
+        if name.ends_with(suffix) {
+            names.push(name);
+        }
+    }
+    names.sort();
+    let mut result = Vec::new();
+    for name in names {
+        let path = root.join(&name).join("OBSERVATION.json");
+        let changes = if path.try_exists()? {
+            package_parents::Changes::reopen(a, &files::pin_file(&path)?)?
+        } else {
+            ensure(
+                reconcile,
+                "normal package metadata has no completed or interrupted observation",
+            )?;
+            let phase = a
+                .journal
+                .borrow()
+                .phase()
+                .ok_or("native parent reconciliation phase")?;
+            let allowed = match operation {
+                package_parents::NativeOperation::Install => matches!(
+                    phase,
+                    super::state::Phase::Aborting | super::state::Phase::NativeInstallIntent
+                ),
+                package_parents::NativeOperation::Rollback => {
+                    phase == super::state::Phase::CellRestored
+                }
+            };
+            ensure(
+                allowed,
+                "unobserved native operation is no longer the active interrupted phase",
+            )?;
+            package_parents::Capture::reopen(a, &name)?.reconcile_interrupted(a)?
+        };
+        result.push(changes);
+    }
+    Ok(result)
+}
+fn replay_native_parents(
+    a: &OriginalQualificationAuthority,
+    operation: package_parents::NativeOperation,
+    states: &mut BTreeMap<PathBuf, DirectoryState>,
+    inputs: &mut Vec<SealedInput>,
+) -> Result<()> {
+    for change in native_parent_history(a, operation, false)? {
+        change.apply_to(states)?;
+        inputs.push(SealedInput::open(change.pin())?);
+    }
+    Ok(())
+}
+
 fn published_parents(
     a: &OriginalQualificationAuthority,
 ) -> Result<(BTreeMap<PathBuf, DirectoryState>, Vec<SealedInput>)> {
     let mut states: BTreeMap<PathBuf, DirectoryState> = BTreeMap::new();
     let mut held = Vec::new();
-    for item in configuration_items(a)? {
-        let i = &item.intent;
-        held.push(SealedInput::open(&item.pin)?);
-        for before in [&i.parent, &i.private_parent] {
-            if let Some(previous) = states.get(&before.path) {
+    let items = configuration_items(a)?;
+    for group in ["owner", "package-masks", "runtime", "recovery", "grub"] {
+        for item in items.iter().filter(|item| item.intent.group == group) {
+            let i = &item.intent;
+            held.push(SealedInput::open(&item.pin)?);
+            for before in [&i.parent, &i.private_parent] {
+                if let Some(previous) = states.get(&before.path) {
+                    ensure(
+                        previous == before,
+                        "configuration parent history contains an unowned intervening mutation",
+                    )?;
+                }
+            }
+            let path = item.directory.join("PUBLISHED.json");
+            let (target, pending, p, q) = if path.exists() {
+                let seal = SealedInput::open(&files::pin_file(&path)?)?;
+                let row: Value = serde_json::from_slice(&seal.read()?)?;
                 ensure(
-                    previous == before,
-                    "configuration parent history contains an unowned intervening mutation",
+                    row["intent"] == serde_json::to_value(&item.pin)?,
+                    "published configuration source pin differs",
                 )?;
+                let values = (
+                    serde_json::from_value::<Option<Node>>(row["actual"]["target"].clone())?,
+                    serde_json::from_value::<Option<Node>>(
+                        row["actual"]["original_retained"].clone(),
+                    )?,
+                    serde_json::from_value::<DirectoryState>(
+                        row["actual"]["public_parent_after"].clone(),
+                    )?,
+                    serde_json::from_value::<DirectoryState>(
+                        row["actual"]["private_parent_after"].clone(),
+                    )?,
+                );
+                ensure(
+                    expected(&i.prepared, &values.0) && expected(&i.original, &values.1),
+                    "published source has unknown original/candidate inode",
+                )?;
+                held.push(seal);
+                values
+            } else {
+                let target = observe_kind(&i.target, i.purpose_target.is_some())?;
+                let pending = observe_kind(&i.pending, i.purpose_target.is_some())?;
+                ensure(
+                    expected(&i.original, &target) && expected(&i.prepared, &pending)
+                        || expected(&i.prepared, &target) && expected(&i.original, &pending),
+                    "interrupted configuration has unknown finite namespace",
+                )?;
+                (
+                    target,
+                    pending,
+                    DirectoryState::capture(&i.parent.path)?.state,
+                    DirectoryState::capture(&i.private_parent.path)?.state,
+                )
+            };
+            i.parent.after_replace(
+                &p,
+                i.target
+                    .file_name()
+                    .and_then(|x| x.to_str())
+                    .ok_or("public name")?,
+                &target,
+            )?;
+            i.private_parent.after_replace(
+                &q,
+                i.pending
+                    .file_name()
+                    .and_then(|x| x.to_str())
+                    .ok_or("private name")?,
+                &pending,
+            )?;
+            advance_parent(&mut states, &i.parent, &p)?;
+            advance_parent(&mut states, &i.private_parent, &q)?;
+            // The directory's exact empty initial state is itself a later parent
+            // checkpoint. Subsequent own child changes update it through the same
+            // chain, including its identity as an ancestor's member.
+            if i.purpose_target.is_some() {
+                if let Some(n) = &target {
+                    let state = DirectoryState {
+                        path: i.target.clone(),
+                        identity: n.identity.clone(),
+                        handle_type: n.handle_type,
+                        handle: n.handle.clone(),
+                        attributes: n.attributes.clone(),
+                        members: BTreeMap::new(),
+                    };
+                    ensure(
+                        states.insert(i.target.clone(), state).is_none(),
+                        "duplicate prepared directory",
+                    )?;
+                }
             }
         }
-        let path = item.directory.join("PUBLISHED.json");
-        let (target, pending, p, q) = if path.exists() {
-            let seal = SealedInput::open(&files::pin_file(&path)?)?;
-            let row: Value = serde_json::from_slice(&seal.read()?)?;
-            ensure(
-                row["intent"] == serde_json::to_value(&item.pin)?,
-                "published configuration source pin differs",
+        if group == "package-masks" {
+            replay_native_parents(
+                a,
+                package_parents::NativeOperation::Install,
+                &mut states,
+                &mut held,
             )?;
-            let values = (
-                serde_json::from_value::<Option<Node>>(row["actual"]["target"].clone())?,
-                serde_json::from_value::<Option<Node>>(row["actual"]["original_retained"].clone())?,
-                serde_json::from_value::<DirectoryState>(
-                    row["actual"]["public_parent_after"].clone(),
-                )?,
-                serde_json::from_value::<DirectoryState>(
-                    row["actual"]["private_parent_after"].clone(),
-                )?,
-            );
-            ensure(
-                expected(&i.prepared, &values.0) && expected(&i.original, &values.1),
-                "published source has unknown original/candidate inode",
-            )?;
-            held.push(seal);
-            values
-        } else {
-            let target = observe_kind(&i.target, i.purpose_target.is_some())?;
-            let pending = observe_kind(&i.pending, i.purpose_target.is_some())?;
-            ensure(
-                expected(&i.original, &target) && expected(&i.prepared, &pending)
-                    || expected(&i.prepared, &target) && expected(&i.original, &pending),
-                "interrupted configuration has unknown finite namespace",
-            )?;
-            (
-                target,
-                pending,
-                DirectoryState::capture(&i.parent.path)?.state,
-                DirectoryState::capture(&i.private_parent.path)?.state,
-            )
-        };
-        i.parent.after_replace(
-            &p,
-            i.target
-                .file_name()
-                .and_then(|x| x.to_str())
-                .ok_or("public name")?,
-            &target,
-        )?;
-        i.private_parent.after_replace(
-            &q,
-            i.pending
-                .file_name()
-                .and_then(|x| x.to_str())
-                .ok_or("private name")?,
-            &pending,
-        )?;
-        advance_parent(&mut states, &i.parent, &p)?;
-        advance_parent(&mut states, &i.private_parent, &q)?;
-        // The directory's exact empty initial state is itself a later parent
-        // checkpoint. Subsequent own child changes update it through the same
-        // chain, including its identity as an ancestor's member.
-        if i.purpose_target.is_some() {
-            if let Some(n) = &target {
-                let state = DirectoryState {
-                    path: i.target.clone(),
-                    identity: n.identity.clone(),
-                    handle_type: n.handle_type,
-                    handle: n.handle.clone(),
-                    attributes: n.attributes.clone(),
-                    members: BTreeMap::new(),
-                };
-                ensure(
-                    states.insert(i.target.clone(), state).is_none(),
-                    "duplicate prepared directory",
-                )?;
-            }
         }
     }
     Ok((states, held))
@@ -1026,6 +1157,28 @@ fn identity_from_label(
         "restored configuration metadata is not the same actual prelabel generation",
     )
 }
+fn restoration_checkpoint_path(work: &Path, labels: Option<&FilePin>) -> Result<PathBuf> {
+    match labels {
+        Some(pin) => {
+            ensure(
+                fs::valid_digest(&pin.sha256),
+                "actual label restoration digest required",
+            )?;
+            Ok(work.join(format!("CONFIGURATION-RESTORE-SOURCE-{}.json", pin.sha256)))
+        }
+        None => Ok(work.join("CONFIGURATION-RESTORE-SOURCE.json")),
+    }
+}
+fn preservation_checkpoint_path(work: &Path, labels: &FilePin) -> Result<PathBuf> {
+    ensure(
+        fs::valid_digest(&labels.sha256),
+        "actual label restoration digest required",
+    )?;
+    Ok(work.join(format!(
+        "NORMAL-PACKAGE-PRESERVATION-{}.json",
+        labels.sha256
+    )))
+}
 impl ConfigurationRestoration {
     pub(super) fn pin(&self) -> &FilePin {
         self.source.pin()
@@ -1039,11 +1192,15 @@ impl ConfigurationRestoration {
                 .is_none(),
             "unlabelled recovery cannot bypass an actual label intent",
         )?;
+        let retained = a.work().join("CONFIGURATION-RESTORE-SOURCE.json");
+        if retained.exists() {
+            return Self::reopen(a, &files::pin_file(&retained)?);
+        }
         let (parents, inputs) = published_parents(a)?;
         for p in parents.values() {
             p.reopen()?;
         }
-        Self::persist(a, parents, inputs, Vec::new(), None)
+        Self::persist(a, parents, inputs, Vec::new(), None, Value::Null)
     }
     pub(super) fn after_labels(
         retirement: &super::OriginalRetirement,
@@ -1053,15 +1210,91 @@ impl ConfigurationRestoration {
         let a = retirement.authority();
         retirement.revalidate()?;
         labels.verify_complete(retirement, data)?;
+        let retained = restoration_checkpoint_path(a.work(), Some(labels.report()))?;
+        if retained.exists() {
+            let p = files::pin_file(&retained)?;
+            let old = read_json(&retained)?;
+            ensure(
+                old["actual_label_restoration"] == serde_json::to_value(labels.report())?,
+                "retained configuration metadata proof belongs to a different actual label restoration",
+            )?;
+            return Self::reopen(a, &p);
+        }
+        let runtime = retirement.runtime_inventory()?;
+        let runtime_path = Path::new("/var/lib/droidloom/qualification")
+            .join(format!("original-once-{}", a.candidate_id()))
+            .join("runtime-evidence");
+        let mut newborn = BTreeMap::<PathBuf, Node>::new();
+        if !runtime["actual"].is_null() {
+            ensure(
+                runtime["actual"]["directory"] == runtime_path.to_string_lossy().as_ref(),
+                "runtime inventory path differs",
+            )?;
+            for row in runtime["actual"]["files"]
+                .as_array()
+                .ok_or("actual held runtime roster")?
+            {
+                let p: FilePin = serde_json::from_value(row["pin"].clone())?;
+                ensure(
+                    p.path.parent() == Some(runtime_path.as_path())
+                        && p.path.file_name().and_then(|n| n.to_str()) == row["name"].as_str(),
+                    "actual runtime birth member location",
+                )?;
+                let n = observe(&p.path)?.ok_or("retired runtime member disappeared")?;
+                ensure(
+                    serde_json::to_value(&n.identity)? == row["identity"]
+                        && serde_json::to_value(&n.attributes)? == row["attributes"]
+                        && n.sha256.as_deref() == Some(p.sha256.as_str())
+                        && n.identity.size == p.bytes,
+                    "runtime birth is not the actual held retirement file",
+                )?;
+                ensure(
+                    newborn.insert(p.path.clone(), n).is_none(),
+                    "duplicate actual runtime member",
+                )?;
+            }
+        }
         let (mut parents, inputs) = published_parents(a)?;
         let mut current = BTreeMap::new();
         let mut wanted = std::collections::BTreeSet::new();
         for (path, old) in &parents {
             let now = DirectoryState::capture(path)?.state;
+            let mut expected_names = old
+                .members
+                .keys()
+                .cloned()
+                .collect::<std::collections::BTreeSet<_>>();
+            if path == &runtime_path {
+                for (p, n) in &newborn {
+                    let name = p
+                        .file_name()
+                        .and_then(|s| s.to_str())
+                        .ok_or("runtime name")?;
+                    ensure(
+                        !old.members.contains_key(name) && expected_names.insert(name.into()),
+                        "runtime birth collides with an original label preimage",
+                    )?;
+                    let member = now
+                        .members
+                        .get(name)
+                        .ok_or("actual runtime member absent from parent")?;
+                    ensure(
+                        member.identity == n.identity
+                            && member.handle_type == n.handle_type
+                            && member.handle == n.handle,
+                        "actual runtime generation changed",
+                    )?;
+                }
+            }
             ensure(
                 now.handle == old.handle
                     && now.handle_type == old.handle_type
-                    && now.members.keys().eq(old.members.keys()),
+                    && now
+                        .members
+                        .keys()
+                        .cloned()
+                        .collect::<std::collections::BTreeSet<_>>()
+                        == expected_names,
                 "restored configuration parent generation/member names differ",
             )?;
             if now.identity != old.identity || now.attributes != old.attributes {
@@ -1141,7 +1374,14 @@ impl ConfigurationRestoration {
             }
             *old = now.clone();
         }
-        Self::persist(a, parents, inputs, proofs, Some(labels.report()))
+        Self::persist(
+            a,
+            parents,
+            inputs,
+            proofs,
+            Some(labels.report()),
+            json!({"actual_retirement":retirement.report_pin(),"held_inventory":runtime,"members":newborn}),
+        )
     }
     fn persist(
         a: &OriginalQualificationAuthority,
@@ -1149,9 +1389,10 @@ impl ConfigurationRestoration {
         inputs: Vec<SealedInput>,
         proofs: Vec<Value>,
         labels: Option<&FilePin>,
+        runtime: Value,
     ) -> Result<Self> {
-        let value = json!({"schema":"droidloom.original-once-configuration-restore-source.v1","candidate_id":a.candidate_id(),"intent":a.intent.pin(),"parents":parents,"source_inputs":inputs.iter().map(SealedInput::pin).collect::<Vec<_>>(),"actual_label_restoration":labels,"actual_metadata_derivations":proofs});
-        let destination = a.work().join("CONFIGURATION-RESTORE-SOURCE.json");
+        let value = json!({"schema":"droidloom.original-once-configuration-restore-source.v1","candidate_id":a.candidate_id(),"intent":a.intent.pin(),"parents":parents,"source_inputs":inputs.iter().map(SealedInput::pin).collect::<Vec<_>>(),"actual_label_restoration":labels,"actual_metadata_derivations":proofs,"actual_runtime_births":runtime});
+        let destination = restoration_checkpoint_path(a.work(), labels)?;
         let pin = if destination.exists() {
             ensure(
                 read_json(&destination)? == value,
@@ -1172,12 +1413,14 @@ impl ConfigurationRestoration {
     }
     pub(super) fn reopen(a: &OriginalQualificationAuthority, pin: &FilePin) -> Result<Self> {
         a.verify_current_owner()?;
-        ensure(
-            pin.path == a.work().join("CONFIGURATION-RESTORE-SOURCE.json"),
-            "configuration restoration source location",
-        )?;
         let source = SealedInput::open(pin)?;
         let value: Value = serde_json::from_slice(&source.read()?)?;
+        let labels: Option<FilePin> =
+            serde_json::from_value(value["actual_label_restoration"].clone())?;
+        ensure(
+            pin.path == restoration_checkpoint_path(a.work(), labels.as_ref())?,
+            "configuration restoration source location",
+        )?;
         ensure(
             value["schema"] == "droidloom.original-once-configuration-restore-source.v1"
                 && value["candidate_id"] == a.candidate_id()
@@ -1192,68 +1435,91 @@ impl ConfigurationRestoration {
             parents,
             inputs: pins.iter().map(SealedInput::open).collect::<Result<_>>()?,
         };
-        for item in configuration_items(a)?.into_iter().rev() {
-            let path = item.directory.join("RESTORED.json");
-            if !path.exists() {
-                continue;
-            }
-            let pin = files::pin_file(&path)?;
-            let seal = SealedInput::open(&pin)?;
-            let v: Value = serde_json::from_slice(&seal.read()?)?;
-            ensure(
-                v["intent"] == serde_json::to_value(&item.pin)?
-                    && v["restore_source"] == serde_json::to_value(result.source.pin())?,
-                "configuration reverse event source differs",
-            )?;
-            let i = &item.intent;
-            let target: Option<Node> = serde_json::from_value(v["actual"]["original"].clone())?;
-            let pending: Option<Node> =
-                serde_json::from_value(v["actual"]["candidate_retained"].clone())?;
-            let candidate_expected: Option<Node> =
-                serde_json::from_value(v["candidate_expected"].clone())?;
-            validate_reverse_candidate(i, &candidate_expected)?;
-            ensure(
-                expected(&i.original, &target) && expected(&candidate_expected, &pending),
-                "configuration reverse event inode differs",
-            )?;
-            for (key, before_key, after_key, name, node) in [
-                (
-                    &i.parent.path,
-                    "public_parent_before",
-                    "public_parent_after",
-                    i.target.file_name(),
-                    &target,
-                ),
-                (
-                    &i.private_parent.path,
-                    "private_parent_before",
-                    "private_parent_after",
-                    i.pending.file_name(),
-                    &pending,
-                ),
-            ] {
-                let before: DirectoryState =
-                    serde_json::from_value(v["actual"][before_key].clone())?;
-                let after: DirectoryState = serde_json::from_value(v["actual"][after_key].clone())?;
+        replay_runtime_archives(a, &mut result)?;
+        let items = configuration_items(a)?;
+        for group in ["grub", "recovery", "runtime", "package-masks", "owner"] {
+            for item in items.iter().rev().filter(|item| item.intent.group == group) {
+                let path = item.directory.join("RESTORED.json");
+                if !path.exists() {
+                    continue;
+                }
+                let pin = files::pin_file(&path)?;
+                let seal = SealedInput::open(&pin)?;
+                let v: Value = serde_json::from_slice(&seal.read()?)?;
                 ensure(
-                    result.parents.get(key) == Some(&before),
-                    "configuration reverse parent chain was rewritten",
+                    v["intent"] == serde_json::to_value(&item.pin)?
+                        && v["restore_source"] == serde_json::to_value(result.source.pin())?,
+                    "configuration reverse event source differs",
                 )?;
-                before.after_replace(
-                    &after,
-                    name.and_then(|x| x.to_str())
-                        .ok_or("configuration reverse child")?,
-                    node,
+                let i = &item.intent;
+                let target: Option<Node> = serde_json::from_value(v["actual"]["original"].clone())?;
+                let pending: Option<Node> =
+                    serde_json::from_value(v["actual"]["candidate_retained"].clone())?;
+                let candidate_expected: Option<Node> =
+                    serde_json::from_value(v["candidate_expected"].clone())?;
+                validate_reverse_candidate(i, &candidate_expected)?;
+                ensure(
+                    expected(&i.original, &target) && expected(&candidate_expected, &pending),
+                    "configuration reverse event inode differs",
                 )?;
-                advance_parent(&mut result.parents, &before, &after)?;
+                for (key, before_key, after_key, name, node) in [
+                    (
+                        &i.parent.path,
+                        "public_parent_before",
+                        "public_parent_after",
+                        i.target.file_name(),
+                        &target,
+                    ),
+                    (
+                        &i.private_parent.path,
+                        "private_parent_before",
+                        "private_parent_after",
+                        i.pending.file_name(),
+                        &pending,
+                    ),
+                ] {
+                    let before: DirectoryState =
+                        serde_json::from_value(v["actual"][before_key].clone())?;
+                    let after: DirectoryState =
+                        serde_json::from_value(v["actual"][after_key].clone())?;
+                    ensure(
+                        result.parents.get(key) == Some(&before),
+                        "configuration reverse parent chain was rewritten",
+                    )?;
+                    before.after_replace(
+                        &after,
+                        name.and_then(|x| x.to_str())
+                            .ok_or("configuration reverse child")?,
+                        node,
+                    )?;
+                    advance_parent(&mut result.parents, &before, &after)?;
+                }
+                if i.purpose_target.is_some() {
+                    result.parents.remove(&i.target);
+                }
+                result.inputs.push(seal);
             }
-            if i.purpose_target.is_some() {
-                result.parents.remove(&i.target);
+            if group == "runtime" {
+                replay_native_parents(
+                    a,
+                    package_parents::NativeOperation::Rollback,
+                    &mut result.parents,
+                    &mut result.inputs,
+                )?;
             }
-            result.inputs.push(seal);
         }
         result.revalidate(a)?;
         Ok(result)
+    }
+    pub(super) fn advance_native(
+        &mut self,
+        a: &OriginalQualificationAuthority,
+        change: &package_parents::Changes,
+    ) -> Result<()> {
+        self.revalidate(a)?;
+        change.apply_to(&mut self.parents)?;
+        self.inputs.push(SealedInput::open(change.pin())?);
+        self.revalidate(a)
     }
     fn revalidate(&self, a: &OriginalQualificationAuthority) -> Result<()> {
         ensure(
@@ -1274,6 +1540,504 @@ fn expected(node: &Option<Node>, actual: &Option<Node>) -> bool {
         (Some(a), Some(b)) => same_inode(a, b) && same_except_ctime(a, b),
         _ => false,
     }
+}
+
+fn f9(id: &Identity) -> Value {
+    json!([
+        id.dev,
+        id.ino,
+        id.mode,
+        id.uid,
+        id.gid,
+        id.nlink,
+        id.size,
+        i128::from(id.mtime_sec) * 1_000_000_000 + i128::from(id.mtime_nsec),
+        i128::from(id.ctime_sec) * 1_000_000_000 + i128::from(id.ctime_nsec)
+    ])
+}
+
+/// This seal is produced from the actual typed return and complete label
+/// restoration. It does not rewrite either normal package snapshot. Both
+/// engines still compare every preserved node, using only this exact observed
+/// source -> runtime -> restored metadata evolution where necessary.
+pub(super) fn seal_public_preservation(
+    retirement: &super::OriginalRetirement,
+    data: &crate::cold_original_data::OriginalDataTransaction,
+    restored: &crate::cold_original_data::labels::OriginalLabelsRestored,
+) -> Result<FilePin> {
+    let a = retirement.authority();
+    retirement.revalidate()?;
+    let mut wanted = std::collections::BTreeSet::new();
+    let mut snapshots = BTreeMap::new();
+    for (kind, phase, key) in [
+        (
+            "public",
+            super::state::Phase::PublicInstallIntent,
+            "preserved_metadata_only",
+        ),
+        (
+            "native",
+            super::state::Phase::NativeInstallIntent,
+            "private_metadata",
+        ),
+    ] {
+        let Some(event) = a.journal.borrow().observation(phase)? else {
+            continue;
+        };
+        let p: FilePin = serde_json::from_value(event["actual"]["snapshot"].clone())?;
+        let v: Value = serde_json::from_slice(&files::read_pin(&p, 32 * 1024 * 1024)?)?;
+        let fields = v[key]
+            .as_object()
+            .ok_or("actual normal snapshot preservation roster")?;
+        for (name, node) in fields {
+            if kind == "native" && node["absent"] == true {
+                continue;
+            }
+            let path = PathBuf::from(if name.starts_with('/') {
+                name.clone()
+            } else {
+                format!("/{name}")
+            });
+            ensure(
+                [
+                    "/etc/passwd",
+                    "/etc/group",
+                    "/etc/shadow",
+                    "/etc/gshadow",
+                    "/etc/ssh",
+                    "/etc/ssh/sshd_config",
+                    "/etc/ssh/ssh_host_ed25519_key",
+                    "/etc/ssh/ssh_host_rsa_key",
+                    "/home",
+                    "/home/alex",
+                ]
+                .iter()
+                .any(|s| path == Path::new(s)),
+                "unreviewed preserved normal package path",
+            )?;
+            wanted.insert(path);
+        }
+        snapshots.insert(kind, json!({"snapshot":p,"original":fields}));
+    }
+    let proof = restored.restored_metadata_derivations(
+        retirement,
+        data,
+        &wanted.into_iter().collect::<Vec<_>>(),
+    )?;
+    for (kind, source) in &snapshots {
+        for (name, old) in source["original"].as_object().ok_or("snapshot fields")? {
+            if *kind == "native" && old["absent"] == true {
+                continue;
+            }
+            let path = if name.starts_with('/') {
+                name.clone()
+            } else {
+                format!("/{name}")
+            };
+            let row = &proof["paths"][&path];
+            let before: Identity = serde_json::from_value(row["prelabel"]["identity"].clone())?;
+            let expected = if *kind == "public" { old } else { &old["f9"] };
+            ensure(
+                f9(&before) == *expected,
+                "normal package preservation preimage differs from the actual prelabel source",
+            )?;
+        }
+    }
+    let value = json!({"schema":"droidloom.original-once-package-preservation.v1","candidate_id":a.candidate_id(),"intent":a.intent.pin(),"actual_retirement":retirement.report_pin(),"actual_label_restoration":restored.report(),"snapshots":snapshots,"metadata":proof});
+    let path = preservation_checkpoint_path(a.work(), restored.report())?;
+    let p = if path.try_exists()? {
+        ensure(
+            read_json(&path)? == value,
+            "retained normal preservation differs from the actual same restoration",
+        )?;
+        files::pin_file(&path)?
+    } else {
+        write_json(&path, &value)?
+    };
+    retirement.revalidate()?;
+    Ok(p)
+}
+pub(super) fn public_preservation_pin(
+    a: &OriginalQualificationAuthority,
+) -> Result<Option<FilePin>> {
+    let event = {
+        let journal = a.journal.borrow();
+        journal
+            .observation(super::state::Phase::CellRestoreIntent)?
+            .or(journal.observation(super::state::Phase::LabelsRestored)?)
+    };
+    let labels_prepared = a
+        .journal
+        .borrow()
+        .observation(super::state::Phase::LabelsIntent)?
+        .is_some();
+    let Some(event) = event else {
+        ensure(
+            !labels_prepared,
+            "labelled package rollback has no durable restoration checkpoint",
+        )?;
+        return Ok(None);
+    };
+    if event["package_preservation"].is_null() {
+        ensure(
+            !labels_prepared,
+            "labelled package restoration lacks actual metadata evolution",
+        )?;
+        return Ok(None);
+    }
+    let p: FilePin = serde_json::from_value(event["package_preservation"].clone())?;
+    let seal = SealedInput::open(&p)?;
+    let v: Value = serde_json::from_slice(&seal.read()?)?;
+    let labels: FilePin = serde_json::from_value(v["actual_label_restoration"].clone())?;
+    ensure(
+        p.path == preservation_checkpoint_path(a.work(), &labels)?
+            && v["schema"] == "droidloom.original-once-package-preservation.v1"
+            && v["candidate_id"] == a.candidate_id()
+            && v["intent"] == serde_json::to_value(a.intent.pin())?
+            && event["actual_retirement"] == v["actual_retirement"],
+        "package metadata evolution belongs to another actual preparation",
+    )?;
+    Ok(Some(p))
+}
+
+pub(super) struct PackagePreservation {
+    seal: SealedInput,
+    held: Vec<(PathBuf, File, MemberIdentity, BTreeMap<String, String>)>,
+}
+impl PackagePreservation {
+    pub(super) fn open(a: &OriginalQualificationAuthority, pin: &FilePin) -> Result<Self> {
+        ensure(
+            public_preservation_pin(a)?
+                .as_ref()
+                .is_some_and(|p| super::same_pin(p, pin)),
+            "normal rollback requested another metadata proof",
+        )?;
+        let seal = SealedInput::open(pin)?;
+        let value: Value = serde_json::from_slice(&seal.read()?)?;
+        let mut held = Vec::new();
+        for (path, row) in value["metadata"]["paths"]
+            .as_object()
+            .ok_or("normal metadata proof paths")?
+        {
+            let path = PathBuf::from(path);
+            let (parent, leaf) = at(&path)?;
+            let file = File::from(rustix::fs::openat(
+                &parent,
+                leaf.as_str(),
+                OFlags::PATH | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+                Mode::empty(),
+            )?);
+            let m = member(&file)?;
+            let x = attrs(&file)?;
+            let restored = &row["restored"];
+            let h: Vec<u8> = serde_json::from_value(restored["handle"]["bytes"].clone())?;
+            let expected_attrs: BTreeMap<String, Vec<u8>> =
+                serde_json::from_value(restored["attributes"].clone())?;
+            ensure(
+                serde_json::to_value(&m.identity)? == restored["identity"]
+                    && restored["handle"]["handle_type"] == m.handle_type
+                    && hex::encode(h) == m.handle
+                    && expected_attrs
+                        .into_iter()
+                        .map(|(k, v)| (k, hex::encode(v)))
+                        .collect::<BTreeMap<_, _>>()
+                        == x,
+                "normal rollback preserved inode is not the actual same-generation restored value",
+            )?;
+            held.push((path, file, m, x));
+        }
+        ensure(
+            !held.is_empty() && held.len() <= 16,
+            "fixed preservation proof bound",
+        )?;
+        let result = Self { seal, held };
+        result.revalidate()?;
+        Ok(result)
+    }
+    pub(super) fn revalidate(&self) -> Result<()> {
+        self.seal.revalidate()?;
+        for (path, held, id, x) in &self.held {
+            let (parent, name) = at(path)?;
+            let named = File::from(rustix::fs::openat(
+                &parent,
+                name.as_str(),
+                OFlags::PATH | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+                Mode::empty(),
+            )?);
+            ensure(
+                member(held)? == *id
+                    && member(&named)? == *id
+                    && attrs(held)? == *x
+                    && attrs(&named)? == *x,
+                "normal package changed preserved account/SSH/home metadata beyond the actual label derivation",
+            )?;
+        }
+        self.seal.revalidate()
+    }
+}
+
+pub(super) fn package_writers_preimage(
+    a: &OriginalQualificationAuthority,
+) -> Result<Option<FilePin>> {
+    let root = a.work().join("commands");
+    if !root.exists() {
+        return Ok(None);
+    }
+    let mut found = None;
+    for e in std::fs::read_dir(&root)? {
+        let p = e?.path().join("WRITERS-INTENT.json");
+        if !p.exists() {
+            continue;
+        }
+        let pin = files::pin_file(&p)?;
+        let seal = SealedInput::open(&pin)?;
+        let v: Value = serde_json::from_slice(&seal.read()?)?;
+        ensure(
+            v["schema"] == "droidloom.original-once-package-writers.v1"
+                && v["candidate_id"] == a.candidate_id()
+                && v["intent"] == serde_json::to_value(a.intent.pin())?,
+            "writer preimage identity differs",
+        )?;
+        ensure(
+            found.replace(pin).is_none(),
+            "multiple initial writer inventories",
+        )?;
+    }
+    Ok(found)
+}
+
+// Replay completed archive actions before configuration reversals. Their
+// source inventory is a real held retirement observation of newly born files,
+// never a synthetic original label preimage. Reopening performs no mutation.
+fn replay_runtime_archives(
+    a: &OriginalQualificationAuthority,
+    ctx: &mut ConfigurationRestoration,
+) -> Result<()> {
+    let source: Value = serde_json::from_slice(&ctx.source.read()?)?;
+    let birth = &source["actual_runtime_births"];
+    if birth.is_null() {
+        return Ok(());
+    }
+    let nodes: BTreeMap<PathBuf, Node> = serde_json::from_value(birth["members"].clone())?;
+    let root = Path::new("/var/lib/droidloom/qualification")
+        .join(format!("original-once-{}", a.candidate_id()))
+        .join("runtime-evidence");
+    let archive = a.work().join("runtime-evidence-archive");
+    let mut gap = false;
+    for (ordinal, (path, expected)) in nodes.iter().enumerate() {
+        ensure(
+            path.parent() == Some(root.as_path())
+                && path.file_name() != Some(std::ffi::OsStr::new("owner.lock")),
+            "fixed runtime birth replay path",
+        )?;
+        let record = archive.join(format!("member-{ordinal:02}"));
+        let complete = record.join("ARCHIVED.json");
+        if !complete.exists() {
+            gap = true;
+            continue;
+        }
+        ensure(
+            !gap,
+            "runtime archive history skipped an earlier exact member",
+        )?;
+        let cp = files::pin_file(&complete)?;
+        let guard = SealedInput::open(&cp)?;
+        let v: Value = serde_json::from_slice(&guard.read()?)?;
+        let ip = files::pin_file(&record.join("INTENT.json"))?;
+        let intent = SealedInput::open(&ip)?;
+        let iv: Value = serde_json::from_slice(&intent.read()?)?;
+        let destination = record.join("payload/evidence");
+        ensure(
+            v["schema"] == "droidloom.original-once-runtime-archived.v1"
+                && v["configuration_source"] == serde_json::to_value(ctx.source.pin())?
+                && v["logical_path"] == path.to_string_lossy().as_ref()
+                && v["original"] == serde_json::to_value(expected)?
+                && v["destination"] == destination.to_string_lossy().as_ref()
+                && iv["schema"] == "droidloom.original-once-runtime-archive-intent.v1"
+                && iv["configuration_source"] == v["configuration_source"]
+                && iv["logical_path"] == v["logical_path"]
+                && iv["expected"] == v["original"]
+                && iv["actual_retirement"] == birth["actual_retirement"],
+            "runtime archive lost its immutable actual sources",
+        )?;
+        let before: DirectoryState = serde_json::from_value(v["public_parent_before"].clone())?;
+        let after: DirectoryState = serde_json::from_value(v["public_parent_after"].clone())?;
+        let pb: DirectoryState = serde_json::from_value(v["private_parent_before"].clone())?;
+        let pa: DirectoryState = serde_json::from_value(v["private_parent_after"].clone())?;
+        let saved: Node = serde_json::from_value(v["archived"].clone())?;
+        ensure(
+            before.path == root
+                && pb.path == record.join("payload")
+                && iv["public_parent"] == serde_json::to_value(&before)?
+                && iv["private_parent"] == serde_json::to_value(&pb)?
+                && same_except_ctime(&saved, expected),
+            "runtime archive changed the exact generation or evidence bytes",
+        )?;
+        before.after_replace(
+            &after,
+            path.file_name()
+                .and_then(|n| n.to_str())
+                .ok_or("runtime leaf")?,
+            &None,
+        )?;
+        pb.after_replace(&pa, "evidence", &Some(saved.clone()))?;
+        ensure(
+            observe(path)?.is_none() && observe(&destination)?.as_ref() == Some(&saved),
+            "archived runtime file changed after its actual return",
+        )?;
+        pa.reopen()?;
+        advance_parent(&mut ctx.parents, &before, &after)?;
+        ctx.inputs.push(intent);
+        ctx.inputs.push(guard);
+    }
+    Ok(())
+}
+
+/// New runtime evidence is archived after the typed label restoration, with
+/// its own preimage and exact finite rename. It is never claimed to be an old
+/// label target. Original owner.lock and directory restoration happens later.
+pub(super) fn archive_runtime_evidence(
+    a: &OriginalQualificationAuthority,
+    ctx: &mut ConfigurationRestoration,
+) -> Result<Value> {
+    a.verify_current_owner()?;
+    ctx.revalidate(a)?;
+    let source: Value = serde_json::from_slice(&ctx.source.read()?)?;
+    let birth = &source["actual_runtime_births"];
+    if birth.is_null() {
+        return Ok(json!({"runtime_files":0,"actual_birth_inventory_absent":true}));
+    }
+    let nodes: BTreeMap<PathBuf, Node> = serde_json::from_value(birth["members"].clone())?;
+    let root = Path::new("/var/lib/droidloom/qualification")
+        .join(format!("original-once-{}", a.candidate_id()))
+        .join("runtime-evidence");
+    let archive = a.work().join("runtime-evidence-archive");
+    if !archive.exists() {
+        files::private_dir(&archive)?;
+        File::open(a.work())?.sync_all()?;
+    }
+    let mut reports = Vec::new();
+    for (ordinal, (path, node)) in nodes.iter().enumerate() {
+        ensure(
+            path.parent() == Some(root.as_path())
+                && path.file_name() != Some(std::ffi::OsStr::new("owner.lock")),
+            "archive source is not an admitted runtime birth",
+        )?;
+        let name = path
+            .file_name()
+            .and_then(|s| s.to_str())
+            .ok_or("runtime birth name")?;
+        let record = archive.join(format!("member-{ordinal:02}"));
+        if !record.exists() {
+            files::private_dir(&record)?;
+            File::open(&archive)?.sync_all()?;
+        }
+        let payload = record.join("payload");
+        if !payload.exists() {
+            files::private_dir(&payload)?;
+            File::open(&record)?.sync_all()?;
+        }
+        let target = payload.join("evidence");
+        let intent = record.join("INTENT.json");
+        let complete = record.join("ARCHIVED.json");
+        if complete.exists() {
+            let v = read_json(&complete)?;
+            ensure(
+                v["configuration_source"] == serde_json::to_value(ctx.source.pin())?
+                    && v["logical_path"] == path.to_string_lossy().as_ref(),
+                "runtime archive replay lost its real source",
+            )?;
+            let after: DirectoryState = serde_json::from_value(v["public_parent_after"].clone())?;
+            let before: DirectoryState = serde_json::from_value(v["public_parent_before"].clone())?;
+            if ctx.parents.get(&root) == Some(&before) {
+                advance_parent(&mut ctx.parents, &before, &after)?;
+            }
+            let saved: Node = serde_json::from_value(v["archived"].clone())?;
+            let private: DirectoryState =
+                serde_json::from_value(v["private_parent_after"].clone())?;
+            ensure(
+                same_except_ctime(&saved, node)
+                    && observe(path)?.is_none()
+                    && observe(&target)?.as_ref() == Some(&saved),
+                "completed runtime archive evidence changed",
+            )?;
+            private.reopen()?;
+            reports.push(files::pin_file(&complete)?);
+            continue;
+        }
+        let (before, private_before) = if intent.exists() {
+            let v = read_json(&intent)?;
+            ensure(
+                v["configuration_source"] == serde_json::to_value(ctx.source.pin())?
+                    && v["logical_path"] == path.to_string_lossy().as_ref()
+                    && v["expected"] == serde_json::to_value(node)?,
+                "runtime archive intent changed",
+            )?;
+            (
+                serde_json::from_value::<DirectoryState>(v["public_parent"].clone())?,
+                serde_json::from_value::<DirectoryState>(v["private_parent"].clone())?,
+            )
+        } else {
+            let public = ctx
+                .parents
+                .get(&root)
+                .ok_or("runtime parent lacks its actual restored checkpoint")?
+                .clone();
+            public.reopen()?;
+            let private = DirectoryState::capture(&payload)?.state;
+            ensure(
+                observe(path)?.as_ref() == Some(node) && observe(&target)?.is_none(),
+                "runtime birth changed before durable archive",
+            )?;
+            write_json(
+                &intent,
+                &json!({"schema":"droidloom.original-once-runtime-archive-intent.v1","configuration_source":ctx.source.pin(),"actual_retirement":birth["actual_retirement"],"logical_path":path,"expected":node,"public_parent":public,"private_parent":private}),
+            )?;
+            (public, private)
+        };
+        ensure(
+            ctx.parents.get(&root) == Some(&before),
+            "runtime archive public checkpoint differs",
+        )?;
+        let current = observe(path)?;
+        let saved = observe(&target)?;
+        if current.as_ref() == Some(node) && saved.is_none() {
+            let src = before.reopen()?;
+            let dst = private_before.reopen()?;
+            rustix::fs::renameat_with(
+                &src.file,
+                name,
+                &dst.file,
+                "evidence",
+                RenameFlags::NOREPLACE,
+            )?;
+            src.file.sync_all()?;
+            dst.file.sync_all()?;
+        } else {
+            ensure(
+                current.is_none() && saved.as_ref().is_some_and(|n| same_except_ctime(n, node)),
+                "runtime archive has an unknown finite placement",
+            )?;
+        }
+        let after = DirectoryState::capture(&root)?.state;
+        before.after_replace(&after, name, &None)?;
+        let archived = observe(&target)?.ok_or("runtime archive destination absent")?;
+        let private_after = DirectoryState::capture(&payload)?.state;
+        private_before.after_replace(&private_after, "evidence", &Some(archived.clone()))?;
+        ensure(
+            same_except_ctime(&archived, node),
+            "runtime archival changed evidence bytes or unrelated metadata",
+        )?;
+        let receipt = write_json(
+            &complete,
+            &json!({"schema":"droidloom.original-once-runtime-archived.v1","configuration_source":ctx.source.pin(),"logical_path":path,"original":node,"archived":archived,"destination":target,"public_parent_before":before,"public_parent_after":after,"private_parent_before":private_before,"private_parent_after":private_after,"runtime_birth_not_original_label_preimage":true}),
+        )?;
+        advance_parent(&mut ctx.parents, &before, &after)?;
+        reports.push(receipt);
+    }
+    Ok(
+        json!({"schema":"droidloom.original-once-runtime-archive.v1","configuration_source":ctx.source.pin(),"members":reports}),
+    )
 }
 fn publish_one(i: &Intent) -> Result<Value> {
     ensure(
@@ -1343,8 +2107,31 @@ fn publish_one(i: &Intent) -> Result<Value> {
         json!({"target":target,"original_retained":rollback,"public_parent_before":i.parent,"public_parent_after":public_after,"private_parent_before":i.private_parent,"private_parent_after":private_after}),
     )
 }
+#[cfg(test)]
 fn restore_one(i: &Intent) -> Result<Value> {
-    restore_one_from(i, &i.parent, &i.private_parent)
+    // The producer reconstructs an interrupted publication from its exact
+    // immutable original intent before beginning a reverse transaction.
+    let target = observe_kind(&i.target, i.purpose_target.is_some())?;
+    let pending = observe_kind(&i.pending, i.purpose_target.is_some())?;
+    let p = DirectoryState::capture(&i.parent.path)?.state;
+    let q = DirectoryState::capture(&i.private_parent.path)?.state;
+    i.parent.after_replace(
+        &p,
+        i.target
+            .file_name()
+            .and_then(|n| n.to_str())
+            .ok_or("test public child")?,
+        &target,
+    )?;
+    i.private_parent.after_replace(
+        &q,
+        i.pending
+            .file_name()
+            .and_then(|n| n.to_str())
+            .ok_or("test private child")?,
+        &pending,
+    )?;
+    restore_one_from(i, &p, &q)
 }
 fn restore_one_from(
     i: &Intent,
@@ -1370,8 +2157,15 @@ fn restore_one_from(
         already || expected(&i.prepared, &target) && expected(&i.original, &rollback),
         "configuration has an unknown generation or changed body",
     )?;
-    public_expected.after_replace(&public.state, name, &target)?;
-    private_expected.after_replace(&private.state, pending, &rollback)?;
+    if already {
+        public_expected.after_replace(&public.state, name, &target)?;
+        private_expected.after_replace(&private.state, pending, &rollback)?;
+    } else {
+        ensure(
+            public.state == *public_expected && private.state == *private_expected,
+            "configuration parent drift before the actual reverse rename",
+        )?;
+    }
     // Complete current parent snapshot is now the held preimage for only this
     // reverse operation. Both named generations are checked again after fsync.
     if !already {
@@ -1522,9 +2316,14 @@ mod tests {
                 private_parent: DirectoryState::capture(&private)?.state,
                 purpose_target: None,
             };
-            publish_one(&i)?; // crash point: no completion record is needed to classify the namespace.
-            restore_one(&i)?;
-            restore_one(&i)?;
+            let published = publish_one(&i)?; // completion bytes are not required to recover a real rename.
+            let p: DirectoryState =
+                serde_json::from_value(published["public_parent_after"].clone())?;
+            let q: DirectoryState =
+                serde_json::from_value(published["private_parent_after"].clone())?;
+            restore_one_from(&i, &p, &q)?;
+            // Actual reverse happened, but its completion was not persisted.
+            restore_one_from(&i, &p, &q)?;
             assert!(expected(&i.original, &observe(&target)?));
             publish_one_replay(&i)?;
             if i.prepared.is_some() {
@@ -1667,6 +2466,88 @@ mod tests {
             !target.exists() && expected(&j.prepared, &observe_kind(&pending, true)?),
             "created directory generation was not retained after crash recovery",
         )?;
+        Ok(())
+    }
+    #[test]
+    #[ignore = "root only; actual independent configuration parent drift counterexamples"]
+    fn parent_only_drift_before_reverse_is_rejected() -> Result<()> {
+        ensure(rustix::process::geteuid().is_root(), "root only")?;
+        let stamp = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)?
+            .as_nanos();
+        let base = PathBuf::from(format!(
+            "/var/lib/droidloom-qualification/once-config-parent-drift-{}-{stamp}",
+            std::process::id()
+        ));
+        files::private_dir(&base)?;
+        for case in [
+            "public-touch",
+            "private-touch",
+            "public-create-delete",
+            "private-create-delete",
+        ] {
+            let work = base.join(case);
+            files::private_dir(&work)?;
+            let public = work.join("public");
+            let private = work.join("private");
+            files::private_dir(&public)?;
+            files::private_dir(&private)?;
+            let target = public.join("target");
+            let pending = private.join("value");
+            files::write_new(&target, b"original", 0o644)?;
+            files::write_new(&pending, b"candidate", 0o644)?;
+            let i = Intent {
+                schema: "test".into(),
+                candidate_id: "a".repeat(64),
+                group: "test".into(),
+                ordinal: 0,
+                logical_path: target.clone(),
+                target: target.clone(),
+                pending: pending.clone(),
+                payload: Payload::Absent,
+                original: observe(&target)?,
+                prepared: observe(&pending)?,
+                parent: DirectoryState::capture(&public)?.state,
+                private_parent: DirectoryState::capture(&private)?.state,
+                purpose_target: None,
+            };
+            let published = publish_one(&i)?;
+            let p: DirectoryState =
+                serde_json::from_value(published["public_parent_after"].clone())?;
+            let q: DirectoryState =
+                serde_json::from_value(published["private_parent_after"].clone())?;
+            let drift = if case.starts_with("public") {
+                &public
+            } else {
+                &private
+            };
+            if case.ends_with("touch") {
+                let file = File::open(drift)?;
+                file.set_times(
+                    std::fs::FileTimes::new()
+                        .set_modified(std::time::UNIX_EPOCH + std::time::Duration::from_secs(42)),
+                )?;
+                file.sync_all()?;
+            } else {
+                files::write_new(&drift.join("foreign"), b"external transient member", 0o644)?;
+                std::fs::remove_file(drift.join("foreign"))?;
+                File::open(drift)?.sync_all()?;
+            }
+            ensure(
+                DirectoryState::capture(&public)?.state.members == p.members
+                    && DirectoryState::capture(&private)?.state.members == q.members,
+                "counterexample must keep all members unchanged",
+            )?;
+            assert!(
+                restore_one_from(&i, &p, &q).is_err(),
+                "{case} must not become an owned rename"
+            );
+            ensure(
+                expected(&i.prepared, &observe(&target)?)
+                    && expected(&i.original, &observe(&pending)?),
+                "rejected parent-only drift wrote a configuration",
+            )?;
+        }
         Ok(())
     }
     fn publish_one_replay(i: &Intent) -> Result<Value> {

@@ -208,6 +208,15 @@ class NativeTransaction:
             except FileNotFoundError:result[path]={"absent":True}
         return result
 
+    def verify_private_preservation(self):
+        # The default public engine keeps the original full metadata rule.
+        # The source-owned once adapter may supply a stricter independently
+        # held, generation-bound label-restoration derivation; no CLI flag or
+        # snapshot rewrite selects that adapter.
+        need(self.private_metadata()==self.snapshot["private_metadata"],
+             "original account/SSH/home metadata changed")
+        return None
+
     def public_configs(self):
         paths=set(DISPLAY_CONFIG)
         for role in self.roles:
@@ -274,7 +283,7 @@ class NativeTransaction:
             if old["type"]=="0":
                 need((old["bytes"],old["sha256"])==(new["bytes"],new["sha256"]),"original native conffile changed")
             elif old["type"]=="2":need(old["target"]==new["target"],"original display-manager selection changed")
-        need(self.private_metadata()==self.snapshot["private_metadata"],"original account/SSH/home metadata changed")
+        self.verify_private_preservation()
         return actual
 
     def check_payload(self,kind,*,conffiles=True):
@@ -459,7 +468,9 @@ class NativeTransaction:
                         need(a.get("absent"),"new native leaf remains after normal downgrade")
         self.event("verified-"+kind,actual_package_rows={r:row for r,(_,row) in selected.items()},
                    whole_payload_members=n,configuration_semantics_preserved=True,
-                   private_metadata_unchanged=True,package_state_sha256=hashlib.sha256(canonical(current)).hexdigest())
+                   private_metadata_unchanged=self.private_metadata()==self.snapshot["private_metadata"],
+                   actual_preservation_derivation=self.verify_private_preservation(),
+                   package_state_sha256=hashlib.sha256(canonical(current)).hexdigest())
         return n
 
     def apply(self):

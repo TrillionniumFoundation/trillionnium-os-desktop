@@ -1,16 +1,17 @@
 //! Typed ownership boundary for original-machine qualification transactions.
 //!
 //! All fields are private. A JSON plan, preserved journal or success boolean
-//! cannot construct this authority. The material-admission/physical dispatcher
-//! is intentionally not exposed until its same-candidate verification is wired.
-//! The data and label adapters may compile against this actual fence without
-//! introducing a permissive production callback or mock authority.
+//! cannot construct this authority. The single source-owned dispatcher invokes
+//! the actual same-candidate material and owner factories before any mutation.
+//! Data and label writers accept only this non-serializable custody.
 #[path = "cold_original_once_cell.rs"]
 mod cell;
 #[path = "cold_original_once_commands.rs"]
 mod commands;
 #[path = "cold_original_once_files.rs"]
 mod configurations;
+#[path = "cold_original_once_dispatch.rs"]
+mod dispatcher;
 #[path = "cold_original_once_labels.rs"]
 mod labels;
 #[path = "cold_original_once_materials.rs"]
@@ -77,9 +78,9 @@ enum RetirementSource {
 }
 
 /// Non-serializable, non-cloneable custody retained by the sole once owner.
-/// There is no public constructor and no physical CLI in this boundary commit.
-/// Normal package, owned guest, MAC, initrd and recovery admission must produce
-/// the private fields before the later dispatcher can obtain this type.
+/// There is no deserializing or caller-boolean constructor. The sole dispatcher
+/// obtains this type only through normal package, ended owned-guest, MAC,
+/// original-host, initrd and recovery admission under the real original locks.
 pub(super) struct OriginalQualificationAuthority {
     owner: RefCell<OriginalOwner>,
     candidate_id: String,
@@ -461,4 +462,11 @@ mod operation_tests {
             OriginalDataStep::PublishSelection
         ));
     }
+}
+
+pub(super) fn run(input: &Path, expected: &str) -> Result<serde_json::Value> {
+    dispatcher::run(input, expected)
+}
+pub(super) fn run_thaw_guard(input: &Path, expected: &str) -> Result<()> {
+    quiescence::run_thaw_guard(input, expected)
 }
