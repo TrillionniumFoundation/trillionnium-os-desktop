@@ -486,4 +486,42 @@ class OriginalGrubEntry(unittest.TestCase):
         self.assertEqual(result["entry_body_sha256"],
                          "2a4912fa11988ed2c07b8f5537d68f8a99b1471f71fde4e308e9d80e4e2d2ec2")
 
+class ColdTargetOriginalGrub(unittest.TestCase):
+    def target(self):
+        import cold_transaction as cold
+        rows={path:{"pin":{"path":path,"bytes":1,"sha256":"a"*64},
+                    "identity":[1,index+1,0o100444,0,0,1,1,1,1]}
+              for index,path in enumerate(cold.SOURCE_PATHS)}
+        mount={"uuid":cold.ROOT_UUID,"fstype":"ext4","source":"/dev/actual-original"}
+        return {"schema":"droidloom-original-ubuntu-cold-preflight-v1","kernel":cold.ORIGINAL_KERNEL,
+                "root_uuid":cold.ROOT_UUID,"original_entry":cold.ORIGINAL_ENTRY,
+                "root_mount":mount,"boot_mount":mount,"root_identity":[1,2],"boot_id":"original",
+                "observed_monotonic_ns":1,"public_originals":rows,"preserved_metadata_only":{},
+                "account_or_secret_bytes_read":False,"original_android_data_accessed":False,
+                "system_modified":False,"runtime_qualified":False}
+
+    def admit(self,target,body):
+        import json
+        import cold_transaction as cold
+        from unittest.mock import patch
+        pin={"path":"/protected-preflight.json","bytes":1,"sha256":"a"*64}
+        def actual_read(selected,*args):
+            if selected==pin:return json.dumps(target).encode()
+            self.assertEqual(selected["path"],"/boot/grub/grub.cfg")
+            self.assertEqual(args,(16*1024*1024,True))
+            return body
+        with patch.object(cold,"read_pin",side_effect=actual_read):return cold.admit_target(pin)
+
+    def test_actual_cold_target_rechecks_the_pinned_original_submenu_body(self):
+        import cold_transaction as cold
+        target=self.target();body=OriginalGrubEntry().observed().encode()
+        self.assertEqual(self.admit(target,body)["original_entry"],OriginalGrubEntry.ENTRY)
+        self.assertEqual(cold.ORIGINAL_ENTRY,release.original_grub_entry(cold.ROOT_UUID))
+        with self.assertRaises(release.Rejected):
+            self.admit(target,body.replace(b"/boot/vmlinuz-7.0.14-p4cred1",b"/boot/vmlinuz-other"))
+
+    def test_old_simple_target_cannot_authorize_the_original_return(self):
+        target=self.target();target["original_entry"]="gnulinux-simple-"+target["root_uuid"]
+        with self.assertRaises(release.Rejected):self.admit(target,OriginalGrubEntry().observed().encode())
+
 if __name__=="__main__":unittest.main()

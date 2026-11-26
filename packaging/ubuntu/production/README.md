@@ -697,3 +697,14 @@ and actual durable result for the once owner's narrow lock-ctime rebind. It
 has no public constructor, deserializer or physical CLI. The complete typed
 apply and post-runtime retirement adapter must still admit the candidate and
 actual mutable-inode restoration before it can grant physical label mutation.
+
+### Original GRUB target identity
+
+Cold preflight and target admission use the same original-entry verifier as
+maintenance return. The original 7.0.14 kernel is the observed leaf inside the
+normal advanced submenu, with the complete parent/leaf chain, kernel and initrd
+paths, root arguments and original default preserved. The simple entry currently
+selects another kernel and cannot stand in for this target. Admission rereads
+the complete pinned normal grub.cfg, including the exact original leaf body.
+Historical targets retain their recorded simple-entry fact and are not rewritten
+to pass a new physical transaction; final candidates need a fresh target.

@@ -20,7 +20,7 @@ from release import (
     Rejected, SCHEMA, COMMIT, KERNEL, KERNEL_SHA, need, exact, digest, canonical,
     f9, safe_relative, safe_absolute, held, hash_fd, pin_shape, read_pin,
     json_bytes, read_json_file, file_pin, new_file, copy_pin, mkdir_new,
-    bounded_process, host_manifest,
+    bounded_process, host_manifest, original_grub_entry, verify_original_grub_entry,
 )
 from cold_publish import (
     COHORT, RUNTIME, BOARD, KERNEL_MODULES_SHA, ANDROID_HANDOFF_SHA,
@@ -30,7 +30,7 @@ from cold_publish import (
 
 ROOT_UUID="01c27223-3933-481e-9836-7bd0ef1be8c9"
 ORIGINAL_KERNEL="7.0.14-p4cred1"
-ORIGINAL_ENTRY="gnulinux-simple-"+ROOT_UUID
+ORIGINAL_ENTRY=original_grub_entry(ROOT_UUID)
 REQUIRED_HOST={
  "usr/lib/droidloom/production/current/droidloom-maintenance":0o755,
  "usr/lib/droidloom/production/current/droidloom-maintenance.py":0o444,
@@ -90,9 +90,7 @@ def preflight(output):
     need(root["source"]==boot["source"],"reviewed /boot and root must share the original filesystem")
     originals={p:original_public(p) for p in SOURCE_PATHS}
     grub=read_pin(originals["/boot/grub/grub.cfg"]["pin"],16*1024*1024,True)
-    entry_lines=[line for line in grub.decode("utf-8","strict").splitlines()
-                 if line.startswith("menuentry ") and ("'"+ORIGINAL_ENTRY+"'") in line]
-    need(len(entry_lines)==1,"exact original stock Ubuntu entry missing or duplicated")
+    verify_original_grub_entry(grub,ROOT_UUID,ORIGINAL_ENTRY,ORIGINAL_KERNEL)
     env=read_pin(originals["/boot/grub/grubenv"]["pin"],4096,True)
     need(len(env)==1024 and env.startswith(b"# GRUB Environment Block"),"original GRUB environment")
     preserved={}
@@ -133,6 +131,11 @@ def admit_target(pin):
     for key in ("root_mount","boot_mount"):
         need(target[key].get("uuid")==ROOT_UUID and target[key].get("fstype")=="ext4","original fixed ext4 target")
     need(target["root_mount"]["source"]==target["boot_mount"]["source"],"separate unreviewed boot filesystem")
+    # The source pin must still contain the observed original kernel leaf in
+    # its real submenu. A matching id string or the stock simple entry is not
+    # evidence of the original 7.0 kernel, initrd, root arguments and default.
+    grub=read_pin(target["public_originals"]["/boot/grub/grub.cfg"]["pin"],16*1024*1024,True)
+    verify_original_grub_entry(grub,ROOT_UUID,ORIGINAL_ENTRY,ORIGINAL_KERNEL)
     return target
 
 def package_control(pin,expected_name):
