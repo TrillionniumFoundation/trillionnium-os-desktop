@@ -71,7 +71,10 @@ def verify_sources(here):
     positions = [call.index(value) for value in ordered]
     if positions != sorted(positions) or any(call.count(v) != 1 for v in ordered):
         raise ValueError("Mount identity custody left the original first-load sequence")
-    profile = source_inputs(here)[7].read_text()
+    # Full source bytes above remain pinned, including comments. Inspect only
+    # active rules here: a comment explaining why Px is forbidden is not Px.
+    profile = "\n".join(line.split("#", 1)[0] for line in
+                        source_inputs(here)[7].read_text().splitlines())
     for path in ("/usr/lib/droidloom/production/current/droidloom-maintenance", "/usr/bin/python3.14"):
         if profile.count(path + " mrix,") != 1:
             raise ValueError("NNP maintenance must keep the actual original AppArmor profile")
