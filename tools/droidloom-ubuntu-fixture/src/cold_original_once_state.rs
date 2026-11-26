@@ -474,7 +474,24 @@ impl Journal {
         self.events.last().map(|(_, event, _, _)| event.phase)
     }
 
+    pub(super) fn revalidate_custody(&self) -> Result<()> {
+        self.directory.revalidate()?;
+        for (pin, _, id, held) in &self.events {
+            let (named, named_id) = files::open_pin(pin)?;
+            ensure(
+                fs::stat(held)? == *id
+                    && named_id == *id
+                    && fs::xattrs(held)?.is_empty()
+                    && fs::xattrs(&named)?.is_empty()
+                    && fs::stat(held)? == *id
+                    && fs::stat(&named)? == *id,
+                "once event full identity/attributes changed during bounded window",
+            )?;
+        }
+        Ok(())
+    }
     pub(super) fn revalidate(&self) -> Result<()> {
+        self.revalidate_custody()?;
         self.directory.revalidate()?;
         for (pin, _, id, held) in &self.events {
             ensure(

@@ -7,14 +7,23 @@
 //! introducing a permissive production callback or mock authority.
 #[path = "cold_original_once_cell.rs"]
 mod cell;
+#[path = "cold_original_once_commands.rs"]
+mod commands;
+#[path = "cold_original_once_files.rs"]
+mod configurations;
 #[path = "cold_original_once_labels.rs"]
 mod labels;
 #[path = "cold_original_once_materials.rs"]
 mod materials;
 #[path = "cold_original_once_owner.rs"]
 mod owner;
+#[path = "cold_original_once_quiescence.rs"]
+mod quiescence;
 #[path = "cold_original_once_retirement.rs"]
 mod retirement;
+#[path = "cold_original_once_window.rs"]
+mod window;
+pub(super) use window::OriginalLabelWindow;
 #[path = "cold_original_once_state.rs"]
 mod state;
 pub(super) use retirement::OriginalRetirement;

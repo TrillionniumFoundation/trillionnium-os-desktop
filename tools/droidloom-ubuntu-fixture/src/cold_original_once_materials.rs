@@ -86,7 +86,20 @@ impl Guard {
         result.revalidate()?;
         Ok(result)
     }
+    fn revalidate_custody(&self) -> Result<()> {
+        let named = fs::Tree::open("/", 0)?.file(&fs::absolute_string(&self.pin.path)?)?;
+        ensure(
+            fs::stat(&self.file)? == self.identity
+                && fs::stat(&named)? == self.identity
+                && fs::xattrs(&self.file)?.is_empty()
+                && fs::xattrs(&named)?.is_empty()
+                && fs::stat(&self.file)? == self.identity
+                && fs::stat(&named)? == self.identity,
+            "normal material held/named full identity or attributes changed",
+        )
+    }
     fn revalidate(&self) -> Result<()> {
+        self.revalidate_custody()?;
         (&self.file).rewind()?;
         ensure(
             fs::stat(&self.file)? == self.identity
@@ -126,6 +139,12 @@ impl SourceCustody {
             Self::Restore(v) => v.revalidate(),
         }
     }
+    fn revalidate_custody(&self) -> Result<()> {
+        match self {
+            Self::Initial(v) => v.revalidate_custody(),
+            Self::Restore(v) => v.revalidate_custody(),
+        }
+    }
 }
 pub(super) struct Materials {
     sources: SourceCustody,
@@ -156,6 +175,20 @@ impl Materials {
     }
     pub(super) fn recovery(&self) -> &RecoveryBootSpec {
         &self.recovery
+    }
+    pub(super) fn revalidate_custody(&self) -> Result<()> {
+        self.sources.revalidate_custody()?;
+        self.report.revalidate_custody()?;
+        self.early_configuration.revalidate_custody()?;
+        self.recovery_recipe.revalidate_custody()?;
+        for file in &self.mac_files {
+            file.revalidate_custody()?;
+        }
+        for file in &self.guards {
+            file.revalidate_custody()?;
+        }
+        self.recovery.validate()?;
+        Ok(())
     }
     pub(super) fn revalidate(&self) -> Result<()> {
         self.sources.revalidate()?;

@@ -165,6 +165,10 @@ fn original_owner_unit(cgroup: &str, invocation: &str) -> Result<String> {
 }
 
 fn original_observation() -> Result<OriginalObservation> {
+    original_observation_for(false)
+}
+
+fn original_observation_for(thaw_guard: bool) -> Result<OriginalObservation> {
     ensure(
         rustix::process::getuid().as_raw() == 0
             && rustix::process::geteuid().as_raw() == 0
@@ -174,10 +178,26 @@ fn original_observation() -> Result<OriginalObservation> {
     )?;
     let capabilities = owner_capabilities(&bounded(Path::new("/proc/self/status"), 64 * 1024)?)?;
     let invocation_id = std::env::var("INVOCATION_ID")?;
-    let control_group = original_owner_unit(
-        &bounded(Path::new("/proc/self/cgroup"), 4096)?,
-        &invocation_id,
-    )?;
+    let observed_cgroup = bounded(Path::new("/proc/self/cgroup"), 4096)?;
+    let control_group = if thaw_guard {
+        let translated = observed_cgroup.replacen(
+            "/system.slice/droidloom-original-thaw@",
+            "/system.slice/droidloom-original-qualification@",
+            1,
+        );
+        ensure(
+            translated != observed_cgroup,
+            "thaw guard is not its independent system unit",
+        )?;
+        original_owner_unit(&translated, &invocation_id)?;
+        observed_cgroup
+            .strip_prefix("0::")
+            .and_then(|s| s.strip_suffix('\n'))
+            .ok_or("thaw cgroup")?
+            .to_owned()
+    } else {
+        original_owner_unit(&observed_cgroup, &invocation_id)?
+    };
     let pid = std::process::id();
     ensure(pid > 1, "original qualification owner cannot be PID1")?;
     let kernel = bounded(Path::new("/proc/sys/kernel/osrelease"), 256)?
@@ -313,6 +333,23 @@ fn original_observation() -> Result<OriginalObservation> {
         invocation_id,
         capabilities,
     })
+}
+
+/// The independent thaw process receives no transaction authority or data
+/// adapter. This verifies the same original host, but its own fixed unit.
+pub(super) fn verify_thaw_owner(candidate: &str, boot: &str) -> Result<serde_json::Value> {
+    ensure(
+        fs::valid_digest(candidate) && uuid(boot),
+        "thaw identity fields",
+    )?;
+    let actual = original_observation_for(true)?;
+    ensure(
+        actual.boot_id == boot
+            && actual.control_group
+                == format!("/system.slice/droidloom-original-thaw@{candidate}.service"),
+        "thaw owner boot/unit differs",
+    )?;
+    Ok(serde_json::to_value(actual)?)
 }
 
 /// Pins a pre-existing lock. No create, chmod, truncate or inode replacement.
@@ -568,15 +605,27 @@ impl SealedInput {
         Ok(bytes)
     }
 
-    pub(super) fn revalidate(&self) -> Result<()> {
+    /// Used only inside a separately held, bounded label window. Full bytes
+    /// are verified when entering/leaving that window; every step still binds
+    /// the same open/named inode and every metadata/xattr field.
+    pub(super) fn revalidate_custody(&self) -> Result<()> {
         if self.identity.uid == 0 {
             fs::Tree::open("/", 0)?.parent(&fs::absolute_string(&self.pin.path)?)?;
         }
+        let (named, identity) = files::open_pin(&self.pin)?;
         ensure(
             fs::stat(&self.held)? == self.identity
-                && files::open_pin(&self.pin)?.1 == self.identity,
-            "once held or named immutable evidence was replaced",
-        )?;
+                && identity == self.identity
+                && fs::xattrs(&self.held)?.is_empty()
+                && fs::xattrs(&named)?.is_empty()
+                && fs::stat(&self.held)? == self.identity
+                && fs::stat(&named)? == self.identity,
+            "once held or named immutable evidence or its attributes changed",
+        )
+    }
+
+    pub(super) fn revalidate(&self) -> Result<()> {
+        self.revalidate_custody()?;
         let mut file = &self.held;
         file.rewind()?;
         ensure(

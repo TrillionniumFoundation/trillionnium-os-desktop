@@ -71,6 +71,7 @@ impl LabelPlanBinding {
     pub(super) fn revalidate(&self) -> Result<()> {
         ensure(
             fs::stat(&self.held)? == self.identity
+                && fs::xattrs(&self.held)?.is_empty()
                 && fs::Tree::open("/", 0)?.identity(&fs::absolute_string(&self.pin.path)?)?
                     == self.identity,
             "complete label plan held/named identity changed",
