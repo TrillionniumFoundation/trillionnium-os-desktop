@@ -602,3 +602,23 @@ and opens no character-device body. It checks the four source/target pairs
 and rejects wrong modes, owners, device numbers, file kinds, symlinks and
 filesystem roles. This focused check does not replace a normally built
 full-guest boot.
+
+### Native credential roots and startup observations
+
+The `259.9-0ubuntu0.1+p4gentmp2` normal source build retains the generator
+namespace patch and labels each selected credential tmpfs root when the
+filesystem is created. Selection requires the actual executor context, one of
+ten fixed unit names, and the matching `/run/credentials/<unit>` path. The
+executor checks the actual root context before and after the original label
+fix, then uses the normal credential acquisition and read-only sealing path.
+A native mount or label failure has no directory or ramfs fallback. Generic
+tmpfs directory enumeration and all credential file bodies remain denied.
+
+The native startup policy separately lists its public proc inputs, readonly
+sysfs observations, mount/pidfd metadata, and original `init.scope` ownership.
+The early producer must verify the fixed init scope and membership labels
+without storing a parent kernfs xattr. Root task membership remains unopened
+by runtime userspace. Calibration keeps systemd's kernel log rate limiting off
+to retain the first failure before journald starts; normal graphical boots
+keep that rate limit enabled. Source checks and policy compilation alone do
+not qualify an enforcing boot, an application, or original-data migration.

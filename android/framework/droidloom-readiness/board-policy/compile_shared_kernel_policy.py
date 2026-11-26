@@ -316,6 +316,89 @@ def verify_manager_runtime_metadata(lines, check, obj, role_types):
             "runtime_qualified": False}
 
 
+def verify_native_boot_observations(lines, check, obj, role_types):
+    """Check fixed native public observations and the original init.scope owner."""
+    count = 0
+    proc_readers = {
+        "init_t": {"proc_cpuinfo", "proc_filesystems", "proc_pid_max",
+                   "proc_pressure_cpu", "proc_swaps", "proc_random"},
+        "p4_linux_service_executor_t": {"proc_pressure_cpu"},
+        "p4_linux_udev_t": {"proc_filesystems", "proc_pressure_cpu", "proc_random"},
+    }
+    public_proc = sorted(set().union(*proc_readers.values()))
+    for actor, readable in proc_readers.items():
+        context = f"u:system_r:{actor}:s0"
+        for target in public_proc:
+            for permission in ("getattr", "open", "read"):
+                if permission == "getattr" and target not in readable:
+                    continue
+                check(context, obj(target), "file", [permission], target in readable)
+                count += 1
+            for permission in ("write", "append", "create", "setattr", "map",
+                               "execute", "execute_no_trans", "entrypoint",
+                               "relabelfrom", "relabelto"):
+                check(context, obj(target), "file", [permission], False)
+                count += 1
+        for permission in ("open", "read", "write", "append", "map"):
+            check(context, obj("proc"), "file", [permission], False)
+            count += 1
+    commandline = {"init_t", "p4_linux_module_loader_t", "p4_linux_generator_t",
+                   "p4_linux_setup_t", "p4_linux_udev_t"}
+    for role, actor in role_types:
+        context = f"u:{role}:{actor}:s0"
+        manager = role == "system_r" and actor == "init_t"
+        for permission in ("write", "setattr"):
+            check(context, obj("p4_linux_cgroup_init_scope_t"), "dir", [permission], manager)
+            count += 1
+        for permission in ("create", "write", "append"):
+            check(context, obj("p4_linux_cgroup_init_scope_t"), "file",
+                  [permission], manager and permission != "append")
+            count += 1
+        check(context, obj("p4_linux_cgroup_root_t"), "dir", ["setattr"], manager)
+        count += 1
+        if role == "system_r":
+            for permission in ("open", "read"):
+                check(context, obj("proc_cmdline"), "file", [permission], actor in commandline)
+                count += 1
+            check(context, obj("p4_linux_cgroup_init_tasks_t"), "file", ["read"], False)
+            count += 1
+    required = {
+        f'(genfscon cgroup2 "{path}" (u object_r {target} ((s0) (s0))))'
+        for path, target in (
+            ("/init.scope", "p4_linux_cgroup_init_scope_t"),
+            ("/init.scope/", "p4_linux_cgroup_init_scope_t"),
+            ("/init.scope/cgroup.procs", "p4_linux_cgroup_init_tasks_t"),
+            ("/init.scope/cgroup.threads", "p4_linux_cgroup_init_tasks_t"),
+        )
+    }
+    actual = {line for line in lines if line.startswith('(genfscon cgroup2 "/init.scope')}
+    if actual != required:
+        raise ValueError("Native init.scope has an unexpected genfs boundary")
+    for actor in ("init_t", "p4_linux_generator_t"):
+        context = f"u:system_r:{actor}:s0"
+        for cls, permissions in (("dir", ("getattr", "search", "open", "read")),
+                                 ("file", ("getattr", "open", "read")),
+                                 ("lnk_file", ("getattr", "read"))):
+            check(context, obj("sysfs"), cls, list(permissions), True)
+            count += len(permissions)
+        for permission in ("write", "append", "map", "execute", "entrypoint"):
+            check(context, obj("sysfs"), "file", [permission], False)
+            count += 1
+    for actor in ("init_t", "p4_linux_service_executor_t"):
+        check(f"u:system_r:{actor}:s0", obj("p4_kernel_pid_handle_t"),
+              "filesystem", ["getattr"], True)
+        count += 1
+    check("u:system_r:init_t:s0", obj("proc"), "filesystem", ["getattr"], True)
+    count += 1
+    return {"permission_checks": count, "public_proc_matrix": {
+                actor: sorted(targets) for actor, targets in proc_readers.items()},
+            "commandline_readers": sorted(commandline),
+            "init_scope_genfs_entries": len(required),
+            "generic_proc_bodies_denied": True,
+            "root_membership_body_read_added": False,
+            "capabilities_added": [], "runtime_qualified": False}
+
+
 def verify_manager_startup(lines, check, obj, role_types):
     """Read generator/status authority from the linked policy for every role."""
     count = 0
@@ -381,6 +464,7 @@ def verify_manager_startup(lines, check, obj, role_types):
             "native_generator_tmpfs": verify_manager_tmpfs(lines, check, obj, role_types),
              "native_runtime_metadata": verify_manager_runtime_metadata(lines, check, obj, role_types),
              "native_credentials": verify_manager_credentials(lines, check, obj, role_types),
+              "native_boot_observations": verify_native_boot_observations(lines, check, obj, role_types),
             "runtime_qualified": False}
 
 
