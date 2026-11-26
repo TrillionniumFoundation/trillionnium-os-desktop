@@ -14,6 +14,7 @@ use serde_json::{Value, json};
 use std::{
     collections::{BTreeMap, BTreeSet},
     fs::File,
+    io::Seek,
     os::unix::fs::{FileTypeExt, MetadataExt},
     path::{Path, PathBuf},
 };
@@ -68,6 +69,8 @@ struct Plan {
     native_release: FilePin,
     native_release_id: String,
     target_preflight: FilePin,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    recovery_recipe: Option<FilePin>,
 }
 #[derive(Clone, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
@@ -120,6 +123,98 @@ struct Stage {
     materials: Materials,
     producer: FilePin,
     input: FilePin,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    recovery_recipe: Option<crate::cold_original_once_initramfs::RecoveryRecipe>,
+}
+
+type RecoverySourceGuard = (FilePin, Identity, File);
+fn recovery_source_guards(
+    recipe: Option<&crate::cold_original_once_initramfs::RecoveryRecipe>,
+) -> Result<Vec<RecoverySourceGuard>> {
+    recipe
+        .map(|recipe| {
+            recipe
+                .source_pins()
+                .into_iter()
+                .map(|pin| {
+                    let (file, identity) = trusted(pin)?;
+                    Ok((pin.clone(), identity, file))
+                })
+                .collect()
+        })
+        .unwrap_or_else(|| Ok(Vec::new()))
+}
+fn recovery_source_readback(guards: &[RecoverySourceGuard]) -> Result<Value> {
+    let mut rows = Vec::new();
+    for (pin, identity, file) in guards {
+        let mut held = file;
+        held.rewind()?;
+        ensure(
+            fs::stat(file)? == *identity
+                && fs::hash(file)? == pin.sha256
+                && fs::stat(file)? == *identity
+                && trusted(pin)?.1 == *identity,
+            "normal recovery input was changed or replaced across the private build",
+        )?;
+        rows.push(json!({"source":pin,"identity":identity,"actual_held_readback":fs::stat(file)?}));
+    }
+    Ok(json!({"schema":"droidloom.original-recovery-source-custody.v1","sources":rows}))
+}
+fn verify_recovery_stage(
+    admitted: &crate::cold_original_once_initramfs::RecoveryRecipe,
+    staged: &crate::cold_original_once_initramfs::RecoveryRecipe,
+) -> Result<()> {
+    // These are the four exact path/schema substitutions made by the normal
+    // staging producer. No other recipe byte, source pin or recovery contract
+    // may be replaced by private input JSON.
+    let mut expected = serde_json::to_value(admitted)?;
+    ensure(
+        expected["schema"] == "droidloom.original-once-initramfs-recipe.v1",
+        "normal recovery source recipe schema differs",
+    )?;
+    expected["schema"] = json!("droidloom.original-once-staged-recovery.v1");
+    expected["helper"]["path"] = json!("/build/producer");
+    expected["base_intent"]["path"] = json!("/build/recovery/INTENT.json");
+    expected["early_configuration"]["path"] = json!("/build/recovery/EARLY.json");
+    ensure(
+        expected == serde_json::to_value(staged)?,
+        "normal recovery private staging differs from its source recipe",
+    )
+}
+fn recovery_image_readback(
+    recipe: Option<&crate::cold_original_once_initramfs::RecoveryRecipe>,
+    unpacked: &Path,
+) -> Result<Option<Value>> {
+    if let Some(recipe) = recipe {
+        return Ok(Some(
+            crate::cold_original_once_initramfs::verify_recovery_image(recipe, unpacked)?,
+        ));
+    }
+    let roots = [unpacked.to_owned(), unpacked.join("main")]
+        .into_iter()
+        .filter(|root| root.join("init").is_file())
+        .collect::<Vec<_>>();
+    ensure(
+        roots.len() == 1,
+        "ordinary initramfs must have one normal root",
+    )?;
+    let tree = fs::Tree::open(&fs::absolute_string(&roots[0])?, 0)?;
+    for name in [
+        "/usr/lib/droidloom/qualification/once-recovery",
+        "/etc/droidloom/qualification/early.json",
+        "/scripts/init-top/00-droidloom-original-once-recovery",
+    ] {
+        match tree.identity(name) {
+            Err(error)
+                if error.downcast_ref::<rustix::io::Errno>() == Some(&rustix::io::Errno::NOENT) => {
+            }
+            Err(error) => return Err(error),
+            Ok(_) => {
+                return Err("ordinary initramfs contains an unadmitted once recovery input".into());
+            }
+        }
+    }
+    Ok(None)
 }
 
 fn string(value: &Value, key: &str) -> Result<String> {
@@ -514,6 +609,22 @@ fn validate_materials(m: &Materials) -> Result<()> {
     validate_public_directories(&m.public_directories)?;
     Ok(())
 }
+
+/// Revalidate preserved normal archive semantics and bytes for restoration.
+/// This is deliberately independent of the *current* physical package DB;
+/// the original owner separately validates its actual candidate/rollback DB.
+/// It does not perform fresh initial-host or boot admission.
+pub(crate) fn verify_archived_normal_materials(value: &Value) -> Result<()> {
+    let materials: Materials = serde_json::from_value(value.clone())?;
+    validate_materials(&materials)?;
+    for pin in [&materials.public_release, &materials.native_release] {
+        trusted(pin)?;
+    }
+    for package in &materials.packages {
+        trusted(&package.package)?;
+    }
+    Ok(())
+}
 fn save(path: &Path, value: &impl Serialize) -> Result<FilePin> {
     let mut body = serde_json::to_vec_pretty(value)?;
     body.push(b'\n');
@@ -632,6 +743,25 @@ pub fn prepare(path: &Path, expected: &str) -> Result<()> {
     }
     let producer = actual_pin(&std::env::current_exe()?)?;
     files::copy_pin(&producer, &build.join("producer"), 0o555)?;
+    let admitted_recovery = plan
+        .recovery_recipe
+        .as_ref()
+        .map(|pin| {
+            crate::cold_original_once_initramfs::admit_recovery_recipe(
+                pin,
+                &producer,
+                &serde_json::to_value(&materials)?,
+            )
+        })
+        .transpose()?;
+    let recovery_guards = recovery_source_guards(admitted_recovery.as_ref())?;
+    let staged_recovery = admitted_recovery
+        .as_ref()
+        .map(|recipe| crate::cold_original_once_initramfs::stage_recovery_recipe(recipe, &build))
+        .transpose()?;
+    if let (Some(admitted), Some(staged)) = (&admitted_recovery, &staged_recovery) {
+        verify_recovery_stage(admitted, staged)?;
+    }
     let stage = Stage {
         schema: "droidloom.original-host-initramfs-stage.v1".into(),
         work_directory: work.clone(),
@@ -639,6 +769,7 @@ pub fn prepare(path: &Path, expected: &str) -> Result<()> {
         materials,
         producer,
         input: input.clone(),
+        recovery_recipe: staged_recovery,
     };
     let stage_pin = save(&build.join("INNER-INPUTS.json"), &stage)?;
     let namespace = run(
@@ -665,6 +796,7 @@ pub fn prepare(path: &Path, expected: &str) -> Result<()> {
         "original host database/accounts/boot context changed",
     )?;
     let guarded = guard_readback(&guards)?;
+    let recovery_custody = recovery_source_readback(&recovery_guards)?;
     for pin in &module_guard {
         trusted(pin)?;
     }
@@ -680,6 +812,10 @@ pub fn prepare(path: &Path, expected: &str) -> Result<()> {
             && inner["kernel_release"] == KERNEL,
         "actual private normal initramfs result differs",
     )?;
+    ensure(
+        inner["recovery_recipe"] == serde_json::to_value(&stage.recovery_recipe)?,
+        "normal private build lost its exact recovery recipe",
+    )?;
     let image = actual_pin(&build.join("initrd.img"))?;
     ensure(
         inner["initrd"]["sha256"] == image.sha256 && inner["initrd"]["bytes"] == image.bytes,
@@ -689,6 +825,8 @@ pub fn prepare(path: &Path, expected: &str) -> Result<()> {
         "input":input,"target_preflight":plan.target_preflight,"original_host":before,"original_files_unchanged":guarded,
         "normal_public_release":plan.public_release,"normal_native_release":plan.native_release,
         "normal_materials":material_pin,"normal_admission_command":command,"namespace_command":namespace,
+        "recovery_recipe_input":plan.recovery_recipe,"recovery_source_custody":recovery_custody,
+        "recovery_image_readback":inner["recovery_image_readback"],
         "actual_private_build":inner_pin,"initrd":image,"kernel_release":KERNEL,"kernel_sha256":KERNEL_SHA,
         "root_uuid":ROOT_UUID,"physical_package_database_modified":false,"original_accounts_replaced":false,
         "original_android_data_accessed":false,"default_boot_changed":false,"services_enabled":false,
@@ -1757,6 +1895,17 @@ pub fn build(path: &Path, expected: &str) -> Result<()> {
         Path::new("/etc/initramfs-tools/conf.d/droidloom-source-bound-original-root-fstype");
     files::write_new(fstype, ORIGINAL_FSTYPE, 0o644)?;
     let fstype_pin = actual_pin(fstype)?;
+    let recovery_installation = stage
+        .recovery_recipe
+        .as_ref()
+        .map(|recipe| {
+            crate::cold_original_once_initramfs::install_private_recipe(
+                recipe,
+                &stage.producer,
+                &stage.original,
+            )
+        })
+        .transpose()?;
     let built = run(
         work,
         "normal-mkinitramfs",
@@ -1773,6 +1922,8 @@ pub fn build(path: &Path, expected: &str) -> Result<()> {
     trusted(&hook_pin)?;
     trusted(&fstype_pin)?;
     let observed = readback(work, &stage.materials)?;
+    let recovery_readback =
+        recovery_image_readback(stage.recovery_recipe.as_ref(), &work.join("unpacked"))?;
     let image = actual_pin(Path::new("/build/initrd.img"))?;
     ensure(
         image.bytes > 1024 && image.bytes <= 512 * 1024 * 1024,
@@ -1786,6 +1937,8 @@ pub fn build(path: &Path, expected: &str) -> Result<()> {
         "status_before":status,"status_after":after,"retained_private_status":actual_pin(&work.join("PRIVATE-DPKG-STATUS"))?,"original_account_files":account_before,
         "policy_rc_101":policy_pin,"previous_private_policy_rc":previous_policy,"normal_native_hook":hook_pin,
         "original_fstype_configuration":fstype_pin,
+        "recovery_recipe":stage.recovery_recipe,"recovery_installation":recovery_installation,
+        "recovery_image_readback":recovery_readback,
         "normal_mkinitramfs":built,"full_readback":observed,"initrd":image,"physical_install":false,
         "qualification_boot_authorized":false,"permanent_activation_authorized":false});
     save(&work.join("BUILT.json"), &report)?;

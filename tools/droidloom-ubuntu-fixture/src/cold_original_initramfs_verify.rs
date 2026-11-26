@@ -364,6 +364,32 @@ pub(crate) fn verify_prepared_original_initramfs(receipt: &FilePin, work: &Path)
         "retained_private_status":private_status,"original_roster":original_roster,
         "private_roster":private_roster,"selected_packages":old_materials.packages});
     let producer = producer_identity(&stage.producer)?;
+    let admitted_recovery = plan
+        .recovery_recipe
+        .as_ref()
+        .map(|pin| {
+            crate::cold_original_once_initramfs::admit_recovery_recipe(
+                pin,
+                &stage.producer,
+                &serde_json::to_value(&old_materials)?,
+            )
+        })
+        .transpose()?;
+    ensure(
+        prepared["recovery_recipe_input"] == serde_json::to_value(&plan.recovery_recipe)?
+            && inner["recovery_recipe"] == serde_json::to_value(&stage.recovery_recipe)?,
+        "source, prepared and private recovery choices differ",
+    )?;
+    match (&admitted_recovery, &stage.recovery_recipe) {
+        (Some(admitted), Some(staged)) => verify_recovery_stage(admitted, staged)?,
+        (None, None) => {}
+        _ => {
+            return Err(
+                "normal recovery recipe is missing or was injected into an ordinary build".into(),
+            );
+        }
+    }
+    let recovery_guards = recovery_source_guards(admitted_recovery.as_ref())?;
     let image = pin(&prepared["initrd"])?;
     ensure(
         image.path == build.join("initrd.img")
@@ -405,6 +431,9 @@ pub(crate) fn verify_prepared_original_initramfs(receipt: &FilePin, work: &Path)
         "fresh normal kernel package module manifest differs",
     )?;
     let complete = readback_image(work, &materials, &image.path, &module_source, false)?;
+    let recovery_readback =
+        recovery_image_readback(admitted_recovery.as_ref(), &work.join("unpacked"))?;
+    let recovery_custody = recovery_source_readback(&recovery_guards)?;
     let original_files_unchanged = guard_readback(&guards)?;
     let after = original_context()?;
     let current_context_readback = compare_original_context(&before, &after)?;
@@ -430,6 +459,8 @@ pub(crate) fn verify_prepared_original_initramfs(receipt: &FilePin, work: &Path)
         "historical_context_readback":historical_context_readback,"current_context_readback":current_context_readback,
         "original_files_unchanged":original_files_unchanged,
         "normal_materials":materials,"fresh_admission":admission,"initrd":image,
+        "recovery_recipe_input":plan.recovery_recipe,"recovery_source_custody":recovery_custody,
+        "recovery_image_readback":recovery_readback,
         "host_source_commit":release["source_commit"],"host_source_tree":release["source_tree"],
         "kernel_payload_extract":kernel_command,"complete_readback":complete,
         "physical_install":false,"qualification_boot_authorized":false,"production_ready":false});

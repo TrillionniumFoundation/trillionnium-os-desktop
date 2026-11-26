@@ -738,3 +738,9 @@ that actual source-plan-bound restoration and revalidates both original OFD
 locks. The core has no physical entry point or retirement constructor. Tests
 exercise real isolated inode writes; they do not claim a physical boot,
 working-copy migration or production acceptance.
+
+### Original initramfs recovery recipe custody
+
+The original-root normal producer accepts an optional pinned `recovery_recipe`. It admits the same normally built producer ELF and exact original materials, keeps all four source descriptors and complete identities across the isolated package/mkinitramfs operation, and stages only the fixed recovery source paths. The private build installs the source-owned normal hook before mkinitramfs. Its existing full archive readback also checks the actual early helper, configuration, signed module, normal init/functions and first/unique init-top ordering. A fresh verification independently repeats these checks. An ordinary image must contain none of the qualification-only recovery entry points.
+
+This interface prepares an image in the existing private overlay. It does not install original-host packages, change labels or data, arm the watchdog, alter GRUB, or grant physical boot authority. Historical images without a recovery recipe retain their ordinary-image scope. Exact final public/native inputs still require a fresh normal build. The archive-only materials verifier is separately usable for restoration: it checks the preserved complete normal package family and source bytes, without claiming the historical original dpkg database is the current returned database.
