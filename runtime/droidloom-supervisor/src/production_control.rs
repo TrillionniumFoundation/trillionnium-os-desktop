@@ -1201,6 +1201,11 @@ impl ProductionDaemon {
             ControlRequest::InspectContactsFixture { contacts, provider } => {
                 self.inspect_contacts_fixture(peer_uid, &contacts, &provider)
             }
+            ControlRequest::ObserveRuntimeMain { .. } => self.authorize_active(peer_uid).and_then(|_| {
+                Err(ControlError::Invalid(
+                    "Main resource observation requires the original kernel-first Ready owner".into(),
+                ))
+            }),
             ControlRequest::ObserveRuntimeVintf { .. } => self.authorize_active(peer_uid).and_then(|_| {
                 Err(ControlError::Invalid(
                     "fixed VINTF observation requires the original kernel-first Ready owner".into(),

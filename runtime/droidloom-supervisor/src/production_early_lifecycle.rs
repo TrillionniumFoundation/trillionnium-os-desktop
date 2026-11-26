@@ -464,7 +464,7 @@ pub fn complete_early_resources() -> io::Result<()> {
                     board.selection().spec().host_uid,
                     |observation_deadline| {
                         super::EarlyApplicationAuthority::acquire(
-                            &base, &group, &owner, root, query, system, &progress,
+                            &base, &group, &owner, root, query, system, mutable, &progress,
                             observation_deadline,
                         )
                     },

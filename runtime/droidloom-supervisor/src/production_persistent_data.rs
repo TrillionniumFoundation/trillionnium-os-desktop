@@ -12,6 +12,8 @@ use crate::production_selection::{PersistentImagePolicy, ProductionSelection};
 
 #[path = "production_persistent_data_early.rs"]
 mod early_storage;
+#[path = "production_persistent_data_custody.rs"]
+mod main_custody;
 pub(crate) use early_storage::EarlyStorageAdmission;
 
 #[path = "production_persistent_data_backings.rs"]

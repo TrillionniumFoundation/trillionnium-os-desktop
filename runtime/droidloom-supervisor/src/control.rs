@@ -52,7 +52,7 @@ mod progress;
 
 #[path = "control_identity.rs"]
 mod identity;
-pub use identity::{NativeApplicationInspector, NativeInspectionPeer};
+pub use identity::{MainCustodyObservation, NativeApplicationInspector, NativeInspectionPeer};
 
 #[cfg(target_os = "linux")]
 #[path = "production_package.rs"]
@@ -227,6 +227,12 @@ pub enum ControlRequest {
     /// Expected PID values compare that owner; they never select a process.
     ObserveRuntimeVintf {
         /// Previously observed physical generation, revalidated before and after.
+        expected_epoch: application_probe::RuntimeEpoch,
+    },
+    /// Read current held Main/data resources; the epoch compares the actual owner.
+    /// This grants neither account continuity nor application acceptance.
+    ObserveRuntimeMain {
+        /// Previously observed generation; never a process selector.
         expected_epoch: application_probe::RuntimeEpoch,
     },
     /// Open a reviewed HTTPS fixture via the current implicit Firefox resolver.
@@ -454,6 +460,9 @@ impl Daemon {
             ControlRequest::OpenBrowser { expected, url } => {
                 self.open_browser(peer_uid, &expected, &url)
             }
+            ControlRequest::ObserveRuntimeMain { .. } => Err(ControlError::Invalid(
+                "Main resource observation requires the original kernel-first Ready owner".into(),
+            )),
             ControlRequest::ObserveRuntimeVintf { .. } => Err(ControlError::Invalid(
                 "fixed VINTF observation requires the original kernel-first Ready owner".into(),
             )),

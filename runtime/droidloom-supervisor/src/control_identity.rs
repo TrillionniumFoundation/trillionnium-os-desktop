@@ -150,7 +150,7 @@ fn peer_credentials_checked(stream: &UnixStream) -> Result<libc::ucred, ControlE
 }
 
 /// Output only: the caller cannot deserialize this into an inspector or authority.
-#[derive(Debug, Serialize)]
+#[derive(Debug, Eq, PartialEq, Serialize)]
 pub struct NativeInspectionPeer {
     pub pid: u32,
     pub start_ticks: u64,
@@ -160,6 +160,45 @@ pub struct NativeInspectionPeer {
     pub public_selector_sha256: String,
     pub systemd_invocation_checked: bool,
 }
+
+/// An in-process observation created only by the authenticated normal inspector.
+/// It retains the actual peer PIDFD. It is neither Clone nor Deserialize and has
+/// no public constructor. Its comparison-only receipt cannot recreate this fact.
+/// This proves resource custody; account contents and business acceptance are
+/// separate factories and are not granted by this type.
+pub struct MainCustodyObservation {
+    facts: crate::main_custody::RuntimeMainCustody,
+    peer: NativeInspectionPeer,
+    pidfd: fs::File,
+}
+impl MainCustodyObservation {
+    /// Read-only comparison projection, not a capability or acceptance receipt.
+    pub fn facts(&self) -> &crate::main_custody::RuntimeMainCustody { &self.facts }
+    /// Actual fixed normal peer, rechecked at construction and by revalidate_main.
+    pub fn peer(&self) -> &NativeInspectionPeer { &self.peer }
+}
+
+fn main_response(
+    response: ControlResponse, expected: &application_probe::RuntimeEpoch,
+) -> Result<crate::main_custody::RuntimeMainCustody, ControlError> {
+    if !response.ok || response.state != CellState::Running
+        || response.host_pid != Some(expected.cell_host_pid)
+        || response.launch.is_some() || response.applications.is_some()
+        || response.application_icon.is_some() || response.inspection.is_some()
+        || response.image_custody.is_some() || response.runtime_vintf.is_some()
+    {
+        return Err(ControlError::Invalid("normal Main resource observation did not complete".into()));
+    }
+    let body = response.diagnostics.ok_or_else(|| ControlError::Invalid(
+        "normal Main resource observation omitted its fixed body".into()))?;
+    if body.len() > 32768 {
+        return Err(ControlError::Invalid("normal Main resource observation exceeded its bound".into()));
+    }
+    let facts: crate::main_custody::RuntimeMainCustody = serde_json::from_str(&body)?;
+    facts.validate(expected).map_err(ControlError::Invalid)?;
+    Ok(facts)
+}
+
 /// A process-local read-only client. It never accepts an executable hash, PID,
 /// invocation or socket pathname selected by a material/acceptance document.
 pub struct NativeApplicationInspector {
@@ -359,10 +398,7 @@ impl NativeApplicationInspector {
         }
         live(&self.pidfd).map_err(io)
     }
-    /// Run only the existing fixed inspection operation on the authenticated
-    /// connection, retaining the original peer and normal source bookends.
-    pub fn inspect(&mut self, package: &str, user: u32) -> Result<ControlResponse, ControlError> {
-        validate_android_user(user)?;
+    fn request_fixed(&mut self, request: &ControlRequest) -> Result<ControlResponse, ControlError> {
         self.revalidate()?;
         let stream = match self.first.take() {
             Some(stream) => stream,
@@ -377,29 +413,64 @@ impl NativeApplicationInspector {
                 "fixed socket was replaced by another daemon".into(),
             ));
         }
-        let result = progress::request_on(
-            stream,
-            Instant::now(),
-            &ControlRequest::InspectApplication {
-                package: package.into(),
-                user,
-            },
-            None,
-            None,
-        );
+        let result = progress::request_on(stream, Instant::now(), request, None, None);
         live(&current_pidfd).map_err(|e| io_error("recheck current control peer", e))?;
         self.revalidate()?;
-        let result = result?;
-        if result
-            .inspection
-            .as_ref()
-            .is_some_and(|value| value.epoch.boot_id != self.boot_id)
-        {
-            return Err(ControlError::Invalid(
-                "inspection belongs to a different host boot".into(),
-            ));
+        result
+    }
+
+    /// Run only the existing fixed inspection operation on the authenticated
+    /// connection, retaining the original peer and normal source bookends.
+    pub fn inspect(&mut self, package: &str, user: u32) -> Result<ControlResponse, ControlError> {
+        validate_android_user(user)?;
+        let result = self.request_fixed(&ControlRequest::InspectApplication {
+            package: package.into(), user,
+        })?;
+        if result.inspection.as_ref().is_some_and(|value| value.epoch.boot_id != self.boot_id) {
+            return Err(ControlError::Invalid("inspection belongs to a different host boot".into()));
         }
         Ok(result)
+    }
+
+    /// Observe only the original normal owner's current process, namespace,
+    /// writable backing and retained mount resources. Expected PIDs compare a
+    /// live epoch; they never select a process or authorize a saved receipt.
+    pub fn observe_main(
+        &mut self, expected: &application_probe::RuntimeEpoch,
+    ) -> Result<MainCustodyObservation, ControlError> {
+        self.revalidate()?;
+        if expected.boot_id != self.boot_id {
+            return Err(ControlError::Invalid("Main epoch belongs to another host boot".into()));
+        }
+        let response = self.request_fixed(&ControlRequest::ObserveRuntimeMain {
+            expected_epoch: expected.clone(),
+        })?;
+        let facts = main_response(response, expected)?;
+        let peer = self.observation()?;
+        let pidfd = self.pidfd.try_clone()
+            .map_err(|e| io_error("retain actual Main control peer", e))?;
+        live(&pidfd).map_err(|e| io_error("check actual Main control peer", e))?;
+        self.revalidate()?;
+        Ok(MainCustodyObservation { facts, peer, pidfd })
+    }
+
+    /// Re-observe the same fixed resources through the same actual source-bound
+    /// peer. This method consumes no external FilePin, pathname or success bit.
+    pub fn revalidate_main(&mut self, prior: &MainCustodyObservation) -> Result<(), ControlError> {
+        live(&prior.pidfd).map_err(|e| io_error("recheck retained Main peer", e))?;
+        let old = prior.pidfd.metadata().map_err(|e| io_error("stat retained Main peer", e))?;
+        let current = self.pidfd.metadata().map_err(|e| io_error("stat current Main peer", e))?;
+        if (old.dev(), old.ino()) != (current.dev(), current.ino())
+            || prior.peer != self.observation()?
+        {
+            return Err(ControlError::Invalid("Main observation belongs to another actual control peer".into()));
+        }
+        let after = self.observe_main(&prior.facts.epoch)?;
+        if after.peer != prior.peer || after.facts != prior.facts {
+            return Err(ControlError::Invalid("Main process, selection, namespace or persistent resource changed".into()));
+        }
+        live(&prior.pidfd).map_err(|e| io_error("finish retained Main peer check", e))?;
+        self.revalidate()
     }
     /// Return factual provenance only; the struct is not an authority input.
     pub fn observation(&self) -> Result<NativeInspectionPeer, ControlError> {
@@ -420,6 +491,35 @@ impl NativeApplicationInspector {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn main_observation_requires_the_fixed_successful_response_and_exact_body() {
+        let facts = crate::main_custody::tests::sample();
+        let response = ControlResponse {
+            ok: true, state: CellState::Running, message: String::new(),
+            host_pid: Some(facts.epoch.cell_host_pid),
+            launch: None, applications: None, application_icon: None,
+            diagnostics: Some(serde_json::to_string(&facts).unwrap()),
+            inspection: None, image_custody: None, runtime_vintf: None,
+        };
+        assert_eq!(main_response(response.clone(), &facts.epoch).unwrap(), facts);
+        for case in 0..6 {
+            let mut changed = response.clone();
+            match case {
+                0 => changed.ok = false,
+                1 => changed.state = CellState::Quarantined,
+                2 => changed.host_pid = Some(999),
+                3 => changed.launch = Some("unrelated operation".into()),
+                4 => changed.diagnostics = None,
+                _ => changed.diagnostics = Some("true".into()),
+            }
+            assert!(main_response(changed, &facts.epoch).is_err());
+        }
+        // A parsed body remains comparison data. This test never constructs
+        // MainCustodyObservation, whose only production constructor needs the
+        // selected program, root socket and an actual original peer PIDFD.
+    }
+
     #[test]
     fn native_socket_pidfd_binds_the_actual_original_process() {
         let (left, _right) = UnixStream::pair().unwrap();

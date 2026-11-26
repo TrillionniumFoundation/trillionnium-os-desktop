@@ -64,7 +64,7 @@ impl EarlyApplicationAuthority<'_> {
             image_bodies_rehashed_by_this_observation: false,
         })
     }
-    fn image_custody_owner(&self, deadline: Instant) -> Result<CustodyOwner> {
+    pub(super) fn image_custody_owner(&self, deadline: Instant) -> Result<CustodyOwner> {
         self.progress_inherited_native(deadline)?;
         self.ready()?;
         let selected = self.base.board().selection();

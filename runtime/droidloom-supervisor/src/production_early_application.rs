@@ -20,6 +20,8 @@ use std::time::{Duration, Instant};
 
 #[path = "production_early_image_custody.rs"]
 mod image_custody;
+#[path = "production_early_main_custody.rs"]
+mod main_custody;
 #[path = "production_early_task_control.rs"]
 mod task_control;
 pub(crate) use task_control::{EarlyTaskControlEndpoint, EarlyTaskControlPeer};
@@ -408,6 +410,7 @@ pub(crate) struct EarlyApplicationAuthority<'a> {
     root: &'a File,
     query: &'a EarlyQueryResources,
     images: &'a crate::production_mounts::PreparedMounts,
+    data: &'a crate::production_mounts::persistent_data::PreparedPersistentData,
     proc_root: File,
     namespaces: Vec<File>,
     init: Process,
@@ -436,6 +439,7 @@ impl<'a> EarlyApplicationAuthority<'a> {
         root: &'a File,
         query: &'a EarlyQueryResources,
         images: &'a crate::production_mounts::PreparedMounts,
+        data: &'a crate::production_mounts::persistent_data::PreparedPersistentData,
         progress: &'a dyn Fn() -> io::Result<()>,
         absolute: Option<Instant>,
     ) -> Result<Self> {
@@ -490,6 +494,7 @@ impl<'a> EarlyApplicationAuthority<'a> {
             root,
             query,
             images,
+            data,
             proc_root,
             namespaces,
             init,

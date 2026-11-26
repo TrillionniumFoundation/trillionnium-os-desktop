@@ -99,8 +99,9 @@ impl EarlyApplicationControl {
                 ));
             }
             // The finite read starts its one absolute budget before original
-            // owner acquisition. Other request lifetimes keep their existing limits.
-            vintf_budget = matches!(&request, ControlRequest::ObserveRuntimeVintf { .. })
+            // owner acquisition. Main custody uses this same metadata-only budget;
+            // other request lifetimes keep their existing limits.
+            vintf_budget = matches!(&request, ControlRequest::ObserveRuntimeVintf { .. } | ControlRequest::ObserveRuntimeMain { .. })
                 .then(crate::production_application::RuntimeVintfBudget::start);
             let observation_deadline = vintf_budget.as_ref().map(|budget| budget.work_deadline());
             // Request-local acquisition starts only after transport admission.
@@ -227,6 +228,22 @@ impl EarlyApplicationControl {
                     })?;
                     response.runtime_vintf = Some(observed);
                     response.message = "Public runtime metadata observed with unchanged owner and namespace bookends; VINTF compatibility and application acceptance remain unevaluated".into();
+                }
+                ControlRequest::ObserveRuntimeMain { expected_epoch } => {
+                    let deadline = vintf_budget.as_ref().expect("fixed Main request budget").work_deadline();
+                    let observed = authority.observe_main_custody(&expected_epoch, deadline)
+                        .map_err(|e| {
+                            vintf_failure = Some(classify_vintf_failure(&e, deadline));
+                            acquisition_quarantined |= matches!(
+                                e, crate::production_namespace::NamespaceError::RetirementUnproven);
+                            ControlError::Invalid(e.to_string())
+                        })?;
+                    let body = serde_json::to_string(&observed)?;
+                    if body.len() > 32768 {
+                        return Err(ControlError::Invalid("fixed Main observation exceeds its bound".into()));
+                    }
+                    response.diagnostics = Some(body);
+                    response.message = "Current Main and writable resource custody observed; data-origin business acceptance remains separate".into();
                 }
                 ControlRequest::InspectApplication { package, user } => {
                     validate_package(&package)?;
@@ -383,6 +400,7 @@ impl EarlyApplicationControl {
             if vintf_budget.is_some() {
                 vintf_failure.get_or_insert(VintfFailure::Other);
                 response.runtime_vintf = None;
+                response.diagnostics = None;
             }
         }
         // A command that could not retire its real children quarantines the
@@ -410,7 +428,7 @@ impl EarlyApplicationControl {
         if original.is_err() {
             response.ok = false;
             response.state = CellState::Quarantined;
-            if vintf_budget.is_some() { response.runtime_vintf = None; }
+            if vintf_budget.is_some() { response.runtime_vintf = None; response.diagnostics = None; }
         }
         if let Err(error) = send_response(stream, &response) {
             eprintln!("could not deliver early application observation: {error}");
@@ -458,6 +476,7 @@ fn finish_vintf_request(
     if expired {
         response.ok = false;
         response.runtime_vintf = None;
+        response.diagnostics = None;
         response.state = CellState::Starting;
         response.message = "Fixed public metadata request exhausted its observation budget; no compatibility or application result was accepted".into();
         // If acquisition itself expired, it returned no new authority or live
@@ -584,6 +603,22 @@ mod tests {
         assert!(response.runtime_vintf.is_none());
         assert!(!response.message.contains("body completed"));
     }
+    #[test]
+    fn main_custody_expiry_discards_body_without_reopening_owner() {
+        let end = Instant::now() - Duration::from_millis(1);
+        let mut response = vintf_test_response();
+        response.runtime_vintf = None;
+        response.diagnostics = Some(serde_json::to_string(&crate::main_custody::tests::sample()).unwrap());
+        let checked = std::cell::Cell::new(false);
+        finish_vintf_request(&mut response, Some(VintfFailure::Expired), end,
+            || panic!("expired Main custody must not start another observer"),
+            || { checked.set(true); Ok(()) }).unwrap();
+        assert!(checked.get());
+        assert!(!response.ok);
+        assert!(response.diagnostics.is_none());
+        assert_eq!(response.state, CellState::Starting);
+    }
+
     #[test]
     fn vintf_owner_failure_and_unretired_children_are_never_expiry_exemptions() {
         use crate::production_namespace::NamespaceError;

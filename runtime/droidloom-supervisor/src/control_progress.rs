@@ -31,7 +31,7 @@ fn response_timeout(request: &ControlRequest) -> Duration {
         }
         // Transport allowance only; the Ready-owner operation has its own
         // absolute 60-second work-and-retirement budget.
-        ControlRequest::ObserveRuntimeVintf { .. } => Duration::from_secs(70),
+        ControlRequest::ObserveRuntimeVintf { .. } | ControlRequest::ObserveRuntimeMain { .. } => Duration::from_secs(70),
         _ => REQUEST_TIMEOUT,
     }
 }
