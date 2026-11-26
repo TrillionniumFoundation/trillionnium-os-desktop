@@ -145,7 +145,8 @@
 (typeattributeset p4_native_nontraversing_without_module_dirs (and (p4_linux_nontraversing_without_native_selinux_queries) (not (or (p4_native_public_directory_traversers) (p4_native_maintenance_actors)))))
 (neverallow p4_native_nontraversing_without_module_dirs p4_all_nonboard (dir (search)))
 (typeattribute p4_native_dev_only_traversers)
-(typeattributeset p4_native_dev_only_traversers (and (and (p4_linux_nontraversing_without_native_selinux_queries) (p4_native_dev_root_traversers)) (not (or (p4_native_sysfs_readers) (or (p4_native_self_fd_metadata_readers) (p4_native_maintenance_actors))))))
+; The coldplug helper has its own complete sysfs/proc/device traversal guard.
+(typeattributeset p4_native_dev_only_traversers (and (and (p4_linux_nontraversing_without_native_selinux_queries) (p4_native_dev_root_traversers)) (not (or (p4_linux_uevent_label_t) (or (p4_native_sysfs_readers) (or (p4_native_self_fd_metadata_readers) (p4_native_maintenance_actors)))))))
 (neverallow p4_native_dev_only_without_user_cgroup p4_nonboard_except_device_directory (dir (search)))
 (typeattribute p4_native_sysfs_nonmodule_traversers)
 (typeattributeset p4_native_sysfs_nonmodule_traversers (and (and (p4_linux_nontraversing_without_native_selinux_queries) (p4_native_sysfs_readers)) (not (or (p4_native_module_readers) (p4_linux_generator_t)))))
