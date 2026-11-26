@@ -400,7 +400,7 @@ def verify(library, linked, contract, binary_cil, export):
         expected = (["relabelfrom"] if target in sources else []) + (["relabelfrom", "relabelto"] if target in targets else [])
         exact(helper, context, "file", ["relabelfrom", "relabelto"], expected)
         exact(helper, context, "dir", ["create", "write", "add_name", "remove_name", "rmdir", "setattr", "mounton", "relabelfrom", "relabelto"], [])
-    for cls in ("capability", "capability2", "cap_userns", "cap2_userns"):
+    def class_permissions(cls):
         raw = next(x for x in lines if x.startswith("(class " + cls + " "))
         permissions = list(parse_expression(raw)[2])
         inherited = [parse_expression(x)[2] for x in lines
@@ -408,11 +408,25 @@ def verify(library, linked, contract, binary_cil, export):
         for common in inherited:
             declaration = next(x for x in lines if x.startswith("(common " + common + " "))
             permissions = parse_expression(declaration)[2] + permissions
-        if not permissions:
-            raise ValueError("Empty capability class in uevent verifier")
-        if len(permissions) != len(set(permissions)) or len(permissions) > 32:
+        if not permissions or len(permissions) != len(set(permissions)):
+            raise ValueError("Invalid inherited class permissions in uevent verifier")
+        return permissions
+    for cls in ("capability", "capability2", "cap_userns", "cap2_userns"):
+        permissions = class_permissions(cls)
+        if len(permissions) > 32:
             raise ValueError("Invalid inherited capability permissions")
         exact(helper, helper, cls, permissions, [])
+    for target in objects:
+        wanted = {
+            "p4_linux_standardio_t": ["getattr", "read", "write"],
+            "null_device": ["getattr", "open", "read", "write"],
+        }.get(target, [])
+        exact(helper, "u:object_r:" + target + ":s0", "chr_file",
+              class_permissions("chr_file"), wanted)
+    for target in ("device", "p4_linux_native_dev_root_t"):
+        exact(helper, "u:object_r:" + target + ":s0", "dir",
+              ["getattr", "search", "open", "read", "write", "add_name", "remove_name"],
+              ["getattr", "search"])
     for role in contract["native_roles"]:
         subject = "u:system_r:" + role + ":s0"
         allowed = ["transition"] if role == "p4_linux_service_executor_t" else []
