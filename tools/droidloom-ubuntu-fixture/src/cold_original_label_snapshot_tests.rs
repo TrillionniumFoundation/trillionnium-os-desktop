@@ -90,3 +90,24 @@ fn every_reused_read_rejects_a_different_proc_target_or_process() {
     assert!(list(&alias, &mut []).is_err());
     assert!(get(&alias, "user.droidloom.any", &mut []).is_err());
 }
+
+#[test]
+fn fixed_proc_name_metadata_matches_a_fresh_opened_descriptor() {
+    for path in [
+        "/proc/self",
+        "/proc/self/fd",
+        "/proc/self/ns/mnt",
+        "/proc/self/ns/pid",
+        "/proc/self/ns/user",
+    ] {
+        let named_before = fs::identity(
+            &rustix::fs::statat(rustix::fs::CWD, path, rustix::fs::AtFlags::empty()).unwrap(),
+        );
+        let opened = File::open(path).unwrap();
+        let named_after = fs::identity(
+            &rustix::fs::statat(rustix::fs::CWD, path, rustix::fs::AtFlags::empty()).unwrap(),
+        );
+        assert_eq!(named_before, fs::stat(&opened).unwrap(), "{path}");
+        assert_eq!(named_after, named_before, "{path}");
+    }
+}

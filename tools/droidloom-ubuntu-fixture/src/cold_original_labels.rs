@@ -86,25 +86,30 @@ impl ProcCustody {
             std::process::id() == self.pid,
             "label process identity changed",
         )?;
-        let actual = File::from(rustix::fs::open(
+        // These temporary name observations need metadata, not another held
+        // descriptor. Follow the same fixed proc names and compare every
+        // original custody field; the initial captured descriptors stay held.
+        let actual = fs::identity(&rustix::fs::statat(
+            rustix::fs::CWD,
             "/proc/self",
-            rustix::fs::OFlags::RDONLY
-                | rustix::fs::OFlags::DIRECTORY
-                | rustix::fs::OFlags::CLOEXEC,
-            rustix::fs::Mode::empty(),
+            rustix::fs::AtFlags::empty(),
         )?);
         let same = |a: &Identity, b: &Identity| {
             (a.dev, a.ino, a.mode, a.uid, a.gid) == (b.dev, b.ino, b.mode, b.uid, b.gid)
         };
         ensure(
-            same(&fs::stat(&actual)?, &self.process_identity)
+            same(&actual, &self.process_identity)
                 && same(&fs::stat(&self.process)?, &self.process_identity),
             "label process proc inode changed",
         )?;
         for (kind, held, identity) in &self.namespaces {
-            let actual = File::open(format!("/proc/self/ns/{kind}"))?;
+            let actual = fs::identity(&rustix::fs::statat(
+                rustix::fs::CWD,
+                format!("/proc/self/ns/{kind}"),
+                rustix::fs::AtFlags::empty(),
+            )?);
             ensure(
-                same(&fs::stat(held)?, identity) && same(&fs::stat(&actual)?, identity),
+                same(&fs::stat(held)?, identity) && same(&actual, identity),
                 "label bridge namespace changed",
             )?;
         }
@@ -151,14 +156,11 @@ impl<'a> DescriptorAlias<'a> {
             self.name.as_str(),
             rustix::fs::AtFlags::empty(),
         )?);
-        let current = File::from(rustix::fs::open(
+        let current_proc = fs::identity(&rustix::fs::statat(
+            rustix::fs::CWD,
             "/proc/self/fd",
-            rustix::fs::OFlags::RDONLY
-                | rustix::fs::OFlags::DIRECTORY
-                | rustix::fs::OFlags::CLOEXEC,
-            rustix::fs::Mode::empty(),
+            rustix::fs::AtFlags::empty(),
         )?);
-        let current_proc = fs::stat(&current)?;
         let held_proc = fs::stat(&self.directory)?;
         ensure(
             (
