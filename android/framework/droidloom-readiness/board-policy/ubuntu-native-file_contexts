@@ -357,3 +357,6 @@
 
 # Fixed root-fstab input for post-policy metadata custody; never an executable.
 /etc/fstab -- u:object_r:p4_linux_remount_fstab_native_config_t:s0
+
+# Only the already-created normal sysusers OFD lock; no account database write.
+/etc/\.pwd\.lock -- u:object_r:p4_linux_sysusers_passwd_lock_t:s0

@@ -135,3 +135,33 @@ Normal source-archive modes may remain unchanged or lose exactly the bits
 selected by the producer's normal 0022 or private 0077 umask. R6 removes group
 write from the original 0775/0664 members to produce 0755/0644. No added access,
 owner, type, alias, packaging-rule or unrelated source-content change is admitted.
+
+## Existing sysusers account lock under the shared kernel
+
+The normally packaged `systemd-sysusers` first opens the existing
+`/etc/.pwd.lock` with `O_WRONLY|O_CREAT|O_NOFOLLOW` and takes an exclusive OFD
+lock with `F_OFD_SETLKW`. This happens before loading passwd/group and also
+happens when the initialized normal root needs no account changes. The
+selected normal lock is an empty, single-link, root-owned 0600 regular file.
+The producer must preserve that inode; this policy does not create it.
+
+`native-sysusers-source.json` binds the unchanged gentmp2 executable/unit and
+the exact normal source call chain. The linker gives only the `/etc` directory
+and the regular `/etc/.pwd.lock` file narrower labels. It preserves every old
+actor's complete AV, constraint, transition and ioctl view, then adds only
+setup's directory `write` and existing lock `write`/`lock`. Directory
+`add_name`/`remove_name`, lock creation/replacement and account/password
+database writes remain forbidden. `/etc/selinux` keeps the original directory
+type and its original neverallow. Missing lock or requested account updates
+therefore remain visible failures, rather than gaining generic `/etc` writes.
+
+The source-owned verifier compares the setup role's full file/directory vectors
+for every concrete object and the real class-aware file-context matches for the
+two selected paths, neighboring names, the policy subtree and account files.
+Setup is checked separately at raw TE and every sampled source/target MLS
+combination: its s0 startup write remains subject to the original category
+constraints. The unchanged hardware/uevent relabel guards stay unreachable
+for both old and new lock objects; their exact full statements are checked.
+The remount role's complete object matrix follows the same preserved source
+vectors for both aliases. These static proofs do not imply sysusers runtime
+success; a fresh enforcing normal boot must supply that evidence.

@@ -13,6 +13,7 @@ import stat
 
 from derive_native_uevent_policy import ContextPolicy
 from derive_native_console_policy import contract as console_contract
+from derive_native_sysusers_policy import ALIASES as SYSUSERS_ALIASES
 from derive_preserved_alias_policy import (
     _roles, _context, derive_preserved_aliases, verify_preserved_aliases)
 from derive_shared_payload_cgroup_policy import parse_expression
@@ -112,7 +113,7 @@ def verify(library, binary, exported, here, expected, export):
     lines = export(policy, binary, exported)
     text = exported.read_text()
     value = contract(here)
-    aliases = console_contract(here)["aliases"]
+    aliases = console_contract(here)["aliases"] + SYSUSERS_ALIASES
     checks = verify_preserved_aliases(policy, exported, value["aliases"], expected)
     objects = sorted(set(re.findall(r"\(roletype object_r (\w+)\)", text)))
     actors = _roles(lines)
