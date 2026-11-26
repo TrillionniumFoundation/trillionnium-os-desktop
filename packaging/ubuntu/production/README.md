@@ -615,3 +615,26 @@ filesystem UUID, held mount, immutable plan and normally resolved pathname.
 An unlinked old inode is rejected even if a remaining descriptor allows the
 kernel to decode its handle. The physical label-plan/apply interface remains
 closed until that complete source and once-owner binding is present.
+
+
+### Fresh original initramfs admission
+
+The read-only `verify-original-initramfs` command takes a protected
+`droidloom.original-initramfs-readback-plan.v1` JSON with `work_directory`
+and `prepared` (the actual `ORIGINAL-INITRAMFS-PREPARED.json` FilePin).
+The output work is a new `original-initramfs-...` child of the qualification
+directory. The command rereads the original context and public package database
+under the existing shared dpkg locks, checks the actual normal producer/import
+and complete source inventory, and runs the same source-bound public/native22
+archive admission again. It extracts the admitted normal kernel package only
+into its private work and unpacks the existing initramfs for full readback.
+
+The five required candidate members, stock upstream init, original filesystem
+checkers, every archived member and every retained signed-kernel module are
+checked against their actual source pins. Producer staging may change only the
+known archive paths to the exact numbered private inputs, never package bytes
+or selection. The resulting `ORIGINAL-INITRAMFS-READBACK.json` exposes the full
+normal Materials, actual producer and host source commit/tree, source receipts,
+image and member pins for the once owner to cross-bind. Old success flags do
+not authorize this readback, and a successful readback does not authorize a
+qualification boot, physical installation or final application acceptance.

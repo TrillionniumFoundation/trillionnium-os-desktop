@@ -5,6 +5,8 @@ use crate::boot_systemd_candidate::dependencies;
 use crate::{Result, boot_files as files, ensure, fs, model::Identity};
 #[path = "../../../packaging/ubuntu/production/cold_modules.rs"]
 mod cold_modules;
+#[path = "cold_original_initramfs_verify.rs"]
+mod verify;
 use files::FilePin;
 use rustix::fs::{FlockOperation, Mode, OFlags};
 use serde::{Deserialize, Serialize};
@@ -15,6 +17,8 @@ use std::{
     os::unix::fs::{FileTypeExt, MetadataExt},
     path::{Path, PathBuf},
 };
+pub(super) use verify::verify_original_initramfs_files;
+pub(super) use verify::verify_prepared_original_initramfs;
 
 const ROOT_UUID: &str = "01c27223-3933-481e-9836-7bd0ef1be8c9";
 const ORIGINAL_KERNEL: &str = "7.0.14-p4cred1";
@@ -1398,10 +1402,26 @@ fn walk(
     Ok(())
 }
 fn readback(work: &Path, m: &Materials) -> Result<Value> {
-    let module_pin = actual_pin(&m.module_manifest.path)?;
+    readback_image(
+        work,
+        m,
+        Path::new("/build/initrd.img"),
+        &m.module_manifest,
+        true,
+    )
+}
+fn readback_image(
+    work: &Path,
+    m: &Materials,
+    image: &Path,
+    module_source: &FilePin,
+    check_installed_candidate: bool,
+) -> Result<Value> {
+    let module_pin = actual_pin(&module_source.path)?;
     ensure(
-        same_pin(&module_pin, &m.module_manifest),
-        "normally installed module manifest differs",
+        module_pin.bytes == m.module_manifest.bytes
+            && module_pin.sha256 == m.module_manifest.sha256,
+        "normally admitted module manifest differs",
     )?;
     let module: Value = read(&module_pin, 4 * 1024 * 1024)?;
     ensure(
@@ -1419,7 +1439,7 @@ fn readback(work: &Path, m: &Materials) -> Result<Value> {
         work,
         "normal-initramfs-full-unpack",
         "/usr/bin/unmkinitramfs",
-        vec!["/build/initrd.img".into(), fs::absolute_string(&unpack)?],
+        vec![fs::absolute_string(image)?, fs::absolute_string(&unpack)?],
         120,
     )?;
     let possible = [unpack.clone(), unpack.join("main")]
@@ -1433,13 +1453,17 @@ fn readback(work: &Path, m: &Materials) -> Result<Value> {
     let root = &possible[0];
     let mut required = Vec::new();
     for wanted in &m.required_initrd_members {
-        let (source, _) = files::resolve_public_file(Path::new("/"), &wanted.source_path)?;
+        if check_installed_candidate {
+            let (source, _) = files::resolve_public_file(Path::new("/"), &wanted.source_path)?;
+            ensure(
+                source.bytes == wanted.bytes && source.sha256 == wanted.sha256,
+                "normally installed candidate initrd source differs",
+            )?;
+        }
         let (actual, aliases) = files::resolve_public_file(root, &wanted.initrd_path)?;
         let id = files::open_pin(&actual)?.1;
         ensure(
-            source.bytes == wanted.bytes
-                && source.sha256 == wanted.sha256
-                && actual.bytes == wanted.bytes
+            actual.bytes == wanted.bytes
                 && actual.sha256 == wanted.sha256
                 && id.uid == 0
                 && id.gid == 0
