@@ -350,8 +350,10 @@ def verify_native_boot_observations(lines, check, obj, role_types):
             count += 1
     # The normal remount unit reads the fixed kernel command line before
     # preparing mounts; its separate role proof checks every other proc body.
+    # The fixed original-return entry also validates its boot intent against it.
     commandline = {"init_t", "p4_linux_module_loader_t", "p4_linux_generator_t",
-                   "p4_linux_setup_t", "p4_linux_udev_t", "p4_linux_remount_t"}
+                   "p4_linux_setup_t", "p4_linux_udev_t", "p4_linux_remount_t",
+                   "p4_linux_once_return_t"}
     for role, actor in role_types:
         context = f"u:{role}:{actor}:s0"
         manager = role == "system_r" and actor == "init_t"
