@@ -1,8 +1,9 @@
 """Admit the fixed normal kmod static-node configuration lifecycle.
 
 Early PID 1 prepares one fixed directory; the normal executor validates it. The unchanged
-kmod command writes one named regular file; the unchanged normal tmpfiles
-consumer retains its complete original public-configuration view.
+kmod command writes one named regular file. The unchanged normal tmpfiles ELF
+uses its dedicated consumer; the original setup actor retains its full source
+view, independently of the dedicated consumer's complete permission proof.
 """
 import ctypes
 import hashlib
@@ -13,12 +14,14 @@ from collections import defaultdict
 
 from derive_native_uevent_policy import ContextPolicy, Membership, LEVELS
 from derive_preserved_alias_policy import (
-    _context, _classes, _validate_inputs, _constraint_targets, _preserved_xperm_rules,
+    _context, _classes, _roles, _validate_inputs, _constraint_targets, _preserved_xperm_rules,
     original_xperms)
 from derive_shared_payload_cgroup_policy import parse_expression
 
 PRODUCER = "p4_linux_module_loader_t"
 EXECUTOR = "p4_linux_service_executor_t"
+TMPFILES = "p4_linux_tmpfiles_t"
+ISOLATED_ROLES = {TMPFILES}
 DIRECTORY = "p4_linux_kmod_tmpfiles_dir_t"
 CONFIG = "p4_linux_kmod_static_nodes_t"
 ALIASES = [
@@ -168,7 +171,7 @@ def contract(here):
             "path": "/run/tmpfiles.d/static-nodes.conf", "name": "static-nodes.conf",
             "type": CONFIG, "open_mode": "we", "rename": False, "unlink": False,
             "device_nodes_created_by_kmod": False,
-            "reader": "p4_linux_setup_t"}:
+            "reader": TMPFILES, "preserved_original_reader": "p4_linux_setup_t"}:
         raise ValueError("Kmod output escaped its fixed text-file lifecycle")
     early = value["early_directory"]
     wanted_early = {
@@ -305,7 +308,9 @@ def _derive_aliases(library, baseline, exported, output, export):
     lines = export(policy, baseline, exported)
     classes = _classes("\n".join(lines))
     actors, extras = _validate_inputs(
-        lines, classes, ALIASES, "p4_kmod_static_preserved", set(), EXTRA, ())
+        lines, classes, ALIASES, "p4_kmod_static_preserved", ISOLATED_ROLES, EXTRA, ())
+    if not ISOLATED_ROLES <= {a for _, a in _roles(lines)}:
+        raise ValueError("The separately verified tmpfiles consumer is missing")
     raw_rows = _raw_new_targets(
         policy, lines, classes, actors,
         targets=tuple(sorted({r[k] for r in ALIASES for k in ("source", "target")})))
@@ -357,6 +362,7 @@ def _derive_aliases(library, baseline, exported, output, export):
                 transitions.add(copied)
     output.write_text("\n".join(sorted(set(generated))) + "\n")
     return {"samples": samples, "classes": classes, "actors": actors,
+            "isolated_roles": sorted(ISOLATED_ROLES),
             "raw_te_samples": raw_samples, "mcs_effective_samples": mcs_samples,
             "constraint_forms": constraints, "constraint_target_checks": constraint_checks,
             "relabel_guard_proof": relabel, "transitions": sorted(transitions),
@@ -369,6 +375,11 @@ def _derive_aliases(library, baseline, exported, output, export):
 
 def _verify_aliases(policy, exported, expected):
     lines = exported.read_text().splitlines()
+    if (expected["isolated_roles"] != sorted(ISOLATED_ROLES) or
+            not ISOLATED_ROLES <= {a for _, a in _roles(lines)} or
+            [(r, a) for r, a in _roles(lines) if a not in ISOLATED_ROLES] !=
+            [tuple(x) for x in expected["actors"]]):
+        raise ValueError("Kmod separately verified consumer/actor roster changed")
     if expected["aliases"] != ALIASES:
         raise ValueError("The actual kmod derivation selected different aliases")
     source_forms = sorted(line for line in lines
@@ -557,6 +568,7 @@ def verify(library, binary, exported, here, expected, export):
         "alias_preserver_sha256": hashlib.sha256((here / "derive_preserved_alias_policy.py").read_bytes()).hexdigest(),
         "verifier_sha256": hashlib.sha256((here / "derive_native_kmod_static_policy.py").read_bytes()).hexdigest(),
         "aliases": ALIASES,
+        "separately_verified_consumers": [TMPFILES],
         "new_types": [DIRECTORY, CONFIG],
         "new_roles": [],
         "alias_model": "raw-te-with-fixed-inert-relabel-guards",

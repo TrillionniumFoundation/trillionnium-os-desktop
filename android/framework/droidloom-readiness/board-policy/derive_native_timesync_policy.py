@@ -24,6 +24,8 @@ NETIF = "p4_linux_timesyncd_netif_t"
 DNS = "p4_linux_timesyncd_dns_port_t"
 EXECUTOR = "p4_linux_service_executor_t"
 NETPLAN = "p4_linux_netplan_t"
+TMPFILES = "p4_linux_tmpfiles_t"
+ISOLATED_ROLES = {ROLE, TMPFILES}
 ALIASES = [
     {"source": "p4_linux_runtime_lib_t", "target": ENTRY, "class": "file"},
     {"source": "p4_linux_rootdir_t", "target": RUN, "class": "dir"},
@@ -43,6 +45,7 @@ SOURCE_SCHEMA = "droidloom.native-timesync-source-closure.v1"
 
 NEW_TYPES = {ROLE, ENTRY, RUN, STATE, CONFIG, NSS, NETIF, DNS}
 FIXED_TRANSITIONS = {
+    '(typetransition ' + TMPFILES + ' ' + NETIF + ' dir "leases" p4_linux_tmpfiles_runtime_dir_t)',
     f"(typetransition {EXECUTOR} {ENTRY} process {ROLE})",
     f'(typetransition {EXECUTOR} p4_linux_systemd_run_t dir "timesync" {RUN})',
     f'(typetransition {EXECUTOR} p4_linux_systemd_state_parent_t dir "timesync" {STATE})',
@@ -279,7 +282,12 @@ def derive(library, baseline, exported, here, output, export):
     policy = ContextPolicy(library, baseline)
     lines = export(policy, baseline, exported)
     classes = _classes(exported.read_text())
-    actors = [(r, a) for r, a in _roles(lines) if a != ROLE]
+    # The fixed tmpfiles consumer has independent complete raw/all-category
+    # and constraint checks in its own component, including NSS and netif.
+    all_actors = _roles(lines)
+    if not ISOLATED_ROLES <= {a for _, a in all_actors}:
+        raise ValueError("A separately verified timesync consumer is missing")
+    actors = [(r, a) for r, a in all_actors if a not in ISOLATED_ROLES]
     aliases = ALIASES + [PORT_ALIAS]
     pairs = {(row[k], row["class"]) for row in aliases for k in ("source", "target")}
     if len({(row["target"], row["class"]) for row in aliases}) != len(aliases):
@@ -356,6 +364,7 @@ def derive(library, baseline, exported, here, output, export):
     return {
         "schema": "droidloom.native-timesync-prelink-contract.v1",
         "aliases": aliases, "classes": classes, "actors": actors,
+        "isolated_roles": sorted(ISOLATED_ROLES),
         "raw_vectors": samples, "effective_vectors": effective, "xperm_vectors": xperms,
         "constraint_forms": sorted(line for line in lines if line.startswith(CONSTRAINTS)),
         "constraint_target_checks": constraint_checks, "relabel_constraints": relabel,
@@ -379,6 +388,7 @@ def _own_tables(here):
     from derive_native_journal_catalog_policy import ALIASES as CATALOG_ALIASES
     from derive_native_kmod_static_policy import ALIASES as KMOD_ALIASES
     from derive_native_update_done_policy import ALIASES as UPDATE_DONE_ALIASES
+    from derive_native_tmpfiles_policy import ALIASES as TMPFILES_ALIASES
     file_access = {
         ROLE: words("getattr open read"),
         ENTRY: words("getattr open read execute map entrypoint"),
@@ -411,7 +421,7 @@ def _own_tables(here):
              "p4_linux_timezone_link_t": words("getattr read")}
     tables = {"file": file_access, "dir": directories, "lnk_file": links}
     successors = (console_contract(here)["aliases"] + REMOUNT_ALIASES +
-                  LOGIND_ALIASES + NETPLAN_ALIASES + SYSUSERS_ALIASES + LDCONFIG_ALIASES + CATALOG_ALIASES + KMOD_ALIASES + UPDATE_DONE_ALIASES)
+                  LOGIND_ALIASES + NETPLAN_ALIASES + SYSUSERS_ALIASES + LDCONFIG_ALIASES + CATALOG_ALIASES + KMOD_ALIASES + UPDATE_DONE_ALIASES + TMPFILES_ALIASES)
     for row in successors:
         table = tables.get(row["class"], {})
         if row["source"] in table:
@@ -438,7 +448,9 @@ def verify(library, binary, exported, here, expected, export):
     if classes != expected["classes"]:
         raise ValueError("Timesync class/permission bit layout changed")
     actors = _roles(lines)
-    if [(r, a) for r, a in actors if a != ROLE] != [tuple(x) for x in expected["actors"]]:
+    if (expected["isolated_roles"] != sorted(ISOLATED_ROLES) or
+            not ISOLATED_ROLES <= {a for _, a in actors} or
+            [(r, a) for r, a in actors if a not in ISOLATED_ROLES] != [tuple(x) for x in expected["actors"]]):
         raise ValueError("Timesync actor roster changed after derivation")
     _port_contexts(lines)
     if _new_transitions(lines) != set(expected["new_type_transition_forms"]):
@@ -577,6 +589,7 @@ def verify(library, binary, exported, here, expected, export):
         "derived_alias_policy_sha256": expected["derived_sha256"],
         "verifier_sha256": hashlib.sha256((here / "derive_native_timesync_policy.py").read_bytes()).hexdigest(),
         "aliases": expected["aliases"], "port_contexts": expected["port_contexts"],
+        "separately_verified_consumers": [TMPFILES],
         "preserved_raw_vectors": len(expected["raw_vectors"]),
         "preserved_mcs_vectors": len(expected["effective_vectors"]),
         "preserved_ioctl_vectors": len(expected["xperm_vectors"]),

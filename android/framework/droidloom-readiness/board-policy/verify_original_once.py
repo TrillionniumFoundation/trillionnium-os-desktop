@@ -27,6 +27,7 @@ SOURCE_PATHS = (
     "android/framework/droidloom-readiness/board-policy/derive_native_timesync_policy.py",
     "android/framework/droidloom-readiness/board-policy/derive_native_ldconfig_policy.py",
     "android/framework/droidloom-readiness/board-policy/derive_native_update_done_policy.py",
+    "android/framework/droidloom-readiness/board-policy/derive_native_tmpfiles_policy.py",
 )
 DIRECTORY = ("ioctl read write create getattr setattr lock relabelfrom relabelto "
              "append map unlink link rename execute quotaon mounton audit_access "
@@ -46,7 +47,7 @@ CONSOLE_SOURCE_AV = {
 
 
 # These original vectors were checked independently against the immutable
-# pre-component policy. Keep the seven source/class pairs explicit: the final
+# pre-component policy. Keep the eight source/class pairs explicit: the final
 # alias policy cannot supply its own expectation. The existing console table
 # above also retains its original native_bin:file zero vector.
 FIXED_ALIAS_SOURCE_AV = {
@@ -57,11 +58,24 @@ FIXED_ALIAS_SOURCE_AV = {
     ("p4_linux_native_config_t", "file"): [],
     ("p4_linux_etc_dir_t", "dir"): ["getattr", "search"],
     ("port", "tcp_socket"): [],
+    ("p4_linux_usrmerge_link_t", "lnk_file"): ["getattr", "read"],
 }
 TCP_SOCKET = ("ioctl read write create getattr setattr lock relabelfrom relabelto "
               "append map bind connect listen accept getopt setopt shutdown "
               "recvfrom sendto name_bind node_bind name_connect").split()
+LNK_FILE = ("ioctl read write create getattr setattr lock relabelfrom relabelto "
+            "append map unlink link rename execute quotaon mounton audit_access "
+            "open execmod watch watch_mount watch_sb watch_with_perm watch_reads").split()
 FIXED_NATIVE_ALIAS_ROWS = (
+    ("derive_native_tmpfiles_policy.py", (
+        ("p4_linux_setup_exec_t", "p4_linux_tmpfiles_exec_t", "file"),
+        ("p4_linux_runtime_lib_t", "p4_linux_tmpfiles_usr_config_t", "file"),
+        ("p4_linux_native_config_t", "p4_linux_tmpfiles_etc_config_t", "file"),
+        ("p4_linux_rootdir_t", "p4_linux_tmpfiles_config_dir_t", "dir"),
+        ("p4_linux_rootdir_t", "p4_linux_tmpfiles_runtime_dir_t", "dir"),
+        ("p4_linux_native_data_t", "p4_linux_tmpfiles_nologin_t", "file"),
+        ("p4_linux_usrmerge_link_t", "p4_linux_tmpfiles_shm_link_t", "lnk_file"),
+    )),
     ("derive_native_kmod_static_policy.py", (
         ("p4_linux_rootdir_t", "p4_linux_kmod_tmpfiles_dir_t", "dir"),
         ("p4_linux_native_data_t", "p4_linux_kmod_static_nodes_t", "file"),
@@ -103,7 +117,7 @@ FIXED_NATIVE_ALIAS_ROWS = (
 
 
 def fixed_native_aliases():
-    # Import only the six reviewed providers, then compare their complete
+    # Import only the seven reviewed providers, then compare their complete
     # rows to this independent list. Unknown providers, added rows, changed
     # source types/classes and repeated target/class pairs all fail closed.
     from derive_native_kmod_static_policy import ALIASES as kmod
@@ -112,7 +126,9 @@ def fixed_native_aliases():
     from derive_native_timesync_policy import ALIASES as timesync, PORT_ALIAS
     from derive_native_ldconfig_policy import ALIASES as ldconfig
     from derive_native_update_done_policy import ALIASES as update_done
+    from derive_native_tmpfiles_policy import ALIASES as tmpfiles
     actual = {
+        "derive_native_tmpfiles_policy.py": tmpfiles,
         "derive_native_kmod_static_policy.py": kmod,
         "derive_native_journal_catalog_policy.py": catalog,
         "derive_native_random_seed_policy.py": seed,
@@ -258,7 +274,8 @@ def verify_original_once(library, binary, export, export_binary_policy, here):
         exact(own, obj(row["target"]), row["class"],
               FILE if row["class"] == "file" else DIRECTORY, expected)
     native_aliases = fixed_native_aliases()
-    permissions_by_class = {"file": FILE, "dir": DIRECTORY, "tcp_socket": TCP_SOCKET}
+    permissions_by_class = {"file": FILE, "dir": DIRECTORY, "tcp_socket": TCP_SOCKET,
+                            "lnk_file": LNK_FILE}
     for (source, cls), expected in FIXED_ALIAS_SOURCE_AV.items():
         exact(own, obj(source), cls, permissions_by_class[cls], expected)
     for row in native_aliases:

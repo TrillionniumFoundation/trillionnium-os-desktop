@@ -54,6 +54,10 @@ def verify_journal_storage(library, binary, exported, original_contract):
     file_permissions = common + ["execute_no_trans", "entrypoint"]
     dir_permissions = common + ["add_name", "remove_name", "reparent", "search", "rmdir"]
     writer = "u:system_r:p4_linux_journald_t:s0"
+    metadata_editor = "u:system_r:p4_linux_tmpfiles_t:s0"
+    if ("system_r", "p4_linux_tmpfiles_t") not in actors:
+        raise ValueError("The fixed normal tmpfiles journal metadata role is absent")
+    metadata_updates = []
     file_writes = "create write append setattr link unlink rename".split()
     dir_writes = "create write setattr add_name remove_name rename reparent rmdir".split()
     file_expected = "create getattr read write append open lock map setattr rename unlink".split()
@@ -67,8 +71,24 @@ def verify_journal_storage(library, binary, exported, original_contract):
         for role, actor in actors:
             subject = f"u:{role}:{actor}:s0"
             if subject != writer:
-                exact(subject, database, "file", file_writes, [])
-                exact(subject, machine, "dir", dir_writes, [])
+                # Normal systemd.conf applies z/a+ to the persistent machine and
+                # system.journal, and recursive Z/A+ to the volatile machine.
+                # tmpfiles.c dispatches A through glob_item_recursively and
+                # fd_set_acls, including the volatile regular journal database.
+                # These four metadata updates do not confer content writes or
+                # any create/link/unlink/rename/directory-entry operation.
+                expected_metadata = ["setattr"] if subject == metadata_editor else []
+                exact(subject, database, "file", file_writes, expected_metadata)
+                exact(subject, machine, "dir", dir_writes, expected_metadata)
+                if expected_metadata:
+                    metadata_updates.extend([
+                        {"actor": "p4_linux_tmpfiles_t",
+                         "target": f"{prefix}_database_t", "class": "file",
+                         "permissions": ["setattr"]},
+                        {"actor": "p4_linux_tmpfiles_t",
+                         "target": f"{prefix}_machine_t", "class": "dir",
+                         "permissions": ["setattr"]},
+                    ])
         # The existing stock journalctl flush role never reads a database.
         exact("u:system_r:p4_linux_journalctl_t:s0", database, "file",
               ["open", "read", "map", *file_writes], [])
@@ -90,7 +110,8 @@ def verify_journal_storage(library, binary, exported, original_contract):
         "process_role_types": len(actors),
         "permission_checks": len(checks),
         "exact_file_transitions": len(actual),
-        "only_journald_mutates_journal_databases": True,
+        "only_journald_writes_database_contents_or_changes_lifecycle": True,
+        "tmpfiles_metadata_updates": metadata_updates,
         "persistent_store_directories_not_removable": True,
         "stock_flush_role_still_cannot_read_databases": True,
         "access_matrix_sha256": hashlib.sha256(

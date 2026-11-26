@@ -548,21 +548,23 @@ def verify(library, binary, exported, here, expected, export):
         "p4_linux_udev_run_t": {"getattr", "search", "write", "add_name"},
         "sysfs": {"search"}, "selinuxfs": {"search"},
     }
+    links = {target: {"getattr", "read"} for target in
+             ("p4_linux_usrmerge_link_t", "p4_linux_timezone_link_t")}
     # These are explicit, source-owned alias sets, never a discovered directory
     # or an automatic permit for a previously unknown type.
     from derive_native_ldconfig_policy import ALIASES as LDCONFIG_ALIASES
     from derive_native_journal_catalog_policy import ALIASES as CATALOG_ALIASES
     from derive_native_update_done_policy import ALIASES as UPDATE_DONE_ALIASES
+    from derive_native_tmpfiles_policy import ALIASES as TMPFILES_ALIASES
     for row in (console_contract(here)["aliases"] + SYSUSERS_ALIASES + LOGIND_ALIASES
-                + TIMESYNC_ALIASES + LDCONFIG_ALIASES + CATALOG_ALIASES + KMOD_ALIASES + UPDATE_DONE_ALIASES):
-        table = file_access if row["class"] == "file" else directories if row["class"] == "dir" else {}
+                + TIMESYNC_ALIASES + LDCONFIG_ALIASES + CATALOG_ALIASES + KMOD_ALIASES + UPDATE_DONE_ALIASES + TMPFILES_ALIASES):
+        table = {"file": file_access, "dir": directories, "lnk_file": links}.get(row["class"], {})
         if row["source"] in table:
             table.setdefault(row["target"], set()).update(table[row["source"]])
     for target in objects:
         av(target, "file", file_access.get(target, set()))
         av(target, "dir", directories.get(target, set()))
-        av(target, "lnk_file", {"getattr", "read"} if target in
-           ("p4_linux_usrmerge_link_t", "p4_linux_timezone_link_t") else set())
+        av(target, "lnk_file", links.get(target, set()))
         av(target, "chr_file", {"getattr", "read", "write"} if target in
            ("null_device", "p4_linux_standardio_t") else set())
         av(target, "blk_file", set())

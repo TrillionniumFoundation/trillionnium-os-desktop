@@ -31,6 +31,7 @@ IOCTLS = {
 # Keep this list explicit: an unrelated actor never gains cache access merely
 # by joining an attribute. Existing native-service cache permissions are kept.
 CACHE_LOADERS = {
+    "p4_linux_tmpfiles_t",
     "p4_linux_update_done_t",
     "p4_linux_random_seed_t",
     "p4_linux_early_t", "p4_linux_service_executor_t",
@@ -397,12 +398,22 @@ def verify(library, binary, exported, here, expected, export):
         _, bits = policy.permissions("file", names)
         if actual != sum(bits.values()):
             raise ValueError("Cache reader is not an admitted native loader: " + actor)
+    from derive_native_tmpfiles_policy import DEVICE_VIEWS
+    fixed_device_views = [
+        {"source": "device", "target": "p4_linux_tmpfiles_static_dir_t", "class": "dir"},
+        {"source": "device", "target": "p4_linux_tmpfiles_static_node_t", "class": "chr_file"},
+    ]
+    if DEVICE_VIEWS != fixed_device_views:
+        raise ValueError("The two fixed tmpfiles device class views changed")
+    # The fresh static-node type preserves the original device getattr only;
+    # it is not a relabel-identity alias. Whole-class checks retain every denial.
     # Whole-class readback rejects inheritance to every other character device.
     # Null/random retain only the exact normal helper operations; no serial,
     # input, DRM, framebuffer body or arbitrary ioctl access is added.
     for target in objects:
         wanted = {
             "device": ["getattr"],
+            "p4_linux_tmpfiles_static_node_t": ["getattr"],
             "null_device": ["getattr", "open", "read", "write", "ioctl"],
             "p4_linux_standardio_t": ["getattr", "open", "read", "write", "ioctl"],
             "random_device": ["getattr", "open", "read"],

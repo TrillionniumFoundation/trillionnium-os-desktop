@@ -181,6 +181,27 @@ def _predecessor_aliases(here):
     # Each installed predecessor must retain this actor's exact original
     # source view. No catalog or static-nodes file access is inherited.
     rows = []
+    if (here / "derive_native_tmpfiles_policy.py").exists():
+        from derive_native_tmpfiles_policy import ALIASES as TMPFILES, DEVICE_VIEWS
+        fixed = [
+            {"source": "p4_linux_setup_exec_t", "target": "p4_linux_tmpfiles_exec_t", "class": "file"},
+            {"source": "p4_linux_runtime_lib_t", "target": "p4_linux_tmpfiles_usr_config_t", "class": "file"},
+            {"source": "p4_linux_native_config_t", "target": "p4_linux_tmpfiles_etc_config_t", "class": "file"},
+            {"source": "p4_linux_rootdir_t", "target": "p4_linux_tmpfiles_config_dir_t", "class": "dir"},
+            {"source": "p4_linux_rootdir_t", "target": "p4_linux_tmpfiles_runtime_dir_t", "class": "dir"},
+            {"source": "p4_linux_native_data_t", "target": "p4_linux_tmpfiles_nologin_t", "class": "file"},
+            {"source": "p4_linux_usrmerge_link_t", "target": "p4_linux_tmpfiles_shm_link_t", "class": "lnk_file"},
+        ]
+        device_views = [
+            {"source": "device", "target": "p4_linux_tmpfiles_static_dir_t", "class": "dir"},
+            {"source": "device", "target": "p4_linux_tmpfiles_static_node_t", "class": "chr_file"},
+        ]
+        if TMPFILES != fixed or DEVICE_VIEWS != device_views:
+            raise ValueError("The fixed tmpfiles predecessor views changed")
+        # The two device rows preserve ordinary class views only. They are not
+        # aliases and do not equate the original relabel identities.
+        rows.extend(TMPFILES)
+        rows.extend(DEVICE_VIEWS)
     if (here / "derive_native_kmod_static_policy.py").exists():
         from derive_native_kmod_static_policy import ALIASES as KMOD
         fixed = [

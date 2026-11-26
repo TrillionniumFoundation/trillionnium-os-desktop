@@ -37,6 +37,13 @@ ALIASES = [
 # target or infer a permission from candidate output. Final reports list the
 # concrete entries present for the release contract's exact composition gate.
 PRIOR_ALIASES = [
+    {"source": "p4_linux_setup_exec_t", "target": "p4_linux_tmpfiles_exec_t", "class": "file"},
+    {"source": "p4_linux_runtime_lib_t", "target": "p4_linux_tmpfiles_usr_config_t", "class": "file"},
+    {"source": "p4_linux_native_config_t", "target": "p4_linux_tmpfiles_etc_config_t", "class": "file"},
+    {"source": "p4_linux_rootdir_t", "target": "p4_linux_tmpfiles_config_dir_t", "class": "dir"},
+    {"source": "p4_linux_rootdir_t", "target": "p4_linux_tmpfiles_runtime_dir_t", "class": "dir"},
+    {"source": "p4_linux_native_data_t", "target": "p4_linux_tmpfiles_nologin_t", "class": "file"},
+    {"source": "p4_linux_usrmerge_link_t", "target": "p4_linux_tmpfiles_shm_link_t", "class": "lnk_file"},
     {"source": "p4_linux_setup_exec_t", "target": "p4_linux_update_done_exec_t", "class": "file"},
     {"source": "p4_linux_rootdir_t", "target": "p4_linux_update_done_var_dir_t", "class": "dir"},
     {"source": "p4_linux_native_config_t", "target": "p4_linux_update_done_etc_file_t", "class": "file"},
@@ -246,6 +253,8 @@ def _own_tables(here, types):
         ETC: {"getattr", "search", "write", "add_name", "remove_name"},
         VAR_CACHE: {"getattr", "search", "write", "add_name"},
     }
+    links = {target: {"getattr", "read"} for target in
+             ("p4_linux_usrmerge_link_t", "p4_linux_timezone_link_t")}
     # A later alias copies only its exact source's existing view. An explicit
     # own-role target (cache, /etc) keeps the separately reviewed write edge.
     present = []
@@ -254,18 +263,16 @@ def _own_tables(here, types):
             if row not in PRIOR_ALIASES:
                 raise ValueError("A required ldconfig successor alias is missing")
             continue
-        table = {"file": files, "dir": dirs}.get(row["class"])
+        table = {"file": files, "dir": dirs, "lnk_file": links}.get(row["class"])
         if (table is not None and row["source"] in table
                 and row["target"] not in table):
             table[row["target"]] = set(table[row["source"]])
         if row in PRIOR_ALIASES:
             present.append(dict(row))
     wanted = {}
-    for cls, table in (("file", files), ("dir", dirs)):
+    for cls, table in (("file", files), ("dir", dirs), ("lnk_file", links)):
         for target, names in table.items():
             wanted[(target, cls)] = set(names)
-    for target in ("p4_linux_usrmerge_link_t", "p4_linux_timezone_link_t"):
-        wanted[(target, "lnk_file")] = {"getattr", "read"}
     wanted[("p4_linux_standardio_t", "chr_file")] = {"getattr", "read", "write"}
     wanted[(EXECUTOR, "unix_stream_socket")] = {"getattr", "read", "write"}
     wanted[(EXECUTOR, "fd")] = {"use"}

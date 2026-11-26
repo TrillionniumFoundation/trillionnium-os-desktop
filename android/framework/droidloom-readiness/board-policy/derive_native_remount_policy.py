@@ -125,8 +125,15 @@ def verify(library, binary, exported, here, expected, export):
     from derive_native_ldconfig_policy import ALIASES as LDCONFIG_ALIASES
     from derive_native_journal_catalog_policy import ALIASES as CATALOG_ALIASES
     from derive_native_update_done_policy import ALIASES as UPDATE_DONE_ALIASES
+    from derive_native_tmpfiles_policy import ALIASES as TMPFILES_ALIASES, DEVICE_VIEWS
+    fixed_device_views = [
+        {"source": "device", "target": "p4_linux_tmpfiles_static_dir_t", "class": "dir"},
+        {"source": "device", "target": "p4_linux_tmpfiles_static_node_t", "class": "chr_file"},
+    ]
+    if DEVICE_VIEWS != fixed_device_views:
+        raise ValueError("The two fixed tmpfiles device class views changed")
     aliases = (console_contract(here)["aliases"] + SYSUSERS_ALIASES + NETPLAN_ALIASES
-               + LOGIND_ALIASES + TIMESYNC_ALIASES + LDCONFIG_ALIASES + CATALOG_ALIASES + KMOD_ALIASES + UPDATE_DONE_ALIASES)
+               + LOGIND_ALIASES + TIMESYNC_ALIASES + LDCONFIG_ALIASES + CATALOG_ALIASES + KMOD_ALIASES + UPDATE_DONE_ALIASES + TMPFILES_ALIASES)
     checks = verify_preserved_aliases(policy, exported, value["aliases"], expected)
     objects = sorted(set(re.findall(r"\(roletype object_r (\w+)\)", text)))
     actors = _roles(lines)
@@ -221,9 +228,13 @@ def verify(library, binary, exported, here, expected, export):
     }
     links = {"p4_linux_usrmerge_link_t", "p4_linux_timezone_link_t",
              "p4_linux_native_config_t", "proc", ROLE, ROOT_LINK}
-    for row in aliases:
+    # Fresh device rows preserve ordinary class views only; they do not
+    # enter the alias preserver or equate old/new relabel identities.
+    for row in aliases + DEVICE_VIEWS:
         if row["class"] == "dir" and row["source"] in directories:
             directories.add(row["target"])
+        if row["class"] == "lnk_file" and row["source"] in links:
+            links.add(row["target"])
     for target in objects:
         av(target, "dir", ({"search"} if target in
             {"sysfs", "selinuxfs", "p4_linux_systemd_run_t"} else
