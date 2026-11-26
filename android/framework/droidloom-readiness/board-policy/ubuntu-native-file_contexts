@@ -380,3 +380,20 @@
 /etc/netplan -d u:object_r:p4_linux_netplan_input_dir_t:s0
 /run/netplan -d u:object_r:p4_linux_netplan_input_dir_t:s0
 /run/NetworkManager/conf\.d/10\-globally\-managed\-devices\.conf(\.[A-Za-z0-9]{6})? -- u:object_r:p4_linux_netplan_output_t:s0
+
+# Separately admitted existing Pocket4 profile inputs; private bytes are not shipped.
+/etc/netplan/50\-cloud\-init\.yaml -- u:object_r:p4_linux_netplan_private_config_t:s0
+/etc/netplan/90\-NM\-3c797701\-51cb\-45c5\-a632\-00f213232095\.yaml -- u:object_r:p4_linux_netplan_private_config_t:s0
+/etc/netplan/90\-NM\-899dbbd2\-d128\-4d5b\-8001\-5d3cad80b503\.yaml -- u:object_r:p4_linux_netplan_private_config_t:s0
+/etc/netplan/90\-NM\-c61cd9fc\-00ef\-49aa\-8ed2\-7bfd641c7097\.yaml -- u:object_r:p4_linux_netplan_private_config_t:s0
+/etc/netplan/90\-NM\-d732669d\-d34a\-4baa\-b97e\-bd2563bdd648\.yaml -- u:object_r:p4_linux_netplan_private_config_t:s0
+/etc/netplan/90\-NM\-e80414a4\-1077\-49d3\-953e\-aaccddb3bf21\.yaml -- u:object_r:p4_linux_netplan_private_config_t:s0
+/etc/netplan/90\-NM\-f84d0c1a\-dcde\-4634\-bf39\-13ace1617de3\.yaml -- u:object_r:p4_linux_netplan_private_config_t:s0
+/etc/nsswitch\.conf -- u:object_r:p4_linux_netplan_private_config_t:s0
+/run/NetworkManager/system\-connections -d u:object_r:p4_linux_netplan_profiles_dir_t:s0
+/run/systemd/network -d u:object_r:p4_linux_netplan_link_dir_t:s0
+/run/udev/rules\.d -d u:object_r:p4_linux_netplan_rule_dir_t:s0
+/run/NetworkManager/conf\.d/netplan\.conf(\.[A-Za-z0-9]{6})? -- u:object_r:p4_linux_netplan_output_t:s0
+/run/NetworkManager/system\-connections/netplan\-[^/]+\.nmconnection(\.[A-Za-z0-9]{6})? -- u:object_r:p4_linux_netplan_output_t:s0
+/run/systemd/network/10\-netplan\-[^/]+\.link(\.[A-Za-z0-9]{6})? -- u:object_r:p4_linux_netplan_link_rule_t:s0
+/run/udev/rules\.d/90\-netplan\.rules(\.[A-Za-z0-9]{6})? -- u:object_r:p4_linux_netplan_link_rule_t:s0

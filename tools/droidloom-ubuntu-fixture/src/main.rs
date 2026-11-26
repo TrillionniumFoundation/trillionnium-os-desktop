@@ -13,6 +13,7 @@ mod boot_host;
 mod boot_kernel;
 mod boot_native;
 mod boot_native_candidates;
+mod boot_netplan_profiles;
 mod boot_owned_evidence;
 mod boot_packages;
 mod boot_privilege_xattr;
@@ -78,6 +79,10 @@ enum Command {
     },
     #[command(hide = true)]
     OriginalOnceEarlyRecovery,
+    VerifyNetplanProfiles {
+        #[arg(long)]
+        root: PathBuf,
+    },
     VerifyPublicApkInputs {
         #[arg(long)]
         config: PathBuf,
@@ -264,6 +269,7 @@ fn run() -> Result<()> {
             config_sha256,
         } => cold_original_qualification::run_thaw_guard(&config, &config_sha256)?,
         Command::OriginalOnceEarlyRecovery => cold_original_once_recovery::early()?,
+        Command::VerifyNetplanProfiles { root } => boot_netplan_profiles::run(&root)?,
         Command::VerifyPublicApkInputs {
             config,
             config_sha256,

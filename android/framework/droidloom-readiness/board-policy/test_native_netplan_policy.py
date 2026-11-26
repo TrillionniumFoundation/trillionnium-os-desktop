@@ -53,10 +53,36 @@ class NetplanSelectionTests(unittest.TestCase):
 
     def test_fixed_transition_roster_has_no_child_process_or_arbitrary_parent(self):
         transitions = netplan.fixed_transitions()
-        self.assertEqual(len(transitions), 5)
+        self.assertEqual(len(transitions), 14)
         self.assertEqual(sum(" process " in row for row in transitions), 1)
         self.assertIn('(typetransition p4_linux_netplan_t p4_linux_network_manager_run_t dir '
                       'p4_linux_netplan_unselected_dir_t)', transitions)
+
+
+class PrivateNetplanSelectionTests(unittest.TestCase):
+    def test_private_selection_keeps_seven_hashes_without_runtime_claim(self):
+        value = netplan.private_contract(HERE)
+        self.assertEqual(len(value["profiles"]), 7)
+        self.assertTrue(all(row["mode"] == 0o600 for row in value["profiles"]))
+        self.assertFalse(value["runtime_qualified"])
+        self.assertFalse(value["policy_enforcement_qualified"])
+
+    def test_private_scope_rejects_missing_extra_unprotected_or_qualified_inputs(self):
+        for mutate in (
+                lambda v: v["profiles"].pop(),
+                lambda v: v["profiles"].append(dict(v["profiles"][0])),
+                lambda v: v["profiles"][0].update(mode=0o644),
+                lambda v: v.update(runtime_qualified=True),
+                lambda v: v.update(policy_enforcement_qualified=True)):
+            value = json.loads((HERE / "native-netplan-private-source.json").read_text())
+            mutate(value)
+            original = Path.read_text
+            def read(path, *args, **kwargs):
+                if path.name == "native-netplan-private-source.json":
+                    return json.dumps(value)
+                return original(path, *args, **kwargs)
+            with patch.object(Path, "read_text", read), self.assertRaises(ValueError):
+                netplan.private_contract(HERE)
 
 
 class NetplanRelabelProofTests(unittest.TestCase):
@@ -75,7 +101,7 @@ class NetplanRelabelProofTests(unittest.TestCase):
             def context_av(self, *args):
                 return 0
         lines = self.constraints()
-        self.assertEqual(len(netplan._relabel_constraints(NoRelabel(), lines)), 5)
+        self.assertEqual(len(netplan._relabel_constraints(NoRelabel(), lines)), len(netplan.ALIASES))
         for altered in (
                 lines[-1].replace("(eq t2 sysfs)", "(eq t2 p4_linux_netplan_output_t)"),
                 lines[-1].replace("(eq t2 sysfs)", "(eq t2 t1)"),

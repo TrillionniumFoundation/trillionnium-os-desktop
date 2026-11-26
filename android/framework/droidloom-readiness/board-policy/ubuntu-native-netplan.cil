@@ -1,7 +1,8 @@
 ; The normal netplan-generator package runs this exact ELF without arguments.
-; This component admits only the captured global NetworkManager/no-netdefs input.
-; No shell, child exec, network socket, interface operation or account lookup is
-; needed by that branch. Other YAML profiles require separate source admission.
+; The original complete-root admission remains the public no-netdefs input.
+; A separate fixed seven-profile source contract covers the original host inputs.
+; Both branches generate files only: no shell, child exec, network socket, or
+; interface operation. The profile branch resolves root through public files.
 (type p4_linux_netplan_t)
 (roletype system_r p4_linux_netplan_t)
 (typeattributeset p4_linux_procs (p4_linux_netplan_t))
@@ -16,13 +17,23 @@
 (type p4_linux_netplan_input_dir_t)
 (type p4_linux_netplan_output_t)
 (type p4_linux_netplan_unselected_dir_t)
+(type p4_linux_netplan_private_config_t)
+(roletype object_r p4_linux_netplan_private_config_t)
+(type p4_linux_netplan_profiles_dir_t)
+(roletype object_r p4_linux_netplan_profiles_dir_t)
+(type p4_linux_netplan_link_dir_t)
+(roletype object_r p4_linux_netplan_link_dir_t)
+(type p4_linux_netplan_rule_dir_t)
+(roletype object_r p4_linux_netplan_rule_dir_t)
+(type p4_linux_netplan_link_rule_t)
+(roletype object_r p4_linux_netplan_link_rule_t)
 (roletype object_r p4_linux_netplan_exec_t)
 (roletype object_r p4_linux_netplan_library_t)
 (roletype object_r p4_linux_netplan_yaml_t)
 (roletype object_r p4_linux_netplan_input_dir_t)
 (roletype object_r p4_linux_netplan_output_t)
 (roletype object_r p4_linux_netplan_unselected_dir_t)
-(typeattributeset p4_linux_data (p4_linux_netplan_exec_t p4_linux_netplan_library_t p4_linux_netplan_yaml_t p4_linux_netplan_input_dir_t p4_linux_netplan_output_t p4_linux_netplan_unselected_dir_t))
+(typeattributeset p4_linux_data (p4_linux_netplan_exec_t p4_linux_netplan_library_t p4_linux_netplan_yaml_t p4_linux_netplan_input_dir_t p4_linux_netplan_output_t p4_linux_netplan_unselected_dir_t p4_linux_netplan_private_config_t p4_linux_netplan_profiles_dir_t p4_linux_netplan_link_dir_t p4_linux_netplan_rule_dir_t p4_linux_netplan_link_rule_t))
 
 (call p4_ubuntu_system_service (p4_linux_netplan_t p4_linux_netplan_exec_t))
 (allow init_t p4_linux_netplan_t (process (getattr signull signal sigkill sigstop)))
@@ -44,6 +55,8 @@
 (allow p4_linux_netplan_t p4_linux_console_library_runtime_lib_t (file (getattr open read execute map)))
 (allow p4_linux_netplan_t p4_linux_console_ld_cache_native_config_t (file (getattr open read map)))
 (allow p4_linux_netplan_t p4_linux_netplan_yaml_t (file (getattr open read)))
+(allow p4_linux_netplan_t p4_linux_netplan_private_config_t (file (getattr open read)))
+(allow p4_linux_netplan_t p4_linux_public_accounts_t (file (getattr open read)))
 (allow p4_linux_netplan_t p4_linux_netplan_input_dir_t (dir (getattr open read search)))
 
 ; The loaded libselinux constructor recognizes the existing selinuxfs mount
@@ -66,8 +79,39 @@
 (typetransition p4_linux_netplan_t p4_linux_network_manager_run_t dir p4_linux_netplan_unselected_dir_t)
 (typetransition p4_linux_netplan_t p4_linux_network_manager_run_t dir "conf.d" p4_linux_network_manager_run_t)
 (typetransition p4_linux_netplan_t p4_linux_network_manager_run_t file p4_linux_netplan_output_t)
-(allow p4_linux_netplan_t p4_linux_netplan_output_t (file (getattr open read write create rename unlink)))
+(allow p4_linux_netplan_t p4_linux_netplan_output_t (file (getattr open read write create rename unlink setattr)))
 (allow p4_linux_netplan_output_t tmpfs (filesystem (associate)))
+; The same normal ELF writes root-only NM profiles and the two exact udev output
+; families after reading the separately pinned seven input profiles. Normal
+; chown(root,root)/fchmod on its own new files needs setattr, without CAP_CHOWN.
+; Failed NSS-cache socket creation was exercised against the actual normal ELF;
+; local passwd/group lookup and identical output succeed without socket authority.
+(typetransition p4_linux_netplan_t p4_linux_network_manager_run_t dir "system-connections" p4_linux_netplan_profiles_dir_t)
+(typetransition p4_linux_netplan_t p4_linux_netplan_profiles_dir_t dir p4_linux_netplan_unselected_dir_t)
+(typetransition p4_linux_netplan_t p4_linux_netplan_profiles_dir_t file p4_linux_netplan_output_t)
+(allow p4_linux_netplan_t p4_linux_netplan_profiles_dir_t (dir (getattr search open read create write add_name remove_name)))
+; The initial manager and udev parent directories already have their post-load
+; dedicated labels. No generic /run child or generic root-directory write is used.
+(allow p4_linux_netplan_t p4_linux_systemd_run_t (dir (getattr search write add_name)))
+(allow p4_linux_netplan_t p4_linux_udev_run_t (dir (getattr search write add_name)))
+(typetransition p4_linux_netplan_t p4_linux_systemd_run_t dir "network" p4_linux_netplan_link_dir_t)
+(typetransition p4_linux_netplan_t p4_linux_udev_run_t dir "rules.d" p4_linux_netplan_rule_dir_t)
+(typetransition p4_linux_netplan_t p4_linux_netplan_link_dir_t dir p4_linux_netplan_unselected_dir_t)
+(typetransition p4_linux_netplan_t p4_linux_netplan_rule_dir_t dir p4_linux_netplan_unselected_dir_t)
+(typetransition p4_linux_netplan_t p4_linux_netplan_link_dir_t file p4_linux_netplan_link_rule_t)
+(typetransition p4_linux_netplan_t p4_linux_netplan_rule_dir_t file p4_linux_netplan_link_rule_t)
+(allow p4_linux_netplan_t p4_linux_netplan_link_dir_t (dir (getattr search open read create write add_name remove_name)))
+(allow p4_linux_netplan_t p4_linux_netplan_rule_dir_t (dir (getattr search open read create write add_name remove_name)))
+(allow p4_linux_netplan_t p4_linux_netplan_link_rule_t (file (getattr open read write create rename unlink setattr)))
+(allow p4_linux_netplan_profiles_dir_t tmpfs (filesystem (associate)))
+(allow p4_linux_netplan_link_dir_t tmpfs (filesystem (associate)))
+(allow p4_linux_netplan_rule_dir_t tmpfs (filesystem (associate)))
+(allow p4_linux_netplan_link_rule_t tmpfs (filesystem (associate)))
+; Udev enumerates only the newly separated rules/link directories. The alias
+; producer preserves its original vector and adds these four read-only bits.
+(allow p4_linux_udev_t p4_linux_netplan_link_dir_t (dir (getattr open read search)))
+(allow p4_linux_udev_t p4_linux_netplan_rule_dir_t (dir (getattr open read search)))
+
 
 (typeattribute p4_netplan_all_types)
 (typeattributeset p4_netplan_all_types (all))
@@ -76,18 +120,18 @@
 (typeattribute p4_netplan_other_sources)
 (typeattributeset p4_netplan_other_sources (not (p4_linux_service_executor_t)))
 (typeattribute p4_netplan_nonoutput_files)
-(typeattributeset p4_netplan_nonoutput_files (not (p4_linux_netplan_output_t)))
+(typeattributeset p4_netplan_nonoutput_files (not (or (p4_linux_netplan_output_t) (p4_linux_netplan_link_rule_t))))
 (typeattribute p4_netplan_nonruntime_dirs)
-(typeattributeset p4_netplan_nonruntime_dirs (not (or (p4_linux_run_t) (p4_linux_network_manager_run_t))))
+(typeattributeset p4_netplan_nonruntime_dirs (not (or (p4_linux_run_t) (p4_linux_network_manager_run_t) (p4_linux_netplan_profiles_dir_t) (p4_linux_netplan_link_dir_t) (p4_linux_netplan_rule_dir_t) (p4_linux_systemd_run_t) (p4_linux_udev_run_t))))
 (typeattribute p4_netplan_nonnm_dirs)
-(typeattributeset p4_netplan_nonnm_dirs (not (p4_linux_network_manager_run_t)))
+(typeattributeset p4_netplan_nonnm_dirs (not (or (p4_linux_network_manager_run_t) (p4_linux_netplan_profiles_dir_t) (p4_linux_netplan_link_dir_t) (p4_linux_netplan_rule_dir_t))))
 (typeattribute p4_netplan_nonstdio_devices)
 (typeattributeset p4_netplan_nonstdio_devices (not (or (null_device) (p4_linux_standardio_t))))
 (neverallow p4_netplan_other_sources p4_linux_netplan_t (process (transition dyntransition)))
 (neverallow p4_linux_service_executor_t p4_linux_netplan_t (process (dyntransition)))
 (neverallow p4_linux_netplan_t p4_netplan_other_entries (file (entrypoint)))
-(neverallow p4_linux_netplan_t p4_netplan_all_types (file (execute_no_trans append setattr link relabelfrom relabelto ioctl execmod)))
-(neverallow p4_linux_netplan_t p4_netplan_nonoutput_files (file (write create rename unlink)))
+(neverallow p4_linux_netplan_t p4_netplan_all_types (file (execute_no_trans append link relabelfrom relabelto ioctl execmod)))
+(neverallow p4_linux_netplan_t p4_netplan_nonoutput_files (file (write create rename unlink setattr)))
 (neverallow p4_linux_netplan_t p4_netplan_nonruntime_dirs (dir (write add_name)))
 (neverallow p4_linux_netplan_t p4_netplan_nonnm_dirs (dir (create remove_name)))
 (neverallow p4_linux_netplan_t p4_netplan_all_types (dir (setattr rmdir rename reparent mounton relabelfrom relabelto)))

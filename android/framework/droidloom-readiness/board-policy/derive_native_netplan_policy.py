@@ -1,7 +1,8 @@
 """Fixed normal netplan configure branch in the strict policy producer.
 
-The package ELF is unchanged. Its selected immutable YAML contains only the
-global NetworkManager renderer. No claim is made for another YAML profile.
+The package ELF is unchanged. The complete-root admission still selects only
+the public global renderer. A separate fixed private-input contract records the
+original seven NetworkManager profiles; neither source check claims runtime.
 """
 import ctypes
 import hashlib
@@ -28,13 +29,26 @@ EXECUTOR = "p4_linux_service_executor_t"
 NM_RUN = "p4_linux_network_manager_run_t"
 CACHE = "p4_linux_console_ld_cache_native_config_t"
 SHARED_LIBRARY = "p4_linux_console_library_runtime_lib_t"
-ALIASES = [
+BASE_ALIASES = [
     {"source": "p4_linux_native_bin_t", "target": ENTRY, "class": "file"},
     {"source": "p4_linux_runtime_lib_t", "target": LIBRARY, "class": "file"},
     {"source": "p4_linux_runtime_lib_t", "target": YAML, "class": "file"},
     {"source": "p4_linux_rootdir_t", "target": INPUT_DIR, "class": "dir"},
     {"source": NM_RUN, "target": OUTPUT, "class": "file"},
 ]
+PRIVATE_INPUT = "p4_linux_netplan_private_config_t"
+PROFILE_DIR = "p4_linux_netplan_profiles_dir_t"
+LINK_DIR = "p4_linux_netplan_link_dir_t"
+RULE_DIR = "p4_linux_netplan_rule_dir_t"
+GENERATED = "p4_linux_netplan_link_rule_t"
+PRIVATE_ALIASES = [
+    {"source": "p4_linux_native_config_t", "target": PRIVATE_INPUT, "class": "file"},
+    {"source": NM_RUN, "target": PROFILE_DIR, "class": "dir"},
+    {"source": "p4_linux_rootdir_t", "target": LINK_DIR, "class": "dir"},
+    {"source": "p4_linux_rootdir_t", "target": RULE_DIR, "class": "dir"},
+    {"source": "p4_linux_native_data_t", "target": GENERATED, "class": "file"},
+]
+ALIASES = BASE_ALIASES + PRIVATE_ALIASES
 LIBDIR = "/usr/lib/x86_64-linux-gnu/"
 ELF_NAMES = (
     "ld-linux-x86-64.so.2", "libatomic.so.1.2.0", "libblkid.so.1.1.0",
@@ -59,7 +73,7 @@ def contract(here):
             "source_documents", "runtime_qualified", "other_yaml_profiles_qualified"}
     if (set(value) != keys or
             value["schema"] != "droidloom.native-netplan-source-closure.v1" or
-            value["aliases"] != ALIASES or value["runtime_qualified"] is not False or
+            value["aliases"] != BASE_ALIASES or value["runtime_qualified"] is not False or
             value["other_yaml_profiles_qualified"] is not False or
             value["selected_configuration"] != "global-NetworkManager-without-netdefs" or
             value["unit_argv"] != ["/usr/libexec/netplan/configure"] or
@@ -139,6 +153,57 @@ def contract(here):
         raise ValueError("Netplan normal loader link closure differs")
     if not value["needed_edges"] or not value["source_documents"]:
         raise ValueError("Netplan normal dependency/source evidence is absent")
+    return value
+
+
+def private_contract(here):
+    value = json.loads((here / "native-netplan-private-source.json").read_text())
+    required = {"schema", "normal_source_contract_sha256", "selection", "profiles",
+                "public_inputs", "public_account_paths", "account_lookup",
+                "normal_unit_argv", "normal_service_umask", "source_documents",
+                "observation", "private_contents_included", "runtime_qualified",
+                "policy_enforcement_qualified"}
+    names = {
+        "50-cloud-init.yaml",
+        "90-NM-3c797701-51cb-45c5-a632-00f213232095.yaml",
+        "90-NM-899dbbd2-d128-4d5b-8001-5d3cad80b503.yaml",
+        "90-NM-c61cd9fc-00ef-49aa-8ed2-7bfd641c7097.yaml",
+        "90-NM-d732669d-d34a-4baa-b97e-bd2563bdd648.yaml",
+        "90-NM-e80414a4-1077-49d3-953e-aaccddb3bf21.yaml",
+        "90-NM-f84d0c1a-dcde-4634-bf39-13ace1617de3.yaml",
+    }
+    if (set(value) != required or
+            value["schema"] != "droidloom.native-netplan-private-source.v1" or
+            value["normal_source_contract_sha256"] != hashlib.sha256(
+                (here / "native-netplan-source.json").read_bytes()).hexdigest() or
+            value["selection"] != "pocket4-existing-seven-NetworkManager-profiles" or
+            value["normal_unit_argv"] != ["/usr/libexec/netplan/configure"] or
+            value["normal_service_umask"] != 0o022 or
+            value["public_account_paths"] != ["/etc/passwd", "/etc/group"] or
+            value["account_lookup"] != "unique-root-uid0-gid0-and-files-first" or
+            value["private_contents_included"] is not False or
+            value["runtime_qualified"] is not False or
+            value["policy_enforcement_qualified"] is not False or
+            len(value["profiles"]) != 7 or
+            {row["path"] for row in value["profiles"]} !=
+                {"/etc/netplan/" + name for name in names}):
+        raise ValueError("Netplan private scope is not the existing seven-profile selection")
+    fields = {"path", "bytes", "sha256", "mode", "uid", "gid", "nlink"}
+    for row in value["profiles"] + value["public_inputs"]:
+        if (set(row) != fields or
+                (row["uid"], row["gid"], row["nlink"]) != (0, 0, 1) or
+                row["mode"] not in (0o600, 0o644) or
+                not 0 < row["bytes"] <= 1024 * 1024 or
+                not re.fullmatch(r"[0-9a-f]{64}", row["sha256"])):
+            raise ValueError("Netplan private/source metadata changed")
+    if (any(row["mode"] != 0o600 for row in value["profiles"]) or
+            len(value["public_inputs"]) != 3 or
+            {row["path"] for row in value["public_inputs"]} !=
+                {YAML_PATH, "/usr/lib/netplan/PLACEHOLDER", "/etc/nsswitch.conf"} or
+            len(value["source_documents"]) != 5 or
+            value["observation"]["schema"] !=
+                "droidloom.netplan-private-profile-public-observation.v2"):
+        raise ValueError("Netplan private/public input boundary differs")
     return value
 
 
@@ -319,12 +384,15 @@ def _verify_manager(policy, lines, exported, classes, expected):
 
 def derive(library, baseline, exported, here, output, export):
     contract(here)
+    private_contract(here)
     expected = derive_preserved_aliases(
         library, baseline, exported, ALIASES, output, export,
         prefix="p4_netplan_preserved", isolated_roles={ROLE, NM_ROLE},
         extra_permissions={
             ("init_t", ENTRY, "file"): {"getattr", "open", "read", "execute", "map"},
             (EXECUTOR, ENTRY, "file"): {"getattr", "open", "read", "execute", "map"},
+            ("p4_linux_udev_t", LINK_DIR, "dir"): {"getattr", "open", "read", "search"},
+            ("p4_linux_udev_t", RULE_DIR, "dir"): {"getattr", "open", "read", "search"},
         }, preamble=("; Preserve the original actors on fixed normal netplan inodes.",))
     policy = ContextPolicy(library, baseline)
     lines = exported.read_text().splitlines()
@@ -332,6 +400,7 @@ def derive(library, baseline, exported, here, output, export):
         policy, lines, exported, expected["classes"], output)
     expected["derived_sha256"] = hashlib.sha256(output.read_bytes()).hexdigest()
     expected["contract_sha256"] = hashlib.sha256((here / "native-netplan-source.json").read_bytes()).hexdigest()
+    expected["private_contract_sha256"] = hashlib.sha256((here / "native-netplan-private-source.json").read_bytes()).hexdigest()
     return expected
 
 
@@ -342,11 +411,24 @@ def fixed_transitions():
         "(typetransition " + ROLE + " " + NM_RUN + " dir " + DENIED_DIR + ")",
         '(typetransition ' + ROLE + ' ' + NM_RUN + ' dir "conf.d" ' + NM_RUN + ')',
         "(typetransition " + ROLE + " " + NM_RUN + " file " + OUTPUT + ")",
+        '(typetransition ' + ROLE + ' ' + NM_RUN + ' dir "system-connections" ' + PROFILE_DIR + ')',
+        "(typetransition " + ROLE + " " + PROFILE_DIR + " dir " + DENIED_DIR + ")",
+        "(typetransition " + ROLE + " " + PROFILE_DIR + " file " + OUTPUT + ")",
+        '(typetransition ' + ROLE + ' p4_linux_systemd_run_t dir "network" ' + LINK_DIR + ')',
+        "(typetransition " + ROLE + " " + LINK_DIR + " dir " + DENIED_DIR + ")",
+        "(typetransition " + ROLE + " " + LINK_DIR + " file " + GENERATED + ")",
+        '(typetransition ' + ROLE + ' p4_linux_udev_run_t dir "rules.d" ' + RULE_DIR + ')',
+        "(typetransition " + ROLE + " " + RULE_DIR + " dir " + DENIED_DIR + ")",
+        "(typetransition " + ROLE + " " + RULE_DIR + " file " + GENERATED + ")",
+
     }
 
 
 def verify(library, binary, exported, here, expected, export):
     value = contract(here)
+    private = private_contract(here)
+    if expected["private_contract_sha256"] != hashlib.sha256((here / "native-netplan-private-source.json").read_bytes()).hexdigest():
+        raise ValueError("Netplan private contract changed during linking")
     policy = ContextPolicy(library, binary)
     lines = export(policy, binary, exported)
     text = exported.read_text()
@@ -369,7 +451,8 @@ def verify(library, binary, exported, here, expected, export):
                              repr(sorted(actual)) + "/" + repr(sorted(wanted)))
         checks.append([actor_role, actor, target_role, target, cls, sorted(wanted)])
 
-    selected = {ROLE, ENTRY, LIBRARY, YAML, INPUT_DIR, OUTPUT, DENIED_DIR}
+    selected = {ROLE, ENTRY, LIBRARY, YAML, INPUT_DIR, OUTPUT, DENIED_DIR,
+                PRIVATE_INPUT, PROFILE_DIR, LINK_DIR, RULE_DIR, GENERATED}
     observed = {line for line in lines if line.startswith(TRANSITIONS) and
                 any(isinstance(token, str) and token in selected
                     for token in parse_expression(line)[1:])}
@@ -383,7 +466,9 @@ def verify(library, binary, exported, here, expected, export):
         ENTRY: executable | {"entrypoint"}, LIBRARY: executable,
         SHARED_LIBRARY: executable, "p4_linux_elf_interpreter_t": executable,
         CACHE: read | {"map"}, YAML: read,
-        OUTPUT: read | {"write", "create", "rename", "unlink"},
+        OUTPUT: read | {"write", "create", "rename", "unlink", "setattr"},
+        PRIVATE_INPUT: read, "p4_linux_public_accounts_t": read,
+        GENERATED: read | {"write", "create", "rename", "unlink", "setattr"},
     }
     directories = {
         "p4_linux_rootdir_t": {"getattr", "search"},
@@ -391,6 +476,11 @@ def verify(library, binary, exported, here, expected, export):
         INPUT_DIR: {"getattr", "open", "read", "search"},
         "p4_linux_run_t": {"getattr", "search", "write", "add_name"},
         NM_RUN: {"getattr", "search", "create", "write", "add_name", "remove_name"},
+        PROFILE_DIR: {"getattr", "search", "open", "read", "create", "write", "add_name", "remove_name"},
+        LINK_DIR: {"getattr", "search", "open", "read", "create", "write", "add_name", "remove_name"},
+        RULE_DIR: {"getattr", "search", "open", "read", "create", "write", "add_name", "remove_name"},
+        "p4_linux_systemd_run_t": {"getattr", "search", "write", "add_name"},
+        "p4_linux_udev_run_t": {"getattr", "search", "write", "add_name"},
         "sysfs": {"search"}, "selinuxfs": {"search"},
     }
     # These are explicit, source-owned alias sets, never a discovered directory
@@ -431,6 +521,9 @@ def verify(library, binary, exported, here, expected, export):
     return {
         "schema": "droidloom.native-netplan-policy-proof.v1",
         "source_contract_sha256": expected["contract_sha256"],
+        "private_profile_contract_sha256": expected["private_contract_sha256"],
+        "private_profile_selection": private["selection"],
+        "private_profile_runtime_qualified": False,
         "derived_alias_policy_sha256": expected["derived_sha256"],
         "preserved_actor_object_vectors": len(expected["samples"]),
         "preserved_transitions": len(expected["transitions"]),
@@ -486,8 +579,33 @@ def verify_file_contexts(here, work):
             if lookup(row["path"], stat.S_IFDIR) != INPUT_DIR:
                 raise ValueError("Netplan input directory label differs")
             checked.append([row["path"], stat.S_IFDIR, INPUT_DIR])
+        private = private_contract(here)
+        for row in private["profiles"] + [r for r in private["public_inputs"]
+                                          if r["path"] == "/etc/nsswitch.conf"]:
+            if lookup(row["path"], stat.S_IFREG) != PRIVATE_INPUT:
+                raise ValueError("Netplan private input file label differs")
+            checked.append([row["path"], stat.S_IFREG, PRIVATE_INPUT])
+        for filename, wanted in [
+                ("/run/NetworkManager/system-connections", PROFILE_DIR),
+                ("/run/systemd/network", LINK_DIR),
+                ("/run/udev/rules.d", RULE_DIR)]:
+            if lookup(filename, stat.S_IFDIR) != wanted:
+                raise ValueError("Netplan runtime output directory label differs")
+            checked.append([filename, stat.S_IFDIR, wanted])
         for filename, mode, wanted in [
             (OUTPUT_PATH, stat.S_IFREG, OUTPUT),
+            ("/run/NetworkManager/conf.d/netplan.conf", stat.S_IFREG, OUTPUT),
+            ("/run/NetworkManager/conf.d/netplan.conf.2EQNZ3", stat.S_IFREG, OUTPUT),
+            ("/run/NetworkManager/system-connections/netplan-selected.nmconnection", stat.S_IFREG, OUTPUT),
+            ("/run/NetworkManager/system-connections/netplan-selected.nmconnection.2EQNZ3", stat.S_IFREG, OUTPUT),
+            ("/run/NetworkManager/system-connections/other.nmconnection", stat.S_IFREG, NM_RUN),
+            ("/run/systemd/network/10-netplan-selected.link", stat.S_IFREG, GENERATED),
+            ("/run/systemd/network/10-netplan-selected.link.2EQNZ3", stat.S_IFREG, GENERATED),
+            ("/run/systemd/network/other.link", stat.S_IFREG, "p4_linux_native_data_t"),
+            ("/run/udev/rules.d/90-netplan.rules", stat.S_IFREG, GENERATED),
+            ("/run/udev/rules.d/90-netplan.rules.2EQNZ3", stat.S_IFREG, GENERATED),
+            ("/run/udev/rules.d/other.rules", stat.S_IFREG, "p4_linux_native_data_t"),
+
             (OUTPUT_PATH + ".2EQNZ3", stat.S_IFREG, OUTPUT),
             ("/usr/libexec/netplan/generate", stat.S_IFREG, "p4_linux_generator_exec_t"),
             ("/usr/libexec/netplan/configure-extra", stat.S_IFREG, "p4_linux_native_bin_t"),
@@ -500,19 +618,27 @@ def verify_file_contexts(here, work):
             if lookup(filename, mode) != wanted:
                 raise ValueError("Netplan path matcher selected an unadmitted file")
             checked.append([filename, mode, wanted])
-        for row in value["files"]:
-            if row["target_type"] not in {ENTRY, LIBRARY, YAML}:
-                continue
+        selected_file_types = {ENTRY, LIBRARY, YAML, PRIVATE_INPUT, OUTPUT, GENERATED}
+        selected_file_paths = [
+            row["path"] for row in value["files"]
+            if row["target_type"] in {ENTRY, LIBRARY, YAML}]
+        selected_file_paths += [row["path"] for row in private["profiles"]]
+        selected_file_paths += ["/etc/nsswitch.conf",
+            "/run/NetworkManager/conf.d/netplan.conf",
+            "/run/NetworkManager/system-connections/netplan-selected.nmconnection",
+            "/run/systemd/network/10-netplan-selected.link",
+            "/run/udev/rules.d/90-netplan.rules"]
+        for filename in selected_file_paths:
             for mode in (stat.S_IFDIR, stat.S_IFLNK, stat.S_IFCHR, stat.S_IFBLK):
                 try:
-                    actual = lookup(row["path"], mode)
+                    actual = lookup(filename, mode)
                 except OSError as error:
                     if error.errno != 2:
                         raise
                     actual = None
-                if actual in {ENTRY, LIBRARY, YAML}:
+                if actual in selected_file_types:
                     raise ValueError("Netplan file label accepted another inode class")
-                checked.append([row["path"], mode, actual])
+                checked.append([filename, mode, actual])
     finally:
         lib.selabel_close(handle)
     return {"selected_and_negative_cases": len(checked),

@@ -196,10 +196,11 @@ all dependencies copied into a fresh private chroot in isolated network and
 mount namespaces. That observation proves the package's file operations,
 not SELinux enforcement or production readiness.
 
-SELinux confines file mutation to the new output type in the existing
-NetworkManager runtime family; the fixed source and unit bind the basename
-and command line. Other pre-existing NetworkManager file types, systemd
-units, account data, interfaces, sockets and child execution remain
+The public branch uses the typed output in the NetworkManager runtime family;
+the fixed source and unit bind the basename and command line. The separate
+profile branch below adds only its observed output families and local public
+account lookup. Other pre-existing NetworkManager file types, systemd units,
+private account databases, interfaces, sockets and child execution remain
 inaccessible to this role.
 The two unit ExecStartPost udevadm commands are separately started by PID 1
 and continue to use the udev execution role.
@@ -218,3 +219,57 @@ NetworkManager runtime directory type; it is not a basename access-control
 rule. Other pre-existing NetworkManager file types remain inaccessible to
 this role. The file-context matcher records the expected fixed output and its
 six-character temporary names, but does not constrain creation by filename.
+
+
+### Existing Pocket4 NetworkManager profiles
+
+The separate native-netplan-private-source.json contract selects the exact
+seven original /etc/netplan files by name, owner, mode, size and full SHA-256.
+It contains no YAML values or generated connection contents. The original
+public no-netdefs complete-root admission remains unchanged; this additional
+scope does not turn an empty-fixture check into verification of the host's
+private configuration.
+
+The fixture command verify-netplan-profiles --root / performs a read-only
+input check. It accepts the original root or a new protected qualification
+working root, holds every selected file descriptor, rejects symlinks and
+hard links, checks exact directory membership, and rechecks held and named
+identities. The separate /run root is explicit so the original host's tmpfs
+does not defeat the per-root NO_XDEV boundary. Empty or absent /run/netplan
+is required. Public passwd/group data is checked only for an unambiguous
+root UID/GID 0 lookup, and NSS must return successful local files lookups
+without a preceding remote service or a changed success action. Reports
+contain metadata and hashes, never private file contents. This command does
+not check the native ELF cohort, execute configure, connect a network, or
+qualify SELinux/runtime behavior; those remain separate gates.
+
+The unchanged normal configure ELF and all 18 normal ELF inputs were used
+in a private same-host copy with separate network and mount namespaces.
+The exact unit command, default normal systemd UMask=0022, and the seven
+unchanged profiles produced seven 0600 NM connection files, one 0640
+netplan.conf, the 0644 empty global override, two 0640 .link files, and
+one 0640 90-netplan.rules. Fresh generation and re-entry both succeeded.
+Forcing all four NSS-cache socket attempts to fail with EACCES produced
+identical files and no errors, so socket creation remains forbidden.
+
+The networkd helper writes .link metadata before rejecting a non-networkd
+backend; normal udev consumes those files. This does not start networkd or
+apply a network connection. Configure writes only the separately typed
+NetworkManager profile directory, /run/systemd/network, and
+/run/udev/rules.d, with named directory transitions from the already typed
+normal parents. Their new regular-file transitions cover the directories'
+file classes; the pinned normal program and selected inputs determine
+basenames. Unknown pre-existing output file types cannot be overwritten.
+The source and selected initrd call chain imply these two new udev directory
+paths are absent before the first policy load; this is not a substitute for
+an actual runtime SID observation. An unexpected existing directory/SID
+must remain a visible failure.
+
+The existing old actor vectors, full ioctl masks and MCS constraints are
+preserved for the new aliases. Udev alone additionally receives directory
+open/read on the two new rule/link directories so its normal directory
+enumeration can consume them. Configure additionally reads the selected
+private YAML, exact NSS file and public account files, and can perform
+normal chown(root,root)/fchmod on its own typed outputs. It gains no account
+database mutation, capability, child execution, interface operation or
+socket creation. Both static reports retain runtime_qualified=false.
