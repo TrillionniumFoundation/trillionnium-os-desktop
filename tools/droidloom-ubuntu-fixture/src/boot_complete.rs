@@ -49,7 +49,7 @@ pub(super) fn normal_families(packages: &[Package]) -> Result<Value> {
         "udev",
     ];
     let families: [(&str, &[&str], &str); 4] = [
-        ("systemd", &systemd, "+p4gentmp1"),
+        ("systemd", &systemd, "+p4gentmp2"),
         ("libselinux", &["libselinux1"], "+p4lsmexec4"),
         ("apparmor", &["apparmor", "libapparmor1"], "+p4peer1"),
         ("gdm", &["gdm3", "libgdm1", "gir1.2-gdm-1.0"], "+p4fsuser3"),
@@ -206,7 +206,7 @@ mod tests {
                     "systemd-timesyncd",
                     "udev",
                 ],
-                "259.9-0ubuntu0.1+p4gentmp1",
+                "259.9-0ubuntu0.1+p4gentmp2",
             ),
             (vec!["libselinux1"], "3.9-1+p4lsmexec4"),
             (vec!["apparmor", "libapparmor1"], "5.0.2-1+p4peer1"),
@@ -234,7 +234,7 @@ mod tests {
         missing.pop();
         assert!(normal_families(&missing).is_err());
         let mut mixed = complete.clone();
-        mixed[0].version = "260-1+p4gentmp1".into();
+        mixed[0].version = "260-1+p4gentmp2".into();
         assert!(normal_families(&mixed).is_err());
         let mut stale = complete.clone();
         stale[10].version = "3.9-1".into();

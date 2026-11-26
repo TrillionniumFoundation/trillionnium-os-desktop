@@ -48,8 +48,8 @@ fields. Every `FilePin` is `{ "path": "/absolute/path", "bytes": N,
   baseline, before the candidate transaction.
 - `normal_build`: a pinned `droidloom.systemd-normal-build.v1` producer record.
   It contains the actual `exit_code`, `argv`, `source_lock_sha256`, `outputs`
-  (basename to byte count and SHA256), and `source_roundtrip` (the three patched
-  source paths to byte count and SHA256). Keep the original command and source
+  (basename to byte count and SHA256), and `source_roundtrip` (every patched
+  source path declared in `source.lock.json`, with its byte count and SHA256). Keep the original command and source
   roundtrip receipts with this record. A successful normal `dpkg-source
   --after-build` may unapply the quilt series in the build directory; the
   independently unpacked candidate `.dsc` is the maintained source check.
@@ -130,3 +130,91 @@ The plan's `artifacts` map retains each original producer path as its key and pi
 Both systemd and the three-family admission receipts preserve the exact input configuration bytes. Installed complete-source capture calls `verify_installed_systemd` and `verify_installed_native` with the actual root, the admitted receipt pin and a new private evidence directory. These helpers repeat source/build/archive and current dpkg/payload validation; an earlier pass flag never substitutes for reading the new root. The report's `input` retains the original admission input identity and `preserved_input` pins this run's private copy.
 
 `installed_source.complete_installed_payload` contains every member actually read back, including any explicitly source-bound normal package transform. Systemd's two credential directory modes are bound to its exact tmpfiles rules. The selected libselinux, AppArmor and GDM packages require exact archive metadata and contents. Complete capture must compare all these members to its manifest and bind the same root identity and final dpkg status. Other normally installed packages and independently admitted family upgrades are checked through the complete current dependency and reverse-dependency closure. These source receipts continue to report guest and production qualification as false.
+
+Normal source-archive modes may remain unchanged or lose exactly the bits
+selected by the producer's normal 0022 or private 0077 umask. R6 removes group
+write from the original 0775/0664 members to produce 0755/0644. No added access,
+owner, type, alias, packaging-rule or unrelated source-content change is admitted.
+
+## Existing sysusers account lock under the shared kernel
+
+The normally packaged `systemd-sysusers` first opens the existing
+`/etc/.pwd.lock` with `O_WRONLY|O_CREAT|O_NOFOLLOW` and takes an exclusive OFD
+lock with `F_OFD_SETLKW`. This happens before loading passwd/group and also
+happens when the initialized normal root needs no account changes. The
+selected normal lock is an empty, single-link, root-owned 0600 regular file.
+The producer must preserve that inode; this policy does not create it.
+
+`native-sysusers-source.json` binds the unchanged gentmp2 executable/unit and
+the exact normal source call chain. The linker gives only the `/etc` directory
+and the regular `/etc/.pwd.lock` file narrower labels. It preserves every old
+actor's complete AV, constraint, transition and ioctl view, then adds only
+setup's directory `write` and existing lock `write`/`lock`. Directory
+`add_name`/`remove_name`, lock creation/replacement and account/password
+database writes remain forbidden. `/etc/selinux` keeps the original directory
+type and its original neverallow. Missing lock or requested account updates
+therefore remain visible failures, rather than gaining generic `/etc` writes.
+
+The source-owned verifier compares the setup role's full file/directory vectors
+for every concrete object and the real class-aware file-context matches for the
+two selected paths, neighboring names, the policy subtree and account files.
+Setup is checked separately at raw TE and every sampled source/target MLS
+combination: its s0 startup write remains subject to the original category
+constraints. The unchanged hardware/uevent relabel guards stay unreachable
+for both old and new lock objects; their exact full statements are checked.
+The remount role's complete object matrix follows the same preserved source
+vectors for both aliases. These static proofs do not imply sysusers runtime
+success; a fresh enforcing normal boot must supply that evidence.
+
+### Fixed normal Netplan configure branch
+
+The complete Ubuntu source admission now binds the normal
+`netplan-generator`/`libnetplan1` 1.2-1ubuntu5.1 payload and the complete 18-ELF
+dependency graph. The selected public input is exactly the 49-byte
+`/usr/lib/netplan/00-network-manager-all.yaml` shipped by ubuntu-settings; it
+selects NetworkManager globally and contains no interface definitions.
+The two other input directories must contain no files. An added, changed,
+symlinked or separately linked input is rejected before native initialization.
+Other YAML profiles, including the original physical host's configuration,
+require a separate actual source selection and are not marked qualified.
+
+The original unit and package ELF remain byte-identical. Its new execution
+role can read the selected YAML, load the twelve newly typed dependency
+inodes, and reuse the existing nine-inode console shared-library type (four
+are actual dependencies; all nine members remain explicitly pinned).
+The role does not inherit the generic native service attribute or executable
+permission for the entire runtime library type. The normal libselinux
+constructor requires only traversal and statfs/statvfs of the already mounted
+selinuxfs; its missing-mount /proc scans are not admitted, and its F_OK check
+does not authorize reading the SELinux configuration body.
+
+For the captured input, configure only creates NetworkManager's runtime
+parent and conf.d, writes an empty temporary file, and renames it to
+`/run/NetworkManager/conf.d/10-globally-managed-devices.conf`. Re-entry removes
+that prior typed output. This was observed twice with the same normal ELF and
+all dependencies copied into a fresh private chroot in isolated network and
+mount namespaces. That observation proves the package's file operations,
+not SELinux enforcement or production readiness.
+
+SELinux confines file mutation to the new output type in the existing
+NetworkManager runtime family; the fixed source and unit bind the basename
+and command line. Other pre-existing NetworkManager file types, systemd
+units, account data, interfaces, sockets and child execution remain
+inaccessible to this role.
+The two unit ExecStartPost udevadm commands are separately started by PID 1
+and continue to use the udev execution role.
+
+The normal producer derives Netplan aliases after remount, derives sysusers
+aliases last, then verifies every component against the final linked binary.
+All original actor vectors, transitions and extended ioctl masks are
+preserved. The explicit Netplan matrix covers file, directory, device,
+filesystem, capability and socket classes. Read-only fixture admission reports
+`runtime_qualified=false`; successful source checking never counts as a
+running network service or an application business gate.
+
+The output filename is selected by the pinned normal configure ELF. The file
+type transition covers newly created regular files under the existing
+NetworkManager runtime directory type; it is not a basename access-control
+rule. Other pre-existing NetworkManager file types remain inaccessible to
+this role. The file-context matcher records the expected fixed output and its
+six-character temporary names, but does not constrain creation by filename.

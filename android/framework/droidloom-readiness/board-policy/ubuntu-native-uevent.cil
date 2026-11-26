@@ -8,6 +8,7 @@
 (typeattributeset p4_linux_procs (p4_linux_uevent_label_t))
 (typeattributeset p4_linux_data (p4_linux_uevent_label_exec_t))
 (typeattributeset p4_handle_owner (p4_linux_uevent_label_t))
+(typeattributeset p4_native_dev_root_traversers (p4_linux_uevent_label_t))
 (call p4_ubuntu_system_service (p4_linux_uevent_label_t p4_linux_uevent_label_exec_t))
 (allow init_t p4_linux_uevent_label_t (process (getattr signull signal sigkill sigstop)))
 (allow p4_linux_uevent_label_t init_t (process (sigchld)))
@@ -17,6 +18,15 @@
 ; The original executor hands off an O_RDWR stdout/stderr stream. Exec checks
 ; both inherited access modes. There is no socket/path creation or connection.
 (allow p4_linux_uevent_label_t p4_linux_service_executor_t (unix_stream_socket (getattr read write)))
+; Admit the executor's fixed /dev/null descriptions in both native and original
+; null-device labels. No terminal/hardware body or ioctl is part of this helper.
+(allow p4_linux_uevent_label_t p4_linux_standardio_t (chr_file (getattr read write)))
+(allow p4_linux_uevent_label_t null_device (chr_file (getattr open read write)))
+(typeattribute p4_uevent_nonstdio_devices)
+(typeattributeset p4_uevent_nonstdio_devices (not (or (p4_linux_standardio_t) (null_device))))
+(neverallow p4_linux_uevent_label_t p4_uevent_nonstdio_devices (chr_file (open read write append ioctl map)))
+(neverallow p4_linux_uevent_label_t p4_uevent_all_types (chr_file (ioctl map create setattr unlink rename relabelfrom relabelto)))
+
 
 (allow p4_linux_uevent_label_t p4_linux_rootdir_t (dir (getattr search)))
 (allow p4_linux_uevent_label_t p4_linux_etc_dir_t (dir (getattr search)))
@@ -62,7 +72,7 @@
 (typeattribute p4_uevent_nonboard_not_sources)
 (typeattributeset p4_uevent_nonboard_not_sources (and (p4_all_nonboard) (not (p4_native_uevent_sources))))
 (typeattribute p4_uevent_nonboard_not_directories)
-(typeattributeset p4_uevent_nonboard_not_directories (and (p4_all_nonboard) (not (or (sysfs_type) (proc)))))
+(typeattributeset p4_uevent_nonboard_not_directories (and (p4_all_nonboard) (not (or (sysfs_type) (or (proc) (device))))))
 (typeattribute p4_uevent_nonboard_not_sysfs)
 (typeattributeset p4_uevent_nonboard_not_sysfs (and (p4_all_nonboard) (not (sysfs_type))))
 (typeattribute p4_uevent_foreign_proc_roles)

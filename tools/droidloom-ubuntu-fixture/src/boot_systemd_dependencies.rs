@@ -341,7 +341,7 @@ mod tests {
             ("1.0", "1.0-0", Ordering::Equal),
             ("1:1", "2.0", Ordering::Greater),
             (
-                "259.9-0ubuntu0.1+p4gentmp1",
+                "259.9-0ubuntu0.1+p4gentmp2",
                 "259.9-0ubuntu0.1",
                 Ordering::Greater,
             ),
@@ -375,11 +375,11 @@ mod tests {
             ),
         ];
         let pid1 = one(
-            "Package: systemd\nArchitecture: amd64\nVersion: 259.9-0ubuntu0.1+p4gentmp1\nDepends: libsystemd-shared (= 259.9-0ubuntu0.1+p4gentmp1), missing | libc6 (>= 2.42)\n",
+            "Package: systemd\nArchitecture: amd64\nVersion: 259.9-0ubuntu0.1+p4gentmp2\nDepends: libsystemd-shared (= 259.9-0ubuntu0.1+p4gentmp2), missing | libc6 (>= 2.42)\n",
         );
         assert!(closure(&installed, std::slice::from_ref(&pid1)).is_err());
         let shared = one(
-            "Package: libsystemd-shared\nArchitecture: amd64\nVersion: 259.9-0ubuntu0.1+p4gentmp1\n",
+            "Package: libsystemd-shared\nArchitecture: amd64\nVersion: 259.9-0ubuntu0.1+p4gentmp2\n",
         );
         assert_eq!(
             closure(&installed, &[pid1.clone(), shared.clone()])?.len(),

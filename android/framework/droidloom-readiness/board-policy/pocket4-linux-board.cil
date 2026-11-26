@@ -84,7 +84,15 @@
 (typeattributeset p4_nonboard_except_journal_uts_and_boot_id (and (p4_all_nonboard) (not (or (proc_hostname) (proc_random)))))
 (typeattribute p4_native_nonjournal_without_module_reads)
 (typeattributeset p4_native_nonjournal_without_module_reads (and (p4_linux_nonmac_nonjournal_without_native_selinux_queries) (not (or (p4_native_sysfs_readers) (p4_native_maintenance_actors)))))
-(neverallow p4_native_nonjournal_without_module_reads p4_nonboard_except_kernel_cmdline (file (open read)))
+; FINISH reads only selinuxfs status and the original nsfs witnesses.
+; Keep the boot-proc partition, then split this actor with its exact complement.
+(typeattribute p4_native_nonjournal_without_early_reads)
+(typeattributeset p4_native_nonjournal_without_early_reads (and (p4_native_nonjournal_without_boot_proc_inputs) (not (p4_linux_early_t))))
+(typeattribute p4_early_nonboard_without_fixed_reads)
+(typeattributeset p4_early_nonboard_without_fixed_reads (and (p4_all_nonboard) (not (or (selinuxfs) (p4_kernel_ns_handle_t)))))
+(neverallow p4_native_nonjournal_without_early_reads p4_nonboard_except_kernel_cmdline (file (open read)))
+(neverallow p4_native_nonjournal_boot_proc_inputs p4_nonboard_except_boot_proc_inputs (file (open read)))
+(neverallow p4_linux_early_t p4_early_nonboard_without_fixed_reads (file (open read)))
 (neverallow p4_linux_journald_t p4_nonboard_except_journal_uts_and_boot_id (file (open read)))
 ; The upstream journal watches its UTS namespace's hostname. Android's same
 ; original proc_hostname type and its own permissions remain intact.
@@ -96,7 +104,7 @@
 (neverallow p4_mac_roles_without_frontend_metadata p4_nonboard_except_mac_read (file (open read)))
 (neverallow droidloom_broker p4_nonboard_except_broker_query_read (file (open read)))
 (typeattribute p4_linux_without_boot_commandline_reader)
-(typeattributeset p4_linux_without_boot_commandline_reader (and (p4_linux_not_pid1_manager) (not (p4_linux_module_loader_t))))
+(typeattributeset p4_linux_without_boot_commandline_reader (and (p4_linux_procs) (not (p4_native_boot_commandline_readers))))
 (neverallow p4_linux_without_boot_commandline_reader proc_cmdline (file (open read)))
 (neverallow init_t proc_cmdline (file (write append map execute execute_no_trans entrypoint ioctl setattr relabelfrom relabelto)))
 (allow init_t proc_cmdline (file (open read getattr)))
@@ -104,7 +112,7 @@
 (neverallow p4_linux_without_namespace_executor p4_all_nonboard (dir (mounton)))
 (neverallow p4_linux_without_native_directory_relabel_actors p4_all_nonboard (dir (relabelfrom)))
 (typeattribute p4_native_nonmac_without_module_dirs)
-(typeattributeset p4_native_nonmac_without_module_dirs (and (p4_linux_nonmac_without_native_selinux_queries) (not (or (p4_linux_uevent_label_t) (or (p4_native_sysfs_readers) (p4_native_maintenance_actors))))))
+(typeattributeset p4_native_nonmac_without_module_dirs (and (p4_linux_nonmac_without_native_selinux_queries) (not (or (p4_linux_console_setup_t) (or (p4_linux_uevent_label_t) (or (p4_native_sysfs_readers) (p4_native_maintenance_actors)))))))
 (neverallow p4_native_nonmac_without_module_dirs p4_all_nonboard (dir (read)))
 ; The sealed executor reopens only a newly created tmpfs mount FD before the
 ; stock credential label_fix_full(). This is an opaque directory handle, not
@@ -121,7 +129,9 @@
 (typeattributeset p4_linux_without_kernel_directory_traversal (and (p4_linux_procs) (not (or (init_t) (or (p4_linux_early_t) (p4_linux_service_executor_t))))))
 (typeattribute p4_nonboard_except_device_directory)
 (typeattributeset p4_nonboard_except_device_directory (and (p4_all_nonboard) (not (device))))
-(neverallow p4_linux_early_t p4_nonboard_except_device_directory (dir (search)))
+(typeattribute p4_early_nonboard_without_fixed_directories)
+(typeattributeset p4_early_nonboard_without_fixed_directories (and (p4_all_nonboard) (not (or (device) (or (proc) (or (sysfs) (selinuxfs)))))))
+(neverallow p4_linux_early_t p4_early_nonboard_without_fixed_directories (dir (search)))
 (allow p4_linux_early_t device (dir (search)))
 (allow init_t device (dir (getattr search)))
 (neverallow p4_linux_early_t binder_device (chr_file (read write open ioctl map)))
@@ -139,16 +149,22 @@
 (typeattribute p4_nonboard_except_journal_proc_directories)
 (typeattributeset p4_nonboard_except_journal_proc_directories (and (p4_all_nonboard) (not (or (proc) (proc_random)))))
 (typeattribute p4_native_public_directory_traversers)
-(typeattributeset p4_native_public_directory_traversers (p4_native_sysfs_readers p4_native_dev_root_traversers p4_linux_uevent_label_t))
+; Netplan only recognizes the existing selinuxfs mount; its component keeps
+; every other nonboard directory search denied, including /dev and /proc.
+(typeattributeset p4_native_public_directory_traversers (p4_native_sysfs_readers p4_native_dev_root_traversers p4_linux_uevent_label_t p4_linux_netplan_t))
 (typeattribute p4_native_nontraversing_without_module_dirs)
 (typeattributeset p4_native_nontraversing_without_module_dirs (and (p4_linux_nontraversing_without_native_selinux_queries) (not (or (p4_native_public_directory_traversers) (p4_native_maintenance_actors)))))
 (neverallow p4_native_nontraversing_without_module_dirs p4_all_nonboard (dir (search)))
 (typeattribute p4_native_dev_only_traversers)
-(typeattributeset p4_native_dev_only_traversers (and (and (p4_linux_nontraversing_without_native_selinux_queries) (p4_native_dev_root_traversers)) (not (or (p4_native_sysfs_readers) (or (p4_native_self_fd_metadata_readers) (p4_native_maintenance_actors))))))
+; The coldplug helper has its own complete sysfs/proc/device traversal guard.
+(typeattributeset p4_native_dev_only_traversers (and (and (p4_linux_nontraversing_without_native_selinux_queries) (p4_native_dev_root_traversers)) (not (or (p4_linux_uevent_label_t) (or (p4_native_sysfs_readers) (or (p4_native_self_fd_metadata_readers) (p4_native_maintenance_actors)))))))
 (neverallow p4_native_dev_only_without_user_cgroup p4_nonboard_except_device_directory (dir (search)))
 (typeattribute p4_native_sysfs_nonmodule_traversers)
-(typeattributeset p4_native_sysfs_nonmodule_traversers (and (and (p4_linux_nontraversing_without_native_selinux_queries) (p4_native_sysfs_readers)) (not (p4_native_module_readers))))
+(typeattributeset p4_native_sysfs_nonmodule_traversers (and (and (p4_linux_nontraversing_without_native_selinux_queries) (p4_native_sysfs_readers)) (not (or (p4_native_module_readers) (p4_linux_generator_t)))))
 (neverallow p4_native_sysfs_nonmodule_traversers p4_nonboard_without_native_sysfs_or_device (dir (search)))
+(typeattribute p4_nonboard_without_generator_public_dirs)
+(typeattributeset p4_nonboard_without_generator_public_dirs (and (p4_nonboard_without_native_sysfs_or_device) (not (proc))))
+(neverallow p4_linux_generator_t p4_nonboard_without_generator_public_dirs (dir (search)))
 (typeattribute p4_presenter_without_hardware_enumeration)
 (typeattributeset p4_presenter_without_hardware_enumeration (and (droidloom_presenter) (not (p4_native_sysfs_readers))))
 (typeattribute p4_presenter_hardware_enumeration)

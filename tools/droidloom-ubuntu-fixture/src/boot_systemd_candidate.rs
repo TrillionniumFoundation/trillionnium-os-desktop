@@ -26,7 +26,7 @@ const PATCH: &[u8] =
 const PATCH_PATH: &str = "/debian/patches/p4-native-generator-tmpfs.patch";
 const PATCH_NAME: &str = "p4-native-generator-tmpfs.patch";
 const ORIGINAL: &str = "259.9-0ubuntu0.1";
-const CANDIDATE: &str = "259.9-0ubuntu0.1+p4gentmp1";
+const CANDIDATE: &str = "259.9-0ubuntu0.1+p4gentmp2";
 const FAMILY: [&str; 10] = [
     "libnss-systemd",
     "libpam-systemd",
@@ -239,6 +239,13 @@ fn verify_environment(environment: &str) -> Result<()> {
     )
 }
 
+// Normal dpkg-source extraction is performed under the actual producer's 0022
+// umask; the earlier private producer used 0077. Either can only remove the
+// exact masked bits. Ownership, type, contents and alias graphs are checked below.
+fn source_archive_mode(before: u32, after: u32) -> bool {
+    after == before || after == before & !0o022 || after == before & !0o077
+}
+
 fn verify_sources(work: &Path, pins: &BTreeMap<String, FilePin>, lock: &Value) -> Result<Value> {
     let original = lock["normal_source_archives"]
         .as_object()
@@ -293,10 +300,9 @@ fn verify_sources(work: &Path, pins: &BTreeMap<String, FilePin>, lock: &Value) -
     for (path, before) in &original {
         let after = &candidate[path];
         let equal_mode = before.member.mode == after.member.mode;
-        let tightened = after.member.mode == before.member.mode & !0o077;
         ensure(
-            equal_mode || tightened,
-            "Debian source archive permissions changed beyond the producer's private umask",
+            source_archive_mode(before.member.mode, after.member.mode),
+            "Debian source archive permissions changed beyond the normal producer umasks",
         )?;
         restricted_modes += usize::from(!equal_mode);
         ensure(
@@ -1093,6 +1099,20 @@ pub fn run(config: &Path, expected: &str) -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn normal_source_umasks_accept_observed_restrictions_without_added_privilege() {
+        // R6 normal source: 102 executable/directory members 0775 -> 0755 and
+        // 195 data members 0664 -> 0644. The private producer retained 0700/0600.
+        for (before, after) in [(0o775, 0o755), (0o664, 0o644), (0o775, 0o700),
+                                (0o664, 0o600), (0o777, 0o777), (0o644, 0o644)] {
+            assert!(source_archive_mode(before, after));
+        }
+        for (before, after) in [(0o664, 0o666), (0o644, 0o755), (0o755, 0o4755),
+                                (0o775, 0o2755), (0o664, 0o640), (0o775, 0o744)] {
+            assert!(!source_archive_mode(before, after));
+        }
+    }
+
     #[test]
     fn documentation_expansion_requires_the_exact_shared_document_bytes() -> Result<()> {
         let mut before = Member {

@@ -1,0 +1,891 @@
+{
+  "aliases": [
+    {
+      "class": "file",
+      "source": "p4_linux_native_bin_t",
+      "target": "p4_linux_netplan_exec_t"
+    },
+    {
+      "class": "file",
+      "source": "p4_linux_runtime_lib_t",
+      "target": "p4_linux_netplan_library_t"
+    },
+    {
+      "class": "file",
+      "source": "p4_linux_runtime_lib_t",
+      "target": "p4_linux_netplan_yaml_t"
+    },
+    {
+      "class": "dir",
+      "source": "p4_linux_rootdir_t",
+      "target": "p4_linux_netplan_input_dir_t"
+    },
+    {
+      "class": "file",
+      "source": "p4_linux_network_manager_run_t",
+      "target": "p4_linux_netplan_output_t"
+    }
+  ],
+  "command_links": [
+    {
+      "gid": 0,
+      "nlink": 1,
+      "path": "/lib",
+      "target": "usr/lib",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "nlink": 1,
+      "path": "/lib64",
+      "target": "usr/lib64",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "nlink": 1,
+      "path": "/usr/lib/x86_64-linux-gnu/libatomic.so.1",
+      "target": "libatomic.so.1.2.0",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "nlink": 1,
+      "path": "/usr/lib/x86_64-linux-gnu/libblkid.so.1",
+      "target": "libblkid.so.1.1.0",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "nlink": 1,
+      "path": "/usr/lib/x86_64-linux-gnu/libffi.so.8",
+      "target": "libffi.so.8.2.0",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "nlink": 1,
+      "path": "/usr/lib/x86_64-linux-gnu/libgio-2.0.so.0",
+      "target": "libgio-2.0.so.0.8800.0",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "nlink": 1,
+      "path": "/usr/lib/x86_64-linux-gnu/libglib-2.0.so.0",
+      "target": "libglib-2.0.so.0.8800.0",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "nlink": 1,
+      "path": "/usr/lib/x86_64-linux-gnu/libgmodule-2.0.so.0",
+      "target": "libgmodule-2.0.so.0.8800.0",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "nlink": 1,
+      "path": "/usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0",
+      "target": "libgobject-2.0.so.0.8800.0",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "nlink": 1,
+      "path": "/usr/lib/x86_64-linux-gnu/libmount.so.1",
+      "target": "libmount.so.1.1.0",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "nlink": 1,
+      "path": "/usr/lib/x86_64-linux-gnu/libpcre2-8.so.0",
+      "target": "libpcre2-8.so.0.14.0",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "nlink": 1,
+      "path": "/usr/lib/x86_64-linux-gnu/libuuid.so.1",
+      "target": "libuuid.so.1.3.0",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "nlink": 1,
+      "path": "/usr/lib/x86_64-linux-gnu/libyaml-0.so.2",
+      "target": "libyaml-0.so.2.0.9",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "nlink": 1,
+      "path": "/usr/lib/x86_64-linux-gnu/libz.so.1",
+      "target": "libz.so.1.3.1",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "nlink": 1,
+      "path": "/usr/lib64/ld-linux-x86-64.so.2",
+      "target": "../lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+      "uid": 0
+    }
+  ],
+  "directories": [
+    {
+      "gid": 0,
+      "mode": 493,
+      "names": [
+        "00-network-manager-all.yaml",
+        "PLACEHOLDER"
+      ],
+      "nlink": 2,
+      "path": "/usr/lib/netplan",
+      "source_type": "p4_linux_rootdir_t",
+      "target_type": "p4_linux_netplan_input_dir_t",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "names": [],
+      "nlink": 2,
+      "path": "/etc/netplan",
+      "source_type": "p4_linux_rootdir_t",
+      "target_type": "p4_linux_netplan_input_dir_t",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "mode": 493,
+      "names": [],
+      "nlink": 2,
+      "path": "/run/netplan",
+      "source_type": "p4_linux_rootdir_t",
+      "target_type": "p4_linux_netplan_input_dir_t",
+      "uid": 0
+    }
+  ],
+  "elf_paths": [
+    "/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+    "/usr/lib/x86_64-linux-gnu/libatomic.so.1.2.0",
+    "/usr/lib/x86_64-linux-gnu/libblkid.so.1.1.0",
+    "/usr/lib/x86_64-linux-gnu/libc.so.6",
+    "/usr/lib/x86_64-linux-gnu/libffi.so.8.2.0",
+    "/usr/lib/x86_64-linux-gnu/libgio-2.0.so.0.8800.0",
+    "/usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.8800.0",
+    "/usr/lib/x86_64-linux-gnu/libgmodule-2.0.so.0.8800.0",
+    "/usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.8800.0",
+    "/usr/lib/x86_64-linux-gnu/libm.so.6",
+    "/usr/lib/x86_64-linux-gnu/libmount.so.1.1.0",
+    "/usr/lib/x86_64-linux-gnu/libnetplan.so.1",
+    "/usr/lib/x86_64-linux-gnu/libpcre2-8.so.0.14.0",
+    "/usr/lib/x86_64-linux-gnu/libselinux.so.1",
+    "/usr/lib/x86_64-linux-gnu/libuuid.so.1.3.0",
+    "/usr/lib/x86_64-linux-gnu/libyaml-0.so.2.0.9",
+    "/usr/lib/x86_64-linux-gnu/libz.so.1.3.1",
+    "/usr/libexec/netplan/configure"
+  ],
+  "file_packages": {
+    "/usr/lib/netplan/00-network-manager-all.yaml": "ubuntu-settings:all",
+    "/usr/lib/systemd/system/netplan-configure.service": "netplan-generator:amd64",
+    "/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2": "libc6:amd64",
+    "/usr/lib/x86_64-linux-gnu/libacl.so.1.1.2302": "libacl1:amd64",
+    "/usr/lib/x86_64-linux-gnu/libatomic.so.1.2.0": "libatomic1:amd64",
+    "/usr/lib/x86_64-linux-gnu/libattr.so.1.1.2502": "libattr1:amd64",
+    "/usr/lib/x86_64-linux-gnu/libblkid.so.1.1.0": "libblkid1:amd64",
+    "/usr/lib/x86_64-linux-gnu/libc.so.6": "libc6:amd64",
+    "/usr/lib/x86_64-linux-gnu/libcrypt.so.1.1.0": "libcrypt1:amd64",
+    "/usr/lib/x86_64-linux-gnu/libffi.so.8.2.0": "libffi8:amd64",
+    "/usr/lib/x86_64-linux-gnu/libgcc_s.so.1": "libgcc-s1:amd64",
+    "/usr/lib/x86_64-linux-gnu/libgio-2.0.so.0.8800.0": "libglib2.0-0t64:amd64",
+    "/usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.8800.0": "libglib2.0-0t64:amd64",
+    "/usr/lib/x86_64-linux-gnu/libgmodule-2.0.so.0.8800.0": "libglib2.0-0t64:amd64",
+    "/usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.8800.0": "libglib2.0-0t64:amd64",
+    "/usr/lib/x86_64-linux-gnu/libm.so.6": "libc6:amd64",
+    "/usr/lib/x86_64-linux-gnu/libmount.so.1.1.0": "libmount1:amd64",
+    "/usr/lib/x86_64-linux-gnu/libnetplan.so.1": "libnetplan1:amd64",
+    "/usr/lib/x86_64-linux-gnu/libpcre2-8.so.0.14.0": "libpcre2-8-0:amd64",
+    "/usr/lib/x86_64-linux-gnu/libselinux.so.1": "libselinux1:amd64",
+    "/usr/lib/x86_64-linux-gnu/libsystemd.so.0.42.0": "libsystemd0:amd64",
+    "/usr/lib/x86_64-linux-gnu/libuuid.so.1.3.0": "libuuid1:amd64",
+    "/usr/lib/x86_64-linux-gnu/libyaml-0.so.2.0.9": "libyaml-0-2:amd64",
+    "/usr/lib/x86_64-linux-gnu/libz.so.1.3.1": "zlib1g:amd64",
+    "/usr/libexec/netplan/configure": "netplan-generator:amd64"
+  },
+  "files": [
+    {
+      "bytes": 51755,
+      "category": "cache",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "path": "/etc/ld.so.cache",
+      "sha256": "dd7fe52f050a934fd422106aba76d07dd7de6c8e3c9f4845dc521c96ec201866",
+      "source_type": "p4_linux_console_ld_cache_native_config_t",
+      "target_type": "p4_linux_console_ld_cache_native_config_t",
+      "uid": 0
+    },
+    {
+      "bytes": 49,
+      "category": "config",
+      "gid": 0,
+      "mode": 384,
+      "nlink": 1,
+      "path": "/usr/lib/netplan/00-network-manager-all.yaml",
+      "sha256": "d0fa4fd1b88a52f9b8eae641c7c84b7843197155c08df46c0057a4ea23094411",
+      "source_type": "p4_linux_runtime_lib_t",
+      "target_type": "p4_linux_netplan_yaml_t",
+      "uid": 0
+    },
+    {
+      "bytes": 879,
+      "category": "unit",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "path": "/usr/lib/systemd/system/netplan-configure.service",
+      "sha256": "6893fca2c14d53951c73f396f7528b0b1baa9f570ca9cf099dc1c71df1aa2724",
+      "source_type": "p4_linux_unit_file_t",
+      "target_type": "p4_linux_unit_file_t",
+      "uid": 0
+    },
+    {
+      "bytes": 254864,
+      "category": "loader",
+      "gid": 0,
+      "mode": 493,
+      "nlink": 1,
+      "path": "/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+      "sha256": "c0b20d6e1ced12abfe0b1ef2b5b68017950beaaea3df69eb6949d73e0ecf7b40",
+      "source_type": "p4_linux_elf_interpreter_t",
+      "target_type": "p4_linux_elf_interpreter_t",
+      "uid": 0
+    },
+    {
+      "bytes": 38984,
+      "category": "shared_label_member",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "path": "/usr/lib/x86_64-linux-gnu/libacl.so.1.1.2302",
+      "sha256": "534d062c6b873081a5f5623627bdeb7d8339087c434be758493ad87c87e257ab",
+      "source_type": "p4_linux_console_library_runtime_lib_t",
+      "target_type": "p4_linux_console_library_runtime_lib_t",
+      "uid": 0
+    },
+    {
+      "bytes": 35120,
+      "category": "library",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "path": "/usr/lib/x86_64-linux-gnu/libatomic.so.1.2.0",
+      "sha256": "eac440708f874c4d446671efb5353cebeaa829bd1f18cd8d5065cd6efefa387b",
+      "source_type": "p4_linux_runtime_lib_t",
+      "target_type": "p4_linux_netplan_library_t",
+      "uid": 0
+    },
+    {
+      "bytes": 26776,
+      "category": "shared_label_member",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "path": "/usr/lib/x86_64-linux-gnu/libattr.so.1.1.2502",
+      "sha256": "bdaf51cec34ae2930638f55ebf752b1f66197c24cd13a16dc30f30c62f059458",
+      "source_type": "p4_linux_console_library_runtime_lib_t",
+      "target_type": "p4_linux_console_library_runtime_lib_t",
+      "uid": 0
+    },
+    {
+      "bytes": 240696,
+      "category": "library",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "path": "/usr/lib/x86_64-linux-gnu/libblkid.so.1.1.0",
+      "sha256": "c6c40ef148122df950ba53c4e44f7b45860da2381bf59fa8d4a645e7bfa55cb8",
+      "source_type": "p4_linux_runtime_lib_t",
+      "target_type": "p4_linux_netplan_library_t",
+      "uid": 0
+    },
+    {
+      "bytes": 2190608,
+      "category": "library",
+      "gid": 0,
+      "mode": 493,
+      "nlink": 1,
+      "path": "/usr/lib/x86_64-linux-gnu/libc.so.6",
+      "sha256": "9941dc28e68bc5fd788d9cd024c69e68c791d63799e7538a97b6040dd9f50fb6",
+      "source_type": "p4_linux_console_library_runtime_lib_t",
+      "target_type": "p4_linux_console_library_runtime_lib_t",
+      "uid": 0
+    },
+    {
+      "bytes": 215128,
+      "category": "shared_label_member",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "path": "/usr/lib/x86_64-linux-gnu/libcrypt.so.1.1.0",
+      "sha256": "212437df8afcd4004965550cb6df2d0eeb8cad736f7a13a89dcec455182429a6",
+      "source_type": "p4_linux_console_library_runtime_lib_t",
+      "target_type": "p4_linux_console_library_runtime_lib_t",
+      "uid": 0
+    },
+    {
+      "bytes": 64184,
+      "category": "library",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "path": "/usr/lib/x86_64-linux-gnu/libffi.so.8.2.0",
+      "sha256": "1a0dc86f787f73e025a6e521056360afcbe70f2a82cd808132fefc2b4ee95daa",
+      "source_type": "p4_linux_runtime_lib_t",
+      "target_type": "p4_linux_netplan_library_t",
+      "uid": 0
+    },
+    {
+      "bytes": 187120,
+      "category": "shared_label_member",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "path": "/usr/lib/x86_64-linux-gnu/libgcc_s.so.1",
+      "sha256": "9d339ecb409578d6a5d587e6c537a8f9589b8a13fefba30d167433a4b5758bee",
+      "source_type": "p4_linux_console_library_runtime_lib_t",
+      "target_type": "p4_linux_console_library_runtime_lib_t",
+      "uid": 0
+    },
+    {
+      "bytes": 1941032,
+      "category": "library",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "path": "/usr/lib/x86_64-linux-gnu/libgio-2.0.so.0.8800.0",
+      "sha256": "015bde05a0741bbc56b5af15f87eac3eb6e25767c69d8a499686a533b69a35d4",
+      "source_type": "p4_linux_runtime_lib_t",
+      "target_type": "p4_linux_netplan_library_t",
+      "uid": 0
+    },
+    {
+      "bytes": 1404616,
+      "category": "library",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "path": "/usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.8800.0",
+      "sha256": "3cc1aeae827f436a296ec488b80e6c45c150dccfb4525e7db275cc08772d322f",
+      "source_type": "p4_linux_runtime_lib_t",
+      "target_type": "p4_linux_netplan_library_t",
+      "uid": 0
+    },
+    {
+      "bytes": 22816,
+      "category": "library",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "path": "/usr/lib/x86_64-linux-gnu/libgmodule-2.0.so.0.8800.0",
+      "sha256": "aa2f41237a20b7b28e99ef9706d2b0bad3097e313f51272cfd14dadff8b195cb",
+      "source_type": "p4_linux_runtime_lib_t",
+      "target_type": "p4_linux_netplan_library_t",
+      "uid": 0
+    },
+    {
+      "bytes": 403928,
+      "category": "library",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "path": "/usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.8800.0",
+      "sha256": "8137127af8315f304e7099591a37a5a922801aaa39e10dc03daaf3c725066975",
+      "source_type": "p4_linux_runtime_lib_t",
+      "target_type": "p4_linux_netplan_library_t",
+      "uid": 0
+    },
+    {
+      "bytes": 1198376,
+      "category": "library",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "path": "/usr/lib/x86_64-linux-gnu/libm.so.6",
+      "sha256": "37b9e6c977b2a0b02a110d93eb8f01b643c9848653f18bd51682c5279ac88f54",
+      "source_type": "p4_linux_console_library_runtime_lib_t",
+      "target_type": "p4_linux_console_library_runtime_lib_t",
+      "uid": 0
+    },
+    {
+      "bytes": 338728,
+      "category": "library",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "path": "/usr/lib/x86_64-linux-gnu/libmount.so.1.1.0",
+      "sha256": "ada01a744a6b665fae43097f3b93400aa74b20d6b59e2d51b9dd28c8747cccbb",
+      "source_type": "p4_linux_runtime_lib_t",
+      "target_type": "p4_linux_netplan_library_t",
+      "uid": 0
+    },
+    {
+      "bytes": 362648,
+      "category": "library",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "path": "/usr/lib/x86_64-linux-gnu/libnetplan.so.1",
+      "sha256": "00537341c36e1ba98674b5c700a416b43f8d6544145b9e2b563c7dc1d0dfe739",
+      "source_type": "p4_linux_runtime_lib_t",
+      "target_type": "p4_linux_netplan_library_t",
+      "uid": 0
+    },
+    {
+      "bytes": 699056,
+      "category": "library",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "path": "/usr/lib/x86_64-linux-gnu/libpcre2-8.so.0.14.0",
+      "sha256": "1896c0dee31c0b04cf749092fafc383178817b02a2304e9128246108920d5156",
+      "source_type": "p4_linux_console_library_runtime_lib_t",
+      "target_type": "p4_linux_console_library_runtime_lib_t",
+      "uid": 0
+    },
+    {
+      "bytes": 199120,
+      "category": "library",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "path": "/usr/lib/x86_64-linux-gnu/libselinux.so.1",
+      "sha256": "c977b03dbb29e45ca7206ff0937cfda419dcacc0fbbe72be1f0a72cfc8c1b218",
+      "source_type": "p4_linux_console_library_runtime_lib_t",
+      "target_type": "p4_linux_console_library_runtime_lib_t",
+      "uid": 0
+    },
+    {
+      "bytes": 1127960,
+      "category": "shared_label_member",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "path": "/usr/lib/x86_64-linux-gnu/libsystemd.so.0.42.0",
+      "sha256": "716def160eb37d6732c60042a5b8b042e483b30ea274c3c6db3af5eb0503033c",
+      "source_type": "p4_linux_console_library_runtime_lib_t",
+      "target_type": "p4_linux_console_library_runtime_lib_t",
+      "uid": 0
+    },
+    {
+      "bytes": 35112,
+      "category": "library",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "path": "/usr/lib/x86_64-linux-gnu/libuuid.so.1.3.0",
+      "sha256": "aef01d22b409ace7db97357b8b47332cd3e10c262ffa3c4014f3eeb44b968620",
+      "source_type": "p4_linux_runtime_lib_t",
+      "target_type": "p4_linux_netplan_library_t",
+      "uid": 0
+    },
+    {
+      "bytes": 133272,
+      "category": "library",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "path": "/usr/lib/x86_64-linux-gnu/libyaml-0.so.2.0.9",
+      "sha256": "5c0fd1dd2a241ed0ebb72f7f25760bab4181f00f9d0f6ae1d0c6d888dc88bffb",
+      "source_type": "p4_linux_runtime_lib_t",
+      "target_type": "p4_linux_netplan_library_t",
+      "uid": 0
+    },
+    {
+      "bytes": 121272,
+      "category": "library",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "path": "/usr/lib/x86_64-linux-gnu/libz.so.1.3.1",
+      "sha256": "27fa6c6cb94fb5b099ead61758a300dbc392d1dbf307fff6c16a9b8e57fdc9de",
+      "source_type": "p4_linux_runtime_lib_t",
+      "target_type": "p4_linux_netplan_library_t",
+      "uid": 0
+    },
+    {
+      "bytes": 23176,
+      "category": "entry",
+      "gid": 0,
+      "mode": 493,
+      "nlink": 1,
+      "path": "/usr/libexec/netplan/configure",
+      "sha256": "02cfa8694559572d38b6c516ab6f103ab55b129cbfac5b3140d9108358bdb12d",
+      "source_type": "p4_linux_native_bin_t",
+      "target_type": "p4_linux_netplan_exec_t",
+      "uid": 0
+    }
+  ],
+  "needed_edges": [
+    [
+      "/usr/libexec/netplan/configure",
+      "libnetplan.so.1",
+      "/usr/lib/x86_64-linux-gnu/libnetplan.so.1"
+    ],
+    [
+      "/usr/libexec/netplan/configure",
+      "libglib-2.0.so.0",
+      "/usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.8800.0"
+    ],
+    [
+      "/usr/libexec/netplan/configure",
+      "libc.so.6",
+      "/usr/lib/x86_64-linux-gnu/libc.so.6"
+    ],
+    [
+      "/usr/lib/x86_64-linux-gnu/libnetplan.so.1",
+      "libglib-2.0.so.0",
+      "/usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.8800.0"
+    ],
+    [
+      "/usr/lib/x86_64-linux-gnu/libnetplan.so.1",
+      "libgio-2.0.so.0",
+      "/usr/lib/x86_64-linux-gnu/libgio-2.0.so.0.8800.0"
+    ],
+    [
+      "/usr/lib/x86_64-linux-gnu/libnetplan.so.1",
+      "libgobject-2.0.so.0",
+      "/usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.8800.0"
+    ],
+    [
+      "/usr/lib/x86_64-linux-gnu/libnetplan.so.1",
+      "libyaml-0.so.2",
+      "/usr/lib/x86_64-linux-gnu/libyaml-0.so.2.0.9"
+    ],
+    [
+      "/usr/lib/x86_64-linux-gnu/libnetplan.so.1",
+      "libuuid.so.1",
+      "/usr/lib/x86_64-linux-gnu/libuuid.so.1.3.0"
+    ],
+    [
+      "/usr/lib/x86_64-linux-gnu/libnetplan.so.1",
+      "libc.so.6",
+      "/usr/lib/x86_64-linux-gnu/libc.so.6"
+    ],
+    [
+      "/usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.8800.0",
+      "libatomic.so.1",
+      "/usr/lib/x86_64-linux-gnu/libatomic.so.1.2.0"
+    ],
+    [
+      "/usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.8800.0",
+      "libm.so.6",
+      "/usr/lib/x86_64-linux-gnu/libm.so.6"
+    ],
+    [
+      "/usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.8800.0",
+      "libpcre2-8.so.0",
+      "/usr/lib/x86_64-linux-gnu/libpcre2-8.so.0.14.0"
+    ],
+    [
+      "/usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.8800.0",
+      "libc.so.6",
+      "/usr/lib/x86_64-linux-gnu/libc.so.6"
+    ],
+    [
+      "/usr/lib/x86_64-linux-gnu/libc.so.6",
+      "ld-linux-x86-64.so.2",
+      "/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2"
+    ],
+    [
+      "/usr/lib/x86_64-linux-gnu/libgio-2.0.so.0.8800.0",
+      "libglib-2.0.so.0",
+      "/usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.8800.0"
+    ],
+    [
+      "/usr/lib/x86_64-linux-gnu/libgio-2.0.so.0.8800.0",
+      "libgobject-2.0.so.0",
+      "/usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.8800.0"
+    ],
+    [
+      "/usr/lib/x86_64-linux-gnu/libgio-2.0.so.0.8800.0",
+      "libgmodule-2.0.so.0",
+      "/usr/lib/x86_64-linux-gnu/libgmodule-2.0.so.0.8800.0"
+    ],
+    [
+      "/usr/lib/x86_64-linux-gnu/libgio-2.0.so.0.8800.0",
+      "libz.so.1",
+      "/usr/lib/x86_64-linux-gnu/libz.so.1.3.1"
+    ],
+    [
+      "/usr/lib/x86_64-linux-gnu/libgio-2.0.so.0.8800.0",
+      "libmount.so.1",
+      "/usr/lib/x86_64-linux-gnu/libmount.so.1.1.0"
+    ],
+    [
+      "/usr/lib/x86_64-linux-gnu/libgio-2.0.so.0.8800.0",
+      "libselinux.so.1",
+      "/usr/lib/x86_64-linux-gnu/libselinux.so.1"
+    ],
+    [
+      "/usr/lib/x86_64-linux-gnu/libgio-2.0.so.0.8800.0",
+      "libc.so.6",
+      "/usr/lib/x86_64-linux-gnu/libc.so.6"
+    ],
+    [
+      "/usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.8800.0",
+      "libglib-2.0.so.0",
+      "/usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.8800.0"
+    ],
+    [
+      "/usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.8800.0",
+      "libffi.so.8",
+      "/usr/lib/x86_64-linux-gnu/libffi.so.8.2.0"
+    ],
+    [
+      "/usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.8800.0",
+      "libc.so.6",
+      "/usr/lib/x86_64-linux-gnu/libc.so.6"
+    ],
+    [
+      "/usr/lib/x86_64-linux-gnu/libyaml-0.so.2.0.9",
+      "libc.so.6",
+      "/usr/lib/x86_64-linux-gnu/libc.so.6"
+    ],
+    [
+      "/usr/lib/x86_64-linux-gnu/libuuid.so.1.3.0",
+      "libc.so.6",
+      "/usr/lib/x86_64-linux-gnu/libc.so.6"
+    ],
+    [
+      "/usr/lib/x86_64-linux-gnu/libuuid.so.1.3.0",
+      "ld-linux-x86-64.so.2",
+      "/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2"
+    ],
+    [
+      "/usr/lib/x86_64-linux-gnu/libatomic.so.1.2.0",
+      "libc.so.6",
+      "/usr/lib/x86_64-linux-gnu/libc.so.6"
+    ],
+    [
+      "/usr/lib/x86_64-linux-gnu/libm.so.6",
+      "libc.so.6",
+      "/usr/lib/x86_64-linux-gnu/libc.so.6"
+    ],
+    [
+      "/usr/lib/x86_64-linux-gnu/libm.so.6",
+      "ld-linux-x86-64.so.2",
+      "/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2"
+    ],
+    [
+      "/usr/lib/x86_64-linux-gnu/libpcre2-8.so.0.14.0",
+      "libc.so.6",
+      "/usr/lib/x86_64-linux-gnu/libc.so.6"
+    ],
+    [
+      "/usr/lib/x86_64-linux-gnu/libgmodule-2.0.so.0.8800.0",
+      "libglib-2.0.so.0",
+      "/usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.8800.0"
+    ],
+    [
+      "/usr/lib/x86_64-linux-gnu/libgmodule-2.0.so.0.8800.0",
+      "libc.so.6",
+      "/usr/lib/x86_64-linux-gnu/libc.so.6"
+    ],
+    [
+      "/usr/lib/x86_64-linux-gnu/libz.so.1.3.1",
+      "libc.so.6",
+      "/usr/lib/x86_64-linux-gnu/libc.so.6"
+    ],
+    [
+      "/usr/lib/x86_64-linux-gnu/libmount.so.1.1.0",
+      "libblkid.so.1",
+      "/usr/lib/x86_64-linux-gnu/libblkid.so.1.1.0"
+    ],
+    [
+      "/usr/lib/x86_64-linux-gnu/libmount.so.1.1.0",
+      "libselinux.so.1",
+      "/usr/lib/x86_64-linux-gnu/libselinux.so.1"
+    ],
+    [
+      "/usr/lib/x86_64-linux-gnu/libmount.so.1.1.0",
+      "libc.so.6",
+      "/usr/lib/x86_64-linux-gnu/libc.so.6"
+    ],
+    [
+      "/usr/lib/x86_64-linux-gnu/libselinux.so.1",
+      "libpcre2-8.so.0",
+      "/usr/lib/x86_64-linux-gnu/libpcre2-8.so.0.14.0"
+    ],
+    [
+      "/usr/lib/x86_64-linux-gnu/libselinux.so.1",
+      "libc.so.6",
+      "/usr/lib/x86_64-linux-gnu/libc.so.6"
+    ],
+    [
+      "/usr/lib/x86_64-linux-gnu/libselinux.so.1",
+      "ld-linux-x86-64.so.2",
+      "/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2"
+    ],
+    [
+      "/usr/lib/x86_64-linux-gnu/libffi.so.8.2.0",
+      "libc.so.6",
+      "/usr/lib/x86_64-linux-gnu/libc.so.6"
+    ],
+    [
+      "/usr/lib/x86_64-linux-gnu/libblkid.so.1.1.0",
+      "libc.so.6",
+      "/usr/lib/x86_64-linux-gnu/libc.so.6"
+    ]
+  ],
+  "other_yaml_profiles_qualified": false,
+  "output_path": "/run/NetworkManager/conf.d/10-globally-managed-devices.conf",
+  "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "packages": {
+    "libacl1:amd64": "2.3.2-2",
+    "libatomic1:amd64": "16-20260322-1ubuntu1",
+    "libattr1:amd64": "1:2.5.2-4ubuntu0.1",
+    "libblkid1:amd64": "2.41.3-3ubuntu2.2",
+    "libc6:amd64": "2.43-2ubuntu2.7",
+    "libcrypt1:amd64": "1:4.5.1-1",
+    "libffi8:amd64": "3.5.2-4",
+    "libgcc-s1:amd64": "16-20260322-1ubuntu1",
+    "libglib2.0-0t64:amd64": "2.88.0-1ubuntu0.1",
+    "libmount1:amd64": "2.41.3-3ubuntu2.2",
+    "libnetplan1:amd64": "1.2-1ubuntu5.1",
+    "libpcre2-8-0:amd64": "10.46-1ubuntu0.1",
+    "libselinux1:amd64": "3.9-4build1+p4lsmexec4",
+    "libsystemd0:amd64": "259.9-0ubuntu0.1+p4gentmp2",
+    "libuuid1:amd64": "2.41.3-3ubuntu2.2",
+    "libyaml-0-2:amd64": "0.2.5-2build3",
+    "netplan-generator:amd64": "1.2-1ubuntu5.1",
+    "ubuntu-settings:all": "26.04.6",
+    "zlib1g:amd64": "1:1.3.dfsg+really1.3.1-1ubuntu3.2"
+  },
+  "runtime_qualified": false,
+  "schema": "droidloom.native-netplan-source-closure.v1",
+  "selected_configuration": "global-NetworkManager-without-netdefs",
+  "shared_library_paths": [
+    "/usr/lib/x86_64-linux-gnu/libacl.so.1.1.2302",
+    "/usr/lib/x86_64-linux-gnu/libattr.so.1.1.2502",
+    "/usr/lib/x86_64-linux-gnu/libc.so.6",
+    "/usr/lib/x86_64-linux-gnu/libcrypt.so.1.1.0",
+    "/usr/lib/x86_64-linux-gnu/libgcc_s.so.1",
+    "/usr/lib/x86_64-linux-gnu/libm.so.6",
+    "/usr/lib/x86_64-linux-gnu/libpcre2-8.so.0.14.0",
+    "/usr/lib/x86_64-linux-gnu/libselinux.so.1",
+    "/usr/lib/x86_64-linux-gnu/libsystemd.so.0.42.0"
+  ],
+  "source_documents": [
+    {
+      "admission": "normal dpkg-source extraction with complete dsc SHA256 archive verification",
+      "bytes": 9569,
+      "package": "netplan.io",
+      "path": "src/configure.c",
+      "sha256": "8339b5c630634ebd035491dd2969b9eb466b3ec4543bd662775c488a0ab7896b",
+      "version": "1.2-1ubuntu5.1"
+    },
+    {
+      "admission": "normal dpkg-source extraction with complete dsc SHA256 archive verification",
+      "bytes": 42999,
+      "package": "netplan.io",
+      "path": "src/util.c",
+      "sha256": "bab3ec6ee5eb4b45ed228bd80b81c2c01deff46aa6ffbf316d6afe01f67e11e4",
+      "version": "1.2-1ubuntu5.1"
+    },
+    {
+      "admission": "normal dpkg-source extraction with complete dsc SHA256 archive verification",
+      "bytes": 56615,
+      "package": "netplan.io",
+      "path": "src/nm.c",
+      "sha256": "408765cfc54b7f1e198305593fb0589fd546dcc2a6e8e7812f350c6ef5eb87b7",
+      "version": "1.2-1ubuntu5.1"
+    },
+    {
+      "admission": "normal dpkg-source extraction with complete dsc SHA256 archive verification",
+      "bytes": 60196,
+      "package": "netplan.io",
+      "path": "src/networkd.c",
+      "sha256": "222e91affef2b5a3abbc237c577e4096867abc7620c7f1fe309bfc0a525fe804",
+      "version": "1.2-1ubuntu5.1"
+    },
+    {
+      "admission": "normal dpkg-source extraction with complete dsc SHA256 archive verification",
+      "bytes": 3103,
+      "package": "netplan.io",
+      "path": "src/openvswitch.c",
+      "sha256": "143fcbbf0db9785480c996ece0543c8b319026beaab0703192085f58174553a3",
+      "version": "1.2-1ubuntu5.1"
+    },
+    {
+      "admission": "normal dpkg-source extraction with complete dsc SHA256 archive verification",
+      "bytes": 2526,
+      "package": "netplan.io",
+      "path": "src/sriov.c",
+      "sha256": "6af09a23cc101a11827ca50b63239fa6113bd7704d179c136b041523cef71871",
+      "version": "1.2-1ubuntu5.1"
+    },
+    {
+      "admission": "normal dpkg-source extraction with complete dsc SHA256 archive verification",
+      "bytes": 25222,
+      "package": "netplan.io",
+      "path": "src/gen-openvswitch.c",
+      "sha256": "c22d63fb356862d8228ec43413c905623463bff1eef15ccc3c41c0a4db3c3012",
+      "version": "1.2-1ubuntu5.1"
+    },
+    {
+      "admission": "normal dpkg-source extraction with complete dsc SHA256 archive verification",
+      "bytes": 525,
+      "package": "netplan.io",
+      "path": "debian/patches/series",
+      "sha256": "0880cab395ba7830fb15a23cb12a5f3a7e37f4b781c2c46d1d7ea81c1a611571",
+      "version": "1.2-1ubuntu5.1"
+    },
+    {
+      "admission": "https://archive.ubuntu.com/ubuntu/pool/main/n/netplan.io/netplan.io_1.2-1ubuntu5.1.dsc",
+      "bytes": 2564,
+      "package": "netplan.io",
+      "path": "netplan.io_1.2-1ubuntu5.1.dsc",
+      "sha256": "89c9d891c6bd14932284abb56f30aebd158e87b56d9521733a26a87c75765bd4",
+      "version": "1.2-1ubuntu5.1"
+    },
+    {
+      "admission": "https://archive.ubuntu.com/ubuntu/pool/main/n/netplan.io/netplan.io_1.2.orig.tar.gz",
+      "bytes": 527597,
+      "package": "netplan.io",
+      "path": "netplan.io_1.2.orig.tar.gz",
+      "sha256": "1516db6e37f92f4f0609118bce6b8dc0b2b6149e331d1345c9aced85ffe60004",
+      "version": "1.2-1ubuntu5.1"
+    },
+    {
+      "admission": "https://archive.ubuntu.com/ubuntu/pool/main/n/netplan.io/netplan.io_1.2-1ubuntu5.1.debian.tar.xz",
+      "bytes": 27656,
+      "package": "netplan.io",
+      "path": "netplan.io_1.2-1ubuntu5.1.debian.tar.xz",
+      "sha256": "47116706017fb0b809e8cf570caa747ce4f7f3c0b55ac176f5deaf597187c34a",
+      "version": "1.2-1ubuntu5.1"
+    },
+    {
+      "admission": "normal-dsc-roundtrip; p4-libselinux-constructor-audit-4b91-r2/SOURCE.json 7b25ebfb73b6cd6ee1a49ba3a357ff157672b7cddb0fdbf66b86e43afd5b01a6",
+      "bytes": 2913,
+      "package": "libselinux",
+      "path": "src/init.c",
+      "sha256": "c7e545e2e87322738a55f55fd7b4ebf8957c44a3d9f87f52a2c359e4ad865ba3",
+      "version": "3.9-4build1+p4lsmexec4"
+    },
+    {
+      "admission": "normal-dsc-roundtrip; p4-libselinux-constructor-audit-4b91-r2/SOURCE.json 7b25ebfb73b6cd6ee1a49ba3a357ff157672b7cddb0fdbf66b86e43afd5b01a6",
+      "bytes": 10196,
+      "package": "libselinux",
+      "path": "src/selinux_config.c",
+      "sha256": "40a1f0b4f0a0bba99c64a77fa952fde889d68927360dcf2aef927c662cf845ea",
+      "version": "3.9-4build1+p4lsmexec4"
+    }
+  ],
+  "unit_argv": [
+    "/usr/libexec/netplan/configure"
+  ]
+}

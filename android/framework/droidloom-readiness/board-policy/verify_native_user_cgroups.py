@@ -40,7 +40,7 @@ def load_contract(here):
     if (set(value) != {"schema", "identities", "systemd_version", "delegate_subgroup",
                       "delegation_attributes", "normal_units", "early_boot_sources"} or
             value["schema"] != "droidloom.native-user-cgroup-contract.v1" or
-            value["systemd_version"] != "259.9-0ubuntu0.1+p4gentmp1" or
+            value["systemd_version"] != "259.9-0ubuntu0.1+p4gentmp2" or
             value["delegate_subgroup"] != "init.scope"):
         raise ValueError("Unknown native user cgroup source contract")
     identities = value["identities"]

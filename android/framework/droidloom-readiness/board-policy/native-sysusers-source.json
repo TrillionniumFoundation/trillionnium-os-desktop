@@ -1,0 +1,89 @@
+{
+  "schema": "droidloom.native-sysusers-lock-source.v1",
+  "package": "systemd:amd64",
+  "version": "259.9-0ubuntu0.1+p4gentmp2",
+  "aliases": [
+    {
+      "source": "p4_linux_etc_dir_t",
+      "target": "p4_linux_sysusers_etc_root_t",
+      "class": "dir"
+    },
+    {
+      "source": "p4_linux_native_config_t",
+      "target": "p4_linux_sysusers_passwd_lock_t",
+      "class": "file"
+    }
+  ],
+  "normal_files": [
+    {
+      "path": "/usr/bin/systemd-sysusers",
+      "bytes": 68224,
+      "sha256": "a042bcaba44058f73f73d26fc998b6da4bd64a0788e8f65ddde22ee1e18a384c",
+      "mode": 493,
+      "uid": 0,
+      "gid": 0,
+      "nlink": 1,
+      "type": "p4_linux_setup_exec_t"
+    },
+    {
+      "path": "/usr/lib/systemd/system/systemd-sysusers.service",
+      "bytes": 1310,
+      "sha256": "22c1aa54692be4fc17b11c0e77230d88cae5d10794def3b4a9d6070f299a6165",
+      "mode": 420,
+      "uid": 0,
+      "gid": 0,
+      "nlink": 1,
+      "type": "p4_linux_unit_file_t"
+    }
+  ],
+  "source_documents": [
+    {
+      "path": "src/basic/user-util.c",
+      "bytes": 42576,
+      "sha256": "d24df80e7a5b91aa0bdc1740a3d9e12a3444758662fa04d89dbed11e86ba2085",
+      "admission": "normal-dsc-roundtrip"
+    },
+    {
+      "path": "src/basic/user-util.h",
+      "bytes": 6868,
+      "sha256": "53840302cac35c769790eeb7215c9aa07b592e9b1b5eb74806c494a53370046c",
+      "admission": "normal-dsc-roundtrip"
+    },
+    {
+      "path": "src/basic/lock-util.c",
+      "bytes": 8888,
+      "sha256": "e0d3430e14a01bb5eac811838d0f1663dfbc551ae3863f185250fbf821682727",
+      "admission": "normal-dsc-roundtrip"
+    },
+    {
+      "path": "src/sysusers/sysusers.c",
+      "bytes": 93671,
+      "sha256": "caf81b4091e9ffdbfabdf6ca1d81450b45d74ede6b6498bb68f441b844ed71a5",
+      "admission": "normal-dsc-roundtrip"
+    }
+  ],
+  "existing_objects": [
+    {
+      "path": "/etc",
+      "class": "dir",
+      "mode": 493,
+      "uid": 0,
+      "gid": 0,
+      "source_type": "p4_linux_etc_dir_t",
+      "target_type": "p4_linux_sysusers_etc_root_t"
+    },
+    {
+      "path": "/etc/.pwd.lock",
+      "class": "file",
+      "mode": 384,
+      "uid": 0,
+      "gid": 0,
+      "nlink": 1,
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_type": "p4_linux_native_config_t",
+      "target_type": "p4_linux_sysusers_passwd_lock_t"
+    }
+  ],
+  "runtime_qualified": false
+}

@@ -16,7 +16,7 @@
 /var/lib -d u:object_r:p4_linux_rootdir_t:s0
 /var/lib/systemd -d u:object_r:p4_linux_rootdir_t:s0
 /etc/machine-id -- u:object_r:p4_linux_machine_id_t:s0
-/etc -d u:object_r:p4_linux_etc_dir_t:s0
+/etc -d u:object_r:p4_linux_sysusers_etc_root_t:s0
 /usr/lib/systemd/systemd-executor -- u:object_r:p4_linux_systemd_executor_t:s0
 /usr/lib/systemd/system -d u:object_r:p4_linux_unit_directory_t:s0
 /(etc|usr/lib)/systemd/system/[^/]+\.(service|target|slice|scope|socket|timer|mount|automount|path|device|swap) -- u:object_r:p4_linux_unit_file_t:s0
@@ -61,6 +61,7 @@
 # Only the stock core directory families are selected; service-specific
 # namespace, logind, resolver and journal paths keep their independent types.
 /run -d u:object_r:p4_linux_run_t:s0
+/run/mount -d u:object_r:p4_linux_mount_monitor_dir_t:s0
 /run/systemd -d u:object_r:p4_linux_systemd_run_t:s0
 /run/systemd/(chr|blk|propagate)(/.*)? -d u:object_r:p4_linux_systemd_run_t:s0
 /run/systemd/journal -d u:object_r:p4_linux_journal_runtime_t:s0

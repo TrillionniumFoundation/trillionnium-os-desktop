@@ -1,0 +1,112 @@
+; The normal netplan-generator package runs this exact ELF without arguments.
+; This component admits only the captured global NetworkManager/no-netdefs input.
+; No shell, child exec, network socket, interface operation or account lookup is
+; needed by that branch. Other YAML profiles require separate source admission.
+(type p4_linux_netplan_t)
+(roletype system_r p4_linux_netplan_t)
+(typeattributeset p4_linux_procs (p4_linux_netplan_t))
+; The mandatory Linux role attribute also retains the existing read-only
+; usrmerge/timezone link and loader rules. No device traverser, self-proc
+; reader or generic native-process attribute is selected.
+(typeattributeset p4_native_selinux_metadata_clients (p4_linux_netplan_t))
+
+(type p4_linux_netplan_exec_t)
+(type p4_linux_netplan_library_t)
+(type p4_linux_netplan_yaml_t)
+(type p4_linux_netplan_input_dir_t)
+(type p4_linux_netplan_output_t)
+(type p4_linux_netplan_unselected_dir_t)
+(roletype object_r p4_linux_netplan_exec_t)
+(roletype object_r p4_linux_netplan_library_t)
+(roletype object_r p4_linux_netplan_yaml_t)
+(roletype object_r p4_linux_netplan_input_dir_t)
+(roletype object_r p4_linux_netplan_output_t)
+(roletype object_r p4_linux_netplan_unselected_dir_t)
+(typeattributeset p4_linux_data (p4_linux_netplan_exec_t p4_linux_netplan_library_t p4_linux_netplan_yaml_t p4_linux_netplan_input_dir_t p4_linux_netplan_output_t p4_linux_netplan_unselected_dir_t))
+
+(call p4_ubuntu_system_service (p4_linux_netplan_t p4_linux_netplan_exec_t))
+(allow init_t p4_linux_netplan_t (process (getattr signull signal sigkill sigstop)))
+(allow p4_linux_netplan_t init_t (process (sigchld)))
+(allow p4_linux_netplan_t p4_linux_service_executor_t (process (sigchld)))
+(allow p4_linux_netplan_t self (fd (use)))
+(allow p4_linux_netplan_t p4_linux_service_executor_t (fd (use)))
+(allow p4_linux_netplan_t p4_linux_service_executor_t (unix_stream_socket (getattr read write)))
+(allow p4_linux_netplan_t p4_linux_standardio_t (chr_file (getattr read write)))
+(allow p4_linux_netplan_t null_device (chr_file (getattr read write)))
+
+(allow p4_linux_netplan_t p4_linux_rootdir_t (dir (getattr search)))
+(allow p4_linux_netplan_t p4_linux_etc_dir_t (dir (getattr search)))
+(allow p4_linux_netplan_t p4_linux_usrmerge_link_t (lnk_file (getattr read)))
+(allow p4_linux_netplan_t p4_linux_elf_interpreter_t (file (getattr open read execute map)))
+(allow p4_linux_netplan_t p4_linux_netplan_library_t (file (getattr open read execute map)))
+; Four dependencies share the already pinned nine-inode normal console library
+; type. The contract records every member, including the five unused libraries.
+(allow p4_linux_netplan_t p4_linux_console_library_runtime_lib_t (file (getattr open read execute map)))
+(allow p4_linux_netplan_t p4_linux_console_ld_cache_native_config_t (file (getattr open read map)))
+(allow p4_linux_netplan_t p4_linux_netplan_yaml_t (file (getattr open read)))
+(allow p4_linux_netplan_t p4_linux_netplan_input_dir_t (dir (getattr open read search)))
+
+; The loaded libselinux constructor recognizes the existing selinuxfs mount
+; with statfs/statvfs. No /proc fallback body or policy query is authorized.
+(allow p4_linux_netplan_t sysfs (dir (search)))
+(allow p4_linux_netplan_t selinuxfs (dir (search)))
+(allow p4_linux_netplan_t selinuxfs (filesystem (getattr)))
+(typeattribute p4_netplan_unselected_nonboard_dirs)
+(typeattributeset p4_netplan_unselected_nonboard_dirs (and (p4_all_nonboard) (not (or (sysfs) (selinuxfs)))))
+(neverallow p4_linux_netplan_t p4_netplan_unselected_nonboard_dirs (dir (search)))
+
+; Normal configure.c:195-196 creates the NM conf.d parent, writes a six-character
+; temporary file with O_RDWR|O_CREAT|O_EXCL, then renames it to the fixed empty
+; override. On re-entry its cleanup unlinks only that prior typed output.
+; Existing NetworkManager runtime node labels and actors remain unchanged.
+(allow p4_linux_netplan_t p4_linux_run_t (dir (getattr search write add_name)))
+(typetransition p4_linux_netplan_t p4_linux_run_t dir "NetworkManager" p4_linux_network_manager_run_t)
+(allow p4_linux_netplan_t p4_linux_network_manager_run_t (dir (getattr search create write add_name remove_name)))
+; A different directory basename cannot inherit a creatable type.
+(typetransition p4_linux_netplan_t p4_linux_network_manager_run_t dir p4_linux_netplan_unselected_dir_t)
+(typetransition p4_linux_netplan_t p4_linux_network_manager_run_t dir "conf.d" p4_linux_network_manager_run_t)
+(typetransition p4_linux_netplan_t p4_linux_network_manager_run_t file p4_linux_netplan_output_t)
+(allow p4_linux_netplan_t p4_linux_netplan_output_t (file (getattr open read write create rename unlink)))
+(allow p4_linux_netplan_output_t tmpfs (filesystem (associate)))
+
+(typeattribute p4_netplan_all_types)
+(typeattributeset p4_netplan_all_types (all))
+(typeattribute p4_netplan_other_entries)
+(typeattributeset p4_netplan_other_entries (not (p4_linux_netplan_exec_t)))
+(typeattribute p4_netplan_other_sources)
+(typeattributeset p4_netplan_other_sources (not (p4_linux_service_executor_t)))
+(typeattribute p4_netplan_nonoutput_files)
+(typeattributeset p4_netplan_nonoutput_files (not (p4_linux_netplan_output_t)))
+(typeattribute p4_netplan_nonruntime_dirs)
+(typeattributeset p4_netplan_nonruntime_dirs (not (or (p4_linux_run_t) (p4_linux_network_manager_run_t))))
+(typeattribute p4_netplan_nonnm_dirs)
+(typeattributeset p4_netplan_nonnm_dirs (not (p4_linux_network_manager_run_t)))
+(typeattribute p4_netplan_nonstdio_devices)
+(typeattributeset p4_netplan_nonstdio_devices (not (or (null_device) (p4_linux_standardio_t))))
+(neverallow p4_netplan_other_sources p4_linux_netplan_t (process (transition dyntransition)))
+(neverallow p4_linux_service_executor_t p4_linux_netplan_t (process (dyntransition)))
+(neverallow p4_linux_netplan_t p4_netplan_other_entries (file (entrypoint)))
+(neverallow p4_linux_netplan_t p4_netplan_all_types (file (execute_no_trans append setattr link relabelfrom relabelto ioctl execmod)))
+(neverallow p4_linux_netplan_t p4_netplan_nonoutput_files (file (write create rename unlink)))
+(neverallow p4_linux_netplan_t p4_netplan_nonruntime_dirs (dir (write add_name)))
+(neverallow p4_linux_netplan_t p4_netplan_nonnm_dirs (dir (create remove_name)))
+(neverallow p4_linux_netplan_t p4_netplan_all_types (dir (setattr rmdir rename reparent mounton relabelfrom relabelto)))
+(neverallow p4_linux_netplan_t p4_netplan_all_types (lnk_file (create write setattr unlink rename relabelfrom relabelto)))
+(neverallow p4_linux_netplan_t p4_netplan_all_types (blk_file (open read write append ioctl map)))
+(neverallow p4_linux_netplan_t p4_netplan_nonstdio_devices (chr_file (open read write append ioctl map)))
+(neverallow p4_linux_netplan_t p4_netplan_all_types (chr_file (open ioctl map create setattr unlink rename relabelfrom relabelto)))
+(neverallow p4_linux_netplan_t p4_netplan_all_types (filesystem (mount remount unmount relabelfrom relabelto)))
+(neverallow p4_linux_netplan_t self (capability (all)))
+(neverallow p4_linux_netplan_t self (capability2 (all)))
+(neverallow p4_linux_netplan_t self (cap_userns (all)))
+(neverallow p4_linux_netplan_t self (cap2_userns (all)))
+(neverallow p4_linux_netplan_t p4_netplan_all_types (process (fork transition setexec setcurrent dyntransition ptrace)))
+(neverallow p4_linux_netplan_t kernel (security (load_policy setenforce setbool setsecparam setcheckreqprot read_policy)))
+(neverallow p4_linux_netplan_t p4_netplan_all_types (unix_stream_socket (create bind listen accept connect connectto sendto)))
+(neverallow p4_linux_netplan_t p4_netplan_all_types (unix_dgram_socket (create bind connect sendto)))
+(neverallow p4_linux_netplan_t self (tcp_socket (create)))
+(neverallow p4_linux_netplan_t self (udp_socket (create)))
+(neverallow p4_linux_netplan_t self (rawip_socket (create)))
+(neverallow p4_linux_netplan_t self (packet_socket (create)))
+(neverallow p4_linux_netplan_t self (netlink_route_socket (create)))
+(neverallow p4_linux_netplan_t self (netlink_kobject_uevent_socket (create)))

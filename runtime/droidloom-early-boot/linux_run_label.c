@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #define _GNU_SOURCE
 #include "linux_run_label.h"
+#include "boot_diagnostics.h"
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -150,6 +151,20 @@ static int hold_runtime_directory(const struct droidloom_linux_run *parent, cons
         return -1;
     }
     return hold_child(parent, name, 0, mode, held);
+}
+
+/* libmount watches this exact directory while utab.event is absent. Holding
+ * it before policy load prevents its normal ancestor fallback from reaching
+ * the unrelated /run root. Keep the original tmpfs inode, owner and mode. */
+int droidloom_hold_linux_mount_monitor(const struct droidloom_linux_run *run,
+                                      struct droidloom_linux_run *held)
+{
+    return hold_runtime_directory(run, "mount", 0755, held);
+}
+
+int droidloom_label_linux_mount_monitor(const struct droidloom_linux_run *held)
+{
+    return apply_label(held, "u:object_r:p4_linux_mount_monitor_dir_t:s0");
 }
 
 int droidloom_hold_ubuntu_log(const struct droidloom_linux_run *run,
@@ -410,17 +425,39 @@ struct console_node {
     const char *source;
     unsigned int major;
     unsigned int minor;
-    mode_t mode;
+    mode_t source_mode;
+    mode_t target_mode;
 };
 
 static const struct console_node board_nodes[] = {
-    { "/dev/console", "/usr/lib/droidloom/production/current/board-devices/console", 5, 1, 0600 },
-    { "/dev/null", "/usr/lib/droidloom/production/current/board-devices/null", 1, 3, 0666 },
-    { "/dev/full", "/usr/lib/droidloom/production/current/board-devices/full", 1, 7, 0666 },
-    /* Native services open this fixed path after the initial policy load.
-     * Project the admitted kmsg inode instead of relabeling generic devtmpfs. */
-    { "/dev/kmsg", "/usr/lib/droidloom/production/current/board-devices/kmsg", 1, 11, 0600 },
+    { "/dev/console", "/usr/lib/droidloom/production/current/board-devices/console", 5, 1, 0600, 0600 },
+    { "/dev/null", "/usr/lib/droidloom/production/current/board-devices/null", 1, 3, 0666, 0666 },
+    { "/dev/full", "/usr/lib/droidloom/production/current/board-devices/full", 1, 7, 0666, 0666 },
+    /* The selected Linux drivers/char/mem.c creates devtmpfs kmsg as 0644.
+     * Its protected ext4 replacement remains 0600. Admit those two exact
+     * metadata contracts independently before attaching the held source. */
+    { "/dev/kmsg", "/usr/lib/droidloom/production/current/board-devices/kmsg", 1, 11, 0600, 0644 },
 };
+
+static void standard_device_failure(const struct console_node *spec, bool backing,
+                                    const char *operation, const struct stat *st,
+                                    const struct statfs *fs, int error)
+{
+    char stage[192];
+    const char *path = backing ? spec->source : spec->path;
+    if (st && fs)
+        (void)snprintf(stage, sizeof(stage),
+                       "%s %s %s uid=%lu gid=%lu mode=%#o dev=%u:%u fs=%#lx",
+                       operation, backing ? "source" : "target", path,
+                       (unsigned long)st->st_uid, (unsigned long)st->st_gid,
+                       (unsigned int)(st->st_mode & 07777),
+                       major(st->st_rdev), minor(st->st_rdev),
+                       (unsigned long)fs->f_type);
+    else
+        (void)snprintf(stage, sizeof(stage), "%s %s %s",
+                       operation, backing ? "source" : "target", path);
+    droidloom_boot_diagnostics_report(DROIDLOOM_DIAGNOSTIC_POLICY, stage, error);
+}
 
 static int open_standard_node(const struct console_node *spec, bool backing, struct stat *st)
 {
@@ -429,18 +466,24 @@ static int open_standard_node(const struct console_node *spec, bool backing, str
         .resolve = RESOLVE_NO_SYMLINKS | RESOLVE_NO_MAGICLINKS,
     };
     int fd = (int)syscall(SYS_openat2, AT_FDCWD, backing ? spec->source : spec->path, &how, sizeof(how));
-    if (fd < 0)
+    if (fd < 0) {
+        standard_device_failure(spec, backing, "open O_PATH", NULL, NULL, errno);
         return -1;
+    }
     struct stat root;
     struct statfs fs;
     int error = 0;
-    if (stat("/", &root) < 0 || fstatfs(fd, &fs) < 0 || fstat(fd, st) < 0)
+    if (stat("/", &root) < 0 || fstatfs(fd, &fs) < 0 || fstat(fd, st) < 0) {
         error = errno;
-    else if (st->st_uid != 0 || st->st_gid != 0 || !S_ISCHR(st->st_mode) ||
-             (st->st_mode & 07777) != spec->mode || major(st->st_rdev) != spec->major ||
-             minor(st->st_rdev) != spec->minor || (backing && root.st_dev != st->st_dev) ||
-             (unsigned long)fs.f_type != (backing ? EXT4_SUPER_MAGIC : TMPFS_MAGIC))
+        standard_device_failure(spec, backing, "read held metadata", NULL, NULL, error);
+    } else if (st->st_uid != 0 || st->st_gid != 0 || !S_ISCHR(st->st_mode) ||
+               (st->st_mode & 07777) != (backing ? spec->source_mode : spec->target_mode) ||
+               major(st->st_rdev) != spec->major || minor(st->st_rdev) != spec->minor ||
+               (backing && root.st_dev != st->st_dev) ||
+               (unsigned long)fs.f_type != (backing ? EXT4_SUPER_MAGIC : TMPFS_MAGIC)) {
         error = EACCES;
+        standard_device_failure(spec, backing, "validate held metadata", st, &fs, error);
+    }
     if (error) {
         close(fd);
         errno = error;
@@ -493,13 +536,17 @@ int droidloom_project_linux_standard_devices(void)
             error = errno;
         if (!error) {
             mount_fd[i] = (int)syscall(SYS_open_tree, fd, "", OPEN_TREE_CLONE | OPEN_TREE_CLOEXEC | AT_EMPTY_PATH);
-            if (mount_fd[i] < 0)
+            if (mount_fd[i] < 0) {
                 error = errno;
+                standard_device_failure(n, true, "clone held mount", NULL, NULL, error);
+            }
         }
         if (!error) {
             struct mount_attr flags = { .attr_set = MOUNT_ATTR_RDONLY | MOUNT_ATTR_NOSUID | MOUNT_ATTR_NOEXEC };
-            if (syscall(SYS_mount_setattr, mount_fd[i], "", AT_EMPTY_PATH, &flags, sizeof(flags)) < 0)
+            if (syscall(SYS_mount_setattr, mount_fd[i], "", AT_EMPTY_PATH, &flags, sizeof(flags)) < 0) {
                 error = errno;
+                standard_device_failure(n, true, "protect held mount", NULL, NULL, error);
+            }
         }
         close(fd);
     }
@@ -507,6 +554,7 @@ int droidloom_project_linux_standard_devices(void)
         if (syscall(SYS_move_mount, mount_fd[i], "", target[i], "",
                     MOVE_MOUNT_F_EMPTY_PATH | MOVE_MOUNT_T_EMPTY_PATH) < 0) {
             error = errno;
+            standard_device_failure(&board_nodes[i], false, "attach held mount", NULL, NULL, error);
             break;
         }
         ++attached;
@@ -516,6 +564,8 @@ int droidloom_project_linux_standard_devices(void)
         else if (now.st_dev != source[i].st_dev || now.st_ino != source[i].st_ino ||
                  now.st_rdev != source[i].st_rdev)
             error = ESTALE;
+        if (error)
+            standard_device_failure(&board_nodes[i], false, "read attached identity", NULL, NULL, error);
     }
     if (!error && droidloom_linux_console_descriptors() < 0)
         error = errno;
@@ -535,6 +585,337 @@ int droidloom_project_linux_standard_devices(void)
     if (error)
         errno = error;
     return error ? -1 : 0;
+}
+
+
+/* Fixed Linux VT inventory. These are the original writable devtmpfs inodes:
+ * unlike the four protected standard devices, normal udev and logind must
+ * retain their DAC/ACL and owner-management semantics. Never open device body. */
+#ifndef STATX_MNT_ID_UNIQUE
+#define STATX_MNT_ID_UNIQUE 0x4000U
+#endif
+#ifndef SYS_setxattrat
+#define SYS_setxattrat 463
+#endif
+#ifndef SYS_getxattrat
+#define SYS_getxattrat 464
+#endif
+static const char linux_vt_context[] = "u:object_r:p4_linux_console_vt_t:s0";
+static const char original_vt_context[] = "u:object_r:device:s0";
+
+struct vt_xattr_args {
+    uint64_t value;
+    uint32_t size;
+    uint32_t flags;
+};
+
+static int vt_fail(int error)
+{
+    errno = error;
+    return -1;
+}
+
+static int vt_name(size_t index, char name[16], dev_t *number, mode_t *mode)
+{
+    if (index >= DROIDLOOM_LINUX_VT_COUNT)
+        return vt_fail(EINVAL);
+    if (index == 0) {
+        strcpy(name, "tty");
+        *number = makedev(5, 0);
+        *mode = 0666;
+    } else {
+        (void)snprintf(name, 16, "tty%u", (unsigned int)(index - 1));
+        *number = makedev(4, index - 1);
+        *mode = 0600;
+    }
+    return 0;
+}
+
+static int vt_mount(int fd, uint64_t *identity)
+{
+    struct statx st;
+    if (statx(fd, "", AT_EMPTY_PATH | AT_SYMLINK_NOFOLLOW,
+              STATX_MNT_ID_UNIQUE, &st) < 0)
+        return -1;
+    if (!(st.stx_mask & STATX_MNT_ID_UNIQUE))
+        return vt_fail(EOPNOTSUPP);
+    *identity = st.stx_mnt_id;
+    return 0;
+}
+
+static bool vt_same_inode(const struct stat *a, const struct stat *b, bool same_ctime)
+{
+    return a->st_dev == b->st_dev && a->st_ino == b->st_ino &&
+           a->st_rdev == b->st_rdev && a->st_mode == b->st_mode &&
+           a->st_uid == b->st_uid && a->st_gid == b->st_gid &&
+           a->st_nlink == b->st_nlink && a->st_size == b->st_size &&
+           a->st_mtim.tv_sec == b->st_mtim.tv_sec &&
+           a->st_mtim.tv_nsec == b->st_mtim.tv_nsec &&
+           (!same_ctime || (a->st_ctim.tv_sec == b->st_ctim.tv_sec &&
+                           a->st_ctim.tv_nsec == b->st_ctim.tv_nsec));
+}
+
+static bool vt_same_proc_directory(const struct stat *current, const struct stat *held)
+{
+    /* Selected 6.18 fs/proc/fd.c: proc_fd_getattr reports the current open-FD
+     * count as st_size. Our own held/verification FDs necessarily change it.
+     * Only this procfs directory has a dynamic size; retain every other F9
+     * field and never use this exception for a device inode or /dev. */
+    struct stat compared = *current;
+    compared.st_size = held->st_size;
+    return vt_same_inode(&compared, held, true);
+}
+
+static int vt_open_path(int parent, const char *name, bool directory)
+{
+    struct open_how how = {
+        .flags = O_PATH | O_CLOEXEC | O_NOFOLLOW | (directory ? O_DIRECTORY : 0),
+        .resolve = RESOLVE_NO_SYMLINKS | RESOLVE_NO_MAGICLINKS,
+    };
+    return (int)syscall(SYS_openat2, parent, name, &how, sizeof(how));
+}
+
+static int vt_admit_node(int dev, uint64_t dev_mount, size_t index, struct stat *st)
+{
+    char name[16];
+    dev_t number;
+    mode_t mode;
+    if (vt_name(index, name, &number, &mode) < 0)
+        return -1;
+    int fd = vt_open_path(dev, name, false);
+    if (fd < 0)
+        return -1;
+    struct stat parent;
+    struct statfs fs;
+    uint64_t mount;
+    int error = 0;
+    if (fstat(fd, st) < 0 || fstat(dev, &parent) < 0 || fstatfs(fd, &fs) < 0 ||
+        vt_mount(fd, &mount) < 0)
+        error = errno;
+    /* The selected kernel initially creates root:root. The admitted distro
+     * rule changes only group to tty(5), retaining exactly these two modes. */
+    else if (!S_ISCHR(st->st_mode) || st->st_rdev != number ||
+             (st->st_mode & 07777) != mode || st->st_uid != 0 ||
+             (st->st_gid != 0 && st->st_gid != 5) || st->st_nlink != 1 ||
+             st->st_size != 0 || st->st_dev != parent.st_dev ||
+             mount != dev_mount || fs.f_type != TMPFS_MAGIC ||
+             (fs.f_flags & ST_RDONLY))
+        error = EACCES;
+    if (error) {
+        close(fd);
+        return vt_fail(error);
+    }
+    return fd;
+}
+
+static int vt_verify_held(const struct droidloom_linux_vts *held, size_t index,
+                          const struct stat *expected, bool same_ctime,
+                          struct stat *current)
+{
+    struct stat parent, proc;
+    struct statfs fs;
+    uint64_t mount, proc_mount;
+    if (fstat(held->dev, &parent) < 0 || fstat(held->proc_fds, &proc) < 0 ||
+        fstatfs(held->proc_fds, &fs) < 0 || vt_mount(held->dev, &mount) < 0 ||
+        vt_mount(held->proc_fds, &proc_mount) < 0)
+        return -1;
+    if (!vt_same_inode(&parent, &held->dev_identity, true) ||
+        !vt_same_proc_directory(&proc, &held->proc_identity) ||
+        mount != held->dev_mount || proc_mount != held->proc_mount ||
+        fs.f_type != PROC_SUPER_MAGIC)
+        return vt_fail(ESTALE);
+    const struct droidloom_linux_vt *node = &held->nodes[index];
+    struct stat named;
+    int fd = vt_admit_node(held->dev, held->dev_mount, index, &named);
+    if (fd < 0)
+        return -1;
+    int error = 0;
+    if (fstat(node->fd, current) < 0 || vt_mount(node->fd, &mount) < 0)
+        error = errno;
+    else if (mount != held->dev_mount ||
+             !vt_same_inode(current, expected, same_ctime) ||
+             !vt_same_inode(&named, current, true))
+        error = ESTALE;
+    close(fd);
+    return error ? vt_fail(error) : 0;
+}
+
+/* O_PATH deliberately cannot use fsetxattr. Follow only our own numeric
+ * /proc/PID/fd entry through a held, verified procfs directory; prove that
+ * second O_PATH resolves to the same inode and unique mount before and after
+ * each raw xattr operation. No caller path, descriptor, key or label is used. */
+static ssize_t vt_raw_label(const struct droidloom_linux_vts *held, size_t index,
+                            bool write_label, char *value, size_t size)
+{
+    const struct droidloom_linux_vt *node = &held->nodes[index];
+    struct stat before, duplicate, after;
+    uint64_t mount;
+    if (vt_verify_held(held, index, &node->identity, true, &before) < 0)
+        return -1;
+    char name[32];
+    (void)snprintf(name, sizeof(name), "%d", node->fd);
+    int fd = openat(held->proc_fds, name, O_PATH | O_CLOEXEC);
+    if (fd < 0)
+        return -1;
+    int error = 0;
+    if (fstat(fd, &duplicate) < 0 || vt_mount(fd, &mount) < 0)
+        error = errno;
+    else if (!vt_same_inode(&before, &duplicate, true) || mount != held->dev_mount)
+        error = ESTALE;
+    ssize_t result = -1;
+    if (!error) {
+        struct vt_xattr_args args = {
+            .value = (uint64_t)(uintptr_t)(write_label ? linux_vt_context : value),
+            .size = write_label ? sizeof(linux_vt_context) : size,
+            .flags = 0,
+        };
+        result = syscall(write_label ? SYS_setxattrat : SYS_getxattrat,
+                         held->proc_fds, name, 0U, "security.selinux", &args, sizeof(args));
+        if (result < 0)
+            error = errno;
+    }
+    int verified = vt_verify_held(held, index, &before, !write_label, &after);
+    if (verified < 0)
+        error = errno;
+    if (fstat(fd, &duplicate) < 0 || vt_mount(fd, &mount) < 0)
+        error = errno;
+    else if (verified == 0 &&
+             (!vt_same_inode(&after, &duplicate, true) || mount != held->dev_mount))
+        error = ESTALE;
+    close(fd);
+    if (error)
+        return vt_fail(error);
+    return result;
+}
+
+static int vt_label_kind(const struct droidloom_linux_vts *held, size_t index)
+{
+    char label[128];
+    ssize_t size = vt_raw_label(held, index, false, label, sizeof(label));
+    if (size < 0)
+        return -1; /* An initialized devtmpfs inode always has a real SID. */
+    if (droidloom_context_matches(label, size, original_vt_context))
+        return 1;
+    if (droidloom_context_matches(label, size, linux_vt_context))
+        return 2;
+    return vt_fail(EACCES);
+}
+
+void droidloom_close_linux_vts(struct droidloom_linux_vts *held)
+{
+    for (size_t n = 0; n < held->held_count; n++) {
+        if (held->nodes[n].fd >= 0)
+            close(held->nodes[n].fd);
+        held->nodes[n].fd = -1;
+    }
+    held->held_count = 0;
+    if (held->proc_fds >= 0)
+        close(held->proc_fds);
+    if (held->dev >= 0)
+        close(held->dev);
+    held->proc_fds = held->dev = -1;
+    held->prepared = false;
+}
+
+int droidloom_prepare_linux_vts(struct droidloom_linux_vts *held)
+{
+    /* FINISH is already p4_linux_early_t and verifies the current first-load
+     * enforcing status and original namespaces before and after this whole
+     * transaction. FS_USE_TRANS devtmpfs requires a post-load relabel. */
+    if (getpid() != 1 || geteuid() != 0 || held->held_count ||
+        held->dev != -1 || held->proc_fds != -1 || held->prepared)
+        return vt_fail(EPERM);
+    int error = 0;
+    held->dev = vt_open_path(AT_FDCWD, "/dev", true);
+    char path[64];
+    (void)snprintf(path, sizeof(path), "/proc/%ld/fd", (long)getpid());
+    held->proc_fds = vt_open_path(AT_FDCWD, path, true);
+    struct statfs devfs, procfs;
+    if (held->dev < 0 || held->proc_fds < 0 ||
+        fstat(held->dev, &held->dev_identity) < 0 ||
+        fstat(held->proc_fds, &held->proc_identity) < 0 ||
+        fstatfs(held->dev, &devfs) < 0 || fstatfs(held->proc_fds, &procfs) < 0 ||
+        vt_mount(held->dev, &held->dev_mount) < 0 ||
+        vt_mount(held->proc_fds, &held->proc_mount) < 0)
+        error = errno;
+    else if (!S_ISDIR(held->dev_identity.st_mode) ||
+             held->dev_identity.st_uid || held->dev_identity.st_gid ||
+             (held->dev_identity.st_mode & 0022) || devfs.f_type != TMPFS_MAGIC ||
+             (devfs.f_flags & ST_RDONLY) ||
+             !S_ISDIR(held->proc_identity.st_mode) ||
+             held->proc_identity.st_uid || held->proc_identity.st_gid ||
+             (held->proc_identity.st_mode & 07777) != 0500 ||
+             procfs.f_type != PROC_SUPER_MAGIC)
+        error = EACCES;
+    /* All 65 metadata and prior labels are admitted before the first write. */
+    for (size_t n = 0; n < DROIDLOOM_LINUX_VT_COUNT && !error; n++) {
+        struct droidloom_linux_vt *node = &held->nodes[n];
+        node->fd = vt_admit_node(held->dev, held->dev_mount, n, &node->identity);
+        if (node->fd < 0) {
+            error = errno;
+            break;
+        }
+        held->held_count++;
+        node->label_kind = vt_label_kind(held, n);
+        if (node->label_kind < 0)
+            error = errno;
+    }
+    for (size_t n = 0; n < held->held_count && !error; n++) {
+        struct droidloom_linux_vt *node = &held->nodes[n];
+        int kind = vt_label_kind(held, n);
+        if (kind < 0)
+            error = errno;
+        else if (kind != node->label_kind)
+            error = ESTALE;
+        else if (kind != 2) {
+            struct stat after;
+            if (vt_raw_label(held, n, true, NULL, 0) < 0 ||
+                vt_verify_held(held, n, &node->identity, false, &after) < 0)
+                error = errno;
+            else
+                node->identity = after; /* Only this xattr's ctime may differ. */
+        }
+        if (!error) {
+            int result = vt_label_kind(held, n);
+            if (result != 2)
+                error = result < 0 ? errno : EACCES;
+        }
+    }
+    if (!error)
+        held->prepared = true;
+    else {
+        /* Any partial post-load relabel is fatal; never start systemd or
+         * services from this transaction. Close every held descriptor. */
+        droidloom_close_linux_vts(held);
+        return vt_fail(error);
+    }
+    return 0;
+}
+
+int droidloom_verify_linux_vts(const struct droidloom_linux_vts *held)
+{
+    if (!held->prepared || held->held_count != DROIDLOOM_LINUX_VT_COUNT ||
+        held->dev < 0 || held->proc_fds < 0)
+        return vt_fail(EINVAL);
+    /* The same post-load transaction reads each actual SELinux SID.
+     * Reject invalid/unmapped labels and changed F9 before any service. */
+    for (size_t n = 0; n < held->held_count; n++) {
+        int result = vt_label_kind(held, n);
+        if (result != 2)
+            return vt_fail(result < 0 ? errno : EACCES);
+    }
+    return 0;
+}
+
+int droidloom_initialize_linux_vts(void)
+{
+    struct droidloom_linux_vts held = { .dev = -1, .proc_fds = -1 };
+    int result = droidloom_prepare_linux_vts(&held);
+    if (result == 0)
+        result = droidloom_verify_linux_vts(&held);
+    int error = errno;
+    droidloom_close_linux_vts(&held);
+    return result == 0 ? 0 : vt_fail(error);
 }
 
 static int native_ubuntu_shm(int dev, int target)
@@ -747,11 +1128,11 @@ int droidloom_label_linux_init_scope(const struct droidloom_linux_init_scope *he
     const char *original = "u:object_r:cgroup_v2:s0";
     if (apply_label_from(&held->root, original, "u:object_r:p4_linux_cgroup_root_t:s0") < 0 ||
         apply_label_from(&held->root_membership, original, "u:object_r:p4_linux_cgroup_root_membership_t:s0") < 0 ||
-        apply_label_from(&held->scope, original, "u:object_r:p4_linux_cgroup_init_scope_t:s0") < 0 ||
+        verify_label(&held->scope, "u:object_r:p4_linux_cgroup_init_scope_t:s0") < 0 ||
         verify_label(&held->system_slice, "u:object_r:p4_linux_system_slice_t:s0") < 0 ||
         apply_label_from(&held->controllers, original, "u:object_r:p4_linux_cgroup_controller_list_t:s0") < 0 ||
         apply_label_from(&held->root_subtree_control, original, "u:object_r:p4_linux_cgroup_subtree_control_t:s0") < 0 ||
-        apply_label_from(&held->procs, original, "u:object_r:p4_linux_cgroup_init_tasks_t:s0") < 0)
+        verify_label(&held->procs, "u:object_r:p4_linux_cgroup_init_tasks_t:s0") < 0)
         return -1;
     return 0;
 }
@@ -772,4 +1153,346 @@ void droidloom_close_linux_init_scope(struct droidloom_linux_init_scope *held)
         close(held->scope.fd);
     if (held->root.fd >= 0)
         close(held->root.fd);
+}
+
+
+/* The normal mount helper resolves the root UUID through exactly one udev
+ * symlink. Keep device enumeration and every block-device body operation
+ * outside the remount domain. This transaction is called only from FINISH,
+ * between its original-PID1 namespace / enforcing-epoch checks. */
+#define ROOT_FSTAB_LIMIT 16384U
+enum root_hold_index {
+    ROOT_ROOT, ROOT_ETC, ROOT_FSTAB, ROOT_DEV, ROOT_DISK, ROOT_UUID_DIR,
+    ROOT_PROC_FDS, ROOT_LINK, ROOT_BLOCK, ROOT_HOLDS
+};
+struct root_device_hold {
+    int fd[ROOT_HOLDS];
+    struct stat identity[ROOT_HOLDS];
+    uint64_t mount[ROOT_HOLDS];
+    char uuid[37];
+    char name[64];
+    char link[70];
+};
+static const char root_fstab_context[] = "u:object_r:p4_linux_remount_fstab_native_config_t:s0";
+static const char root_link_context[] = "u:object_r:p4_linux_root_uuid_link_t:s0";
+static const char root_block_context[] = "u:object_r:p4_linux_root_block_t:s0";
+
+static bool root_uuid(const char *text)
+{
+    if (strlen(text) != 36)
+        return false;
+    for (size_t i = 0; i < 36; ++i) {
+        if (i == 8 || i == 13 || i == 18 || i == 23) {
+            if (text[i] != '-') return false;
+        } else if (!((text[i] >= '0' && text[i] <= '9') ||
+                     (text[i] >= 'a' && text[i] <= 'f'))) {
+            return false;
+        }
+    }
+    return true;
+}
+
+static int root_fstab_uuid(char *data, size_t size, char uuid[37])
+{
+    if (!size || size >= ROOT_FSTAB_LIMIT || data[size - 1] != '\n')
+        return vt_fail(EINVAL);
+    for (size_t i = 0; i < size; ++i)
+        if ((data[i] < 32 && data[i] != '\n' && data[i] != '\t' && data[i] != '\r') ||
+            (unsigned char)data[i] > 126)
+            return vt_fail(EINVAL);
+    data[size] = 0;
+    bool found = false;
+    char *line_state = NULL;
+    for (char *line = strtok_r(data, "\n", &line_state); line;
+         line = strtok_r(NULL, "\n", &line_state)) {
+        char *words[7], *state = NULL;
+        size_t count = 0;
+        for (char *word = strtok_r(line, " \t\r", &state); word;
+             word = strtok_r(NULL, " \t\r", &state)) {
+            if (word[0] == '#') break;
+            if (count == 7) return vt_fail(EINVAL);
+            words[count++] = word;
+        }
+        if (!count) continue;
+        if (count != 6) return vt_fail(EINVAL);
+        if (strcmp(words[1], "/")) continue;
+        if (found || strcmp(words[2], "ext4") || strcmp(words[3], "defaults") ||
+            strcmp(words[4], "0") || strcmp(words[5], "1"))
+            return vt_fail(EINVAL);
+        const char *value;
+        if (!strncmp(words[0], "UUID=", 5))
+            value = words[0] + 5;
+        else if (!strncmp(words[0], "/dev/disk/by-uuid/", 18))
+            value = words[0] + 18;
+        else
+            return vt_fail(EINVAL);
+        if (!root_uuid(value)) return vt_fail(EINVAL);
+        memcpy(uuid, value, 37);
+        found = true;
+    }
+    return found ? 0 : vt_fail(ENOENT);
+}
+
+static int root_capture(struct root_device_hold *held, size_t index, int fd)
+{
+    if (fd < 0) return -1;
+    held->fd[index] = fd;
+    if (fstat(fd, &held->identity[index]) < 0 ||
+        vt_mount(fd, &held->mount[index]) < 0)
+        return -1;
+    return 0;
+}
+
+static bool root_directory(const struct stat *st)
+{
+    return S_ISDIR(st->st_mode) && st->st_uid == 0 && st->st_gid == 0 &&
+        (st->st_mode & 07777) == 0755;
+}
+
+static bool root_block_metadata(const struct stat *st, dev_t root, dev_t dev)
+{
+    /* Selected kernel devtmpfs_create_node defaults to 0600/root:root.
+     * Normal 50-udev-default.rules sets block GROUP=disk; normal group has
+     * disk gid 6 and udev's nonzero-group default mode is exactly 0660. */
+    return S_ISBLK(st->st_mode) && st->st_uid == 0 &&
+        ((st->st_gid == 0 && (st->st_mode & 07777) == 0600) ||
+         (st->st_gid == 6 && (st->st_mode & 07777) == 0660)) &&
+        st->st_rdev == root && st->st_dev == dev &&
+        st->st_nlink == 1 && st->st_size == 0;
+}
+
+static int root_read_link(const struct root_device_hold *held, char value[70])
+{
+    ssize_t n = readlinkat(held->fd[ROOT_LINK], "", value, 69);
+    if (n < 0) return -1;
+    if (n <= 6 || n >= 69 || strncmp(value, "../../", 6))
+        return vt_fail(EINVAL);
+    value[n] = 0;
+    for (ssize_t i = 6; i < n; ++i)
+        if (!((value[i] >= 'a' && value[i] <= 'z') ||
+              (value[i] >= 'A' && value[i] <= 'Z') ||
+              (value[i] >= '0' && value[i] <= '9') ||
+              value[i] == '_' || value[i] == '-' || value[i] == '.'))
+            return vt_fail(EINVAL);
+    if (!strcmp(value + 6, ".") || !strcmp(value + 6, ".."))
+        return vt_fail(EINVAL);
+    return 0;
+}
+
+static int root_open_named(const struct root_device_hold *held, size_t index)
+{
+    switch (index) {
+    case ROOT_ROOT: return vt_open_path(AT_FDCWD, "/", true);
+    case ROOT_ETC: return vt_open_path(held->fd[ROOT_ROOT], "etc", true);
+    case ROOT_FSTAB: return vt_open_path(held->fd[ROOT_ETC], "fstab", false);
+    case ROOT_DEV: return vt_open_path(held->fd[ROOT_ROOT], "dev", true);
+    case ROOT_DISK: return vt_open_path(held->fd[ROOT_DEV], "disk", true);
+    case ROOT_UUID_DIR: return vt_open_path(held->fd[ROOT_DISK], "by-uuid", true);
+    case ROOT_PROC_FDS: return vt_open_path(AT_FDCWD, "/proc/1/fd", true);
+    case ROOT_LINK: return vt_open_path(held->fd[ROOT_UUID_DIR], held->uuid, false);
+    case ROOT_BLOCK: return vt_open_path(held->fd[ROOT_DEV], held->name, false);
+    default: return vt_fail(EINVAL);
+    }
+}
+
+static int root_stable_inode(struct root_device_hold *held, size_t i, int changed)
+{
+    if (i >= ROOT_HOLDS || held->fd[i] < 0) return vt_fail(EINVAL);
+    struct stat current, named;
+    uint64_t mount, named_mount;
+    int fd = root_open_named(held, i);
+    if (fd < 0) return -1;
+    int error = 0;
+    if (fstat(held->fd[i], &current) < 0 || fstat(fd, &named) < 0 ||
+        vt_mount(held->fd[i], &mount) < 0 || vt_mount(fd, &named_mount) < 0)
+        error = errno;
+    else if (mount != held->mount[i] || named_mount != mount ||
+             (i == ROOT_PROC_FDS ?
+              (!vt_same_proc_directory(&current, &held->identity[i]) ||
+               !vt_same_proc_directory(&named, &current)) :
+              (!vt_same_inode(&current, &held->identity[i], changed != (int)i) ||
+               !vt_same_inode(&named, &current, true))))
+        error = ESTALE;
+    close(fd);
+    if (error) return vt_fail(error);
+    if (changed == (int)i)
+        held->identity[i] = current; /* Only this inode's SELinux ctime changed. */
+    return 0;
+}
+
+static int root_stable(struct root_device_hold *held, int changed)
+{
+    for (size_t i = 0; i < ROOT_HOLDS; ++i)
+        if (root_stable_inode(held, i, changed) < 0) return -1;
+    char link[70];
+    if (root_read_link(held, link) < 0) return -1;
+    if (strcmp(link, held->link) ||
+        !root_block_metadata(&held->identity[ROOT_BLOCK],
+                             held->identity[ROOT_ROOT].st_dev,
+                             held->identity[ROOT_DEV].st_dev))
+        return vt_fail(ESTALE);
+    return 0;
+}
+
+static ssize_t root_raw_label(struct root_device_hold *held, size_t index,
+                              bool write_label, char *value, size_t size)
+{
+    if (index != ROOT_LINK && index != ROOT_BLOCK)
+        return vt_fail(EINVAL);
+    if (root_stable(held, -1) < 0) return -1;
+    char number[32];
+    const char *name = held->uuid;
+    int parent = held->fd[ROOT_UUID_DIR], flags = AT_SYMLINK_NOFOLLOW;
+    if (index == ROOT_BLOCK) {
+        (void)snprintf(number, sizeof(number), "%d", held->fd[ROOT_BLOCK]);
+        parent = held->fd[ROOT_PROC_FDS];
+        name = number;
+        flags = 0; /* Follow only this process's held block FD, never device body. */
+        int duplicate = openat(parent, name, O_PATH | O_CLOEXEC);
+        struct stat st;
+        uint64_t mount;
+        int error = 0;
+        if (duplicate < 0) return -1;
+        if (fstat(duplicate, &st) < 0 || vt_mount(duplicate, &mount) < 0)
+            error = errno;
+        else if (mount != held->mount[ROOT_BLOCK] ||
+                 !vt_same_inode(&st, &held->identity[ROOT_BLOCK], true))
+            error = ESTALE;
+        close(duplicate);
+        if (error) return vt_fail(error);
+    }
+    /* Selected 6.18 fs/xattr.c path_{get,set}xattrat accepts an O_PATH parent
+     * with a nonempty name. The empty-name fdget path rejects O_PATH. */
+    struct vt_xattr_args args = { .value = (uintptr_t)value, .size = size, .flags = 0 };
+    ssize_t result = syscall(write_label ? SYS_setxattrat : SYS_getxattrat,
+        parent, name, flags, "security.selinux", &args, sizeof(args));
+    int error = errno;
+    if (result < 0) return vt_fail(error);
+    if (root_stable(held, write_label ? (int)index : -1) < 0) return -1;
+    return result;
+}
+
+static int root_apply_label(struct root_device_hold *held, size_t index, const char *expected)
+{
+    char context[128];
+    ssize_t n = root_raw_label(held, index, false, context, sizeof(context));
+    if (n < 0) return -1;
+    if (!droidloom_context_matches(context, n, expected)) {
+        if (!droidloom_context_matches(context, n, original_vt_context))
+            return vt_fail(EACCES);
+        if (root_raw_label(held, index, true, (char *)expected, strlen(expected) + 1) < 0)
+            return -1;
+    }
+    n = root_raw_label(held, index, false, context, sizeof(context));
+    if (n < 0) return -1;
+    return droidloom_context_matches(context, n, expected) ? 0 : vt_fail(EACCES);
+}
+
+int droidloom_initialize_linux_root_device(void)
+{
+    struct root_device_hold held = {0};
+    for (size_t i = 0; i < ROOT_HOLDS; ++i) held.fd[i] = -1;
+    int error = 0;
+    struct statfs fs;
+    if (getpid() != 1 || geteuid() != 0) { error = EPERM; goto done; }
+    if (root_capture(&held, ROOT_ROOT, root_open_named(&held, ROOT_ROOT)) < 0 ||
+        root_capture(&held, ROOT_ETC, root_open_named(&held, ROOT_ETC)) < 0)
+        goto failed;
+    if (!root_directory(&held.identity[ROOT_ROOT]) ||
+        !root_directory(&held.identity[ROOT_ETC]) ||
+        held.identity[ROOT_ROOT].st_ino != 2 ||
+        held.identity[ROOT_ETC].st_dev != held.identity[ROOT_ROOT].st_dev ||
+        held.mount[ROOT_ETC] != held.mount[ROOT_ROOT]) {
+        error = EACCES; goto done;
+    }
+    if (fstatfs(held.fd[ROOT_ROOT], &fs) < 0) goto failed;
+    if (fs.f_type != EXT4_SUPER_MAGIC) { error = EACCES; goto done; }
+    struct open_how how = {
+        .flags = O_RDONLY | O_CLOEXEC | O_NOFOLLOW,
+        .resolve = RESOLVE_NO_SYMLINKS | RESOLVE_NO_MAGICLINKS,
+    };
+    if (root_capture(&held, ROOT_FSTAB, (int)syscall(SYS_openat2,
+            held.fd[ROOT_ETC], "fstab", &how, sizeof(how))) < 0)
+        goto failed;
+    const struct stat *fstab = &held.identity[ROOT_FSTAB];
+    if (!S_ISREG(fstab->st_mode) || fstab->st_uid || fstab->st_gid ||
+        fstab->st_nlink != 1 || (fstab->st_mode & 07777) != 0644 ||
+        fstab->st_size <= 0 || fstab->st_size >= ROOT_FSTAB_LIMIT ||
+        fstab->st_dev != held.identity[ROOT_ROOT].st_dev ||
+        held.mount[ROOT_FSTAB] != held.mount[ROOT_ROOT]) {
+        error = EACCES; goto done;
+    }
+    char context[128], data[ROOT_FSTAB_LIMIT + 1];
+    ssize_t n = fgetxattr(held.fd[ROOT_FSTAB], "security.selinux", context, sizeof(context));
+    if (n < 0) goto failed;
+    if (!droidloom_context_matches(context, n, root_fstab_context)) {
+        error = EACCES; goto done;
+    }
+    size_t used = 0;
+    while (used < (size_t)fstab->st_size) {
+        n = pread(held.fd[ROOT_FSTAB], data + used, (size_t)fstab->st_size - used, used);
+        if (n < 0 && errno == EINTR) continue;
+        if (n <= 0) { error = n < 0 ? errno : ESTALE; goto done; }
+        used += (size_t)n;
+    }
+    do { n = pread(held.fd[ROOT_FSTAB], data + used, 1, used); } while (n < 0 && errno == EINTR);
+    if (n != 0) { error = n < 0 ? errno : ESTALE; goto done; }
+    if (root_fstab_uuid(data, used, held.uuid) < 0) goto failed;
+    for (size_t i = ROOT_DEV; i <= ROOT_PROC_FDS; ++i)
+        if (root_capture(&held, i, root_open_named(&held, i)) < 0)
+            goto failed;
+    for (size_t i = ROOT_DEV; i <= ROOT_UUID_DIR; ++i) {
+        if (!root_directory(&held.identity[i]) ||
+            held.identity[i].st_dev != held.identity[ROOT_DEV].st_dev ||
+            held.mount[i] != held.mount[ROOT_DEV]) { error = EACCES; goto done; }
+        if (fstatfs(held.fd[i], &fs) < 0) goto failed;
+        if (fs.f_type != TMPFS_MAGIC || (fs.f_flags & ST_RDONLY)) {
+            error = EACCES; goto done;
+        }
+    }
+    if (fstatfs(held.fd[ROOT_PROC_FDS], &fs) < 0) goto failed;
+    if (fs.f_type != PROC_SUPER_MAGIC || held.identity[ROOT_PROC_FDS].st_uid ||
+        held.identity[ROOT_PROC_FDS].st_gid ||
+        !S_ISDIR(held.identity[ROOT_PROC_FDS].st_mode) ||
+        (held.identity[ROOT_PROC_FDS].st_mode & 07777) != 0500) {
+        error = EACCES; goto done;
+    }
+    if (root_capture(&held, ROOT_LINK, root_open_named(&held, ROOT_LINK)) < 0)
+        goto failed;
+    const struct stat *link = &held.identity[ROOT_LINK];
+    if (!S_ISLNK(link->st_mode) || link->st_uid || link->st_gid ||
+        (link->st_mode & 07777) != 0777 || link->st_nlink != 1 ||
+        link->st_dev != held.identity[ROOT_DEV].st_dev ||
+        held.mount[ROOT_LINK] != held.mount[ROOT_DEV]) { error = EACCES; goto done; }
+    if (root_read_link(&held, held.link) < 0) goto failed;
+    memcpy(held.name, held.link + 6, strlen(held.link + 6) + 1);
+    if (link->st_size != (off_t)strlen(held.link)) { error = ESTALE; goto done; }
+    if (root_capture(&held, ROOT_BLOCK, root_open_named(&held, ROOT_BLOCK)) < 0)
+        goto failed;
+    if (!root_block_metadata(&held.identity[ROOT_BLOCK],
+                             held.identity[ROOT_ROOT].st_dev,
+                             held.identity[ROOT_DEV].st_dev) ||
+        held.mount[ROOT_BLOCK] != held.mount[ROOT_DEV]) { error = EACCES; goto done; }
+    /* Admit both original SIDs before the first label mutation. */
+    for (size_t i = ROOT_LINK; i <= ROOT_BLOCK; ++i) {
+        const char *wanted = i == ROOT_LINK ? root_link_context : root_block_context;
+        n = root_raw_label(&held, i, false, context, sizeof(context));
+        if (n < 0) goto failed;
+        if (!droidloom_context_matches(context, n, original_vt_context) &&
+            !droidloom_context_matches(context, n, wanted)) {
+            error = EACCES; goto done;
+        }
+    }
+    if (root_stable(&held, -1) < 0 ||
+        root_apply_label(&held, ROOT_BLOCK, root_block_context) < 0 ||
+        root_apply_label(&held, ROOT_LINK, root_link_context) < 0 ||
+        root_stable(&held, -1) < 0)
+        goto failed;
+    goto done;
+failed:
+    error = errno;
+done:
+    for (size_t i = 0; i < ROOT_HOLDS; ++i)
+        if (held.fd[i] >= 0) close(held.fd[i]);
+    return error ? vt_fail(error) : 0;
 }

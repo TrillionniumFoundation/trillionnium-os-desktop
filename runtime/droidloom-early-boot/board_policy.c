@@ -12,6 +12,10 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <linux/magic.h>
+#include <linux/openat2.h>
+#include <sys/syscall.h>
+#include <sys/statvfs.h>
+#include <sys/xattr.h>
 #include <openssl/evp.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -291,7 +295,7 @@ int droidloom_board_activate_policy(gid_t observer_gid, const char *cohort)
     struct droidloom_raw_profile selected_profiles[4] = {0};
     int status = -1, epoch_directory = -1;
     struct droidloom_linux_init_scope scope = { .root.fd = -1, .scope.fd = -1, .procs.fd = -1, .controllers.fd = -1, .system_slice.fd = -1, .root_membership.fd = -1, .root_subtree_control.fd = -1 };
-    struct droidloom_linux_run run = {.fd = -1}, shm = {.fd = -1};
+    struct droidloom_linux_run run = {.fd = -1}, shm = {.fd = -1}, mount_monitor = {.fd = -1};
     struct droidloom_linux_journal_store log_store = { .log.fd = -1, .journal.fd = -1 };
     struct droidloom_linux_credentials credentials = { .root.fd = -1, .systemd.fd = -1, .staging.fd = -1 };
     struct droidloom_linux_run udev = {.fd = -1}, udev_data = {.fd = -1};
@@ -305,6 +309,7 @@ int droidloom_board_activate_policy(gid_t observer_gid, const char *cohort)
     if (rc == 0) { stage = "hold the original Ubuntu cgroup root and move global PID 1 to its init.scope"; rc = droidloom_hold_linux_init_scope(&scope); }
     if (rc == 0) { stage = "prepare the original Ubuntu shared memory mount"; rc = droidloom_hold_linux_shm(&shm); }
     if (rc == 0) { stage = "hold original Ubuntu /run"; rc = droidloom_hold_linux_run(&run); }
+    if (rc == 0) { stage = "hold the exact Ubuntu mount-monitor directory"; rc = droidloom_hold_linux_mount_monitor(&run, &mount_monitor); }
     if (rc == 0) { stage = "hold the Ubuntu runtime log directory"; rc = droidloom_hold_ubuntu_log(&run, &log_store); }
     if (rc == 0) { stage = "hold the distro credentials root"; rc = droidloom_hold_ubuntu_credentials(&run, &credentials); }
     if (rc == 0) { stage = "hold the root-owned Ubuntu udev directory on the original /run"; rc = droidloom_hold_linux_udev(&run, &udev); }
@@ -333,6 +338,7 @@ int droidloom_board_activate_policy(gid_t observer_gid, const char *cohort)
     if (rc == 0) { stage = "label the held Ubuntu cgroup root and its initial scope"; rc = droidloom_label_linux_init_scope(&scope); }
     if (rc == 0) { stage = "label the original Ubuntu shared memory root"; rc = droidloom_label_linux_shm(&shm); }
     if (rc == 0) { stage = "label the held Ubuntu /run inode"; rc = droidloom_label_linux_run(&run); }
+    if (rc == 0) { stage = "label the held Ubuntu mount-monitor directory"; rc = droidloom_label_linux_mount_monitor(&mount_monitor); }
     if (rc == 0) { stage = "label the held Ubuntu runtime log directory"; rc = droidloom_label_ubuntu_log(&log_store); }
     if (rc == 0) { stage = "label the held distro credentials root"; rc = droidloom_label_ubuntu_credentials(&credentials); }
     if (rc == 0) { stage = "label the held Ubuntu udev directory"; rc = droidloom_label_linux_udev(&udev); }
@@ -357,9 +363,199 @@ int droidloom_board_activate_policy(gid_t observer_gid, const char *cohort)
         close(udev_data.fd);
     if (udev.fd >= 0)
         close(udev.fd);
+    if (mount_monitor.fd >= 0)
+        close(mount_monitor.fd);
     if (run.fd >= 0)
         close(run.fd);
     free(aa.data);
     free(policy.data);
     return rc == 0 ? 0 : reject(error);
+}
+
+/* Reopen the typed, read-only first-load receipt after the board self-exec.
+ * This is an observation of the current kernel status, never a caller flag.
+ * No policy API transaction, boot-id proc read, or inherited FD is used. */
+static int epoch_same(const struct stat *a, const struct stat *b)
+{
+    return a->st_dev == b->st_dev && a->st_ino == b->st_ino &&
+        a->st_mode == b->st_mode && a->st_uid == b->st_uid &&
+        a->st_gid == b->st_gid && a->st_nlink == b->st_nlink &&
+        a->st_size == b->st_size && a->st_rdev == b->st_rdev &&
+        a->st_mtim.tv_sec == b->st_mtim.tv_sec &&
+        a->st_mtim.tv_nsec == b->st_mtim.tv_nsec &&
+        a->st_ctim.tv_sec == b->st_ctim.tv_sec &&
+        a->st_ctim.tv_nsec == b->st_ctim.tv_nsec;
+}
+
+static int epoch_label(int fd, const char *expected)
+{
+    char value[128] = {0};
+    ssize_t n = fgetxattr(fd, "security.selinux", value, sizeof(value));
+    if (n < 0) return -1;
+    size_t length = strlen(expected);
+    return (n == (ssize_t)length || n == (ssize_t)length + 1) &&
+        !memcmp(value, expected, length + 1) ? 0 : reject(EACCES);
+}
+
+static int epoch_open(int parent, const char *name, int directory)
+{
+    struct open_how how = {
+        .flags = O_RDONLY | O_CLOEXEC | O_NOFOLLOW | O_NONBLOCK |
+            (directory ? O_DIRECTORY : 0),
+        .resolve = RESOLVE_NO_SYMLINKS | RESOLVE_NO_MAGICLINKS,
+    };
+    return (int)syscall(SYS_openat2, parent, name, &how, sizeof(how));
+}
+
+static int epoch_directory(int fd, const char *context, int readonly, struct stat *st)
+{
+    struct statfs fs;
+    struct statvfs flags;
+    if (fstat(fd, st) < 0 || fstatfs(fd, &fs) < 0 ||
+        fstatvfs(fd, &flags) < 0 || epoch_label(fd, context) < 0)
+        return -1;
+    const unsigned long required = ST_RDONLY | ST_NOSUID | ST_NODEV | ST_NOEXEC;
+    if (!S_ISDIR(st->st_mode) || st->st_uid || st->st_gid ||
+        (st->st_mode & 07777) != 0700 || (unsigned long)fs.f_type != TMPFS_MAGIC ||
+        (readonly && (flags.f_flag & required) != required))
+        return reject(EACCES);
+    return 0;
+}
+
+static int epoch_status(int fd, uint32_t value[5])
+{
+    struct stat a, b;
+    struct statfs fs;
+    uint32_t next[5];
+    if (fstat(fd, &a) < 0 || fstatfs(fd, &fs) < 0)
+        return -1;
+    /* Selected selinuxfs.c supplies this 0444 regular status page. Its
+     * size is not a user file size; pread returns the kernel page bytes. */
+    if (!S_ISREG(a.st_mode) || a.st_uid || a.st_gid ||
+        (a.st_mode & 07777) != 0444 || (unsigned long)fs.f_type != SELINUXFS_MAGIC)
+        return reject(EACCES);
+    if (pread(fd, value, 5 * sizeof(uint32_t), 0) != 5 * sizeof(uint32_t) ||
+        pread(fd, next, sizeof(next), 0) != sizeof(next))
+        return reject(EIO);
+    if (fstat(fd, &b) < 0)
+        return -1;
+    if (!epoch_same(&a, &b) || memcmp(value, next, sizeof(next)) ||
+        value[0] != 1 || (value[1] & 1) || value[2] != 1 ||
+        value[3] != 1 || value[4] != 1)
+        return reject(ESTALE);
+    return 0;
+}
+
+static int epoch_packet(const unsigned char *bytes, size_t length,
+                        const uint32_t status[5])
+{
+    const char header[] = "DLAAREV3\n";
+    if (status[0] != 1 || (status[1] & 1) || status[2] != 1 ||
+        status[3] != 1 || status[4] != 1 ||
+        length <= sizeof(header) || length >= 8192 ||
+        memcmp(bytes, header, sizeof(header) - 1))
+        return reject(EBADMSG);
+    size_t start = 0, tail = 0, lines = 0;
+    for (size_t n = 0; n < length; n++) {
+        unsigned char c = bytes[n];
+        if (c == '\n') {
+            if (n == start) return reject(EBADMSG);
+            tail = start;
+            start = n + 1;
+            lines++;
+        } else if (c < 0x20 || c > 0x7e) {
+            return reject(EBADMSG);
+        }
+    }
+    if (start != length || lines != 6)
+        return reject(EBADMSG);
+    char expected[128];
+    int n = snprintf(expected, sizeof(expected), "SELINUX1 %s %u 1 1\n",
+        DROIDLOOM_BOARD_SELINUX_SHA256, status[1]);
+    if (n < 0 || (size_t)n >= sizeof(expected) ||
+        (size_t)n != length - tail || memcmp(bytes + tail, expected, (size_t)n))
+        return reject(ESTALE);
+    return 0;
+}
+
+int droidloom_board_verify_policy_epoch(void)
+{
+    int handoff = -1, directory = -1, receipt = -1, status = -1, error = 0;
+    struct stat handoff_before, directory_before, file_before, current, named;
+    uint32_t first[5], after[5];
+    unsigned char bytes[8192];
+    if (getpid() != 1 || geteuid() != 0)
+        return reject(EPERM);
+    handoff = epoch_open(AT_FDCWD, "/run/droidloom-early", 1);
+    if (handoff < 0 || epoch_directory(handoff,
+        "u:object_r:p4_linux_early_handoff_dir_t:s0", 0, &handoff_before) < 0)
+        goto failed;
+    directory = epoch_open(handoff, "kernel-policy", 1);
+    if (directory < 0 || epoch_directory(directory,
+        "u:object_r:p4_linux_policy_epoch_dir_t:s0", 1, &directory_before) < 0)
+        goto failed;
+    status = epoch_open(AT_FDCWD, SELINUX_DIR "/status", 0);
+    if (status < 0 || epoch_status(status, first) < 0)
+        goto failed;
+    receipt = epoch_open(directory, "apparmor-epoch", 0);
+    struct statfs fs;
+    struct statvfs flags;
+    if (receipt < 0 || fstat(receipt, &file_before) < 0 ||
+        fstatfs(receipt, &fs) < 0 || fstatvfs(receipt, &flags) < 0 ||
+        epoch_label(receipt, "u:object_r:p4_linux_apparmor_epoch_t:s0") < 0)
+        goto failed;
+    const unsigned long required = ST_RDONLY | ST_NOSUID | ST_NODEV | ST_NOEXEC;
+    if (!S_ISREG(file_before.st_mode) || file_before.st_uid || file_before.st_gid ||
+        (file_before.st_mode & 07777) != 0400 || file_before.st_nlink != 1 ||
+        file_before.st_size < 128 || file_before.st_size >= (off_t)sizeof(bytes) ||
+        (unsigned long)fs.f_type != TMPFS_MAGIC ||
+        file_before.st_dev != directory_before.st_dev ||
+        (flags.f_flag & required) != required) {
+        errno = EACCES;
+        goto failed;
+    }
+    size_t size = (size_t)file_before.st_size;
+    ssize_t received;
+    /* The sealed tmpfs packet is smaller than this fixed buffer. A short or
+     * overlong read is rejected; no untrusted length reaches pread(2). */
+    do { received = pread(receipt, bytes, sizeof(bytes), 0); }
+    while (received < 0 && errno == EINTR);
+    if (received < 0)
+        goto failed;
+    if ((size_t)received != size) { errno = EIO; goto failed; }
+    unsigned char extra;
+    if (pread(receipt, &extra, 1, (off_t)size) != 0) {
+        errno = ESTALE;
+        goto failed;
+    }
+    if (epoch_packet(bytes, size, first) < 0 || epoch_status(status, after) < 0)
+        goto failed;
+    if (memcmp(first, after, sizeof(first))) { errno = ESTALE; goto failed; }
+    if (fstat(receipt, &current) < 0 ||
+        fstatat(directory, "apparmor-epoch", &named, AT_SYMLINK_NOFOLLOW) < 0)
+        goto failed;
+    if (!epoch_same(&file_before, &current) || !epoch_same(&current, &named)) {
+        errno = ESTALE; goto failed;
+    }
+    if (fstat(directory, &current) < 0 ||
+        fstatat(handoff, "kernel-policy", &named, AT_SYMLINK_NOFOLLOW) < 0)
+        goto failed;
+    if (!epoch_same(&directory_before, &current) || !epoch_same(&current, &named)) {
+        errno = ESTALE; goto failed;
+    }
+    if (fstat(handoff, &current) < 0 ||
+        lstat("/run/droidloom-early", &named) < 0)
+        goto failed;
+    if (!epoch_same(&handoff_before, &current) || !epoch_same(&current, &named)) {
+        errno = ESTALE; goto failed;
+    }
+    goto done;
+failed:
+    error = errno;
+done:
+    if (status >= 0) close(status);
+    if (receipt >= 0) close(receipt);
+    if (directory >= 0) close(directory);
+    if (handoff >= 0) close(handoff);
+    return error ? reject(error) : 0;
 }

@@ -1,7 +1,7 @@
 {
   "schema": "droidloom.native-systemd-generator-tmp-source.v1",
   "original_source_version": "259.9-0ubuntu0.1",
-  "candidate_source_version": "259.9-0ubuntu0.1+p4gentmp1",
+  "candidate_source_version": "259.9-0ubuntu0.1+p4gentmp2",
   "normal_source_archives": {
     "systemd_259.9-0ubuntu0.1.dsc": {
       "bytes": 8779,
@@ -28,6 +28,18 @@
     "src/basic/process-util.h": {
       "bytes": 11846,
       "sha256": "8cff90d749f7bf56e1ec8b3bd80c7347821c872138a123b6282cd4e85844c8d7"
+    },
+    "src/core/exec-credential.c": {
+      "bytes": 41057,
+      "sha256": "1d5adca86bfd24158bc0773df734d7258bdc47305a24228b91f32a22749a20d6"
+    },
+    "src/shared/mount-util.c": {
+      "bytes": 93207,
+      "sha256": "95231014720db3a9a16b82a87ad9631f32e88c67cc09c149a66d40c689c2f6d8"
+    },
+    "src/shared/mount-util.h": {
+      "bytes": 8034,
+      "sha256": "dfbc99abf9afb2845a83c41aca5e5a8d87e89bda78dd3e5607112fb287b0a4a4"
     }
   },
   "patched_files": {
@@ -42,12 +54,24 @@
     "src/basic/process-util.h": {
       "bytes": 12061,
       "sha256": "8e44b2ead7396cff3f8fa9c51ed3266d06679089c36e1d2cf9bc76c0137038e6"
+    },
+    "src/core/exec-credential.c": {
+      "bytes": 44708,
+      "sha256": "0db13dd9881aca39d3cde0307a1ba6682ca76fc907c5fb94bc5d082d0837bd76"
+    },
+    "src/shared/mount-util.c": {
+      "bytes": 93851,
+      "sha256": "c2e0c10cc2149d0530d5859bc72c3c3c1e889b638c8e7af48b2d96343ac29e84"
+    },
+    "src/shared/mount-util.h": {
+      "bytes": 8108,
+      "sha256": "25aa9bb3c5da3fe980ba772f26dac1dc645fe5ec0e16875cebfab74698e8aae3"
     }
   },
   "patch": {
     "file": "p4-native-generator-tmpfs.patch",
-    "bytes": 4012,
-    "sha256": "7745100e9dd1fc3a680538aa2b66894abc92ffc09faa9fbbc2e6a0a661572fce"
+    "bytes": 11765,
+    "sha256": "4bde81c270d5208097f56d008527df24b2df9babe8ddfdbaa00089eb9b52c9d7"
   },
   "required_raw_manager_context": "u:system_r:init_t:s0",
   "fixed_fscontext": "u:object_r:p4_linux_generator_tmpfs_t:s0",
@@ -56,5 +80,22 @@
   "original_android_cil_files_changed": 0,
   "normal_debian_build_required": true,
   "full_package_payload_and_dependency_closure_required": true,
-  "actual_enforcing_runtime_required": true
+  "actual_enforcing_runtime_required": true,
+  "credential_executor_context": "u:system_r:p4_linux_service_executor_t:s0",
+  "credential_root_contexts": {
+    "systemd-journald.service": "u:object_r:p4_linux_journal_credentials_t:s0",
+    "systemd-firstboot.service": "u:object_r:p4_linux_setup_credentials_t:s0",
+    "systemd-sysusers.service": "u:object_r:p4_linux_setup_credentials_t:s0",
+    "systemd-tmpfiles-clean.service": "u:object_r:p4_linux_setup_credentials_t:s0",
+    "systemd-tmpfiles-setup-dev-early.service": "u:object_r:p4_linux_setup_credentials_t:s0",
+    "systemd-tmpfiles-setup-dev.service": "u:object_r:p4_linux_setup_credentials_t:s0",
+    "systemd-tmpfiles-setup.service": "u:object_r:p4_linux_setup_credentials_t:s0",
+    "systemd-udev-load-credentials.service": "u:object_r:p4_linux_udev_credentials_t:s0",
+    "systemd-resolved.service": "u:object_r:p4_linux_resolved_credentials_t:s0",
+    "systemd-sysctl.service": "u:object_r:p4_linux_sysctl_credentials_t:s0"
+  },
+  "credential_directory_prefix": "/run/credentials/",
+  "credential_root_label_readback_required": true,
+  "generic_tmpfs_directory_read_permitted": false,
+  "native_credential_mount_fallback_permitted": false
 }

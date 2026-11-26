@@ -215,23 +215,122 @@ static int current_linux_role(void)
 
 static int verified_systemd(int fd)
 {
-    /* The selected normal systemd_259.9-0ubuntu0.1+p4gentmp1_amd64.deb
-     * (SHA256 01c4a8ecb1eb4ef9af53115fe8591c4f1e9b7e3fa71ac6e214f6ad8aa1e27cd8)
+    /* The selected normal systemd_259.9-0ubuntu0.1+p4gentmp2_amd64.deb
+     * (SHA256 6555069c0c2425eb22c1efadc92e23c30ce906ae3edcf1dbd7c62d2653a2e146)
      * supplies this exact /usr/lib/systemd/systemd. Its complete source, package
      * family and installed payload are admitted before preparing the root.
-     * The former unpatched Ubuntu executable must not pass this release gate.
-     * tests/systemd_identity.c checks both actual normal package executables. */
+     * This pin matches the normal archive inventory and the admitted 1001-package
+     * root; earlier systemd payloads must not pass this release gate.
+     * tests/systemd_identity.c checks actual normal package executables without
+     * executing them, along with byte mutation, truncation and nonregular FDs. */
     static const unsigned char selected[32] = {
-        0x86, 0xab, 0xab, 0xd4, 0x80, 0xc9, 0x63, 0x7d, 0xdc, 0xf5, 0x55, 0x5f, 0xe7, 0x5c, 0x5f, 0x49,
-        0x03, 0x70, 0x6c, 0xfb, 0x73, 0xbf, 0x67, 0xd3, 0x44, 0xdc, 0xa9, 0x7c, 0x6c, 0x4b, 0x8b, 0x19
+        0x66, 0x64, 0x9f, 0x8c, 0x6d, 0xcd, 0x62, 0x2f, 0x4f, 0x89, 0x36, 0xe1, 0xc4, 0xfa, 0x92, 0x00,
+        0xc5, 0x30, 0xe9, 0xcf, 0x83, 0x6e, 0x57, 0xc1, 0xd2, 0x52, 0x73, 0xf3, 0x75, 0x2c, 0x0c, 0x9b
     };
     return droidloom_verified_elf(fd, 141776, selected);
+}
+
+
+/* Compare this PID 1's real namespaces with the fixed read-only witnesses
+ * published by activate(). pidfd ioctls open only this process's namespaces;
+ * no /proc namespace magic link, task number, or caller namespace is accepted. */
+static int finish_namespaces(void)
+{
+    struct open_how how = {
+        .flags = O_RDONLY | O_DIRECTORY | O_CLOEXEC | O_NOFOLLOW,
+        .resolve = RESOLVE_NO_SYMLINKS | RESOLVE_NO_MAGICLINKS,
+    };
+    int handoff = (int)syscall(SYS_openat2, AT_FDCWD, "/run/droidloom-early",
+        &how, sizeof(how));
+    int pidfd = -1, original = -1, actual = -1, error = 0;
+    struct stat parent, after;
+    struct statfs fs;
+    if (getpid() != 1 || geteuid() != 0) { error = EPERM; goto done; }
+    if (handoff < 0 || fstat(handoff, &parent) < 0 || fstatfs(handoff, &fs) < 0 ||
+        has_label(handoff, "u:object_r:p4_linux_early_handoff_dir_t:s0") < 0)
+        goto failed;
+    if (!S_ISDIR(parent.st_mode) || parent.st_uid || parent.st_gid ||
+        (parent.st_mode & 07777) != 0700 || (unsigned long)fs.f_type != TMPFS_MAGIC) {
+        errno = EACCES; goto failed;
+    }
+    pidfd = (int)syscall(SYS_pidfd_open, getpid(), 0U);
+    if (pidfd < 0) goto failed;
+    const struct { const char *name; unsigned long request; int type; } pins[] = {
+        { "host-userns", 0xff09UL, CLONE_NEWUSER },
+        { "host-pidns", 0xff05UL, CLONE_NEWPID },
+    };
+    for (size_t i = 0; i < sizeof(pins)/sizeof(pins[0]); i++) {
+        actual = ioctl(pidfd, pins[i].request, 0UL);
+        how.flags = O_RDONLY | O_CLOEXEC | O_NOFOLLOW;
+        original = (int)syscall(SYS_openat2, handoff, pins[i].name, &how, sizeof(how));
+        struct stat a, b, again, named;
+        struct statfs original_fs;
+        struct statvfs flags;
+        if (actual < 0 || original < 0 || fstat(actual, &a) < 0 ||
+            fstat(original, &b) < 0 || fstatfs(actual, &fs) < 0 ||
+            fstatfs(original, &original_fs) < 0 || fstatvfs(original, &flags) < 0 ||
+            has_label(original, "u:object_r:p4_kernel_ns_handle_t:s0") < 0)
+            goto failed;
+        const unsigned long required = ST_RDONLY | ST_NOSUID | ST_NODEV | ST_NOEXEC;
+        if (!S_ISREG(a.st_mode) || !S_ISREG(b.st_mode) ||
+            a.st_uid || a.st_gid || b.st_uid || b.st_gid ||
+            a.st_dev != b.st_dev || a.st_ino != b.st_ino ||
+            (unsigned long)fs.f_type != NSFS_MAGIC ||
+            (unsigned long)original_fs.f_type != NSFS_MAGIC ||
+            (flags.f_flag & required) != required ||
+            ioctl(actual, NS_GET_NSTYPE) != pins[i].type ||
+            ioctl(original, NS_GET_NSTYPE) != pins[i].type) {
+            errno = ESTALE; goto failed;
+        }
+        if (fstat(actual, &again) < 0 ||
+            fstatat(handoff, pins[i].name, &named, AT_SYMLINK_NOFOLLOW) < 0)
+            goto failed;
+        if (a.st_dev != again.st_dev || a.st_ino != again.st_ino ||
+            b.st_dev != named.st_dev || b.st_ino != named.st_ino ||
+            b.st_mode != named.st_mode || b.st_uid != named.st_uid ||
+            b.st_gid != named.st_gid) { errno = ESTALE; goto failed; }
+        close(actual); actual = -1;
+        close(original); original = -1;
+    }
+    if (fstat(handoff, &after) < 0) goto failed;
+    if (parent.st_dev != after.st_dev || parent.st_ino != after.st_ino ||
+        parent.st_mode != after.st_mode || parent.st_uid != after.st_uid ||
+        parent.st_gid != after.st_gid || parent.st_nlink != after.st_nlink ||
+        parent.st_size != after.st_size ||
+        parent.st_mtim.tv_sec != after.st_mtim.tv_sec ||
+        parent.st_mtim.tv_nsec != after.st_mtim.tv_nsec ||
+        parent.st_ctim.tv_sec != after.st_ctim.tv_sec ||
+        parent.st_ctim.tv_nsec != after.st_ctim.tv_nsec) { errno = ESTALE; goto failed; }
+    goto done;
+failed:
+    error = errno;
+done:
+    if (actual >= 0) close(actual);
+    if (original >= 0) close(original);
+    if (pidfd >= 0) close(pidfd);
+    if (handoff >= 0) close(handoff);
+    return error ? fail(error) : 0;
 }
 
 static int finish(int argc, char **argv)
 {
     operation = "check the Linux early process role";
     if (current_linux_role() < 0)
+        return -1;
+    operation = "verify the original namespaces and current first-load policy epoch";
+    if (finish_namespaces() < 0 || droidloom_board_verify_policy_epoch() < 0)
+        return -1;
+    /* No earlier stage consumes a Linux VT: the pre-policy projections use
+     * console/null/full/kmsg only. Do not carry VT descriptors across exec. */
+    operation = "label and verify the original Linux VTs in the enforcing early role";
+    if (droidloom_initialize_linux_vts() < 0)
+        return -1;
+    operation = "label the mounted root UUID link and device metadata";
+    if (droidloom_initialize_linux_root_device() < 0)
+        return -1;
+    operation = "recheck early role, original namespaces and current policy epoch";
+    if (current_linux_role() < 0 || finish_namespaces() < 0 ||
+        droidloom_board_verify_policy_epoch() < 0)
         return -1;
     operation = "reopen the Ubuntu console in the Linux early process role";
     if (droidloom_linux_console_descriptors() < 0)

@@ -1994,7 +1994,7 @@ mod tests {
         let mut package = Package {
             role: "systemd-dev".into(),
             name: "systemd-dev".into(),
-            version: "1:259.9-0ubuntu0.1+p4gentmp1".into(),
+            version: "1:259.9-0ubuntu0.1+p4gentmp2".into(),
             architecture: "all".into(),
             package: FilePin {
                 path: "/inputs/00.deb".into(),
@@ -2004,7 +2004,7 @@ mod tests {
         };
         assert_eq!(
             apt_archive_path(&package).unwrap(),
-            Path::new("/var/cache/apt/archives/systemd-dev_1%3a259.9-0ubuntu0.1+p4gentmp1_all.deb")
+            Path::new("/var/cache/apt/archives/systemd-dev_1%3a259.9-0ubuntu0.1+p4gentmp2_all.deb")
         );
         for version in ["../other", "x/y", "x\n", "x%2fy", ""] {
             package.version = version.into();

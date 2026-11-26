@@ -106,7 +106,7 @@
 (typeattribute p4_nonboard_except_generator_tmpfs_source)
 (typeattributeset p4_nonboard_except_generator_tmpfs_source (and (p4_all_nonboard) (not (tmpfs))))
 (typeattribute p4_linux_without_fresh_filesystem_labelers)
-(typeattributeset p4_linux_without_fresh_filesystem_labelers (and (p4_linux_procs) (not (or (droidloom_broker) (init_t)))))
+(typeattributeset p4_linux_without_fresh_filesystem_labelers (and (p4_linux_procs) (not (or (droidloom_broker) (or (init_t) (p4_linux_service_executor_t))))))
 
 ; The kernel first checks relabel-from the default fresh tmpfs superblock, then
 ; relabel-to the one native filesystem SID. Its context/rootcontext checks then
@@ -250,10 +250,13 @@
 (allow p4_native_credential_consumers p4_linux_credentials_root_t (dir (getattr search)))
 (allow p4_linux_service_executor_t p4_native_new_credential_unit_dirs (dir (getattr search open read create write setattr rmdir rename reparent)))
 
-; fsmount_credentials_fs() is a real tmpfs mount, not an assumed fallback.
-; fd_reopen() needs only OPEN on its still-unlabelled root; the existing
-; tmpfs relabel-from edge then selects one exact native credential directory.
-; The original source makes that mount read-only before attaching it.
+; The normal p4gentmp2 systemd source sets rootcontext at tmpfs creation,
+; before fd_reopen(O_DIRECTORY) checks read access. The raw executor SID, exact
+; /run/credentials/<unit> path and ten literal units select one of these five
+; root labels. Actual security.selinux readback is required before and after
+; the original label_fix_full(); native mount/label failures have no fallback.
+; No tmpfs context= override is used: children retain normal labeling. The
+; original source seals the filesystem read-only before attaching it.
 (allow p4_linux_service_executor_t tmpfs (dir (open)))
 (allow p4_linux_service_executor_t p4_native_credential_unit_dirs (dir (relabelto mounton)))
 (neverallow p4_not_service_executor p4_native_credential_unit_dirs (dir (create write setattr rename reparent relabelto mounton)))
@@ -267,3 +270,97 @@
 (allow init_t p4_linux_credentials_root_t (dir (getattr search write remove_name)))
 (allow init_t p4_native_credential_unit_dirs (dir (getattr search open read rmdir)))
 (neverallow p4_without_native_credential_retire p4_native_credential_unit_dirs (dir (rmdir)))
+
+; Source-owned native bootstrap observations. The selected normal manager uses
+; procfs/mount metadata, pidfds, public kernel limits and readonly hardware
+; enumeration. Keep original Android proc/sysfs labels and decisions unchanged.
+; Generic proc file bodies, process memory, kernel writes and capabilities are
+; not added. Each original public proc type has its own explicit reader list.
+(typeattribute p4_native_boot_commandline_readers)
+(typeattributeset p4_native_boot_commandline_readers (init_t p4_linux_module_loader_t p4_linux_generator_t p4_linux_setup_t p4_linux_udev_t))
+(allow p4_native_boot_commandline_readers proc_cmdline (file (getattr open read)))
+(typeattribute p4_native_boot_proc_readers)
+(typeattributeset p4_native_boot_proc_readers (init_t p4_linux_service_executor_t p4_linux_udev_t))
+(typeattribute p4_native_boot_proc_files)
+(typeattributeset p4_native_boot_proc_files (proc_cpuinfo proc_filesystems proc_pid_max proc_pressure_cpu proc_swaps proc_random))
+(typeattribute p4_nonboard_except_boot_proc_inputs)
+(typeattributeset p4_nonboard_except_boot_proc_inputs (and (p4_all_nonboard) (not (or (proc_cmdline) (or (p4_kernel_ns_handle_t) (p4_native_boot_proc_files))))))
+(typeattribute p4_native_nonjournal_without_boot_proc_inputs)
+(typeattributeset p4_native_nonjournal_without_boot_proc_inputs (and (p4_native_nonjournal_without_module_reads) (not (p4_native_boot_proc_readers))))
+(typeattribute p4_native_nonjournal_boot_proc_inputs)
+(typeattributeset p4_native_nonjournal_boot_proc_inputs (and (p4_native_nonjournal_without_module_reads) (p4_native_boot_proc_readers)))
+(allow init_t proc_cpuinfo (file (getattr open read)))
+(allow init_t proc_filesystems (file (getattr open read)))
+(allow init_t proc_pid_max (file (getattr open read)))
+(allow init_t proc_pressure_cpu (file (getattr open read)))
+(allow init_t proc_swaps (file (getattr open read)))
+(allow init_t proc_random (dir (getattr search)))
+(allow init_t proc_random (file (getattr open read)))
+(allow p4_linux_service_executor_t proc_pressure_cpu (file (getattr open read)))
+(allow p4_linux_udev_t proc_filesystems (file (getattr open read)))
+(allow p4_linux_udev_t proc_pressure_cpu (file (getattr open read)))
+(allow p4_linux_udev_t proc_random (dir (getattr search)))
+(allow p4_linux_udev_t proc_random (file (getattr open read)))
+(neverallow p4_native_boot_proc_readers proc (file (open read write append map execute entrypoint)))
+(neverallow p4_native_boot_proc_readers p4_native_boot_proc_files (file (write append create setattr relabelfrom relabelto map execute execute_no_trans entrypoint)))
+
+; Distribution generators inspect public hardware and unit-directory metadata;
+; PID 1 uses the same readonly sysfs partition for virtualization and device
+; discovery. Writes and executable mappings remain prohibited by that partition.
+(typeattributeset p4_native_sysfs_readers (init_t p4_linux_generator_t))
+(allow p4_linux_generator_t proc (dir (getattr search)))
+(allow p4_linux_generator_t sysfs (filesystem (getattr)))
+(allow p4_linux_generator_t p4_linux_unit_directory_t (dir (getattr search open read)))
+(allow p4_linux_generator_t p4_linux_sshd_exec_t (file (getattr)))
+(allow init_t proc (filesystem (getattr)))
+(allow init_t p4_kernel_pid_handle_t (filesystem (getattr)))
+(allow p4_linux_service_executor_t p4_kernel_pid_handle_t (filesystem (getattr)))
+(allow init_t p4_kernel_ns_handle_t (file (getattr)))
+(allow p4_linux_setup_t p4_kernel_ns_handle_t (file (getattr)))
+(allow p4_linux_udev_t p4_kernel_ns_handle_t (file (getattr)))
+(allow init_t p4_linux_rootdir_t (dir (open read)))
+(allow init_t p4_linux_run_t (dir (open read)))
+
+; The unmodified libmount monitor watches /run/mount for the future
+; utab.event name. Early boot holds and labels that exact existing/new tmpfs
+; directory before PID 1. Without it, libmount falls back to /run and fails
+; its inotify watch; systemd then loses its initial mount table.
+(type p4_linux_mount_monitor_dir_t)
+(roletype object_r p4_linux_mount_monitor_dir_t)
+(typeattributeset p4_linux_data (p4_linux_mount_monitor_dir_t))
+(allow kernel p4_linux_mount_monitor_dir_t (dir (getattr relabelto)))
+(allow p4_linux_mount_monitor_dir_t tmpfs (filesystem (associate)))
+(allow init_t p4_linux_mount_monitor_dir_t (dir (getattr open read search watch)))
+(allow p4_linux_remount_t p4_linux_mount_monitor_dir_t (dir (getattr search)))
+(neverallow init_t p4_linux_run_t (dir (watch)))
+(neverallow init_t p4_linux_mount_monitor_dir_t (dir (write add_name remove_name create setattr rmdir mounton relabelfrom relabelto)))
+(neverallow p4_linux_procs p4_linux_mount_monitor_dir_t (dir (relabelfrom relabelto)))
+(neverallow p4_android_userspace p4_linux_mount_monitor_dir_t (dir (open read search watch write add_name remove_name create setattr rmdir mounton relabelfrom relabelto)))
+(allow init_t p4_linux_kernel_modules_t (file (getattr open read)))
+(allow init_t p4_linux_udev_rules_t (dir (getattr search)))
+(allow p4_linux_setup_t p4_linux_udev_rules_t (dir (getattr)))
+
+; These tools resolve only their own proc descriptors or compare a fixed
+; namespace handle. Traversal is not permission to read another task's body.
+(typeattributeset p4_native_self_fd_metadata_readers (p4_linux_setup_t p4_linux_journalctl_t))
+(typeattributeset p4_native_dev_root_traversers (p4_linux_journalctl_t))
+(allow p4_linux_setup_t proc (lnk_file (getattr read)))
+(allow p4_linux_journalctl_t proc (lnk_file (getattr read)))
+(allow p4_linux_setup_t proc (dir (getattr search)))
+(allow p4_linux_journalctl_t proc (dir (getattr search)))
+(allow p4_linux_journalctl_t p4_linux_rootdir_t (dir (open read)))
+(allow p4_linux_module_loader_t init_t (dir (search)))
+(allow p4_linux_setup_t init_t (dir (search)))
+(allow p4_linux_udev_t init_t (dir (search)))
+(typeattribute p4_native_manager_child_metadata)
+(typeattributeset p4_native_manager_child_metadata (p4_linux_console_setup_t p4_linux_journalctl_t p4_linux_module_loader_t p4_linux_setup_t p4_linux_udev_t p4_linux_uevent_label_t))
+(allow init_t p4_native_manager_child_metadata (dir (getattr search)))
+
+; udev's stock daemon shares no generic native executable role. Its local
+; event-loop socket and own proc/config observations are explicitly listed.
+(allow p4_linux_udev_t self (file (getattr open read)))
+(allow p4_linux_udev_t self (dir (open read)))
+(allow p4_linux_udev_t self (unix_stream_socket (create bind connect)))
+(allow p4_linux_udev_t p4_linux_native_config_t (file (getattr open read)))
+(allow p4_linux_udev_t p4_linux_machine_id_t (file (getattr open read)))
+(allow p4_linux_udev_t selinuxfs (filesystem (getattr)))

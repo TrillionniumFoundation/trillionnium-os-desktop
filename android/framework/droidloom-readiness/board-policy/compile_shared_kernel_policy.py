@@ -12,6 +12,10 @@ import tempfile
 from derive_shared_payload_cgroup_policy import Decision, Policy, derive, verify
 from derive_native_uevent_policy import (derive_android as derive_uevent_android,
     derive_native as derive_uevent_native, verify as verify_uevent)
+from derive_native_console_policy import derive as derive_console, verify as verify_console
+from derive_native_remount_policy import derive as derive_remount, verify as verify_remount
+from derive_native_netplan_policy import derive as derive_netplan, verify as verify_netplan
+from derive_native_sysusers_policy import derive as derive_sysusers, verify as verify_sysusers
 from verify_native_user_cgroups import verify as verify_user_cgroups, source_inputs as user_cgroup_source_inputs
 from verify_native_login_audit import verify_login_audit
 from verify_native_journal_storage import verify_journal_storage
@@ -180,6 +184,36 @@ def verify_manager_credentials(lines, check, obj, role_types):
                 check(context, obj(target), "lnk_file", [permission], False)
                 count += 1
     executor = "u:system_r:p4_linux_service_executor_t:s0"
+    object_types = sorted(line[len("(roletype object_r "):-1] for line in lines
+                          if line.startswith("(roletype object_r "))
+    for target in object_types:
+        if not target or any(c.isspace() or c in "()" for c in target):
+            raise ValueError("Unexpected concrete object role in credential verifier")
+        check(executor, obj(target), "filesystem", ["relabelfrom"], target == "tmpfs")
+        check(executor, obj(target), "filesystem", ["relabelto"], False)
+        count += 2
+    for target in CREDENTIAL_DIRECTORY_FAMILIES:
+        check(obj(target), obj("tmpfs"), "filesystem", ["associate"], True)
+        count += 1
+    source_dir = Path(__file__).resolve().parents[4] / "packaging/ubuntu/systemd"
+    source_lock = source_dir / "source.lock.json"
+    source = json.loads(source_lock.read_text())
+    expected_contexts = {unit: f"u:object_r:{target}:s0"
+                         for target, (_, units) in CREDENTIAL_DIRECTORY_FAMILIES.items()
+                         for unit in units}
+    if (source["candidate_source_version"] != "259.9-0ubuntu0.1+p4gentmp2" or
+            source["credential_executor_context"] != executor or
+            source["credential_root_contexts"] != expected_contexts or
+            source["credential_directory_prefix"] != "/run/credentials/" or
+            source["credential_root_label_readback_required"] is not True or
+            source["generic_tmpfs_directory_read_permitted"] is not False or
+            source["native_credential_mount_fallback_permitted"] is not False):
+        raise ValueError("Credential root policy differs from the normal source contract")
+    patch = source_dir / source["patch"]["file"]
+    if (patch.name != "p4-native-generator-tmpfs.patch" or
+            patch.stat().st_size != source["patch"]["bytes"] or
+            sha256(patch) != source["patch"]["sha256"]):
+        raise ValueError("Credential root normal source patch changed")
     check(executor, obj("tmpfs"), "dir", ["open"], True)
     check(executor, obj("tmpfs"), "dir", ["read"], False)
     for permission in ("create", "open", "read", "write", "append", "unlink", "map", "execute", "entrypoint"):
@@ -200,6 +234,10 @@ def verify_manager_credentials(lines, check, obj, role_types):
             "credential_directory_families": len(CREDENTIAL_DIRECTORY_FAMILIES),
             "exact_unit_transitions": len(expected), "credential_bodies_denied": True,
             "tmpfs_directory_enumeration_denied": True, "capabilities_added": [],
+            "credential_root_source_lock": sha256(source_lock),
+            "credential_root_source_patch": sha256(patch),
+            "rootcontext_filesystem_source": "tmpfs",
+            "rootcontext_source_object_checks": len(object_types) * 2,
             "runtime_qualified": False}
 
 
@@ -281,6 +319,157 @@ def verify_manager_runtime_metadata(lines, check, obj, role_types):
             "runtime_qualified": False}
 
 
+def verify_native_boot_observations(lines, check, obj, role_types):
+    """Check fixed native public observations and the original init.scope owner."""
+    count = 0
+    proc_readers = {
+        "init_t": {"proc_cpuinfo", "proc_filesystems", "proc_pid_max",
+                   "proc_pressure_cpu", "proc_swaps", "proc_random"},
+        "p4_linux_service_executor_t": {"proc_pressure_cpu"},
+        "p4_linux_udev_t": {"proc_filesystems", "proc_pressure_cpu", "proc_random"},
+    }
+    public_proc = sorted(set().union(*proc_readers.values()))
+    for actor, readable in proc_readers.items():
+        context = f"u:system_r:{actor}:s0"
+        for target in public_proc:
+            for permission in ("getattr", "open", "read"):
+                if permission == "getattr" and target not in readable:
+                    continue
+                check(context, obj(target), "file", [permission], target in readable)
+                count += 1
+            for permission in ("write", "append", "create", "setattr", "map",
+                               "execute", "execute_no_trans", "entrypoint",
+                               "relabelfrom", "relabelto"):
+                check(context, obj(target), "file", [permission], False)
+                count += 1
+        for permission in ("open", "read", "write", "append", "map"):
+            check(context, obj("proc"), "file", [permission], False)
+            count += 1
+    # The normal remount unit reads the fixed kernel command line before
+    # preparing mounts; its separate role proof checks every other proc body.
+    commandline = {"init_t", "p4_linux_module_loader_t", "p4_linux_generator_t",
+                   "p4_linux_setup_t", "p4_linux_udev_t", "p4_linux_remount_t"}
+    for role, actor in role_types:
+        context = f"u:{role}:{actor}:s0"
+        manager = role == "system_r" and actor == "init_t"
+        for permission in ("write", "setattr"):
+            check(context, obj("p4_linux_cgroup_init_scope_t"), "dir", [permission], manager)
+            count += 1
+        for permission in ("create", "write", "append"):
+            check(context, obj("p4_linux_cgroup_init_scope_t"), "file",
+                  [permission], manager and permission != "append")
+            count += 1
+        check(context, obj("p4_linux_cgroup_root_t"), "dir", ["setattr"], manager)
+        count += 1
+        if role == "system_r":
+            for permission in ("open", "read"):
+                check(context, obj("proc_cmdline"), "file", [permission], actor in commandline)
+                count += 1
+            check(context, obj("p4_linux_cgroup_init_tasks_t"), "file", ["read"], False)
+            count += 1
+    required = {
+        f'(genfscon cgroup2 "{path}" (u object_r {target} ((s0) (s0))))'
+        for path, target in (
+            ("/init.scope", "p4_linux_cgroup_init_scope_t"),
+            ("/init.scope/", "p4_linux_cgroup_init_scope_t"),
+            ("/init.scope/cgroup.procs", "p4_linux_cgroup_init_tasks_t"),
+            ("/init.scope/cgroup.threads", "p4_linux_cgroup_init_tasks_t"),
+        )
+    }
+    actual = {line for line in lines if line.startswith('(genfscon cgroup2 "/init.scope')}
+    if actual != required:
+        raise ValueError("Native init.scope has an unexpected genfs boundary")
+    for actor in ("init_t", "p4_linux_generator_t"):
+        context = f"u:system_r:{actor}:s0"
+        for cls, permissions in (("dir", ("getattr", "search", "open", "read")),
+                                 ("file", ("getattr", "open", "read")),
+                                 ("lnk_file", ("getattr", "read"))):
+            check(context, obj("sysfs"), cls, list(permissions), True)
+            count += len(permissions)
+        for permission in ("write", "append", "map", "execute", "entrypoint"):
+            check(context, obj("sysfs"), "file", [permission], False)
+            count += 1
+    for actor in ("init_t", "p4_linux_service_executor_t"):
+        check(f"u:system_r:{actor}:s0", obj("p4_kernel_pid_handle_t"),
+              "filesystem", ["getattr"], True)
+        count += 1
+        for permission in ("open", "read", "write", "append", "ioctl", "map",
+                           "execute", "execute_no_trans", "entrypoint"):
+            check(f"u:system_r:{actor}:s0", obj("p4_kernel_pid_handle_t"),
+                  "file", [permission], False)
+            count += 1
+    check("u:system_r:p4_linux_generator_t:s0", obj("proc"), "dir", ["search"], True)
+    count += 1
+    check("u:system_r:init_t:s0", obj("proc"), "filesystem", ["getattr"], True)
+    count += 1
+    return {"permission_checks": count, "public_proc_matrix": {
+                actor: sorted(targets) for actor, targets in proc_readers.items()},
+            "commandline_readers": sorted(commandline),
+            "init_scope_genfs_entries": len(required),
+            "generic_proc_bodies_denied": True,
+            "root_membership_body_read_added": False,
+            "capabilities_added": [], "runtime_qualified": False}
+
+
+def verify_native_mount_monitor(check, obj, role_types):
+    """Only global PID 1 watches the exact held libmount runtime directory."""
+    target = obj("p4_linux_mount_monitor_dir_t")
+    count = 0
+    for role, actor in role_types:
+        context = f"u:{role}:{actor}:s0"
+        check(context, target, "dir", ["watch"], actor == "init_t")
+        count += 1
+        for permission in ("write", "add_name", "remove_name", "create",
+                           "setattr", "rmdir", "mounton"):
+            check(context, target, "dir", [permission], False)
+            count += 1
+    manager = "u:system_r:init_t:s0"
+    check(manager, target, "dir", ["getattr", "open", "read", "search", "watch"], True)
+    check(manager, obj("p4_linux_run_t"), "dir", ["watch"], False)
+    check("u:system_r:p4_linux_remount_t:s0", target, "dir", ["getattr", "search"], True)
+    return {"path": "/run/mount", "role_permission_checks": count + 3,
+            "process_role_types": len(role_types), "watcher": "init_t",
+            "generic_run_watch_denied": True, "directory_mutation_denied": True,
+            "runtime_qualified": False}
+
+
+def verify_native_selinux_label_readers(check, obj):
+    """The normal udev label database path has no policy/query write power."""
+    actor = "u:system_r:p4_linux_udev_t:s0"
+    count = 0
+    for target, cls, allowed, denied in (
+        ("p4_linux_board_selinux_config_t", "file",
+         ("getattr", "open", "read"),
+         ("map", "write", "append", "create", "setattr", "unlink", "link",
+          "rename", "relabelfrom", "relabelto", "execute", "execute_no_trans", "entrypoint")),
+        ("selinuxfs", "file", ("getattr", "open", "read", "map"),
+         ("write", "append", "create", "setattr", "unlink", "link", "rename",
+          "relabelfrom", "relabelto", "execute", "execute_no_trans", "entrypoint", "ioctl")),
+        ("selinuxfs", "dir", ("search",),
+         ("open", "read", "write", "add_name", "remove_name", "create",
+          "setattr", "rmdir", "mounton", "relabelfrom", "relabelto")),
+        ("selinuxfs", "filesystem", ("getattr",),
+         ("mount", "remount", "unmount", "relabelfrom", "relabelto")),
+    ):
+        for permission in allowed:
+            check(actor, obj(target), cls, [permission], True)
+            count += 1
+        for permission in denied:
+            check(actor, obj(target), cls, [permission], False)
+            count += 1
+    for permission in ("load_policy", "setenforce", "setbool", "setsecparam",
+                       "setcheckreqprot", "read_policy", "compute_av",
+                       "compute_create", "compute_relabel", "compute_member", "check_context"):
+        check(actor, "u:r:kernel:s0", "security", [permission], False)
+        count += 1
+    for permission in ("create", "bind", "read", "write", "connect", "sendto"):
+        check(actor, actor, "netlink_selinux_socket", [permission], False)
+        count += 1
+    return {"reader": "p4_linux_udev_t", "binary_permission_checks": count,
+            "normal_status_page_read_only": True, "policy_and_query_writes_denied": True,
+            "netlink_fallback_denied": True, "runtime_qualified": False}
+
+
 def verify_manager_startup(lines, check, obj, role_types):
     """Read generator/status authority from the linked policy for every role."""
     count = 0
@@ -346,6 +535,9 @@ def verify_manager_startup(lines, check, obj, role_types):
             "native_generator_tmpfs": verify_manager_tmpfs(lines, check, obj, role_types),
              "native_runtime_metadata": verify_manager_runtime_metadata(lines, check, obj, role_types),
              "native_credentials": verify_manager_credentials(lines, check, obj, role_types),
+              "native_boot_observations": verify_native_boot_observations(lines, check, obj, role_types),
+              "native_mount_monitor": verify_native_mount_monitor(check, obj, role_types),
+              "native_label_database": verify_native_selinux_label_readers(check, obj),
             "runtime_qualified": False}
 
 
@@ -417,6 +609,11 @@ def verify_manager_file_contexts(here, work):
                 cases.append((parent + unit, stat.S_IFDIR, target))
                 cases.append((parent + unit, stat.S_IFREG, "p4_linux_native_data_t"))
     cases.extend([
+        ("/run/mount", stat.S_IFDIR, "p4_linux_mount_monitor_dir_t"),
+        ("/run/mount", stat.S_IFREG, "p4_linux_native_data_t"),
+        ("/run/mount", stat.S_IFLNK, "p4_linux_usrmerge_link_t"),
+        ("/run/mount-other", stat.S_IFDIR, "p4_linux_rootdir_t"),
+        ("/run/mount/utab", stat.S_IFREG, "p4_linux_native_data_t"),
         ("/run/credentials", stat.S_IFDIR, "p4_linux_credentials_root_t"),
         ("/run/systemd/temporary-credentials", stat.S_IFDIR, "p4_linux_credential_staging_t"),
         ("/run/credentials/unselected.service", stat.S_IFDIR, "p4_linux_rootdir_t"),
@@ -424,11 +621,11 @@ def verify_manager_file_contexts(here, work):
         ("/run/systemd/temporary-credentials/unselected.service", stat.S_IFDIR, "p4_linux_rootdir_t"),
     ])
     # Normal debootstrap character nodes survive complete-root capture. Keep the
-    # original class-specific labels without assigning device types to other kinds.
+    # class-specific labels, including the fixed Linux VT, never other inode kinds.
     for name, device_type in [
         ("console", "console_device"), ("full", "p4_linux_standardio_t"),
         ("null", "null_device"), ("ptmx", "ptmx_device"),
-        ("random", "random_device"), ("tty", "owntty_device"),
+        ("random", "random_device"), ("tty", "p4_linux_console_vt_t"),
         ("urandom", "random_device"), ("zero", "zero_device"),
     ]:
         cases.extend([
@@ -898,7 +1095,8 @@ def verify_host_control(library, binary, export, original_contract):
                "debugfs_tracing_debug", "fusectlfs", "fs_bpf", "pstorefs",
                "binfmt_miscfs", "rootfs"]:
         check(executor, obj(fs), "filesystem", ["getattr", "remount", "unmount"], True)
-        check(executor, obj(fs), "filesystem", ["relabelto", "relabelfrom"], False)
+        check(executor, obj(fs), "filesystem", ["relabelto"], False)
+        check(executor, obj(fs), "filesystem", ["relabelfrom"], fs == "tmpfs")
     check(executor, obj("tmpfs"), "filesystem", ["mount"], True)
     check(executor, obj("selinuxfs"), "filesystem", ["mount"], False)
     for fs in ["labeledfs", "tmpfs"]:
@@ -908,9 +1106,9 @@ def verify_host_control(library, binary, export, original_contract):
     check(executor, obj("p4_linux_cgroup_init_scope_t"), "dir", ["mounton", "relabelto", "relabelfrom"], False)
     check(executor, obj("p4_linux_cgroup_init_tasks_t"), "file", ["open", "write", "relabelto", "relabelfrom"], False)
     check(executor, obj("tmpfs"), "dir", ["relabelfrom"], True)
-    # Stock credential fsmount() reopens the still-unlabelled directory FD
-    # before label_fix_full(); enumeration, content mutation and relabel-to
-    # the generic tmpfs type remain prohibited.
+    # The normal credential patch labels the root in fsconfig before reopening
+    # its directory FD. The opaque tmpfs handle grant remains available to the
+    # stock namespace constructor; enumeration and generic mutation stay closed.
     check(executor, obj("tmpfs"), "dir", ["open"], True)
     check(executor, obj("tmpfs"), "dir", ["read", "write", "add_name", "remove_name", "relabelto"], False)
     for private in ["droidloom_public_apk_input", "p4_linux_product_store_t"]:
@@ -1303,8 +1501,8 @@ def main():
         "ubuntu-real-root-interpreter.cil", "ubuntu-mounted-api-metadata.cil",
         "ubuntu-native-journal-storage.cil",
         "ubuntu-core-cgroup-ownership.cil", "ubuntu-native-user-cgroups.cil", "ubuntu-native-services.cil",
-        "ubuntu-native-service-capabilities.cil",
-        "ubuntu-native-login-audit.cil",
+        "ubuntu-native-service-capabilities.cil", "ubuntu-native-console.cil",
+        "ubuntu-native-login-audit.cil", "ubuntu-native-remount.cil", "ubuntu-native-netplan.cil", "ubuntu-native-sysusers.cil",
         "ubuntu-native-service-runtime.cil", "ubuntu-native-sandbox.cil",
         "ubuntu-native-maintenance.cil",
         "frontend-android-interface.cil", "native-camera-interface.cil", "linux-frontend-observer.cil", "instance-launcher.cil",
@@ -1327,10 +1525,17 @@ def main():
                here / "derive_shared_payload_cgroup_policy.py",
                here / "derive_native_uevent_policy.py", here / "native-uevent-labels.json",
                here / "verify_native_user_cgroups.py", here / "native-user-cgroups.json",
+               here / "derive_native_console_policy.py", here / "native-console-setup.json",
+               here / "derive_preserved_alias_policy.py",
+               here / "derive_native_remount_policy.py", here / "native-remount-source.json",
+               here / "derive_native_netplan_policy.py", here / "native-netplan-source.json",
+               here / "derive_native_sysusers_policy.py", here / "native-sysusers-source.json",
                *user_cgroup_source_inputs(here),
                here / "verify_native_login_audit.py", here / "verify_native_journal_storage.py",
                here / "verify_greeter_home.py", here / "verify_native_maintenance.py",
                here / "verify_fixed_display.py",
+               here.parents[3] / "packaging/ubuntu/systemd/source.lock.json",
+               here.parents[3] / "packaging/ubuntu/systemd/p4-native-generator-tmpfs.patch",
                here / "ubuntu-native-file_contexts", here / "ubuntu-real-root-file_contexts",
                here / "linux-service-file_contexts", here / "linux-initial-calibration-file_contexts"]
     if any(output.resolve() == path.resolve() for path in sources):
@@ -1359,11 +1564,43 @@ def main():
         linked = work / "combined.policy"
         compile_policy(compiler, [*args.android_cil, board, *components, shared, uevent_android, uevent_native],
                        linked, contexts, environment)
+        console_aliases = work / "native-console-aliases.cil"
+        console_contract = derive_console(library, linked, work / "console-before.cil",
+                                           here, console_aliases, export_binary_policy)
+        compile_policy(compiler, [*args.android_cil, board, *components, shared,
+                                 uevent_android, uevent_native, console_aliases],
+                       linked, contexts, environment)
+        remount_aliases = work / "native-remount-aliases.cil"
+        remount_contract = derive_remount(library, linked, work / "remount-before.cil",
+                                          here, remount_aliases, export_binary_policy)
+        compile_policy(compiler, [*args.android_cil, board, *components, shared,
+                                 uevent_android, uevent_native, console_aliases, remount_aliases],
+                       linked, contexts, environment)
+        netplan_aliases = work / "native-netplan-aliases.cil"
+        netplan_contract = derive_netplan(library, linked, work / "netplan-before.cil",
+                                          here, netplan_aliases, export_binary_policy)
+        compile_policy(compiler, [*args.android_cil, board, *components, shared,
+                                 uevent_android, uevent_native, console_aliases, remount_aliases,
+                                 netplan_aliases], linked, contexts, environment)
+        sysusers_aliases = work / "native-sysusers-aliases.cil"
+        sysusers_contract = derive_sysusers(library, linked, work / "sysusers-before.cil",
+                                           here, sysusers_aliases, export_binary_policy)
+        compile_policy(compiler, [*args.android_cil, board, *components, shared,
+                                 uevent_android, uevent_native, console_aliases, remount_aliases,
+                                 netplan_aliases, sysusers_aliases], linked, contexts, environment)
+        host_control = verify_host_control(library, linked, work / "host-control-binary.cil", contract)
+        netplan_access = verify_netplan(library, linked, work / "netplan-after.cil",
+                                       here, netplan_contract, export_binary_policy)
+        sysusers_access = verify_sysusers(library, linked, work / "sysusers-after.cil",
+                                         here, sysusers_contract, export_binary_policy)
+        remount_access = verify_remount(library, linked, work / "remount-after.cil",
+                                       here, remount_contract, export_binary_policy)
+        console_access = verify_console(library, linked, work / "console-after.cil",
+                                        here, console_contract, export_binary_policy)
         uevent_access = verify_uevent(library, linked, uevent_contract,
                                      work / "native-uevent-binary.cil", export_binary_policy)
         user_cgroups = verify_user_cgroups(library, linked, here, work / "user-cgroup-binary.cil", export_binary_policy)
         shared_access = verify(library, linked, contract)
-        host_control = verify_host_control(library, linked, work / "host-control-binary.cil", contract)
         native_capabilities = verify_native_service_capabilities(library, linked)
         login_audit = verify_login_audit(library, linked, work / "login-audit-binary.cil", export_binary_policy)
         auxiliary_sockets = verify_native_auxiliary_sockets(
@@ -1375,6 +1612,10 @@ def main():
         manager_file_contexts = verify_manager_file_contexts(here, work)
         result = {
             "native_uevent": uevent_access,
+            "native_console": console_access,
+            "native_remount": remount_access,
+            "native_sysusers_lock": sysusers_access,
+            "native_netplan": netplan_access,
             "native_user_cgroups": user_cgroups,
             "native_manager_file_contexts": manager_file_contexts,
             "native_maintenance": native_maintenance,

@@ -111,3 +111,111 @@ cannot transfer that authority. This second preparation reports
 65-APK payload and then run real installation, launch and required business
 gates for the selected 39 apps. Preserved original data stays separate from
 both the initial calibration and fresh public-APK testing.
+
+## Normal console package closure
+
+The complete initializer checks the compiled board-policy/native-console-setup.json
+before modifying the cloned root. This binds the selected normal console-setup,
+keyboard-configuration, kbd, shell, coreutils and library packages, all consumed
+file bytes and modes, the complete hardlink groups, and command/library symlink
+targets. The 116 normal uutils names remain one inode; GNU cp is the actual
+selected /usr/bin/cp implementation. No executable replaces a package file and
+no normal hardlink group is split.
+
+The normal system service scripts and udev font/terminal cache scripts enter a
+dedicated console role. It has no general native command or runtime-library
+execution permission. Exact helper and library inodes have narrower labels.
+The strict linker derives and checks the old actors' effective access, MLS
+constraint membership, ioctl filters and existing transitions for each changed
+object family. Original Android assertions and existing native verifiers remain
+enabled. The real libselinux matcher checks every regular-file alias and
+wrong-kind or unselected-path cases.
+
+The selected configuration uses the US pc105 keyboard, UTF-8 and Uni2 Fixed16
+font. Cache regeneration can write only selected cache names and its private
+temporary type. The script's first /run/tmpkbd.XXXXXX attempt stays denied;
+its existing /tmp fallback creates a non-executable private temporary file.
+/run/console-setup has a named directory transition and non-executable marker storage.
+No home, password, account key, network socket, arbitrary program, mount or
+MAC-management authority is added. VT operations use the actual selected
+kernel/kbd ioctl closure and console configuration capability. Normal glibc 2.43
+isatty/tcgetattr and the selected normal stty issue TCGETS2 (0x802c542a);
+the SELinux filter uses its low 16 bits, 0x542a, and does not grant the obsolete
+TCGETS assumption. All 14 requests are checked in the actual linked policy for
+exactly the four existing VT object types and the fixed Linux VT type described
+below. Null-device isatty probes permit only TCGETS2. Every other character-device
+class vector is checked separately.
+
+The original units retain their ordering. console-setup.service is ordered
+before the display manager; that ordering and Wants edges do not constitute a
+hard GDM Requires dependency. Console functionality is a separate normal-host
+requirement. Source admission retains runtime_qualified=false. Actual unit
+completion, keyboard mode/keymap, font/terminal readback and normal udev execution
+require a real owned boot; package hashes or a service exit cannot claim them.
+
+Focused tests reject missing/extra hardlink aliases, substituted symlinks or
+independent copies, altered bytes, duplicate package identities, wrong
+architectures, versions and unconfigured dpkg-query states. The existing normal
+package canonicalizer accepts the real amd64-qualified names and the ii status.
+The explicitly ignored test
+boot_native::console::tests::admitted_normal_source_readback validates an existing
+normal source using DROIDLOOM_CONSOLE_SOURCE_ROOT, DROIDLOOM_CONSOLE_SOURCE_MANIFEST
+and its exact DROIDLOOM_CONSOLE_SOURCE_SHA256. It starts no service and writes no
+source file; it does not qualify a running console.
+
+### First-load Linux VT and loader boundaries
+
+The script's initial binfmt handoff opens the fixed normal /usr/bin/dash while
+the old executor still owns the credentials. That one interpreter has its own
+type: the executor and udev may open it for the script transition, but cannot
+execute a shell while remaining in their old role. noatsecure is not granted;
+normal secure-exec environment handling remains in effect.
+
+The exact /etc/ld.so.cache inode and the normal locale archive/C.utf8 files
+have separate mapped-data types. Console can read/map those bytes without any
+execute permission. The fixed old actors which already use the admitted native
+ELF interpreter gain only missing cache read/map access. All their existing
+alias access/constraints/transitions continue to be derived from the actual
+pre-alias policy; the new role receives no generic runtime-library execution.
+
+Before the first policy load, the board holds exactly /dev/tty (5:0, 0666)
+and /dev/tty0 through /dev/tty63 (4:0–63, 0600). The selected 6.18 kernel
+creates these root:root; the normal 50-udev-default rule sets group tty (5).
+Only those two exact metadata states are admitted. All 65 are checked before
+the first label write. They stay the same writable devtmpfs inodes, with their
+original mode, ownership and ACLs; the four standard-device projections remain
+separate. No terminal body is read or written by this label preparation.
+
+O_PATH descriptors, no-symlink resolution, unique mount IDs, full node metadata
+and pathname readback bind the operation. Raw xattrs go through only this
+process's generated numeric FD links under a held, verified procfs directory.
+Its st_size alone is dynamic: selected fs/proc/fd.c:proc_fd_getattr reports the
+current open-FD count. This exception is not used for device metadata. After
+initial policy load, the same handles must read the exact valid Linux VT label
+and unchanged node identities; every handle is closed before PID 1 handoff.
+No active-policy generic device relabel or body permission is added.
+
+The new Linux VT type permits the fixed console closure, normal udev label/DAC
+maintenance and logind's session VT lifecycle. The verifier reads every concrete
+actor and every character-device permission from the real binary; unselected
+actors retain at most existing getattr observation. It also checks the exact
+extended ioctl sets below, not merely the presence of ioctl permission.
+
+| Actor and target | Fixed requests | Normal source |
+| --- | --- | --- |
+| PID 1, private console/VT | TCGETS2 0x542a, TCSETS2 0x542b, TIOCGWINSZ 0x5413, TIOCNXCL 0x540d, KDSKBMODE 0x4b45, TCFLSH 0x540b | systemd terminal_reset_ioctl, vt_reset_keyboard, fd_columns/fd_lines, save_console_winsize_in_environment; glibc tcgetattr/tcsetattr/tcflush |
+| Executor, private console/VT | TCGETS2 0x542a | systemd isatty_safe and inherited terminal validation |
+| logind, Linux VT | TCGETS2 0x542a, KDSETMODE 0x4b3a, KDSKBMODE 0x4b45, VT_SETMODE 0x5602, VT_GETSTATE 0x5603, VT_RELDISP 0x5605, VT_ACTIVATE 0x5606 | session_prepare_vt, vt_restore, vt_release, vt_is_busy and positive chvt |
+| Console helper, standardio/null | TCGETS2 0x542a | glibc isatty/tcgetattr, with the null driver's normal ENOTTY |
+
+PID 1's private-console file lock is the existing normal lock_dev_console
+operation. These source checks and inode tests do not substitute for actual
+unit completion, VT mode/keymap/font readback, logind ownership restoration or
+GDM operation in an owned enforcing boot.
+
+The fresh init.scope must use the exact genfs rules for its directory and
+control files, like system.slice. The C consumer verifies its scope/procs labels
+instead of storing a parent xattr which would make future kernfs controls
+inherit a different label. This change must be integrated with the matching
+fixed init.scope genfs policy; root membership handling and all descriptor
+retirement remain unchanged.

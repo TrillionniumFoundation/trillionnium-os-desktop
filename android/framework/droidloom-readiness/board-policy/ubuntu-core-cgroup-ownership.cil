@@ -151,3 +151,22 @@
 (allow init_t p4_linux_cgroup_root_t (dir (write add_name remove_name)))
 (neverallow p4_not_ubuntu_pid1 p4_linux_cgroup_root_t (dir (write add_name remove_name)))
 (neverallow p4_linux_procs p4_linux_cgroup_root_t (dir (create rmdir rename reparent)))
+
+; init.scope is created and held before policy activation, like system.slice.
+; Never store a parent kernfs xattr: it would override genfs labeling of newly
+; generated controller files. The early handoff verifies these original inodes
+; after policy activation and retains the separate unopened root membership.
+(genfscon cgroup2 "/init.scope" (u object_r p4_linux_cgroup_init_scope_t ((s0) (s0))))
+(genfscon cgroup2 "/init.scope/" (u object_r p4_linux_cgroup_init_scope_t ((s0) (s0))))
+(genfscon cgroup2 "/init.scope/cgroup.procs" (u object_r p4_linux_cgroup_init_tasks_t ((s0) (s0))))
+(genfscon cgroup2 "/init.scope/cgroup.threads" (u object_r p4_linux_cgroup_init_tasks_t ((s0) (s0))))
+(allow init_t p4_linux_cgroup_root_t (dir (setattr)))
+(allow init_t p4_linux_cgroup_init_scope_t (dir (open read write setattr)))
+(allow init_t p4_linux_cgroup_init_scope_t (file (getattr open read write create watch)))
+(allow init_t p4_linux_system_slice_t (file (create)))
+(allow init_t p4_linux_udevd_unit_cgroup_t (file (create)))
+(neverallow p4_not_ubuntu_pid1 p4_linux_cgroup_root_t (dir (setattr)))
+(neverallow p4_not_ubuntu_pid1 p4_linux_cgroup_init_scope_t (dir (write setattr)))
+(neverallow p4_not_ubuntu_pid1 p4_linux_cgroup_init_scope_t (file (create write append)))
+(neverallow p4_linux_procs p4_linux_cgroup_init_scope_t (file (execute execute_no_trans entrypoint map unlink rename link relabelfrom relabelto)))
+(neverallow p4_linux_procs p4_linux_cgroup_init_tasks_t (file (read append map ioctl execute execute_no_trans entrypoint)))

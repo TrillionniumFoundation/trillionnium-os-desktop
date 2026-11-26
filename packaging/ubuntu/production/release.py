@@ -47,13 +47,13 @@ ORIGINAL_ROOT_UUID = "01c27223-3933-481e-9836-7bd0ef1be8c9"
 ORIGINAL_ENTRY_BODY_BYTES = 751
 ORIGINAL_ENTRY_BODY_SHA256 = "2a4912fa11988ed2c07b8f5537d68f8a99b1471f71fde4e308e9d80e4e2d2ec2"
 SYSTEMD_ORIGINAL_VERSION = "259.9-0ubuntu0.1"
-SYSTEMD_CANDIDATE_VERSION = "259.9-0ubuntu0.1+p4gentmp1"
+SYSTEMD_CANDIDATE_VERSION = "259.9-0ubuntu0.1+p4gentmp2"
 # These two ELF files were read back from the complete normally built systemd
-# candidate (systemd .deb SHA256 01c4a8ecb1eb4ef9af53115fe8591c4f1e9b7e3fa71ac6e214f6ad8aa1e27cd8).
+# candidate (systemd .deb SHA256 6555069c0c2425eb22c1efadc92e23c30ce906ae3edcf1dbd7c62d2653a2e146).
 # A new source package requires a new normal host, not an environment override.
 SYSTEMD_CANDIDATE_TOOLS = {
- "systemctl": ("/usr/bin/systemctl",302112,"64a96b6dbb9d4795e977e6fb3940fb090a435b1c22ce4e86ef968982d7e4cd8e"),
- "journalctl": ("/usr/bin/journalctl",97472,"8d61e3edafab2ed0cac9a63c0eaa50933a16a37e39efc15a315d5316a18e8880"),
+ "systemctl": ("/usr/bin/systemctl",302112,"2936abe412268cee9736975fb96017e8e92a3331f199505d91539c1d2e3bb535"),
+ "journalctl": ("/usr/bin/journalctl",97472,"9021f580ba218a3948d532ce251fa7cc097936d9359d4e0c388a325ceb8d0224"),
 }
 SYSTEMD_FAMILY = frozenset((
  "libnss-systemd","libpam-systemd","libsystemd-shared","libsystemd0","libudev1",

@@ -36,7 +36,7 @@ observation is returned as failed evidence, not a running/ready unit.
 
 Maintenance selects one exact systemd tool pair for its actual phase. Under the
 shared kernel, the real enforcing maintenance context admits only the normal
-259.9-0ubuntu0.1+p4gentmp1 candidate's `systemctl` and `journalctl` bytes. Their
+259.9-0ubuntu0.1+p4gentmp2 candidate's `systemctl` and `journalctl` bytes. Their
 source package and complete installed payload are checked by the normal
 systemd admission; a caller cannot supply another hash, version, or path. The
 original 7.0.14-p4cred1 cold boot instead reads the protected actual dpkg status
@@ -998,3 +998,42 @@ existing input, command directory, result, foreign member, changed generation
 or non-source prefix is rejected. The preservation record is never a native
 package completion or parent-change event; the normal public/native rollback
 still uses its original durable snapshots.
+
+### Early standard-device metadata
+
+The selected kernel creates the original devtmpfs /dev/kmsg as root:root
+0644; its separately prepared ext4 backing node is root:root 0600.
+The early projection admits those exact source and target modes separately.
+Console, null and full keep their existing exact metadata requirements.
+The held source replaces the target through the existing protected mount
+sequence; neither a device-body read nor a generic devtmpfs relabel is needed.
+Failures identify the fixed node and the failed admission or mount operation.
+
+The standard_devices_test.c regression under runtime/droidloom-early-boot/tests
+exercises the production O_PATH admission with real ext4 backing inodes and a
+private tmpfs target filesystem. It requires an empty root-owned 0700 ext4
+directory and root mount-namespace rights, creates its own mount namespace,
+and opens no character-device body. It checks the four source/target pairs
+and rejects wrong modes, owners, device numbers, file kinds, symlinks and
+filesystem roles. This focused check does not replace a normally built
+full-guest boot.
+
+### Native credential roots and startup observations
+
+The `259.9-0ubuntu0.1+p4gentmp2` normal source build retains the generator
+namespace patch and labels each selected credential tmpfs root when the
+filesystem is created. Selection requires the actual executor context, one of
+ten fixed unit names, and the matching `/run/credentials/<unit>` path. The
+executor checks the actual root context before and after the original label
+fix, then uses the normal credential acquisition and read-only sealing path.
+A native mount or label failure has no directory or ramfs fallback. Generic
+tmpfs directory enumeration and all credential file bodies remain denied.
+
+The native startup policy separately lists its public proc inputs, readonly
+sysfs observations, mount/pidfd metadata, and original `init.scope` ownership.
+The early producer must verify the fixed init scope and membership labels
+without storing a parent kernfs xattr. Root task membership remains unopened
+by runtime userspace. Calibration keeps systemd's kernel log rate limiting off
+to retain the first failure before journald starts; normal graphical boots
+keep that rate limit enabled. Source checks and policy compilation alone do
+not qualify an enforcing boot, an application, or original-data migration.
