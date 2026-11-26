@@ -364,3 +364,18 @@
 (allow p4_linux_udev_t p4_linux_native_config_t (file (getattr open read)))
 (allow p4_linux_udev_t p4_linux_machine_id_t (file (getattr open read)))
 (allow p4_linux_udev_t selinuxfs (filesystem (getattr)))
+
+; Normal systemd 259.9 setup_keyring() creates an anonymous per-service session
+; keyring, links the service UID's user keyring, and adds its invocation-ID key.
+; KEYCTL_LINK needs destination write and source link. KEYCTL_SETPERM looks up
+; the new positive key ID: search is required to retain possession, then setattr
+; changes only that key's permissions. Selected 6.18 allocates each new key with
+; the current executor SID; ordinary UID/possession checks remain in force.
+; No key payload read, alternate key-create SID, or other caller/type is added.
+(allow p4_linux_service_executor_t self (key (write search link setattr)))
+(neverallow p4_linux_service_executor_t self (key (view read create)))
+(neverallow p4_linux_service_executor_t self (process (setkeycreate)))
+(typeattribute p4_not_native_executor_key_owner)
+(typeattributeset p4_not_native_executor_key_owner (and (all) (not (p4_linux_service_executor_t))))
+(neverallow p4_linux_service_executor_t p4_not_native_executor_key_owner (key (view read write search link setattr create)))
+(neverallow p4_not_native_executor_key_owner p4_linux_service_executor_t (key (view read write search link setattr create)))

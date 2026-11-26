@@ -412,6 +412,48 @@ def verify_native_boot_observations(lines, check, obj, role_types):
             "capabilities_added": [], "runtime_qualified": False}
 
 
+def verify_native_executor_keyring(lines, check, role_types):
+    """Check normal session-keyring setup without granting another role's keys."""
+    executor_type = "p4_linux_service_executor_t"
+    executor = "u:system_r:" + executor_type + ":s0"
+    permissions = ("view", "read", "write", "search", "link", "setattr", "create")
+    required = {"write", "search", "link", "setattr"}
+    contexts = set(role_types)
+    for line in lines:
+        prefix = "(roletype object_r "
+        if line.startswith(prefix):
+            name = line[len(prefix):-1]
+            if not name or any(c.isspace() or c in "()" for c in name):
+                raise ValueError("Unexpected keyring object-role declaration")
+            contexts.add(("object_r", name))
+    if ("system_r", executor_type) not in contexts:
+        raise ValueError("The normal service executor is absent from keyring review")
+    count = 0
+    # Expected permissions come from normal setup_keyring()/selected keyctl,
+    # not from the candidate binary. Query each bit separately, including
+    # SETPERM's possession-search prerequisite and every denied key permission.
+    for role, target in sorted(contexts):
+        context = f"u:{role}:{target}:s0"
+        for permission in permissions:
+            check(executor, context, "key", [permission],
+                  target == executor_type and permission in required)
+            count += 1
+    for role, actor in role_types:
+        context = f"u:{role}:{actor}:s0"
+        for permission in permissions:
+            check(context, executor, "key", [permission],
+                  actor == executor_type and permission in required)
+            count += 1
+    check(executor, executor, "process", ["setkeycreate"], False)
+    return {"executor": executor_type, "process_role_types": len(role_types),
+            "key_target_contexts": len(contexts), "binary_permission_checks": count + 1,
+            "self_key_permissions": sorted(required),
+            "self_key_view_read_create_denied": True,
+            "other_key_types_denied": True, "other_key_callers_denied": True,
+            "setkeycreate_denied": True, "capabilities_added": [],
+            "runtime_qualified": False}
+
+
 def verify_native_mount_monitor(check, obj, role_types):
     """Only global PID 1 watches the exact held libmount runtime directory."""
     target = obj("p4_linux_mount_monitor_dir_t")
@@ -1319,6 +1361,7 @@ def verify_host_control(library, binary, export, original_contract):
     manager_startup = verify_manager_startup(lines, check, obj, role_types)
     camera = verify_camera(policy, lines, check, obj, Path(__file__).resolve().parent)
     fixed_display = verify_fixed_display(lines, check, obj, role_types)
+    executor_keyring = verify_native_executor_keyring(lines, check, role_types)
     # The exact timezone symlink retains the prior read-only public-link
     # contract, while only PID 1 may place its stock IN_DONT_FOLLOW watch.
     timezone_decisions = 0
@@ -1348,6 +1391,7 @@ def verify_host_control(library, binary, export, original_contract):
         "native_manager_startup": manager_startup,
         "native_camera": camera,
         "fixed_display_control": fixed_display,
+        "native_executor_keyring": executor_keyring,
         "timezone_link_decisions": timezone_decisions + 9,
         "binary_access_checks": len(checks),
         "public_module_role_types": len(role_types),
