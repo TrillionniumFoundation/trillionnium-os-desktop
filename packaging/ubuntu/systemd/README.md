@@ -48,8 +48,8 @@ fields. Every `FilePin` is `{ "path": "/absolute/path", "bytes": N,
   baseline, before the candidate transaction.
 - `normal_build`: a pinned `droidloom.systemd-normal-build.v1` producer record.
   It contains the actual `exit_code`, `argv`, `source_lock_sha256`, `outputs`
-  (basename to byte count and SHA256), and `source_roundtrip` (the three patched
-  source paths to byte count and SHA256). Keep the original command and source
+  (basename to byte count and SHA256), and `source_roundtrip` (every patched
+  source path declared in `source.lock.json`, with its byte count and SHA256). Keep the original command and source
   roundtrip receipts with this record. A successful normal `dpkg-source
   --after-build` may unapply the quilt series in the build directory; the
   independently unpacked candidate `.dsc` is the maintained source check.
@@ -130,3 +130,8 @@ The plan's `artifacts` map retains each original producer path as its key and pi
 Both systemd and the three-family admission receipts preserve the exact input configuration bytes. Installed complete-source capture calls `verify_installed_systemd` and `verify_installed_native` with the actual root, the admitted receipt pin and a new private evidence directory. These helpers repeat source/build/archive and current dpkg/payload validation; an earlier pass flag never substitutes for reading the new root. The report's `input` retains the original admission input identity and `preserved_input` pins this run's private copy.
 
 `installed_source.complete_installed_payload` contains every member actually read back, including any explicitly source-bound normal package transform. Systemd's two credential directory modes are bound to its exact tmpfiles rules. The selected libselinux, AppArmor and GDM packages require exact archive metadata and contents. Complete capture must compare all these members to its manifest and bind the same root identity and final dpkg status. Other normally installed packages and independently admitted family upgrades are checked through the complete current dependency and reverse-dependency closure. These source receipts continue to report guest and production qualification as false.
+
+Normal source-archive modes may remain unchanged or lose exactly the bits
+selected by the producer's normal 0022 or private 0077 umask. R6 removes group
+write from the original 0775/0664 members to produce 0755/0644. No added access,
+owner, type, alias, packaging-rule or unrelated source-content change is admitted.
