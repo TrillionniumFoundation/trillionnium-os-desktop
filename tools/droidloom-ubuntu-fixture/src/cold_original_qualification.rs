@@ -127,6 +127,15 @@ impl OriginalQualificationAuthority {
             data_phase_allowed(phase, step),
             "data adapter operation is outside the owned durable phase",
         )?;
+        if step == OriginalDataStep::Label {
+            let recorded = self
+                .journal
+                .borrow()
+                .observation(Phase::LabelsIntent)?
+                .ok_or("labels lack their durable source-plan intent")?;
+            let pin: FilePin = serde_json::from_value(recorded["label_plan"].clone())?;
+            self.verify_label_plan(&pin)?;
+        }
         match (&*self.retirement.borrow(), step) {
             (
                 RetirementSource::Initial,
@@ -147,6 +156,57 @@ impl OriginalQualificationAuthority {
         }
     }
 
+    /// Planning is read-only, after every public inode has been published.
+    pub(super) fn verify_label_preparation(&self) -> Result<()> {
+        self.verify_current_owner()?;
+        ensure(
+            self.journal.borrow().phase() == Some(Phase::GrubPublished)
+                && matches!(*self.retirement.borrow(), RetirementSource::Prepared(_)),
+            "complete labels may only be planned after public recovery and GRUB publication",
+        )
+    }
+
+    /// The actual dispatcher seals the plan before allowing the first xattr write.
+    fn begin_labels(&self, pin: &FilePin) -> Result<()> {
+        self.verify_label_preparation()?;
+        ensure(
+            self.label_plan.borrow().is_none(),
+            "label plan is already bound",
+        )?;
+        let binding = labels::LabelPlanBinding::open(self, pin)?;
+        let boot = self.owner.borrow().boot_id().to_owned();
+        self.journal.borrow_mut().append(
+            Phase::LabelsIntent,
+            &boot,
+            serde_json::json!({"label_plan":pin}),
+        )?;
+        *self.label_plan.borrow_mut() = Some(binding);
+        self.verify_label_plan(pin)?;
+        self.verify_current_owner()
+    }
+
+    pub(super) fn verify_label_plan(&self, pin: &FilePin) -> Result<()> {
+        let observation = self
+            .journal
+            .borrow()
+            .observation(Phase::LabelsIntent)?
+            .ok_or("source label plan was not durably selected before mutation")?;
+        let recorded: FilePin = serde_json::from_value(observation["label_plan"].clone())?;
+        ensure(
+            same_pin(pin, &recorded),
+            "label plan differs from the durable exact source pin",
+        )?;
+        if self.label_plan.borrow().is_none() {
+            let binding = labels::LabelPlanBinding::open(self, &recorded)?;
+            *self.label_plan.borrow_mut() = Some(binding);
+        }
+        self.label_plan
+            .borrow()
+            .as_ref()
+            .ok_or("label plan binding absent")?
+            .verify_pin(&recorded)
+    }
+
     pub(super) fn accept_label_derivation(
         &self,
         derivation: &cold_original_data::labels::OriginalLabelDerivation,
@@ -165,17 +225,7 @@ impl OriginalQualificationAuthority {
             derivation.candidate_id() == self.candidate_id,
             "opaque label derivation belongs to another candidate",
         )?;
-        if self.label_plan.borrow().is_none() {
-            let binding = labels::LabelPlanBinding::open(self, derivation.source_plan())?;
-            *self.label_plan.borrow_mut() = Some(binding);
-        }
-        {
-            let binding = self.label_plan.borrow();
-            binding
-                .as_ref()
-                .ok_or("source label plan is not bound")?
-                .verify_pin(derivation.source_plan())?;
-        }
+        self.verify_label_plan(derivation.source_plan())?;
         self.owner.borrow_mut().accept_lock_label(
             derivation.path(),
             derivation.before_identity(),

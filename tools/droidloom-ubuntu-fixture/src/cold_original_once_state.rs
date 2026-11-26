@@ -416,6 +416,19 @@ impl Journal {
         }
     }
 
+    /// Read the actual sealed event, never a caller's recomputed file pin.
+    pub(super) fn observation(&self, phase: Phase) -> Result<Option<Value>> {
+        self.revalidate()?;
+        let selected = self
+            .events
+            .iter()
+            .filter(|(_, event, _, _)| event.phase == phase)
+            .map(|(_, event, _, _)| event.observation.clone())
+            .collect::<Vec<_>>();
+        ensure(selected.len() <= 1, "once durable phase was repeated")?;
+        Ok(selected.into_iter().next())
+    }
+
     pub(super) fn append(
         &mut self,
         phase: Phase,
