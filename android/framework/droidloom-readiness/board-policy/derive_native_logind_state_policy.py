@@ -160,8 +160,118 @@ def derive(library, baseline, exported, here, output, export):
     return expected
 
 
-def verify(library, binary, exported, here, expected, export):
+def compose_successors(expected, netplan, sysusers):
+    """Compose only the two following normal alias derivations.
+
+    Every expected bit still comes from a pre-link binary. The final binary
+    supplies no values to this function, including for unchanged objects.
+    """
+    # Import at call time: netplan also consumes this module's parent alias.
+    from derive_native_netplan_policy import ALIASES as NETPLAN_ALIASES
+    from derive_native_sysusers_policy import ALIASES as SYSUSERS_ALIASES
+
+    if (netplan["aliases"] != NETPLAN_ALIASES or
+            sysusers["aliases"] != SYSUSERS_ALIASES or
+            netplan["classes"] != expected["classes"] or
+            sysusers["classes"] != expected["classes"] or
+            set(netplan["normal_native_consumers"]) != {"init_t", ROLE} or
+            netplan["normal_native_consumers"][ROLE]["actor"] != ROLE):
+        raise ValueError("Logind successor preservation source/class layout differs")
+    aliases = NETPLAN_ALIASES + SYSUSERS_ALIASES
+    mapping = {(row["target"], row["class"]): row["source"] for row in aliases}
+    targets = {row["target"] for row in aliases}
+    if (len(mapping) != len(aliases) or len(targets) != len(aliases) or
+            any(row["source"] in targets for row in aliases)):
+        raise ValueError("Logind successor aliases are not independent and unique")
+
+    def vectors(rows):
+        result = {}
+        for target, cls, level, mask in rows:
+            key = (target, cls, level)
+            if (key in result or cls not in ("file", "dir") or level not in LEVELS or
+                    not isinstance(target, str) or type(mask) is not int or
+                    not 0 <= mask <= 0xffffffff):
+                raise ValueError("Logind successor has a malformed/duplicate actor vector")
+            result[key] = mask
+        objects = {key[0] for key in result}
+        if set(result) != {(obj, cls, level) for obj in objects
+                           for cls in ("file", "dir") for level in LEVELS}:
+            raise ValueError("Logind successor has an incomplete actor matrix")
+        return result
+
+    before = vectors(expected["executor_vectors"])
+    following = vectors(netplan["normal_native_consumers"][ROLE]["effective_vectors"])
+    if set(before) != set(following):
+        raise ValueError("Logind successor changed the complete object matrix")
+    wanted = dict(before)
+    for (target, cls), source in mapping.items():
+        for level in LEVELS:
+            key, original = (target, cls, level), (source, cls, level)
+            if key not in before or original not in before:
+                raise ValueError("Logind successor alias lacks its pre-link object")
+            # Same source/target category pair, as in the following producer.
+            wanted[key] = before[original] | before[key]
+    if following != wanted:
+        raise ValueError("Logind successor changed an unexplained executor vector")
+
+    # Sysusers is linked last. Check its independently derived executor rows
+    # against the same composed matrix, not against a final-binary observation.
+    seen = set()
+    for role, actor, source, target, cls, values, mask in sysusers["samples"]:
+        if actor != ROLE:
+            continue
+        key = (source, target, cls)
+        if (role != "system_r" or key in seen or
+                key not in {(row["source"], row["target"], row["class"])
+                            for row in SYSUSERS_ALIASES} or
+                values != [wanted[(source, cls, level)] for level in LEVELS] or
+                any(mask != wanted[(target, cls, level)] for level in LEVELS)):
+            raise ValueError("Logind successor sysusers pre-link row differs")
+        seen.add(key)
+    if seen != {(row["source"], row["target"], row["class"])
+                for row in SYSUSERS_ALIASES}:
+        raise ValueError("Logind successor sysusers actor closure is incomplete")
+
+    def transitions(rows):
+        if len(rows) != len(set(rows)) or any(not row.startswith(TRANSITIONS) for row in rows):
+            raise ValueError("Logind successor transition table is malformed")
+        return set(rows)
+
+    original = transitions(expected["transition_forms"]) | transitions(expected["transitions"])
+    next_transitions = original | transitions(netplan["transitions"])
+    if transitions(sysusers["transition_forms"]) != next_transitions:
+        raise ValueError("Logind successor complete transition preimage differs")
+    final_transitions = next_transitions | transitions(sysusers["transitions"])
+    rows = [[target, cls, level, wanted[(target, cls, level)]]
+            for target, cls, level, _ in expected["executor_vectors"]]
+    changed = [[*key, before[key], wanted[key]] for key in sorted(before)
+               if before[key] != wanted[key]]
+    digest = lambda value: hashlib.sha256(json.dumps(
+        value, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+    return {
+        "executor_vectors": rows,
+        "transition_forms": final_transitions,
+        "proof": {
+            "schema": "droidloom.logind-successor-preservation.v1",
+            "stages": ["netplan", "sysusers"],
+            "aliases": aliases,
+            "complete_executor_vectors": len(rows),
+            "changed_executor_vectors": changed,
+            "additional_transition_forms": sorted(final_transitions - original),
+            "logind_derivation_sha256": digest(expected),
+            "netplan_derivation_sha256": digest(netplan),
+            "sysusers_derivation_sha256": digest(sysusers),
+            "complete_executor_matrix_sha256": digest(rows),
+            "complete_transition_forms_sha256": digest(sorted(final_transitions)),
+        },
+    }
+
+
+def verify(library, binary, exported, here, expected, export, *, successors=()):
     contract(here)
+    if successors and len(successors) != 2:
+        raise ValueError("Logind needs both exact successor derivations")
+    composed = compose_successors(expected, *successors) if successors else None
     policy = ContextPolicy(library, binary)
     lines = export(policy, binary, exported)
     checks = verify_preserved_aliases(policy, exported, ALIASES, expected)
@@ -181,10 +291,12 @@ def verify(library, binary, exported, here, expected, export):
     for target in (ALIASES[0]["source"], PARENT):
         if original_xperms([exported], [ROLE], target, class_names=("dir",))["dir"] != expected["executor_xperms"]:
             raise ValueError("Logind parent changed executor ioctl filters")
-    if ({line for line in lines if line.startswith(TRANSITIONS)} !=
-            set(expected["transition_forms"]) | set(expected["transitions"])):
+    wanted_transitions = (composed["transition_forms"] if composed else
+                          set(expected["transition_forms"]) | set(expected["transitions"]))
+    if {line for line in lines if line.startswith(TRANSITIONS)} != wanted_transitions:
         raise ValueError("Logind parent changed an unrelated or fallback transition")
-    for target, cls, level, wanted in expected["executor_vectors"]:
+    executor_vectors = composed["executor_vectors"] if composed else expected["executor_vectors"]
+    for target, cls, level, wanted in executor_vectors:
         actual = policy.context_av(_context("system_r", ROLE, level),
             _context("object_r", target), cls, expected["classes"][cls])
         if actual != wanted:
@@ -225,6 +337,7 @@ def verify(library, binary, exported, here, expected, export):
         "all_ranges_constraint_target_checks": expected["constraint_target_checks"],
         "relabel_constraint": expected["relabel_constraint_proof"],
         "complete_executor_vectors": len(expected["executor_vectors"]),
+        "successor_preservation": composed["proof"] if composed else None,
         "extra_permissions": [[ROLE, PARENT, "dir", sorted(ADDITIONS)]],
         "startup_write_vectors": startup,
         "normal_state_directory_permissions": sorted(existing),

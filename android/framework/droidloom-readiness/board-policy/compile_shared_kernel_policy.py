@@ -1724,7 +1724,8 @@ def main():
                                  logind_aliases, netplan_aliases, sysusers_aliases], linked, contexts, environment)
         host_control = verify_host_control(library, linked, work / "host-control-binary.cil", contract)
         logind_access = verify_logind_state(library, linked, work / "logind-state-after.cil",
-                                            here, logind_contract, export_binary_policy)
+                                            here, logind_contract, export_binary_policy,
+                                            successors=(netplan_contract, sysusers_contract))
         netplan_access = verify_netplan(library, linked, work / "netplan-after.cil",
                                        here, netplan_contract, export_binary_policy)
         sysusers_access = verify_sysusers(library, linked, work / "sysusers-after.cil",
