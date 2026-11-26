@@ -15,7 +15,18 @@
 ; journal body or namespace write authority. Original Android guards remain.
 (typeattribute p4_linux_journal_nonwriters)
 (typeattributeset p4_linux_journal_nonwriters (and (p4_linux_procs) (not (p4_linux_journald_t))))
-(neverallow p4_linux_journal_nonwriters p4_linux_journal_database_t (file (create write append setattr link unlink rename)))
-(neverallow p4_linux_journal_nonwriters p4_linux_volatile_journal_database_t (file (create write append setattr link unlink rename)))
+(neverallow p4_linux_journal_nonwriters p4_linux_journal_database_t (file (create write append link unlink rename)))
+(neverallow p4_linux_journal_nonwriters p4_linux_volatile_journal_database_t (file (create write append link unlink rename)))
+; Normal systemd.conf z/a+ and recursive Z/A+ rules let only the fixed
+; tmpfiles role update journal metadata. Its complete file vectors and the
+; four database/machine metadata exceptions are checked by
+; verify_native_journal_storage.py; normal rules and tmpfiles.c are pinned
+; by native-tmpfiles-source.json. Content and lifecycle guards above apply
+; to tmpfiles unchanged, as do the original Android assertions.
+(typeattribute p4_linux_journal_nonmetadata)
+(expandtypeattribute (p4_linux_journal_nonmetadata) true)
+(typeattributeset p4_linux_journal_nonmetadata (and (p4_linux_journal_nonwriters) (not (p4_linux_tmpfiles_t))))
+(neverallow p4_linux_journal_nonmetadata p4_linux_journal_database_t (file (setattr)))
+(neverallow p4_linux_journal_nonmetadata p4_linux_volatile_journal_database_t (file (setattr)))
 (neverallow p4_linux_journald_t p4_linux_journal_database_t (file (link)))
 (neverallow p4_linux_journald_t p4_linux_journal_machine_t (dir (rmdir rename reparent mounton relabelfrom relabelto)))
