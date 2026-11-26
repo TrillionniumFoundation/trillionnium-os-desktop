@@ -429,6 +429,43 @@ def verify_native_mount_monitor(check, obj, role_types):
             "runtime_qualified": False}
 
 
+def verify_native_selinux_label_readers(check, obj):
+    """The normal udev label database path has no policy/query write power."""
+    actor = "u:system_r:p4_linux_udev_t:s0"
+    count = 0
+    for target, cls, allowed, denied in (
+        ("p4_linux_board_selinux_config_t", "file",
+         ("getattr", "open", "read"),
+         ("map", "write", "append", "create", "setattr", "unlink", "link",
+          "rename", "relabelfrom", "relabelto", "execute", "execute_no_trans", "entrypoint")),
+        ("selinuxfs", "file", ("getattr", "open", "read", "map"),
+         ("write", "append", "create", "setattr", "unlink", "link", "rename",
+          "relabelfrom", "relabelto", "execute", "execute_no_trans", "entrypoint", "ioctl")),
+        ("selinuxfs", "dir", ("search",),
+         ("open", "read", "write", "add_name", "remove_name", "create",
+          "setattr", "rmdir", "mounton", "relabelfrom", "relabelto")),
+        ("selinuxfs", "filesystem", ("getattr",),
+         ("mount", "remount", "unmount", "relabelfrom", "relabelto")),
+    ):
+        for permission in allowed:
+            check(actor, obj(target), cls, [permission], True)
+            count += 1
+        for permission in denied:
+            check(actor, obj(target), cls, [permission], False)
+            count += 1
+    for permission in ("load_policy", "setenforce", "setbool", "setsecparam",
+                       "setcheckreqprot", "read_policy", "compute_av",
+                       "compute_create", "compute_relabel", "compute_member", "check_context"):
+        check(actor, "u:r:kernel:s0", "security", [permission], False)
+        count += 1
+    for permission in ("create", "bind", "read", "write", "connect", "sendto"):
+        check(actor, actor, "netlink_selinux_socket", [permission], False)
+        count += 1
+    return {"reader": "p4_linux_udev_t", "binary_permission_checks": count,
+            "normal_status_page_read_only": True, "policy_and_query_writes_denied": True,
+            "netlink_fallback_denied": True, "runtime_qualified": False}
+
+
 def verify_manager_startup(lines, check, obj, role_types):
     """Read generator/status authority from the linked policy for every role."""
     count = 0
@@ -496,6 +533,7 @@ def verify_manager_startup(lines, check, obj, role_types):
              "native_credentials": verify_manager_credentials(lines, check, obj, role_types),
               "native_boot_observations": verify_native_boot_observations(lines, check, obj, role_types),
               "native_mount_monitor": verify_native_mount_monitor(check, obj, role_types),
+              "native_label_database": verify_native_selinux_label_readers(check, obj),
             "runtime_qualified": False}
 
 

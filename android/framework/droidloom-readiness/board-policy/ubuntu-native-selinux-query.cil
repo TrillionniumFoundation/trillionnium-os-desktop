@@ -57,3 +57,19 @@
  (and (p4_native_selinux_query_clients) (not (init_t))))
 (neverallow p4_native_selinux_nonmanager_clients p4_nonboard_except_native_selinux_dirs (dir (search)))
 (neverallow p4_native_dbus_daemons self (netlink_selinux_socket (write sendto connect)))
+
+
+; Stock udevadm/udevd call mac_init -> open_label_db. Their labeling handle
+; reads the admitted public config/file_contexts and libselinux's status page.
+; libselinux 3.9 uses O_RDONLY + PROT_READ for that page; no netlink fallback
+; or access-query transaction is needed when this normal path succeeds.
+(typeattribute p4_native_selinux_label_readers)
+(typeattributeset p4_native_selinux_label_readers (p4_linux_udev_t))
+(allow p4_native_selinux_label_readers p4_linux_board_selinux_config_t (file (getattr open read)))
+(allow p4_native_selinux_label_readers selinuxfs (dir (search)))
+(allow p4_native_selinux_label_readers selinuxfs (filesystem (getattr)))
+(allow p4_native_selinux_label_readers selinuxfs (file (getattr open read map)))
+(neverallow p4_native_selinux_label_readers selinuxfs (file (not (getattr open read map))))
+(neverallow p4_native_selinux_label_readers selinuxfs (dir (open read write add_name remove_name create setattr rmdir mounton relabelfrom relabelto)))
+(neverallow p4_native_selinux_label_readers kernel (security (all)))
+(neverallow p4_native_selinux_label_readers self (netlink_selinux_socket (all)))
