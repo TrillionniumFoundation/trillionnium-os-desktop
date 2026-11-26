@@ -93,6 +93,18 @@ fn validate_native(value: &Value, inputs: &VerifiedVendorInputs) -> Result<()> {
     Ok(())
 }
 
+fn reject_unrestorable_webview(value: &Value) -> Result<()> {
+    if value
+        .get("public_webview_input")
+        .is_some_and(|input| !input.is_null())
+    {
+        return fail(
+            "resume cannot restore the selected WebView input; use a fresh official-gsi-vendor-build with --webview-apk",
+        );
+    }
+    Ok(())
+}
+
 fn collect_references(
     value: &Value,
     root: &Path,
@@ -590,6 +602,7 @@ pub(crate) fn run(
         let pin = artifact(&file, 64 * 1024 * 1024).map_err(|error| format!("prior resume input {}: {error}", file.display()))?;
         let value: Value = serde_json::from_slice(&fs::read(&file)?)?;
         pin.check()?;
+        reject_unrestorable_webview(&value)?;
         collect_references(&value, built, &mut preserved)?;
         preserved.insert(built.join(relative), (pin.bytes, pin.sha256.clone()));
         receipts.push(pin);
@@ -679,6 +692,28 @@ pub(crate) fn run(
 mod tests {
     use super::*;
 
+
+    #[test]
+    fn resume_rejects_a_selected_webview_in_prior_input_receipts() {
+        for schema in [
+            "droidloom-official-gsi-independent-vendor-attempt-v1",
+            "droidloom-official-cp3a-vendor-inputs-v1",
+        ] {
+            let legacy = json!({"schema": schema});
+            assert!(reject_unrestorable_webview(&legacy).is_ok());
+            let mut receipt = legacy;
+            receipt["public_webview_input"] = Value::Null;
+            assert!(reject_unrestorable_webview(&receipt).is_ok());
+            for selected in [
+                json!({"sha256": droidloom_image::webview_provider::APK_SHA256}),
+                json!(false),
+                json!("unbound input"),
+            ] {
+                receipt["public_webview_input"] = selected;
+                assert!(reject_unrestorable_webview(&receipt).is_err());
+            }
+        }
+    }
 
     #[test]
     fn older_retention_only_adds_the_explicitly_pinned_native_receipt() {

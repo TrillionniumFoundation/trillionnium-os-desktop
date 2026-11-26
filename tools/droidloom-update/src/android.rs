@@ -5488,8 +5488,9 @@ pub fn build_official_vendor(
     product: &str,
     jobs: usize,
     inputs: &droidloom_image::official_vendor_inputs::VerifiedVendorInputs,
+    webview: Option<droidloom_image::webview_provider::VerifiedWebView>,
 ) -> Result<()> {
-    official_vendor::build(repo, source, out, work, product, jobs, inputs)
+    official_vendor::build(repo, source, out, work, product, jobs, inputs, webview)
 }
 
 /// Build services and the existing upstream WmTests through the normal strict producer.

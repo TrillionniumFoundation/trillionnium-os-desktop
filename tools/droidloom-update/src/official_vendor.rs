@@ -17,6 +17,8 @@ use std::time::{Duration, Instant};
 
 #[path = "official_vendor_keymint_test.rs"]
 mod keymint_test;
+#[path = "official_vendor_webview.rs"]
+mod webview;
 #[path = "official_vendor_resume.rs"]
 pub(crate) mod resume;
 pub(super) const NATIVE_TARGETS: &[&str] = &["droidloom_cp3a_native_bridge_package"];
@@ -189,6 +191,7 @@ pub(super) struct Bridge {
     files: BTreeMap<String, Artifact>,
     host_needed: BTreeMap<String, Vec<String>>,
     qualification: Value,
+    webview: Option<droidloom_image::webview_provider::VerifiedWebView>,
 }
 fn vendor_path(original: &str) -> Result<String> {
     if let Some(name) = original.strip_prefix("system/lib64/") {
@@ -552,6 +555,7 @@ fn check_bridge(
         files,
         host_needed,
         qualification,
+        webview: None,
     })
 }
 
@@ -780,6 +784,10 @@ fn stage_vendor_modules(
     )?;
     bp.push_str("prebuilt_etc { name: \"droidloom_cp3a_guest_linker_config\", vendor: true, src: \"guest-ld.config.arm64.txt\", filename: \"ld.config.arm64.txt\", relative_install_path: \"droidloom/nativebridge/guest/etc\", }\n");
     modules.push("droidloom_cp3a_guest_linker_config".into());
+    if let Some(input) = &bridge.webview {
+        bp.push_str(webview::project(pack, input, projection)?);
+        modules.extend(webview::MODULES.iter().map(|name| (*name).to_owned()));
+    }
     projection.put(&pack.join("Android.bp"), bp)?;
     inputs.verify_unchanged()?;
     Ok(modules)
@@ -804,6 +812,8 @@ pub(super) fn input_receipt(out: &Path, request: Request<'_>) -> Result<()> {
         receipt["native_distribution"] = serde_json::to_value(&bridge.archive)?;
         receipt["native_files"] = serde_json::to_value(&bridge.files)?;
         receipt["native_static_link_check"] = bridge.qualification.clone();
+        receipt["public_webview_input"] = bridge.webview.as_ref()
+            .map(|input| input.receipt()).transpose()?.into();
     }
     write(&out.join(INPUT_NAME), serde_json::to_vec_pretty(&receipt)?)
 }
@@ -816,8 +826,10 @@ pub(super) fn build(
     product: &str,
     jobs: usize,
     inputs: &VerifiedVendorInputs,
+    webview: Option<droidloom_image::webview_provider::VerifiedWebView>,
 ) -> Result<()> {
     inputs.verify_unchanged()?;
+    let webview_input = webview.as_ref().map(|input| input.receipt()).transpose()?;
     crate::native_generation_art::validated_output(work, out)?;
     fs::create_dir(out)?;
     write(
@@ -826,7 +838,8 @@ pub(super) fn build(
         "schema":"droidloom-official-gsi-independent-vendor-attempt-v1",
         "system_sha256":SYSTEM_SHA256,"reference_profile_sha256":PROFILE_SHA256,
         "source_release":PRODUCTION_TARGET_RELEASE,"variant":PRODUCTION_BUILD_VARIANT,
-        "normal_phases":[NATIVE_TARGETS,VENDOR_TARGETS],"runtime_qualified":false,"production_ready":false}))?,
+        "normal_phases":[NATIVE_TARGETS,VENDOR_TARGETS],"public_webview_input":webview_input,
+        "runtime_qualified":false,"production_ready":false}))?,
     )?;
     crate::assemble::prepare_vendor_build_tools(repo, work, jobs)?;
     let native = out.join("native");
@@ -844,7 +857,11 @@ pub(super) fn build(
     )?;
     inputs.verify_unchanged()?;
     let archive = native.join("soong/.intermediates/vendor/droidloom/android/native-bridge/official-vendor/droidloom_cp3a_native_bridge_package/android_common/droidloom_cp3a_native_bridge_package.zip");
-    let bridge = check_bridge(&archive, &out.join("native-vendor-inputs"), inputs)?;
+    let mut bridge = check_bridge(&archive, &out.join("native-vendor-inputs"), inputs)?;
+    if let Some(input) = &webview {
+        input.verify_unchanged()?;
+    }
+    bridge.webview = webview;
     let vendor_out = out.join("vendor");
     build_targets_with_fixed_request(
         repo,
@@ -895,6 +912,9 @@ fn finish(
     let graphics_hal_entries = crate::coherent_images::verify_vendor_graphics_hal_entries(
         &product_out, &sparse_converter, out,
     )?;
+    let factory_webview = bridge.webview.as_ref()
+        .map(|input| webview::verify_installed(input, &product_out, &sparse_converter, out))
+        .transpose()?;
     let mut host_digests = BTreeMap::new();
     for name in HOST_MODULES {
         let filename = format!("{name}.so");
@@ -920,6 +940,7 @@ fn finish(
         "normal_vendor_result":artifact(&vendor_out.join("droidloom-production-full654-vendor-normal-result.json"),64*1024*1024)?,
         "normal_vendor_image":vendor_image,
         "graphics_hal_image_entrypoints":graphics_hal_entries,
+        "factory_webview":factory_webview,
         "host_checkvintf":artifact(&vendor_out.join("host/linux-x86/bin/checkvintf"),128*1024*1024)?,
         "native_binaries":actual,"native_static_link_check":bridge.qualification,
         "software_keymint_compatibility":software_keymint_compatibility,

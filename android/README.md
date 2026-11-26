@@ -92,6 +92,34 @@ The application-neutral policy defaults on and can be disabled with
 broker, presenter and Denial surface-tree alpha/orientation support. Live visual
 and performance acceptance belongs to the user after activation.
 
+## Pinned factory WebView in the normal vendor build
+
+The `droidloom-update official-gsi-vendor-build` command accepts an optional
+`--webview-apk /absolute/path/to/webview.apk`. The input must match the compiled
+`manifest/webview-provider.json` profile. Admission keeps the canonical file
+open, checks its complete digest and identity, rejects aliases, and rechecks the
+same input before and after projection. This is a separate public input; it
+does not replace any of the 29 official GSI references or modify the selected
+system image.
+
+The normal vendor phase adds a `preprocessed` Google WebView
+`android_app_import` and a static resource overlay that selects the same package
+with its complete signing certificate. Soong's ordinary APK alignment, native
+library and uses-library checks remain enabled. The APK keeps its original
+signature and bytes. Assembly reads both installed APKs back from the actual
+vendor image and checks their complete digests and precise SELinux labels.
+
+Use a fresh output for this route. The existing failed-build resume interface
+does not restore the held WebView input and explicitly rejects prior receipts
+that selected one. Successful releases remain ineligible for that interface.
+
+The current profile pins the verified x86/x86_64 Google WebView
+158.0.8127.92, version code 812709208. It is an integration input; a newer
+compatible 158.0.8127.93 is known, so the profile does not claim latest-version
+acceptance. Input verification and image readback also leave default-provider,
+rendering, runtime and production qualification false. Those checks require a
+normally completed build and acceptance on the resulting Android system.
+
 - [Manifest](manifest/README.md): source locks and sparse materialization.
 - [Device products](device/README.md): architecture configuration and image boundary.
 - [Framework](framework/README.md): Android adapters and minimal system apps.

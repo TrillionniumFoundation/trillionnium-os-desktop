@@ -10,6 +10,9 @@
 pub mod official_gsi;
 /// Exact CP3A link references for a separately built vendor.
 pub mod official_vendor_inputs;
+/// A separate, reviewed public APK for the vendor WebView provider.
+pub mod webview_provider;
+pub use webview_provider::{VerifiedWebView, verify_webview_provider};
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::ffi::OsStr;

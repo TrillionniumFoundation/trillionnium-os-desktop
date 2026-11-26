@@ -1135,6 +1135,110 @@ pub(crate) fn verify_vendor_graphics_hal_entries(
     Ok(observed)
 }
 
+/// Bind the two selected WebView APKs to their normal vendor image bytes and labels.
+pub(crate) fn verify_vendor_webview_entries(
+    product_out: &Path,
+    sparse_converter: &FileRef,
+    scratch: &Path,
+    apk_sha256: &str,
+    overlay_sha256: &str,
+) -> Result<BTreeMap<String, String>> {
+    if apk_sha256 != droidloom_image::webview_provider::APK_SHA256
+        || overlay_sha256.len() != 64
+        || !overlay_sha256
+            .bytes()
+            .all(|byte| b"0123456789abcdef".contains(&byte))
+    {
+        return fail("vendor WebView does not name the selected APK and overlay digests");
+    }
+    let _scope = resources::Scope::writing(scratch, 2 * resources::GIB)?;
+    let temp = tempfile::Builder::new()
+        .prefix("webview-readback-")
+        .tempdir_in(scratch)?;
+    let original = pin(&product_out.join("vendor.img"), MAX_IMAGE)?;
+    let entries = [
+        (
+            "app/DroidloomGoogleWebView/DroidloomGoogleWebView.apk",
+            "u:object_r:vendor_app_file:s0",
+            apk_sha256,
+        ),
+        (
+            "overlay/DroidloomGoogleWebViewOverlay.apk",
+            "u:object_r:vendor_overlay_file:s0",
+            overlay_sha256,
+        ),
+    ];
+    let mut installed_entries = Vec::with_capacity(entries.len());
+    for &(relative, _, expected) in &entries {
+        let installed = pin(&product_out.join("vendor").join(relative), MAX_IMAGE)?;
+        if installed.sha256 != expected
+            || bound_header(&installed, 4)?.as_slice() != b"PK\x03\x04"
+        {
+            return fail(format!(
+                "normal installed WebView APK differs from its selected bytes: /vendor/{relative}"
+            ));
+        }
+        installed_entries.push(installed);
+    }
+    let (decoded, _) = decode_image(
+        &original,
+        &temp.path().join("vendor.raw.img"),
+        Some(sparse_converter),
+    )?;
+    let debugfs = reader_tool("debugfs")?;
+    let mut observed = BTreeMap::new();
+    let mut readbacks = Vec::with_capacity(entries.len());
+    for (index, &(relative, label, expected)) in entries.iter().enumerate() {
+        let inside = format!("/{relative}");
+        let contents = format!("apk-{index}");
+        let attribute = format!("label-{index}");
+        for command in [
+            format!("dump {inside} {contents}"),
+            format!("ea_get -f {attribute} {inside} security.selinux"),
+        ] {
+            checked_tool(
+                &debugfs,
+                Command::new(&debugfs.path)
+                    .current_dir(temp.path())
+                    .args(["-R", &command])
+                    .arg(&decoded.path),
+            )?;
+        }
+        let installed = &installed_entries[index];
+        let delivered = pin(&temp.path().join(contents), MAX_IMAGE)?;
+        if bound_header(&delivered, 4)?.as_slice() != b"PK\x03\x04"
+            || delivered.bytes != installed.bytes
+            || delivered.sha256 != installed.sha256
+            || delivered.sha256 != expected
+        {
+            return fail(format!(
+                "vendor WebView APK differs from its normal installed and selected bytes: {inside}"
+            ));
+        }
+        let attribute = pin(&temp.path().join(attribute), 4096)?;
+        let actual = bound_body(&attribute, 4096)?;
+        if actual.strip_suffix(&[0]) != Some(label.as_bytes()) {
+            return fail(format!(
+                "vendor WebView APK has the wrong SELinux label: {inside}"
+            ));
+        }
+        observed.insert(format!("/vendor{inside}"), delivered.sha256.clone());
+        readbacks.push((delivered, attribute));
+    }
+    for installed in &installed_entries {
+        recheck(installed, MAX_IMAGE)?;
+    }
+    for (delivered, attribute) in &readbacks {
+        recheck(delivered, MAX_IMAGE)?;
+        recheck(attribute, 4096)?;
+    }
+    recheck(&decoded, MAX_IMAGE)?;
+    recheck(&original, MAX_IMAGE)?;
+    temp.close()?;
+    resources::checkpoint()?;
+    Ok(observed)
+}
+
 fn image_root<'a>(partition: &str, extracted: &'a Path) -> Result<PathBuf> {
     if partition != "system" {
         return Ok(extracted.to_owned());

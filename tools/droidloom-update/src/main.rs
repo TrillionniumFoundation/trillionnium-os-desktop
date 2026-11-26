@@ -104,6 +104,9 @@ enum Action {
         system_image: PathBuf,
         #[arg(long)]
         references: PathBuf,
+        /// Exact reviewed publisher APK, preinstalled unchanged with its factory provider overlay.
+        #[arg(long)]
+        webview_apk: Option<PathBuf>,
     },
     /// Continue normal vendor targets from a verified completed cache, then assemble fresh outputs.
     OfficialGsiVendorResume {
@@ -701,6 +704,11 @@ fn execute(args: Args) -> Result<()> {
         ),
         _ => None,
     };
+    let official_webview_input = match &args.command {
+        Some(Action::OfficialGsiVendorBuild { webview_apk: Some(path), .. }) =>
+            Some(droidloom_image::webview_provider::verify_webview_provider(path)?),
+        _ => None,
+    };
     if work.join("source-projection.json").exists() {
         android::recover(&work.join("source-projection.json"), &source)?;
     }
@@ -780,7 +788,7 @@ fn execute(args: Args) -> Result<()> {
         return android::build_vendor_image(&repo, &source, &out, &work, product, jobs);
     }
     if let Some(inputs) = &official_vendor_inputs {
-        return android::build_official_vendor(&repo, &source, &out, &work, product, jobs, inputs);
+        return android::build_official_vendor(&repo, &source, &out, &work, product, jobs, inputs, official_webview_input);
     }
     if matches!(args.command, Some(Action::VendorPolicyBuild { .. })) {
         eprintln!(
