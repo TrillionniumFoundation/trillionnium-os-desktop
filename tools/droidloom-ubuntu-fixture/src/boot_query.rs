@@ -1,4 +1,4 @@
-//! Admit and seal the four fixed original query inputs used by kernel-first v2.
+//! Admit and seal the five fixed original query inputs used by kernel-first v2.
 //! Fixture preparation proves input custody only; application execution remains
 //! an independently observed boot outcome.
 use crate::{
@@ -49,6 +49,7 @@ struct QueryDeclaration {
     source_system_sha256: String,
     cmd: QuerySource,
     toybox: QuerySource,
+    toolbox: QuerySource,
     contacts: ContactsInputs,
 }
 #[derive(Deserialize)]
@@ -81,7 +82,7 @@ struct ImageDeclaration {
 
 pub struct QueryPlan {
     runtime: String,
-    pins: [FilePin; 4],
+    pins: [FilePin; 5],
 }
 
 impl QueryPlan {
@@ -128,7 +129,7 @@ pub fn admit(
         }
         (2, "android_kernel_first_stage_v2", Some(query)) => {
             ensure(
-                query.scope == "fixed_application_query_v1"
+                query.scope == "fixed_application_query_v2"
                     && query.source_system_sha256 == fixed::SYSTEM_SHA256
                     && query.contacts.scope == "fixed_contacts_content_query_v1",
                 "kernel-first query declaration scope or original system differs",
@@ -138,14 +139,15 @@ pub fn admit(
                 query.toybox,
                 query.contacts.app_process64,
                 query.contacts.content_jar,
+                query.toolbox,
             ];
-            let pins = pins.ok_or("kernel-first v2 requires all four original query pins")?;
+            let pins = pins.ok_or("kernel-first v2 requires all five original query pins")?;
             ensure(
                 pins.keys().map(String::as_str).collect::<BTreeSet<_>>()
                     == fixed::INPUTS.iter().map(|role| role.output_name).collect(),
-                "kernel-first v2 input set must contain exactly the four fixed query roles",
+                "kernel-first v2 input set must contain exactly the five fixed query roles",
             )?;
-            let mut selected = Vec::with_capacity(4);
+            let mut selected = Vec::with_capacity(fixed::INPUTS.len());
             for (source, role) in sources.iter().zip(fixed::INPUTS) {
                 ensure(
                     source.original.file == role.output_name
@@ -316,8 +318,8 @@ mod tests {
             "base_cohort_sha256":cohort,"source_system_sha256":fixed::SYSTEM_SHA256,
             "init_path":"/system/bin/init","init_bytes":original_init::INIT_BYTES,
             "init_sha256":original_init::INIT_SHA256,"argv":["/system/bin/init","second_stage"],
-            "query_inputs":{"scope":"fixed_application_query_v1","source_system_sha256":fixed::SYSTEM_SHA256,
-                "cmd":role(0),"toybox":role(1),"contacts":{"scope":"fixed_contacts_content_query_v1",
+            "query_inputs":{"scope":"fixed_application_query_v2","source_system_sha256":fixed::SYSTEM_SHA256,
+                "cmd":role(0),"toybox":role(1),"toolbox":role(4),"contacts":{"scope":"fixed_contacts_content_query_v1",
                     "app_process64":role(2),"content_jar":role(3)}}});
         let system = FilePin {
             path: "/intentionally-absent/system.img".into(),
@@ -349,11 +351,11 @@ mod tests {
         admit(&bytes, cohort, &fs::digest(&bytes), system, pins)
     }
     #[test]
-    fn complete_v2_admission_is_metadata_only_and_binds_all_four_paths() -> Result<()> {
+    fn complete_v2_admission_is_metadata_only_and_binds_all_five_paths() -> Result<()> {
         let (value, cohort, system, pins) = fixture();
         let plan = check(&value, &cohort, &system, Some(&pins))?.ok_or("query plan missing")?;
         let paths = guest_paths(plan.runtime())?;
-        assert_eq!(paths.len(), 4);
+        assert_eq!(paths.len(), 5);
         for (path, role) in paths.iter().zip(fixed::INPUTS) {
             assert_eq!(
                 Path::new(path).file_name().and_then(|v| v.to_str()),
@@ -399,6 +401,7 @@ mod tests {
         for prefix in [
             "/query_inputs/cmd",
             "/query_inputs/toybox",
+            "/query_inputs/toolbox",
             "/query_inputs/contacts/app_process64",
             "/query_inputs/contacts/content_jar",
         ] {
@@ -480,6 +483,7 @@ mod tests {
             "/query_inputs",
             "/query_inputs/cmd",
             "/query_inputs/cmd/original",
+            "/query_inputs/toolbox",
             "/query_inputs/contacts",
             "/query_inputs/contacts/content_jar",
         ] {

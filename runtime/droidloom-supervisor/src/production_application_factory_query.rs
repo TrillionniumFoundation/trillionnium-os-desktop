@@ -244,7 +244,7 @@ fn pass_credentials(socket: &File) -> Result<()> {
     Ok(())
 }
 fn readable(fd: RawFd, deadline: Instant) -> Result<bool> {
-    require(Instant::now() < deadline, "factory query absolute deadline")?;
+    crate::production_host_admission::check_observation_before(deadline)?;
     let mut p = libc::pollfd {
         fd,
         events: libc::POLLIN,
@@ -262,7 +262,7 @@ fn readable(fd: RawFd, deadline: Instant) -> Result<bool> {
 }
 fn pause(fds: &[RawFd], deadline: Instant) -> Result<()> {
     let left = deadline.saturating_duration_since(Instant::now());
-    require(!left.is_zero(), "factory query absolute deadline")?;
+    crate::production_host_admission::check_observation_before(deadline)?;
     let mut values: Vec<_> = fds
         .iter()
         .map(|fd| libc::pollfd {
@@ -1176,7 +1176,7 @@ impl Client {
         )?;
         let anchor = protocol::monotonic_ns()?;
         let left = deadline.saturating_duration_since(Instant::now());
-        require(!left.is_zero(), "factory client request deadline")?;
+        crate::production_host_admission::check_observation_before(deadline)?;
         let deadline_ns = anchor
             .checked_add(left.as_nanos() as u64)
             .ok_or_else(|| reject("factory request deadline overflow"))?;
@@ -1505,7 +1505,7 @@ fn capture(
             progress()?;
             progress_after = Instant::now() + Duration::from_millis(20);
         }
-        require(Instant::now() < deadline, "factory query output deadline")?;
+        crate::production_host_admission::check_observation_before(deadline)?;
         drain(
             stdout,
             &mut output,
@@ -1558,7 +1558,7 @@ fn capture(
             });
         }
         let left = deadline.saturating_duration_since(Instant::now());
-        require(!left.is_zero(), "factory stream absolute deadline")?;
+        crate::production_host_admission::check_observation_before(deadline)?;
         let count = unsafe {
             libc::poll(
                 watches.as_mut_ptr(),
@@ -1592,22 +1592,22 @@ pub(super) fn run_with_input(
     use std::os::unix::process::ExitStatusExt;
     let started = Instant::now();
     let deadline = (started + QUERY_LIMIT).min(workflow_deadline);
-    require(Instant::now() < deadline, "factory query workflow deadline")?;
+    crate::production_host_admission::check_observation_before(deadline)?;
     request.validate()?;
     require(
         authority.query_projection() == QueryProjection::EarlyDev,
         "factory operation requires the original early projection",
     )?;
-    authority.revalidate().map_err(external)?;
-    let mut files = authority.descriptors(request.binary()).map_err(external)?;
+    authority.revalidate().map_err(observation_authority_error)?;
+    let mut files = authority.descriptors(request.binary()).map_err(observation_authority_error)?;
     require(
         files.len() == 12,
         "factory query original descriptor prefix differs",
     )?;
     let namespaces = super::process::NamespaceBinding::from_original_owner(&files)?;
-    let (root_uid, root_gid) = authority.mapped_root().map_err(external)?;
+    let (root_uid, root_gid) = authority.mapped_root().map_err(observation_authority_error)?;
     let classpath = if request.needs_content_jar() {
-        Some(authority.contacts_content_descriptors().map_err(external)?)
+        Some(authority.contacts_content_descriptors().map_err(observation_authority_error)?)
     } else {
         None
     };
@@ -1644,7 +1644,7 @@ pub(super) fn run_with_input(
     let mut stdout = io.stdout_read;
     let mut stderr = io.stderr_read;
     let mut client = Client::connect()?;
-    let mut leaf = authority.leaf().map_err(external)?;
+    let mut leaf = authority.leaf().map_err(observation_authority_error)?;
     let cgroup_identity = leaf.identity().map_err(external)?;
     let cgroup = leaf
         .clone_target()
@@ -1658,12 +1658,12 @@ pub(super) fn run_with_input(
     let mut progress = || {
         authority
             .progress_inherited_native(deadline)
-            .map_err(external)
+            .map_err(observation_authority_error)
     };
     let operation = (|| -> Result<(Vec<u8>, Vec<u8>, super::process::ExecReceipt)> {
         let stop = client.request(request, &files, deadline, &mut progress)?;
         drop(files);
-        authority.revalidate().map_err(external)?;
+        authority.revalidate().map_err(observation_authority_error)?;
         let query = client
             .query
             .as_ref()
@@ -1781,10 +1781,7 @@ pub(super) fn run_with_input(
     }
     let stderr_bytes = error.len();
     let stderr_sha256 = format!("{:x}", Sha256::digest(&error));
-    require(
-        Instant::now() < deadline,
-        "factory query completed after its workflow deadline",
-    )?;
+    crate::production_host_admission::check_observation_before(deadline)?;
     Ok(LaunchCommandResult {
         output: std::process::Output {
             status: std::process::ExitStatus::from_raw(raw),

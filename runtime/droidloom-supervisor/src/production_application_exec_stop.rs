@@ -154,7 +154,7 @@ fn digest(file: &File, expected: Node, deadline: Instant) -> Result<[u8; 32]> {
     let mut at = 0_u64;
     let mut buffer = [0_u8; 32 * 1024];
     while at < expected.bytes {
-        require(Instant::now() < deadline, "query executable hash deadline")?;
+        crate::production_host_admission::check_observation_before(deadline)?;
         let length = (expected.bytes - at).min(buffer.len() as u64) as usize;
         let n = match file.read_at(&mut buffer[..length], at) {
             Err(error) if error.kind() == io::ErrorKind::Interrupted => continue,
@@ -412,10 +412,7 @@ pub(crate) fn verify_factory_exec(
     deadline: Instant,
 ) -> Result<ExecReceipt> {
     use super::super::query_io as identities;
-    require(
-        Instant::now() < deadline,
-        "factory exec observation deadline",
-    )?;
+    crate::production_host_admission::check_observation_before(deadline)?;
     identities::alive(factory_pidfd)?;
     identities::alive(query_pidfd)?;
     let factory = identities::pidfd_info(factory_pidfd)?;
@@ -545,10 +542,7 @@ pub(crate) fn verify_factory_exec(
     binding.verify(&observed.executable, deadline)?;
     identities::alive(query_pidfd)?;
     identities::alive(factory_pidfd)?;
-    require(
-        Instant::now() < deadline,
-        "factory query exec verification exceeded deadline",
-    )?;
+    crate::production_host_admission::check_observation_before(deadline)?;
     Ok(ExecReceipt {
         query_start_ticks: original.1,
         original_parent_pid: factory.pid,
@@ -774,10 +768,7 @@ impl<'a> ExecTrace<'a> {
                 current_label(&self.proc, ProcLabel::AppArmor)?,
             )
         };
-        require(
-            Instant::now() < deadline,
-            "query exec observation exceeded its deadline",
-        )?;
+        crate::production_host_admission::check_observation_before(deadline)?;
         binding.verify(&actual, deadline)?;
         require(
             label_matches(&selinux, domain.context().as_bytes()),

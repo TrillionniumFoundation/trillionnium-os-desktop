@@ -1,4 +1,4 @@
-//! Derive all four fixed query inputs from the same held CP3A system image.
+//! Derive all five fixed query inputs from the same held CP3A system image.
 //! No caller path, substituted executable, new query command or admission is
 //! selected here. The original filesystem and its inode labels are read-only.
 
@@ -36,6 +36,7 @@ pub(crate) struct QueryDeclaration {
     source_system_sha256: &'static str,
     cmd: QuerySource,
     toybox: QuerySource,
+    toolbox: QuerySource,
     contacts: ContactsInputs,
 }
 
@@ -86,8 +87,8 @@ pub(crate) fn prepare(
     selected.validate(&plan.system)?;
     inputs.add(&plan.system, deadline)?;
     let image = inputs.descriptor_path(&plan.system)?;
-    let mut sources = Vec::with_capacity(4);
-    let mut observations: Vec<Value> = Vec::with_capacity(4);
+    let mut sources = Vec::with_capacity(fixed::INPUTS.len());
+    let mut observations: Vec<Value> = Vec::with_capacity(fixed::INPUTS.len());
     for role in fixed::INPUTS {
         deadline.check()?;
         let (body, _) = runner.run(
@@ -182,20 +183,22 @@ pub(crate) fn prepare(
     io::json_new(
         &output.join("QUERY-INSTALL-REQUIREMENTS.json"),
         &json!({
-            "schema":"droidloom-fixed-cp3a-query-inputs-v1","source_system":plan.system,
-            "sources":observations,"input_count":4,"private_query_projection_observed":false,
+            "schema":"droidloom-fixed-cp3a-query-inputs-v2","source_system":plan.system,
+            "sources":observations,"input_count":fixed::INPUTS.len(),"private_query_projection_observed":false,
             "original_query_executions":0,"application_admission":false,"runtime_qualified":false
         }),
         deadline,
     )?;
-    let [cmd, toybox, app_process64, content_jar]: [QuerySource; 4] = sources
-        .try_into()
-        .map_err(|_| "fixed original query input count changed")?;
+    let [cmd, toybox, app_process64, content_jar, toolbox]: [QuerySource; 5] =
+        sources
+            .try_into()
+            .map_err(|_| "fixed original query input count changed")?;
     Ok(QueryDeclaration {
-        scope: "fixed_application_query_v1",
+        scope: "fixed_application_query_v2",
         source_system_sha256: fixed::SYSTEM_SHA256,
         cmd,
         toybox,
+        toolbox,
         contacts: ContactsInputs {
             scope: "fixed_contacts_content_query_v1",
             app_process64,

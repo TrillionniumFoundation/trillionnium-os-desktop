@@ -1,7 +1,7 @@
 //! Exact ordinary query members of the original CP3A system filesystem.
 //! These pins identify inputs, not successful queries or application admission.
 
-pub(crate) const INPUT_SCOPE: &str = "cp3a_fixed_application_query_inputs_v1";
+pub(crate) const INPUT_SCOPE: &str = "cp3a_fixed_application_query_inputs_v2";
 pub(crate) const SYSTEM_BYTES: u64 = 2_294_853_632;
 pub(crate) const SYSTEM_SHA256: &str =
     "dc781249bb4724b7a0777e5077321b84576db46f61abb4b9086b81077bfd0ab4";
@@ -28,10 +28,10 @@ impl FixedQueryInput {
     }
 }
 
-// The three original executables are root:shell (0:2000), not root:root.
+// The four original executables are root:shell (0:2000), not root:root.
 // New sealed input copies and private query projections have their own root
 // ownership. That must never be substituted for the original image metadata.
-pub(crate) const INPUTS: [FixedQueryInput; 4] = [
+pub(crate) const INPUTS: [FixedQueryInput; 5] = [
     FixedQueryInput {
         source_path: "/system/bin/cmd",
         output_name: "cmd-original",
@@ -71,5 +71,15 @@ pub(crate) const INPUTS: [FixedQueryInput; 4] = [
         original_gid: 0,
         original_label: b"u:object_r:system_file:s0\0",
         interpreter: None,
+    },
+    FixedQueryInput {
+        source_path: "/system/bin/toolbox",
+        output_name: "toolbox-original",
+        bytes: 169_856,
+        sha256: "a1d2b30312db7b099cfc4f25b712420b46574affa0d73709add5bc7630d55ae8",
+        original_mode: 0o100755,
+        original_gid: 2000,
+        original_label: b"u:object_r:toolbox_exec:s0\0",
+        interpreter: Some("/system/bin/linker64"),
     },
 ];

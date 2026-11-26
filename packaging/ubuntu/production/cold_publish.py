@@ -32,6 +32,7 @@ QUERY={
  "toybox-original":(611248,"5c2b46686560564967fb5c1cb4ec633c42f658c347831c1d8c788ecf66e1774b",0o555,"u:object_r:toolbox_exec:s0"),
  "contacts-app-process64-original":(51616,"bcc150b9c7e2abcc9aef312ea04f5bbcba631dbb2e23cb1b240b7219df1229a2",0o555,"u:object_r:zygote_exec:s0"),
  "contacts-content-jar-original":(20158,"c0ee6290243eda4a6dd95292c28274dd199b82b57466e00a83e1bb1a50eae8b3",0o444,"u:object_r:system_file:s0"),
+ "toolbox-original":(169856,"a1d2b30312db7b099cfc4f25b712420b46574affa0d73709add5bc7630d55ae8",0o555,"u:object_r:toolbox_exec:s0"),
 }
 IMAGES={
  "system":(2294853632,SYSTEM),
@@ -297,8 +298,8 @@ def pack_android(plan_path,output):
     need(board["schema"]==1 and board["scope"]=="android_private_device_source_v1" and board["base_cohort_sha256"]==COHORT and board["runtime_manifest_sha256"]==RUNTIME and board["source_system_sha256"]==SYSTEM,"normal board device binding")
     need(board["bytes"]==8388608 and board["sha256"]==BANK and board["file"]==BANK+".img","normal device bank")
     query=h["query_inputs"]
-    need(h["query_input_count"]==readback["query_input_count"]==len(query)==4,
-         "four actual original query inputs")
+    need(h["query_input_count"]==readback["query_input_count"]==len(query)==len(QUERY),
+         "five actual original query inputs")
     query={Path(r["path"]).name:project_pin(r) for r in query}
     need(set(h["images"])==set(IMAGES) and set(query)==set(QUERY),"closed normal image/query roles")
     need(runtime==readback["runtime"] and board==readback["board_device_source"],
@@ -317,9 +318,9 @@ def pack_android(plan_path,output):
     bank=project_pin(h["device_bank"]);need((bank["bytes"],bank["sha256"])==(8388608,BANK),"normal device bank bytes")
     source("var/lib/droidloom/cohorts/"+COHORT+"/board/"+BANK+".img",bank,0o444)
     requirements=project_pin(h["query_install_requirements"]);q=json_bytes(read_pin(requirements))
-    need(q["schema"]=="droidloom-fixed-cp3a-query-inputs-v1" and q["input_count"]==4 and q["source_system_sha256"]==SYSTEM,"normal query install contract")
+    need(q["schema"]=="droidloom-fixed-cp3a-query-inputs-v2" and q["input_count"]==len(QUERY) and q["source_system_sha256"]==SYSTEM,"normal query install contract")
     requirements_by_name={row["file"]:row for row in q["sources"]}
-    need(len(q["sources"])==4 and set(requirements_by_name)==set(QUERY),"closed query install labels")
+    need(len(q["sources"])==len(QUERY) and set(requirements_by_name)==set(QUERY),"closed query install labels")
     for name,(size,sha,mode,label) in QUERY.items():
         pin=query[name];row=requirements_by_name[name]
         need((pin["bytes"],pin["sha256"])==(size,sha),"fixed original query bytes")

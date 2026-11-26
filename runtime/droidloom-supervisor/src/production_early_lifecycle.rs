@@ -462,9 +462,10 @@ pub fn complete_early_resources() -> io::Result<()> {
                 .poll(
                     board.host_pid() as u32,
                     board.selection().spec().host_uid,
-                    || {
+                    |observation_deadline| {
                         super::EarlyApplicationAuthority::acquire(
                             &base, &group, &owner, root, query, system, &progress,
+                            observation_deadline,
                         )
                     },
                 )

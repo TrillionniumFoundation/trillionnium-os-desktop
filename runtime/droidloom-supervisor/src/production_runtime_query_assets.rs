@@ -35,6 +35,7 @@ pub(super) struct QueryDeclaration {
     source_system_sha256: String,
     cmd: QuerySource,
     toybox: QuerySource,
+    toolbox: QuerySource,
     contacts: Option<ContactsInputs>,
 }
 #[derive(Debug, Deserialize)]
@@ -56,6 +57,7 @@ struct QuerySource {
 pub(crate) enum QueryRole {
     Cmd,
     Toybox,
+    Toolbox,
     AppProcess64,
     ContentJar,
 }
@@ -66,6 +68,7 @@ impl QueryRole {
             Self::Toybox => 1,
             Self::AppProcess64 => 2,
             Self::ContentJar => 3,
+            Self::Toolbox => 4,
         }]
     }
 
@@ -82,6 +85,7 @@ impl QueryRole {
         match self {
             Self::Cmd => c"cmd",
             Self::Toybox => c"toybox",
+            Self::Toolbox => c"toolbox",
             Self::AppProcess64 => c"app_process64",
             Self::ContentJar => c"content.jar",
         }
@@ -90,6 +94,7 @@ impl QueryRole {
         match self {
             Self::Cmd => "cmd-original",
             Self::Toybox => "toybox-original",
+            Self::Toolbox => "toolbox-original",
             Self::AppProcess64 => "contacts-app-process64-original",
             Self::ContentJar => "contacts-content-jar-original",
         }
@@ -98,6 +103,7 @@ impl QueryRole {
         match self {
             Self::Cmd => "/system/bin/cmd",
             Self::Toybox => "/system/bin/toybox",
+            Self::Toolbox => "/system/bin/toolbox",
             Self::AppProcess64 => "/system/bin/app_process64",
             Self::ContentJar => "/system/framework/content.jar",
         }
@@ -107,6 +113,8 @@ impl QueryRole {
             Ok(Self::Cmd)
         } else if name == c"toybox" {
             Ok(Self::Toybox)
+        } else if name == c"toolbox" {
+            Ok(Self::Toolbox)
         } else if name == c"app_process64" {
             Ok(Self::AppProcess64)
         } else {
@@ -116,7 +124,9 @@ impl QueryRole {
     fn original_security(self, file: &File) -> Result<()> {
         match self {
             Self::Cmd => require_exact_xattr(file, c"security.selinux", CMD_ORIGINAL)?,
-            Self::Toybox => require_exact_xattr(file, c"security.selinux", TOYBOX_ORIGINAL)?,
+            Self::Toybox | Self::Toolbox => {
+                require_exact_xattr(file, c"security.selinux", TOYBOX_ORIGINAL)?
+            }
             Self::AppProcess64 => {
                 require_exact_xattr(file, c"security.selinux", APP_PROCESS_ORIGINAL)?
             }
@@ -133,7 +143,7 @@ impl QueryRole {
     }
     pub(crate) fn private_label(self) -> &'static [u8] {
         match self {
-            Self::Cmd | Self::Toybox => QUERY_EXEC,
+            Self::Cmd | Self::Toybox | Self::Toolbox => QUERY_EXEC,
             Self::AppProcess64 => PROVIDER_EXEC,
             Self::ContentJar => PROVIDER_JAR,
         }
@@ -165,12 +175,13 @@ pub(crate) enum QueryLayout {
 impl QueryLayout {
     pub(crate) fn roles(self) -> &'static [QueryRole] {
         match self {
-            Self::Commands => &[QueryRole::Cmd, QueryRole::Toybox],
+            Self::Commands => &[QueryRole::Cmd, QueryRole::Toybox, QueryRole::Toolbox],
             Self::Contacts => &[
                 QueryRole::Cmd,
                 QueryRole::Toybox,
                 QueryRole::AppProcess64,
                 QueryRole::ContentJar,
+                QueryRole::Toolbox,
             ],
         }
     }
@@ -213,23 +224,24 @@ impl QueryDeclaration {
             sources.push((QueryRole::AppProcess64, &contacts.app_process64));
             sources.push((QueryRole::ContentJar, &contacts.content_jar));
         }
+        sources.push((QueryRole::Toolbox, &self.toolbox));
         sources
     }
     pub(super) fn validate_kernel_first(&self, system: &str) -> Result<()> {
         require(
-            self.scope == "fixed_application_query_v1"
+            self.scope == "fixed_application_query_v2"
                 && self.source_system_sha256 == system
                 && system == fixed::SYSTEM_SHA256,
             "kernel-first query roles must come from the selected original CP3A system",
         )?;
         let contacts = self.contacts.as_ref().ok_or(MountError::Rejected(
-            "kernel-first v2 requires all four fixed query roles",
+            "kernel-first v2 requires all five fixed query roles",
         ))?;
         require(
             contacts.scope == "fixed_contacts_content_query_v1"
                 && contacts.content_jar.interpreter.is_none()
                 && self.layout() == QueryLayout::Contacts
-                && self.sources().len() == 4,
+                && self.sources().len() == 5,
             "kernel-first query layout must contain the exact commands and Contacts roles",
         )?;
         self.validate_cp3a()
@@ -237,7 +249,7 @@ impl QueryDeclaration {
 
     pub(super) fn validate(&self, runtime: &RuntimeDeclaration) -> Result<()> {
         require(
-            self.scope == "fixed_application_query_v1"
+            self.scope == "fixed_application_query_v2"
                 && is_digest(&self.source_system_sha256)
                 && self.source_system_sha256 == runtime.source_system.sha256,
             "query sources must bind the complete selected original system image",
@@ -953,9 +965,10 @@ mod tests {
             serde_json::json!({"original":{"file":fixed.output_name,"bytes":fixed.bytes,"sha256":fixed.sha256},
                 "source_path":fixed.source_path,"interpreter":fixed.interpreter})
         };
-        let value = serde_json::json!({"scope":"fixed_application_query_v1",
+        let value = serde_json::json!({"scope":"fixed_application_query_v2",
             "source_system_sha256":fixed::SYSTEM_SHA256,
             "cmd":source(QueryRole::Cmd),"toybox":source(QueryRole::Toybox),
+            "toolbox":source(QueryRole::Toolbox),
             "contacts":{"scope":"fixed_contacts_content_query_v1",
                 "app_process64":source(QueryRole::AppProcess64),"content_jar":source(QueryRole::ContentJar)}});
         serde_json::from_value::<QueryDeclaration>(value.clone())
@@ -965,6 +978,7 @@ mod tests {
         for path in [
             "/cmd/original/sha256",
             "/toybox/original/sha256",
+            "/toolbox/original/sha256",
             "/contacts/app_process64/original/sha256",
             "/contacts/content_jar/original/sha256",
             "/source_system_sha256",

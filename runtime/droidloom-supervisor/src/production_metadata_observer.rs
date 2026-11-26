@@ -730,10 +730,7 @@ pub(crate) fn observe(
         return Err(ApplicationError::RetirementUnproven);
     }
     let deadline = deadline.min(Instant::now() + LIMIT);
-    require(
-        Instant::now() < deadline,
-        "metadata observation deadline already expired",
-    )?;
+    crate::production_host_admission::check_observation_before(deadline)?;
     helper::own_root_credentials()?;
     helper::mac_context(b"u:r:droidloom_broker:s0")?;
     super::worker::require_wait_semantics()?;
@@ -768,10 +765,7 @@ pub(crate) fn observe(
         offset += count as usize;
     }
     let remaining = deadline.saturating_duration_since(Instant::now());
-    require(
-        !remaining.is_zero(),
-        "metadata preparation exceeded deadline",
-    )?;
+    crate::production_host_admission::check_observation_before(deadline)?;
     let deadline_ns = protocol::monotonic_ns()?
         .checked_add(remaining.as_nanos() as u64)
         .ok_or_else(|| reject("metadata deadline overflow"))?;

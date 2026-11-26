@@ -30,7 +30,7 @@ impl EarlyApplicationControl {
         &self,
         host_pid: u32,
         host_uid: u32,
-        acquire: impl FnOnce() -> std::result::Result<
+        acquire: impl FnOnce(Option<Instant>) -> std::result::Result<
             crate::production_selection::early_generation::EarlyApplicationAuthority<'owner>,
             crate::production_namespace::NamespaceError,
         >,
@@ -77,9 +77,12 @@ impl EarlyApplicationControl {
             diagnostics: None,
             inspection: None,
             image_custody: None,
+            runtime_vintf: None,
         };
         let mut authority = None;
         let mut acquisition_quarantined = false;
+        let mut vintf_budget = None;
+        let mut vintf_failure = None;
         let handled = (|| -> Result<(), ControlError> {
             let (peer, request, file, streaming) = receive_request(stream)?;
             let launch_deadline = Instant::now()
@@ -95,16 +98,24 @@ impl EarlyApplicationControl {
                     "only installation accepts exactly one original APK descriptor".into(),
                 ));
             }
+            // The finite read starts its one absolute budget before original
+            // owner acquisition. Other request lifetimes keep their existing limits.
+            vintf_budget = matches!(&request, ControlRequest::ObserveRuntimeVintf { .. })
+                .then(crate::production_application::RuntimeVintfBudget::start);
+            let observation_deadline = vintf_budget.as_ref().map(|budget| budget.work_deadline());
             // Request-local acquisition starts only after transport admission.
             // While original init is crossing stock exec, report Starting to
             // the caller and keep the actual boot owner/frontend loop alive.
-            authority = Some(match acquire() {
+            authority = Some(match acquire(observation_deadline) {
                 Ok(value) => value,
                 Err(error) => {
                     acquisition_quarantined = matches!(
                         error,
                         crate::production_namespace::NamespaceError::RetirementUnproven,
                     );
+                    if let Some(budget) = &vintf_budget {
+                        vintf_failure = Some(classify_vintf_failure(&error, budget.work_deadline()));
+                    }
                     return Err(ControlError::Invalid(error.to_string()));
                 }
             });
@@ -201,6 +212,21 @@ impl EarlyApplicationControl {
                         result.session,
                         result.segments.len()
                     );
+                }
+                ControlRequest::ObserveRuntimeVintf { expected_epoch } => {
+                    progress.report("Reading fixed public VINTF, APEX and properties in the current Ready generation...");
+                    let observed = crate::production_application::observe_runtime_vintf(
+                        authority,
+                        &expected_epoch,
+                        vintf_budget.as_ref().expect("fixed VINTF request budget"),
+                    )
+                    .map_err(|e| {
+                        let deadline = vintf_budget.as_ref().expect("fixed VINTF budget").work_deadline();
+                        vintf_failure = Some(classify_vintf_failure(&e, deadline));
+                        early_application_error(e, &mut acquisition_quarantined)
+                    })?;
+                    response.runtime_vintf = Some(observed);
+                    response.message = "Public runtime metadata observed with unchanged owner and namespace bookends; VINTF compatibility and application acceptance remain unevaluated".into();
                 }
                 ControlRequest::InspectApplication { package, user } => {
                     validate_package(&package)?;
@@ -340,13 +366,24 @@ impl EarlyApplicationControl {
             }
             authority
                 .ready()
-                .map_err(|e| ControlError::Invalid(e.to_string()))?;
+                .map_err(|e| {
+                    if let Some(budget) = &vintf_budget {
+                        vintf_failure = Some(classify_vintf_failure(&e, budget.work_deadline()));
+                        acquisition_quarantined |= matches!(
+                            e, crate::production_namespace::NamespaceError::RetirementUnproven);
+                    }
+                    ControlError::Invalid(e.to_string())
+                })?;
             response.state = CellState::Running;
             response.ok = true;
             Ok(())
         })();
         if let Err(error) = handled {
             response.message = error.to_string();
+            if vintf_budget.is_some() {
+                vintf_failure.get_or_insert(VintfFailure::Other);
+                response.runtime_vintf = None;
+            }
         }
         // A command that could not retire its real children quarantines the
         // original cgroup. That failure must leave the main service loop.
@@ -354,6 +391,15 @@ impl EarlyApplicationControl {
             Err(ControlError::Invalid(
                 "original application or metadata helper retirement remains quarantined".into(),
             ))
+        } else if let Some(budget) = &vintf_budget {
+            let deadline = budget.work_deadline();
+            finish_vintf_request(
+                &mut response,
+                vintf_failure,
+                deadline,
+                || authority.as_ref().map_or(Ok(()), |owner| owner.revalidate()),
+                || authority.as_ref().map_or(Ok(()), |owner| owner.expired_request_bookend(deadline)),
+            )
         } else {
             authority.as_ref().map_or(Ok(()), |authority| {
                 authority
@@ -364,6 +410,7 @@ impl EarlyApplicationControl {
         if original.is_err() {
             response.ok = false;
             response.state = CellState::Quarantined;
+            if vintf_budget.is_some() { response.runtime_vintf = None; }
         }
         if let Err(error) = send_response(stream, &response) {
             eprintln!("could not deliver early application observation: {error}");
@@ -373,6 +420,52 @@ impl EarlyApplicationControl {
     pub(crate) fn retire(self) -> Result<(), ControlError> {
         self.listener.retire()
     }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum VintfFailure { Expired, Other }
+fn classify_vintf_failure(
+    error: &(dyn std::error::Error + 'static), expected: Instant,
+) -> VintfFailure {
+    if crate::production_host_admission::observation_expiry(error) == Some(expected)
+        && Instant::now() >= expected
+    {
+        VintfFailure::Expired
+    } else {
+        VintfFailure::Other
+    }
+}
+/// Complete only the finite read. A typed pure expiry never starts a new
+/// observer and never promotes an old body to success. Other failures keep the
+/// existing original-owner isolation path; all ordinary requests are unchanged.
+fn finish_vintf_request(
+    response: &mut ControlResponse,
+    prior: Option<VintfFailure>,
+    deadline: Instant,
+    final_check: impl FnOnce() -> std::result::Result<(), crate::production_namespace::NamespaceError>,
+    expiry_bookend: impl FnOnce() -> std::result::Result<(), crate::production_namespace::NamespaceError>,
+) -> Result<(), ControlError> {
+    let expired = if prior == Some(VintfFailure::Expired) {
+        true
+    } else {
+        match final_check() {
+            Ok(()) => false,
+            Err(error) if prior.is_none()
+                && classify_vintf_failure(&error, deadline) == VintfFailure::Expired => true,
+            Err(error) => return Err(ControlError::Invalid(error.to_string())),
+        }
+    };
+    if expired {
+        response.ok = false;
+        response.runtime_vintf = None;
+        response.state = CellState::Starting;
+        response.message = "Fixed public metadata request exhausted its observation budget; no compatibility or application result was accepted".into();
+        // If acquisition itself expired, it returned no new authority or live
+        // query child; its original typed retirement flag was already checked.
+        // Otherwise only the same held owner's kernel custody is sampled here.
+        expiry_bookend().map_err(|e| ControlError::Invalid(e.to_string()))?;
+    }
+    Ok(())
 }
 
 fn early_application_error(
@@ -430,6 +523,88 @@ fn early_launch_request(
 #[cfg(test)]
 mod tests {
     use super::*;
+    fn vintf_test_response() -> ControlResponse {
+        use crate::control::application_custody::{CustodyFileIdentity, CustodyOwner};
+        use crate::control::application_probe::RuntimeEpoch;
+        use crate::control::runtime_vintf::{PublicStat, RuntimeVintfBinding, RuntimeVintfObservation, VintfDocument};
+        // An opaque unit-test sentinel verifies removal of an actual Some body.
+        // It is never validated, serialized, or represented as runtime evidence.
+        let epoch = RuntimeEpoch { boot_id: "unit-test-only".into(), cell_host_pid: 19,
+            framework_host_pid: 20, framework_start_ticks: 1 };
+        let binding = RuntimeVintfBinding {
+            owner: CustodyOwner { host_uid: 1000, cell_host_pid: 19, cell_start_ticks: 1,
+                selection_binding_sha256: "unit-test-only".into(), base_cohort_sha256: "unit-test-only".into(),
+                runtime_manifest_sha256: "unit-test-only".into(), namespaces: Vec::new() },
+            framework_namespaces: Vec::new(),
+            framework_root: CustodyFileIdentity { device: 1, inode: 2, mode: 0o40755,
+                uid: 0, gid: 0, links: 1, bytes: 0, modified: (0,0), changed: (0,0) },
+            base_images: Vec::new(), image_bodies_rehashed_by_this_observation: false,
+        };
+        let body = RuntimeVintfObservation {
+            schema: "unit-test-only".into(), expected_epoch: epoch.clone(), epoch_before: epoch.clone(),
+            epoch_after: epoch, binding_before: binding.clone(), binding_after: binding,
+            kernel_release: "unit-test-only".into(), machine: "unit-test-only".into(),
+            properties: Vec::new(), apex_inventory: VintfDocument {
+                path: "/apex/apex-info-list.xml".into(), bytes: 0, sha256: "unit-test-only".into(),
+                stat: PublicStat { path: "/apex/apex-info-list.xml".into(), mode: 0o100444, uid: 0, gid: 0,
+                    links: 1, device: 1, inode: 3, bytes: 0, modified: "unit-test-only".into(), changed: "unit-test-only".into() },
+                utf8: String::new(),
+            },
+            active_apex: Vec::new(), root_mappings: std::collections::BTreeMap::new(),
+            missing: Vec::new(), odm_links: Vec::new(), directories: Vec::new(),
+            documents: Vec::new(), query_receipts: Vec::new(), elapsed_millis: 1,
+            compatibility_checked: false, application_acceptance: false,
+        };
+        ControlResponse { ok: true, state: CellState::Running, message: "body completed".into(),
+            host_pid: Some(19), launch: None, applications: None, application_icon: None,
+            diagnostics: None, inspection: None, image_custody: None, runtime_vintf: Some(body) }
+    }
+    #[test]
+    fn vintf_expiry_returns_to_owner_without_starting_another_observer() {
+        let end = Instant::now() - Duration::from_millis(1);
+        let called = std::cell::Cell::new(0);
+        let mut response = vintf_test_response();
+        finish_vintf_request(&mut response, Some(VintfFailure::Expired), end,
+            || panic!("an expired request cannot open a new owner observer"),
+            || { called.set(called.get()+1); Ok(()) }).unwrap();
+        assert_eq!(called.get(),1);
+        assert!(!response.ok);
+        assert!(response.runtime_vintf.is_none());
+        assert_ne!(response.state,CellState::Quarantined);
+    }
+    #[test]
+    fn vintf_final_expiry_cannot_publish_a_successful_body() {
+        let end = Instant::now() - Duration::from_millis(1);
+        let mut response = vintf_test_response();
+        assert!(response.runtime_vintf.is_some());
+        finish_vintf_request(&mut response, None, end,
+            || Err(crate::production_host_admission::observation_expired_error(end).into()),
+            || Ok(())).unwrap();
+        assert!(!response.ok);
+        assert!(response.runtime_vintf.is_none());
+        assert!(!response.message.contains("body completed"));
+    }
+    #[test]
+    fn vintf_owner_failure_and_unretired_children_are_never_expiry_exemptions() {
+        use crate::production_namespace::NamespaceError;
+        let end = Instant::now() - Duration::from_millis(1);
+        let mut response = vintf_test_response();
+        assert!(finish_vintf_request(&mut response,Some(VintfFailure::Other),end,
+            || Err(crate::production_host_admission::observation_expired_error(end).into()),
+            || panic!("prior substantive failure cannot take expiry path")).is_err());
+        for error in [NamespaceError::Rejected("original owner changed"),NamespaceError::RetirementUnproven] {
+            assert!(finish_vintf_request(&mut response,Some(VintfFailure::Expired),end,
+                || panic!("expiry may only take kernel bookend"),
+                || Err(error)).is_err());
+        }
+        let arbitrary=io::Error::new(io::ErrorKind::TimedOut,"original request observation deadline reached");
+        assert_eq!(classify_vintf_failure(&arbitrary,end),VintfFailure::Other);
+        let other=crate::production_host_admission::observation_expired_error(end-Duration::from_millis(1));
+        assert_eq!(classify_vintf_failure(&other,end),VintfFailure::Other);
+        let future=Instant::now()+Duration::from_secs(1);
+        let forged_early=crate::production_host_admission::observation_expired_error(future);
+        assert_eq!(classify_vintf_failure(&forged_early,future),VintfFailure::Other);
+    }
     #[test]
     fn early_public_launch_keeps_exact_package_alias_user_and_extent() {
         let request = early_launch_request(

@@ -364,20 +364,20 @@ release are mutually exclusive.
 
 For a normal kernel-first v2 runtime, `android.query_inputs` is required. It
 maps exactly `cmd-original`, `toybox-original`,
-`contacts-app-process64-original`, and `contacts-content-jar-original` to
-the four published `FilePin` inputs. The fixture shares the production
+`contacts-app-process64-original`, `contacts-content-jar-original`, and `toolbox-original` to
+the five published `FilePin` inputs. The fixture shares the production
 `production_query_input_profile.rs` and original-init identity constants.
 It parses the original runtime bytes with duplicate/unknown-field rejection,
 binds schema, cohort, complete CP3A system and original init, and checks all
-four role declarations and external pins before importing query bytes. A v1
+five role declarations and external pins before importing query bytes. A v1
 runtime accepts neither query declarations nor query input pins.
 
-The new copies are root:root, single-link, mode 0555 for the three executables
+The new copies are root:root, single-link, mode 0555 for the four executables
 and 0444 for the JAR, with no file capability or POSIX ACL. Their final guest
 paths are `/var/lib/droidloom/runtime-cohorts/<runtime-sha256>/images/<fixed-name>`.
 After the ordinary Linux setfiles traversal, the fixture applies and reads
-back the original stock role labels: system_file, toolbox_exec, zygote_exec
-and system_file. The actual generated ext4 is then read independently for
+back the original stock role labels: system_file, toolbox_exec, zygote_exec,
+system_file and toolbox_exec. The actual generated ext4 is then read independently for
 every complete file, inode type/mode/owner/size/link count and label. Its xattr
 inventory must contain exactly that original SELinux label. This proves the
 sealed input copies survived root-image construction; it does not prove query

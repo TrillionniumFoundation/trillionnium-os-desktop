@@ -174,7 +174,7 @@ pub(super) fn send(
     require(fds.len() <= INPUT_FDS, "too many application descriptors")?;
     let bytes = encoded(message)?;
     loop {
-        require(Instant::now() < deadline, "application send deadline")?;
+        crate::production_host_admission::check_observation_before(deadline)?;
         let mut iov = libc::iovec {
             iov_base: bytes.as_ptr().cast_mut().cast(),
             iov_len: bytes.len(),
@@ -221,7 +221,7 @@ pub(super) fn send(
 
 pub(super) fn receive(socket: RawFd, deadline: Instant) -> Result<Received> {
     loop {
-        require(Instant::now() < deadline, "application receive deadline")?;
+        crate::production_host_admission::check_observation_before(deadline)?;
         let mut bytes = [0_u8; MESSAGE_LIMIT];
         let mut iov = libc::iovec {
             iov_base: bytes.as_mut_ptr().cast(),
@@ -316,7 +316,7 @@ pub(super) fn receive(socket: RawFd, deadline: Instant) -> Result<Received> {
 fn wait(fd: RawFd, events: i16, deadline: Instant) -> Result<()> {
     loop {
         let left = deadline.saturating_duration_since(Instant::now());
-        require(!left.is_zero(), "application protocol absolute deadline")?;
+        crate::production_host_admission::check_observation_before(deadline)?;
         let mut poll = libc::pollfd {
             fd,
             events,

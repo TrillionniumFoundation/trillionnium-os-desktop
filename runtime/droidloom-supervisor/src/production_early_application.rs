@@ -25,9 +25,11 @@ mod task_control;
 pub(crate) use task_control::{EarlyTaskControlEndpoint, EarlyTaskControlPeer};
 
 type Result<T> = std::result::Result<T, NamespaceError>;
-fn external(e: impl std::fmt::Display) -> NamespaceError {
+fn external(e: impl std::error::Error + 'static) -> NamespaceError {
     if crate::production_application::metadata_retirement_failed() {
         NamespaceError::RetirementUnproven
+    } else if let Some(deadline) = crate::production_host_admission::observation_expiry(&e) {
+        NamespaceError::Io(crate::production_host_admission::observation_expired_error(deadline))
     } else {
         NamespaceError::RuntimeResource(e.to_string())
     }
@@ -128,14 +130,27 @@ fn retirement_checked<T>(result: Result<T>) -> Result<T> {
         result
     }
 }
-fn metadata(target: &File, userns: &File, role: MetadataRole) -> Result<MetadataObservation> {
+fn request_checked<T>(base: &EarlyBaseAdmission<'_>, result: Result<T>) -> Result<T> {
+    if base.retirement_unproven() {
+        Err(NamespaceError::RetirementUnproven)
+    } else {
+        retirement_checked(result)
+    }
+}
+fn metadata(
+    target: &File,
+    userns: &File,
+    role: MetadataRole,
+    absolute: Option<Instant>,
+) -> Result<MetadataObservation> {
     retirement_checked(Ok(()))?;
+    let deadline = super::resources::observer_deadline(absolute)?;
     retirement_checked(
         crate::production_application::observe_metadata(
             role,
             target,
             userns,
-            Instant::now() + Duration::from_secs(5),
+            deadline,
         )
         .map_err(|error| match error {
             crate::production_application::ApplicationError::RetirementUnproven => {
@@ -387,7 +402,7 @@ fn same_sample(held: &MetadataObservation, current: &MetadataObservation) -> Res
 /// This owner can only borrow the existing reservation, budget, exact root and
 /// private immutable query roles; it cannot manufacture a new Android lifetime.
 pub(crate) struct EarlyApplicationAuthority<'a> {
-    base: &'a EarlyBaseAdmission<'a>,
+    base: EarlyBaseAdmission<'a>,
     group: &'a PreparedCgroup,
     owner: &'a RuntimeMacOwner,
     root: &'a File,
@@ -422,11 +437,16 @@ impl<'a> EarlyApplicationAuthority<'a> {
         query: &'a EarlyQueryResources,
         images: &'a crate::production_mounts::PreparedMounts,
         progress: &'a dyn Fn() -> io::Result<()>,
+        absolute: Option<Instant>,
     ) -> Result<Self> {
+        request_checked(base, Ok(()))?;
+        let original = base;
+        let base = base.for_request(absolute)?;
+        let result = (|| {
         retirement_checked(Ok(()))?;
         retirement_checked(base.revalidate().map_err(NamespaceError::Io))?;
         group
-            .revalidate_early_member(base, owner)
+            .revalidate_early_member(&base, owner)
             .map_err(external)?;
         let proc_root = File::open("/proc")?;
         fs_kind(&proc_root, libc::PROC_SUPER_MAGIC)?;
@@ -434,6 +454,7 @@ impl<'a> EarlyApplicationAuthority<'a> {
             base.board().pidfd(),
             base.user_namespace(),
             MetadataRole::Init,
+            base.observation_deadline(),
         )?;
         let mut namespaces = Vec::new();
         for ((_, kind), index) in NS_NAMES.into_iter().zip([2, 1, 3, 4, 5, 6]) {
@@ -454,7 +475,7 @@ impl<'a> EarlyApplicationAuthority<'a> {
         let device = open(root, c"dev", true)?;
         fs_kind(&device, libc::TMPFS_MAGIC)?;
         let init = verify_sample(
-            base,
+            &base,
             root,
             &actual,
             base.board().pidfd(),
@@ -483,23 +504,58 @@ impl<'a> EarlyApplicationAuthority<'a> {
         // Starting while the main boot/frontend owner continues progressing.
         this.revalidate()?;
         Ok(this)
+        })();
+        request_checked(original, result)
+    }
+    pub(crate) fn check_request_deadline(&self) -> Result<()> {
+        request_checked(&self.base, Ok(()))?;
+        super::resources::check_observation_deadline(self.base.observation_deadline())?;
+        Ok(())
+    }
+    pub(crate) fn request_deadline(&self) -> Option<Instant> {
+        self.base.observation_deadline()
+    }
+    /// Only a failed, expired read may use this finite kernel-only custody
+    /// fence. It does not claim Ready/framework freshness and starts no worker.
+    /// The existing main owner performs its next normal full validation.
+    pub(crate) fn expired_request_bookend(&self, expected: Instant) -> Result<()> {
+        request_checked(&self.base, Ok(()))?;
+        require(
+            self.request_deadline() == Some(expected) && Instant::now() >= expected,
+            "expiry bookend does not match this private request",
+        )?;
+        let (_, uid, gid) = role_ids(&self.base, MetadataRole::Init)?;
+        native_process(self.base.board().pidfd(), self.init, uid, gid)?;
+        self.base.board().generation.check_liveness()?;
+        for ((_, kind), held) in NS_NAMES.into_iter().zip(&self.namespaces) {
+            ns_type(held, kind)?;
+            ns_owner(held, self.base.user_namespace())?;
+        }
+        require(
+            identity(&self.namespaces[0])? == identity(self.base.board().mount_namespace())?
+                && identity(&self.namespaces[1])? == identity(self.base.board().pid_namespace())?
+                && identity(&self.device)? == identity(&open(self.root, c"dev", true)?)?,
+            "expired request retained namespace or device custody changed",
+        )?;
+        request_checked(&self.base, Ok(()))
     }
     pub(crate) fn revalidate(&self) -> Result<()> {
-        retirement_checked(Ok(()))?;
+        self.check_request_deadline()?;
         let result = (|| {
             self.base.revalidate()?;
             self.group
-                .revalidate_early_member(self.base, self.owner)
+                .revalidate_early_member(&self.base, self.owner)
                 .map_err(external)?;
-            self.query.revalidate(self.base).map_err(external)?;
+            self.query.revalidate(&self.base).map_err(external)?;
             let actual = metadata(
                 self.base.board().pidfd(),
                 self.base.user_namespace(),
                 MetadataRole::Init,
+                self.base.observation_deadline(),
             )?;
             require(
                 verify_sample(
-                    self.base,
+                    &self.base,
                     self.root,
                     &actual,
                     self.base.board().pidfd(),
@@ -532,7 +588,7 @@ impl<'a> EarlyApplicationAuthority<'a> {
             self.base.board().revalidate()?;
             Ok(())
         })();
-        retirement_checked(result)
+        request_checked(&self.base, result)
     }
     pub(crate) fn host_pid(&self) -> u32 {
         self.init.pid
@@ -588,15 +644,17 @@ impl<'a> EarlyApplicationAuthority<'a> {
             &held.framework_pidfd,
             self.base.user_namespace(),
             MetadataRole::Framework,
+            self.base.observation_deadline(),
         )?;
         let zygote = metadata(
             &held.zygote_pidfd,
             self.base.user_namespace(),
             MetadataRole::Zygote,
+            self.base.observation_deadline(),
         )?;
         require(
             verify_sample(
-                self.base,
+                &self.base,
                 self.root,
                 &framework,
                 &held.framework_pidfd,
@@ -604,7 +662,7 @@ impl<'a> EarlyApplicationAuthority<'a> {
                 held.framework.pid,
             )? == held.framework
                 && verify_sample(
-                    self.base,
+                    &self.base,
                     self.root,
                     &zygote,
                     &held.zygote_pidfd,
@@ -628,9 +686,9 @@ impl<'a> EarlyApplicationAuthority<'a> {
             "framework epoch differs from the original early generation",
         )?;
         self.ready()?;
-        let (_, uid, gid) = role_ids(self.base, MetadataRole::Framework)?;
+        let (_, uid, gid) = role_ids(&self.base, MetadataRole::Framework)?;
         native_process(&held.framework_pidfd, held.framework, uid, gid)?;
-        let (_, uid, gid) = role_ids(self.base, MetadataRole::Zygote)?;
+        let (_, uid, gid) = role_ids(&self.base, MetadataRole::Zygote)?;
         native_process(&held.zygote_pidfd, held.zygote, uid, gid)?;
         retirement_checked(Ok(()))
     }
@@ -638,8 +696,9 @@ impl<'a> EarlyApplicationAuthority<'a> {
         self.ready()?;
         let mut found = None;
         let mut count = 0usize;
-        let (_, wanted_uid, wanted_gid) = role_ids(self.base, MetadataRole::Framework)?;
+        let (_, wanted_uid, wanted_gid) = role_ids(&self.base, MetadataRole::Framework)?;
         for entry in std::fs::read_dir(format!("/proc/self/fd/{}", self.proc_root.as_raw_fd()))? {
+            self.check_request_deadline()?;
             let entry = entry?;
             let Some(name) = entry.file_name().to_str().map(str::to_owned) else {
                 continue;
@@ -668,18 +727,19 @@ impl<'a> EarlyApplicationAuthority<'a> {
                     &framework_pidfd,
                     self.base.user_namespace(),
                     MetadataRole::Framework,
+                    self.base.observation_deadline(),
                 ) {
                     Ok(value) => value,
                     Err(NamespaceError::RetirementUnproven) => {
                         return Err(NamespaceError::RetirementUnproven);
                     }
                     Err(_) => {
-                        retirement_checked(Ok(()))?;
+                        self.check_request_deadline()?;
                         return Ok(None);
                     }
                 };
                 let framework = verify_sample(
-                    self.base,
+                    &self.base,
                     self.root,
                     &framework_metadata,
                     &framework_pidfd,
@@ -698,9 +758,10 @@ impl<'a> EarlyApplicationAuthority<'a> {
                     &zygote_pidfd,
                     self.base.user_namespace(),
                     MetadataRole::Zygote,
+                    self.base.observation_deadline(),
                 )?;
                 let zygote = verify_sample(
-                    self.base,
+                    &self.base,
                     self.root,
                     &zygote_metadata,
                     &zygote_pidfd,
@@ -730,7 +791,8 @@ impl<'a> EarlyApplicationAuthority<'a> {
                 self.verify_framework_processes(&held)?;
                 Ok(Some(held))
             })();
-            match retirement_checked(observed) {
+            self.check_request_deadline()?;
+            match request_checked(&self.base, observed) {
                 Ok(Some(held)) => {
                     require(
                         found.is_none(),
@@ -752,7 +814,7 @@ impl<'a> EarlyApplicationAuthority<'a> {
     }
     pub(crate) fn catalog_jar_digest(&self) -> Result<String> {
         self.ready()?;
-        let digest = self.query.catalog_jar_digest(self.base).map_err(external)?;
+        let digest = self.query.catalog_jar_digest(&self.base).map_err(external)?;
         self.revalidate()?;
         Ok(digest)
     }
@@ -775,7 +837,7 @@ impl ApplicationWorkerAuthority for EarlyApplicationAuthority<'_> {
         let actual = &held.framework_metadata;
         let [copy, original] = self
             .query
-            .descriptors(self.base, &actual.root, binary)
+            .descriptors(&self.base, &actual.root, binary)
             .map_err(external)?;
         let raw = unsafe { libc::syscall(libc::SYS_pidfd_open, libc::getpid(), 0u32) };
         if raw < 0 {
@@ -799,7 +861,7 @@ impl ApplicationWorkerAuthority for EarlyApplicationAuthority<'_> {
         let held = self.observe_framework()?;
         let out = self
             .query
-            .content(self.base, &held.framework_metadata.root)
+            .content(&self.base, &held.framework_metadata.root)
             .map_err(external)?;
         self.verify_framework_processes(&held)?;
         Ok(out)
@@ -811,7 +873,7 @@ impl ApplicationWorkerAuthority for EarlyApplicationAuthority<'_> {
     fn leaf(&self) -> Result<ApplicationLeaf<'_>> {
         self.ready()?;
         self.group
-            .early_application_leaf(self.base, self.owner)
+            .early_application_leaf(&self.base, self.owner)
             .map_err(external)
     }
     fn bind_created_process(&self, pidfd: &OwnedFd, query: bool) -> Result<(File, u32)> {

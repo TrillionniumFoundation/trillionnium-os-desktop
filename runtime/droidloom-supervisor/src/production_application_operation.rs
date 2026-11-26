@@ -155,6 +155,7 @@ impl BrowserCommand {
 #[serde(tag = "operation", deny_unknown_fields)]
 pub(super) enum ApplicationOperation {
     Read { value: ApplicationRead },
+    Vintf { value: super::vintf::VintfRead },
     Browser { value: BrowserCommand },
     ContactsRead { value: ContactsQuery },
     Launch { value: LaunchCommand },
@@ -167,6 +168,7 @@ impl ApplicationOperation {
     pub(super) fn validate(&self) -> Result<()> {
         match self {
             Self::Read { value } => value.validate(),
+            Self::Vintf { value } => value.validate(),
             Self::Browser { value } => value.validate(),
             Self::ContactsRead { value } => value.validate(),
             Self::Launch { value } => value.validate(),
@@ -188,6 +190,7 @@ impl ApplicationOperation {
     pub(super) const fn output_limit(&self) -> usize {
         match self {
             Self::Catalog { .. } => super::catalog::OUTPUT_BYTES,
+            Self::Vintf { value } => value.output_limit(),
             _ => OUTPUT_LIMIT,
         }
     }
@@ -231,6 +234,7 @@ impl ApplicationOperation {
     pub(super) fn binary(&self) -> &'static CStr {
         match self {
             Self::Read { value } => value.binary(),
+            Self::Vintf { value } => value.binary(),
             Self::Browser { .. } => c"cmd",
             Self::ContactsRead { .. } | Self::Catalog { .. } => c"app_process64",
             Self::Launch { .. } | Self::Install { .. } | Self::Display { .. } => c"cmd",
@@ -240,6 +244,7 @@ impl ApplicationOperation {
     pub(super) fn arguments(&self) -> Result<Vec<CString>> {
         match self {
             Self::Read { value } => value.arguments(),
+            Self::Vintf { value } => value.arguments(),
             Self::Browser { value } => value.arguments(),
             Self::ContactsRead { value } => value.arguments(),
             Self::Launch { value } => value.arguments(),
@@ -251,7 +256,7 @@ impl ApplicationOperation {
 
     pub(super) fn domain(&self) -> OperationDomain {
         match self {
-            Self::Read { .. } => OperationDomain::Query,
+            Self::Read { .. } | Self::Vintf { .. } => OperationDomain::Query,
             Self::Browser { value } => value.domain(),
             Self::ContactsRead { .. } => OperationDomain::ContactsRead,
             Self::Launch { value } => value.domain(),

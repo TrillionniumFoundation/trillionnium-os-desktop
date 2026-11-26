@@ -5,6 +5,65 @@ use crate::control::application_custody::{CustodyNamespace, CustodyOwner};
 use crate::production_mounts::custody::ObservedGalleryImage;
 
 impl EarlyApplicationAuthority<'_> {
+    pub(crate) fn runtime_vintf_binding(
+        &self,
+        held: &EarlyFrameworkObservation,
+        deadline: Instant,
+    ) -> Result<crate::control::runtime_vintf::RuntimeVintfBinding> {
+        self.verify_framework_processes(held)?;
+        let owner = self.image_custody_owner(deadline)?;
+        let base_images = self
+            .images
+            .observe_vintf_mount_bindings_early(&self.base, deadline, self.progress)
+            .map_err(external)?;
+        let root = held.framework_metadata.root.metadata()?;
+        let root_id = crate::control::application_custody::CustodyFileIdentity {
+            device: root.dev(),
+            inode: root.ino(),
+            mode: root.mode(),
+            uid: root.uid(),
+            gid: root.gid(),
+            links: root.nlink(),
+            bytes: root.len(),
+            modified: (root.mtime(), root.mtime_nsec()),
+            changed: (root.ctime(), root.ctime_nsec()),
+        };
+        require(
+            base_images.first().is_some_and(|image| {
+                (image.mount_root.device, image.mount_root.inode) == (root.dev(), root.ino())
+            }),
+            "framework root is not the actual selected base filesystem",
+        )?;
+        let mut framework_namespaces = Vec::new();
+        for (name, file) in ["user", "pid", "mount", "ipc", "uts", "net", "cgroup"]
+            .into_iter()
+            .zip(&held.framework_metadata.namespaces)
+        {
+            let node = file.metadata()?;
+            framework_namespaces.push(CustodyNamespace {
+                name: name.into(),
+                device: node.dev(),
+                inode: node.ino(),
+            });
+        }
+        require(
+            framework_namespaces.len() == 7,
+            "incomplete framework namespace set",
+        )?;
+        framework_namespaces.sort_by(|a, b| a.name.cmp(&b.name));
+        self.verify_framework_processes(held)?;
+        require(
+            self.image_custody_owner(deadline)? == owner,
+            "VINTF owner changed",
+        )?;
+        Ok(crate::control::runtime_vintf::RuntimeVintfBinding {
+            owner,
+            framework_namespaces,
+            framework_root: root_id,
+            base_images,
+            image_bodies_rehashed_by_this_observation: false,
+        })
+    }
     fn image_custody_owner(&self, deadline: Instant) -> Result<CustodyOwner> {
         self.progress_inherited_native(deadline)?;
         self.ready()?;
@@ -59,7 +118,7 @@ impl EarlyApplicationAuthority<'_> {
         // whole-byte reads. The original owner is fully checked at bookends.
         let observed = self
             .images
-            .observe_gallery_custody_early(self.base, deadline, self.progress)
+            .observe_gallery_custody_early(&self.base, deadline, self.progress)
             .map_err(external)?;
         observed
             .verify_originating_root(self.root)
@@ -85,7 +144,7 @@ impl EarlyApplicationAuthority<'_> {
             .verify_originating_root(self.root)
             .map_err(external)?;
         self.images
-            .complete_gallery_byte_bookend_early(self.base, observed, deadline, self.progress)
+            .complete_gallery_byte_bookend_early(&self.base, observed, deadline, self.progress)
             .map_err(external)?;
         observed
             .verify_originating_root(self.root)
@@ -110,7 +169,7 @@ impl EarlyApplicationAuthority<'_> {
             .verify_originating_root(self.root)
             .map_err(external)?;
         self.images
-            .revalidate_gallery_custody_early(self.base, observed, deadline)
+            .revalidate_gallery_custody_early(&self.base, observed, deadline)
             .map_err(external)?;
         require(
             &self.image_custody_owner(deadline)? == owner,

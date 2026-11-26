@@ -71,6 +71,9 @@ pub mod application_custody;
 #[path = "application_tasks.rs"]
 pub mod application_tasks;
 
+#[path = "runtime_vintf.rs"]
+pub mod runtime_vintf;
+
 #[path = "application_command.rs"]
 mod application_command;
 
@@ -216,6 +219,12 @@ pub enum ControlRequest {
         /// Complete current installed identity and physical runtime generation.
         expected: application_probe::ApplicationInspection,
     },
+    /// Read the fixed public VINTF/APEX/property set in the current Ready owner.
+    /// Expected PID values compare that owner; they never select a process.
+    ObserveRuntimeVintf {
+        /// Previously observed physical generation, revalidated before and after.
+        expected_epoch: application_probe::RuntimeEpoch,
+    },
     /// Open a reviewed HTTPS fixture via the current implicit Firefox resolver.
     OpenBrowser {
         /// Exact current package and physical Main observation to recheck.
@@ -313,6 +322,9 @@ pub struct ControlResponse {
     /// Readonly whole-image and actual query provenance; never a release gate.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub image_custody: Option<application_custody::ImageApplicationCustody>,
+    /// Bounded public runtime facts; neither compatibility nor app acceptance.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub runtime_vintf: Option<runtime_vintf::RuntimeVintfObservation>,
 }
 
 /// Daemon filesystem and executable configuration.
@@ -438,6 +450,9 @@ impl Daemon {
             ControlRequest::OpenBrowser { expected, url } => {
                 self.open_browser(peer_uid, &expected, &url)
             }
+            ControlRequest::ObserveRuntimeVintf { .. } => Err(ControlError::Invalid(
+                "fixed VINTF observation requires the original kernel-first Ready owner".into(),
+            )),
             ControlRequest::ObserveApplicationTasks { .. } => Err(ControlError::Invalid(
                 "fixed task observation requires the production Ready owner".into(),
             )),
@@ -489,6 +504,7 @@ impl Daemon {
             diagnostics: None,
             inspection: None,
             image_custody: None,
+            runtime_vintf: None,
         })
     }
 
@@ -593,6 +609,7 @@ impl Daemon {
             diagnostics: None,
             inspection: None,
             image_custody: None,
+            runtime_vintf: None,
         })
     }
 
@@ -662,6 +679,7 @@ impl Daemon {
             diagnostics: None,
             inspection: None,
             image_custody: None,
+            runtime_vintf: None,
         })
     }
 
@@ -762,6 +780,7 @@ impl Daemon {
             diagnostics: None,
             inspection: None,
             image_custody: None,
+            runtime_vintf: None,
         })
     }
 
@@ -792,6 +811,7 @@ impl Daemon {
             diagnostics: None,
             inspection: None,
             image_custody: None,
+            runtime_vintf: None,
         })
     }
 
@@ -882,6 +902,7 @@ impl Daemon {
             diagnostics: None,
             inspection: None,
             image_custody: None,
+            runtime_vintf: None,
         }
     }
 
@@ -1929,6 +1950,7 @@ mod tests {
                         diagnostics: None,
                         inspection: None,
                         image_custody: None,
+                        runtime_vintf: None,
                     },
                 )
                 .unwrap();
@@ -1993,6 +2015,7 @@ mod tests {
                         diagnostics: None,
                         inspection: None,
                         image_custody: None,
+                        runtime_vintf: None,
                     },
                 )
                 .unwrap();

@@ -762,13 +762,15 @@ qualification as pending.
 ## Original fixed application query input production
 
 An adapter with the explicit CP3A execution selection can also select
-`query.scope = "cp3a_fixed_application_query_inputs_v1"`. This closed object
-accepts no executable paths or replacement files. The producer reads the four
+`query.scope = "cp3a_fixed_application_query_inputs_v2"`. This closed object
+accepts no executable paths or replacement files. The producer reads the five
 fixed members directly from the same held, fully verified system image with
 the pinned filesystem tool. It verifies each whole body, ELF interpreter or
 JAR format, original inode mode and ownership, complete SELinux label bytes,
 and absence of other xattrs. The output selects the existing fixed command
-and Contacts query roles; it adds no query command or application authority.
+and Contacts query roles. The fifth member supplies the original fixed getprop
+dispatcher for the finite public VINTF observation below, without accepting
+caller-selected commands, executable paths or application authority.
 
 | Original member | Bytes | Original owner/mode | SHA-256 |
 | --- | ---: | --- | --- |
@@ -776,23 +778,65 @@ and Contacts query roles; it adds no query command or application authority.
 | `/system/bin/toybox` | 611,248 | 0:2000 / 0755 | `5c2b46686560564967fb5c1cb4ec633c42f658c347831c1d8c788ecf66e1774b` |
 | `/system/bin/app_process64` | 51,616 | 0:2000 / 0755 | `bcc150b9c7e2abcc9aef312ea04f5bbcba631dbb2e23cb1b240b7219df1229a2` |
 | `/system/framework/content.jar` | 20,158 | 0:0 / 0644 | `c0ee6290243eda4a6dd95292c28274dd199b82b57466e00a83e1bb1a50eae8b3` |
+| `/system/bin/toolbox` | 169,856 | 0:2000 / 0755 | `a1d2b30312db7b099cfc4f25b712420b46574affa0d73709add5bc7630d55ae8` |
 
-All three ELF interpreters are `/system/bin/linker64`. The original labels
+All four ELF interpreters are `/system/bin/linker64`. The original labels
 are respectively `system_file`, `toolbox_exec`, `zygote_exec` and
-`system_file`, each with the actual complete Android context and trailing
+`system_file` and `toolbox_exec`, each with the actual complete Android context and trailing
 NUL. Production checks the same exact source pins. The original-image
-verifier preserves the three executables' mapped Android shell group 2000;
+verifier preserves the four executables' mapped Android shell group 2000;
 it does not confuse those inodes with the root-owned sealed input copies.
 The content JAR remains a distinct nonexecutable role with its original
 root group and exact mode. No source inode is relabelled or chowned.
 
-The producer creates the three sealed input candidates with mode 0555 and
+The producer creates the four sealed executable input candidates with mode 0555 and
 the JAR with mode 0444. `QUERY-INSTALL-REQUIREMENTS.json` records the actual
 source metadata and explicit root ownership/label requirements for later
 installation. The consumer still requires the original labels before
 constructing separately labelled read-only private query projections.
 Extraction, copies and metadata checks provide no successful query,
 Contacts response, application admission or runtime qualification.
+
+## Finite public runtime VINTF observation
+
+`droidloomctl observe-runtime-vintf --expected-epoch <file>` accepts only the
+complete expected `RuntimeEpoch`. That value is compared with the existing
+Ready owner's current framework identity; its PIDs never select a process.
+The expected-epoch file is bounded, opened without following a symlink, and
+read between unchanged file-identity observations.
+
+The operation borrows that original owner, its held framework namespace and
+admitted image mounts. It reads exactly four public properties through the
+original toolbox: `ro.boot.product.vendor.sku`,
+`ro.boot.product.hardware.sku`, `apex.all.ready`, and
+`ro.product.first_api_level`. Fixed toybox operations read the actual kernel
+release and machine, the APEX inventory, the system/product/system_ext/vendor
+VINTF trees, and the defined legacy/ODM mappings. Active APEX paths are derived
+only from the bounded actual inventory and must resolve to the same canonical
+module and exact active version. There is no arbitrary path, property, command,
+namespace or PID request.
+
+The producer preserves full XML bodies and hashes, no-follow stat identities,
+actual ENOENT records, complete bounded rosters, and owner/epoch/mount/property
+bookends. Empty property output remains explicitly observed-empty-or-unset;
+permission errors, malformed data, non-ready APEX state, changed identities or
+incomplete reads cannot become absence or successful compatibility.
+
+After transport authentication, one immutable request context limits admitted
+work and real child retirement to 60 seconds. The work cutoff reserves the last
+12 seconds for the existing bounded cleanup chain; no nested observer resets
+that cutoff. A pure structured expiry of this exact request returns failure
+without accepted observation data, after a finite held-owner custody check.
+Observed custody failures and unproven retirement retain the isolation path.
+Successful responses require the complete final Ready/owner observations.
+The normal transport keeps its existing socket limits; the client uses a
+70-second absolute response allowance.
+
+The result always leaves `compatibility_checked` and `application_acceptance`
+false. A later normal checkvintf consumer must bind these real runtime facts to
+the exact source images, kernel configuration and tool inputs. Static extraction,
+a successful query or a missing-source equivalence flag supplies no VINTF,
+private ABI, security-update, application-business or production acceptance.
 
 ## Original init cleanup and scoped host context providers
 

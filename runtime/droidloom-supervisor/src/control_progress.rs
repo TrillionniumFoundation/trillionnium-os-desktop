@@ -29,6 +29,9 @@ fn response_timeout(request: &ControlRequest) -> Duration {
             // original 300-second absolute deadline and real reap rules.
             GALLERY_CUSTODY_RESPONSE_TIMEOUT
         }
+        // Transport allowance only; the Ready-owner operation has its own
+        // absolute 60-second work-and-retirement budget.
+        ControlRequest::ObserveRuntimeVintf { .. } => Duration::from_secs(70),
         _ => REQUEST_TIMEOUT,
     }
 }

@@ -1,4 +1,4 @@
-//! Fresh-worker verification of the two fixed original/private query roles.
+//! Fresh-worker verification of the fixed original/private executable roles.
 //! The private executable must be a different, sealed tmpfs inode containing
 //! the complete bytes of its actual selected system counterpart. Only fixed
 //! root-relative components are opened; no packet supplies a binary pathname.
@@ -131,10 +131,7 @@ fn complete_hash(file: &File, expected: Node, deadline: Instant) -> Result<[u8; 
     let mut at = 0_u64;
     let mut bytes = [0_u8; 32 * 1024];
     while at < expected.bytes {
-        require(
-            Instant::now() < deadline,
-            "query executable verification deadline",
-        )?;
+        crate::production_host_admission::check_observation_before(deadline)?;
         let length = (expected.bytes - at).min(bytes.len() as u64) as usize;
         let count = match file.read_at(&mut bytes[..length], at) {
             Err(error) if error.kind() == io::ErrorKind::Interrupted => continue,
@@ -177,6 +174,7 @@ pub(in crate::production_application) fn verify(
     let original_input = fixed::INPUTS[match query.binary().to_bytes() {
         b"cmd" => 0,
         b"toybox" => 1,
+        b"toolbox" => 4,
         b"app_process64" if query.uses_app_process() => 2,
         _ => return Err(reject("unknown fixed query executable role")),
     }];
@@ -418,7 +416,7 @@ impl ArtInputs {
             .iter()
             .zip(&crate::production_application::art_profile::INPUTS)
         {
-            require(Instant::now() < deadline, "original ART input deadline")?;
+            crate::production_host_admission::check_observation_before(deadline)?;
             let current = at(&self.root, input.components)?;
             require(
                 identity(&held.file)? == held.node
@@ -453,7 +451,7 @@ pub(in crate::production_application) fn bind_art(
     let root_mount = art_mount(&root)?;
     let mut inputs = Vec::with_capacity(crate::production_application::art_profile::INPUTS.len());
     for input in &crate::production_application::art_profile::INPUTS {
-        require(Instant::now() < deadline, "original ART input deadline")?;
+        crate::production_host_admission::check_observation_before(deadline)?;
         // Every component is compiled into the fixed profile. Intermediate
         // directories are O_PATH and symlinks are never followed.
         let file = at(&root, input.components)?;

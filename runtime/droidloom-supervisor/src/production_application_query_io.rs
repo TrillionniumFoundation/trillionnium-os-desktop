@@ -114,7 +114,7 @@ struct Received {
 fn wait(fd: RawFd, events: i16, deadline: Instant) -> Result<()> {
     loop {
         let left = deadline.saturating_duration_since(Instant::now());
-        require(!left.is_zero(), "query I/O absolute deadline")?;
+        crate::production_host_admission::check_observation_before(deadline)?;
         let mut p = libc::pollfd {
             fd,
             events,
@@ -143,7 +143,7 @@ fn send(socket: RawFd, wire: Wire, files: &[RawFd], deadline: Instant) -> Result
     require(files.len() <= 6, "query I/O descriptor send bound")?;
     let bytes = wire.bytes();
     loop {
-        require(Instant::now() < deadline, "query I/O send deadline")?;
+        crate::production_host_admission::check_observation_before(deadline)?;
         let mut vector = libc::iovec {
             iov_base: bytes.as_ptr().cast_mut().cast(),
             iov_len: bytes.len(),
@@ -187,7 +187,7 @@ fn send(socket: RawFd, wire: Wire, files: &[RawFd], deadline: Instant) -> Result
 fn receive(socket: RawFd, expected_files: usize, deadline: Instant) -> Result<Received> {
     require(expected_files <= 6, "query I/O receive descriptor bound")?;
     loop {
-        require(Instant::now() < deadline, "query I/O receive deadline")?;
+        crate::production_host_admission::check_observation_before(deadline)?;
         let mut bytes = [0_u8; WIRE_BYTES];
         let mut vector = libc::iovec {
             iov_base: bytes.as_mut_ptr().cast(),
@@ -1292,10 +1292,7 @@ fn create_fixed(root: &File, deadline: Instant, apk_pipe: bool) -> Result<QueryI
     #[cfg(not(target_arch = "x86_64"))]
     return Err(reject("query I/O requires the reviewed native x86_64 ABI"));
     let deadline = deadline.min(Instant::now() + LIMIT);
-    require(
-        Instant::now() < deadline,
-        "query I/O deadline already expired",
-    )?;
+    crate::production_host_admission::check_observation_before(deadline)?;
     own_root_credentials()?;
     mac_context(BROKER)?;
     require(
@@ -1336,7 +1333,7 @@ fn create_fixed(root: &File, deadline: Instant, apk_pipe: bool) -> Result<QueryI
         offset += count as usize;
     }
     let left = deadline.saturating_duration_since(Instant::now());
-    require(!left.is_zero(), "query I/O preparation exceeded deadline")?;
+    crate::production_host_admission::check_observation_before(deadline)?;
     let wire = Wire {
         phase: if apk_pipe { REQUEST_APK_PIPE } else { REQUEST },
         nonce,

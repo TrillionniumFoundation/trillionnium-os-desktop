@@ -516,12 +516,19 @@ impl EarlyBoardResources {
     pub(crate) fn observe_init_metadata(
         &self,
     ) -> io::Result<crate::production_application::MetadataObservation> {
+        self.observe_init_metadata_before(None)
+    }
+    pub(crate) fn observe_init_metadata_before(
+        &self, absolute: Option<std::time::Instant>,
+    ) -> io::Result<crate::production_application::MetadataObservation> {
+        let deadline = resources::observer_deadline(absolute)?;
         self.revalidate()?;
+        resources::check_observation_deadline(absolute)?;
         let observed = crate::production_application::observe_metadata(
             crate::production_application::MetadataRole::InitLifecycle,
             self.pidfd(),
             self.user_namespace(),
-            std::time::Instant::now() + std::time::Duration::from_secs(5),
+            deadline,
         )
         .map_err(io::Error::other)?;
         self.generation.check_liveness()?;

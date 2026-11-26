@@ -376,6 +376,7 @@ mod tests {
             diagnostics: None,
             inspection: Some(expected.clone()),
             image_custody: None,
+            runtime_vintf: None,
         }
     }
     fn responses(expected: &ApplicationInspection) -> VecDeque<ControlResponse> {

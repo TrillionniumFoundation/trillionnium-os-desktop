@@ -1155,7 +1155,9 @@ mod tests {
     fn runtime_query_sources_bind_fixed_roles_and_complete_selected_system() {
         let mut value = declaration();
         value["query"] = serde_json::json!({
-            "scope":"fixed_application_query_v1", "source_system_sha256":"a".repeat(64),
+            "scope":"fixed_application_query_v2", "source_system_sha256":"a".repeat(64),
+            "toolbox":{"original":{"file":"toolbox-original","bytes":169856,"sha256":"9".repeat(64)},
+                "source_path":"/system/bin/toolbox","interpreter":"/system/bin/linker64"},
             "cmd":{"original":{"file":"cmd-original","bytes":4096,"sha256":"5".repeat(64)},
                 "source_path":"/system/bin/cmd","interpreter":"/system/bin/linker64"},
             "toybox":{"original":{"file":"toybox-original","bytes":8192,"sha256":"6".repeat(64)},
@@ -1190,7 +1192,9 @@ mod tests {
     fn contacts_runtime_inputs_require_complete_fixed_source_roles_and_nonexecutable_classpath() {
         let mut value = declaration();
         value["query"] = serde_json::json!({
-            "scope":"fixed_application_query_v1", "source_system_sha256":"a".repeat(64),
+            "scope":"fixed_application_query_v2", "source_system_sha256":"a".repeat(64),
+            "toolbox":{"original":{"file":"toolbox-original","bytes":169856,"sha256":"9".repeat(64)},
+                "source_path":"/system/bin/toolbox","interpreter":"/system/bin/linker64"},
             "cmd":{"original":{"file":"cmd-original","bytes":4096,"sha256":"5".repeat(64)},
                 "source_path":"/system/bin/cmd","interpreter":"/system/bin/linker64"},
             "toybox":{"original":{"file":"toybox-original","bytes":8192,"sha256":"6".repeat(64)},

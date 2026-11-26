@@ -7,6 +7,26 @@ use std::fs::{File, OpenOptions};
 use std::io;
 use std::os::fd::{AsRawFd, FromRawFd};
 use std::os::unix::fs::OpenOptionsExt;
+use std::ops::Deref;
+use std::time::{Duration, Instant};
+
+pub(super) fn check_observation_deadline(absolute: Option<Instant>) -> io::Result<()> {
+    if absolute.is_some_and(|end| Instant::now() >= end) {
+        Err(crate::production_host_admission::observation_expired_error(absolute.expect("observed expired request")))
+    } else { Ok(()) }
+}
+pub(super) fn observer_deadline(absolute: Option<Instant>) -> io::Result<Instant> {
+    check_observation_deadline(absolute)?;
+    let ordinary = Instant::now() + Duration::from_secs(5);
+    Ok(absolute.map_or(ordinary, |end| end.min(ordinary)))
+}
+fn narrowed_deadline(original: Option<Instant>, request: Option<Instant>) -> Option<Instant> {
+    match (original, request) {
+        (Some(a), Some(b)) => Some(a.min(b)),
+        (Some(a), None) | (None, Some(a)) => Some(a),
+        (None, None) => None,
+    }
+}
 
 fn start_ticks(line: &str, expected_pid: u32) -> io::Result<u64> {
     let (pid, rest) = line
@@ -53,8 +73,19 @@ pub(crate) struct EarlyBoundNamespaces<'a> {
     proc: File,
     start: u64,
     proc_identity: (u64, u64),
+    // Immutable and private to a derived request; the live shared owner is never modified.
+    observation_deadline: Option<Instant>,
 }
 impl<'a> EarlyBoundNamespaces<'a> {
+    fn for_request(&self, absolute: Instant) -> io::Result<Self> {
+        let deadline = narrowed_deadline(self.observation_deadline, Some(absolute));
+        check_observation_deadline(deadline)?;
+        Ok(Self {
+            board:self.board, proc:self.proc.try_clone()?, start:self.start,
+            proc_identity:self.proc_identity, observation_deadline:deadline,
+        })
+    }
+    pub(crate) fn observation_deadline(&self) -> Option<Instant> { self.observation_deadline }
     pub(crate) fn acquire(board: &'a EarlyBoardResources) -> io::Result<Self> {
         let observed = board.observe_init_metadata()?;
         let start = start_ticks(&observed.stat, board.host_pid() as u32)?;
@@ -69,6 +100,7 @@ impl<'a> EarlyBoundNamespaces<'a> {
             proc,
             start,
             proc_identity: observed.host.proc_identity(),
+            observation_deadline: None,
         };
         obj.verify_metadata(&observed)?;
         obj.revalidate()?;
@@ -136,7 +168,7 @@ impl<'a> EarlyBoundNamespaces<'a> {
     pub(crate) fn observe_metadata(
         &self,
     ) -> io::Result<crate::production_application::MetadataObservation> {
-        let observed = self.board.observe_init_metadata()?;
+        let observed = self.board.observe_init_metadata_before(self.observation_deadline)?;
         self.verify_metadata(&observed)?;
         self.board.revalidate()?;
         Ok(observed)
@@ -157,16 +189,40 @@ impl<'a> EarlyBoundNamespaces<'a> {
 
 /// The canonical four-image provider borrows the reservation already owned by
 /// the manager. It cannot construct an identity from a cohort or descriptor.
+enum RequestNamespaces<'a> {
+    Original(&'a EarlyBoundNamespaces<'a>),
+    Bounded(EarlyBoundNamespaces<'a>),
+}
+impl<'a> Deref for RequestNamespaces<'a> {
+    type Target = EarlyBoundNamespaces<'a>;
+    fn deref(&self) -> &Self::Target {
+        match self { Self::Original(value) => value, Self::Bounded(value) => value }
+    }
+}
 pub(crate) struct EarlyBaseAdmission<'a> {
-    bound: &'a EarlyBoundNamespaces<'a>,
+    bound: RequestNamespaces<'a>,
     host: &'a HostAdmission,
 }
 impl<'a> EarlyBaseAdmission<'a> {
+    /// Same original lease and held namespaces; no shared mutable deadline.
+    pub(crate) fn for_request(&'a self, absolute: Option<Instant>) -> io::Result<Self> {
+        let deadline = narrowed_deadline(self.observation_deadline(), absolute);
+        check_observation_deadline(deadline)?;
+        let bound = match deadline {
+            Some(end) => RequestNamespaces::Bounded(self.bound.for_request(end)?),
+            None => RequestNamespaces::Original(&self.bound),
+        };
+        Ok(Self { bound, host:self.host })
+    }
+    pub(crate) fn observation_deadline(&self) -> Option<Instant> {
+        self.bound.observation_deadline()
+    }
+    pub(crate) fn retirement_unproven(&self) -> bool { self.host.retirement_unproven() }
     pub(crate) fn new(
         bound: &'a EarlyBoundNamespaces<'a>,
         host: &'a HostAdmission,
     ) -> io::Result<Self> {
-        let value = Self { bound, host };
+        let value = Self { bound:RequestNamespaces::Original(bound), host };
         value.revalidate()?;
         Ok(value)
     }
@@ -182,7 +238,7 @@ impl<'a> EarlyBaseAdmission<'a> {
             return Err(invalid("host reservation and early release differ"));
         }
         self.host
-            .revalidate_early(self.bound)
+            .revalidate_early(&self.bound)
             .map_err(io::Error::other)?;
         self.bound.revalidate()
     }

@@ -153,7 +153,7 @@ impl EarlyApplicationAuthority<'_> {
         let (uid, gid) = self.mapped_root()?;
         let socket = socket_file(self.root)?;
         let m = socket.metadata()?;
-        let (_, system_uid, system_gid) = role_ids(self.base, MetadataRole::Composer)?;
+        let (_, system_uid, system_gid) = role_ids(&self.base, MetadataRole::Composer)?;
         require(
             m.mode() == libc::S_IFSOCK | 0o660
                 && m.nlink() == 1
@@ -311,7 +311,7 @@ impl EarlyTaskControlEndpoint {
     ) -> Result<(MetadataObservation, Process)> {
         before(deadline)?;
         let native = info(target.as_fd(), true)?;
-        let (_, uid, gid) = role_ids(authority.base, MetadataRole::Composer)?;
+        let (_, uid, gid) = role_ids(&authority.base, MetadataRole::Composer)?;
         require(
             native.pid > 1
                 && native.tgid == native.pid
@@ -327,7 +327,7 @@ impl EarlyTaskControlEndpoint {
         )
         .map_err(external)?;
         let process = verify_sample(
-            authority.base,
+            &authority.base,
             authority.root,
             &observed,
             target,
@@ -358,7 +358,7 @@ impl EarlyTaskControlEndpoint {
         )?;
         let target = File::from(pidfd.try_clone()?);
         let native = info(target.as_fd(), true)?;
-        let (_, uid, gid) = role_ids(authority.base, MetadataRole::Composer)?;
+        let (_, uid, gid) = role_ids(&authority.base, MetadataRole::Composer)?;
         require(
             credentials.pid > 1
                 && native.pid == credentials.pid as u32

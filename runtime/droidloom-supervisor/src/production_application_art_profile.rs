@@ -1,4 +1,4 @@
-//! Exact ART inputs of the same original CP3A system used by the four query roles.
+//! Exact ART inputs of the same original CP3A system used by the five query roles.
 //! Derived from original protobuf fragments: ART, system, sorted non-ART APEX.
 //! The 45 original APEX containers, including EROFS virt, were inspected.
 //! Derivation SHA256: 9372d37ffbdb98c8fd76e88870e948345394b847a62d8b0a88fb6739b8b58b02

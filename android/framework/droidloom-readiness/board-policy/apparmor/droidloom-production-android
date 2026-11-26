@@ -19,11 +19,11 @@ profile droidloom-production-android {
   ptrace (readby, tracedby) peer=droidloom-instance-factory,
   signal (receive) set=(kill) peer=droidloom-instance-factory,
   /dev/socket/droidloom/shutdown-request r,
-  # The four selected immutable roles and their ordinary Android loader inputs.
+  # The five selected immutable roles and their ordinary Android loader inputs.
   /{dev/droidloom-query,.droidloom-query}/ r,
-  /{dev/droidloom-query,.droidloom-query}/{cmd,toybox,app_process64} mrix,
+  /{dev/droidloom-query,.droidloom-query}/{cmd,toybox,toolbox,app_process64} mrix,
   /{dev/droidloom-query,.droidloom-query}/content.jar r,
-  /system/bin/{cmd,toybox,app_process64} r,
+  /system/bin/{cmd,toybox,toolbox,app_process64} r,
   /system/framework/content.jar r,
   # Original ART interpreter/boot classpath inputs, without writable code.
   /system/framework/{,**} r,
@@ -39,6 +39,16 @@ profile droidloom-production-android {
   /linkerconfig/{,ld.config.txt,apex.libraries.config.txt} r,
   /system/etc/{,ld.config.txt,ld.config.*.txt,public.libraries.txt} r,
   /apex/{,apex-info-list.xml} r,
+  # Finite public VINTF metadata. The Rust query contract bounds module/SKU
+  # components, complete rosters and byte counts in the held Ready namespace.
+  # SELinux's existing query domain still rejects unrelated vendor/APEX bodies.
+  /system/{etc/vintf,product/etc/vintf,system_ext/etc/vintf}/{,**} r,
+  /{product,system_ext,vendor,odm}/etc/vintf/{,**} r,
+  /vendor/odm/etc/vintf/{,**} r,
+  /{system,vendor}/{manifest,compatibility_matrix}.xml r,
+  /{odm,vendor/odm}/etc/manifest{,_*}.xml r,
+  /{odm,odm/etc,vendor/odm,vendor/odm/etc} r,
+  /apex/*/etc/vintf/{,**} r,
   /dev/__properties__/{,**} r,
   /dev/{binder,hwbinder,vndbinder} rw,
   /data/app/**.apk r,

@@ -45,7 +45,9 @@ pub struct CustodyNamespace {
     pub inode: u64,
 }
 
-/// Fresh whole-body hash plus the actual bound loop and mounted filesystem.
+/// Image identity plus the actual bound loop and mounted filesystem.
+/// Gallery custody rehashes the complete image. Runtime VINTF explicitly marks
+/// its metadata-only revalidation and retains the original admitted digest.
 #[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct CustodyImage {

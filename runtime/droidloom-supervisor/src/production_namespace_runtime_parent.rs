@@ -940,16 +940,17 @@ mod tests {
         };
         make("cmd", 0o555);
         make("toybox", 0o555);
+        make("toolbox", 0o555);
         let root = File::open(dir.path()).unwrap();
         let meta = root.metadata().unwrap();
         let read = |layout| query_files(&root, layout, meta.uid(), meta.gid());
-        assert_eq!(read(QueryLayout::Commands).unwrap().len(), 2);
+        assert_eq!(read(QueryLayout::Commands).unwrap().len(), 3);
         assert!(read(QueryLayout::Contacts).is_err());
 
         make("app_process64", 0o555);
         make("content.jar", 0o444);
         let complete = read(QueryLayout::Contacts).unwrap();
-        assert_eq!(complete.len(), 4);
+        assert_eq!(complete.len(), 5);
         assert_eq!(complete[2].role, QueryRole::AppProcess64);
         assert_eq!(complete[3].role, QueryRole::ContentJar);
         assert_eq!(complete[3].node.mode, libc::S_IFREG | 0o444);

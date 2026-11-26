@@ -68,10 +68,73 @@ type Result<T> = std::result::Result<T, HostAdmissionError>;
 fn reject(message: impl Into<String>) -> HostAdmissionError {
     HostAdmissionError::Rejected(message.into())
 }
+/// Private, non-serializable cause. Neither errno nor a message can grant the
+/// failed-request expiry path; consumers must match this exact absolute instant.
+#[derive(Debug, Error)]
+#[error("original request observation deadline reached")]
+struct RequestObservationExpired { absolute: Instant }
+pub(crate) fn observation_expired_error(absolute: Instant) -> io::Error {
+    io::Error::new(io::ErrorKind::TimedOut, RequestObservationExpired { absolute })
+}
+pub(crate) fn observation_expiry(
+    mut error: &(dyn std::error::Error + 'static),
+) -> Option<Instant> {
+    // io::Error::source can expose the wrapped error's source instead of the
+    // wrapped concrete value. Inspect get_ref before following other wrappers.
+    for _ in 0..16 {
+        if let Some(expired) = error.downcast_ref::<RequestObservationExpired>() {
+            return Some(expired.absolute);
+        }
+        // These transparent enums delegate Error::source to their inner
+        // error. Inspect the concrete variant so an io::Error's private cause
+        // cannot be skipped by that delegation.
+        error = if let Some(HostAdmissionError::Io(io)) = error.downcast_ref::<HostAdmissionError>() {
+            io
+        } else if let Some(namespace) = error.downcast_ref::<crate::production_namespace::NamespaceError>() {
+            match namespace {
+                crate::production_namespace::NamespaceError::Io(io) => io,
+                crate::production_namespace::NamespaceError::Admission(admission) => admission,
+                _ => return None,
+            }
+        } else if let Some(crate::production_application::ApplicationError::Io(io)) = error.downcast_ref::<crate::production_application::ApplicationError>() {
+            io
+        } else if let Some(mount) = error.downcast_ref::<crate::production_mounts::MountError>() {
+            match mount {
+                crate::production_mounts::MountError::Io(io) => io,
+                crate::production_mounts::MountError::Namespace(namespace) => namespace,
+                _ => return None,
+            }
+        } else if let Some(io) = error.downcast_ref::<io::Error>() {
+            io.get_ref()?
+        } else {
+            error.source()?
+        };
+    }
+    None
+}
+pub(crate) fn check_observation_before(absolute: Instant) -> io::Result<()> {
+    if Instant::now() >= absolute {
+        Err(observation_expired_error(absolute))
+    } else {
+        Ok(())
+    }
+}
+fn check_request_deadline(absolute: Option<Instant>) -> Result<()> {
+    absolute.map(check_observation_before).transpose()?;
+    Ok(())
+}
+fn request_phase_deadline(absolute: Option<Instant>, normal: Duration) -> Result<Instant> {
+    check_request_deadline(absolute)?;
+    let end = Instant::now() + normal;
+    Ok(absolute.map_or(end, |limit|limit.min(end)))
+}
 
 // Closed within this module. Each implementation owns or borrows the real
 // namespace/process handles for one of the two supported normal boot paths.
 trait LiveNamespace {
+    // Only a privately derived request supplies a bound. Ordinary admissions
+    // retain their original limits; no shared admission state is mutated.
+    fn observation_deadline(&self) -> Option<Instant> { None }
     fn user_namespace(&self) -> &File;
     fn proc_identity(&self) -> Result<(u64, u64)>;
     fn early_metadata(&self) -> Result<Option<crate::production_application::MetadataObservation>> {
@@ -106,6 +169,9 @@ impl LiveNamespace for OwnedNamespaceWitness<'_> {
     }
 }
 impl LiveNamespace for EarlyBoundNamespaces<'_> {
+    fn observation_deadline(&self) -> Option<Instant> {
+        EarlyBoundNamespaces::observation_deadline(self)
+    }
     fn verify_credentials(&self, creds: &Credentials, uids: IdRange, gids: IdRange) -> Result<()> {
         require_early_ranges(creds, uids, gids)
     }
@@ -128,7 +194,7 @@ impl LiveNamespace for EarlyBoundNamespaces<'_> {
         EarlyBoundNamespaces::descendant_pid_namespace(self)
     }
     fn check_live(&self) -> Result<()> {
-        self.revalidate().map_err(|e| reject(e.to_string()))
+        self.revalidate().map_err(HostAdmissionError::Io)
     }
 }
 
@@ -180,6 +246,8 @@ impl HostAdmission {
         witness.check_live()
     }
 
+    pub(crate) fn retirement_unproven(&self) -> bool { self.quarantined.get() }
+
     pub(crate) fn lease(&self) -> &IdentityLease {
         self.lease
             .as_ref()
@@ -211,18 +279,20 @@ impl HostAdmission {
         if self.quarantined.get() {
             return Err(HostAdmissionError::RetirementUnproven);
         }
+        let absolute = witness.and_then(LiveNamespace::observation_deadline);
+        check_request_deadline(absolute)?;
         require_initial_root()?;
         self.lease()
             .revalidate_for_broker()
             .map_err(|error| reject(error.to_string()))?;
-        let before = HostInputs::capture()?;
+        let before = HostInputs::capture_before(absolute)?;
         if let Some(baseline) = &self.baseline {
             baseline.sssd.revalidate_held()?;
             if baseline != &before {
                 return Err(HostAdmissionError::Changed);
             }
         }
-        let observation = match run_owned_worker(&self.quarantined) {
+        let observation = match run_owned_worker_before(&self.quarantined, absolute) {
             Err(HostAdmissionError::RetirementUnproven) => {
                 self.quarantined.set(true);
                 return Err(HostAdmissionError::RetirementUnproven);
@@ -235,7 +305,7 @@ impl HostAdmission {
         if include_live {
             audit_live_tasks(uids, gids, uid, gid, witness)?;
         }
-        let final_observation = match run_owned_worker(&self.quarantined) {
+        let final_observation = match run_owned_worker_before(&self.quarantined, absolute) {
             Err(HostAdmissionError::RetirementUnproven) => {
                 self.quarantined.set(true);
                 return Err(HostAdmissionError::RetirementUnproven);
@@ -247,7 +317,7 @@ impl HostAdmission {
             return Err(HostAdmissionError::Changed);
         }
         before.sssd.revalidate_held()?;
-        let after = HostInputs::capture()?;
+        let after = HostInputs::capture_before(absolute)?;
         before.sssd.revalidate_held()?;
         if before != after {
             return Err(HostAdmissionError::Changed);
@@ -255,6 +325,7 @@ impl HostAdmission {
         self.lease()
             .revalidate_for_broker()
             .map_err(|error| reject(error.to_string()))?;
+        check_request_deadline(absolute)?;
         Ok(after)
     }
 }
@@ -542,6 +613,10 @@ fn sssd_directory_seal(path: &str, file: &File, identity: &SssdIdentity) -> Resu
 
 impl InactiveSssd {
     fn capture(passwd: &str, users: &[PublicUser], groups: &[PublicGroup]) -> Result<Self> {
+        Self::capture_before(passwd, users, groups, None)
+    }
+    fn capture_before(passwd: &str, users: &[PublicUser], groups: &[PublicGroup], absolute: Option<Instant>) -> Result<Self> {
+        check_request_deadline(absolute)?;
         let identity = sssd_files_identity(passwd, users, groups)?;
         let mut directories = Vec::new();
         for &path in SSSD_STATE_PATHS {
@@ -557,7 +632,7 @@ impl InactiveSssd {
             directories,
         };
         value.revalidate_held()?;
-        value.no_live_service_credentials()?;
+        value.no_live_service_credentials_before(absolute)?;
         Ok(value)
     }
     fn revalidate_held(&self) -> Result<()> {
@@ -572,19 +647,22 @@ impl InactiveSssd {
         Ok(())
     }
     fn no_live_service_credentials(&self) -> Result<()> {
+        self.no_live_service_credentials_before(None)
+    }
+    fn no_live_service_credentials_before(&self, absolute: Option<Instant>) -> Result<()> {
+        let deadline = request_phase_deadline(absolute, Duration::from_secs(5))?;
         let proc = open_absolute("/proc", libc::O_RDONLY | libc::O_DIRECTORY)?;
         if fs_type(&proc)? != PROC_MAGIC {
             return Err(reject("actual host procfs required for SSSD inactivity"));
         }
-        let deadline = Instant::now() + Duration::from_secs(5);
-        complete_sssd_process_scan(deadline, || {
-            self.scan_no_live_service_credentials(&proc, deadline)
+        complete_sssd_process_scan_before(deadline, absolute, || {
+            self.scan_no_live_service_credentials(&proc, deadline, absolute)
         })
     }
 
-    fn scan_no_live_service_credentials(&self, proc: &File, deadline: Instant) -> Result<()> {
+    fn scan_no_live_service_credentials(&self, proc: &File, deadline: Instant, absolute: Option<Instant>) -> Result<()> {
         let mut count = 0_usize;
-        for name in directory_names(&proc, PROC_LIMIT)? {
+        for name in directory_names_before(&proc, PROC_LIMIT, absolute)? {
             let Ok(pid) = name.parse::<u32>() else {
                 continue;
             };
@@ -592,6 +670,7 @@ impl InactiveSssd {
                 return Err(reject("noncanonical proc PID"));
             }
             if Instant::now() >= deadline {
+                check_request_deadline(absolute)?;
                 return Err(reject("SSSD process observation deadline"));
             }
             let leader = match open_at(&proc, &name, libc::O_RDONLY | libc::O_DIRECTORY) {
@@ -614,13 +693,17 @@ impl InactiveSssd {
                 return Err(HostAdmissionError::Changed);
             }
             let tasks = open_at(&leader, "task", libc::O_RDONLY | libc::O_DIRECTORY)?;
-            for tid_name in directory_names(&tasks, TASK_LIMIT)? {
+            for tid_name in directory_names_before(&tasks, TASK_LIMIT, absolute)? {
                 let tid = number(&tid_name)?;
                 if tid == 0 || tid.to_string() != tid_name {
                     return Err(reject("noncanonical proc TID"));
                 }
                 count += 1;
-                if count > TASK_LIMIT || Instant::now() >= deadline {
+                if count > TASK_LIMIT {
+                    return Err(reject("SSSD task observation bound"));
+                }
+                if Instant::now() >= deadline {
+                    check_request_deadline(absolute)?;
                     return Err(reject("SSSD task observation bound"));
                 }
                 let task = open_at(&tasks, &tid_name, libc::O_RDONLY | libc::O_DIRECTORY)?;
@@ -650,17 +733,29 @@ const SSSD_PROC_SCAN_ATTEMPTS: usize = 8;
 // never turn an incomplete scan into a successful absence observation.
 // This helper is scoped to process inventory. Provider/config changes, live
 // service credentials and owned-worker retirement errors are not retried.
+#[cfg(test)]
 fn complete_sssd_process_scan(
     deadline: Instant,
+    scan: impl FnMut() -> Result<()>,
+) -> Result<()> {
+    complete_sssd_process_scan_before(deadline, None, scan)
+}
+fn complete_sssd_process_scan_before(
+    deadline: Instant,
+    absolute: Option<Instant>,
     mut scan: impl FnMut() -> Result<()>,
 ) -> Result<()> {
     for _ in 0..SSSD_PROC_SCAN_ATTEMPTS {
         if Instant::now() >= deadline {
+            check_request_deadline(absolute)?;
             return Err(reject("SSSD process observation deadline"));
         }
         match scan() {
             Ok(()) if Instant::now() < deadline => return Ok(()),
-            Ok(()) => return Err(reject("SSSD process observation deadline")),
+            Ok(()) => {
+                check_request_deadline(absolute)?;
+                return Err(reject("SSSD process observation deadline"));
+            }
             Err(HostAdmissionError::Changed) => {}
             Err(HostAdmissionError::Io(error))
                 if matches!(error.raw_os_error(), Some(libc::ENOENT | libc::ESRCH)) => {}
@@ -1266,13 +1361,25 @@ fn read_bounded(file: &File, limit: usize) -> Result<Vec<u8>> {
     Ok(value)
 }
 fn directory_names(file: &File, maximum: usize) -> Result<Vec<String>> {
-    with_directory_names(file, maximum, |names, _iterator| Ok(names.to_vec()))
+    directory_names_before(file, maximum, None)
+}
+fn directory_names_before(file: &File, maximum: usize, absolute: Option<Instant>) -> Result<Vec<String>> {
+    with_directory_names_before(file, maximum, absolute, |names, _iterator| Ok(names.to_vec()))
 }
 fn with_directory_names<T>(
     file: &File,
     maximum: usize,
     consume: impl FnOnce(&[String], RawFd) -> Result<T>,
 ) -> Result<T> {
+    with_directory_names_before(file, maximum, None, consume)
+}
+fn with_directory_names_before<T>(
+    file: &File,
+    maximum: usize,
+    absolute: Option<Instant>,
+    consume: impl FnOnce(&[String], RawFd) -> Result<T>,
+) -> Result<T> {
+    check_request_deadline(absolute)?;
     // Open a new file description rather than dup: fdopendir consumes its
     // directory offset and must not affect the caller's held description.
     // SAFETY: "." under this held descriptor cannot escape its directory.
@@ -1297,6 +1404,7 @@ fn with_directory_names<T>(
     let result = (|| {
         let mut names = Vec::new();
         loop {
+            check_request_deadline(absolute)?;
             unsafe {
                 *libc::__errno_location() = 0;
             }
@@ -1325,6 +1433,7 @@ fn with_directory_names<T>(
         // Keep the iterator descriptor alive while the caller examines the
         // names. During a self FD-table audit its own numeric entry remains
         // real, so no guessed descriptor exclusion is necessary.
+        check_request_deadline(absolute)?;
         consume(&names, fd)
     })();
     let closed = unsafe { libc::closedir(directory) };
@@ -1539,7 +1648,9 @@ fn public_files(passwd: &str, group: &str) -> Result<(Vec<PublicUser>, Vec<Publi
     Ok((users, groups))
 }
 impl HostInputs {
-    fn capture() -> Result<Self> {
+    fn capture() -> Result<Self> { Self::capture_before(None) }
+    fn capture_before(absolute: Option<Instant>) -> Result<Self> {
+        check_request_deadline(absolute)?;
         let (nss, nss_seal) = static_file("/etc/nsswitch.conf")?;
         nss_grammar(&nss)?;
         let (passwd, passwd_seal) = static_file("/etc/passwd")?;
@@ -1550,8 +1661,9 @@ impl HostInputs {
         // directories use the unique noninteractive package service identity.
         seals.push(absent_file("/etc/sssd/sssd.conf")?);
         seals.push(empty_or_absent_directory("/etc/sssd/conf.d", &[])?);
-        let sssd = InactiveSssd::capture(&passwd, &users, &groups)?;
+        let sssd = InactiveSssd::capture_before(&passwd, &users, &groups, absolute)?;
         for &(unit, bytes, digest) in SSSD_UNITS {
+            check_request_deadline(absolute)?;
             let path = format!("/usr/lib/systemd/system/{unit}");
             let (text, seal) = static_file(&path)?;
             if text.len() != bytes || seal.sha256.as_deref() != Some(digest) {
@@ -1573,6 +1685,7 @@ impl HostInputs {
         let (_, providers) = provider_directory()?;
         let services = providers.entries.iter().map(|(n, _)| n.clone()).collect();
         seals.push(providers);
+        check_request_deadline(absolute)?;
         Ok(Self {
             seals,
             users,
@@ -2814,8 +2927,9 @@ impl<'a> WorkerOwner<'a> {
         }
         Err(HostAdmissionError::RetirementUnproven)
     }
-    fn collect(&mut self) -> Result<Vec<u8>> {
-        let deadline = Instant::now() + WORKER_TIMEOUT;
+    fn collect(&mut self) -> Result<Vec<u8>> { self.collect_before(None) }
+    fn collect_before(&mut self, absolute: Option<Instant>) -> Result<Vec<u8>> {
+        let deadline = request_phase_deadline(absolute, WORKER_TIMEOUT)?;
         let mut output = Vec::new();
         let mut error = Vec::new();
         let mut output_eof = false;
@@ -2836,6 +2950,7 @@ impl<'a> WorkerOwner<'a> {
                 }
             }
             if Instant::now() >= deadline {
+                check_request_deadline(absolute)?;
                 return Err(reject("owned NSS worker deadline"));
             }
             let mut fds = [
@@ -2919,17 +3034,26 @@ struct WorkerObservation {
 fn run_owned_worker(quarantine: &Cell<bool>) -> Result<PublicObservation> {
     Ok(run_owned_worker_with_receipt(quarantine)?.public)
 }
+fn run_owned_worker_before(quarantine: &Cell<bool>, absolute: Option<Instant>) -> Result<PublicObservation> {
+    Ok(run_owned_worker_with_receipt_before(quarantine, absolute)?.public)
+}
 fn run_owned_worker_with_receipt(quarantine: &Cell<bool>) -> Result<WorkerObservation> {
+    run_owned_worker_with_receipt_before(quarantine, None)
+}
+fn run_owned_worker_with_receipt_before(quarantine: &Cell<bool>, absolute: Option<Instant>) -> Result<WorkerObservation> {
     let started = Instant::now();
+    check_request_deadline(absolute)?;
     let (executable, before, source_sha256) = self_executable()?;
+    check_request_deadline(absolute)?;
     let mut worker = WorkerOwner::start(&executable, quarantine)?;
-    let result = worker.collect();
+    let result = worker.collect_before(absolute);
     if worker.retire().is_err() {
         quarantine.set(true);
         mem::forget(worker);
         return Err(HostAdmissionError::RetirementUnproven);
     }
     let bytes = result?;
+    check_request_deadline(absolute)?;
     if before != Node::of(&executable.metadata()?) {
         return Err(HostAdmissionError::Changed);
     }
@@ -3605,11 +3729,15 @@ fn mount_unescape(value: &str) -> Result<String> {
     }
     Ok(output)
 }
-fn audit_nsfs_mounts(task: &File, references: &mut BTreeSet<NamespaceKey>) -> Result<bool> {
+fn audit_nsfs_mounts(
+    task: &File, references: &mut BTreeSet<NamespaceKey>, absolute: Option<Instant>,
+) -> Result<bool> {
+    check_request_deadline(absolute)?;
     let info = proc_text(task, "mountinfo")?;
     let mut nsfs = Vec::new();
     let mut full_root = false;
     for line in info.lines() {
+        check_request_deadline(absolute)?;
         let Some((left, right)) = line.split_once(" - ") else {
             return Err(reject("malformed mountinfo"));
         };
@@ -3646,6 +3774,7 @@ fn audit_nsfs_mounts(task: &File, references: &mut BTreeSet<NamespaceKey>) -> Re
     }
     let root = unsafe { File::from_raw_fd(root_fd) };
     for mountpoint in nsfs {
+        check_request_deadline(absolute)?;
         let path = CString::new(mountpoint).map_err(|_| reject("NUL mount path"))?;
         let how = OpenHow {
             flags: (libc::O_RDONLY | libc::O_CLOEXEC | libc::O_NONBLOCK) as u64,
@@ -3675,18 +3804,22 @@ fn audit_nsfs_mounts(task: &File, references: &mut BTreeSet<NamespaceKey>) -> Re
     if info != proc_text(task, "mountinfo")? {
         return Err(HostAdmissionError::Changed);
     }
+    check_request_deadline(absolute)?;
     Ok(true)
 }
 fn audit_fd_namespaces(
     task: &File,
     references: &mut BTreeSet<NamespaceKey>,
     inspected: &mut usize,
+    absolute: Option<Instant>,
 ) -> Result<()> {
+    check_request_deadline(absolute)?;
     let directory = open_at(task, "fd", libc::O_RDONLY | libc::O_DIRECTORY)?;
     // Linux tasks in one thread group can unshare their descriptor table.
     // Inspect every task's table; the leader's descriptors are not a proxy.
-    with_directory_names(&directory, 65536, |names, _iterator| {
+    with_directory_names_before(&directory, 65536, absolute, |names, _iterator| {
         for entry in names {
+            check_request_deadline(absolute)?;
             number(entry)?;
             *inspected += 1;
             if *inspected > 262144 {
@@ -3715,6 +3848,7 @@ fn audit_fd_namespaces(
                 namespace_reference(file, references)?;
             }
         }
+        check_request_deadline(absolute)?;
         Ok(())
     })
 }
@@ -3723,6 +3857,8 @@ fn scan_live_tasks(
     uids: IdRange,
     gids: IdRange,
 ) -> Result<LiveScan> {
+    let absolute = witness.and_then(LiveNamespace::observation_deadline);
+    check_request_deadline(absolute)?;
     let early_scope = early_scope_view(witness, uids, gids)?;
     let proc = OpenOptions::new()
         .read(true)
@@ -3731,7 +3867,7 @@ fn scan_live_tasks(
     if fs_type(&proc)? != PROC_MAGIC {
         return Err(reject("host procfs is not observable"));
     }
-    let pids: Vec<_> = directory_names(&proc, TASK_LIMIT)?
+    let pids: Vec<_> = directory_names_before(&proc, TASK_LIMIT, absolute)?
         .into_iter()
         .filter(|name| name.bytes().all(|b| b.is_ascii_digit()))
         .collect();
@@ -3746,9 +3882,10 @@ fn scan_live_tasks(
         tasks.insert(scope.original_identity, scope.original_task.clone());
         references.insert(scope.user_namespace);
     }
-    let deadline = Instant::now() + Duration::from_secs(30);
+    let deadline = request_phase_deadline(absolute, Duration::from_secs(30))?;
     for entry in &pids {
         if Instant::now() >= deadline {
+            check_request_deadline(absolute)?;
             return Err(reject("live identity audit deadline"));
         }
         let pid = number(entry)?;
@@ -3774,8 +3911,9 @@ fn scan_live_tasks(
         let process = open_at(&proc, entry, libc::O_RDONLY | libc::O_DIRECTORY)?;
         let process_before = task_start(&proc_text(&process, "stat")?, pid)?;
         let task_dir = open_at(&process, "task", libc::O_RDONLY | libc::O_DIRECTORY)?;
-        let tids = directory_names(&task_dir, TASK_LIMIT)?;
+        let tids = directory_names_before(&task_dir, TASK_LIMIT, absolute)?;
         for entry in &tids {
+            check_request_deadline(absolute)?;
             if tasks.len() == TASK_LIMIT {
                 return Err(reject("host task audit bound"));
             }
@@ -3828,14 +3966,14 @@ fn scan_live_tasks(
                         let key = Node::of(&file.metadata()?).key();
                         mount_namespaces.insert(key);
                         if !complete_mounts.contains(&key)
-                            && audit_nsfs_mounts(&task, &mut references)?
+                            && audit_nsfs_mounts(&task, &mut references, absolute)?
                         {
                             complete_mounts.insert(key);
                         }
                     }
                     namespace_reference(file, &mut references)?;
                 }
-                audit_fd_namespaces(&task, &mut references, &mut inspected_fds)?;
+                audit_fd_namespaces(&task, &mut references, &mut inspected_fds, absolute)?;
             }
             if before.0 != task_start(&proc_text(&task, "stat")?, tid)?.0
                 || credentials != parse_status(&proc_text(&task, "status")?)?
@@ -3878,6 +4016,7 @@ fn scan_live_tasks(
         scoped_pidfds,
     };
     scan.require_scoped_alive()?;
+    check_request_deadline(absolute)?;
     Ok(scan)
 }
 #[derive(Clone, Copy)]
@@ -4045,6 +4184,66 @@ fn audit_live_tasks(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn vintf_private_expiry_survives_exact_authority_error_wrappers() {
+        use crate::production_application::ApplicationError;
+        use crate::production_namespace::NamespaceError;
+        use crate::production_mounts::MountError;
+        let end = Instant::now() - Duration::from_millis(1);
+        let errors: Vec<Box<dyn std::error::Error>> = vec![
+            Box::new(observation_expired_error(end)),
+            Box::new(HostAdmissionError::Io(observation_expired_error(end))),
+            Box::new(NamespaceError::Io(observation_expired_error(end))),
+            Box::new(NamespaceError::Admission(HostAdmissionError::Io(observation_expired_error(end)))),
+            Box::new(ApplicationError::Io(observation_expired_error(end))),
+            Box::new(MountError::Io(observation_expired_error(end))),
+            Box::new(MountError::Namespace(NamespaceError::Io(observation_expired_error(end)))),
+            Box::new(io::Error::other(HostAdmissionError::Io(observation_expired_error(end)))),
+        ];
+        for error in errors { assert_eq!(observation_expiry(error.as_ref()), Some(end)); }
+        for error in [
+            HostAdmissionError::RetirementUnproven,
+            HostAdmissionError::Changed,
+            HostAdmissionError::Io(io::Error::new(io::ErrorKind::TimedOut, "original request observation deadline reached")),
+        ] { assert_eq!(observation_expiry(&error), None); }
+    }
+
+    #[test]
+    fn vintf_expired_host_inventory_starts_no_fd_mount_or_directory_read() {
+        let anchor = File::open(".").unwrap();
+        let end = Instant::now() - Duration::from_millis(1);
+        let mut references = BTreeSet::new();
+        let mut inspected = 0;
+        let error = audit_fd_namespaces(&anchor, &mut references, &mut inspected, Some(end)).unwrap_err();
+        assert_eq!(observation_expiry(&error), Some(end));
+        assert_eq!(inspected, 0);
+        assert!(references.is_empty());
+        let error = audit_nsfs_mounts(&anchor, &mut references, Some(end)).unwrap_err();
+        assert_eq!(observation_expiry(&error), Some(end));
+        let error = with_directory_names_before(&anchor, 1, Some(end), |_,_| -> Result<()> {
+            panic!("expired directory inventory cannot call its consumer")
+        }).unwrap_err();
+        assert_eq!(observation_expiry(&error), Some(end));
+    }
+
+    #[test]
+    fn vintf_sssd_phase_preserves_private_cutoff_and_prior_semantic_failure() {
+        let expired = Instant::now() - Duration::from_millis(1);
+        let error = complete_sssd_process_scan_before(expired, Some(expired),
+            || panic!("expired phase must not start a scan")).unwrap_err();
+        assert_eq!(observation_expiry(&error), Some(expired));
+        let error = complete_sssd_process_scan(expired,
+            || panic!("ordinary phase also must not start")).unwrap_err();
+        assert_eq!(observation_expiry(&error), None);
+        let end = Instant::now() + Duration::from_millis(2);
+        let error = complete_sssd_process_scan_before(end, Some(end), || {
+            std::thread::sleep(Duration::from_millis(4));
+            Err(reject("real provider identity changed"))
+        }).unwrap_err();
+        assert!(matches!(error, HostAdmissionError::Rejected(ref reason) if reason == "real provider identity changed"));
+        assert_eq!(observation_expiry(&error), None);
+    }
 
     #[test]
     fn early_android_allows_mapped_supplementary_aids_only() {

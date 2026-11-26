@@ -50,6 +50,10 @@ mod catalog;
 use catalog::CatalogRequest;
 pub(crate) use catalog::{CatalogCommand, catalog_early};
 
+#[path = "production_application_vintf.rs"]
+mod vintf;
+pub(crate) use vintf::{RuntimeVintfBudget, observe_runtime_vintf};
+
 #[path = "production_application_display.rs"]
 mod display;
 use display::DisplayCommand;
@@ -164,6 +168,17 @@ fn require(value: bool, message: &'static str) -> Result<()> {
 }
 fn external(error: impl std::fmt::Display) -> ApplicationError {
     reject(error.to_string())
+}
+/// Preserve a private observation deadline through original authority checks.
+/// Arbitrary timed-out I/O and rejected strings remain ordinary failures.
+fn observation_authority_error(error: crate::production_namespace::NamespaceError) -> ApplicationError {
+    if matches!(error, crate::production_namespace::NamespaceError::RetirementUnproven) {
+        ApplicationError::RetirementUnproven
+    } else if let Some(end) = crate::production_host_admission::observation_expiry(&error) {
+        ApplicationError::Io(crate::production_host_admission::observation_expired_error(end))
+    } else {
+        external(error)
+    }
 }
 
 /// Deliberately finite. There is no shell, general argv, user-selected binary,
@@ -394,11 +409,14 @@ pub(crate) struct ReadReceipt {
 }
 impl ReadReceipt {
     fn successful_retirement(&self) -> bool {
+        self.retired_with_exit(0)
+    }
+    fn retired_with_exit(&self, expected_exit: i32) -> bool {
         self.schema == 2
             && self.cgroup_removed
             && self.query_pid > 1
             && self.query_waitid_code == libc::CLD_EXITED
-            && self.query_waitid_status == 0
+            && self.query_waitid_status == expected_exit
             && match &self.lifecycle {
                 ReadLifecycle::LegacyBroker {
                     worker_pid,

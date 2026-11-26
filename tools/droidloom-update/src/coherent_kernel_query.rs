@@ -32,9 +32,9 @@ fn capture(reader: &FileRef, system: &FileRef, work: &Path, name: &str, request:
 pub(super) fn prepare(work: &Path, system: &FileRef, reader: &FileRef) -> Result<Prepared> {
     require(system.bytes == fixed::SYSTEM_BYTES && system.sha256 == fixed::SYSTEM_SHA256,
         "kernel-first query roles require the complete original CP3A system")?;
-    let mut files = Vec::with_capacity(4);
-    let mut sources = Vec::with_capacity(4);
-    let mut observations = Vec::with_capacity(4);
+    let mut files = Vec::with_capacity(fixed::INPUTS.len());
+    let mut sources = Vec::with_capacity(fixed::INPUTS.len());
+    let mut observations = Vec::with_capacity(fixed::INPUTS.len());
     for role in fixed::INPUTS {
         let body = capture(reader, system, work, role.output_name,
             &format!("cat {}", role.source_path), role.bytes)?;
@@ -64,14 +64,14 @@ pub(super) fn prepare(work: &Path, system: &FileRef, reader: &FileRef) -> Result
     }
     recheck(system, MAX_IMAGE)?;
     recheck(reader, 256 * 1024 * 1024)?;
-    let [cmd,toybox,app_process64,content_jar]: [Value;4] = sources.try_into()
+    let [cmd,toybox,app_process64,content_jar,toolbox]: [Value;5] = sources.try_into()
         .map_err(|_| "fixed kernel-first query input count changed")?;
-    let declaration = json!({"scope":"fixed_application_query_v1","source_system_sha256":fixed::SYSTEM_SHA256,
-        "cmd":cmd,"toybox":toybox,"contacts":{"scope":"fixed_contacts_content_query_v1",
+    let declaration = json!({"scope":"fixed_application_query_v2","source_system_sha256":fixed::SYSTEM_SHA256,
+        "cmd":cmd,"toybox":toybox,"toolbox":toolbox,"contacts":{"scope":"fixed_contacts_content_query_v1",
         "app_process64":app_process64,"content_jar":content_jar}});
-    let installation = json!({"schema":"droidloom-fixed-cp3a-query-inputs-v1",
+    let installation = json!({"schema":"droidloom-fixed-cp3a-query-inputs-v2",
         "input_scope":fixed::INPUT_SCOPE,"source_system_sha256":fixed::SYSTEM_SHA256,
-        "source_system_bytes":fixed::SYSTEM_BYTES,"sources":observations,"input_count":4,
+        "source_system_bytes":fixed::SYSTEM_BYTES,"sources":observations,"input_count":fixed::INPUTS.len(),
         "private_query_projection_observed":false,"original_query_executions":0,
         "application_admission":false,"runtime_qualified":false});
     Ok(Prepared { declaration, files, installation })
@@ -149,7 +149,7 @@ impl Prepared {
         File::open(&parent)?.sync_all()?;
         Ok(json!({"images_directory":directory.strip_prefix(root)?,
             "installation_requirements":requirements.path.strip_prefix(root)?,
-            "installation_requirements_sha256":requirements.sha256,"input_count":4,
+            "installation_requirements_sha256":requirements.sha256,"input_count":fixed::INPUTS.len(),
             "installed_original_labels_observed":false,"application_admission":false}))
     }
 }

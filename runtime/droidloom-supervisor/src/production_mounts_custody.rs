@@ -2,6 +2,7 @@
 //! No path, digest, loop number, PID, or success value is accepted from a
 //! request. The only APK member is the fixed original CP3A Gallery member.
 use super::*;
+use super::early::BaseAuthority;
 use crate::control::application_custody::{
     CustodyCohort, CustodyFileIdentity, CustodyImage, CustodyImageMember, CustodyNamespace,
     GALLERY_BYTES, GALLERY_SHA256, GALLERY_SOURCE_PATH, SYSTEM_BYTES, SYSTEM_SHA256,
@@ -138,9 +139,10 @@ fn image_observation(
     let digest_value = if full_hash {
         complete_hash(&source.file, source.identity.bytes, deadline, progress)?
     } else {
-        // Only revalidation of an opaque observation can reach this branch.
-        // Complete bytes were read at creation; exact file/path F9 and all
-        // held loop/mount resources must still equal that original bookend.
+        // The original owner admitted the complete source. This branch only
+        // revalidates its exact file/path F9 and held loop/mount resources.
+        // VINTF explicitly reports metadata-only image revalidation; Gallery
+        // still requires its separate before/after complete-body observations.
         declaration.sha256.clone()
     };
     require(
@@ -308,6 +310,89 @@ fn original_gallery(
 }
 
 impl PreparedMounts {
+    /// Read only actual held loop/mount metadata. Hash fields identify the
+    /// complete source admitted by this owner; this is not a fresh body proof
+    /// and cannot be used to construct ObservedGalleryImage.
+    pub(crate) fn observe_vintf_mount_bindings_early(
+        &self,
+        witness: &EarlyBaseAdmission<'_>,
+        deadline: Instant,
+        progress: &dyn Fn() -> io::Result<()>,
+    ) -> Result<Vec<CustodyImage>> {
+        require(
+            self.exported,
+            "VINTF metadata requires actual base transfer",
+        )?;
+        let resources = self
+            .resources
+            .as_ref()
+            .ok_or(MountError::Rejected("base resources retired"))?;
+        before_deadline(deadline)?;
+        witness.revalidate_live_admission()?;
+        resources.matches_witness(witness)?;
+        resources.cohort.revalidate(witness)?;
+        require_complete_namespace(witness)?;
+        require(
+            resources.has_declared_set() && resources.images.len() == 4,
+            "VINTF requires the complete admitted four-image set",
+        )?;
+        let raw = resources.cohort.manifest.bounded_bytes(MAX_MANIFEST)?;
+        require(
+            format!("{:x}", Sha256::digest(&raw)) == resources.cohort.cohort,
+            "VINTF selected manifest bytes changed",
+        )?;
+        let declaration: CohortDeclaration = serde_json::from_slice(&raw)?;
+        declaration.validate()?;
+        let library = declaration
+            .system_ext_lib64
+            .as_ref()
+            .ok_or(MountError::Rejected("library extension absent"))?;
+        let readiness = declaration
+            .system_ext_readiness
+            .as_ref()
+            .ok_or(MountError::Rejected("readiness extension absent"))?;
+        let library_decl = ImageDeclaration {
+            file: library.file.clone(),
+            bytes: library.bytes,
+            sha256: library.sha256.clone(),
+        };
+        let readiness_decl = ImageDeclaration {
+            file: readiness.file.clone(),
+            bytes: readiness.bytes,
+            sha256: readiness.sha256.clone(),
+        };
+        let sources = [
+            (&declaration.system, &resources.cohort.system),
+            (&declaration.vendor, &resources.cohort.vendor),
+            (
+                &library_decl,
+                resources
+                    .cohort
+                    .system_ext_lib64
+                    .as_ref()
+                    .ok_or(MountError::Rejected("library source absent"))?,
+            ),
+            (
+                &readiness_decl,
+                &resources
+                    .cohort
+                    .system_ext_readiness
+                    .as_ref()
+                    .ok_or(MountError::Rejected("readiness source absent"))?
+                    .0,
+            ),
+        ];
+        let mut result = Vec::new();
+        for (row, (decl, source)) in resources.images.iter().zip(sources) {
+            result.push(image_observation(
+                resources, row, decl, source, false, deadline, progress,
+            )?);
+        }
+        resources.cohort.revalidate(witness)?;
+        witness.revalidate_live_admission()?;
+        before_deadline(deadline)?;
+        Ok(result)
+    }
     pub(crate) fn observe_gallery_custody(
         &self,
         witness: &OwnedNamespaceWitness<'_>,

@@ -427,8 +427,8 @@ mod tests {
             "init_sha256": crate::production_cp3a_init_identity::INIT_SHA256,
             "argv": ["/system/bin/init", "second_stage"],
             "query_inputs": {
-                "scope":"fixed_application_query_v1", "source_system_sha256":system,
-                "cmd":role(0), "toybox":role(1),
+                "scope":"fixed_application_query_v2", "source_system_sha256":system,
+                "cmd":role(0), "toybox":role(1), "toolbox":role(4),
                 "contacts": {"scope":"fixed_contacts_content_query_v1",
                              "app_process64":role(2), "content_jar":role(3)},
             },

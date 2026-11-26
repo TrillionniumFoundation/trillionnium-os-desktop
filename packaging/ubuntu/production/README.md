@@ -187,7 +187,7 @@ Both normal packages have root-owned payloads and only control/md5sums control
 members. Complete ordinary extraction checks every payload digest and mode.
 The kernel retains xz; the multi-GiB raw Android image package uses stock dpkg
 zstd with one compressor thread and the same bounded deadline. SELinux labels
-are not claimed to survive Debian data archives: the four query inputs preserve
+are not claimed to survive Debian data archives: the five query inputs preserve
 the original installation requirements and must receive the exact original
 labels, ownership, modes, absence of capabilities, and actual readback during
 the eventual cold installation.

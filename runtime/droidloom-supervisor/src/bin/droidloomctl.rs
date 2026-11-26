@@ -4,7 +4,7 @@
 
 use std::{
     env, fs,
-    io::Write,
+    io::{Read, Write},
     os::unix::fs::{DirBuilderExt, MetadataExt, OpenOptionsExt, PermissionsExt},
     path::PathBuf,
     thread,
@@ -150,6 +150,12 @@ enum Command {
         #[arg(long, default_value_t = 0)]
         user: u32,
     },
+    /// Read the fixed public runtime VINTF inputs without checking compatibility.
+    ObserveRuntimeVintf {
+        /// Bounded RuntimeEpoch JSON from an actual prior owner observation.
+        #[arg(long)]
+        expected_epoch: PathBuf,
+    },
     /// List Android applications exported to the native launcher.
     Applications {
         /// Android user identifier.
@@ -186,6 +192,44 @@ enum WindowMode {
     FitOutput,
     /// Use an explicit logical size, constrained by XDG bounds.
     Windowed,
+}
+
+fn read_expected_epoch(
+    path: &std::path::Path,
+) -> Result<
+    droidloom_supervisor::control::application_probe::RuntimeEpoch,
+    Box<dyn std::error::Error>,
+> {
+    let file = fs::OpenOptions::new()
+        .read(true)
+        .custom_flags(libc::O_NOFOLLOW | libc::O_CLOEXEC)
+        .open(path)?;
+    let before = file.metadata()?;
+    if !before.is_file() || before.len() == 0 || before.len() > 4096 {
+        return Err("expected epoch must be one bounded regular JSON file".into());
+    }
+    let mut bytes = Vec::new();
+    (&file).take(4097).read_to_end(&mut bytes)?;
+    let after = file.metadata()?;
+    let identity = |m: &fs::Metadata| {
+        (
+            m.dev(),
+            m.ino(),
+            m.mode(),
+            m.uid(),
+            m.gid(),
+            m.nlink(),
+            m.len(),
+            m.mtime(),
+            m.mtime_nsec(),
+            m.ctime(),
+            m.ctime_nsec(),
+        )
+    };
+    if identity(&before) != identity(&after) || bytes.len() as u64 != before.len() {
+        return Err("expected epoch file changed while reading".into());
+    }
+    Ok(serde_json::from_slice(&bytes)?)
 }
 
 fn main() {
@@ -400,6 +444,9 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             Command::Inspect { package, user } => {
                 ControlRequest::InspectApplication { package, user }
             }
+            Command::ObserveRuntimeVintf { expected_epoch } => ControlRequest::ObserveRuntimeVintf {
+                expected_epoch: read_expected_epoch(&expected_epoch)?,
+            },
             Command::Applications { user } => ControlRequest::ListApplications { user },
             Command::Dpi { dpi, spec } => ControlRequest::SetDpi { spec, dpi },
             Command::WindowMode {

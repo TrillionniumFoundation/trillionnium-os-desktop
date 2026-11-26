@@ -606,6 +606,7 @@ impl ProductionDaemon {
             diagnostics: None,
             inspection: None,
             image_custody: None,
+            runtime_vintf: None,
         }
     }
 
@@ -1200,6 +1201,11 @@ impl ProductionDaemon {
             ControlRequest::InspectContactsFixture { contacts, provider } => {
                 self.inspect_contacts_fixture(peer_uid, &contacts, &provider)
             }
+            ControlRequest::ObserveRuntimeVintf { .. } => self.authorize_active(peer_uid).and_then(|_| {
+                Err(ControlError::Invalid(
+                    "fixed VINTF observation requires the original kernel-first Ready owner".into(),
+                ))
+            }),
             ControlRequest::ObserveApplicationTasks { expected } => {
                 if file.is_some() || shutdown.load(Ordering::Relaxed) {
                     Err(ControlError::Invalid(
