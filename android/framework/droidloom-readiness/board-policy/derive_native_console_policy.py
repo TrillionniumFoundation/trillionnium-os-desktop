@@ -9,10 +9,11 @@ import hashlib
 import json
 import re
 import stat
-from collections import defaultdict
 
-from derive_native_uevent_policy import ContextPolicy, Membership, LEVELS
-from derive_shared_payload_cgroup_policy import parse_expression, original_xperms
+from derive_native_uevent_policy import ContextPolicy, Membership
+from derive_preserved_alias_policy import (
+    _roles, _context, derive_preserved_aliases, verify_preserved_aliases)
+from derive_shared_payload_cgroup_policy import parse_expression
 
 ROLE = "p4_linux_console_setup_t"
 SCHEMA = "droidloom.native-console-source-closure.v1"
@@ -214,26 +215,6 @@ def contract(here):
     return value
 
 
-def _classes(text):
-    common = dict((n, body.split()) for n, body in
-                  re.findall(r"\(common (\w+) \(([^()]*)\)\)", text))
-    result = dict((n, body.split()) for n, body in
-                  re.findall(r"\(class (\w+) \(([^()]*)\)\)", text))
-    for name, parent in re.findall(r"\(classcommon (\w+) (\w+)\)", text):
-        result[name] = common[parent] + result[name]
-    return result
-
-
-def _roles(lines):
-    return sorted({(role, line[len("(roletype " + role + " "):-1])
-                   for role in ("r", "system_r") for line in lines
-                   if line.startswith("(roletype " + role + " ")})
-
-
-def _context(role, actor, level="s0"):
-    return "u:" + role + ":" + actor + ":" + level
-
-
 def _extra(actor, target):
     """Only fixed entry/interpreter/cache operations differ for old actors."""
     if (target == "p4_linux_console_interpreter_native_bin_t" and
@@ -255,78 +236,22 @@ def _extra(actor, target):
 
 def derive(library, baseline, exported, here, output, export):
     value = contract(here)
-    policy = ContextPolicy(library, baseline)
-    lines = export(policy, baseline, exported)
-    text = exported.read_text()
-    members = Membership(text)
-    classes = _classes(text)
-    actors = [(r, a) for r, a in _roles(lines) if a != ROLE]
-    generated = ["; Derived from the actual normal pre-console-alias binary.",
-                 "; Preserve all existing concrete actors; no generic execute grant."]
-    samples, transitions = [], set()
-    for index, row in enumerate(value["aliases"]):
-        old, new, cls = row["source"], row["target"], row["class"]
-        names = classes[cls]
-        _, bits = policy.permissions(cls, names)
-        groups = defaultdict(list)
-        for role, actor in actors:
-            vals = [policy.context_av(_context(role, actor, level),
-                                      "u:object_r:" + old + ":s0", cls, names)
-                    for level in LEVELS]
-            # Native private types are not category-dependent Android storage.
-            # Reject a new object family needing a stronger derivation.
-            if len(set(vals)) != 1:
-                raise ValueError("Console source access depends on MCS: " + old)
-            extra = _extra(actor, new) if cls == "file" else set()
-            allowed = vals[0] | sum(bits[n] for n in extra)
-            groups[allowed].append(actor)
-            samples.append([role, actor, old, new, cls, vals, allowed])
-        for group, (allowed, selected) in enumerate(sorted(groups.items())):
-            attr = "p4_console_preserved_" + str(index) + "_" + str(group)
-            generated += ["(typeattribute " + attr + ")",
-                          "(typeattributeset " + attr + " (" + " ".join(sorted(set(selected))) + "))"]
-            for op, choose in (("allow", True), ("neverallow", False)):
-                chosen = [name for name in names if bool(allowed & bits[name]) == choose]
-                if chosen:
-                    generated.append("(" + op + " " + attr + " " + new +
-                                     " (" + cls + " (" + " ".join(chosen) + ")))")
-        # Match the original exported transition, including named transitions.
-        # The source policy's macros have already expanded to concrete types.
-        for line in lines:
-            if line.startswith(("(typetransition ", "(typechange ", "(typemember ",
-                                "(roletransition ", "(allowx ")):
-                form = parse_expression(line)
-                if len(form) >= 4 and form[2] == old:
-                    copied = line.replace(" " + old + " ", " " + new + " ", 1)
-                    generated.append(copied)
-                    transitions.add(copied)
-        # Preserve constraint target atoms for every possible MLS range.
-        for line in lines:
-            if not line.startswith(("(constrain ", "(mlsconstrain ")):
-                continue
-            form = parse_expression(line)
-            if form[1][0] != cls:
-                continue
-            def visit(expr):
-                if not isinstance(expr, list):
-                    return
-                if len(expr) == 3 and expr[0] in ("eq", "neq") and "t2" in expr[1:]:
-                    other = expr[2] if expr[1] == "t2" else expr[1]
-                    if other in ("t1", "t2", "t3"):
-                        raise ValueError("Console alias needs a direct type-identity constraint proof")
-                    if members.member(other, old) != members.member(other, new):
-                        raise ValueError("Console alias changed constraint membership: " + new + " " + other)
-                for sub in expr[1:]:
-                    visit(sub)
-            visit(form[2])
-    output.write_text("\n".join(sorted(set(generated))) + "\n")
-    return {"samples": samples, "classes": classes, "actors": actors,
-            "transitions": sorted(transitions),
-            "source_xperms": {row["source"]: original_xperms([exported],
-                sorted({a for _, a in actors}), row["source"])
-                for row in {r["source"]:r for r in value["aliases"]}.values()},
-            "contract_sha256": hashlib.sha256((here / "native-console-setup.json").read_bytes()).hexdigest(),
-            "derived_sha256": hashlib.sha256(output.read_bytes()).hexdigest()}
+    extras = {}
+    actors = {"init_t", "p4_linux_service_executor_t", "p4_linux_udev_t",
+              *CACHE_LOADERS}
+    for row in value["aliases"]:
+        for actor in sorted(actors):
+            names = _extra(actor, row["target"]) if row["class"] == "file" else set()
+            if names:
+                extras[(actor, row["target"], row["class"])] = names
+    expected = derive_preserved_aliases(library, baseline, exported,
+        value["aliases"], output, export, prefix="p4_console_preserved",
+        isolated_roles={ROLE}, extra_permissions=extras, preamble=(
+            "; Derived from the actual normal pre-console-alias binary.",
+            "; Preserve all existing concrete actors; no generic execute grant."))
+    expected["contract_sha256"] = hashlib.sha256(
+        (here / "native-console-setup.json").read_bytes()).hexdigest()
+    return expected
 
 
 def verify(library, binary, exported, here, expected, export):
@@ -338,21 +263,7 @@ def verify(library, binary, exported, here, expected, export):
     objects = sorted(re.findall(r"\(roletype object_r (\w+)\)", text))
     ioctls = _verify_ioctl_filters(lines, text, objects)
     native_terminals = _verify_native_terminals(policy, lines, text, expected["classes"])
-    checks = []
-    for role, actor, old, new, cls, vals, wanted in expected["samples"]:
-        names = expected["classes"][cls]
-        for i, level in enumerate(LEVELS):
-            before = policy.context_av(_context(role, actor, level), "u:object_r:" + old + ":s0", cls, names)
-            after = policy.context_av(_context(role, actor, level), "u:object_r:" + new + ":s0", cls, names)
-            if before != vals[i] or after != wanted:
-                raise ValueError("Console changed existing access: " + actor + " " + new)
-        checks.append([role, actor, new, cls, wanted])
-    actor_names = sorted({a for _, a in expected["actors"]})
-    for row in value["aliases"]:
-        wanted = expected["source_xperms"][row["source"]][row["class"]]
-        actual = original_xperms([exported], actor_names, row["target"])[row["class"]]
-        if actual != wanted:
-            raise ValueError("Console alias changed existing ioctl filters: " + row["target"])
+    checks = verify_preserved_aliases(policy, exported, value["aliases"], expected)
     def av(target, cls, permissions, wanted, role="object_r"):
         got = policy.context_av(_context("system_r", ROLE), _context(role, target), cls, permissions)
         _, bits = policy.permissions(cls, permissions)
@@ -425,6 +336,8 @@ def verify(library, binary, exported, here, expected, export):
     return {"schema": "droidloom.native-console-policy-proof.v1",
             "source_contract_sha256": expected["contract_sha256"],
             "derived_alias_policy_sha256": expected["derived_sha256"],
+            "alias_preserver_sha256": hashlib.sha256(
+                (here / "derive_preserved_alias_policy.py").read_bytes()).hexdigest(),
             "verifier_sha256": hashlib.sha256((here / "derive_native_console_policy.py").read_bytes()).hexdigest(),
             "complete_console_transition_count": transitions,
             "fixed_vt_ioctl_filters": {target: ioctls[target] for target in TTY_TYPES},

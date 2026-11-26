@@ -1455,6 +1455,7 @@ def main():
                here / "derive_native_uevent_policy.py", here / "native-uevent-labels.json",
                here / "verify_native_user_cgroups.py", here / "native-user-cgroups.json",
                here / "derive_native_console_policy.py", here / "native-console-setup.json",
+               here / "derive_preserved_alias_policy.py",
                *user_cgroup_source_inputs(here),
                here / "verify_native_login_audit.py", here / "verify_native_journal_storage.py",
                here / "verify_greeter_home.py", here / "verify_native_maintenance.py",
