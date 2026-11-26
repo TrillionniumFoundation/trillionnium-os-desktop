@@ -37,8 +37,14 @@
 (allow droidloom_policy_loader init_t (fd (use)))
 ; The original systemd-executor opens the selected ELF before entering the loader domain.
 (allow droidloom_policy_loader p4_linux_service_executor_t (fd (use)))
-; Keep the normal systemd-provided null standard streams across secure exec.
+; Preserve the normal null input and executor-owned journal stderr across secure exec.
+; The logger socket retains FMODE_READ|FMODE_WRITE after shutdown(SHUT_RD).
 (allow droidloom_policy_loader p4_linux_standardio_t (chr_file (read write)))
+(neverallow droidloom_policy_loader p4_linux_standardio_t (chr_file (not (read write))))
+(allow droidloom_policy_loader p4_linux_service_executor_t (unix_stream_socket (read write)))
+(neverallow droidloom_policy_loader p4_linux_service_executor_t (unix_stream_socket (not (read write))))
+; SELinux internal null_device is not the exact projected /dev/null inode.
+(neverallow droidloom_policy_loader null_device (chr_file (getattr open read write ioctl map)))
 (allow init_t droidloom_broker (fd (use)))
 (allow droidloom_broker init_t (process (getattr sigchld)))
 (allow droidloom_policy_loader init_t (process (getattr sigchld)))

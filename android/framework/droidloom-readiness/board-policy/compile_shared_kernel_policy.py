@@ -25,6 +25,7 @@ from verify_native_maintenance import verify_native_maintenance
 from verify_original_once import verify_original_once, source_inputs as original_once_source_inputs
 from verify_native_camera import verify_camera
 from verify_fixed_display import verify_fixed_display
+from verify_native_stdio import verify_native_stdio, source_inputs as native_stdio_source_inputs
 
 
 def sha256(path):
@@ -1405,6 +1406,7 @@ def verify_host_control(library, binary, export, original_contract):
     camera = verify_camera(policy, lines, check, obj, Path(__file__).resolve().parent)
     fixed_display = verify_fixed_display(lines, check, obj, role_types)
     executor_keyring = verify_native_executor_keyring(lines, check, role_types)
+    native_stdio = verify_native_stdio(lines, check, obj, Path(__file__).resolve().parent)
     # The exact timezone symlink retains the prior read-only public-link
     # contract, while only PID 1 may place its stock IN_DONT_FOLLOW watch.
     timezone_decisions = 0
@@ -1436,6 +1438,7 @@ def verify_host_control(library, binary, export, original_contract):
         "native_camera": camera,
         "fixed_display_control": fixed_display,
         "native_executor_keyring": executor_keyring,
+        "native_stdio": native_stdio,
         "timezone_link_decisions": timezone_decisions + 9,
         "binary_access_checks": len(checks),
         "public_module_role_types": len(role_types),
@@ -1656,6 +1659,7 @@ def main():
                here / "verify_fixed_display.py",
                here / "verify_original_once.py", here / "original-once-source.json",
                *original_once_source_inputs(here),
+               here / "verify_native_stdio.py", *native_stdio_source_inputs(here),
                here.parents[3] / "packaging/ubuntu/systemd/source.lock.json",
                here.parents[3] / "packaging/ubuntu/systemd/p4-native-generator-tmpfs.patch",
                here / "ubuntu-native-file_contexts", here / "ubuntu-real-root-file_contexts",

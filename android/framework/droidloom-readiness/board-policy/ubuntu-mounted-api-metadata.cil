@@ -551,7 +551,12 @@
 (allow init_t p4_linux_journalctl_t (process (getattr signull signal sigkill sigstop)))
 (allow p4_linux_journalctl_t init_t (fd (use)))
 (allow p4_linux_journalctl_t p4_linux_service_executor_t (fd (use)))
+; The normal --flush client must retain its inherited journal stdio at exec.
 (allow p4_linux_journalctl_t p4_linux_standardio_t (chr_file (getattr read write)))
+(neverallow p4_linux_journalctl_t p4_linux_standardio_t (chr_file (not (getattr read write))))
+(allow p4_linux_journalctl_t p4_linux_service_executor_t (unix_stream_socket (getattr read write)))
+(neverallow p4_linux_journalctl_t p4_linux_service_executor_t (unix_stream_socket (not (getattr read write))))
+(neverallow p4_linux_journalctl_t null_device (chr_file (getattr open read write ioctl map)))
 (allow p4_linux_journalctl_t p4_linux_console_t (chr_file (getattr read write)))
 (allow p4_linux_journalctl_t p4_linux_rootdir_t (dir (getattr search)))
 (allow p4_linux_journalctl_t p4_linux_runtime_lib_t (file (getattr open read execute map)))
