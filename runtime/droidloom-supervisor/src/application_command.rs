@@ -703,7 +703,7 @@ pub(super) fn run_prepared_host_leaf(
 }
 
 fn gallery_command(command: &Command) -> Result<(), String> {
-    const ROOT: &str = "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261120-apps-r1";
+    const ROOT: &str = "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2";
     let args = command.get_args().map(|v| v.to_str()).collect::<Option<Vec<_>>>()
         .ok_or("Gallery argv is not UTF-8")?;
     let hash = |v: &str| v.len() == 64 && v.bytes().all(|c| c.is_ascii_digit() || (b'a'..=b'f').contains(&c));
@@ -722,7 +722,7 @@ fn gallery_command(command: &Command) -> Result<(), String> {
 }
 
 fn calendar_command(command: &Command) -> Result<(),String> {
-    const ROOT: &str = "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261120-apps-r1";
+    const ROOT: &str = "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2";
     let args = command.get_args().map(|v|v.to_str()).collect::<Option<Vec<_>>>()
         .ok_or("Calendar argv is not UTF-8")?;
     let hash=|value:&str| value.len()==64 && value.bytes().all(|c|c.is_ascii_digit()||(b'a'..=b'f').contains(&c));
@@ -736,7 +736,7 @@ fn calendar_command(command: &Command) -> Result<(),String> {
 }
 
 fn settings_command(command: &Command) -> Result<(), String> {
-    const ROOT: &str = "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261120-apps-r1";
+    const ROOT: &str = "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2";
     let args = command.get_args().map(|value| value.to_str()).collect::<Option<Vec<_>>>()
         .ok_or("Settings argv is not UTF-8")?;
     let hash = |value: &str| value.len() == 64
@@ -808,7 +808,7 @@ mod gallery_tests {
     use super::*;
 
     fn selected_command(preparation: &str) -> Command {
-        let root = "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261120-apps-r1";
+        let root = "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2";
         let mut command = Command::new("/usr/bin/python3");
         command.args(["-I", "-B"]).arg(format!("{root}/source/gallery/source/gallery_image_entry.py"))
             .arg("--preparation").arg(format!("{root}/preparations/gallery-{preparation}.json"))
@@ -819,7 +819,7 @@ mod gallery_tests {
 
     #[test]
     fn settings_resource_profile_rejects_other_entries_and_extra_arguments() {
-        let root = "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261120-apps-r1";
+        let root = "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2";
         let mut command = Command::new("/usr/bin/python3");
         command.args(["-I", "-B"]).arg(format!("{root}/source/settings/settings_entry.py"))
             .arg("--preparation").arg(format!("{root}/preparations/settings.json"))
@@ -848,7 +848,7 @@ mod gallery_tests {
 
     #[test]
     fn calendar_resource_profile_cannot_be_selected_by_an_unrelated_entry() {
-        let root="/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261120-apps-r1";
+        let root="/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2";
         let mut command=Command::new("/usr/bin/python3");
         command.args(["-I","-B"]).arg(format!("{root}/source/calendar-reminder/system_entry.py"))
             .arg("--preparation").arg(format!("{root}/preparations/calendar-reminder.json"))

@@ -3,6 +3,10 @@
 //! The historical packet is a fixed source input, not an application qualification.
 //! Missing current preparation/entry bytes remain missing; this command cannot repair
 //! that difference by accepting a caller-supplied digest or by changing runtime gates.
+pub(crate) mod cohort;
+pub(crate) mod install;
+mod package;
+
 use crate::util::{Result, fail};
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
@@ -21,12 +25,15 @@ use std::{
 
 const RECIPE: &str =
     include_str!("../../../android/manifest/native-application-leaf-recovery.json");
+// Preserve the C93 historical commitment when the active consumer adopts r2.
 const CURRENT_CATALOG: &str =
-    include_str!("../../../runtime/droidloom-applications/src/leaf_sources.json");
+    include_str!("../resources/native-leaves/cp3a-20261120-apps-r1/leaf_sources.json");
 const CURRENT_SELECTION: &str = include_str!(
-    "../../../runtime/droidloom-applications/tests/fixtures/selection-14-20261120.json"
+    "../resources/native-leaves/cp3a-20261120-apps-r1/selection-14.json"
 );
 const MAX_FILE: u64 = 2 * 1024 * 1024;
+const FIXED_HELPER_BYTES: u64 = 3_972_024;
+const FIXED_HELPER_SHA256: &str = "67cfd1c212e9f40ce3f0ff7be856a05f8189c674cbfa270757a672ea596a6c3f";
 const MAX_TOTAL: u64 = 16 * 1024 * 1024;
 const MAX_FILES: usize = 512;
 const MAX_DIRS: usize = 256;
@@ -205,7 +212,7 @@ fn check_directory(fd: &File) -> Result<Node> {
     node(&m)
 }
 fn read_all(fd: &mut File, expected: u64) -> Result<Vec<u8>> {
-    if expected > MAX_FILE {
+    if expected > MAX_FILE && expected != FIXED_HELPER_BYTES {
         return fail("leaf source file exceeds the fixed size bound");
     }
     fd.seek(SeekFrom::Start(0))?;
@@ -225,7 +232,7 @@ struct Held {
 }
 impl Held {
     fn open(root: &File, name: &str, pin: &Pin) -> Result<Self> {
-        if !sha_shape(&pin.sha256) {
+        if !sha_shape(&pin.sha256) || (pin.bytes > MAX_FILE && (pin.bytes != FIXED_HELPER_BYTES || pin.sha256 != FIXED_HELPER_SHA256)) {
             return fail("invalid source-owned digest");
         }
         let mut file = beneath(root, name, false)?;
@@ -413,7 +420,7 @@ impl OutputTree {
     }
     fn write(&self, name: &str, raw: &[u8]) -> Result<StagedFile> {
         relative(name)?;
-        if raw.len() as u64 > MAX_FILE {
+        if raw.len() as u64 > MAX_FILE && !(name == "cohort/bin/held-namespace-entry" && raw.len() as u64 == FIXED_HELPER_BYTES && digest(raw) == FIXED_HELPER_SHA256) {
             return fail("leaf staged file exceeds bound");
         }
         self.guard()?;

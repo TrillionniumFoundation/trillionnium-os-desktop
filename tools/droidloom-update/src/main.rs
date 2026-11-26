@@ -57,6 +57,24 @@ enum Action {
         #[arg(long)]
         output: PathBuf,
     },
+    /// Build the fixed complete successor leaf source cohort in fresh staging; no installation or execution.
+    MaterializeNativeLeafCohort {
+        #[arg(long)]
+        input: PathBuf,
+        #[arg(long)]
+        output: PathBuf,
+        #[arg(long)]
+        helper: PathBuf,
+    },
+    /// Publish the one compiled immutable leaf cohort; never activate it.
+    InstallNativeLeafCohort {
+        /// Already protected root-owned directory input.
+        #[arg(long, conflicts_with = "package", required_unless_present = "package")]
+        input: Option<PathBuf>,
+        /// Normal public package; authority comes only from the compiled recipe.
+        #[arg(long, conflicts_with = "input", required_unless_present = "input")]
+        package: Option<PathBuf>,
+    },
     /// Materialize the five sealed files from a witnessed kernel-first board capture.
     PackageKernelFirstMac {
         #[arg(long)] capture: PathBuf,
@@ -513,6 +531,26 @@ fn execute(args: Args) -> Result<()> {
                 return fail("leaf source staging accepts no build, cleanup, repository or activation options");
             }
             let result = native_leaf_sources::materialize(input, output)?;
+            println!("{}", serde_json::to_string_pretty(&result)?);
+            return Ok(());
+        }
+        Some(Action::MaterializeNativeLeafCohort { input, helper, output }) => {
+            if args.clean || args.build_only || args.bootstrapped || args.jobs.is_some() || args.source.is_some() {
+                return fail("leaf cohort staging accepts no build, cleanup, repository or activation options");
+            }
+            let result = native_leaf_sources::cohort::materialize(input, helper, output)?;
+            println!("{}", serde_json::to_string_pretty(&result)?);
+            return Ok(());
+        }
+        Some(Action::InstallNativeLeafCohort { input, package }) => {
+            if args.clean || args.build_only || args.bootstrapped || args.jobs.is_some() || args.source.is_some() {
+                return fail("cohort installation cannot be combined with source/build options");
+            }
+            let result = match (input, package) {
+                (Some(input), None) => native_leaf_sources::install::install(input)?,
+                (None, Some(package)) => native_leaf_sources::install::install_package(package)?,
+                _ => return fail("exactly one protected directory or normal package is required"),
+            };
             println!("{}", serde_json::to_string_pretty(&result)?);
             return Ok(());
         }

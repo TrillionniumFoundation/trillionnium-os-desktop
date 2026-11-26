@@ -136,26 +136,79 @@ using release symlinks does not meet this entry's canonical regular-file
 contract. The ordinary package owner or the direct runtime installer must
 place the actual current executable and templates at their canonical paths.
 
-### Settings read-only page scope
+### Settings pages and one reversible value
 
-The same normal payload also stages `droidloom-native-settings@.service` with
-profile `settings-pages`. It accepts only `com.android.settings` and the
-`settings_supported_pages` route, from its independently adopted index-13 source.
-Its exact root plan lives under the `settings-pages` directory beside the other
-fixed plans. The two-CPU, 2-GiB, zero-swap, 64-task scope uses CPU 20/21 and a
-1,500-second controller ceiling. The nested native leaf has a 900-second outer
-ceiling; its original business and cleanup lease remains 600 plus 120 seconds.
+The normal payload stages `droidloom-native-settings@.service` with profile
+`settings-pages`. It accepts only `com.android.settings` and the
+`settings_supported_pages` route, from its independently adopted index-13
+source. The existing unit, CPU/memory limits and original business/cleanup lease
+remain required.
 
-The result may credit only `settings.pages` after five page observations, two
-owned launches, two normal closes and complete original cleanup. Settings value
-round trips, permission UI and all whole-app gates remain pending. No template is
-automatically enabled, and no source or resource observation creates acceptance.
+The r2 cohort's v3 source performs five fixed page routes, nine UI observations,
+two owned launches and normal closes, and one reversible user-0
+`system/font_scale` transaction. It records the original provider string or
+absence, checks the actual resource configuration, observes the changed value
+after close and reopen, and restores only its own still-current value. An unknown
+dispatch or a third-party change cannot authorize another write. The parser must
+verify the exact v3 facts together with actual Main, held runtime/data custody,
+execution and complete retirement before evaluating `settings.pages` or
+`settings.roundtrip`. Permission/account interfaces and whole-app acceptance
+remain outside this result. Neither a saved result nor installation grants credit.
 
-The current canonical application source bundle is rooted at
-`/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261120-apps-r1`.
-New Main and business qualifications use the v2 protocol and
-`/var/lib/droidloom/qualification/pocket4`; old home-directory receipts cannot
-qualify the new mapped Main or its held guest-entry helper.
+### Separate immutable native leaf cohort
+
+`cp3a-20261126-apps-r2` is a distinct, reproducible cohort. It preserves the
+historical r1 commitments as history; it does not claim to reconstruct the four
+missing later r1 entrypoints. The compiled recipe explicitly describes every
+recovered source, path and dependency-pin change, the seven reviewed Settings
+sources, the real held-user-namespace argv repair, and the admitted IHG input.
+The selected helper is the recovered original 3,972,024-byte ELF with SHA-256
+`67cfd1c212e9f40ce3f0ff7be856a05f8189c674cbfa270757a672ea596a6c3f`.
+Its historical normal build and mechanism evidence remain distinct from the
+fresh Main/namespace/retirement checks required on every actual invocation.
+
+Using the normally built CLI from the same source release, the ordinary producer
+runs:
+
+```sh
+droidloom-update materialize-native-leaf-cohort \
+  --input RECOVERED_PUBLIC_PACKET \
+  --helper EXACT_ORIGINAL_HELPER \
+  --output FRESH_STAGING_DIRECTORY
+```
+
+It verifies all 477 fixed inputs and generates 476 cohort members, 14 preparations
+and ten entrypoints, plus the source manifest, exact compiled recipe and
+`COHORT.tar`. The canonical ustar package has only the ordered regular
+members authorized by that recipe. It is a separate release artifact; it is not
+added to the 63-member host archive.
+
+The privileged normal importer and installer is the same CLI:
+
+```sh
+droidloom-update install-native-leaf-cohort --package PUBLIC_COHORT_TAR
+```
+
+The public archive supplies bytes, not authority: no caller member/digest table is
+accepted. Its held FD, complete SHA and full inode bookends are recorded. Every
+header, member name, order, count, mode, length, payload digest, padding and exact
+EOF must match the compiled recipe; links and extension records are rejected.
+The importer creates a fresh root-owned directory under the fixed cohort parent,
+writes and fully reads back all members, then atomically publishes with
+`RENAME_NOREPLACE`. Failure cleanup is limited to the invocation's unpublished
+files. Existing cohorts are never overwritten. The directory-input alternative,
+`--input`, still requires already protected root-owned sources; ordinary
+user staging is not passed directly to that route.
+
+The only production destination is
+`/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2`.
+Directories are root:root 0755, ordinary members 0444 and the fixed helper 0755.
+The matching source catalog and selection are compiled into the App consumer;
+publication never changes a runtime plan, starts a service or creates Main or
+application authority. The normal release must bind the package/materialization
+receipt and actual installation result separately. The new Rust modules,
+compiled recipes and embedded sources belong to the actual Cargo dependency
+closure, even though the existing host install-layout names are unchanged.
 
 ## Explicit launch observations in runtime plans
 
