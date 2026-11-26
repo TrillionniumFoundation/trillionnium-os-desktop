@@ -194,10 +194,10 @@ def verify_project_id_query(policy, exported, lines, classes):
 def derive(library, baseline, exported, here, output, export):
     contract(here)
     expected = derive_preserved_aliases(library, baseline, exported, ALIASES,
-        output, export, prefix="p4_logind_parent_preserved", isolated_roles={ROLE},
+        output, export, prefix="p4_logind_parent_preserved", isolated_roles={ROLE, "p4_linux_random_seed_t"},
         extra_permissions={}, preamble=(
-            "; Preserve every original actor; executor has a separate complete proof.",
-            "; Only its exact /var/lib/systemd parent write/add_name bits differ."))
+            "; Original actors retain their source vectors; executor and seed are proved separately.",
+            "; Only these two fixed actors own additional exact parent operations."))
     policy = ContextPolicy(library, baseline)
     lines = exported.read_text().splitlines()
     objects = sorted(set(re.findall(r"\(roletype object_r (\w+)\)", "\n".join(lines))))

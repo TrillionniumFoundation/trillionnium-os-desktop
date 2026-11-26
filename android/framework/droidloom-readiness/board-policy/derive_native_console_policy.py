@@ -31,6 +31,7 @@ IOCTLS = {
 # Keep this list explicit: an unrelated actor never gains cache access merely
 # by joining an attribute. Existing native-service cache permissions are kept.
 CACHE_LOADERS = {
+    "p4_linux_random_seed_t",
     "p4_linux_early_t", "p4_linux_service_executor_t",
     "p4_linux_journald_t", "p4_linux_journalctl_t", "p4_linux_udev_t",
     "p4_linux_hardware_label_t", "p4_linux_uevent_label_t",

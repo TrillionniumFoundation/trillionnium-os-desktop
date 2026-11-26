@@ -1,0 +1,170 @@
+{
+  "aliases": [
+    {
+      "class": "file",
+      "source": "p4_linux_setup_exec_t",
+      "target": "p4_linux_random_seed_exec_t"
+    },
+    {
+      "class": "file",
+      "source": "p4_linux_native_data_t",
+      "target": "p4_linux_random_seed_file_t"
+    }
+  ],
+  "cross_boot_credit_qualified": false,
+  "entropy_ioctls": false,
+  "entry": {
+    "caller": "p4_linux_service_executor_t",
+    "old_domain": "p4_linux_setup_t",
+    "path": "/usr/lib/systemd/systemd-random-seed",
+    "selected_domain": "p4_linux_random_seed_t",
+    "selected_type": "p4_linux_random_seed_exec_t",
+    "source_type": "p4_linux_setup_exec_t"
+  },
+  "kernel_runtime_qualified": false,
+  "normal_default_credit": "environment-unset-NO",
+  "normal_fallbacks": {
+    "extra_proc_sys_read": false,
+    "kmsg_write": false,
+    "log_setup": "normal-journal-or-kmsg-failure-falls-back-to-inherited-stderr",
+    "new_logging_socket": false,
+    "random_pool_size": "proc-read-failure-uses-normal-minimum"
+  },
+  "normal_files": [
+    {
+      "admission": "normal-complete-root",
+      "bytes": 1187,
+      "path": "/usr/lib/systemd/system/systemd-random-seed.service",
+      "sha256": "e4b935cc3c5aa680af2addebc0af1507d46c0f0f638bed3497a46b1db0ee51f6"
+    },
+    {
+      "admission": "normal-complete-root",
+      "bytes": 27080,
+      "path": "/usr/lib/systemd/systemd-random-seed",
+      "sha256": "6ee3d7034674fcab8a8aeaa8e145138801422ea8051a00b28c3927c1e05f40a8"
+    },
+    {
+      "admission": "normal-complete-root",
+      "bytes": 254864,
+      "path": "/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+      "sha256": "c0b20d6e1ced12abfe0b1ef2b5b68017950beaaea3df69eb6949d73e0ecf7b40"
+    },
+    {
+      "admission": "normal-complete-root",
+      "bytes": 2190608,
+      "path": "/usr/lib/x86_64-linux-gnu/libc.so.6",
+      "sha256": "9941dc28e68bc5fd788d9cd024c69e68c791d63799e7538a97b6040dd9f50fb6"
+    },
+    {
+      "admission": "normal-complete-root",
+      "bytes": 215128,
+      "path": "/usr/lib/x86_64-linux-gnu/libcrypt.so.1.1.0",
+      "sha256": "212437df8afcd4004965550cb6df2d0eeb8cad736f7a13a89dcec455182429a6"
+    },
+    {
+      "admission": "normal-complete-root",
+      "bytes": 6386528,
+      "path": "/usr/lib/x86_64-linux-gnu/libcrypto.so.3",
+      "sha256": "5385f0436ac2e284ba8c5fb1488874057c29c04be72dea32add832694f381e28"
+    },
+    {
+      "admission": "normal-complete-root",
+      "bytes": 1198376,
+      "path": "/usr/lib/x86_64-linux-gnu/libm.so.6",
+      "sha256": "37b9e6c977b2a0b02a110d93eb8f01b643c9848653f18bd51682c5279ac88f54"
+    },
+    {
+      "admission": "normal-complete-root",
+      "bytes": 5017728,
+      "path": "/usr/lib/x86_64-linux-gnu/systemd/libsystemd-shared-259.so",
+      "sha256": "21ddd09d02a864c40139986fdc89c3f2a428ad1adcc201c8276bc9590c2c98fd"
+    }
+  ],
+  "package": "systemd:amd64",
+  "role": "p4_linux_random_seed_t",
+  "schema": "droidloom.native-random-seed-source.v1",
+  "seed": {
+    "body_captured": false,
+    "gid": 0,
+    "kind": "regular",
+    "mode": 384,
+    "named_creation": "random-seed",
+    "parent": "/var/lib/systemd",
+    "parent_type": "p4_linux_systemd_state_parent_t",
+    "path": "/var/lib/systemd/random-seed",
+    "selected_type": "p4_linux_random_seed_file_t",
+    "source_type": "p4_linux_native_data_t",
+    "uid": 0
+  },
+  "source_documents": [
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 41483,
+      "path": "src/basic/fd-util.c",
+      "sha256": "cb60ffa3bbe82f099d62dac6d7b37102cb56ab69e46b75483bf5f7dcfdfd0311"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 52249,
+      "path": "src/basic/fs-util.c",
+      "sha256": "de38f495f3be7fc9e80051487bac1242c71f2f38cffa4fba2d8f11380d3794d4"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 6412,
+      "path": "src/basic/fs-util.h",
+      "sha256": "bc197965da83e69a914a25c2805ea8437066a17cb89a63fd9d73fcb27de3ba09"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 56820,
+      "path": "src/basic/log.c",
+      "sha256": "2d578efd6b1f5a1acb85f82ad88901e44b9a6845496f15c470fbbd153355fd42"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 9880,
+      "path": "src/basic/mkdir.c",
+      "sha256": "88a9ce00bc2c05c0c5d329653c29846622356efcbc207639a5877b323d102756"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 2396,
+      "path": "src/basic/mkdir.h",
+      "sha256": "c15ef9b8ffe871145167de528a757f540c53b6a7b7c50fc9b6f061584284df95"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 7280,
+      "path": "src/basic/random-util.c",
+      "sha256": "86021bc02cb8895964643b59354a5acad25b8693a9127fe80284d57ddb6a7ff8"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 5256,
+      "path": "src/basic/sync-util.c",
+      "sha256": "5316535fd95aa5d2db8d266c002b87ed6bc059f390181a061c8113b80ca28845"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 16448,
+      "path": "src/basic/xattr-util.c",
+      "sha256": "ee53c486072ca48c2a371d29154f5cebfe628eff71648f5fcb70330c08373793"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 17044,
+      "path": "src/random-seed/random-seed-tool.c",
+      "sha256": "40f53a6f8387769fe48974be684018b002f1133bb66fde6800f617aaafce79b1"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 1170,
+      "path": "units/systemd-random-seed.service.in",
+      "sha256": "f29b83bfb6d2651e0064781cec17881f2ca55bdd8f1583543a263c3a9a8cab30"
+    }
+  ],
+  "sys_admin": false,
+  "unit_environment_overridden": false,
+  "version": "259.9-0ubuntu0.1+p4gentmp2"
+}

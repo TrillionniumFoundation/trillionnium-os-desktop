@@ -33,7 +33,7 @@
 
 # Original helper entrypoints from the selected Ubuntu system and user units.
 /usr/lib/systemd/(system|user)-generators/[^/]+ -- u:object_r:p4_linux_generator_exec_t:s0
-/usr/lib/systemd/systemd-(battery-check|binfmt|bsod|factory-reset|hibernate-resume|pcrextend|random-seed|tpm2-setup|update-done|user-sessions|user-runtime-dir) -- u:object_r:p4_linux_setup_exec_t:s0
+/usr/lib/systemd/systemd-(battery-check|binfmt|bsod|factory-reset|hibernate-resume|pcrextend|tpm2-setup|update-done|user-sessions|user-runtime-dir) -- u:object_r:p4_linux_setup_exec_t:s0
 /usr/bin/systemd-(firstboot|hwdb|machine-id-setup|sysusers|tmpfiles|sysext|confext) -- u:object_r:p4_linux_setup_exec_t:s0
 /usr/sbin/ldconfig -- u:object_r:p4_linux_setup_exec_t:s0
 /usr/lib/systemd/systemd-modules-load -- u:object_r:p4_linux_module_loader_exec_t:s0
@@ -410,3 +410,7 @@
 /etc/systemd/timesyncd\.conf\.d/[^/]+\.conf -- u:object_r:p4_linux_timesyncd_config_t:s0
 /run/systemd/netif(/links)? -d u:object_r:p4_linux_timesyncd_netif_t:s0
 /run/systemd/netif/(state|links/[0-9]+) -- u:object_r:p4_linux_timesyncd_netif_t:s0
+
+# Fixed normal random-seed entry and its single persistent file.
+/usr/lib/systemd/systemd-random-seed -- u:object_r:p4_linux_random_seed_exec_t:s0
+/var/lib/systemd/random-seed -- u:object_r:p4_linux_random_seed_file_t:s0
