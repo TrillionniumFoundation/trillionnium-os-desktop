@@ -31,6 +31,16 @@ NEW_TYPES=frozenset({
     'p4_linux_update_done_var_dir_t',
     'p4_linux_update_done_etc_file_t',
     'p4_linux_update_done_var_file_t',
+    'p4_linux_tmpfiles_config_dir_t',
+    'p4_linux_tmpfiles_etc_config_t',
+    'p4_linux_tmpfiles_exec_t',
+    'p4_linux_tmpfiles_nologin_t',
+    'p4_linux_tmpfiles_runtime_dir_t',
+    'p4_linux_tmpfiles_shm_link_t',
+    'p4_linux_tmpfiles_static_dir_t',
+    'p4_linux_tmpfiles_static_node_t',
+    'p4_linux_tmpfiles_t',
+    'p4_linux_tmpfiles_usr_config_t',
 })
 AUDIT=frozenset({"auditallow","dontaudit","auditallowx","dontauditx"})
 TYPE_OPERATIONS=frozenset({"type","typeattribute","typeattributeset","typealias","typealiasactual","expandtypeattribute"})
