@@ -131,6 +131,7 @@ pub(in crate::cold_original_data) fn restore_pair(
         selected == data::SelectionState::Original,
         "pair restoration requires actual selection withdrawal",
     )?;
+    super::restore::seal_pair_label_outcomes(retirement, data)?;
     let scope = RootScope::original(&data.transaction.intent.cold_clone)?;
     let path = authority.work().join("pair-restoration");
     match std::fs::symlink_metadata(&path) {
@@ -275,7 +276,9 @@ impl OriginalPairRestored {
         retirement: &OriginalRetirement,
         data: &OriginalDataTransaction,
     ) -> Result<BTreeMap<PathBuf, Snapshot>> {
-        self.revalidate(retirement, data)?;
+        // Historical exact rename evidence remains useful while a subsequent
+        // typed label restoration legitimately changes these same ctimes.
+        self.validate_history(retirement, data)?;
         let value: PairResult =
             serde_json::from_slice(&data::root_pin(&self.result, 32 * 1024 * 1024)?)?;
         Ok(BTreeMap::from([
@@ -285,5 +288,48 @@ impl OriginalPairRestored {
             ),
             (PathBuf::from(data::ORIGINAL), value.working),
         ]))
+    }
+    pub(super) fn resume_for_labels(
+        retirement: &OriginalRetirement,
+        data: &OriginalDataTransaction,
+    ) -> Result<Self> {
+        retirement.revalidate()?;
+        data.binding(retirement.authority())?;
+        ensure(
+            data.transaction.observe(true)?
+                == (data::Layout::Ready, data::SelectionState::Original),
+            "label restoration requires the actual completed original pair layout",
+        )?;
+        let records = Records::open(&retirement.authority().work().join("pair-restoration"))?;
+        let (intent, _) = read(&records, retirement, data)?;
+        let value = Self {
+            intent,
+            result: record_pin(&records, "RESULT.json")?,
+        };
+        value.validate_history(retirement, data)?;
+        Ok(value)
+    }
+    fn validate_history(
+        &self,
+        retirement: &OriginalRetirement,
+        data: &OriginalDataTransaction,
+    ) -> Result<()> {
+        let records = Records::open(&retirement.authority().work().join("pair-restoration"))?;
+        let (pin, intent) = read(&records, retirement, data)?;
+        ensure(
+            pin_equal(&pin, &self.intent)
+                && pin_equal(&record_pin(&records, "RESULT.json")?, &self.result),
+            "preserved whole-pair rename evidence was replaced",
+        )?;
+        let (_, _, body) = records.read("RESULT.json")?;
+        let result: PairResult = serde_json::from_slice(&body)?;
+        ensure(
+            result.schema == "droidloom.original-pair-restoration-result.v1"
+                && pin_equal(&result.intent, &pin),
+            "preserved whole-pair rename result has another intent",
+        )?;
+        same_directory(&intent.original, &result.original)?;
+        same_directory(&intent.working, &result.working)?;
+        verify_parent(&intent.parent, &result.parent, &result.original)
     }
 }

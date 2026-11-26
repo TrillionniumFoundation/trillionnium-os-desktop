@@ -5,7 +5,7 @@ use super::*;
 
 #[derive(Clone, Copy, Debug, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
-enum RuntimeClass {
+pub(super) enum RuntimeClass {
     Log,
     Cache,
     Temporary,
@@ -21,7 +21,7 @@ fn below(path: &str, prefix: &str) -> bool {
             .strip_prefix(prefix)
             .is_some_and(|v| v.starts_with('/'))
 }
-fn runtime_class(path: &Path, candidate: &str) -> Option<RuntimeClass> {
+pub(super) fn runtime_class(path: &Path, candidate: &str) -> Option<RuntimeClass> {
     if path == Path::new("/var/lib/systemd/random-seed") {
         return Some(RuntimeClass::RandomSeed);
     }
@@ -79,7 +79,7 @@ fn runtime_class(path: &Path, candidate: &str) -> Option<RuntimeClass> {
     }
     None
 }
-fn admit_current(
+pub(super) fn admit_current(
     applied: &Snapshot,
     current: &Snapshot,
     class: Option<RuntimeClass>,
@@ -134,6 +134,138 @@ fn admit_current(
     )
 }
 
+#[derive(Clone, Copy, Debug, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub(super) enum EvolutionKind {
+    WorkingBacking,
+    GrubEnvironment,
+    PairRename,
+    SelectionRename,
+}
+/// Private data, never mutation authority. The full restore adapter obtains
+/// these exact observations from the real retirement and completed rename
+/// objects before constructing the current preimage.
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub(super) struct ExactEvolution {
+    pub(super) kind: EvolutionKind,
+    pub(super) actual: Snapshot,
+    pub(super) evidence: FilePin,
+}
+impl ExactEvolution {
+    fn validate(
+        &self,
+        original: &DurableAttempt,
+        applied: &Snapshot,
+        current: &Snapshot,
+        retirement: &FilePin,
+    ) -> Result<()> {
+        let path = &original.preimage.logical_path;
+        let allowed = match self.kind {
+            EvolutionKind::WorkingBacking => [
+                "/var/lib/droidloom/users/1000/data/data.img",
+                "/var/lib/droidloom/users/1000/data/metadata.img",
+            ]
+            .contains(&path.to_str().unwrap_or("")),
+            EvolutionKind::GrubEnvironment => path == Path::new("/boot/grub/grubenv"),
+            EvolutionKind::PairRename => [
+                "/var/lib/droidloom/users/1000",
+                "/var/lib/droidloom/users/1000/data",
+            ]
+            .contains(&path.to_str().unwrap_or("")),
+            EvolutionKind::SelectionRename => [
+                "/etc/droidloom/production",
+                "/etc/droidloom/production/selected.json",
+            ]
+            .contains(&path.to_str().unwrap_or("")),
+        };
+        ensure(
+            allowed
+                && self.actual == *current
+                && applied.handle == current.handle
+                && applied.attributes == current.attributes,
+            "owned runtime evolution is outside its fixed inode or changed another attribute",
+        )?;
+        let a = &applied.identity;
+        let b = &current.identity;
+        ensure(
+            (a.dev, a.ino, a.mode, a.uid, a.gid, a.nlink)
+                == (b.dev, b.ino, b.mode, b.uid, b.gid, b.nlink),
+            "owned runtime evolution changed inode authority or links",
+        )?;
+        if matches!(
+            self.kind,
+            EvolutionKind::WorkingBacking | EvolutionKind::GrubEnvironment
+        ) {
+            ensure(
+                a.size == b.size && FileType::from_raw_mode(b.mode) == FileType::RegularFile,
+                "bounded working backing or GRUB environment size/type changed",
+            )?;
+        }
+        let value: Value = serde_json::from_slice(&super::super::super::root_pin(
+            &self.evidence,
+            32 * 1024 * 1024,
+        )?)?;
+        match self.kind {
+            EvolutionKind::WorkingBacking | EvolutionKind::GrubEnvironment => {
+                ensure(
+                    self.evidence.path == retirement.path
+                        && self.evidence.sha256 == retirement.sha256
+                        && self.evidence.bytes == retirement.bytes
+                        && value["schema"] == "droidloom.original-once-retirement.v1"
+                        && value["candidate_id"] == original.preimage.candidate_id,
+                    "owned runtime state is not this actual sealed retirement",
+                )?;
+                if self.kind == EvolutionKind::GrubEnvironment {
+                    ensure(
+                        value["grubenv_identity"] == serde_json::to_value(&current.identity)?,
+                        "GRUB state differs from its actual retirement readback",
+                    )?;
+                } else {
+                    let sync = &value["working_data"]["actual_synchronization"];
+                    let rows = sync["backings"]
+                        .as_array()
+                        .ok_or("actual retired backing snapshots missing")?;
+                    ensure(
+                        sync["schema"] == "droidloom.working-pair-recovery-fsync.v1"
+                            && rows.len() == 2
+                            && rows
+                                .iter()
+                                .filter(|row| {
+                                    row["before"] == row["after"]
+                                        && row["after"]
+                                            == serde_json::to_value(&current.identity)
+                                                .unwrap_or(Value::Null)
+                                })
+                                .count()
+                                == 1,
+                        "working current preimage differs from the actual two-fd fsync readback",
+                    )?;
+                }
+            }
+            EvolutionKind::PairRename => ensure(
+                value["schema"] == "droidloom.original-pair-restoration-result.v1"
+                    && if path == Path::new("/var/lib/droidloom/users/1000") {
+                        value["parent"]["snapshot"] == serde_json::to_value(current)?
+                    } else {
+                        value["working"] == serde_json::to_value(current)?
+                    },
+                "pair directory lacks its exact completed rename readback",
+            )?,
+            EvolutionKind::SelectionRename => ensure(
+                value["schema"] == "droidloom.original-selection-label-result.v1"
+                    && if path == Path::new("/etc/droidloom/production") {
+                        value["parent"]["snapshot"] == serde_json::to_value(current)?
+                    } else {
+                        value["candidate"] == serde_json::to_value(current)?
+                    },
+                "selection directory/inode lacks its exact completed withdrawal readback",
+            )?,
+        }
+        Ok(())
+    }
+}
+
 #[derive(Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 struct CurrentPreimage {
@@ -142,6 +274,7 @@ struct CurrentPreimage {
     applied: FilePin,
     retirement: FilePin,
     class: Option<RuntimeClass>,
+    evolution: Option<ExactEvolution>,
     current: Snapshot,
 }
 
@@ -157,7 +290,7 @@ pub(in crate::cold_original_data::labels) struct RuntimeRestoreAttempt {
     intent_identity: Identity,
 }
 impl RuntimeRestoreAttempt {
-    fn applied(original: &DurableAttempt) -> Result<(FilePin, Snapshot)> {
+    pub(super) fn applied(original: &DurableAttempt) -> Result<(FilePin, Snapshot)> {
         original.validate_intent()?;
         let (_, _, bytes) = original.records.read("APPLIED.json")?;
         let value: Value = serde_json::from_slice(&bytes)?;
@@ -192,6 +325,14 @@ impl RuntimeRestoreAttempt {
         records: Records,
         retirement: &FilePin,
     ) -> Result<Self> {
+        Self::prepare_exact(original, records, retirement, None)
+    }
+    pub(in crate::cold_original_data::labels) fn prepare_exact(
+        original: DurableAttempt,
+        records: Records,
+        retirement: &FilePin,
+        evolution: Option<ExactEvolution>,
+    ) -> Result<Self> {
         ensure(
             fs::valid_digest(&retirement.sha256) && retirement.bytes > 0,
             "actual enclosing retirement evidence pin required",
@@ -202,7 +343,11 @@ impl RuntimeRestoreAttempt {
             &original.preimage.logical_path,
             &original.preimage.candidate_id,
         );
-        admit_current(&after, &current, class)?;
+        if let Some(exact) = &evolution {
+            exact.validate(&original, &after, &current, retirement)?;
+        } else {
+            admit_current(&after, &current, class)?;
+        }
         ensure(
             current.identity.dev == records.identity.dev,
             "runtime restore preimage requires same-filesystem durability",
@@ -213,6 +358,7 @@ impl RuntimeRestoreAttempt {
             applied,
             retirement: retirement.clone(),
             class,
+            evolution,
             current,
         };
         let pin = records.publish("CURRENT-PREIMAGE.json", &current)?;
@@ -234,6 +380,15 @@ impl RuntimeRestoreAttempt {
         records: Records,
         pin: &FilePin,
     ) -> Result<Self> {
+        let value = Self::open_evidence(original, records, pin)?;
+        value.classify()?;
+        Ok(value)
+    }
+    pub(super) fn open_evidence(
+        original: DurableAttempt,
+        records: Records,
+        pin: &FilePin,
+    ) -> Result<Self> {
         let (intent, intent_identity, bytes) = records.read("CURRENT-PREIMAGE.json")?;
         ensure(
             pin.path == records.path.join("CURRENT-PREIMAGE.json")
@@ -251,7 +406,6 @@ impl RuntimeRestoreAttempt {
             intent_identity,
         };
         value.validate()?;
-        value.classify()?;
         Ok(value)
     }
     fn validate(&self) -> Result<()> {
@@ -274,9 +428,18 @@ impl RuntimeRestoreAttempt {
                     ),
             "held current restoration evidence or its fixed source class changed",
         )?;
-        admit_current(&after, &self.current.current, self.current.class)
+        if let Some(exact) = &self.current.evolution {
+            exact.validate(
+                &self.original,
+                &after,
+                &self.current.current,
+                &self.current.retirement,
+            )
+        } else {
+            admit_current(&after, &self.current.current, self.current.class)
+        }
     }
-    fn classify(&self) -> Result<(Snapshot, bool)> {
+    pub(super) fn classify(&self) -> Result<(Snapshot, bool)> {
         self.validate()?;
         let actual = snapshot(&self.original.recovery)?;
         let mut restored = self.current.current.attributes.clone();
@@ -302,6 +465,62 @@ impl RuntimeRestoreAttempt {
             "runtime restore has an unknown target or concurrent metadata/xattr outcome",
         )?;
         Ok((actual, done))
+    }
+    pub(super) fn preimage_pin(&self) -> &FilePin {
+        &self.pin
+    }
+    pub(super) fn original_pin(&self) -> &FilePin {
+        &self.original.pin
+    }
+    pub(super) fn current_snapshot(&self) -> &Snapshot {
+        &self.current.current
+    }
+    pub(super) fn ordinal(&self) -> u32 {
+        self.original.preimage.ordinal
+    }
+    pub(super) fn has_completed_result(&self) -> Result<bool> {
+        self.records.exists("RESTORED.json")
+    }
+    pub(super) fn historical_restored_snapshot(&self) -> Result<Snapshot> {
+        self.validate()?;
+        let mut expected = self.current.current.clone();
+        match self
+            .original
+            .preimage
+            .before
+            .attributes
+            .get(&self.original.preimage.attribute)
+        {
+            Some(old) => {
+                expected
+                    .attributes
+                    .insert(self.original.preimage.attribute.clone(), old.clone());
+            }
+            None => {
+                expected
+                    .attributes
+                    .remove(&self.original.preimage.attribute);
+            }
+        }
+        if self.records.exists("RESTORED.json")? {
+            let (_, _, body) = self.records.read("RESTORED.json")?;
+            let actual: Value = serde_json::from_slice(&body)?;
+            let after: Snapshot = serde_json::from_value(actual["after"].clone())?;
+            ensure(
+                actual["schema"] == "droidloom.current-label-restored.v1"
+                    && actual["current_preimage"] == serde_json::to_value(&self.pin)?
+                    && actual["original_preimage"] == serde_json::to_value(&self.original.pin)?
+                    && actual["before"] == serde_json::to_value(&self.current.current)?
+                    && after.handle == expected.handle
+                    && after.attributes == expected.attributes
+                    && only_ctime_changed(&expected.identity, &after.identity)
+                    && actual["target_metadata_durability"]["operation"] == "syncfs"
+                    && actual["target_metadata_durability"]["filesystem_dev"] == after.identity.dev,
+                "historical restored inode lacks its exact current preimage and actual metadata barrier",
+            )?;
+            return Ok(after);
+        }
+        Ok(expected)
     }
     pub(in crate::cold_original_data::labels) fn restore(
         &self,
@@ -329,7 +548,7 @@ impl RuntimeRestoreAttempt {
             "original_preimage":self.original.pin,"retirement":self.current.retirement,
             "before":self.current.current,"observed_before_retry":observed,
             "after":after,"target_metadata_durability":durability,
-            "original_content_claimed_unchanged":self.current.class.is_none()});
+            "original_content_claimed_unchanged":self.current.class.is_none() && self.current.evolution.is_none()});
         let pin = if self.records.exists("RESTORED.json")? {
             let (_, _, bytes) = self.records.read("RESTORED.json")?;
             let record: Value = serde_json::from_slice(&bytes)?;
@@ -363,6 +582,31 @@ impl RuntimeRestoreAttempt {
 mod tests {
     use super::*;
     use std::os::unix::fs::PermissionsExt;
+    #[test]
+    fn historical_restore_uses_the_actual_synchronized_after_ctime() {
+        let tmp = tempfile::Builder::new()
+            .prefix(".p4-restore-history-")
+            .tempdir_in(std::env::current_dir().unwrap())
+            .unwrap();
+        let original = setup(tmp.path(), "/etc/immutable-test");
+        let attempt =
+            RuntimeRestoreAttempt::prepare(original, recovery(tmp.path()), &retirement(tmp.path()))
+                .unwrap();
+        let (actual, _) = attempt.restore().unwrap();
+        assert!(attempt.has_completed_result().unwrap());
+        assert_eq!(
+            attempt.historical_restored_snapshot().unwrap(),
+            actual.after
+        );
+        assert!(
+            admit_current(
+                &actual.after,
+                &snapshot(&attempt.original.recovery).unwrap(),
+                None
+            )
+            .is_ok()
+        );
+    }
     fn setup(root: &Path, path: &str) -> DurableAttempt {
         std::fs::create_dir(root.join("apply")).unwrap();
         std::fs::set_permissions(root.join("apply"), std::fs::Permissions::from_mode(0o700))

@@ -20,7 +20,10 @@ mod plan;
 mod scope;
 #[path = "cold_original_label_service_state.rs"]
 mod service_state;
-pub(crate) use journal::{OriginalLabelTransaction, OriginalLabelsApplied, OriginalPairRestored};
+pub(crate) use journal::{
+    OriginalLabelRestorationTransaction, OriginalLabelTransaction, OriginalLabelsApplied,
+    OriginalLabelsRestored, OriginalPairRestored,
+};
 pub(super) use journal::{restore_retired_pair, withdraw_labeled_selection};
 pub(crate) use plan::{
     OriginalLabelRestoreSources, OriginalLabelSources,
@@ -379,15 +382,18 @@ struct PlanSeal {
     pin: crate::boot_files::FilePin,
     file: File,
     identity: Identity,
+    attributes: BTreeMap<String, Vec<u8>>,
 }
 impl PlanSeal {
     fn open(pin: &crate::boot_files::FilePin) -> Result<Self> {
         super::root_pin(pin, 512 * 1024 * 1024)?;
         let (file, identity) = crate::boot_files::open_pin(pin)?;
+        let attributes = attributes(&file)?;
         let value = Self {
             pin: pin.clone(),
             file,
             identity,
+            attributes,
         };
         value.revalidate()?;
         Ok(value)
@@ -395,8 +401,10 @@ impl PlanSeal {
     fn revalidate(&self) -> Result<()> {
         ensure(
             fs::stat(&self.file)? == self.identity
+                && attributes(&self.file)? == self.attributes
                 && fs::Tree::open("/", 0)?.identity(&fs::absolute_string(&self.pin.path)?)?
-                    == self.identity,
+                    == self.identity
+                && fs::stat(&self.file)? == self.identity,
             "held immutable complete label plan was changed or replaced",
         )?;
         super::no_privilege_attributes(&self.file)

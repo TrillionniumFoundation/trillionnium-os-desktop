@@ -19,7 +19,8 @@ pub(super) use runtime::RuntimeRestoreAttempt;
 #[path = "cold_original_label_transaction.rs"]
 mod transaction;
 pub(crate) use transaction::{
-    OriginalLabelTransaction, OriginalLabelsApplied, OriginalPairRestored,
+    OriginalLabelRestorationTransaction, OriginalLabelTransaction, OriginalLabelsApplied,
+    OriginalLabelsRestored, OriginalPairRestored,
 };
 pub(in crate::cold_original_data) use transaction::{
     restore_retired_pair, withdraw_labeled_selection,

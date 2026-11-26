@@ -768,3 +768,38 @@ The source factory extracts three exact normal systemd units from the admitted s
 The actual gentmp2 random-seed source performs in-place write/truncate/fsync. It normally removes and sets only user.random-seed-creditable (absent or exactly one byte 1). This one source-owned attribute may therefore differ across the runtime window on the same generation and root-owned0600 regular file. The restoration preimage records its complete current value, and the label syscall must preserve that and every other current attribute and inode field. This is not an exception for replaced generations or unrelated attributes, and never reads seed contents. The normal gentmp2 archive readback independently matched all three declared unit hashes.
 
 The initial data intent now retains each original and working directory/member's complete descriptor-bound xattrs and ext4 generation alongside F9. This reads no image bodies. Every retirement/layout observation preserves the original rollback attributes and generation exactly. Working observations permit only the separately admitted SELinux label attribute to differ; all unrelated xattrs and the generation remain exact, and this observation alone never authorizes a label or data mutation. Old incomplete data intents cannot substitute for these mandatory snapshots.
+
+
+### Complete original label restoration
+
+The data adapter first consumes the real `OriginalRetirement` and durably
+returns the entire independent working directory to its private location.
+`OriginalLabelRestorationTransaction` then reopens the original immutable label
+plan and exact normal archive sources. Every target is matched both by its
+named inode and its persistent ext4 generation; the logical working-data paths
+map to the returned private copy, never the restored original images.
+
+Every restoration writes a current preimage under its actual retirement
+epoch, retains a recovery descriptor, changes only the recorded SELinux
+attribute, and performs the target filesystem metadata barrier before recording
+completion. Original accounts/package inputs remain strict. Only the fixed,
+source-defined log/cache/home/service state contracts may preserve current
+runtime metadata; the two working images additionally require their actual
+two-FD fsync and retirement proof. The single GRUB environment and owned
+directory renames use their exact transaction observations, not generic mutable
+paths. Unknown generations, aliases, attributes or source states remain errors.
+
+An interrupted successful xattr operation is recognized from its real inode
+before the held owner's ctime is rebound. A new real retirement may finish
+restoration after permitted mutable growth without editing an older preimage.
+The opaque `OriginalLabelsRestored` exists only after complete current target
+and retained-exclusion readback. Its account/SSH/home metadata derivations bind
+the original source prelabel snapshot, current snapshot, restored snapshot and
+actual evidence pins for the normal package rollback bridge. No caller Boolean,
+phase name, request to return, or failed-return record proves normal shutdown
+or final application readiness.
+
+These are source and isolated filesystem tests. They do not assert that labels
+have been applied to the original device or that a physical boot is authorized.
+The initial and returned owner windows must still retain actual quiescence,
+deadlines and complete source/reference checks at their boundaries.

@@ -585,6 +585,76 @@ impl RootScope {
         self.root_identity = step.core.after.identity.clone();
         self.revalidate()
     }
+    pub(super) fn verify_restored_exclusions(
+        &self,
+        inventory: &Inventory,
+        data: &super::super::OriginalDataTransaction,
+    ) -> Result<Value> {
+        self.revalidate()?;
+        ensure(
+            data.transaction.observe(true)?
+                == (
+                    super::super::Layout::Ready,
+                    super::super::SelectionState::Original,
+                ),
+            "retained exclusions require the actual original pair and selection",
+        )?;
+        let mut rows = Vec::new();
+        for excluded in &inventory.exclusions {
+            if let Some(old) = &excluded.mount {
+                let actual = self
+                    .mounts
+                    .iter()
+                    .find(|m| m.path == old.path)
+                    .ok_or("original excluded mount missing after return")?;
+                ensure(
+                    actual.root == old.root
+                        && actual.filesystem == old.filesystem
+                        && actual.source == old.source
+                        && actual.options == old.options
+                        && actual.super_options == old.super_options,
+                    "returned excluded mount no longer has its original normal source and flags",
+                )?;
+                rows.push(serde_json::json!({"path":excluded.path,"prior_boot_mount":old,"returned_mount":actual}));
+                continue;
+            }
+            let current = snapshot(&self.open_named(&excluded.path)?)?;
+            if excluded.path == Path::new(super::super::ORIGINAL) {
+                super::verify_data_snapshot(
+                    &data.transaction.intent.original.directory_label_identity,
+                    &current,
+                    false,
+                )?;
+                rows.push(
+                    serde_json::json!({"path":excluded.path,"original_pair_generation":current,
+                    "original_label_not_written":true}),
+                );
+                continue;
+            }
+            ensure(
+                Some(&current.handle) == excluded.persistent_handle.as_ref()
+                    && (
+                        current.identity.dev,
+                        current.identity.ino,
+                        current.identity.mode,
+                        current.identity.uid,
+                        current.identity.gid,
+                    ) == (
+                        excluded.identity.dev,
+                        excluded.identity.ino,
+                        excluded.identity.mode,
+                        excluded.identity.uid,
+                        excluded.identity.gid,
+                    )
+                    && current.attributes.get(super::LABEL) == excluded.original_label.as_ref(),
+                "retained original clone/evidence tree lost its generation, custody or original label",
+            )?;
+            rows.push(serde_json::json!({"path":excluded.path,"before":excluded.identity,"returned":current,
+                "excluded_tree_contents_not_traversed":true}));
+        }
+        self.revalidate()?;
+        Ok(serde_json::json!({"retained_exclusions":rows}))
+    }
     fn walk(
         &self,
         file: &File,

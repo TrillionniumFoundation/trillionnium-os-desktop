@@ -19,6 +19,9 @@ pub(in crate::cold_original_data) use selection::withdraw as withdraw_labeled_se
 mod pair_restore;
 pub(crate) use pair_restore::OriginalPairRestored;
 pub(in crate::cold_original_data) use pair_restore::restore_pair as restore_retired_pair;
+#[path = "cold_original_label_restore.rs"]
+mod restore;
+pub(crate) use restore::{OriginalLabelRestorationTransaction, OriginalLabelsRestored};
 
 const SCHEMA: &str = "droidloom.original-label-transaction-plan.v1";
 #[derive(Clone, Copy, Debug, Deserialize, Serialize, PartialEq, Eq)]
@@ -531,6 +534,24 @@ impl<'a> OriginalLabelTransaction<'a> {
         authority: &OriginalQualificationAuthority,
         data: &OriginalDataTransaction,
     ) -> Result<OriginalLabelsApplied> {
+        if let Some(attempt) = self.active_attempt.as_ref() {
+            let current = snapshot(&attempt.recovery)?;
+            let mut expected = attempt.preimage.before.attributes.clone();
+            expected.insert(LABEL.into(), attempt.preimage.desired.clone());
+            if current.attributes == expected {
+                let core = attempt.applied_readback()?;
+                let step = OriginalLabelDerivation {
+                    candidate_id: self.plan.candidate_id.clone(),
+                    logical_path: attempt.preimage.logical_path.clone(),
+                    plan: self.seal.clone(),
+                    preimage: attempt.pin.clone(),
+                    applied: record_pin(&attempt.records, "APPLIED.json")?,
+                    core,
+                };
+                self.scope.accept_root_label(&step)?;
+                authority.accept_label_derivation(&step)?;
+            }
+        }
         self.validate_owner(authority, data)?;
         self.seal.full_readback()?;
         let mut applications = Vec::new();
