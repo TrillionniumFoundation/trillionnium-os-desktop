@@ -30,6 +30,8 @@ pub(super) enum OriginalDataStep {
     Exchange,
     Label,
     PublishSelection,
+    WithdrawSelection,
+    RetireWorking,
     Restore,
 }
 
@@ -41,6 +43,11 @@ fn data_phase_allowed(phase: Phase, step: OriginalDataStep) -> bool {
             | (Phase::PairExchangeIntent, Exchange)
             | (Phase::LabelsIntent, Label)
             | (Phase::SelectionPublishIntent, PublishSelection)
+            | (
+                Phase::SelectionWithdrawIntent | Phase::Aborting,
+                WithdrawSelection
+            )
+            | (Phase::SelectionWithdrawn | Phase::Aborting, RetireWorking)
             | (Phase::SelectionWithdrawn | Phase::Aborting, Restore)
     )
 }
@@ -118,12 +125,19 @@ impl OriginalQualificationAuthority {
             "data adapter operation is outside the owned durable phase",
         )?;
         match (&*self.retirement.borrow(), step) {
-            (RetirementSource::Initial, OriginalDataStep::Prepare | OriginalDataStep::Restore)
+            (
+                RetirementSource::Initial,
+                OriginalDataStep::Prepare
+                | OriginalDataStep::WithdrawSelection
+                | OriginalDataStep::Restore,
+            )
             | (
                 RetirementSource::Prepared(_),
                 OriginalDataStep::Exchange
                 | OriginalDataStep::Label
                 | OriginalDataStep::PublishSelection
+                | OriginalDataStep::WithdrawSelection
+                | OriginalDataStep::RetireWorking
                 | OriginalDataStep::Restore,
             ) => Ok(()),
             _ => Err("data adapter lacks the phase's actual immutable intent".into()),
@@ -298,6 +312,22 @@ mod operation_tests {
         assert!(data_phase_allowed(
             Phase::SelectionWithdrawn,
             OriginalDataStep::Restore
+        ));
+        assert!(!data_phase_allowed(
+            Phase::OriginalReturned,
+            OriginalDataStep::WithdrawSelection
+        ));
+        assert!(data_phase_allowed(
+            Phase::SelectionWithdrawIntent,
+            OriginalDataStep::WithdrawSelection
+        ));
+        assert!(!data_phase_allowed(
+            Phase::SelectionWithdrawIntent,
+            OriginalDataStep::RetireWorking
+        ));
+        assert!(data_phase_allowed(
+            Phase::SelectionWithdrawn,
+            OriginalDataStep::RetireWorking
         ));
     }
 }

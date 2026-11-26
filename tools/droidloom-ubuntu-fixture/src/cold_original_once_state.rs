@@ -45,6 +45,7 @@ pub(super) enum Phase {
     ReturnSelected,
     ReturnRebootRequested,
     OriginalReturned,
+    SelectionWithdrawIntent,
     Aborting,
     SelectionWithdrawn,
     PairRestored,
@@ -98,8 +99,9 @@ impl Phase {
                 | (Retiring, ReturnSelected)
                 | (ReturnSelected, ReturnRebootRequested)
                 | (ReturnRebootRequested, OriginalReturned)
-                | (OriginalReturned, SelectionWithdrawn)
-                | (Aborting, SelectionWithdrawn)
+                | (OriginalReturned, SelectionWithdrawIntent)
+                | (Aborting, SelectionWithdrawIntent)
+                | (SelectionWithdrawIntent, SelectionWithdrawn)
                 | (SelectionWithdrawn, PairRestored)
                 | (PairRestored, LabelsRestored)
                 | (LabelsRestored, CellRestored)
@@ -541,6 +543,45 @@ mod tests {
         assert_eq!(
             Journal::reopen(&path, &candidate, &intent)?.phase(),
             Some(Phase::Aborting)
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn withdrawal_intent_survives_interruption_before_any_restore() -> Result<()> {
+        assert!(!Phase::OriginalReturned.permits(Phase::SelectionWithdrawn));
+        assert!(Phase::OriginalReturned.permits(Phase::SelectionWithdrawIntent));
+        assert!(!Phase::SelectionWithdrawIntent.permits(Phase::PairRestored));
+        let tmp = tempfile::tempdir()?;
+        let path = tmp.path().join("journal");
+        let (candidate, intent) = identifiers();
+        let mut j = Journal::create(&path, &candidate, &intent)?;
+        j.append(Phase::Admitted, BOOT, json!({}))?;
+        j.append(Phase::Aborting, BOOT, json!({"test_interruption":true}))?;
+        assert!(
+            j.append(Phase::SelectionWithdrawn, BOOT, json!({}))
+                .is_err()
+        );
+        j.append(
+            Phase::SelectionWithdrawIntent,
+            BOOT,
+            json!({"preimage":"exact"}),
+        )?;
+        let mut recovered = Journal::reopen(&path, &candidate, &intent)?;
+        assert_eq!(recovered.phase(), Some(Phase::SelectionWithdrawIntent));
+        assert!(
+            recovered
+                .append(Phase::PairRestored, BOOT, json!({}))
+                .is_err()
+        );
+        recovered.append(
+            Phase::SelectionWithdrawn,
+            BOOT,
+            json!({"readback":"test-only"}),
+        )?;
+        assert_eq!(
+            Journal::reopen(&path, &candidate, &intent)?.phase(),
+            Some(Phase::SelectionWithdrawn)
         );
         Ok(())
     }
