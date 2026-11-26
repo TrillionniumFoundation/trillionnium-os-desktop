@@ -990,8 +990,8 @@ pub(super) fn admit(input: &FilePin) -> Result<Rc<OriginalQualificationAuthority
     ensure(
         plan.public_apk_inputs.bytes == 881
             && plan.public_apk_inputs.sha256
-                == "3073389344630d8268f27043230404dc23e3c5633d2c612b263d1e66ac4c1742",
-        "once candidate does not bind the current reviewed r4 public39 import",
+                == "e0b218e430c1a8de312bd8af29fc9d4247929ec4f907361eea66daa050215fad",
+        "once candidate does not bind the current reviewed r5 public39 import",
     )?;
     let public_apks = crate::boot_public_apks::verify_inputs_report(
         &plan.public_apk_inputs.path,
@@ -1220,11 +1220,11 @@ pub(super) fn resume(intent_pin: &FilePin) -> Result<Rc<OriginalQualificationAut
     ensure(
         plan.public_apk_inputs.bytes == 881
             && plan.public_apk_inputs.sha256
-                == "3073389344630d8268f27043230404dc23e3c5633d2c612b263d1e66ac4c1742"
+                == "e0b218e430c1a8de312bd8af29fc9d4247929ec4f907361eea66daa050215fad"
             && report["public_apks"]["import"] == serde_json::to_value(&plan.public_apk_inputs)?
             && report["public_apks"]["package_count"] == 39
             && report["public_apks"]["apk_file_count"] == 65,
-        "returned public material history differs from the exact admitted r4 input",
+        "returned public material history differs from the exact admitted r5 input",
     )?;
     let source_pin = pin(&intent["normal_sources"])?;
     ensure(
