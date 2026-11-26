@@ -2,7 +2,7 @@
 //! package and matcher. No deserialized plan grants label mutation authority.
 use super::{
     Snapshot,
-    scope::{Inventory, RootScope},
+    scope::{Entry, Inventory, RootScope},
 };
 use crate::{
     Result,
@@ -89,7 +89,7 @@ fn pin(path: &Path) -> Result<FilePin> {
     Guard::open(&pin)?;
     Ok(pin)
 }
-fn save(path: &Path, value: &impl Serialize) -> Result<FilePin> {
+pub(super) fn save(path: &Path, value: &impl Serialize) -> Result<FilePin> {
     let body = serde_json::to_vec(value)?;
     ensure(
         body.len() <= 512 * 1024 * 1024,
@@ -176,7 +176,10 @@ impl OriginalLabelSources {
         let host: FilePin = serde_json::from_value(selected[0]["package"].clone())?;
         let mut guards = vec![Guard::open(&source_record)?, Guard::open(&host)?];
         let extract_tool = pin(Path::new("/usr/bin/dpkg-deb"))?;
-        guards.push(Guard::open(&extract_tool)?);
+        // This original host executable is legitimately labeled later. Its
+        // extraction-window custody ends before the full-root label phase;
+        // only immutable qualification sources remain in the long-lived set.
+        let extract_guard = Guard::open(&extract_tool)?;
         let host_root = work.join("normal-host-payload");
         files::private_dir(&host_root)?;
         let extract = files::run_logged(
@@ -214,11 +217,8 @@ impl OriginalLabelSources {
             guards.push(Guard::open(&pinned)?);
             tool_pins.push(pinned);
         }
-        let environment = BTreeMap::from([
-            ("LD_LIBRARY_PATH".into(), fs::absolute_string(&tool_root)?),
-            ("LANG".into(), "C".into()),
-            ("LC_ALL".into(), "C".into()),
-        ]);
+        let environment =
+            BTreeMap::from([("LD_LIBRARY_PATH".into(), fs::absolute_string(&tool_root)?)]);
         let empty = work.join("empty-policy-validation-root");
         files::private_dir(&empty)?;
         // -n is mandatory: normal setfiles validates all contexts against the
@@ -245,10 +245,12 @@ impl OriginalLabelSources {
         for guard in &guards {
             guard.revalidate()?;
         }
+        extract_guard.revalidate()?;
         let source = save(
             &work.join("ORIGINAL-LABEL-SOURCES.json"),
             &json!({"schema":"droidloom.original-label-sources.v1",
             "fresh_normal_initramfs_readback":source_record,"host_package":host,"host_extract":extract,
+            "normal_extractor":{"source":extract_tool,"identity":extract_guard.identity},
             "contexts":contexts,"joint_policy":policy,"normal_label_tools":tool_pins,"context_policy_validation":validation,
             "host_source_commit":report["host_source_commit"],"host_source_tree":report["host_source_tree"],
             "normal_materials":report["normal_materials"],"physical_labels_applied":false}),
@@ -272,13 +274,17 @@ impl OriginalLabelSources {
         }
         Ok(())
     }
-    fn lookup(&self, inventory: &Inventory, work: &Path) -> Result<(Vec<Vec<u8>>, FilePin)> {
+    pub(super) fn lookup_entries(
+        &self,
+        entries: &[Entry],
+        work: &Path,
+    ) -> Result<(Vec<Vec<u8>>, FilePin)> {
         self.revalidate()?;
         let mut groups: BTreeMap<&str, Vec<usize>> = BTreeMap::new();
-        for (index, entry) in inventory.entries.iter().enumerate() {
+        for (index, entry) in entries.iter().enumerate() {
             groups.entry(&entry.matcher_type).or_default().push(index);
         }
-        let mut labels = vec![Vec::new(); inventory.entries.len()];
+        let mut labels = vec![Vec::new(); entries.len()];
         let mut commands = Vec::new();
         for (kind, indices) in groups {
             for (batch, chunk) in indices.chunks(32).enumerate() {
@@ -291,7 +297,7 @@ impl OriginalLabelSources {
                     fs::absolute_string(&self.contexts.path)?,
                 ];
                 for index in chunk {
-                    args.push(fs::absolute_string(&inventory.entries[*index].path)?);
+                    args.push(fs::absolute_string(&entries[*index].path)?);
                 }
                 ensure(
                     args.iter().map(String::len).sum::<usize>() <= 160 * 1024,
@@ -333,7 +339,7 @@ impl OriginalLabelSources {
         let inventory = scope.collect()?;
         let matched = self.work.join("root-context-lookups");
         files::private_dir(&matched)?;
-        let (labels, commands) = self.lookup(&inventory, &matched)?;
+        let (labels, commands) = self.lookup_entries(&inventory.entries, &matched)?;
         verify_hardlink_labels(
             &inventory
                 .entries
@@ -369,7 +375,10 @@ impl OriginalLabelSources {
         )
     }
 }
-fn verify_hardlink_labels(entries: &[(&Snapshot, &Path)], labels: &[Vec<u8>]) -> Result<()> {
+pub(super) fn verify_hardlink_labels(
+    entries: &[(&Snapshot, &Path)],
+    labels: &[Vec<u8>],
+) -> Result<()> {
     ensure(
         entries.len() == labels.len(),
         "complete label/member association required",
@@ -513,5 +522,174 @@ mod tests {
             )
             .is_err()
         );
+    }
+}
+
+/// Separate read-only custody of the exact source chain selected *before* the
+/// original transaction. It cannot be passed to label preparation or apply,
+/// cannot manufacture OriginalLabelSources, and never says the old original
+/// dpkg status describes the returned candidate package database.
+pub(crate) struct OriginalLabelRestoreSources {
+    source_record: FilePin,
+    historical_readback: Value,
+    guards: Vec<Guard>,
+}
+impl OriginalLabelRestoreSources {
+    pub(crate) fn source_pin(&self) -> &FilePin {
+        &self.source_record
+    }
+    pub(crate) fn historical_initramfs_readback(&self) -> &Value {
+        &self.historical_readback
+    }
+    pub(crate) fn revalidate(&self) -> Result<()> {
+        for guard in &self.guards {
+            guard.revalidate()?;
+        }
+        Ok(())
+    }
+    pub(crate) fn reopen(source_record: &FilePin) -> Result<Self> {
+        // These observations prove the real returned original environment,
+        // without comparing its current dpkg bytes with the historical source.
+        crate::cold_original_initramfs::original_context()?;
+        let work = source_record
+            .path
+            .parent()
+            .ok_or("original label source parent absent")?;
+        source_work(work)?;
+        ensure(
+            source_record.path == work.join("ORIGINAL-LABEL-SOURCES.json"),
+            "restoration requires the exact preserved source factory record",
+        )?;
+        let mut guards = vec![Guard::open(source_record)?];
+        let source: Value =
+            serde_json::from_slice(&files::read_pin(source_record, 16 * 1024 * 1024)?)?;
+        ensure(
+            source["schema"] == "droidloom.original-label-sources.v1",
+            "preserved normal label source schema differs",
+        )?;
+        let readback: FilePin =
+            serde_json::from_value(source["fresh_normal_initramfs_readback"].clone())?;
+        ensure(
+            readback.path == work.join("ORIGINAL-INITRAMFS-READBACK.json"),
+            "historical normal admission is outside the source factory's actual work",
+        )?;
+        guards.push(Guard::open(&readback)?);
+        let historical: Value =
+            serde_json::from_slice(&files::read_pin(&readback, 16 * 1024 * 1024)?)?;
+        ensure(
+            historical["schema"] == "droidloom.original-initramfs-readback.v1"
+                && source["normal_materials"] == historical["normal_materials"]
+                && source["host_source_commit"] == historical["host_source_commit"]
+                && source["host_source_tree"] == historical["host_source_tree"],
+            "restoration source chain differs from the actual earlier normal admission",
+        )?;
+        crate::cold_original_initramfs::verify_archived_normal_materials(
+            &historical["normal_materials"],
+        )?;
+        // Only preserved qualification objects become long-lived guards. Old
+        // original_host/dpkg/account pins remain historical facts, never a
+        // claim about today's returned original-machine state.
+        for field in [
+            "source_prepared",
+            "producer_input",
+            "producer_stage",
+            "actual_private_build",
+            "initrd",
+        ] {
+            let pin: FilePin = serde_json::from_value(historical[field].clone())?;
+            ensure(
+                pin.path.starts_with(QUALIFICATION),
+                "restoration proof left the protected qualification tree",
+            )?;
+            guards.push(Guard::open(&pin)?);
+        }
+        let prepared_pin: FilePin = serde_json::from_value(historical["source_prepared"].clone())?;
+        let prepared: Value =
+            serde_json::from_slice(&files::read_pin(&prepared_pin, 2 * 1024 * 1024)?)?;
+        ensure(
+            prepared["schema"] == "droidloom.original-host-initramfs-prepared.v1"
+                && prepared["input"] == historical["producer_input"]
+                && prepared["actual_private_build"] == historical["actual_private_build"]
+                && prepared["initrd"] == historical["initrd"],
+            "preserved source and normal producer references no longer agree",
+        )?;
+        for field in ["public_release", "native_release"] {
+            let pin: FilePin =
+                serde_json::from_value(historical["normal_materials"][field].clone())?;
+            ensure(
+                pin.path.starts_with(QUALIFICATION),
+                "normal release source left protected qualification custody",
+            )?;
+            guards.push(Guard::open(&pin)?);
+        }
+        for package in historical["normal_materials"]["packages"]
+            .as_array()
+            .ok_or("normal archive roster missing")?
+        {
+            let pin: FilePin = serde_json::from_value(package["package"].clone())?;
+            ensure(
+                pin.path.starts_with(QUALIFICATION),
+                "normal package archive left protected qualification custody",
+            )?;
+            guards.push(Guard::open(&pin)?);
+        }
+        let host: FilePin = serde_json::from_value(source["host_package"].clone())?;
+        let selected = historical["normal_materials"]["packages"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter(|row| row["role"] == "host" && row["package"] == source["host_package"])
+            .count();
+        ensure(
+            selected == 1,
+            "label source no longer identifies the unique admitted normal host archive",
+        )?;
+        guards.push(Guard::open(&host)?);
+        for (field, relative) in [
+            (
+                "contexts",
+                "etc/selinux/droidloom/contexts/files/file_contexts",
+            ),
+            (
+                "joint_policy",
+                "usr/lib/droidloom/production/current/board-policy/joint.policy",
+            ),
+        ] {
+            let pin: FilePin = serde_json::from_value(source[field].clone())?;
+            ensure(
+                pin.path == work.join("normal-host-payload").join(relative),
+                "preserved normal FC/policy source location differs",
+            )?;
+            guards.push(Guard::open(&pin)?);
+        }
+        let tools = source["normal_label_tools"]
+            .as_array()
+            .ok_or("normal label tool source roster missing")?;
+        ensure(
+            tools.len() == TOOLS.len(),
+            "normal label tool count differs",
+        )?;
+        for (value, (name, bytes, sha, mode)) in tools.iter().zip(TOOLS) {
+            let pin: FilePin = serde_json::from_value(value.clone())?;
+            ensure(
+                pin.path == work.join("original-label-tools").join(name)
+                    && pin.bytes == bytes
+                    && pin.sha256 == sha,
+                "preserved normal matcher/library source differs",
+            )?;
+            let guard = Guard::open(&pin)?;
+            ensure(
+                guard.identity.mode & 0o7777 == mode,
+                "preserved normal label tool mode differs",
+            )?;
+            guards.push(guard);
+        }
+        let result = Self {
+            source_record: source_record.clone(),
+            historical_readback: historical,
+            guards,
+        };
+        result.revalidate()?;
+        Ok(result)
     }
 }

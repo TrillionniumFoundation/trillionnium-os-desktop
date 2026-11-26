@@ -18,7 +18,7 @@ mod journal;
 mod plan;
 #[path = "cold_original_label_scope.rs"]
 mod scope;
-pub(crate) use plan::{OriginalLabelSources, inspect_files as inspect_original_labels_files};
+pub(crate) use plan::{OriginalLabelRestoreSources, OriginalLabelSources, inspect_files as inspect_original_labels_files};
 
 const LABEL: &str = "security.selinux";
 const MAX_NAMES: usize = 65_536;
