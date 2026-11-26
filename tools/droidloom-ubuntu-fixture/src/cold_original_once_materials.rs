@@ -52,6 +52,7 @@ pub(super) struct Plan {
     normal_producer: FilePin,
     prepared_initramfs: FilePin,
     owned_verification_input: FilePin,
+    public_apk_inputs: FilePin,
     cold_clone: FilePin,
     original_ext4_metadata: FilePin,
     label_tools: LabelTools,
@@ -175,6 +176,77 @@ impl Materials {
     }
     pub(super) fn recovery(&self) -> &RecoveryBootSpec {
         &self.recovery
+    }
+    pub(super) fn early(&self) -> &FilePin {
+        self.early_configuration.pin()
+    }
+    pub(super) fn mac_files(&self) -> Vec<&FilePin> {
+        self.mac_files.iter().map(SealedInput::pin).collect()
+    }
+    pub(super) fn admitted(&self) -> Result<Value> {
+        self.revalidate_custody()?;
+        let value = serde_json::from_slice(&self.report.read()?)?;
+        self.revalidate_custody()?;
+        Ok(value)
+    }
+    /// The complete source factory extracted and verified these bytes from
+    /// the actual normal host Debian package. This lookup does not select an
+    /// arbitrary installed pathname or admit a second producer.
+    pub(super) fn normal_host_file(&self, relative: &str) -> Result<FilePin> {
+        ensure(
+            !relative.starts_with('/')
+                && relative
+                    .split('/')
+                    .all(|p| !p.is_empty() && p != "." && p != ".."),
+            "normal host relative member",
+        )?;
+        let admitted = self.admitted()?;
+        let host_pin: FilePin = serde_json::from_value(
+            admitted["fresh_owned"]["actual"]["normal_host_manifest"].clone(),
+        )?;
+        let host: crate::boot_host::HostManifest =
+            serde_json::from_slice(&files::read_pin(&host_pin, 1024 * 1024)?)?;
+        crate::boot_host::validate_manifest(&host)?;
+        let normal = &admitted["normal_initramfs"];
+        ensure(
+            host.commit == text(normal, "host_source_commit")?
+                && host.tree == text(normal, "host_source_tree")?,
+            "normal host file source differs from actual admission",
+        )?;
+        let rows = host
+            .files
+            .iter()
+            .filter(|f| f.path == relative)
+            .collect::<Vec<_>>();
+        ensure(
+            rows.len() == 1,
+            "normal package must contain the exact source-owned member once",
+        )?;
+        let row = rows[0];
+        let root = self
+            .source_pin()
+            .path
+            .parent()
+            .ok_or("normal source parent")?
+            .join("normal-host-payload");
+        let pin = FilePin {
+            path: root.join(relative),
+            bytes: row.size,
+            sha256: row.sha256.clone(),
+        };
+        let (file, identity) = files::open_pin(&pin)?;
+        ensure(
+            identity.uid == 0
+                && identity.gid == 0
+                && identity.nlink == 1
+                && identity.mode & 0o7777 == row.mode
+                && fs::hash(&file)? == pin.sha256
+                && fs::stat(&file)? == identity
+                && fs::xattrs(&file)?.is_empty(),
+            "normal package member body or metadata changed",
+        )?;
+        self.revalidate_custody()?;
+        Ok(pin)
     }
     pub(super) fn revalidate_custody(&self) -> Result<()> {
         self.sources.revalidate_custody()?;
@@ -717,6 +789,7 @@ pub(super) fn admit(input: &FilePin) -> Result<Rc<OriginalQualificationAuthority
         &plan.normal_producer,
         &plan.prepared_initramfs,
         &plan.owned_verification_input,
+        &plan.public_apk_inputs,
         &plan.cold_clone,
         &plan.original_ext4_metadata,
     ] {
@@ -727,6 +800,24 @@ pub(super) fn admit(input: &FilePin) -> Result<Rc<OriginalQualificationAuthority
         fs::stat(&actual_exe)? == guards[0].identity
             && fs::hash(&actual_exe)? == plan.normal_producer.sha256,
         "once preparation is not executing its actual normal producer",
+    )?;
+    ensure(
+        plan.public_apk_inputs.bytes == 881
+            && plan.public_apk_inputs.sha256
+                == "3073389344630d8268f27043230404dc23e3c5633d2c612b263d1e66ac4c1742",
+        "once candidate does not bind the current reviewed r4 public39 import",
+    )?;
+    let public_apks = crate::boot_public_apks::verify_inputs_report(
+        &plan.public_apk_inputs.path,
+        &plan.public_apk_inputs.sha256,
+    )?;
+    ensure(
+        public_apks["package_count"] == 39
+            && public_apks["apk_file_count"] == 65
+            && public_apks["scope"] == "source_materials_only"
+            && public_apks["applications_installed"] == 0
+            && public_apks["application_business_accepted"] == false,
+        "public input verification must remain the actual source-only 39-app contract",
     )?;
     let data_before = cold_original_data::assert_initial_pair_retired(&plan.cold_clone)?;
     let source_work = Path::new(BASE).join(format!(
@@ -770,7 +861,7 @@ pub(super) fn admit(input: &FilePin) -> Result<Rc<OriginalQualificationAuthority
         &work.join("ADMITTED-MATERIALS.json"),
         &json!({
         "schema":"droidloom.original-once-admitted-materials.v1","input":input,"candidate_id":plan.candidate_id,
-        "normal_sources":sources.source_pin(),"normal_initramfs":normal,"fresh_owned":owned,
+        "normal_sources":sources.source_pin(),"normal_initramfs":normal,"fresh_owned":owned,"public_apks":public_apks,
         "five_mac_files":mac_receipt,"original_data_before":data_before,"original_ext4":ext4_readback,
         "original_cold_clone_input":original_cold_clone,"original_cold_clone_input_identity":original_cold_guard.identity,
         "retained_cold_clone":plan.cold_clone,
@@ -802,7 +893,7 @@ pub(super) fn admit(input: &FilePin) -> Result<Rc<OriginalQualificationAuthority
         &json!({"schema":"droidloom.original-once-intent.v1",
         "candidate_id":plan.candidate_id,"work_directory":work,"original_boot_id":plan.original_boot_id,
         "root_uuid":contract::ROOT_UUID,"original_kernel":contract::ORIGINAL_KERNEL,"original_entry":contract::ORIGINAL_ENTRY,
-        "public_release_id":m["public_release_id"],"native_release_id":m["native_release_id"],
+        "normal_public_release_id":m["public_release_id"],"normal_native_release_id":m["native_release_id"],
         "admitted_materials":report,"normal_sources":sources.source_pin(),"normal_producer":plan.normal_producer,
         "original_cell":original_cell_pin,"candidate_cell":new_cell,"selection":selection,"cold_clone":plan.cold_clone,
         "original_grub":grub,"recovery":recovery}),
@@ -939,6 +1030,15 @@ pub(super) fn resume(intent_pin: &FilePin) -> Result<Rc<OriginalQualificationAut
             && super::same_pin(&pin(&intent["normal_producer"])?, &plan.normal_producer),
         "returned intent differs from its original source plan",
     )?;
+    ensure(
+        plan.public_apk_inputs.bytes == 881
+            && plan.public_apk_inputs.sha256
+                == "3073389344630d8268f27043230404dc23e3c5633d2c612b263d1e66ac4c1742"
+            && report["public_apks"]["import"] == serde_json::to_value(&plan.public_apk_inputs)?
+            && report["public_apks"]["package_count"] == 39
+            && report["public_apks"]["apk_file_count"] == 65,
+        "returned public material history differs from the exact admitted r4 input",
+    )?;
     let source_pin = pin(&intent["normal_sources"])?;
     ensure(
         super::same_pin(&source_pin, &pin(&report["normal_sources"])?),
@@ -976,6 +1076,7 @@ pub(super) fn resume(intent_pin: &FilePin) -> Result<Rc<OriginalQualificationAut
         plan.normal_producer.clone(),
         plan.prepared_initramfs.clone(),
         plan.owned_verification_input.clone(),
+        plan.public_apk_inputs.clone(),
         retained_cold.clone(),
         plan.original_ext4_metadata.clone(),
     ];

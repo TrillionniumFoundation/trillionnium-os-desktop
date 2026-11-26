@@ -20,7 +20,7 @@ const PYTHON_SHA: &str = "52e0a13e60a981d8c4b6478be2ba5176f69da07948a056bf49cf6f
 // This is an internal adapter to the already source-bound engines, not a new
 // Python CLI. All source files are exact embedded normal-producer bytes. In
 // particular package rollback uses the original durable engine snapshots.
-const DRIVER: &str = r#"import sys,json,os,stat,hashlib
+const DRIVER: &str = r#"import sys,json,os,stat,hashlib,contextlib
 from pathlib import Path
 sys.path.insert(0,sys.argv[1])
 from release import need,held,hash_fd,file_pin,read_pin,read_json_file,canonical,f9,TOOLS,_fixed_command,verify_original_grub_entry,original_grub_entry,ORIGINAL_ROOT_UUID,ORIGINAL_KERNEL
@@ -43,12 +43,48 @@ def serialize(v):
  if isinstance(v,(list,tuple)):return [serialize(x) for x in v]
  return v
 
+_tool_sources=contextlib.ExitStack()
+_tool_custody=[]
+_tool_payloads=None
+
+def source_attrs(fd):
+ names=os.listxattr(fd)
+ need(len(names)==len(set(names)) and len(names)<=16,'normal tool source xattr inventory')
+ return {n:os.getxattr(fd,n) for n in names}
+
+def check_tool_sources(full=False):
+ for path,fd,before,attrs,pin in _tool_custody:
+  with held(path,root=True,maximum=16*1024**3) as (named,now):
+   need(f9(os.fstat(fd))==f9(before)==f9(now),'normal tool archive custody changed')
+   need(source_attrs(fd)==attrs==source_attrs(named),'normal tool archive xattrs changed')
+   if full:need(hash_fd(fd)==pin['sha256'],'normal tool archive full source bytes changed')
+   need(f9(os.fstat(fd))==f9(before)==f9(os.fstat(named)),'normal tool archive changed during readback')
+
+def normal_tool_payloads():
+ global _tool_payloads
+ if _tool_payloads is None:
+  descriptor=json.loads(read_pin(m['native_release']))
+  need(descriptor['schema']==ORIGINAL_SCHEMA and isinstance(descriptor['files'],list) and len(descriptor['files'])<=512,'bounded exact original native source')
+  rows=[{'path':'NATIVE-RELEASE.json','bytes':m['native_release']['bytes'],'sha256':m['native_release']['sha256']}]+descriptor['files']
+  seen=set()
+  for pin in rows:
+   relative=pin['path'];parts=Path(relative).parts
+   need(not Path(relative).is_absolute() and parts and all(p not in ('','.','..') for p in parts) and relative not in seen,'normal native relative source')
+   seen.add(relative);path=native/relative
+   fd,st=_tool_sources.enter_context(held(path,root=True,maximum=16*1024**3))
+   need(st.st_size==pin['bytes'] and hash_fd(fd)==pin['sha256'],'normal tool initial source bytes')
+   _tool_custody.append((path,fd,st,source_attrs(fd),pin))
+  actual,closure,packages,payloads=verify_bundle(native,m['native_release_id'],True)
+  need(actual==descriptor and len(packages)==22,'exact physical native22 source')
+  check_tool_sources();_tool_payloads=payloads
+ else:check_tool_sources()
+ return _tool_payloads
+
 def normal_tool(name,args,seconds=60,maximum=8*1024*1024,borrowed=()):
  # The original kernel may already have its normally upgraded systemd. Select
  # only the actual old/new member of this complete native22 source closure.
  if name in ('systemctl','journalctl','loginctl','systemd-run'):
-  descriptor,closure,packages,payloads=verify_bundle(native,m['native_release_id'],True)
-  need(descriptor['schema']==ORIGINAL_SCHEMA and len(packages)==22,'exact physical native22 source')
+  payloads=normal_tool_payloads()
   path='/usr/bin/'+name;rows=[]
   for kind in ('old','new'):
    row=payloads['systemd'][kind]['payload']['usr/bin/'+name]
@@ -56,9 +92,10 @@ def normal_tool(name,args,seconds=60,maximum=8*1024*1024,borrowed=()):
    rows.append((kind,row))
   with held(path,root=True,modes={0o755},maximum=16*1024*1024) as (fd,st):actual=(st.st_size,hash_fd(fd))
   matches=[(k,r) for k,r in rows if actual==(r['bytes'],r['sha256'])]
-  need(len(matches)==1,'fixed tool must match exactly one complete normal package generation')
+  need(len(matches)==1,'fixed tool must uniquely match the actual old/new normal package member')
   kind,row=matches[0]
   result=_fixed_command(path,row['bytes'],row['sha256'],args,uid=None,seconds=seconds,maximum=maximum,borrowed=borrowed)
+  check_tool_sources()
   result['normal_package_kind']=kind
   result['normal_native_release']=m['native_release']
   return result
@@ -182,6 +219,8 @@ elif op=='retirement-journal':
  rows=normal_tool('journalctl',['--directory=/var/log/journal','--boot='+boot,'--no-pager','--all','--output=json','--output-fields='+fields,'_PID=1','+','_SYSTEMD_UNIT=systemd-journald.service'],seconds=60,maximum=16*1024*1024)
  result={'verify_exit':verified['exit'],'verify_stdout':verified['stdout'].decode('utf-8','strict'),'verify_stderr':verified['stderr'].decode('utf-8','strict'),'exit':rows['exit'],'stderr':rows['stderr'].decode('utf-8','strict'),'rows':[json.loads(line) for line in rows['stdout'].splitlines()],'normal_journalctl_package_kind':rows['normal_package_kind']}
 else:raise RuntimeError('unsupported source-owned once operation')
+check_tool_sources(full=True)
+_tool_sources.close()
 need(original_cold_context()==context,'original kernel/root/boot changed during the normal command')
 print(json.dumps(serialize({'schema':'droidloom.original-once-fixed-command-result.v1','operation':op,'candidate_id':request['candidate_id'],'intent':request['intent'],'original':context,'result':result}),sort_keys=True))
 "#;
@@ -247,6 +286,13 @@ pub(super) fn call(
         id.uid == 0 && id.gid == 0 && id.mode & 0o7777 == 0o755 && id.nlink == 1,
         "normal interpreter custody differs",
     )?;
+    ensure(
+        fs::hash(&python)? == python_pin.sha256
+            && fs::stat(&python)? == id
+            && fs::Tree::open("/", 0)?.identity("/usr/bin/python3.14")? == id
+            && fs::xattrs(&python)?.keys().all(|k| k == "security.selinux"),
+        "normal interpreter complete bytes or privilege attributes differ before exec",
+    )?;
     let result = files::run_logged(
         &work,
         "normal-command",
@@ -260,6 +306,10 @@ pub(super) fn call(
             fs::absolute_string(&input_path)?,
         ],
         seconds,
+    )?;
+    ensure(
+        result.exit_code == Some(0) && !result.timed_out,
+        "normal source-owned command failed or timed out",
     )?;
     (&python).rewind()?;
     ensure(

@@ -323,7 +323,7 @@ impl OriginalQualificationAuthority {
                     "original cell is not the preserved preimage",
                 )?;
             }
-            CellPublishIntent | Aborting => {
+            CellPublishIntent | CellRestoreIntent | Aborting => {
                 ensure(
                     root_file_matches(&original)? || root_file_matches(&self.expected_cell)?,
                     "interrupted cell publication is outside its two exact inode payloads",

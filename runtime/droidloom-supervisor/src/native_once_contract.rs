@@ -205,9 +205,12 @@ impl ReturnConfiguration {
         self.cell.validate(1024 * 1024)?;
         self.selection.validate(1024 * 1024)
     }
-    pub(crate) fn work(&self) -> std::path::PathBuf {
-        std::path::Path::new("/var/lib/droidloom-qualification")
+    pub(crate) fn runtime_evidence_directory(&self) -> std::path::PathBuf {
+        // Candidate-visible output is separate from the excluded private
+        // qualification intents, original preimages and rollback material.
+        std::path::Path::new("/var/lib/droidloom/qualification")
             .join(format!("original-once-{}", self.candidate_id))
+            .join("runtime-evidence")
     }
 }
 pub(crate) fn boot_arguments(input: &str) -> io::Result<BTreeMap<String, String>> {

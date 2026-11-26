@@ -643,7 +643,7 @@ fn recheck_held_source(
 
 /// Read-only check of the same pinned material contract consumed by install.
 /// It does not infer a guest, Main, epoch, labels, installation or business result.
-pub fn verify_inputs(config: &Path, expected: &str) -> Result<()> {
+pub(crate) fn verify_inputs_report(config: &Path, expected: &str) -> Result<serde_json::Value> {
     let input = boot_files::pin_file(config)?;
     ensure(input.sha256 == expected, "public APK import digest differs")?;
     let (staged, provenance) = read_materials(&input)?;
@@ -665,29 +665,33 @@ pub fn verify_inputs(config: &Path, expected: &str) -> Result<()> {
             "complete_sha256_verified":true
         }));
     }
+    Ok(json!({
+        "schema":"droidloom.public-apk-inputs-verified.v1",
+        "scope":"source_materials_only",
+        "import":input,
+        "package_count":staged.package_count,
+        "apk_file_count":staged.apk_file_count,
+        "applications":staged.applications,
+        "sources":verified,
+        "prospective_runtime_preparation_inputs":staged.runtime_preparation_inputs,
+        "fresh_normal_guest_required_for_install":true,
+        "sdk_signatures_reexecuted":false,
+        "labels_checked":false,
+        "ext4_readback_checked":false,
+        "files_staged":false,
+        "original_userdata_imported":false,
+        "applications_installed":0,
+        "application_business_accepted":false,
+        "latest_qualification_evaluated":false,
+        "guest_qualified":false,
+        "production_ready":false
+    }))
+}
+
+pub fn verify_inputs(config: &Path, expected: &str) -> Result<()> {
     println!(
         "{}",
-        serde_json::to_string_pretty(&json!({
-            "schema":"droidloom.public-apk-inputs-verified.v1",
-            "scope":"source_materials_only",
-            "import":input,
-            "package_count":staged.package_count,
-            "apk_file_count":staged.apk_file_count,
-            "applications":staged.applications,
-            "sources":verified,
-            "prospective_runtime_preparation_inputs":staged.runtime_preparation_inputs,
-            "fresh_normal_guest_required_for_install":true,
-            "sdk_signatures_reexecuted":false,
-            "labels_checked":false,
-            "ext4_readback_checked":false,
-            "files_staged":false,
-            "original_userdata_imported":false,
-            "applications_installed":0,
-            "application_business_accepted":false,
-            "latest_qualification_evaluated":false,
-            "guest_qualified":false,
-            "production_ready":false
-        }))?
+        serde_json::to_string_pretty(&verify_inputs_report(config, expected)?)?
     );
     Ok(())
 }

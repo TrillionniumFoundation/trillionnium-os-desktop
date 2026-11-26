@@ -52,6 +52,7 @@ pub(super) enum Phase {
     SelectionWithdrawn,
     PairRestored,
     LabelsRestored,
+    CellRestoreIntent,
     CellRestored,
     NativeRestored,
     PublicRestored,
@@ -69,6 +70,7 @@ impl Phase {
                     | SelectionWithdrawn
                     | PairRestored
                     | LabelsRestored
+                    | CellRestoreIntent
                     | CellRestored
                     | NativeRestored
                     | PublicRestored
@@ -103,12 +105,23 @@ impl Phase {
                 | (Retiring, ReturnSelected)
                 | (ReturnSelected, ReturnRebootRequested)
                 | (ReturnRebootRequested, OriginalReturned)
+                // The original owner records only its actual returned boot.
+                // Normal/failed runtime classification remains the private
+                // retirement factory's full observation, never this phase.
+                | (ArmIntent, OriginalReturned)
+                | (Armed, OriginalReturned)
+                | (RebootRequested, OriginalReturned)
                 | (OriginalReturned, SelectionWithdrawIntent)
                 | (Aborting, SelectionWithdrawIntent)
                 | (SelectionWithdrawIntent, SelectionWithdrawn)
                 | (SelectionWithdrawn, PairRestored)
                 | (PairRestored, LabelsRestored)
-                | (LabelsRestored, CellRestored)
+                // The dispatcher proves LabelsIntent is absent on these
+                // zero-label paths; it does not manufacture a label plan.
+                | (PairRestored, CellRestoreIntent)
+                | (Aborting, CellRestoreIntent)
+                | (LabelsRestored, CellRestoreIntent)
+                | (CellRestoreIntent, CellRestored)
                 | (CellRestored, NativeRestored)
                 | (NativeRestored, PublicRestored)
                 | (PublicRestored, GrubRestored)

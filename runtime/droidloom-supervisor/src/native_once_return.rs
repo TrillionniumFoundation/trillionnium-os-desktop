@@ -477,7 +477,7 @@ struct Evidence {
 }
 impl Evidence {
     fn open(owner: &Owner) -> io::Result<Self> {
-        let path = owner.config.work().join("runtime-evidence");
+        let path = owner.config.runtime_evidence_directory();
         let held = root_directory(&path)?;
         let st = held.metadata()?;
         if st.mode() & 0o7777 != 0o700 || held::label(&held)? != EVIDENCE_LABEL {
