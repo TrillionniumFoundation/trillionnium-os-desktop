@@ -644,3 +644,11 @@ the normal producer's retained private status. The whole roster must equal the
 original roster with exactly the selected 24 package transactions; retained
 configuration-only and held states cannot disappear. Both actual status pins
 and complete parsed rosters are exposed for the once constructor.
+
+Only this read-only image verifier distinguishes historical and current
+/home/alex directory-entry metadata. The complete producer excluded /home
+and the full image validator rejects every home payload layer. The same
+home inode/type/mode/owner must remain, while its directory length/link count
+and clocks may reflect continued use. Every other machine/account/package
+field remains exact. Both complete observations are retained; normal physical
+preparation and its fresh context gates are unchanged.

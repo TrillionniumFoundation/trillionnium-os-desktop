@@ -155,6 +155,48 @@ fn validate_normal_build(record: &Value) -> Result<()> {
     Ok(())
 }
 
+// The original normal producer excluded the entire private home tree, and
+// the shared full-image readback rejects it in every archive layer. The user
+// may continue creating/removing home entries after that historical build.
+// This read-only verifier retains that history without treating its directory
+// clocks as the current original-host snapshot or loosening any input file.
+fn compare_original_context(historical: &Value, current: &Value) -> Result<Value> {
+    let old = historical["preserved_metadata"]["/home/alex"]
+        .as_array()
+        .ok_or("historical home directory metadata missing")?;
+    let new = current["preserved_metadata"]["/home/alex"]
+        .as_array()
+        .ok_or("current home directory metadata missing")?;
+    ensure(
+        old.len() == 11
+            && new.len() == 11
+            && old[..5] == new[..5]
+            && old[2].as_u64().is_some_and(|m| m & 0o170000 == 0o040000)
+            && old[5].as_u64().is_some_and(|n| n >= 2)
+            && new[5].as_u64().is_some_and(|n| n >= 2)
+            && old[6].as_u64().is_some_and(|n| n > 0)
+            && new[6].as_u64().is_some_and(|n| n > 0)
+            && [old, new].iter().all(|a| {
+                a[7].as_i64().is_some()
+                    && a[9].as_i64().is_some()
+                    && a[8].as_u64().is_some_and(|n| n < 1_000_000_000)
+                    && a[10].as_u64().is_some_and(|n| n < 1_000_000_000)
+            }),
+        "original home directory inode, type, mode, owner or metadata shape changed",
+    )?;
+    let mut normalized = current.clone();
+    normalized["preserved_metadata"]["/home/alex"] = json!(old);
+    ensure(
+        normalized == *historical,
+        "original immutable machine/account/package context changed",
+    )?;
+    Ok(
+        json!({"path":"/home/alex","historical_metadata":old,"current_metadata":new,
+        "scope":"directory-entry-history-outside-the-complete-initramfs-payload",
+        "home_contents_read":false,"physical_label_or_install_authority":false}),
+    )
+}
+
 fn admit_materials(plan: &Plan, work: &Path) -> Result<(Materials, Value)> {
     let modules = work.join("controller");
     files::private_dir(&modules)?;
@@ -245,10 +287,8 @@ pub(crate) fn verify_prepared_original_initramfs(receipt: &FilePin, work: &Path)
         "prepared original preflight differs",
     )?;
     let before = original_context()?;
-    ensure(
-        before == prepared["original_host"],
-        "original machine context changed since normal preparation",
-    )?;
+    let historical_context_readback =
+        compare_original_context(&prepared["original_host"], &before)?;
     let preflight: Value = read(&preflight_pin, 2 * 1024 * 1024)?;
     let guards = source_guards(&preflight, &before)?;
     let _locks = original_package_read_locks()?;
@@ -266,7 +306,7 @@ pub(crate) fn verify_prepared_original_initramfs(receipt: &FilePin, work: &Path)
         stage.schema == "droidloom.original-host-initramfs-stage.v1"
             && stage.work_directory == plan.work_directory
             && same_pin(&stage.input, &input)
-            && stage.original == before
+            && stage.original == prepared["original_host"]
             && inner["stage_sha256"] == stage_pin.sha256
             && inner["schema"] == "droidloom.original-host-normal-initramfs-build.v1"
             && inner["kernel_release"] == KERNEL
@@ -366,10 +406,8 @@ pub(crate) fn verify_prepared_original_initramfs(receipt: &FilePin, work: &Path)
     )?;
     let complete = readback_image(work, &materials, &image.path, &module_source, false)?;
     let original_files_unchanged = guard_readback(&guards)?;
-    ensure(
-        original_context()? == before,
-        "original machine changed during read-only image admission",
-    )?;
+    let after = original_context()?;
+    let current_context_readback = compare_original_context(&before, &after)?;
     for p in [
         receipt,
         &input,
@@ -388,7 +426,9 @@ pub(crate) fn verify_prepared_original_initramfs(receipt: &FilePin, work: &Path)
     let output = json!({"schema":"droidloom.original-initramfs-readback.v1","source_prepared":receipt,
         "producer_input":input,"producer_stage":stage_pin,"normal_producer":producer,
         "actual_private_build":inner_pin,"normal_package_state":normal_package_state,
-        "original_host":before,"original_files_unchanged":original_files_unchanged,
+        "original_host":before,"original_host_after":after,"historical_original_host":prepared["original_host"],
+        "historical_context_readback":historical_context_readback,"current_context_readback":current_context_readback,
+        "original_files_unchanged":original_files_unchanged,
         "normal_materials":materials,"fresh_admission":admission,"initrd":image,
         "host_source_commit":release["source_commit"],"host_source_tree":release["source_tree"],
         "kernel_payload_extract":kernel_command,"complete_readback":complete,
@@ -469,5 +509,34 @@ mod tests {
             };
             assert!(validate_normal_build(&value).is_err());
         }
+    }
+    #[test]
+    fn only_the_excluded_home_directory_history_may_evolve_during_readonly_image_verification() {
+        let old = json!({"kernel":"original","dpkg_status":{"sha256":"a".repeat(64)},
+            "preserved_metadata":{"/home/alex":[1,2,0o40750,1000,1000,2,4096,10,20,10,30],
+                "/etc/passwd":[1,3,0o100644,0,0,1,100,10,20,10,30]}});
+        let mut current = old.clone();
+        current["preserved_metadata"]["/home/alex"][5] = json!(160);
+        current["preserved_metadata"]["/home/alex"][6] = json!(8192);
+        current["preserved_metadata"]["/home/alex"][7] = json!(11);
+        current["preserved_metadata"]["/home/alex"][9] = json!(11);
+        compare_original_context(&old, &current).unwrap();
+        for index in [0, 1, 2, 3, 4] {
+            let mut wrong = current.clone();
+            wrong["preserved_metadata"]["/home/alex"][index] = json!(77);
+            assert!(compare_original_context(&old, &wrong).is_err());
+        }
+        let mut wrong = current.clone();
+        wrong["dpkg_status"]["sha256"] = json!("b".repeat(64));
+        assert!(compare_original_context(&old, &wrong).is_err());
+        wrong = current.clone();
+        wrong["preserved_metadata"]["/etc/passwd"][9] = json!(11);
+        assert!(compare_original_context(&old, &wrong).is_err());
+        wrong = current.clone();
+        wrong["kernel"] = json!("candidate");
+        assert!(compare_original_context(&old, &wrong).is_err());
+        wrong = current.clone();
+        wrong["extra_scope"] = json!(true);
+        assert!(compare_original_context(&old, &wrong).is_err());
     }
 }
