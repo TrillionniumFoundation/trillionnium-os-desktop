@@ -5,6 +5,7 @@
 //! identity lease and held fixed-directory backing inodes.
 
 use serde::Deserialize;
+use crate::native_once_contract::OriginalCopyPolicy;
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
 #[serde(deny_unknown_fields)]
@@ -12,6 +13,8 @@ pub(crate) struct PersistentDataPolicy {
     pub(crate) mode: String,
     pub(crate) data: PersistentImagePolicy,
     pub(crate) metadata: PersistentImagePolicy,
+    #[serde(default)]
+    pub(crate) original_copy: Option<OriginalCopyPolicy>,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
@@ -34,6 +37,13 @@ impl PersistentDataPolicy {
         }
         self.data.validate()?;
         self.metadata.validate()?;
+        if let Some(copy) = &self.original_copy {
+            copy.validate()?;
+            if copy.working[0][6] != self.data.image_bytes
+                || copy.working[1][6] != self.metadata.image_bytes {
+                return Err("original-copy roles differ from selected filesystem sizes");
+            }
+        }
         if self.data.filesystem_uuid == self.metadata.filesystem_uuid {
             return Err("data and metadata require distinct selected filesystem UUIDs");
         }
@@ -149,7 +159,7 @@ mod tests {
     #[test]
     fn persistent_policy_rejects_alias_roles_and_unreviewed_mutable_features() {
         let original = policy();
-        let pair = PersistentDataPolicy { mode: "original-ext4-v1".into(), data: original.clone(), metadata: original.clone() };
+        let pair = PersistentDataPolicy { mode: "original-ext4-v1".into(), data: original.clone(), metadata: original.clone(), original_copy: None };
         assert!(pair.validate().is_err());
         for mutation in 0..8 {
             let mut value = original.clone();
@@ -166,6 +176,38 @@ mod tests {
             assert!(value.validate().is_err());
         }
         assert_eq!(original.uuid().unwrap(), [0xc2,0xe0,0x70,0x1f,0xf5,0xd5,0x42,0x34,0x87,0xa7,0x50,0x6b,0x21,0xfe,0x62,0xcb]);
+    }
+
+    #[test]
+    fn original_copy_is_optional_configuration_but_cannot_select_foreign_files() {
+        let image = serde_json::json!({
+            "image_bytes":34_359_738_368_u64,
+            "filesystem_uuid":"c2e0701f-f5d5-4234-87a7-506b21fe62cb",
+            "feature_compat":0x3c,"feature_incompat":0x22c2,
+            "feature_ro_compat":0x46b,"guest_root_uid":1000,
+            "guest_root_gid":1000,"guest_root_mode":0o771
+        });
+        let mut metadata = image.clone();
+        metadata["image_bytes"] = serde_json::json!(134_217_728_u64);
+        metadata["filesystem_uuid"] = serde_json::json!("c2e0701f-f5d5-4234-87a7-506b21fe62cc");
+        let legacy = serde_json::json!({"mode":"original-ext4-v1",
+            "data":image,"metadata":metadata});
+        let old: PersistentDataPolicy = serde_json::from_value(legacy.clone()).unwrap();
+        old.validate().unwrap();
+        assert!(old.original_copy.is_none());
+        let mut selected = legacy;
+        selected["original_copy"] = serde_json::to_value(OriginalCopyPolicy::reviewed()).unwrap();
+        let current: PersistentDataPolicy = serde_json::from_value(selected.clone()).unwrap();
+        current.validate().unwrap();
+        assert!(current.original_copy.is_some());
+        let mut foreign = selected.clone();
+        foreign["original_copy"]["working"][0][1] = serde_json::json!(444454);
+        assert!(serde_json::from_value::<PersistentDataPolicy>(foreign).unwrap().validate().is_err());
+        let mut wrong_size = selected.clone();
+        wrong_size["data"]["image_bytes"] = serde_json::json!(134_217_728_u64);
+        assert!(serde_json::from_value::<PersistentDataPolicy>(wrong_size).unwrap().validate().is_err());
+        selected["original_copy"]["main_qualified"] = serde_json::json!(true);
+        assert!(serde_json::from_value::<PersistentDataPolicy>(selected).is_err());
     }
 
     #[test]

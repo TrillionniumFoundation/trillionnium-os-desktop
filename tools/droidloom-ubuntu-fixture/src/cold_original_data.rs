@@ -258,6 +258,23 @@ fn lineage(copy: &Value, clone: &Value, original: &PairRecord, working: &PairRec
     }
     Ok(())
 }
+
+/// The structural checker is also used by private mechanism tests. Only the
+/// two normal admission paths below may add the fixed real-source comparison.
+fn admitted_lineage(
+    copy: &Value, clone: &Value, original: &PairRecord, working: &PairRecord,
+) -> Result<()> {
+    lineage(copy, clone, original, working)?;
+    let stable_identity = |node: &Identity| -> [u64; 7] {
+        [node.dev, node.ino, u64::from(node.mode), u64::from(node.uid),
+         u64::from(node.gid), node.nlink, node.size]
+    };
+    crate::cold_original_once_recovery::contract::OriginalCopyPolicy::bind_cold_pairs(
+        IMAGES.map(|name| stable_identity(&original.members[name].identity)),
+        IMAGES.map(|name| stable_identity(&working.members[name].identity)),
+    )?;
+    Ok(())
+}
 fn initial_pair_sources(cold_clone: &FilePin) -> Result<(FilePin, PairRecord, PairRecord)> {
     ensure(
         cold_clone.bytes == 2843 && cold_clone.sha256 == CLONE_SHA,
@@ -282,7 +299,7 @@ fn initial_pair_sources(cold_clone: &FilePin) -> Result<(FilePin, PairRecord, Pa
     let (new_parent, new_name) = tree.parent(WORKING)?;
     let original = capture_pair(&old_parent, &old_name, &IMAGES, 0)?;
     let working = capture_pair(&new_parent, &new_name, &WORKING_MEMBERS, 0)?;
-    lineage(&copy, &cold, &original, &working)?;
+    admitted_lineage(&copy, &cold, &original, &working)?;
     let new_dir = tree.dir(WORKING)?;
     for (index, name) in ["data-COPY.json", "metadata-COPY.json"].iter().enumerate() {
         let file = open_at(&new_dir, name, false)?;
@@ -607,7 +624,7 @@ pub(super) fn assert_prepared_pair_retired(pair_intent: &FilePin) -> Result<Valu
     )?;
     let copy: Value = serde_json::from_slice(&proof)?;
     let clone: Value = serde_json::from_slice(&root_pin(&tx.intent.cold_clone, 64 * 1024)?)?;
-    lineage(&copy, &clone, &tx.intent.original, &tx.intent.working)?;
+    admitted_lineage(&copy, &clone, &tx.intent.original, &tx.intent.working)?;
     let references =
         reference_scan::require_no_other_references(&reference_targets(&original, &working))?;
     ensure(
@@ -2312,6 +2329,8 @@ mod tests {
                 "source_f9_before":prior,"source_f9_after":prior,"bytes":4096,"sha256":"a".repeat(64)}));
         }
         lineage(&copy, &cold, original, working).unwrap();
+        // A structurally correct private fixture is never the admitted real pair.
+        assert!(admitted_lineage(&copy, &cold, original, working).is_err());
         for mutation in 0..6 {
             let mut c = copy.clone();
             let mut p = cold.clone();

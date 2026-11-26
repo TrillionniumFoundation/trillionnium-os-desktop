@@ -219,6 +219,14 @@ fn derive(
         }
     }
     let cell = canonical(&new)?;
+    // This adds only the fixed public comparison projection. The actual cold
+    // COPY/CLONE lineage and four inodes are independently checked before
+    // admission and again by the data transaction before any exchange.
+    let mut persistent = serde_json::to_value(persistent)?;
+    persistent.as_object_mut().ok_or("persistent policy object missing")?.insert(
+        "original_copy".into(),
+        serde_json::to_value(crate::cold_original_once_recovery::contract::OriginalCopyPolicy::reviewed())?,
+    );
     let selected = json!({"schema":"droidloom-production-selection-v4",
         "launcher":"early_boot_shared_kernel_v1", "host_uid":1000,
         "cell_spec_bytes":cell.len(), "cell_spec_sha256":fs::digest(&cell),
@@ -276,6 +284,11 @@ mod tests {
         assert_eq!(selection["cell_spec_sha256"], fs::digest(&result.cell));
         assert_eq!(selection["cell_spec_bytes"], result.cell.len());
         assert_eq!(selection.as_object().unwrap().len(), 8);
+        assert_eq!(selection["persistent_data"]["original_copy"],
+            serde_json::to_value(crate::cold_original_once_recovery::contract::OriginalCopyPolicy::reviewed())?);
+        // The metadata input cannot supply its own lineage. Only this normal
+        // source producer adds the fixed, separately checked projection.
+        assert!(serde_json::from_value::<PersistentData>(selection["persistent_data"].clone()).is_err());
         assert_eq!(result.changed_fields.len(), 6);
         // The production entry also requires the actual original bytes. This
         // synthetic test record never becomes real-machine admission.

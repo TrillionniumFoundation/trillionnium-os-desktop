@@ -2,6 +2,9 @@
 //! the normal-root return helper. These fields are not an admission receipt.
 use serde::{Deserialize, Serialize};
 use std::{collections::BTreeMap, io};
+#[path = "native_original_copy_policy.rs"]
+mod original_copy;
+pub(crate) use original_copy::OriginalCopyPolicy;
 pub(crate) const KERNEL: &str = "6.18.64-p4ctx6181-fusectl-aafs-peer-r1";
 pub(crate) const KERNEL_SHA: &str =
     "19052ac77e40a86147f6bc186739763628916033f7c36f3448b4a872914090df";

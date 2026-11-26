@@ -53,6 +53,11 @@ impl OriginalBackingPair {
                 && node.links == 1 && node.bytes == selected.image_bytes,
                 "selected root-private single-link original backing identity required")?;
         }
+        if let Some(copy) = &policy.original_copy {
+            copy.verify_working(nodes.map(|node| [node.dev, node.ino, u64::from(node.mode),
+                u64::from(node.uid), u64::from(node.gid), node.links, node.bytes]))
+                .map_err(MountError::Rejected)?;
+        }
         admission.verify()?;
         let readers = [
             open_leaf(&parent, c"data.img", libc::O_RDONLY | libc::O_NOATIME)?,
