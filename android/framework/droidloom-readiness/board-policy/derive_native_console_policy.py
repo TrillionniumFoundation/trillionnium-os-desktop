@@ -35,7 +35,7 @@ CACHE_LOADERS = {
     "p4_linux_journald_t", "p4_linux_journalctl_t", "p4_linux_udev_t",
     "p4_linux_hardware_label_t", "p4_linux_uevent_label_t",
     "p4_linux_maintenance_journal_t", "droidloom_container_entry_t",
-    "p4_linux_remount_t",
+    "p4_linux_remount_t", "p4_linux_netplan_t",
 }
 INTERPRETER_OPENERS = {"p4_linux_service_executor_t", "p4_linux_udev_t"}
 NULL_TYPES = ("null_device", "p4_linux_standardio_t")
@@ -305,6 +305,9 @@ def _extra(actor, target):
         # open_exec under the old SID; bprm still selects the script's SID.
         # No execute_no_trans, entrypoint, or arbitrary helper execution.
         return {"getattr", "open", "read", "execute"}
+    if actor == "p4_linux_netplan_t" and target == "p4_linux_console_library_runtime_lib_t":
+        # Explicit fixed shared-library dependency, not all runtime_lib files.
+        return {"getattr", "open", "read", "execute", "map"}
     if target == "p4_linux_console_ld_cache_native_config_t" and actor in CACHE_LOADERS:
         return {"getattr", "open", "read", "map"}
     if target in ("p4_linux_console_entry_runtime_lib_t",

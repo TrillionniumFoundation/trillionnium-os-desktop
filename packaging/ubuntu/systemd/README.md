@@ -165,3 +165,56 @@ for both old and new lock objects; their exact full statements are checked.
 The remount role's complete object matrix follows the same preserved source
 vectors for both aliases. These static proofs do not imply sysusers runtime
 success; a fresh enforcing normal boot must supply that evidence.
+
+### Fixed normal Netplan configure branch
+
+The complete Ubuntu source admission now binds the normal
+`netplan-generator`/`libnetplan1` 1.2-1ubuntu5.1 payload and the complete 18-ELF
+dependency graph. The selected public input is exactly the 49-byte
+`/usr/lib/netplan/00-network-manager-all.yaml` shipped by ubuntu-settings; it
+selects NetworkManager globally and contains no interface definitions.
+The two other input directories must contain no files. An added, changed,
+symlinked or separately linked input is rejected before native initialization.
+Other YAML profiles, including the original physical host's configuration,
+require a separate actual source selection and are not marked qualified.
+
+The original unit and package ELF remain byte-identical. Its new execution
+role can read the selected YAML, load the twelve newly typed dependency
+inodes, and reuse the existing nine-inode console shared-library type (four
+are actual dependencies; all nine members remain explicitly pinned).
+The role does not inherit the generic native service attribute or executable
+permission for the entire runtime library type. The normal libselinux
+constructor requires only traversal and statfs/statvfs of the already mounted
+selinuxfs; its missing-mount /proc scans are not admitted, and its F_OK check
+does not authorize reading the SELinux configuration body.
+
+For the captured input, configure only creates NetworkManager's runtime
+parent and conf.d, writes an empty temporary file, and renames it to
+`/run/NetworkManager/conf.d/10-globally-managed-devices.conf`. Re-entry removes
+that prior typed output. This was observed twice with the same normal ELF and
+all dependencies copied into a fresh private chroot in isolated network and
+mount namespaces. That observation proves the package's file operations,
+not SELinux enforcement or production readiness.
+
+SELinux confines file mutation to the new output type in the existing
+NetworkManager runtime family; the fixed source and unit bind the basename
+and command line. Other pre-existing NetworkManager file types, systemd
+units, account data, interfaces, sockets and child execution remain
+inaccessible to this role.
+The two unit ExecStartPost udevadm commands are separately started by PID 1
+and continue to use the udev execution role.
+
+The normal producer derives Netplan aliases after remount, derives sysusers
+aliases last, then verifies every component against the final linked binary.
+All original actor vectors, transitions and extended ioctl masks are
+preserved. The explicit Netplan matrix covers file, directory, device,
+filesystem, capability and socket classes. Read-only fixture admission reports
+`runtime_qualified=false`; successful source checking never counts as a
+running network service or an application business gate.
+
+The output filename is selected by the pinned normal configure ELF. The file
+type transition covers newly created regular files under the existing
+NetworkManager runtime directory type; it is not a basename access-control
+rule. Other pre-existing NetworkManager file types remain inaccessible to
+this role. The file-context matcher records the expected fixed output and its
+six-character temporary names, but does not constrain creation by filename.

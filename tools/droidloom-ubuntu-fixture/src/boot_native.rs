@@ -21,6 +21,9 @@ mod console;
 #[path = "boot_native_remount.rs"]
 mod remount;
 
+#[path = "boot_native_netplan.rs"]
+mod netplan;
+
 #[path = "boot_native_complete.rs"]
 mod complete;
 pub use complete::{CompleteNativeInputs, initialize_complete};

@@ -149,7 +149,9 @@
 (typeattribute p4_nonboard_except_journal_proc_directories)
 (typeattributeset p4_nonboard_except_journal_proc_directories (and (p4_all_nonboard) (not (or (proc) (proc_random)))))
 (typeattribute p4_native_public_directory_traversers)
-(typeattributeset p4_native_public_directory_traversers (p4_native_sysfs_readers p4_native_dev_root_traversers p4_linux_uevent_label_t))
+; Netplan only recognizes the existing selinuxfs mount; its component keeps
+; every other nonboard directory search denied, including /dev and /proc.
+(typeattributeset p4_native_public_directory_traversers (p4_native_sysfs_readers p4_native_dev_root_traversers p4_linux_uevent_label_t p4_linux_netplan_t))
 (typeattribute p4_native_nontraversing_without_module_dirs)
 (typeattributeset p4_native_nontraversing_without_module_dirs (and (p4_linux_nontraversing_without_native_selinux_queries) (not (or (p4_native_public_directory_traversers) (p4_native_maintenance_actors)))))
 (neverallow p4_native_nontraversing_without_module_dirs p4_all_nonboard (dir (search)))
