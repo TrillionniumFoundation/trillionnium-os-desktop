@@ -869,3 +869,70 @@ checks each target is not the original source inode, restores a full group befor
 checking the unchanged 600-second deadline, then rereads every completed target.
 It reports complete coverage and fitting the fixed window separately, including
 final readback time; it never constructs physical qualification authority.
+
+### Normal native package configuration-parent provenance
+
+The once configuration producer observes the normal native22 package operation
+through `cold_original_once_package_parents.rs`, nested in the existing
+configuration module. It never executes a package script, grants physical
+qualification, or substitutes directory metadata for complete DPKG verification.
+
+Before each create-only `dispatch-NNNN-native-apply` or
+`dispatch-NNNN-native-rollback`, `capture` binds the actual native snapshot and
+attempt, the immutable once intent, admitted normal materials, and the selected
+original-host native release. It verifies the complete old/new GDM and systemd
+archive digests whose normal maintainer scripts define the allowed effects.
+The actual snapshot is copied byte-for-byte into private qualification custody;
+its original pathname and digest remain the normal command input. Later label
+changes to the original transaction file cannot redefine this retained source.
+Normal published sources retain root-owned readonly mode 0444 or 0400 with
+complete held/named F9, bytes and empty attributes; private attempt evidence
+continues to require the existing 0400 `SealedInput` contract.
+
+`BEFORE.json` is durable before the package command can start. It records every
+direct member's full identity and ext4 generation in `/etc/systemd/system` and,
+when present, `local-fs.target.wants`, together with complete parent attributes.
+The selected normal scripts permit only these observed changes:
+
+- With the actual unchanged GDM default selection and normal service file,
+  GDM's configure postinst may replace `display-manager.service` with a fresh
+  symlink to the same `/lib/systemd/system/gdm3.service`. An existing `/dev/null`
+  mask stays exactly unchanged. An absent alias on a later attempt requires the
+  exact earlier sealed interrupted-removal observation for this same native
+  attempt; an arbitrary originally absent alias is not admitted.
+- The normal systemd preinst may remove `tmp.mount` only when it is the obsolete
+  `/usr/share/systemd/tmp.mount` symlink. That exact predicate also permits its
+  captured non-directory wants entry to be removed. Independently, the wants
+  symlink to that same obsolete example may be removed. No other unit or helper
+  alias is whitelisted.
+
+Every unrelated member, parent generation, owner, mode, link count and xattr
+remains exact. Parent size/clocks can evolve only with an actually explained
+change to its direct member. A nested directory's changed metadata updates its
+ancestor's member record without exempting that ancestor's own clocks. Merely
+returning exit zero cannot admit another member, inode replacement, or
+parent-only clock drift.
+
+`finish` reopens the exact `INPUTS.json`, actual normal stdout and source-owned
+terminal `RESULT.json` for this command and then verifies current named/held
+parents. `reconcile_interrupted` takes that same completed path when a real
+result exists; otherwise it records only interrupted parent metadata. Missing
+input is admissible only before any command activity, with an absent/empty
+command directory and a completely unchanged namespace. These records never
+claim the native database has finished installation or rollback.
+
+Opaque `Changes::reopen` verifies historical sealed sources and full recorded
+deltas without requiring today's directory to equal an earlier checkpoint.
+`apply_to` composes only an exact historical before-to-after step. The once
+owner replays owner/masks, the native install delta, then runtime configuration;
+return replays runtime configuration restoration, the separate native rollback
+delta, then masks/owner restoration. Each later mutation still checks the full
+actual current parent against that composed checkpoint.
+
+Focused tests cover exact command/source/attempt bindings and terminal-event
+requirements. Separate root tests create only independent qualification test
+inodes: real same-target `ln -sf`, retained/reopened interrupted preimages, both
+obsolete tmp predicates, and rejection of unrelated children, replaced directory
+generations and unexplained parent clocks. The selected normal native22 archives
+are also read back completely. These are source and isolated filesystem proofs;
+they do not constitute an original-device package operation or runtime pass.
