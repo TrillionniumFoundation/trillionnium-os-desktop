@@ -742,6 +742,8 @@ def verify_manager_file_contexts(here, work):
         ("/run/systemd/journal", stat.S_IFDIR, "p4_linux_journal_runtime_t"),
         ("/run/systemd/namespace-example", stat.S_IFDIR, "p4_linux_sandbox_dir_t"),
         ("/run/systemd/inaccessible", stat.S_IFDIR, "p4_linux_inaccessible_t"),
+        ("/usr/lib/systemd/system/mount.d", stat.S_IFDIR, "p4_linux_unit_directory_t"),
+        ("/usr/lib/systemd/system/mount.d/50-droidloom-private-keyring.conf", stat.S_IFREG, "p4_linux_unit_file_t"),
         ("/usr/lib/systemd/system-generators", stat.S_IFDIR, "p4_linux_generator_directory_t"),
         ("/usr/lib/systemd/system-environment-generators", stat.S_IFDIR, "p4_linux_generator_directory_t"),
         ("/usr/lib/systemd/system-environment-generators/snapd-env-generator", stat.S_IFREG, "p4_linux_generator_exec_t"),
