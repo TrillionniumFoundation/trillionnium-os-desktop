@@ -859,3 +859,13 @@ and all target readbacks. They also interrupt preimage publication and target
 syscalls and reject foreign xattrs or replaced evidence. These tests are not a
 full-root timing or physical activation claim. The complete shadow-root run
 must still satisfy the fixed 600-second window without increasing its budget.
+
+The batch recovery test also interrupts restoration after only three of eight
+kernel writes, with all CURRENT-PREIMAGE records durable and no RESTORED records.
+It drops the live objects, reopens actual original/current records and inode
+handles, classifies the mixed outcomes, and restores every member. The explicit
+ignored complete shadow-root benchmark uses only its fixed independent r2 root,
+checks each target is not the original source inode, restores a full group before
+checking the unchanged 600-second deadline, then rereads every completed target.
+It reports complete coverage and fitting the fixed window separately, including
+final readback time; it never constructs physical qualification authority.

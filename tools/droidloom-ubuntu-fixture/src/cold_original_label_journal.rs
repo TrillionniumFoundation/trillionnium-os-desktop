@@ -1019,3 +1019,6 @@ mod tests {
 #[cfg(test)]
 #[path = "cold_original_label_scale_tests.rs"]
 mod scale_tests;
+#[cfg(test)]
+#[path = "cold_original_label_batch_scale_tests.rs"]
+mod batch_scale_tests;

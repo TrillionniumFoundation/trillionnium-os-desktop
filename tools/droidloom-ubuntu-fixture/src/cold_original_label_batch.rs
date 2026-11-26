@@ -432,6 +432,73 @@ mod tests {
         }
     }
     #[test]
+    fn partial_runtime_restoration_without_results_reopens_its_durable_current_preimages() {
+        let root = tempfile::Builder::new()
+            .prefix(".p4-label-batch-return-crash-")
+            .tempdir_in(std::env::current_dir().unwrap())
+            .unwrap();
+        let (pending, batch) = stages(root.path(), 8);
+        let attempts = DurableAttempt::seal_preparations(pending, batch).unwrap();
+        let cores = attempts
+            .iter()
+            .map(|a| a.apply_uncommitted().unwrap())
+            .collect::<Vec<_>>();
+        DurableAttempt::complete_applications(&attempts.iter().collect::<Vec<_>>(), &cores)
+            .unwrap();
+        let original_pins = attempts.iter().map(|a| a.pin.clone()).collect::<Vec<_>>();
+        let mut pending = Vec::new();
+        let mut batch = RecordBatch::new();
+        let retirement = FilePin {
+            path: root.path().join("actual-retirement"),
+            bytes: 1,
+            sha256: "c".repeat(64),
+        };
+        for (index, attempt) in attempts.into_iter().enumerate() {
+            pending.push(
+                RuntimeRestoreAttempt::stage_exact(
+                    attempt,
+                    records(&root.path().join(format!("return-{index}"))),
+                    &retirement,
+                    None,
+                    &mut batch,
+                )
+                .unwrap(),
+            );
+        }
+        let attempts = RuntimeRestoreAttempt::seal_preparations(pending, batch).unwrap();
+        let current_pins = attempts
+            .iter()
+            .map(|a| a.preimage_pin().clone())
+            .collect::<Vec<_>>();
+        for attempt in attempts.iter().take(3) {
+            attempt.restore_uncommitted().unwrap();
+        }
+        for attempt in &attempts {
+            assert!(!attempt.has_completed_result().unwrap());
+        }
+        drop(attempts);
+        for (index, (original, current)) in original_pins.iter().zip(current_pins).enumerate() {
+            let original = DurableAttempt::load_unclassified(
+                Records::open(&root.path().join(format!("inode-{index}"))).unwrap(),
+                original,
+                held(&root.path().join(format!("target-{index}"))),
+            )
+            .unwrap();
+            let before = original.preimage.before.clone();
+            let attempt = RuntimeRestoreAttempt::reopen(
+                original,
+                Records::open(&root.path().join(format!("return-{index}"))).unwrap(),
+                &current,
+            )
+            .unwrap();
+            assert_eq!(attempt.classify().unwrap().1, index < 3);
+            let (actual, _) = attempt.restore().unwrap();
+            assert_eq!(actual.after.attributes, before.attributes);
+            assert_eq!(actual.after.handle, before.handle);
+            assert!(only_ctime_changed(&before.identity, &actual.after.identity));
+        }
+    }
+    #[test]
     fn uncertain_batch_keeps_every_recovery_fd_and_rejects_foreign_xattrs_or_replaced_records() {
         let root = tempfile::Builder::new()
             .prefix(".p4-label-batch-foreign-")
