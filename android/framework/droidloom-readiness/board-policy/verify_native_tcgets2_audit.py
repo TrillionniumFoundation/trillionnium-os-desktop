@@ -155,6 +155,18 @@ def _exact_probe_rule(form):
     )
 
 
+def _concrete_pair(membership, form):
+    """Match a concrete same-source self spelling without rewriting its AST."""
+    source, target = form[1:3]
+    if source not in membership.types:
+        return None
+    if target == "self":
+        target = source
+    if target not in membership.types:
+        return None
+    return source, target
+
+
 def _matches(membership, form, source, target):
     return membership.member(form[1], source) and (
         source == target if form[2] == "self" else membership.member(form[2], target)
@@ -193,7 +205,8 @@ def _verify_raw_pairs(forms, membership):
                 if _matches(membership, form, source, target):
                     xrules.append(form)
         if (len(xrules) != 1 or xrules[0][0] != "dontauditx"
-                or xrules[0][1:3] != [source, target] or not _exact_probe_rule(xrules[0])):
+                or _concrete_pair(membership, xrules[0]) != (source, target)
+                or not _exact_probe_rule(xrules[0])):
             raise ValueError("TCGETS2 audit pair has an existing or non-exact xperm rule")
         matrix.append({
             "source": source, "target": target, "class": "file",
@@ -270,9 +283,15 @@ def _subtract_native_grants(forms, membership):
     matrix = []
     for source, target, cls, permissions in REVIEWED_NATIVE_GRANTS:
         key = (source, target, cls)
-        if source not in membership.types or target not in membership.types or key not in rows:
+        keys = [key]
+        if source == target:
+            keys.append((source, "self", cls))
+        matching = [rows[candidate] for candidate in keys if candidate in rows]
+        if len(matching) > 1:
+            raise ValueError("Duplicate semantic concrete reviewed native grant")
+        if source not in membership.types or target not in membership.types or not matching:
             raise ValueError("Missing concrete reviewed native grant")
-        row = rows[key]
+        row = matching[0]
         if not set(permissions).issubset(row[3][1]):
             raise ValueError("Missing reviewed native permission bit")
         final = _base_permissions(normal, membership, source, target, cls)
@@ -337,7 +356,7 @@ def _verify_text(text):
         if form[0] == "dontauditx":
             if len(form) != 4 or any(not isinstance(x, str) for x in form[1:3]):
                 raise ValueError("Non-concrete or malformed TCGETS2 audit rule")
-            pair = tuple(form[1:3])
+            pair = _concrete_pair(membership, form)
             if pair in expected:
                 if pair in added:
                     raise ValueError("Duplicate concrete TCGETS2 audit pair")
