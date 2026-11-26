@@ -16,7 +16,7 @@ use std::{
 };
 
 #[path = "../../../runtime/droidloom-supervisor/src/native_once_contract.rs"]
-mod contract;
+pub(super) mod contract;
 use contract::{
     CONFIG_SHA, EARLY_CONFIG, EARLY_EXECUTABLE, KERNEL, KERNEL_SHA, MODULE_BYTES, MODULE_REL,
     MODULE_SHA, ROOT_UUID, boot_arguments,

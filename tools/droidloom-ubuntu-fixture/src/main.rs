@@ -29,6 +29,7 @@ mod cold_original_data;
 mod cold_original_initramfs;
 mod cold_original_qualification;
 mod cold_original_once_recovery;
+mod cold_original_once_initramfs;
 mod complete_native;
 mod complete_snapshot;
 mod fs;

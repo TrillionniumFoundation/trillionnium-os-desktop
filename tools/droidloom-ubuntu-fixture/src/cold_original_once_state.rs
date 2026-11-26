@@ -30,13 +30,15 @@ pub(super) enum Phase {
     CellPublished,
     PairExchangeIntent,
     PairExchanged,
+    RecoveryInstallIntent,
+    RecoveryInstalled,
+    GrubPublishIntent,
+    GrubPublished,
     LabelsIntent,
     LabelsApplied,
     SelectionPublishIntent,
     SelectionPublished,
-    RecoveryInstallIntent,
-    RecoveryInstalled,
-    GrubPublishIntent,
+    ArmIntent,
     Armed,
     RebootRequested,
     CandidateObserved,
@@ -84,14 +86,16 @@ impl Phase {
                 | (CellPublishIntent, CellPublished)
                 | (CellPublished, PairExchangeIntent)
                 | (PairExchangeIntent, PairExchanged)
-                | (PairExchanged, LabelsIntent)
+                | (PairExchanged, RecoveryInstallIntent)
+                | (RecoveryInstallIntent, RecoveryInstalled)
+                | (RecoveryInstalled, GrubPublishIntent)
+                | (GrubPublishIntent, GrubPublished)
+                | (GrubPublished, LabelsIntent)
                 | (LabelsIntent, LabelsApplied)
                 | (LabelsApplied, SelectionPublishIntent)
                 | (SelectionPublishIntent, SelectionPublished)
-                | (SelectionPublished, RecoveryInstallIntent)
-                | (RecoveryInstallIntent, RecoveryInstalled)
-                | (RecoveryInstalled, GrubPublishIntent)
-                | (GrubPublishIntent, Armed)
+                | (SelectionPublished, ArmIntent)
+                | (ArmIntent, Armed)
                 | (Armed, RebootRequested)
                 | (RebootRequested, CandidateObserved)
                 | (CandidateObserved, Collecting)
@@ -544,6 +548,51 @@ mod tests {
             Journal::reopen(&path, &candidate, &intent)?.phase(),
             Some(Phase::Aborting)
         );
+        Ok(())
+    }
+
+    #[test]
+    fn all_public_files_precede_labels_and_arm_is_the_last_separate_intent() -> Result<()> {
+        let tmp = tempfile::tempdir()?;
+        let path = tmp.path().join("journal");
+        let (candidate, intent) = identifiers();
+        let mut j = Journal::create(&path, &candidate, &intent)?;
+        for phase in [
+            Phase::Admitted,
+            Phase::PublicInstallIntent,
+            Phase::PublicInstalled,
+            Phase::NativeInstallIntent,
+            Phase::NativeInstalled,
+            Phase::CellPublishIntent,
+            Phase::CellPublished,
+            Phase::PairExchangeIntent,
+            Phase::PairExchanged,
+        ] {
+            j.append(phase, BOOT, json!({}))?;
+        }
+        assert!(j.append(Phase::LabelsIntent, BOOT, json!({})).is_err());
+        for phase in [
+            Phase::RecoveryInstallIntent,
+            Phase::RecoveryInstalled,
+            Phase::GrubPublishIntent,
+            Phase::GrubPublished,
+            Phase::LabelsIntent,
+            Phase::LabelsApplied,
+            Phase::SelectionPublishIntent,
+            Phase::SelectionPublished,
+        ] {
+            j.append(phase, BOOT, json!({}))?;
+        }
+        assert!(j.append(Phase::Armed, BOOT, json!({})).is_err());
+        j.append(Phase::ArmIntent, BOOT, json!({"next_entry_before":""}))?;
+        let mut recovered = Journal::reopen(&path, &candidate, &intent)?;
+        assert_eq!(recovered.phase(), Some(Phase::ArmIntent));
+        assert!(
+            recovered
+                .append(Phase::RebootRequested, BOOT, json!({}))
+                .is_err()
+        );
+        recovered.append(Phase::Armed, BOOT, json!({"actual_next_entry":"test-only"}))?;
         Ok(())
     }
 
