@@ -87,7 +87,7 @@
 ; FINISH reads only selinuxfs status and the original nsfs witnesses.
 ; Keep the boot-proc partition, then split this actor with its exact complement.
 (typeattribute p4_native_nonjournal_without_early_reads)
-(typeattributeset p4_native_nonjournal_without_early_reads (and (p4_native_nonjournal_without_boot_proc_inputs) (not (p4_linux_early_t))))
+(typeattributeset p4_native_nonjournal_without_early_reads (and (p4_native_nonjournal_without_boot_proc_inputs) (not (or (p4_linux_early_t) (p4_linux_once_return_t)))))
 (typeattribute p4_early_nonboard_without_fixed_reads)
 (typeattributeset p4_early_nonboard_without_fixed_reads (and (p4_all_nonboard) (not (or (selinuxfs) (p4_kernel_ns_handle_t)))))
 (neverallow p4_native_nonjournal_without_early_reads p4_nonboard_except_kernel_cmdline (file (open read)))
@@ -112,7 +112,7 @@
 (neverallow p4_linux_without_namespace_executor p4_all_nonboard (dir (mounton)))
 (neverallow p4_linux_without_native_directory_relabel_actors p4_all_nonboard (dir (relabelfrom)))
 (typeattribute p4_native_nonmac_without_module_dirs)
-(typeattributeset p4_native_nonmac_without_module_dirs (and (p4_linux_nonmac_without_native_selinux_queries) (not (or (p4_linux_console_setup_t) (or (p4_linux_uevent_label_t) (or (p4_native_sysfs_readers) (p4_native_maintenance_actors)))))))
+(typeattributeset p4_native_nonmac_without_module_dirs (and (p4_linux_nonmac_without_native_selinux_queries) (not (or (p4_linux_once_return_t) (or (p4_linux_console_setup_t) (or (p4_linux_uevent_label_t) (or (p4_native_sysfs_readers) (p4_native_maintenance_actors))))))))
 (neverallow p4_native_nonmac_without_module_dirs p4_all_nonboard (dir (read)))
 ; The sealed executor reopens only a newly created tmpfs mount FD before the
 ; stock credential label_fix_full(). This is an opaque directory handle, not

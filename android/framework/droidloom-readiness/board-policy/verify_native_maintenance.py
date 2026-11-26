@@ -60,6 +60,14 @@ def verify_native_maintenance(library, binary, export, export_binary_policy):
     exact(maint,obj("p4_linux_maintenance_grubenv_t"),"file",FILE,["getattr","open","read","write"])
     exact(maint,obj("p4_linux_maintenance_grubcfg_t"),"file",FILE,["getattr","open","read"])
     exact(journal,obj("p4_linux_journal_database_t"),"file",FILE,["getattr","open","read","map","lock"])
+    exact(journal,obj("p4_linux_volatile_journal_database_t"),"file",FILE,["getattr","open","read","map","lock"])
+    directory = [p for p in FILE if p not in ("entrypoint", "execute_no_trans")] + [
+        "add_name", "remove_name", "reparent", "search", "rmdir"
+    ]
+    for prefix in ("p4_linux_", "p4_linux_volatile_"):
+        exact(journal,obj(prefix+"log_root_t"),"dir",directory,["getattr","search"])
+        for suffix in ("journal_store_t", "journal_machine_t"):
+            exact(journal,obj(prefix+suffix),"dir",directory,["getattr","search","open","read"])
     for t in ("p4_linux_maintenance_script_t","p4_linux_maintenance_config_t","p4_linux_maintenance_release_t"):
         exact(maint,obj(t),"file",FILE,["getattr","open","read"])
     services="start stop status reload kill load enable disable".split()
@@ -75,12 +83,13 @@ def verify_native_maintenance(library, binary, export, export_binary_policy):
                 n=line[len(prefix):-1]
                 if not n or any(x.isspace() for x in n) or "(" in n:raise ValueError("Nonconcrete maintenance role")
                 c=f"u:{role}:{n}:s0";sources.append(c)
-                for target,allowed in [(maint,sudo),(journal,maint)]:
-                    exact(c,target,"process",["transition","dyntransition"],["transition"] if c==allowed else [])
+                for target,allowed in [(maint,{sudo,context("p4_linux_once_return_t")}),(journal,{maint})]:
+                    exact(c,target,"process",["transition","dyntransition"],["transition"] if c in allowed else [])
     transitions=(
       "(typetransition p4_linux_user_session_t p4_linux_sudo_exec_t process p4_linux_sudo_t)",
       "(typetransition p4_linux_sudo_t p4_linux_maintenance_exec_t process p4_linux_maintenance_t)",
       "(typetransition p4_linux_maintenance_t p4_linux_journalctl_exec_t process p4_linux_maintenance_journal_t)",
+      "(typetransition p4_linux_once_return_t p4_linux_maintenance_exec_t process p4_linux_maintenance_t)",
     )
     missing=[t for t in transitions if t not in lines]
     if missing:raise ValueError("Maintenance binary transitions missing: "+repr(missing))

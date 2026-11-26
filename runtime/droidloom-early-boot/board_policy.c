@@ -13,6 +13,9 @@
 #include <fcntl.h>
 #include <linux/magic.h>
 #include <linux/openat2.h>
+#include <linux/nsfs.h>
+#include <sched.h>
+#include <sys/ioctl.h>
 #include <sys/syscall.h>
 #include <sys/statvfs.h>
 #include <sys/xattr.h>
@@ -44,6 +47,67 @@ struct input {
     const char *path;
     unsigned char *data;
 };
+
+/* The global PID 1 captures its own real mount namespace before first load.
+ * Only its fixed identity data crosses into the later native return helper;
+ * there is no namespace bind mount, foreign proc lookup or caller authority. */
+struct host_mount_identity {
+    int fd;
+    struct stat identity;
+    char boot_id[37];
+};
+static int epoch_same(const struct stat *a, const struct stat *b);
+static int publish_host_mount_identity(const struct host_mount_identity *held,
+                                        int directory, const char *policy_digest);
+
+static int hold_host_mount_identity(struct host_mount_identity *held)
+{
+    if (!held || held->fd >= 0 || getpid() != 1 || geteuid() != 0)
+        return reject(EINVAL);
+    int fd = open("/proc/self/ns/mnt", O_RDONLY | O_CLOEXEC);
+    if (fd < 0) return -1;
+    struct statfs fs;
+    struct stat before, after;
+    int error = 0;
+    if (fstat(fd, &before) < 0 || fstatfs(fd, &fs) < 0)
+        error = errno;
+    else if ((unsigned long)fs.f_type != NSFS_MAGIC || !S_ISREG(before.st_mode) ||
+             before.st_uid || before.st_gid || before.st_nlink != 1 ||
+             ioctl(fd, NS_GET_NSTYPE) != CLONE_NEWNS)
+        error = EACCES;
+    int boot = -1;
+    if (!error) {
+        boot = open("/proc/sys/kernel/random/boot_id", O_RDONLY | O_NOFOLLOW | O_CLOEXEC);
+        if (boot < 0) error = errno;
+    }
+    char value[38];
+    size_t pos = 0;
+    if (!error && fstatfs(boot, &fs) < 0) error = errno;
+    if (!error && (unsigned long)fs.f_type != PROC_SUPER_MAGIC) error = EXDEV;
+    while (!error && pos < sizeof(value)) {
+        ssize_t n = read(boot, value + pos, sizeof(value) - pos);
+        if (n < 0 && errno == EINTR) continue;
+        if (n < 0) { error = errno; break; }
+        if (!n) break;
+        pos += (size_t)n;
+    }
+    if (!error && (pos != 37 || value[36] != '\n')) error = EBADMSG;
+    for (size_t i = 0; !error && i < 36; ++i) {
+        if (i == 8 || i == 13 || i == 18 || i == 23) {
+            if (value[i] != '-') error = EBADMSG;
+        } else if (!((value[i] >= '0' && value[i] <= '9') ||
+                     (value[i] >= 'a' && value[i] <= 'f'))) error = EBADMSG;
+    }
+    if (!error && fstat(fd, &after) < 0) error = errno;
+    if (!error && !epoch_same(&before, &after)) error = ESTALE;
+    if (boot >= 0) close(boot);
+    if (error) { close(fd); return reject(error); }
+    memcpy(held->boot_id, value, 36);
+    held->boot_id[36] = 0;
+    held->identity = before;
+    held->fd = fd;
+    return 0;
+}
 
 static int read_admitted(struct input *input)
 {
@@ -300,11 +364,13 @@ int droidloom_board_activate_policy(gid_t observer_gid, const char *cohort)
     struct droidloom_linux_credentials credentials = { .root.fd = -1, .systemd.fd = -1, .staging.fd = -1 };
     struct droidloom_linux_run udev = {.fd = -1}, udev_data = {.fd = -1};
     struct droidloom_readiness_paths paths = { .handoff.fd = -1, .readiness.fd = -1 };
+    struct host_mount_identity mount_identity = { .fd = -1 };
     const char *stage = "read admitted SELinux input";
     int rc = read_admitted(&policy);
     if (rc == 0) { stage = "read admitted AppArmor input"; rc = read_admitted(&aa); }
     if (rc == 0) { stage = "validate AppArmor framing"; rc = apparmor_profiles(&aa, 0, selected_profiles); }
     if (rc == 0) { stage = "check initial Ubuntu policy state"; rc = initial_ubuntu_kernel(); }
+    if (rc == 0) { stage = "hold original PID 1 mount namespace and boot identity"; rc = hold_host_mount_identity(&mount_identity); }
     if (rc == 0) { stage = "prepare the original Ubuntu unified cgroup hierarchy"; rc = prepare_ubuntu_cgroup2(); }
     if (rc == 0) { stage = "hold the original Ubuntu cgroup root and move global PID 1 to its init.scope"; rc = droidloom_hold_linux_init_scope(&scope); }
     if (rc == 0) { stage = "prepare the original Ubuntu shared memory mount"; rc = droidloom_hold_linux_shm(&shm); }
@@ -344,8 +410,10 @@ int droidloom_board_activate_policy(gid_t observer_gid, const char *cohort)
     if (rc == 0) { stage = "label the held Ubuntu udev directory"; rc = droidloom_label_linux_udev(&udev); }
     if (rc == 0) { stage = "label the original Ubuntu udev database directory"; rc = droidloom_label_linux_udev_data(&udev_data); }
     if (rc == 0) { stage = "label the held private readiness directory"; rc = droidloom_label_readiness_paths(&paths); }
+    if (rc == 0) { stage = "publish the typed original host mount identity"; rc = publish_host_mount_identity(&mount_identity, paths.handoff.fd, policy.digest); }
     if (rc == 0) { stage = "seal the original kernel policy load epoch"; rc = droidloom_publish_apparmor_epoch(epoch_directory, status, policy.digest, &observation); }
     int error = errno;
+    if (mount_identity.fd >= 0) close(mount_identity.fd);
     if (status >= 0) close(status);
     if (epoch_directory >= 0) close(epoch_directory);
     if (rc < 0)
@@ -420,6 +488,79 @@ static int epoch_directory(int fd, const char *context, int readonly, struct sta
         (readonly && (flags.f_flag & required) != required))
         return reject(EACCES);
     return 0;
+}
+
+static int publish_host_mount_identity(const struct host_mount_identity *held,
+                                        int directory, const char *policy_digest)
+{
+    static const char name[] = "host-mount-identity.json";
+    static const char context[] = "u:object_r:p4_linux_host_mount_identity_t:s0";
+    struct stat actual, parent, named, written, after;
+    struct statfs fs;
+    if (!held || held->fd < 0 || directory < 0 || getpid() != 1 || geteuid() != 0)
+        return reject(EINVAL);
+    if (strlen(policy_digest) != 64 || strcmp(policy_digest, DROIDLOOM_BOARD_SELINUX_SHA256))
+        return reject(EBADMSG);
+    if (fstat(held->fd, &actual) < 0 || fstatfs(held->fd, &fs) < 0)
+        return -1;
+    if (!epoch_same(&held->identity, &actual) || (unsigned long)fs.f_type != NSFS_MAGIC)
+        return reject(ESTALE);
+    if (epoch_directory(directory, "u:object_r:p4_linux_early_handoff_dir_t:s0", 0, &parent) < 0 ||
+        lstat("/run/droidloom-early", &named) < 0)
+        return -1;
+    if (!epoch_same(&parent, &named)) return reject(ESTALE);
+    char body[512];
+    int length = snprintf(body, sizeof(body),
+        "{\"schema\":\"droidloom.host-mount-identity.v1\",\"boot_id\":\"%s\","
+        "\"joint_policy_sha256\":\"%s\",\"device\":%llu,\"inode\":%llu}\n",
+        held->boot_id, policy_digest, (unsigned long long)actual.st_dev,
+        (unsigned long long)actual.st_ino);
+    if (length <= 0 || (size_t)length >= sizeof(body)) return reject(EOVERFLOW);
+    /* tmpfs uses fs_use_trans. This file must be created after first load;
+     * the exact named transition supplies its actual SID. Never raw-set it. */
+    int fd = openat(directory, name, O_RDWR | O_CREAT | O_EXCL | O_NOFOLLOW | O_CLOEXEC, 0600);
+    if (fd < 0) return -1;
+    int error = 0;
+    if (fstat(fd, &written) < 0 || fstatfs(fd, &fs) < 0 || epoch_label(fd, context) < 0)
+        error = errno;
+    else if (!S_ISREG(written.st_mode) || written.st_uid || written.st_gid ||
+             written.st_nlink != 1 || written.st_size != 0 || written.st_dev != parent.st_dev ||
+             (unsigned long)fs.f_type != TMPFS_MAGIC)
+        error = EACCES;
+    size_t pos = 0;
+    while (!error && pos < (size_t)length) {
+        ssize_t n = write(fd, body + pos, (size_t)length - pos);
+        if (n < 0 && errno == EINTR) continue;
+        if (n <= 0) error = n < 0 ? errno : EIO;
+        else pos += (size_t)n;
+    }
+    if (!error && (fchmod(fd, 0400) < 0 || fsync(fd) < 0 || fsync(directory) < 0)) error = errno;
+    char readback[512];
+    ssize_t received = -1;
+    if (!error) {
+        do { received = pread(fd, readback, sizeof(readback), 0); }
+        while (received < 0 && errno == EINTR);
+        if (received < 0) error = errno;
+        else if (received != length || memcmp(readback, body, (size_t)length)) error = ESTALE;
+    }
+    if (!error && (fstat(fd, &after) < 0 ||
+        fstatat(directory, name, &named, AT_SYMLINK_NOFOLLOW) < 0 || epoch_label(fd, context) < 0))
+        error = errno;
+    if (!error && (!epoch_same(&after, &named) || after.st_dev != written.st_dev ||
+        after.st_ino != written.st_ino || after.st_mode != (S_IFREG | 0400) ||
+        after.st_uid || after.st_gid || after.st_nlink != 1 || after.st_size != length)) error = ESTALE;
+    if (!error && (fstat(directory, &after) < 0 || lstat("/run/droidloom-early", &named) < 0))
+        error = errno;
+    if (!error && (!epoch_same(&after, &named) || after.st_dev != parent.st_dev ||
+        after.st_ino != parent.st_ino || after.st_mode != parent.st_mode ||
+        after.st_uid != parent.st_uid || after.st_gid != parent.st_gid || after.st_nlink != parent.st_nlink))
+        error = ESTALE;
+    if (!error && fstat(held->fd, &after) < 0) error = errno;
+    if (!error && !epoch_same(&held->identity, &after)) error = ESTALE;
+    /* A failed, partially written observation is preserved for diagnosis;
+     * the boot fails before native execution and no file is overwritten. */
+    close(fd);
+    return error ? reject(error) : 0;
 }
 
 static int epoch_status(int fd, uint32_t value[5])

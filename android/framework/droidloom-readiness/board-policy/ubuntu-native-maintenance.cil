@@ -162,6 +162,12 @@
 (allow p4_linux_maintenance_journal_t p4_linux_journal_store_t (dir (getattr search open read)))
 (allow p4_linux_maintenance_journal_t p4_linux_journal_machine_t (dir (getattr search open read)))
 (allow p4_linux_maintenance_journal_t p4_linux_journal_database_t (file (getattr open read map lock)))
+; The same normal journalctl --boot reads a not-yet-flushed failed boot from
+; /run/log/journal. Only this existing read-only child can inspect its records.
+(allow p4_linux_maintenance_journal_t p4_linux_volatile_log_root_t (dir (getattr search)))
+(allow p4_linux_maintenance_journal_t p4_linux_volatile_journal_store_t (dir (getattr search open read)))
+(allow p4_linux_maintenance_journal_t p4_linux_volatile_journal_machine_t (dir (getattr search open read)))
+(allow p4_linux_maintenance_journal_t p4_linux_volatile_journal_database_t (file (getattr open read map lock)))
 (allow p4_linux_maintenance_journal_t p4_linux_standardio_t (chr_file (getattr read write)))
 (allow p4_linux_maintenance_journal_t labeledfs (filesystem (getattr)))
 (allow p4_linux_maintenance_journal_t tmpfs (filesystem (getattr)))

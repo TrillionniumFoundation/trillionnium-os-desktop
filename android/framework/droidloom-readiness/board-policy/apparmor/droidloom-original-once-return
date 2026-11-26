@@ -1,0 +1,76 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+abi <abi/5.0>,
+#include <tunables/global>
+# The fixed return entry seals E=0, I=A=0 and NNP=1 before observations.
+# The three capabilities below are usable only after the fixed maintenance
+# exec also crosses SELinux's exact nnp_transition. The return SELinux role
+# permits no capability, Python execution, socket creation or GRUB write.
+# Keep ix: the selected kernel's NNP check compares profile identity sets,
+# not semantic rule subsets, so a standalone Px would correctly be refused.
+profile droidloom-original-once-return /usr/lib/droidloom/production/current/droidloom-original-once-return flags=(attach_disconnected) {
+  capability setuid,
+  capability setgid,
+  capability kill,
+
+  / r,
+  /{etc,run,usr,usr/bin,usr/lib,proc,dev,sys,var,var/lib,var/log,boot}/ r,
+  /etc/ld.so.cache r,
+  /{,usr/}lib{,64}/ld-linux-x86-64.so.2 mr,
+  /{,usr/}lib/x86_64-linux-gnu/{ld-linux-x86-64.so.2,lib*.so*} mr,
+  /usr/lib/x86_64-linux-gnu/systemd/libsystemd-shared-259.so mr,
+  /usr/lib/droidloom/{,production/,production/current/} r,
+  /usr/lib/droidloom/production/current/droidloom-original-once-return mr,
+  /usr/lib/droidloom/production/current/droidloom-maintenance mrix,
+  /usr/lib/droidloom/production/current/droidloom-maintenance.py r,
+  /usr/bin/python3.14 mrix,
+  /usr/lib/python3.14/{,**} r,
+  /usr/lib/python3.14/lib-dynload/*.so mr,
+  /usr/bin/{systemctl,journalctl,grub-editenv} mrix,
+
+  /etc/{passwd,group,machine-id,nsswitch.conf,os-release} r,
+  /usr/lib/os-release r,
+  /usr/share/locale/{,**} r,
+  /usr/lib/locale/{,**} r,
+  /usr/share/zoneinfo/{,**} r,
+  /etc/localtime r,
+  /etc/droidloom/{,production/,qualification/} r,
+  /etc/droidloom/{cell.json,production/selected.json,qualification/early.json,qualification/return.json} r,
+  /etc/droidloom-maintenance/{,installation.json} r,
+  /var/lib/droidloom/{,qualification/,qualification/original-once-[0-9a-f]*/} r,
+  /var/lib/droidloom/qualification/original-once-[0-9a-f]*/runtime-evidence/ rw,
+  /var/lib/droidloom/qualification/original-once-[0-9a-f]*/runtime-evidence/* rwk,
+
+  /run/droidloom-early/ r,
+  /run/droidloom-early/host-{userns,pidns} r,
+  /run/droidloom-early/host-mount-identity.json r,
+  /{user,pid,mnt}:[0-9]* r,
+  owner /proc/{self,[0-9]*}/ r,
+  owner /proc/{self,[0-9]*}/{stat,status,cgroup,uid_map,mountinfo} r,
+  owner /proc/{self,[0-9]*}/exe r,
+  owner /proc/{self,[0-9]*}/fd/{,[0-9]*} r,
+  owner /proc/{self,[0-9]*}/ns/{,mnt} r,
+  owner /proc/{self,[0-9]*}/attr/{,apparmor/,apparmor/current} r,
+  /proc/cmdline r,
+  /proc/sys/kernel/{osrelease,random/boot_id} r,
+  /sys/fs/{,selinux/,selinux/enforce} r,
+  /sys/module/apparmor/parameters/enabled r,
+  /sys/devices/{,virtual/,virtual/watchdog/,virtual/watchdog/watchdog[0-9]*/} r,
+  /sys/devices/virtual/watchdog/watchdog[0-9]*/{identity,state,nowayout,timeout} r,
+  /dev/null rw,
+
+  # The unchanged maintenance collector reads only the original journal.
+  /{run/log,var/log}/journal/{,**/} r,
+  /{run/log,var/log}/journal/**/*.journal{,~} mrk,
+  /run/systemd/{,private} rw,
+  /run/user/{,1000/,1000/bus,1000/systemd/,1000/systemd/private} rw,
+  # Selected 6.18 profile_peer_perm sends filesystem peers through
+  # unix_fs_perm and these exact path rules. Do not grant abstract peers.
+  unix (create, getopt, setopt, shutdown) type=stream,
+  dbus (send, receive) bus=session peer=(name=org.freedesktop.systemd1),
+  dbus (send, receive) bus=session peer=(name=org.freedesktop.DBus),
+
+  /boot/grub/{,grub.cfg} r,
+  /boot/grub/grubenv rw,
+  signal (receive) peer=unconfined,
+  signal (send, receive) peer=droidloom-original-once-return,
+}

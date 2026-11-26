@@ -100,3 +100,14 @@
 /run/(credentials|systemd/temporary-credentials)/systemd-udev-load-credentials\.service -d u:object_r:p4_linux_udev_credentials_t:s0
 /run/(credentials|systemd/temporary-credentials)/systemd-resolved\.service -d u:object_r:p4_linux_resolved_credentials_t:s0
 /run/(credentials|systemd/temporary-credentials)/systemd-sysctl\.service -d u:object_r:p4_linux_sysctl_credentials_t:s0
+
+# Source-owned original-machine return entry and immutable boot identity.
+/usr/lib/droidloom/production/current/droidloom-original-once-return -- u:object_r:p4_linux_once_return_exec_t:s0
+/etc/droidloom/qualification -d u:object_r:p4_linux_once_config_t:s0
+/etc/droidloom/qualification/(early|return)\.json -- u:object_r:p4_linux_once_config_t:s0
+/var/lib/droidloom/qualification(/original-once-[0-9a-f]{64})? -d u:object_r:p4_linux_once_parent_t:s0
+/var/lib/droidloom/qualification/original-once-[0-9a-f]{64}/runtime-evidence -d u:object_r:p4_linux_once_evidence_t:s0
+/var/lib/droidloom/qualification/original-once-[0-9a-f]{64}/runtime-evidence/[A-Za-z0-9_.-]+ -- u:object_r:p4_linux_once_evidence_t:s0
+/run/droidloom-early/host-mount-identity\.json -- u:object_r:p4_linux_host_mount_identity_t:s0
+/usr/share/droidloom/production/droidloom-original-once(\.target|-return\.service|-return\.timer) -- u:object_r:p4_linux_once_unit_t:s0
+/etc/systemd/system/droidloom-original-once(\.target|-return\.service|-return\.timer) -- u:object_r:p4_linux_once_unit_t:s0

@@ -295,6 +295,11 @@ fn production_host_payload(repo: &Path, host: &Path, runtime: &Path) -> Result<(
     let uevent = runtime.join("usr/lib/droidloom/production/current/droidloom-native-uevent-label");
     copy(&host.join("droidloomd"), &uevent)?;
     mode(&uevent, 0o755)?;
+    // This same normal droidloomd build has a separate, fixed original-return
+    // attachment. Independent bytes/inode avoid relabeling a live daemon alias.
+    let once = runtime.join("usr/lib/droidloom/production/current/droidloom-original-once-return");
+    copy(&host.join("droidloomd"), &once)?;
+    mode(&once, 0o755)?;
     // The same release must contain its fixed maintenance peer; an older
     // independently installed helper cannot retire this generation's resources.
     let helper = host.join("droidloom-package-helper");
@@ -343,6 +348,18 @@ fn production_host_payload(repo: &Path, host: &Path, runtime: &Path) -> Result<(
         }
         let target = runtime.join("usr/share/droidloom/production").join(unit);
         copy(&source, &target)?;
+        mode(&target, 0o644)?;
+    }
+    // These source templates remain inactive package data. The original-once
+    // authority publishes them transactionally; package installation does not
+    // enable, select, arm or reboot the original machine.
+    for (name, body) in [
+        ("droidloom-original-once.target", include_bytes!("../../../packaging/systemd/droidloom-original-once.target").as_slice()),
+        ("droidloom-original-once-return.service", include_bytes!("../../../packaging/systemd/droidloom-original-once-return.service").as_slice()),
+        ("droidloom-original-once-return.timer", include_bytes!("../../../packaging/systemd/droidloom-original-once-return.timer").as_slice()),
+    ] {
+        let target = runtime.join("usr/share/droidloom/production").join(name);
+        write(&target, body)?;
         mode(&target, 0o644)?;
     }
     // The desktop only joins its original early owner's listener. It never

@@ -35,7 +35,7 @@ CACHE_LOADERS = {
     "p4_linux_journald_t", "p4_linux_journalctl_t", "p4_linux_udev_t",
     "p4_linux_hardware_label_t", "p4_linux_uevent_label_t",
     "p4_linux_maintenance_journal_t", "droidloom_container_entry_t",
-    "p4_linux_remount_t", "p4_linux_netplan_t",
+    "p4_linux_remount_t", "p4_linux_netplan_t", "p4_linux_once_return_t",
 }
 INTERPRETER_OPENERS = {"p4_linux_service_executor_t", "p4_linux_udev_t"}
 NULL_TYPES = ("null_device", "p4_linux_standardio_t")

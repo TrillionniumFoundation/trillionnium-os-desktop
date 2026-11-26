@@ -21,6 +21,7 @@ from verify_native_login_audit import verify_login_audit
 from verify_native_journal_storage import verify_journal_storage
 from verify_greeter_home import verify_greeter_home
 from verify_native_maintenance import verify_native_maintenance
+from verify_original_once import verify_original_once, source_inputs as original_once_source_inputs
 from verify_native_camera import verify_camera
 from verify_fixed_display import verify_fixed_display
 
@@ -603,6 +604,34 @@ def verify_manager_file_contexts(here, work):
         ("/usr/lib/droidloom/production/current/droidloom-native-uevent-label", stat.S_IFDIR, "p4_linux_rootdir_t"),
         ("/usr/lib/droidloom/production/current/droidloom-native-uevent-label", stat.S_IFLNK, "p4_linux_usrmerge_link_t"),
     ])
+    once = "/var/lib/droidloom/qualification/original-once-" + "a" * 64
+    cases.extend([
+        ("/usr/lib/droidloom/production/current/droidloom-original-once-return", stat.S_IFREG, "p4_linux_once_return_exec_t"),
+        ("/usr/lib/droidloom/production/current/droidloom-original-once-return", stat.S_IFLNK, "p4_linux_usrmerge_link_t"),
+        ("/usr/lib/droidloom/production/current/droidloom-original-once-return", stat.S_IFDIR, "p4_linux_rootdir_t"),
+        ("/etc/droidloom/qualification", stat.S_IFDIR, "p4_linux_once_config_t"),
+        ("/etc/droidloom/qualification/early.json", stat.S_IFREG, "p4_linux_once_config_t"),
+        ("/etc/droidloom/qualification/return.json", stat.S_IFREG, "p4_linux_once_config_t"),
+        ("/etc/droidloom/qualification/return.json-extra", stat.S_IFREG, "p4_linux_native_config_t"),
+        ("/etc/droidloom", stat.S_IFDIR, "droidloom_package_config_dir"),
+        ("/etc/droidloom/production", stat.S_IFDIR, "droidloom_package_selection_dir"),
+        ("/etc/droidloom/cell.json", stat.S_IFREG, "p4_linux_mac_release_input_t"),
+        ("/etc/droidloom/production/selected.json", stat.S_IFREG, "p4_linux_mac_release_input_t"),
+        ("/var/lib/droidloom/qualification", stat.S_IFDIR, "p4_linux_once_parent_t"),
+        (once, stat.S_IFDIR, "p4_linux_once_parent_t"),
+        (once[:-1], stat.S_IFDIR, "p4_linux_product_store_t"),
+        (once + "g", stat.S_IFDIR, "p4_linux_product_store_t"),
+        (once + "/runtime-evidence", stat.S_IFDIR, "p4_linux_once_evidence_t"),
+        (once + "/runtime-evidence", stat.S_IFREG, "p4_linux_product_store_t"),
+        (once + "/runtime-evidence/owner.lock", stat.S_IFREG, "p4_linux_once_evidence_t"),
+        (once + "/runtime-evidence/RETURN.json", stat.S_IFREG, "p4_linux_once_evidence_t"),
+        (once + "/runtime-evidence/RETURN.json", stat.S_IFLNK, "p4_linux_product_store_t"),
+        (once + "/runtime-evidence/other/RETURN.json", stat.S_IFREG, "p4_linux_product_store_t"),
+        ("/run/droidloom-early/host-mount-identity.json", stat.S_IFREG, "p4_linux_host_mount_identity_t"),
+    ])
+    for prefix in ("/usr/share/droidloom/production/", "/etc/systemd/system/"):
+        for unit in ("droidloom-original-once.target", "droidloom-original-once-return.service", "droidloom-original-once-return.timer"):
+            cases.append((prefix + unit, stat.S_IFREG, "p4_linux_once_unit_t"))
     for target, (_, units) in CREDENTIAL_DIRECTORY_FAMILIES.items():
         for unit in units:
             for parent in ("/run/credentials/", "/run/systemd/temporary-credentials/"):
@@ -1504,7 +1533,7 @@ def main():
         "ubuntu-native-service-capabilities.cil", "ubuntu-native-console.cil",
         "ubuntu-native-login-audit.cil", "ubuntu-native-remount.cil", "ubuntu-native-netplan.cil", "ubuntu-native-sysusers.cil",
         "ubuntu-native-service-runtime.cil", "ubuntu-native-sandbox.cil",
-        "ubuntu-native-maintenance.cil",
+        "ubuntu-native-maintenance.cil", "ubuntu-original-once.cil",
         "frontend-android-interface.cil", "native-camera-interface.cil", "linux-frontend-observer.cil", "instance-launcher.cil",
         "linux-query-owner.cil", "linux-fixed-metadata-observer.cil",
         "instance-factory-cgroup.cil", "ubuntu-systemd-unit-status.cil",
@@ -1535,6 +1564,8 @@ def main():
                here / "verify_native_login_audit.py", here / "verify_native_journal_storage.py",
                here / "verify_greeter_home.py", here / "verify_native_maintenance.py",
                here / "verify_fixed_display.py",
+               here / "verify_original_once.py", here / "original-once-source.json",
+               *original_once_source_inputs(here),
                here.parents[3] / "packaging/ubuntu/systemd/source.lock.json",
                here.parents[3] / "packaging/ubuntu/systemd/p4-native-generator-tmpfs.patch",
                here / "ubuntu-native-file_contexts", here / "ubuntu-real-root-file_contexts",
@@ -1610,6 +1641,7 @@ def main():
             library, linked, work / "host-control-binary.cil", contract)
         greeter_home = verify_greeter_home(library, linked, work / "host-control-binary.cil", contract, here / "ubuntu-native-file_contexts")
         native_maintenance = verify_native_maintenance(library, linked, work / "maintenance-binary.cil", export_binary_policy)
+        original_once = verify_original_once(library, linked, work / "original-once-binary.cil", export_binary_policy, here)
         manager_file_contexts = verify_manager_file_contexts(here, work)
         result = {
             "native_uevent": uevent_access,
@@ -1620,6 +1652,8 @@ def main():
             "native_user_cgroups": user_cgroups,
             "native_manager_file_contexts": manager_file_contexts,
             "native_maintenance": native_maintenance,
+            "original_once": original_once,
+            "original_once_verifier": sha256(here / "verify_original_once.py"),
             "native_maintenance_verifier": sha256(here / "verify_native_maintenance.py"),
             "native_journal_storage": journal_storage,
             "native_journal_storage_verifier": sha256(here / "verify_native_journal_storage.py"),

@@ -31,9 +31,9 @@ struct ReleaseInput {
     board_profiles: std::collections::BTreeMap<String, AppArmorProfileInput>,
 }
 
-// Preserve the original eight roles and append the fixed coldplug helper.
+// Preserve the original nine roles and append the fixed original-return entry.
 // The committed lock owns the serialized order; this is its closed set.
-const APPARMOR_BOARD_ROLES: [&str; 9] = [
+const APPARMOR_BOARD_ROLES: [&str; 10] = [
     "droidloom-ubuntu-journald",
     "droidloom-policy-loader",
     "droidloom-production-android",
@@ -43,6 +43,7 @@ const APPARMOR_BOARD_ROLES: [&str; 9] = [
     "droidloom-native-hardware-label",
     "droidloom-camera-capture",
     "droidloom-native-uevent-label",
+    "droidloom-original-once-return",
 ];
 
 fn sha256_text(value: &str) -> bool {
@@ -108,7 +109,7 @@ fn parse_board_inputs(bytes: &[u8]) -> Result<BoardInputs> {
         || aa.board_profiles.len() != APPARMOR_BOARD_ROLES.len()
     {
         return fail(
-            "AppArmor lock must preserve the bounded Ubuntu prefix and nine ordered board roles",
+            "AppArmor lock must preserve the bounded Ubuntu prefix and ten ordered board roles",
         );
     }
     for name in &aa.board_profile_order {
