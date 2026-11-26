@@ -891,3 +891,7 @@ mod tests {
         }
     }
 }
+
+#[cfg(test)]
+#[path = "cold_original_label_scale_tests.rs"]
+mod scale_tests;
