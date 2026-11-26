@@ -1,0 +1,50 @@
+; The unchanged normal kmod static-nodes command writes only one generated
+; tmpfiles configuration. Early PID 1 holds its fixed parent across first load;
+; the normal unit drop-in validates and preserves it at normal shutdown.
+(type p4_linux_kmod_tmpfiles_dir_t)
+(roletype object_r p4_linux_kmod_tmpfiles_dir_t)
+(type p4_linux_kmod_static_nodes_t)
+(roletype object_r p4_linux_kmod_static_nodes_t)
+(typeattributeset p4_linux_data (p4_linux_kmod_tmpfiles_dir_t p4_linux_kmod_static_nodes_t))
+
+; The first-load policy installer labels only the newly held exact inode.
+(allow kernel p4_linux_kmod_tmpfiles_dir_t (dir (getattr relabelto)))
+; The executor uses the existing directory with normal chmod/chown checks.
+; It cannot create another directory here or write its generic /run parent.
+(allow p4_linux_service_executor_t p4_linux_kmod_tmpfiles_dir_t (dir (getattr search open read setattr mounton)))
+(neverallow p4_linux_service_executor_t p4_linux_kmod_tmpfiles_dir_t (dir (not (getattr search open read setattr mounton))))
+(neverallow p4_linux_service_executor_t p4_linux_kmod_tmpfiles_dir_t (file (all)))
+(neverallow p4_linux_service_executor_t p4_linux_kmod_static_nodes_t (file (not (getattr open read))))
+
+; mkdir_parents() returns when this prepared directory exists. fopen("we")
+; creates/truncates static-nodes.conf, without rename, unlink or device creation.
+(allow p4_linux_module_loader_t p4_linux_kmod_tmpfiles_dir_t (dir (getattr search open read write add_name)))
+(neverallow p4_linux_module_loader_t p4_linux_kmod_tmpfiles_dir_t (dir (not (getattr search open read write add_name))))
+(neverallow p4_linux_module_loader_t p4_linux_kmod_tmpfiles_dir_t (file (all)))
+(allow p4_linux_module_loader_t p4_linux_kmod_static_nodes_t (file (getattr open read map create write setattr)))
+(neverallow p4_linux_module_loader_t p4_linux_kmod_static_nodes_t (file (not (getattr open read map create write setattr))))
+(neverallow p4_linux_module_loader_t p4_linux_kmod_static_nodes_t (dir (all)))
+(typetransition p4_linux_module_loader_t p4_linux_kmod_tmpfiles_dir_t file "static-nodes.conf" p4_linux_kmod_static_nodes_t)
+
+; The wrong filename inherits the directory label and cannot be created as a
+; regular file by this producer. Original module loading and hardware scope stay
+; unchanged; the generated text is consumed by the normal tmpfiles setup role.
+(neverallow p4_linux_module_loader_t p4_linux_run_t (dir (write add_name remove_name create setattr rename reparent rmdir relabelfrom relabelto)))
+(neverallow p4_linux_module_loader_t p4_linux_rootdir_t (dir (write add_name remove_name create setattr rename reparent rmdir relabelfrom relabelto)))
+(neverallow p4_linux_module_loader_t p4_linux_native_data_t (file (create write append setattr unlink link rename relabelfrom relabelto)))
+(neverallow p4_linux_module_loader_t p4_linux_kmod_tmpfiles_dir_t (lnk_file (all)))
+(neverallow p4_linux_module_loader_t p4_linux_kmod_tmpfiles_dir_t (sock_file (all)))
+(neverallow p4_linux_module_loader_t p4_linux_kmod_tmpfiles_dir_t (chr_file (all)))
+(neverallow p4_linux_module_loader_t p4_linux_kmod_tmpfiles_dir_t (blk_file (all)))
+(neverallow p4_linux_module_loader_t p4_linux_kmod_tmpfiles_dir_t (fifo_file (all)))
+(neverallow p4_linux_module_loader_t p4_linux_kmod_static_nodes_t (lnk_file (all)))
+(neverallow p4_linux_module_loader_t p4_linux_kmod_static_nodes_t (sock_file (all)))
+(neverallow p4_linux_module_loader_t p4_linux_kmod_static_nodes_t (chr_file (all)))
+(neverallow p4_linux_module_loader_t p4_linux_kmod_static_nodes_t (blk_file (all)))
+(neverallow p4_linux_module_loader_t p4_linux_kmod_static_nodes_t (fifo_file (all)))
+(allow p4_linux_kmod_tmpfiles_dir_t tmpfs (filesystem (associate)))
+(allow p4_linux_kmod_static_nodes_t tmpfs (filesystem (associate)))
+
+; The fixed kmod alias model preserves old actor vectors, ioctl filters and
+; every original constraint, including the two unchanged relabel guards.
+; Only the explicit early-label/executor/producer operations above are added.

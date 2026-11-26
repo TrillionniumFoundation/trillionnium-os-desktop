@@ -17,6 +17,19 @@ struct droidloom_linux_run {
 };
 
 
+/* One create-only directory, held across the initial SELinux policy load. */
+struct droidloom_linux_tmpfiles {
+    struct droidloom_linux_run directory;
+    struct stat identity;
+    uint64_t mount_id;
+    bool prepared;
+};
+int droidloom_hold_linux_tmpfiles(const struct droidloom_linux_run *run,
+                                 struct droidloom_linux_tmpfiles *held);
+int droidloom_label_linux_tmpfiles(const struct droidloom_linux_run *run,
+                                  struct droidloom_linux_tmpfiles *held);
+void droidloom_close_linux_tmpfiles(struct droidloom_linux_tmpfiles *held);
+
 struct droidloom_linux_init_scope {
     struct droidloom_linux_run root;
     struct droidloom_linux_run scope;

@@ -794,6 +794,10 @@ mod tests {
                 "usr/lib/systemd/system/mount.d/50-droidloom-private-keyring.conf",
                 include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-mount-private-keyring.conf").as_slice(),
             ),
+            (
+                "usr/lib/systemd/system/kmod-static-nodes.service.d/50-droidloom-runtime-directory.conf",
+                include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-kmod-static-nodes-runtime.conf").as_slice(),
+            ),
         ] {
             let path = runtime.join(relative);
             let metadata = fs::symlink_metadata(&path).unwrap();

@@ -15,9 +15,9 @@ EXPECTED = {
 }
 SOURCE_PINS = {
     "runtime/droidloom-early-boot/linux_run_label.c":
-        (75090, "2e4d85188cc4a06928383289ba63c90b4c10567215694fce14fc7165783cb9b4"),
+        (81473, "06067bea8bae2b52116339330bcb29bdb7de3c65eee722a6f834bf4cc75ca755"),
     "runtime/droidloom-early-boot/linux_run_label.h":
-        (4300, "b73ce88b65345da91bafcdb57fc01ab495ccfa990c176500d51c7b21e1003130"),
+        (4896, "0906e6cb194798595dfbb0461f518514865efe4b89484c0159d72b709a746e91"),
     "runtime/droidloom-early-boot/board_init.c":
         (28851, "b695288f215158e5dd83292f156898103e82d01fdf6a6d855d7f03d778711b1b"),
     "runtime/droidloom-early-boot/tests/standard_devices_test.c":

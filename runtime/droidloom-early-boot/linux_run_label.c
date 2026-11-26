@@ -676,6 +676,180 @@ static int vt_open_path(int parent, const char *name, bool directory)
     return (int)syscall(SYS_openat2, parent, name, &how, sizeof(how));
 }
 
+/* The normal static-nodes unit uses the existing /run/tmpfiles.d.  Create
+ * this one root-owned tmpfs directory before the first policy load, then keep
+ * its exact FD until the selected policy can assign its dedicated type.
+ * Never adopt a pre-existing directory or grant the executor /run writes. */
+static const char linux_tmpfiles_context[] =
+    "u:object_r:p4_linux_kmod_tmpfiles_dir_t:s0";
+
+static int tmpfiles_run_identity(const struct droidloom_linux_run *run,
+                                uint64_t *mount_id)
+{
+    struct stat held, named;
+    struct statfs fs;
+    uint64_t found, named_mount;
+    if (!run || run->fd < 0)
+        return vt_fail(EINVAL);
+    int fd = vt_open_path(AT_FDCWD, "/run", true);
+    if (fd < 0)
+        return -1;
+    int rc = fstat(run->fd, &held);
+    if (rc == 0) rc = fstat(fd, &named);
+    if (rc == 0) rc = fstatfs(run->fd, &fs);
+    if (rc == 0) rc = vt_mount(run->fd, &found);
+    if (rc == 0) rc = vt_mount(fd, &named_mount);
+    int error = errno;
+    close(fd);
+    if (rc < 0)
+        return vt_fail(error);
+    if (!S_ISDIR(held.st_mode) || held.st_uid || held.st_gid ||
+        (held.st_mode & 07777) != 0755 || held.st_rdev ||
+        held.st_dev != run->device || held.st_ino != run->inode ||
+        !vt_same_inode(&held, &named, true) || found != named_mount ||
+        (unsigned long)fs.f_type != TMPFS_MAGIC)
+        return vt_fail(ESTALE);
+    *mount_id = found;
+    return 0;
+}
+
+static int tmpfiles_xattrs(int fd)
+{
+    char names[128];
+    ssize_t size = flistxattr(fd, names, sizeof(names));
+    if (size < 0)
+        return -1;
+    /* security.selinux may be supplied by the LSM rather than an actual xattr.
+     * All other attributes are foreign to this newly created directory. */
+    if (size != 0 && (size != (ssize_t)sizeof("security.selinux") ||
+                     memcmp(names, "security.selinux", sizeof("security.selinux"))))
+        return vt_fail(EACCES);
+    return 0;
+}
+
+static int tmpfiles_verify(const struct droidloom_linux_run *run,
+                           const struct droidloom_linux_tmpfiles *held,
+                           bool same_ctime, struct stat *observed)
+{
+    struct stat current, named;
+    struct statfs fs;
+    uint64_t parent_mount, current_mount, named_mount;
+    if (!held || !held->prepared || held->directory.fd < 0)
+        return vt_fail(EINVAL);
+    if (tmpfiles_run_identity(run, &parent_mount) < 0 ||
+        fstat(held->directory.fd, &current) < 0 ||
+        fstatfs(held->directory.fd, &fs) < 0 ||
+        vt_mount(held->directory.fd, &current_mount) < 0)
+        return -1;
+    int fd = vt_open_path(run->fd, "tmpfiles.d", true);
+    if (fd < 0)
+        return -1;
+    int rc = fstat(fd, &named);
+    if (rc == 0) rc = vt_mount(fd, &named_mount);
+    int error = errno;
+    close(fd);
+    if (rc < 0)
+        return vt_fail(error);
+    if (!S_ISDIR(current.st_mode) || current.st_uid || current.st_gid ||
+        (current.st_mode & 07777) != 0755 || current.st_nlink != 2 ||
+        current.st_rdev || current.st_dev != run->device ||
+        current.st_dev != held->directory.device ||
+        current.st_ino != held->directory.inode ||
+        !vt_same_inode(&current, &held->identity, same_ctime) ||
+        !vt_same_inode(&current, &named, true) ||
+        (unsigned long)fs.f_type != TMPFS_MAGIC ||
+        parent_mount != held->mount_id || current_mount != held->mount_id ||
+        named_mount != held->mount_id)
+        return vt_fail(ESTALE);
+    if (tmpfiles_xattrs(held->directory.fd) < 0)
+        return -1;
+    if (observed)
+        *observed = current;
+    return 0;
+}
+
+void droidloom_close_linux_tmpfiles(struct droidloom_linux_tmpfiles *held)
+{
+    if (!held)
+        return;
+    if (held->directory.fd >= 0)
+        close(held->directory.fd);
+    *held = (struct droidloom_linux_tmpfiles){ .directory.fd = -1 };
+}
+
+int droidloom_hold_linux_tmpfiles(const struct droidloom_linux_run *run,
+                                 struct droidloom_linux_tmpfiles *held)
+{
+    if (!held || held->directory.fd != -1 || held->prepared)
+        return vt_fail(EINVAL);
+    uint64_t parent_mount;
+    if (tmpfiles_run_identity(run, &parent_mount) < 0)
+        return -1;
+    mode_t saved_umask = umask(0);
+    int rc = mkdirat(run->fd, "tmpfiles.d", 0755);
+    int error = errno;
+    umask(saved_umask);
+    if (rc < 0)
+        return vt_fail(error);
+    if (hold_child(run, "tmpfiles.d", 0, 0755, &held->directory) < 0)
+        return -1;
+    if (fstat(held->directory.fd, &held->identity) < 0) {
+        error = errno;
+        droidloom_close_linux_tmpfiles(held);
+        return vt_fail(error);
+    }
+    held->mount_id = parent_mount;
+    held->prepared = true;
+    if (tmpfiles_verify(run, held, true, NULL) < 0) {
+        error = errno;
+        droidloom_close_linux_tmpfiles(held);
+        return vt_fail(error);
+    }
+    return 0;
+}
+
+static int tmpfiles_label_kind(const struct droidloom_linux_tmpfiles *held)
+{
+    char context[128];
+    ssize_t size = fgetxattr(held->directory.fd, "security.selinux",
+                            context, sizeof(context));
+    if (size < 0)
+        return -1;
+    if (droidloom_context_matches(context, size, "u:object_r:tmpfs:s0"))
+        return 0;
+    if (droidloom_context_matches(context, size, linux_tmpfiles_context))
+        return 1;
+    return vt_fail(EACCES);
+}
+
+int droidloom_label_linux_tmpfiles(const struct droidloom_linux_run *run,
+                                  struct droidloom_linux_tmpfiles *held)
+{
+    if (tmpfiles_verify(run, held, true, NULL) < 0)
+        return -1;
+    int kind = tmpfiles_label_kind(held);
+    if (kind < 0)
+        return -1;
+    /* Recheck immediately before the sole write. An already-labelled inode
+     * must retain its full ctime; only our successful xattr permits a change. */
+    if (tmpfiles_verify(run, held, true, NULL) < 0)
+        return -1;
+    if (kind == 0 &&
+        fsetxattr(held->directory.fd, "security.selinux", linux_tmpfiles_context,
+                  sizeof(linux_tmpfiles_context), 0) < 0)
+        return -1;
+    struct stat after;
+    int after_kind = tmpfiles_label_kind(held);
+    if (after_kind < 0)
+        return -1;
+    if (after_kind != 1)
+        return vt_fail(EACCES);
+    if (tmpfiles_verify(run, held, kind != 0, &after) < 0)
+        return -1;
+    held->identity = after;
+    return tmpfiles_verify(run, held, true, NULL);
+}
+
 static int vt_admit_node(int dev, uint64_t dev_mount, size_t index, struct stat *st)
 {
     char name[16];

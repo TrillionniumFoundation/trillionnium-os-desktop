@@ -15,6 +15,7 @@ from derive_native_console_policy import contract as console_contract
 from derive_native_sysusers_policy import ALIASES as SYSUSERS_ALIASES
 from derive_native_logind_state_policy import ALIASES as LOGIND_ALIASES
 from derive_native_timesync_policy import ALIASES as TIMESYNC_ALIASES
+from derive_native_kmod_static_policy import ALIASES as KMOD_ALIASES
 from derive_preserved_alias_policy import (
     _roles, _context, _preserved_xperm_rules,
     derive_preserved_aliases, verify_preserved_aliases)
@@ -552,7 +553,7 @@ def verify(library, binary, exported, here, expected, export):
     from derive_native_ldconfig_policy import ALIASES as LDCONFIG_ALIASES
     from derive_native_journal_catalog_policy import ALIASES as CATALOG_ALIASES
     for row in (console_contract(here)["aliases"] + SYSUSERS_ALIASES + LOGIND_ALIASES
-                + TIMESYNC_ALIASES + LDCONFIG_ALIASES + CATALOG_ALIASES):
+                + TIMESYNC_ALIASES + LDCONFIG_ALIASES + CATALOG_ALIASES + KMOD_ALIASES):
         table = file_access if row["class"] == "file" else directories if row["class"] == "dir" else {}
         if row["source"] in table:
             table.setdefault(row["target"], set()).update(table[row["source"]])

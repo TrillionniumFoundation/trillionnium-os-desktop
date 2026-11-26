@@ -17,6 +17,7 @@ from derive_native_sysusers_policy import ALIASES as SYSUSERS_ALIASES
 from derive_native_netplan_policy import ALIASES as NETPLAN_ALIASES
 from derive_native_logind_state_policy import ALIASES as LOGIND_ALIASES
 from derive_native_timesync_policy import ALIASES as TIMESYNC_ALIASES
+from derive_native_kmod_static_policy import ALIASES as KMOD_ALIASES
 from derive_preserved_alias_policy import (
     _roles, _context, derive_preserved_aliases, verify_preserved_aliases)
 from derive_shared_payload_cgroup_policy import parse_expression
@@ -124,7 +125,7 @@ def verify(library, binary, exported, here, expected, export):
     from derive_native_ldconfig_policy import ALIASES as LDCONFIG_ALIASES
     from derive_native_journal_catalog_policy import ALIASES as CATALOG_ALIASES
     aliases = (console_contract(here)["aliases"] + SYSUSERS_ALIASES + NETPLAN_ALIASES
-               + LOGIND_ALIASES + TIMESYNC_ALIASES + LDCONFIG_ALIASES + CATALOG_ALIASES)
+               + LOGIND_ALIASES + TIMESYNC_ALIASES + LDCONFIG_ALIASES + CATALOG_ALIASES + KMOD_ALIASES)
     checks = verify_preserved_aliases(policy, exported, value["aliases"], expected)
     objects = sorted(set(re.findall(r"\(roletype object_r (\w+)\)", text)))
     actors = _roles(lines)

@@ -429,3 +429,7 @@
 /var/lib/systemd/catalog -d u:object_r:p4_linux_journal_catalog_dir_t:s0
 /var/lib/systemd/catalog/database -- u:object_r:p4_linux_journal_catalog_file_t:s0
 /var/lib/systemd/catalog/\.#database[0-9a-f]{16} -- u:object_r:p4_linux_journal_catalog_file_t:s0
+
+# Fixed generated static-node configuration; all adjacent names keep their old labels.
+/run/tmpfiles\.d -d u:object_r:p4_linux_kmod_tmpfiles_dir_t:s0
+/run/tmpfiles\.d/static-nodes\.conf -- u:object_r:p4_linux_kmod_static_nodes_t:s0
