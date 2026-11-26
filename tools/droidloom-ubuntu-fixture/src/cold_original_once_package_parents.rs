@@ -5,6 +5,10 @@ use super::super::commands::CommandEvidence;
 use super::*;
 use std::collections::BTreeSet;
 
+#[path = "cold_original_once_uncommitted_parents.rs"]
+mod uncommitted;
+pub(in crate::cold_original_qualification) use uncommitted::preserve_uncommitted;
+
 const SYSTEM: &str = "/etc/systemd/system";
 const WANTS: &str = "/etc/systemd/system/local-fs.target.wants";
 const DISPLAY: &str = "display-manager.service";

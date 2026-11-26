@@ -1037,6 +1037,11 @@ pub(super) fn native_parent_history(
     names.sort();
     let mut result = Vec::new();
     for name in names {
+        if package_parents::preserve_uncommitted(a, operation, &name)?.is_some() {
+            // This retained private prefix never acquired a BEFORE record or
+            // command input. It cannot supply a package-success/directory delta.
+            continue;
+        }
         let path = root.join(&name).join("OBSERVATION.json");
         let changes = if path.try_exists()? {
             package_parents::Changes::reopen(a, &files::pin_file(&path)?)?

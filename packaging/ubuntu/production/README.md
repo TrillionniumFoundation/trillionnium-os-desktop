@@ -987,3 +987,14 @@ lifecycle qualified. Normal helper/policy/AppArmor packaging, exact current
 cohort admission, the measured complete frozen windows and selected-kernel
 runtime return proof remain mandatory before physical arm. Permanent enablement
 still requires its separate real application, private-data and maintenance gates.
+
+A native parent capture interrupted before BEFORE.json has a separate private-
+only recovery path. It retains the original capture directory and any exact
+prefix of the same normally produced snapshot, verifies that the corresponding
+command directory does not exist, and seals the observation outside that
+untouched directory. Source binding reopens the actual native-snapshot input,
+stdout, result, original snapshot and selected native package sources. An
+existing input, command directory, result, foreign member, changed generation
+or non-source prefix is rejected. The preservation record is never a native
+package completion or parent-change event; the normal public/native rollback
+still uses its original durable snapshots.
