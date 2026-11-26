@@ -1026,6 +1026,71 @@ static int hold_cgroup_inode(int fd, mode_t kind, struct droidloom_linux_run *ou
     return 0;
 }
 
+/* The selected 6.18 kernfs constructor creates its root directory as 0555.
+ * Prepare only this held, original unified-hierarchy root while global PID 1
+ * is still before the first policy load. Later init_t can then create its
+ * policy-admitted children as the owner without a global DAC override. */
+static int observe_linux_cgroup_root(const struct droidloom_linux_run *held,
+                                     struct stat *identity)
+{
+    struct stat named;
+    struct statfs fs;
+    int fd = vt_open_path(AT_FDCWD, "/sys/fs/cgroup", true);
+    if (fd < 0)
+        return -1;
+    int error = 0;
+    if (fstat(held->fd, identity) < 0 || fstat(fd, &named) < 0 ||
+        fstatfs(held->fd, &fs) < 0)
+        error = errno;
+    else if (!vt_same_inode(identity, &named, true) ||
+             identity->st_dev != held->device || identity->st_ino != held->inode ||
+             identity->st_ino != 1 || !S_ISDIR(identity->st_mode) ||
+             identity->st_uid || identity->st_gid || !identity->st_nlink ||
+             fs.f_type != CGROUP2_SUPER_MAGIC || (fs.f_flags & ST_RDONLY))
+        error = EACCES;
+    close(fd);
+    return error ? vt_fail(error) : 0;
+}
+
+static int prepare_linux_cgroup_root_mode(const struct droidloom_linux_run *held)
+{
+    struct stat initial, before, after, expected;
+    if (getpid() != 1 || getuid() || geteuid() || getgid() || getegid())
+        return vt_fail(EPERM);
+    if (observe_linux_cgroup_root(held, &initial) < 0)
+        return -1;
+    mode_t mode = initial.st_mode & 07777;
+    if (mode != 0555 && mode != 0755)
+        return vt_fail(EACCES);
+    bool changed = mode == 0555;
+    before = initial;
+    if (changed) {
+        /* Selected 6.18 kernfs_iop_listxattr initializes lazy iattrs. Its first
+         * allocation sets mtime and ctime, even though this size query writes
+         * no xattr. Complete that normal initialization before the strict
+         * chmod snapshot, on the same held root whose identity we checked. */
+        if (flistxattr(held->fd, NULL, 0) < 0 ||
+            observe_linux_cgroup_root(held, &before) < 0)
+            return -1;
+        expected = initial;
+        expected.st_mtim = before.st_mtim;
+        expected.st_ctim = before.st_ctim;
+        if (!vt_same_inode(&before, &expected, true))
+            return vt_fail(ESTALE);
+        if (fchmod(held->fd, 0755) < 0)
+            return -1;
+    }
+    if (observe_linux_cgroup_root(held, &after) < 0)
+        return -1;
+    expected = before;
+    expected.st_mode = S_IFDIR | 0755;
+    /* Only our successful mode change may advance this inode's ctime.
+     * Preserve its owner, links, size, rdev, mtime and actual named identity. */
+    if (!vt_same_inode(&after, &expected, !changed))
+        return vt_fail(ESTALE);
+    return 0;
+}
+
 static int initial_cgroup_membership(void)
 {
     char data[64];
@@ -1061,6 +1126,8 @@ int droidloom_hold_linux_init_scope(struct droidloom_linux_init_scope *held)
         errno = ESTALE;
         return -1;
     }
+    if (prepare_linux_cgroup_root_mode(&held->root) < 0)
+        return -1;
     if (hold_cgroup_inode(openat(held->root.fd, "cgroup.procs", O_RDONLY | O_NOFOLLOW | O_CLOEXEC),
                           S_IFREG, &held->root_membership) < 0)
         return -1;
