@@ -26,6 +26,7 @@ SOURCE_PATHS = (
     "android/framework/droidloom-readiness/board-policy/derive_native_random_seed_policy.py",
     "android/framework/droidloom-readiness/board-policy/derive_native_timesync_policy.py",
     "android/framework/droidloom-readiness/board-policy/derive_native_ldconfig_policy.py",
+    "android/framework/droidloom-readiness/board-policy/derive_native_update_done_policy.py",
 )
 DIRECTORY = ("ioctl read write create getattr setattr lock relabelfrom relabelto "
              "append map unlink link rename execute quotaon mounton audit_access "
@@ -92,11 +93,17 @@ FIXED_NATIVE_ALIAS_ROWS = (
         ("p4_linux_rootdir_t", "p4_linux_ldconfig_aux_dir_t", "dir"),
         ("p4_linux_native_data_t", "p4_linux_ldconfig_aux_t", "file"),
     )),
+    ("derive_native_update_done_policy.py", (
+        ("p4_linux_setup_exec_t", "p4_linux_update_done_exec_t", "file"),
+        ("p4_linux_rootdir_t", "p4_linux_update_done_var_dir_t", "dir"),
+        ("p4_linux_native_config_t", "p4_linux_update_done_etc_file_t", "file"),
+        ("p4_linux_native_data_t", "p4_linux_update_done_var_file_t", "file"),
+    )),
 )
 
 
 def fixed_native_aliases():
-    # Import only the five reviewed providers, then compare their complete
+    # Import only the six reviewed providers, then compare their complete
     # rows to this independent list. Unknown providers, added rows, changed
     # source types/classes and repeated target/class pairs all fail closed.
     from derive_native_kmod_static_policy import ALIASES as kmod
@@ -104,12 +111,14 @@ def fixed_native_aliases():
     from derive_native_random_seed_policy import ALIASES as seed
     from derive_native_timesync_policy import ALIASES as timesync, PORT_ALIAS
     from derive_native_ldconfig_policy import ALIASES as ldconfig
+    from derive_native_update_done_policy import ALIASES as update_done
     actual = {
         "derive_native_kmod_static_policy.py": kmod,
         "derive_native_journal_catalog_policy.py": catalog,
         "derive_native_random_seed_policy.py": seed,
         "derive_native_timesync_policy.py": timesync + [PORT_ALIAS],
         "derive_native_ldconfig_policy.py": ldconfig,
+        "derive_native_update_done_policy.py": update_done,
     }
     expected = {
         provider: [{"source": source, "target": target, "class": cls}
