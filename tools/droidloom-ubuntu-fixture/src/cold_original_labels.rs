@@ -3,7 +3,15 @@
 //! physical mutation command and does not infer authority from a receipt flag.
 use crate::{Result, ensure, fs, model::Identity};
 use serde::{Deserialize, Serialize};
-use std::{collections::BTreeMap, ffi::CString, fs::File, os::fd::AsRawFd};
+use std::{
+    collections::BTreeMap,
+    ffi::CString,
+    fs::File,
+    os::fd::{AsFd, AsRawFd},
+};
+
+#[path = "cold_original_label_journal.rs"]
+mod journal;
 
 const LABEL: &str = "security.selinux";
 const MAX_NAMES: usize = 65_536;
@@ -14,11 +22,81 @@ const MAX_TOTAL: usize = 8_388_608;
 // magic link instead jumps directly to the held dentry, including a symlink,
 // without following that symlink's target. Only this fixed current-process
 // descriptor bridge is allowed; original pathnames never enter an xattr call.
+// The once owner additionally binds all original PID1 namespaces. These
+// held proc and namespace identities make each bridge call fail if this
+// process itself changes namespace custody between its surrounding fences.
+struct ProcCustody {
+    pid: u32,
+    process: File,
+    process_identity: Identity,
+    namespaces: Vec<(&'static str, File, Identity)>,
+}
+impl ProcCustody {
+    fn capture() -> Result<Self> {
+        let process = File::from(rustix::fs::open(
+            "/proc/self",
+            rustix::fs::OFlags::RDONLY
+                | rustix::fs::OFlags::DIRECTORY
+                | rustix::fs::OFlags::CLOEXEC,
+            rustix::fs::Mode::empty(),
+        )?);
+        let process_identity = fs::stat(&process)?;
+        ensure(
+            rustix::fs::fstatfs(&process)?.f_type as u64 == 0x9fa0,
+            "label process custody is outside procfs",
+        )?;
+        let mut namespaces = Vec::new();
+        for kind in ["mnt", "pid", "user"] {
+            let file = File::open(format!("/proc/self/ns/{kind}"))?;
+            let identity = fs::stat(&file)?;
+            namespaces.push((kind, file, identity));
+        }
+        let result = Self {
+            pid: std::process::id(),
+            process,
+            process_identity,
+            namespaces,
+        };
+        result.revalidate()?;
+        Ok(result)
+    }
+    fn revalidate(&self) -> Result<()> {
+        ensure(
+            std::process::id() == self.pid,
+            "label process identity changed",
+        )?;
+        let actual = File::from(rustix::fs::open(
+            "/proc/self",
+            rustix::fs::OFlags::RDONLY
+                | rustix::fs::OFlags::DIRECTORY
+                | rustix::fs::OFlags::CLOEXEC,
+            rustix::fs::Mode::empty(),
+        )?);
+        let same = |a: &Identity, b: &Identity| {
+            (a.dev, a.ino, a.mode, a.uid, a.gid) == (b.dev, b.ino, b.mode, b.uid, b.gid)
+        };
+        ensure(
+            same(&fs::stat(&actual)?, &self.process_identity)
+                && same(&fs::stat(&self.process)?, &self.process_identity),
+            "label process proc inode changed",
+        )?;
+        for (kind, held, identity) in &self.namespaces {
+            let actual = File::open(format!("/proc/self/ns/{kind}"))?;
+            ensure(
+                same(&fs::stat(held)?, identity) && same(&fs::stat(&actual)?, identity),
+                "label bridge namespace changed",
+            )?;
+        }
+        Ok(())
+    }
+}
+
 struct DescriptorAlias<'a> {
     directory: File,
     file: &'a File,
     name: String,
     path: String,
+    custody: ProcCustody,
 }
 impl<'a> DescriptorAlias<'a> {
     fn new(file: &'a File) -> Result<Self> {
@@ -39,11 +117,13 @@ impl<'a> DescriptorAlias<'a> {
             file,
             path: format!("/proc/self/fd/{name}"),
             name,
+            custody: ProcCustody::capture()?,
         };
         value.validate()?;
         Ok(value)
     }
     fn validate(&self) -> Result<()> {
+        self.custody.revalidate()?;
         let held = fs::stat(self.file)?;
         let named = fs::identity(&rustix::fs::statat(
             &self.directory,
@@ -158,16 +238,61 @@ fn attributes(file: &File) -> Result<BTreeMap<String, Vec<u8>>> {
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
+struct PersistentHandle {
+    handle_type: i32,
+    bytes: Vec<u8>,
+}
+impl PersistentHandle {
+    fn capture(file: &File) -> Result<Self> {
+        ensure(
+            rustix::fs::fstatfs(file)?.f_type as u64 == 0xef53,
+            "original label custody requires the admitted ext4 filesystem",
+        )?;
+        let (handle, _) = droidloom_descriptor_custody::Ext4Handle::capture(file.as_fd())?;
+        let id = fs::stat(file)?;
+        ensure(
+            u64::from(handle.inode_number()) == id.ino && id.nlink > 0,
+            "persistent handle differs from the linked held inode",
+        )?;
+        Ok(Self {
+            handle_type: handle.handle_type(),
+            bytes: handle.bytes().to_vec(),
+        })
+    }
+    fn reopen(&self, admitted_mount: &File) -> Result<File> {
+        ensure(
+            rustix::fs::fstatfs(admitted_mount)?.f_type as u64 == 0xef53,
+            "label recovery mount is not the admitted ext4 filesystem",
+        )?;
+        let handle =
+            droidloom_descriptor_custody::Ext4Handle::from_record(self.handle_type, &self.bytes)?;
+        let held = File::from(handle.reopen(admitted_mount.as_fd())?);
+        ensure(
+            Self::capture(&held)? == *self && fs::stat(&held)?.dev == fs::stat(admitted_mount)?.dev,
+            "reopened label handle no longer identifies the same filesystem inode",
+        )?;
+        Ok(held)
+    }
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
 struct Snapshot {
     identity: Identity,
+    handle: PersistentHandle,
     attributes: BTreeMap<String, Vec<u8>>,
 }
 fn snapshot(file: &File) -> Result<Snapshot> {
     let identity = fs::stat(file)?;
+    let handle = PersistentHandle::capture(file)?;
     let attributes = attributes(file)?;
-    ensure(fs::stat(file)? == identity, "label snapshot inode changed")?;
+    ensure(
+        fs::stat(file)? == identity && PersistentHandle::capture(file)? == handle,
+        "label snapshot inode changed",
+    )?;
     Ok(Snapshot {
         identity,
+        handle,
         attributes,
     })
 }
@@ -216,7 +341,9 @@ fn apply_one(file: File, before: &Snapshot, desired: &[u8], name: &str) -> Resul
     }
     let after = snapshot(&file)?;
     ensure(
-        only_ctime_changed(&before.identity, &after.identity) && after.attributes == expected,
+        only_ctime_changed(&before.identity, &after.identity)
+            && before.handle == after.handle
+            && after.attributes == expected,
         "label mutation changed another inode field or extended attribute",
     )?;
     Ok(LabelDerivation {
@@ -241,6 +368,7 @@ fn restore_one(step: &LabelDerivation, name: &str) -> Result<Snapshot> {
     let restored = snapshot(&step.file)?;
     ensure(
         only_ctime_changed(&step.before.identity, &restored.identity)
+            && step.before.handle == restored.handle
             && restored.attributes == step.before.attributes,
         "label rollback changed an unrelated inode field or xattr",
     )?;
@@ -265,7 +393,10 @@ mod tests {
     }
     #[test]
     fn actual_descriptor_label_and_rollback_preserve_other_xattrs_and_mtime() {
-        let area = tempfile::tempdir().unwrap();
+        let area = tempfile::Builder::new()
+            .prefix(".p4-label-test-")
+            .tempdir_in(std::env::current_dir().unwrap())
+            .unwrap();
         let path = area.path().join("target");
         std::fs::write(&path, b"unchanged ordinary content").unwrap();
         let file = path_inode(&path);
@@ -286,7 +417,10 @@ mod tests {
     }
     #[test]
     fn held_inode_does_not_retarget_a_replaced_final_path_or_follow_symlinks() {
-        let area = tempfile::tempdir().unwrap();
+        let area = tempfile::Builder::new()
+            .prefix(".p4-label-test-")
+            .tempdir_in(std::env::current_dir().unwrap())
+            .unwrap();
         let path = area.path().join("target");
         let old = area.path().join("old");
         std::fs::write(&path, b"old").unwrap();
@@ -314,7 +448,10 @@ mod tests {
     }
     #[test]
     fn intervening_identity_or_xattr_change_prevents_apply_and_restore() {
-        let area = tempfile::tempdir().unwrap();
+        let area = tempfile::Builder::new()
+            .prefix(".p4-label-test-")
+            .tempdir_in(std::env::current_dir().unwrap())
+            .unwrap();
         let path = area.path().join("target");
         std::fs::write(&path, b"original").unwrap();
         let file = path_inode(&path);

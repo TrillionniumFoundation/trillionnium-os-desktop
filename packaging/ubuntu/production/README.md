@@ -567,7 +567,10 @@ remain exact; a working image that has run may retain its changed content clocks
 while its inode, size, mode and owner must remain the same. Its old copy hash is
 historical evidence and is never asserted as a new runtime or migration result.
 The mutation core has no standalone physical CLI; only the separately verified
-qualification controller's sealed authority may eventually call its adapter.
+qualification controller's sealed authority calls its typed preparation and
+exchange adapter. Every move rechecks the exact durable once phase, immutable
+data intent, selected cell bytes, four backing OFDs and actual retirement scan.
+Exchange returns before labels and final selection publication.
 
 Mount-reference observations bind both the mount namespace and the held
 process-root inode. Two chroots in the same namespace cannot share an unchecked
@@ -583,3 +586,32 @@ again before restoring the selection or directory pair. It never synchronizes
 the preserved original images. The recovery receipt records the two actual
 working-backend synchronization results separately from directory rename
 durability and runtime or migration acceptance.
+
+
+### Descriptor-bound label recovery
+
+The label mutation core changes only `security.selinux` through the fixed
+`/proc/self/fd/<held O_PATH>` bridge. It binds the actual proc filesystem,
+current-process inode and held mount, PID and user namespaces before and after
+access. A held symlink is treated as that symlink inode, without changing its
+target or a replacement at the old pathname. All other extended attributes and
+all inode fields other than the expected ctime remain exact.
+
+Before an inode can change, its complete preimage, desired source-plan label
+and candidate binding are written and fsynced in a protected create-only
+journal. A separate recovery descriptor stays open when a syscall succeeds but
+a later identity check or result publication fails. Recovery classifies the
+actual full xattrs and inode identity against the two admitted states; an error
+is never interpreted as proof that nothing was written. Partial result files
+are preserved under their inode/hash names before recovery continues. Replaced
+proofs, replaced target inodes and unrelated attribute changes are rejected.
+
+Persistent snapshots include the ext4 inode/generation handle. The small
+`droidloom-descriptor-custody` crate wraps only `name_to_handle_at` with a fixed
+empty path and `open_by_handle_at` with fixed `O_PATH|O_NOFOLLOW|O_CLOEXEC` flags.
+The fixture crate continues to forbid unsafe code. Decoding a handle is not
+installation authority: the full label adapter must bind the same original
+filesystem UUID, held mount, immutable plan and normally resolved pathname.
+An unlinked old inode is rejected even if a remaining descriptor allows the
+kernel to decode its handle. The physical label-plan/apply interface remains
+closed until that complete source and once-owner binding is present.
