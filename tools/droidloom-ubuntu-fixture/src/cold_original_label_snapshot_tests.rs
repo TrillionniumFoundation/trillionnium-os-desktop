@@ -100,10 +100,13 @@ fn fixed_proc_name_metadata_matches_a_fresh_opened_descriptor() {
         "/proc/self/ns/pid",
         "/proc/self/ns/user",
     ] {
+        // /proc/self/fd reports the current descriptor count as its size.
+        // Hold the comparison descriptor before both observations so that
+        // this test itself does not change the complete metadata between them.
+        let opened = File::open(path).unwrap();
         let named_before = fs::identity(
             &rustix::fs::statat(rustix::fs::CWD, path, rustix::fs::AtFlags::empty()).unwrap(),
         );
-        let opened = File::open(path).unwrap();
         let named_after = fs::identity(
             &rustix::fs::statat(rustix::fs::CWD, path, rustix::fs::AtFlags::empty()).unwrap(),
         );
