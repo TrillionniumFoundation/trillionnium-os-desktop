@@ -289,6 +289,15 @@ pub(in crate::cold_original_data::labels) struct RuntimeRestoreAttempt {
     intent: File,
     intent_identity: Identity,
 }
+pub(super) struct PendingRuntimeAttempt {
+    original: DurableAttempt,
+    records: Records,
+    current: CurrentPreimage,
+}
+pub(super) struct ProvisionalRestoration {
+    pub(super) core: LabelDerivation,
+    observed: Snapshot,
+}
 impl RuntimeRestoreAttempt {
     pub(super) fn applied(original: &DurableAttempt) -> Result<(FilePin, Snapshot)> {
         original.validate_intent()?;
@@ -327,12 +336,13 @@ impl RuntimeRestoreAttempt {
     ) -> Result<Self> {
         Self::prepare_exact(original, records, retirement, None)
     }
-    pub(in crate::cold_original_data::labels) fn prepare_exact(
+    pub(in crate::cold_original_data::labels) fn stage_exact(
         original: DurableAttempt,
         records: Records,
         retirement: &FilePin,
         evolution: Option<ExactEvolution>,
-    ) -> Result<Self> {
+        batch: &mut RecordBatch,
+    ) -> Result<PendingRuntimeAttempt> {
         ensure(
             fs::valid_digest(&retirement.sha256) && retirement.bytes > 0,
             "actual enclosing retirement evidence pin required",
@@ -361,19 +371,63 @@ impl RuntimeRestoreAttempt {
             evolution,
             current,
         };
-        let pin = records.publish("CURRENT-PREIMAGE.json", &current)?;
-        let (intent, intent_identity, _) = records.read("CURRENT-PREIMAGE.json")?;
-        let value = Self {
+        batch.stage(&records, "CURRENT-PREIMAGE.json", &current)?;
+        ensure(
+            snapshot(&original.recovery)? == current.current,
+            "runtime inode changed while its current preimage was staged",
+        )?;
+        Ok(PendingRuntimeAttempt {
             original,
             records,
             current,
-            pin,
-            intent,
-            intent_identity,
-        };
-        value.validate()?;
-        value.classify()?;
-        Ok(value)
+        })
+    }
+    pub(super) fn seal_preparations(
+        pending: Vec<PendingRuntimeAttempt>,
+        batch: RecordBatch,
+    ) -> Result<Vec<Self>> {
+        let pins = batch.publish()?;
+        ensure(
+            !pending.is_empty() && pending.len() == pins.len(),
+            "runtime restoration preparation batch membership differs",
+        )?;
+        pending
+            .into_iter()
+            .zip(pins)
+            .map(|(draft, pin)| {
+                ensure(
+                    pin.path == draft.records.path.join("CURRENT-PREIMAGE.json"),
+                    "current batch preimage pin names another runtime target",
+                )?;
+                let (intent, intent_identity, _) = draft.records.read("CURRENT-PREIMAGE.json")?;
+                let value = Self {
+                    original: draft.original,
+                    records: draft.records,
+                    current: draft.current,
+                    pin,
+                    intent,
+                    intent_identity,
+                };
+                value.validate()?;
+                ensure(
+                    snapshot(&value.original.recovery)? == value.current.current,
+                    "runtime target changed across its durable batch current preimage",
+                )?;
+                Ok(value)
+            })
+            .collect()
+    }
+    pub(in crate::cold_original_data::labels) fn prepare_exact(
+        original: DurableAttempt,
+        records: Records,
+        retirement: &FilePin,
+        evolution: Option<ExactEvolution>,
+    ) -> Result<Self> {
+        let mut batch = RecordBatch::new();
+        let pending = Self::stage_exact(original, records, retirement, evolution, &mut batch)?;
+        Self::seal_preparations(vec![pending], batch)?
+            .pop()
+            .ok_or_else(|| "sealed runtime preparation missing".into())
     }
     pub(in crate::cold_original_data::labels) fn reopen(
         original: DurableAttempt,
@@ -522,9 +576,7 @@ impl RuntimeRestoreAttempt {
         }
         Ok(expected)
     }
-    pub(in crate::cold_original_data::labels) fn restore(
-        &self,
-    ) -> Result<(LabelDerivation, FilePin)> {
+    pub(super) fn restore_uncommitted(&self) -> Result<ProvisionalRestoration> {
         let (observed, done) = self.classify()?;
         if !done {
             set(
@@ -543,38 +595,117 @@ impl RuntimeRestoreAttempt {
             done,
             "runtime label restoration did not reach the exact original label",
         )?;
-        let durability = self.records.sync_target(&self.original.recovery, &after)?;
-        let output = json!({"schema":"droidloom.current-label-restored.v1","current_preimage":self.pin,
-            "original_preimage":self.original.pin,"retirement":self.current.retirement,
-            "before":self.current.current,"observed_before_retry":observed,
-            "after":after,"target_metadata_durability":durability,
-            "original_content_claimed_unchanged":self.current.class.is_none() && self.current.evolution.is_none()});
-        let pin = if self.records.exists("RESTORED.json")? {
-            let (_, _, bytes) = self.records.read("RESTORED.json")?;
-            let record: Value = serde_json::from_slice(&bytes)?;
-            ensure(
-                record["schema"] == output["schema"]
-                    && record["current_preimage"] == output["current_preimage"]
-                    && record["original_preimage"] == output["original_preimage"]
-                    && record["after"] == output["after"],
-                "existing runtime restoration result differs from the actual current inode",
-            )?;
-            FilePin {
-                path: self.records.path.join("RESTORED.json"),
-                bytes: bytes.len() as u64,
-                sha256: fs::digest(&bytes),
-            }
-        } else {
-            self.records.publish("RESTORED.json", &output)?
-        };
-        let result = LabelDerivation {
+        let core = LabelDerivation {
             file: self.original.recovery.try_clone()?,
             before: self.current.current.clone(),
             after,
         };
-        result.revalidate()?;
-        self.validate()?;
-        Ok((result, pin))
+        core.revalidate()?;
+        Ok(ProvisionalRestoration { core, observed })
+    }
+    fn restoration_record(&self, provisional: &ProvisionalRestoration) -> Result<Option<FilePin>> {
+        if !self.records.exists("RESTORED.json")? {
+            return Ok(None);
+        }
+        let (_, _, bytes) = self.records.read("RESTORED.json")?;
+        let record: Value = serde_json::from_slice(&bytes)?;
+        ensure(
+            record["schema"] == "droidloom.current-label-restored.v1"
+                && record["current_preimage"] == serde_json::to_value(&self.pin)?
+                && record["original_preimage"] == serde_json::to_value(&self.original.pin)?
+                && record["retirement"] == serde_json::to_value(&self.current.retirement)?
+                && record["before"] == serde_json::to_value(&self.current.current)?
+                && record["after"] == serde_json::to_value(&provisional.core.after)?
+                && record["target_metadata_durability"]["operation"] == "syncfs"
+                && record["target_metadata_durability"]["filesystem_dev"]
+                    == provisional.core.after.identity.dev,
+            "existing runtime restoration result differs from the actual source/current inode",
+        )?;
+        Ok(Some(FilePin {
+            path: self.records.path.join("RESTORED.json"),
+            bytes: bytes.len() as u64,
+            sha256: fs::digest(&bytes),
+        }))
+    }
+    pub(super) fn complete_restorations(
+        attempts: &[&Self],
+        provisional: &[ProvisionalRestoration],
+    ) -> Result<Vec<FilePin>> {
+        ensure(
+            !attempts.is_empty()
+                && attempts.len() <= BATCH_LIMIT
+                && attempts.len() == provisional.len(),
+            "bounded complete runtime restoration batch required",
+        )?;
+        let mut outputs = Vec::with_capacity(attempts.len());
+        let mut missing = Vec::new();
+        for (index, (attempt, provisional)) in attempts.iter().zip(provisional).enumerate() {
+            attempt.validate()?;
+            let (current, done) = attempt.classify()?;
+            ensure(
+                done && current == provisional.core.after
+                    && provisional.core.before == attempt.current.current,
+                "provisional restoration no longer names the actual current preimage outcome",
+            )?;
+            provisional.core.revalidate()?;
+            let result = attempt.restoration_record(provisional)?;
+            if result.is_none() {
+                missing.push(index);
+            }
+            outputs.push(result);
+        }
+        if !missing.is_empty() {
+            let targets = missing
+                .iter()
+                .map(|&i| {
+                    (
+                        &attempts[i].records,
+                        &attempts[i].original.recovery,
+                        &provisional[i].core.after,
+                    )
+                })
+                .collect::<Vec<_>>();
+            let barriers = sync_targets(&targets)?;
+            let mut records = RecordBatch::new();
+            for (&index, barrier) in missing.iter().zip(barriers) {
+                let attempt = attempts[index];
+                let result = &provisional[index];
+                records.stage(&attempt.records,"RESTORED.json",&json!({
+                    "schema":"droidloom.current-label-restored.v1","current_preimage":attempt.pin,
+                    "original_preimage":attempt.original.pin,"retirement":attempt.current.retirement,
+                    "before":attempt.current.current,"observed_before_retry":result.observed,
+                    "after":result.core.after,"target_metadata_durability":barrier,
+                    "original_content_claimed_unchanged":attempt.current.class.is_none() && attempt.current.evolution.is_none()}))?;
+            }
+            for (&index, pin) in missing.iter().zip(records.publish()?) {
+                outputs[index] = Some(pin);
+            }
+        }
+        for (attempt, result) in attempts.iter().zip(provisional) {
+            attempt.validate()?;
+            result.core.revalidate()?;
+            let (current, done) = attempt.classify()?;
+            ensure(
+                done && current == result.core.after,
+                "runtime target changed after batch restoration publication",
+            )?;
+            attempt
+                .restoration_record(result)?
+                .ok_or("complete runtime restoration record missing")?;
+        }
+        outputs
+            .into_iter()
+            .map(|pin| pin.ok_or_else(|| "actual runtime restoration pin missing".into()))
+            .collect()
+    }
+    pub(in crate::cold_original_data::labels) fn restore(
+        &self,
+    ) -> Result<(LabelDerivation, FilePin)> {
+        let provisional = self.restore_uncommitted()?;
+        let pin = Self::complete_restorations(&[self], std::slice::from_ref(&provisional))?
+            .pop()
+            .ok_or("completed runtime restoration missing")?;
+        Ok((provisional.core, pin))
     }
 }
 

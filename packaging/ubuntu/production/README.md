@@ -817,3 +817,45 @@ Both full-tree writers now require the corresponding opaque borrowed window: Ori
 The returned path-metadata query is read-only and accepts a bounded, unique set of paths already present in the exact label plan. It first verifies complete actual restoration and then returns every requested prelabel/current/restored snapshot and original proof pins. The closed configuration rollback producer must collect its full finite target/parent set before its first later write; it cannot demand unchanged whole-tree state after it has legitimately restored a configuration. The fixed account/SSH/home helper remains a restricted view of the same proof.
 
 Missing preimages or applications can be reconciled only during a verified unbooted abort or a separately proved preparation-interrupted return. The exact inode generation, current label result and complete other metadata still decide whether that specific unfinished syscall is recognizable. Normal or failed candidate runtime cannot manufacture missing pre-boot application records. These source and isolated tests do not prove that a complete original-root window fits the deadline, and do not authorize a physical label sweep or final activation.
+
+### Bounded durable label batches
+
+The original-root label writer retains the complete source plan, individual
+persistent inode handles, full metadata/xattr preimages and independent recovery
+descriptors. Ordinary targets are grouped in at most 64 records and 8 MiB of
+serialized pending bodies. Each group writes create-only pending records, issues
+a real same-filesystem syncfs, publishes the complete record names with
+RENAME_NOREPLACE, then issues a second syncfs before any target xattr syscall
+is permitted. A crash during publication can therefore reveal a subset of
+complete durable originals; uncommitted targets remain unchanged.
+
+After applying a group, every target is checked again across one same-filesystem
+metadata barrier. The group then publishes its ordinary per-inode APPLIED.json
+records with the same two-barrier protocol. No complete opaque label derivation
+is exposed until these records and target metadata have passed readback.
+CURRENT-PREIMAGE.json and RESTORED.json use the identical bounded protocol
+after actual runtime retirement. Their schemas, original source pins, current
+metadata admission and retained history remain the same. Missing success
+records are reconciled from actual generation, complete metadata and xattrs;
+they never imply that a potentially successful syscall did nothing.
+
+The actual once windows provide their held synchronous paths. The three fixed
+locks, current cell, returned GRUB environment and every actually held runtime
+evidence member are singleton operations. The label adapter additionally keeps
+the original root, whole working pair with its nine members and pending selection
+as singletons. They receive their durable opaque ctime derivation before another
+owner fence. Caller-provided names cannot expand either window or label scope.
+
+The real frozen-window source/custody/namespace checks and per-target alias,
+generation, metadata and attribute checks remain in both loops. Full source
+hashes, process/reference retirement and complete target readbacks remain at
+the phase boundaries. A partial batch retains all recovery descriptors in its
+transaction; existing interrupted/historical return paths keep their exact
+per-inode reconciliation.
+
+Focused tests exercise 64 real regular/directory inodes through ten actual
+same-filesystem barriers for complete apply and restore, with unchanged bodies
+and all target readbacks. They also interrupt preimage publication and target
+syscalls and reject foreign xattrs or replaced evidence. These tests are not a
+full-root timing or physical activation claim. The complete shadow-root run
+must still satisfy the fixed 600-second window without increasing its budget.

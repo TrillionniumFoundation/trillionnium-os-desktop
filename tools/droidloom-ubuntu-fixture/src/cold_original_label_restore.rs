@@ -27,6 +27,7 @@ pub(crate) struct OriginalLabelRestorationTransaction<'a> {
     pair: OriginalPairRestored,
     renamed: BTreeMap<PathBuf, (Snapshot, FilePin, EvolutionKind)>,
     active: Option<RuntimeRestoreAttempt>,
+    active_batch: Vec<RuntimeRestoreAttempt>,
 }
 
 /// This type exists only after every actual target and original pair has been
@@ -255,6 +256,7 @@ impl<'a> OriginalLabelRestorationTransaction<'a> {
             pair,
             renamed,
             active: None,
+            active_batch: Vec::new(),
         };
         value.fence(data)?;
         value.seal.full_readback()?;
@@ -609,6 +611,140 @@ impl<'a> OriginalLabelRestorationTransaction<'a> {
         step.revalidate()?;
         data.binding_custody(self.retirement.authority())
     }
+    /// The ordinary complete-runtime path batches only targets whose durable
+    /// original/APPLIED evidence exists and which have not begun this return
+    /// epoch. Interrupted or historical targets retain the exact one-inode
+    /// reconciliation path below; no eligibility observation grants a write.
+    fn try_restore_batch(
+        &mut self,
+        data: &OriginalDataTransaction,
+        window: &OriginalRestoreLabelWindow<'_>,
+        start: usize,
+        end: usize,
+        synchronous: &BTreeSet<PathBuf>,
+    ) -> Result<Option<Vec<RestoredRow>>> {
+        let targets = self.plan.targets[start..end].to_vec();
+        ensure(
+            !targets.is_empty()
+                && targets.len() <= BATCH_LIMIT
+                && targets
+                    .iter()
+                    .all(|target| !synchronous_target(target, synchronous)),
+            "held owner/data objects cannot enter an ordinary restoration batch",
+        )?;
+        let mut admitted = Vec::new();
+        for target in &targets {
+            self.window_fence(data, window)?;
+            let (held, current) =
+                actual_named(&self.scope, target, self.retirement.authority().work())?;
+            let path = record_directory(&self.plan.work_directory, target.ordinal);
+            let records = match std::fs::symlink_metadata(&path) {
+                Ok(_) => Records::open(&path)?,
+                Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(None),
+                Err(error) => return Err(error.into()),
+            };
+            if !records.exists("PREIMAGE.json")? || !records.exists("APPLIED.json")? {
+                return Ok(None);
+            }
+            let mut ours = target.before.attributes.clone();
+            ours.insert(LABEL.into(), target.desired.clone());
+            if current.attributes != ours {
+                return Ok(None);
+            }
+            let epoch_path = records.path.join(format!(
+                "retirement-{}",
+                self.retirement.report_pin().sha256
+            ));
+            match std::fs::symlink_metadata(&epoch_path) {
+                Ok(_) => {
+                    if Records::open(&epoch_path)?.exists("CURRENT-PREIMAGE.json")? {
+                        return Ok(None);
+                    }
+                }
+                Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+                Err(error) => return Err(error.into()),
+            }
+            let original = load_original(&path, held, target, &self.seal, &self.plan.candidate_id)?;
+            let evolution = self.evolution(target, &current, window)?;
+            if evolution.is_none() {
+                let (_, applied) = RuntimeRestoreAttempt::applied(&original)?;
+                for alias in &target.aliases {
+                    runtime::admit_current(
+                        &applied,
+                        &current,
+                        runtime::runtime_class(&alias.logical, &self.plan.candidate_id),
+                    )?;
+                }
+            }
+            admitted.push((original, records, evolution));
+        }
+        let mut pending = Vec::new();
+        let mut batch = RecordBatch::new();
+        for (original, records, evolution) in admitted {
+            self.window_fence(data, window)?;
+            let now = epoch(&records, self.retirement)?;
+            pending.push(RuntimeRestoreAttempt::stage_exact(
+                original,
+                now,
+                self.retirement.report_pin(),
+                evolution,
+                &mut batch,
+            )?);
+        }
+        self.active_batch = RuntimeRestoreAttempt::seal_preparations(pending, batch)?;
+        let mut provisional = Vec::with_capacity(targets.len());
+        for (index, target) in targets.iter().enumerate() {
+            self.window_fence(data, window)?;
+            let actual = self.active_batch[index].restore_uncommitted()?;
+            let (_, named) = actual_named(&self.scope, target, self.retirement.authority().work())?;
+            ensure(
+                named == actual.core.after,
+                "restored batch target alias/generation changed after its syscall",
+            )?;
+            provisional.push(actual);
+        }
+        let attempts = self.active_batch.iter().collect::<Vec<_>>();
+        let completed = RuntimeRestoreAttempt::complete_restorations(&attempts, &provisional)?;
+        let mut rows = Vec::with_capacity(targets.len());
+        for (index, ((target, actual), pin)) in
+            targets.iter().zip(provisional).zip(completed).enumerate()
+        {
+            let original_pin = self.active_batch[index].original_pin().clone();
+            let row = RestoredRow {
+                ordinal: target.ordinal,
+                prelabel: target.before.clone(),
+                current_before: actual.core.before.clone(),
+                restored: actual.core.after.clone(),
+                original_preimage: Some(original_pin.clone()),
+                restoration: Some(pin.clone()),
+                recognized_history: None,
+                target_write: actual.core.before.attributes.get(LABEL)
+                    != target.before.attributes.get(LABEL),
+            };
+            let step = OriginalLabelRestoration {
+                candidate_id: self.plan.candidate_id.clone(),
+                logical_path: target.aliases[0].logical.clone(),
+                plan: self.seal.clone(),
+                original_preimage: original_pin,
+                restored: pin,
+                core: actual.core,
+            };
+            step.revalidate()?;
+            self.scope.accept_root_restoration(&step)?;
+            window.accept_restoration(&step)?;
+            let (_, current) =
+                actual_named(&self.scope, target, self.retirement.authority().work())?;
+            ensure(
+                current == row.restored,
+                "restored batch target changed before actual completion",
+            )?;
+            self.window_fence(data, window)?;
+            rows.push(row);
+        }
+        self.active_batch.clear();
+        Ok(Some(rows))
+    }
+
     pub(crate) fn restore(
         &mut self,
         data: &OriginalDataTransaction,
@@ -617,7 +753,7 @@ impl<'a> OriginalLabelRestorationTransaction<'a> {
         // A successful xattr syscall can precede a failed publication or owner
         // ctime rebind. Reconcile only that held active write, without another
         // target mutation, before invoking the otherwise strict full fence.
-        if let Some(attempt) = self.active.as_ref() {
+        for attempt in self.active.iter().chain(self.active_batch.iter()) {
             if attempt.classify()?.1 {
                 let target = self
                     .plan
@@ -667,8 +803,32 @@ impl<'a> OriginalLabelRestorationTransaction<'a> {
             Err(e) => return Err(e.into()),
         }
         let mut rows = Vec::with_capacity(self.plan.targets.len());
+        let synchronous = window.synchronous_paths()?;
+        let mut completed_until = 0;
         for index in 0..self.plan.targets.len() {
+            if index < completed_until {
+                continue;
+            }
             self.window_fence(data, window)?;
+            if !synchronous_target(&self.plan.targets[index], &synchronous) {
+                let end = batch_end(&self.plan.targets, index, &synchronous);
+                if let Some(actual) =
+                    self.try_restore_batch(data, window, index, end, &synchronous)?
+                {
+                    rows.extend(actual);
+                    completed_until = end;
+                    if end / 1000 != index / 1000 || end == self.plan.targets.len() {
+                        eprintln!(
+                            "original-label-restore targets={}/{} elapsed_ms={} batch_limit={}",
+                            end,
+                            self.plan.targets.len(),
+                            started.elapsed().as_millis(),
+                            BATCH_LIMIT
+                        );
+                    }
+                    continue;
+                }
+            }
             if index > 0 && index % 1000 == 0 {
                 eprintln!(
                     "original-label-restore targets={}/{} elapsed_ms={}",

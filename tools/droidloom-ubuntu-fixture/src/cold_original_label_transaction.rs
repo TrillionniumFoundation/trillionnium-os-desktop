@@ -72,7 +72,7 @@ pub(crate) struct OriginalLabelTransaction<'a> {
     seal: Arc<PlanSeal>,
     // Kept across an Err, including a successful syscall followed by failed
     // readback/publication. The caller still owns this transaction and FD.
-    active_attempt: Option<DurableAttempt>,
+    active_attempts: Vec<DurableAttempt>,
 }
 /// Only a complete actual target readback constructs this object. Publication
 /// of selected.json must consume this held source/plan/target evidence.
@@ -86,6 +86,21 @@ pub(crate) struct OriginalLabelsApplied {
     targets: Vec<Target>,
     applications: Vec<FilePin>,
     paths: BTreeMap<PathBuf, usize>,
+}
+fn synchronous_target(target: &Target, paths: &BTreeSet<PathBuf>) -> bool {
+    target.aliases.iter().any(|alias| {
+        alias.logical == Path::new("/")
+            || alias.placement != Placement::Root
+            || paths.contains(&alias.logical)
+    })
+}
+fn batch_end(targets: &[Target], start: usize, synchronous: &BTreeSet<PathBuf>) -> usize {
+    if synchronous_target(&targets[start], synchronous) {
+        return start + 1;
+    }
+    (start + 1..targets.len().min(start + BATCH_LIMIT))
+        .find(|&index| synchronous_target(&targets[index], synchronous))
+        .unwrap_or(targets.len().min(start + BATCH_LIMIT))
 }
 fn path_index(targets: &[Target]) -> Result<BTreeMap<PathBuf, usize>> {
     let mut paths = BTreeMap::new();
@@ -445,7 +460,7 @@ impl<'a> OriginalLabelTransaction<'a> {
             scope,
             plan,
             seal: Arc::new(PlanSeal::open(&pin)?),
-            active_attempt: None,
+            active_attempts: Vec::new(),
         };
         value.seal.full_readback()?;
         Ok(value)
@@ -485,7 +500,7 @@ impl<'a> OriginalLabelTransaction<'a> {
             scope,
             plan,
             seal,
-            active_attempt: None,
+            active_attempts: Vec::new(),
         };
         value.validate_owner(authority, data)?;
         Ok(value)
@@ -557,7 +572,7 @@ impl<'a> OriginalLabelTransaction<'a> {
         data: &OriginalDataTransaction,
         window: &OriginalLabelWindow<'_>,
     ) -> Result<OriginalLabelsApplied> {
-        if let Some(attempt) = self.active_attempt.as_ref() {
+        for attempt in &self.active_attempts {
             let current = snapshot(&attempt.recovery)?;
             let mut expected = attempt.preimage.before.attributes.clone();
             expected.insert(LABEL.into(), attempt.preimage.desired.clone());
@@ -581,83 +596,121 @@ impl<'a> OriginalLabelTransaction<'a> {
         let started = std::time::Instant::now();
         let mut applications = Vec::new();
         let mut updates = BTreeMap::new();
-        for target in &self.plan.targets {
+        let synchronous = window.synchronous_paths()?;
+        let mut index = 0;
+        while index < self.plan.targets.len() {
             self.validate_window(authority, data, window)?;
-            let path = record_directory(&self.plan.work_directory, target.ordinal);
-            let records = match std::fs::symlink_metadata(&path) {
-                Ok(_) => Records::open(&path)?,
-                Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
-                    self.validate_window(authority, data, window)?;
-                    crate::boot_files::private_dir(&path)?;
-                    Records::open(&path)?
-                }
-                Err(error) => return Err(error.into()),
-            };
-            let attempt = if records.exists("PREIMAGE.json")? {
-                self.attempt(target)?
-            } else {
+            let end = batch_end(&self.plan.targets, index, &synchronous);
+            let targets = self.plan.targets[index..end].to_vec();
+            let mut attempts = (0..targets.len()).map(|_| None).collect::<Vec<_>>();
+            let mut pending = Vec::new();
+            let mut pending_indices = Vec::new();
+            let mut records_batch = RecordBatch::new();
+            for (offset, target) in targets.iter().enumerate() {
                 self.validate_window(authority, data, window)?;
-                self.scope.revalidate()?;
-                for alias in &target.aliases {
-                    snapshot_matches_handle(&self.scope, alias, &target.before)?;
-                }
-                records.verify_unpublished_preimage()?;
-                let held = self.scope.open_named(&target.aliases[0].physical)?;
-                DurableAttempt::prepare(
-                    records,
-                    held,
-                    &self.plan.candidate_id,
-                    &self.seal.pin,
-                    target.ordinal,
-                    &target.aliases[0].logical,
-                    &target.desired,
-                    LABEL,
-                )?
-            };
-            self.active_attempt = Some(attempt);
-            let attempt = self
-                .active_attempt
-                .as_ref()
-                .ok_or("actual active label recovery descriptor missing")?;
-            let current = snapshot(&attempt.recovery)?;
-            let mut desired = target.before.attributes.clone();
-            desired.insert(LABEL.into(), target.desired.clone());
-            let core = if current.attributes == desired {
-                // No target write in this branch. Its opaque actual derivation
-                // restores the precise expected ctime of a held once lock.
-                attempt.applied_readback()?
-            } else {
-                self.validate_window(authority, data, window)?;
-                ensure(current == target.before, "unapplied source inode changed")?;
-                attempt.apply()?
-            };
-            let applied = record_pin(&attempt.records, "APPLIED.json")?;
-            let derivation = OriginalLabelDerivation {
-                candidate_id: self.plan.candidate_id.clone(),
-                logical_path: target.aliases[0].logical.clone(),
-                plan: self.seal.clone(),
-                preimage: attempt.pin.clone(),
-                applied: applied.clone(),
-                core,
-            };
-            derivation.revalidate()?;
-            self.scope.accept_root_label(&derivation)?;
-            window.accept_derivation(&derivation)?;
-            for alias in &target.aliases {
-                snapshot_matches_handle(&self.scope, alias, &derivation.core.after)?;
-                if alias.placement != Placement::PendingSelection {
-                    updates.insert(alias.logical.clone(), derivation.core.after.clone());
+                let path = record_directory(&self.plan.work_directory, target.ordinal);
+                let records = match std::fs::symlink_metadata(&path) {
+                    Ok(_) => Records::open(&path)?,
+                    Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+                        crate::boot_files::private_dir(&path)?;
+                        Records::open(&path)?
+                    }
+                    Err(error) => return Err(error.into()),
+                };
+                if records.exists("PREIMAGE.json")? {
+                    attempts[offset] = Some(self.attempt(target)?);
+                } else {
+                    self.scope.revalidate()?;
+                    for alias in &target.aliases {
+                        snapshot_matches_handle(&self.scope, alias, &target.before)?;
+                    }
+                    records.verify_unpublished_preimage()?;
+                    let held = self.scope.open_named(&target.aliases[0].physical)?;
+                    pending.push(DurableAttempt::stage(
+                        records,
+                        held,
+                        &self.plan.candidate_id,
+                        &self.seal.pin,
+                        target.ordinal,
+                        &target.aliases[0].logical,
+                        &target.desired,
+                        LABEL,
+                        &mut records_batch,
+                    )?);
+                    pending_indices.push(offset);
                 }
             }
-            self.validate_window(authority, data, window)?;
-            applications.push(applied);
-            self.active_attempt.take();
-            if applications.len() % 1000 == 0 || applications.len() == self.plan.targets.len() {
+            if !pending.is_empty() {
+                for (offset, attempt) in pending_indices
+                    .into_iter()
+                    .zip(DurableAttempt::seal_preparations(pending, records_batch)?)
+                {
+                    attempts[offset] = Some(attempt);
+                }
+            }
+            self.active_attempts = attempts
+                .into_iter()
+                .map(|a| a.ok_or_else(|| "durable batch target is missing".into()))
+                .collect::<Result<Vec<_>>>()?;
+            // All independent recovery descriptors remain owned by self on
+            // any error, including partial syscalls or partial publication.
+            let mut cores = Vec::with_capacity(targets.len());
+            for (offset, target) in targets.iter().enumerate() {
+                self.validate_window(authority, data, window)?;
+                let attempt = &self.active_attempts[offset];
+                let current = snapshot(&attempt.recovery)?;
+                let mut desired = target.before.attributes.clone();
+                desired.insert(LABEL.into(), target.desired.clone());
+                let core = if current.attributes == desired {
+                    attempt.readback_uncommitted()?
+                } else {
+                    ensure(current == target.before, "unapplied source inode changed")?;
+                    attempt.apply_uncommitted()?
+                };
+                // Full alias/generation checks remain per target. A root or
+                // owner-held target is a singleton and is rebound immediately
+                // after its barrier, before the next window fence.
+                if !synchronous_target(target, &synchronous) {
+                    for alias in &target.aliases {
+                        snapshot_matches_handle(&self.scope, alias, &core.after)?;
+                    }
+                }
+                cores.push(core);
+            }
+            let refs = self.active_attempts.iter().collect::<Vec<_>>();
+            let completed = DurableAttempt::complete_applications(&refs, &cores)?;
+            for (((target, core), applied), offset) in
+                targets.iter().zip(cores).zip(completed).zip(0..)
+            {
+                let derivation = OriginalLabelDerivation {
+                    candidate_id: self.plan.candidate_id.clone(),
+                    logical_path: target.aliases[0].logical.clone(),
+                    plan: self.seal.clone(),
+                    preimage: self.active_attempts[offset].pin.clone(),
+                    applied: applied.clone(),
+                    core,
+                };
+                derivation.revalidate()?;
+                self.scope.accept_root_label(&derivation)?;
+                window.accept_derivation(&derivation)?;
+                for alias in &target.aliases {
+                    snapshot_matches_handle(&self.scope, alias, &derivation.core.after)?;
+                    if alias.placement != Placement::PendingSelection {
+                        updates.insert(alias.logical.clone(), derivation.core.after.clone());
+                    }
+                }
+                self.validate_window(authority, data, window)?;
+                applications.push(applied);
+            }
+            self.active_attempts.clear();
+            index = end;
+            if index / 1000 != (index - targets.len()) / 1000 || index == self.plan.targets.len() {
                 eprintln!(
-                    "original-label-apply targets={}/{} elapsed_ms={}",
-                    applications.len(),
+                    "original-label-apply targets={}/{} elapsed_ms={} batch_limit={}",
+                    index,
                     self.plan.targets.len(),
-                    started.elapsed().as_millis()
+                    started.elapsed().as_millis(),
+                    BATCH_LIMIT
                 );
             }
         }

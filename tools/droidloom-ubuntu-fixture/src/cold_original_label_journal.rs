@@ -26,6 +26,10 @@ pub(in crate::cold_original_data) use transaction::{
     restore_retired_pair, withdraw_labeled_selection,
 };
 
+#[path = "cold_original_label_batch.rs"]
+mod batch;
+use batch::{BATCH_LIMIT, RecordBatch, sync_targets};
+
 const LIMIT: u64 = 32 * 1024 * 1024;
 
 #[derive(Deserialize, Serialize)]
@@ -329,8 +333,13 @@ struct DurableAttempt {
     intent_identity: Identity,
     recovery: File,
 }
+struct PendingAttempt {
+    records: Records,
+    preimage: Preimage,
+    recovery: File,
+}
 impl DurableAttempt {
-    fn prepare(
+    fn stage(
         records: Records,
         file: File,
         candidate_id: &str,
@@ -339,7 +348,8 @@ impl DurableAttempt {
         logical_path: &Path,
         desired: &[u8],
         attribute: &str,
-    ) -> Result<Self> {
+        batch: &mut RecordBatch,
+    ) -> Result<PendingAttempt> {
         ensure(
             attribute == LABEL || cfg!(test),
             "only SELinux labels may be journaled",
@@ -368,22 +378,76 @@ impl DurableAttempt {
             desired: desired.to_vec(),
             attribute: attribute.into(),
         };
-        let pin = records.publish("PREIMAGE.json", &preimage)?;
-        let (intent, intent_identity, _) = records.read("PREIMAGE.json")?;
-        let result = Self {
+        batch.stage(&records, "PREIMAGE.json", &preimage)?;
+        ensure(
+            snapshot(&file)? == preimage.before,
+            "label inode changed while its preimage was staged",
+        )?;
+        Ok(PendingAttempt {
             records,
             preimage,
-            pin,
-            intent,
-            intent_identity,
             recovery: file,
-        };
-        result.validate_intent()?;
+        })
+    }
+
+    fn seal_preparations(pending: Vec<PendingAttempt>, batch: RecordBatch) -> Result<Vec<Self>> {
+        let pins = batch.publish()?;
         ensure(
-            snapshot(&result.recovery)? == result.preimage.before,
-            "label inode changed before its durable intent",
+            pending.len() == pins.len() && !pending.is_empty(),
+            "label preparation batch membership differs",
         )?;
-        Ok(result)
+        pending
+            .into_iter()
+            .zip(pins)
+            .map(|(draft, pin)| {
+                ensure(
+                    pin.path == draft.records.path.join("PREIMAGE.json"),
+                    "batch preimage pin does not name its held source target",
+                )?;
+                let (intent, intent_identity, _) = draft.records.read("PREIMAGE.json")?;
+                let value = Self {
+                    records: draft.records,
+                    preimage: draft.preimage,
+                    pin,
+                    intent,
+                    intent_identity,
+                    recovery: draft.recovery,
+                };
+                value.validate_intent()?;
+                ensure(
+                    snapshot(&value.recovery)? == value.preimage.before,
+                    "label target changed across its durable batch preimage",
+                )?;
+                Ok(value)
+            })
+            .collect()
+    }
+
+    fn prepare(
+        records: Records,
+        file: File,
+        candidate_id: &str,
+        source_plan: &FilePin,
+        ordinal: u32,
+        logical_path: &Path,
+        desired: &[u8],
+        attribute: &str,
+    ) -> Result<Self> {
+        let mut batch = RecordBatch::new();
+        let pending = Self::stage(
+            records,
+            file,
+            candidate_id,
+            source_plan,
+            ordinal,
+            logical_path,
+            desired,
+            attribute,
+            &mut batch,
+        )?;
+        Self::seal_preparations(vec![pending], batch)?
+            .pop()
+            .ok_or_else(|| "sealed label preparation missing".into())
     }
 
     fn reopen(records: Records, pin: &FilePin, recovery: File) -> Result<Self> {
@@ -477,7 +541,10 @@ impl DurableAttempt {
         Ok((current, applied && !original))
     }
 
-    fn apply(&self) -> Result<LabelDerivation> {
+    /// An internal provisional result is not an OriginalLabelDerivation. Its
+    /// durable PREIMAGE and independent recovery FD already exist; a batch
+    /// filesystem barrier and durable APPLIED record are still mandatory.
+    fn apply_uncommitted(&self) -> Result<LabelDerivation> {
         self.validate_intent()?;
         ensure(
             !self.restored_intent()? && !self.records.exists("APPLIED.json")?,
@@ -487,38 +554,23 @@ impl DurableAttempt {
             snapshot(&self.recovery)? == self.preimage.before,
             "label preimage changed before mutation",
         )?;
-        // recovery remains open even if the following call changes the xattr
-        // and then fails during proc custody or complete snapshot validation.
-        let result = apply_one(
+        match apply_one(
             self.recovery.try_clone()?,
             &self.preimage.before,
             &self.preimage.desired,
             &self.preimage.attribute,
-        );
-        match result {
+        ) {
             Ok(derivation) => {
                 self.validate_intent()?;
-                derivation.revalidate()?;
-                let durability = self
-                    .records
-                    .sync_target(&self.recovery, &derivation.after)?;
-                self.records.publish(
-                    "APPLIED.json",
-                    &json!({
-                    "schema":"droidloom.original-label-applied.v1","preimage":self.pin,
-                    "before":derivation.before,"after":derivation.after,"target_metadata_durability":durability}),
-                )?;
                 derivation.revalidate()?;
                 Ok(derivation)
             }
             Err(error) => {
-                // An observation is diagnostic only. Even failure to publish
-                // it leaves the fsynced preimage and recovery FD intact.
-                let actual = self.classify(false);
-                let observation = match actual {
-                    Ok((current, applied)) => json!({"recognized_current":current,
-                        "label_present_after_error":applied}),
-                    Err(ref read_error) => json!({"unresolved_error":read_error.to_string()}),
+                let observation = match self.classify(false) {
+                    Ok((current, applied)) => {
+                        json!({"recognized_current":current,"label_present_after_error":applied})
+                    }
+                    Err(read_error) => json!({"unresolved_error":read_error.to_string()}),
                 };
                 let _ = self.records.publish(
                     "UNCERTAIN.json",
@@ -531,11 +583,29 @@ impl DurableAttempt {
         }
     }
 
-    /// Read back a completed or uncertain application without another target
-    /// xattr write. In particular this can reconstruct the opaque derivation
-    /// needed to rebind a held lock after setxattr succeeded but its caller was
-    /// interrupted before the normal post-write fence.
-    fn applied_readback(&self) -> Result<LabelDerivation> {
+    fn application_record(&self, core: &LabelDerivation) -> Result<Option<FilePin>> {
+        if !self.records.exists("APPLIED.json")? {
+            return Ok(None);
+        }
+        let (_, _, bytes) = self.records.read("APPLIED.json")?;
+        let value: Value = serde_json::from_slice(&bytes)?;
+        ensure(
+            value["schema"] == "droidloom.original-label-applied.v1"
+                && value["preimage"] == serde_json::to_value(&self.pin)?
+                && value["before"] == serde_json::to_value(&self.preimage.before)?
+                && value["after"] == serde_json::to_value(&core.after)?
+                && value["target_metadata_durability"]["operation"] == "syncfs"
+                && value["target_metadata_durability"]["filesystem_dev"] == core.after.identity.dev,
+            "durable application does not describe this actual inode",
+        )?;
+        Ok(Some(FilePin {
+            path: self.records.path.join("APPLIED.json"),
+            bytes: bytes.len() as u64,
+            sha256: fs::digest(&bytes),
+        }))
+    }
+
+    fn readback_uncommitted(&self) -> Result<LabelDerivation> {
         self.validate_intent()?;
         ensure(
             !self.restored_intent()?,
@@ -551,36 +621,90 @@ impl DurableAttempt {
             current.attributes == expected,
             "readback cannot invent a label that the kernel has not applied",
         )?;
-        if self.records.exists("APPLIED.json")? {
-            let (_, _, bytes) = self.records.read("APPLIED.json")?;
-            let value: Value = serde_json::from_slice(&bytes)?;
-            ensure(
-                value["schema"] == "droidloom.original-label-applied.v1"
-                    && value["preimage"] == serde_json::to_value(&self.pin)?
-                    && value["before"] == serde_json::to_value(&self.preimage.before)?
-                    && value["after"] == serde_json::to_value(&current)?
-                    && value["target_metadata_durability"]["operation"] == "syncfs"
-                    && value["target_metadata_durability"]["filesystem_dev"]
-                        == current.identity.dev,
-                "durable application does not describe this actual inode",
-            )?;
-        } else {
-            let durability = self.records.sync_target(&self.recovery, &current)?;
-            self.records.publish(
-                "APPLIED.json",
-                &json!({
-                "schema":"droidloom.original-label-applied.v1","preimage":self.pin,
-                "before":self.preimage.before,"after":current,
-                "target_metadata_durability":durability,"recognized_uncertain_application":true}),
-            )?;
-        }
-        let result = LabelDerivation {
+        let core = LabelDerivation {
             file: self.recovery.try_clone()?,
             before: self.preimage.before.clone(),
             after: current,
         };
-        result.revalidate()?;
-        Ok(result)
+        core.revalidate()?;
+        self.application_record(&core)?;
+        Ok(core)
+    }
+
+    fn complete_applications(
+        attempts: &[&Self],
+        cores: &[LabelDerivation],
+    ) -> Result<Vec<FilePin>> {
+        ensure(
+            !attempts.is_empty() && attempts.len() <= BATCH_LIMIT && attempts.len() == cores.len(),
+            "bounded complete label application batch required",
+        )?;
+        let mut outputs = Vec::with_capacity(attempts.len());
+        let mut missing = Vec::new();
+        for (index, (attempt, core)) in attempts.iter().zip(cores).enumerate() {
+            attempt.validate_intent()?;
+            ensure(
+                !attempt.restored_intent()?
+                    && core.before == attempt.preimage.before
+                    && snapshot(&attempt.recovery)? == core.after,
+                "provisional application lost its durable source or actual recovery inode",
+            )?;
+            core.revalidate()?;
+            let record = attempt.application_record(core)?;
+            if record.is_none() {
+                missing.push(index);
+            }
+            outputs.push(record);
+        }
+        if !missing.is_empty() {
+            let targets = missing
+                .iter()
+                .map(|&i| (&attempts[i].records, &attempts[i].recovery, &cores[i].after))
+                .collect::<Vec<_>>();
+            let barriers = sync_targets(&targets)?;
+            let mut records = RecordBatch::new();
+            for (&index, barrier) in missing.iter().zip(barriers) {
+                let attempt = attempts[index];
+                let core = &cores[index];
+                records.stage(
+                    &attempt.records,
+                    "APPLIED.json",
+                    &json!({
+                    "schema":"droidloom.original-label-applied.v1","preimage":attempt.pin,
+                    "before":core.before,"after":core.after,"target_metadata_durability":barrier}),
+                )?;
+            }
+            for (&index, pin) in missing.iter().zip(records.publish()?) {
+                outputs[index] = Some(pin);
+            }
+        }
+        for (attempt, core) in attempts.iter().zip(cores) {
+            attempt.validate_intent()?;
+            core.revalidate()?;
+            ensure(
+                snapshot(&attempt.recovery)? == core.after,
+                "application changed after batch publication",
+            )?;
+            attempt
+                .application_record(core)?
+                .ok_or("completed application record missing")?;
+        }
+        outputs
+            .into_iter()
+            .map(|pin| pin.ok_or_else(|| "actual application pin missing".into()))
+            .collect()
+    }
+
+    fn apply(&self) -> Result<LabelDerivation> {
+        let core = self.apply_uncommitted()?;
+        Self::complete_applications(&[self], std::slice::from_ref(&core))?;
+        Ok(core)
+    }
+    /// Reconcile a completed or uncertain write without another target write.
+    fn applied_readback(&self) -> Result<LabelDerivation> {
+        let core = self.readback_uncommitted()?;
+        Self::complete_applications(&[self], std::slice::from_ref(&core))?;
+        Ok(core)
     }
 
     fn restore(&self) -> Result<Snapshot> {
