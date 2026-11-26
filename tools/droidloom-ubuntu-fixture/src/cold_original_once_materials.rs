@@ -650,7 +650,7 @@ fn original_grub(work: &Path, guards: &mut Vec<Guard>) -> Result<FilePin> {
 /// every mutation/recovery stage wired to the same retained owner.
 pub(super) fn admit(input: &FilePin) -> Result<Rc<OriginalQualificationAuthority>> {
     let input_guard = SealedInput::open(input)?;
-    let plan: Plan = serde_json::from_slice(&input_guard.read()?)?;
+    let mut plan: Plan = serde_json::from_slice(&input_guard.read()?)?;
     ensure(
         plan.schema == "droidloom.original-once-plan.v1"
             && fs::valid_digest(&plan.candidate_id)
@@ -666,6 +666,19 @@ pub(super) fn admit(input: &FilePin) -> Result<Rc<OriginalQualificationAuthority
         Mode::empty(),
     )?);
     let work_identity = fs::stat(&work_fd)?;
+    // This proof can originally be one of the nine members that the data
+    // exchange moves. Keep that exact source under custody only during
+    // admission, then bind an independent immutable owner-work snapshot.
+    let original_cold_clone = plan.cold_clone.clone();
+    let original_cold_guard = Guard::open(&original_cold_clone)?;
+    let retained_cold_path = work.join("COLD-CLONE-SOURCE.json");
+    files::copy_pin(&original_cold_clone, &retained_cold_path, 0o400)?;
+    plan.cold_clone = files::pin_file(&retained_cold_path)?;
+    ensure(
+        same_bytes(&plan.cold_clone, &original_cold_clone),
+        "retained cold proof differs",
+    )?;
+    original_cold_guard.revalidate()?;
     let mut guards = Vec::new();
     for p in [
         &plan.normal_producer,
@@ -726,6 +739,8 @@ pub(super) fn admit(input: &FilePin) -> Result<Rc<OriginalQualificationAuthority
         "schema":"droidloom.original-once-admitted-materials.v1","input":input,"candidate_id":plan.candidate_id,
         "normal_sources":sources.source_pin(),"normal_initramfs":normal,"fresh_owned":owned,
         "five_mac_files":mac_receipt,"original_data_before":data_before,"original_ext4":ext4_readback,
+        "original_cold_clone_input":original_cold_clone,"original_cold_clone_input_identity":original_cold_guard.identity,
+        "retained_cold_clone":plan.cold_clone,
         "original_grub":grub,"original_cell":original_cell_pin,"actual_original_cell":actual_cell,
         "actual_original_cell_identity":actual_cell_guard.identity,"candidate_cell":new_cell,"selection":selection,
         "preserved_cell_fields":derived.preserved_fields,"changed_cell_fields":derived.changed_fields,
@@ -780,6 +795,7 @@ pub(super) fn admit(input: &FilePin) -> Result<Rc<OriginalQualificationAuthority
     owner.revalidate()?;
     input_guard.revalidate()?;
     actual_cell_guard.revalidate()?;
+    original_cold_guard.revalidate()?;
     ensure(
         cold_original_data::assert_initial_pair_retired(&plan.cold_clone)?["original"]
             == data_before["original"],
@@ -913,11 +929,21 @@ pub(super) fn resume(intent_pin: &FilePin) -> Result<Rc<OriginalQualificationAut
         actual_owned == report["fresh_owned"]["actual"],
         "preserved actual full-guest proof differs from the admitted body",
     )?;
+    let retained_cold = pin(&report["retained_cold_clone"])?;
+    ensure(
+        retained_cold.path == work.join("COLD-CLONE-SOURCE.json")
+            && same_bytes(&retained_cold, &plan.cold_clone)
+            && super::same_pin(
+                &pin(&report["original_cold_clone_input"])?,
+                &plan.cold_clone,
+            ),
+        "returned cold proof lost its independent exact source snapshot",
+    )?;
     let mut expected = vec![
         plan.normal_producer.clone(),
         plan.prepared_initramfs.clone(),
         plan.owned_verification_input.clone(),
-        plan.cold_clone.clone(),
+        retained_cold.clone(),
         plan.original_ext4_metadata.clone(),
     ];
     let five_pin = pin(&report["five_mac_files"])?;
@@ -1022,7 +1048,7 @@ pub(super) fn resume(intent_pin: &FilePin) -> Result<Rc<OriginalQualificationAut
         )?;
     }
     ensure(
-        super::same_pin(cold_clone.pin(), &plan.cold_clone),
+        super::same_pin(cold_clone.pin(), &retained_cold),
         "returned original data source changed",
     )?;
     let ext4_pin = pin(&report["original_ext4"])?;

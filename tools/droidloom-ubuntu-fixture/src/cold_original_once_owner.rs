@@ -408,7 +408,7 @@ impl ExistingLock {
         comparable.ctime_sec = before.ctime_sec;
         comparable.ctime_nsec = before.ctime_nsec;
         ensure(
-            self.identity == *before && comparable == *before,
+            (self.identity == *before || self.identity == *after) && comparable == *before,
             "lock label derivation changes more than the observed ctime",
         )?;
         let (parent, leaf) = fs::absolute_parent(&fs::absolute_string(&self.path)?)?;
@@ -633,6 +633,7 @@ mod tests {
         let after = fs::stat(&lock.held)?;
         assert!(lock.revalidate().is_err());
         lock.accept_label_identity(&before, &after)?;
+        lock.accept_label_identity(&before, &after)?; // exact already-rebound replay
         assert!(ExistingLock::acquire(&path, rustix::process::geteuid().as_raw()).is_err());
         assert_eq!(std::fs::read(&path)?, b"original-lock");
         std::fs::write(&path, b"unrelated-new-contents")?;

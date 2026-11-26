@@ -153,11 +153,12 @@ impl Readback {
             return Ok(());
         }
         ensure(
-            self.identity == *restoration.before_identity()
+            (self.identity == *restoration.before_identity()
+                || self.identity == *restoration.after_identity())
                 && fs::stat(&self.held)? == *restoration.after_identity(),
             "opaque restoration is not this actual held return input",
         )?;
-        only_label_clock(&self.identity, restoration.after_identity())?;
+        only_label_clock(restoration.before_identity(), restoration.after_identity())?;
         self.identity = restoration.after_identity().clone();
         self.attributes = attributes(&self.held)?;
         self.revalidate()
@@ -319,11 +320,12 @@ impl RuntimeEvidence {
             if path == restoration.path() {
                 let mut old = identity.borrow_mut();
                 ensure(
-                    *old == *restoration.before_identity()
+                    (*old == *restoration.before_identity()
+                        || *old == *restoration.after_identity())
                         && fs::stat(held)? == *restoration.after_identity(),
                     "runtime witness restoration is not its held original inode",
                 )?;
-                only_label_clock(&old, restoration.after_identity())?;
+                only_label_clock(restoration.before_identity(), restoration.after_identity())?;
                 *old = restoration.after_identity().clone();
             }
         }
@@ -611,6 +613,9 @@ impl OriginalRetirement {
     }
     pub(crate) fn report(&self) -> &Value {
         &self.report
+    }
+    pub(crate) fn report_pin(&self) -> &FilePin {
+        self.sealed.pin()
     }
     pub(crate) fn pair_intent(&self) -> &FilePin {
         self.working.pair_intent()
