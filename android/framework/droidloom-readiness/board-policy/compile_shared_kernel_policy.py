@@ -26,6 +26,7 @@ from verify_original_once import verify_original_once, source_inputs as original
 from verify_native_camera import verify_camera
 from verify_fixed_display import verify_fixed_display
 from verify_native_stdio import verify_native_stdio, source_inputs as native_stdio_source_inputs
+from verify_native_tcgets2_audit import verify_native_tcgets2_audit
 from verify_native_calibration import verify_native_calibration, source_inputs as native_calibration_source_inputs
 
 
@@ -1720,6 +1721,7 @@ def main():
                here / "verify_original_once.py", here / "original-once-source.json",
                *original_once_source_inputs(here),
                here / "verify_native_stdio.py", *native_stdio_source_inputs(here),
+               here / "verify_native_tcgets2_audit.py",
                here / "verify_native_calibration.py", *native_calibration_source_inputs(here),
                here.parents[3] / "packaging/ubuntu/systemd/source.lock.json",
                here.parents[3] / "packaging/ubuntu/systemd/p4-native-generator-tmpfs.patch",
@@ -1781,6 +1783,7 @@ def main():
                                  uevent_android, uevent_native, console_aliases, remount_aliases,
                                  logind_aliases, netplan_aliases, sysusers_aliases], linked, contexts, environment)
         host_control = verify_host_control(library, linked, work / "host-control-binary.cil", contract)
+        tcgets2_audit = verify_native_tcgets2_audit(work / "host-control-binary.cil")
         logind_access = verify_logind_state(library, linked, work / "logind-state-after.cil",
                                             here, logind_contract, export_binary_policy,
                                             successors=(netplan_contract, sysusers_contract))
@@ -1810,6 +1813,8 @@ def main():
         manager_file_contexts = verify_manager_file_contexts(here, work)
         result = {
             "native_composed_file_contexts": composed_file_contexts,
+            "native_tcgets2_audit": tcgets2_audit,
+            "native_tcgets2_audit_verifier": sha256(here / "verify_native_tcgets2_audit.py"),
             "native_uevent": uevent_access,
             "native_console": console_access,
             "native_remount": remount_access,

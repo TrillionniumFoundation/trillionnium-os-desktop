@@ -130,3 +130,65 @@ Actual PID 1 reap and closure of live mount-namespace references precede device
 and base-mount retirement. Ambiguous exit or transfer retains the entire owned
 tree, remaining mount descriptors and identity reservation. Test-only fixtures
 are absent from normal binaries and cannot construct production admission.
+
+## Native terminal-probe audit boundary
+
+The selected normal glibc isatty() issues TCGETS2 (0x802c542a).
+Systemd 259.9 calls it while reading configuration lines. Its isatty_safe()
+returns false for both EACCES and ENOTTY; retaining the SELinux denial
+does not change the normal non-terminal result. R13 captured 4,373 such
+file denials across 28 concrete source/target pairs. Audit loss means this
+is a count of retained events, not every attempted operation.
+
+ubuntu-native-manager-lifecycle.cil suppresses only the 0x542a extended
+audit bit for those 28 pairs. It adds no access. Each pair has no raw base
+file ioctl permission and no pre-existing extended-permission rule in the
+admitted baseline. This matters because introducing an xperm table on a pair
+that previously had generic ioctl access could restrict unrelated commands.
+Character devices, sockets, inherited descriptor use, and other ioctl audit
+bits retain their existing rules. SELinux's ioctl table matches the low
+16 bits; it cannot distinguish alternate high direction/size encodings of
+0x542a. Those operations remain denied.
+
+The selected kernel's security/selinux/ss/services.c (SHA-256
+a3dc132fceec9f42a8d1728cef1b45685d5d2e0f3b5dcb812bec4049c5c19f67)
+indexes extended DONTAUDIT entries independently of base access.
+security/selinux/avc.c (SHA-256
+88c0e2ebcdcb071db42357e5baf753e87fa44c7d81c5abff2ae5d37b696de813)
+keeps the base denial and then applies the extended audit decision.
+Normal systemd source pins are src/basic/fileio.c
+691d77b7655f522473d2c0baba78f285bfe5ff344e3ebd4357b63a7b87402d86
+and src/basic/terminal-util.c
+29d7fcb01a7dfcd1cb03b69772a4bedd98021881f1d3e46378f0abb4529767d1.
+The actual normal glibc 2.43-2ubuntu2.7 libc.so.6 is 2,190,608 bytes with
+SHA-256 9941dc28e68bc5fd788d9cd024c69e68c791d63799e7538a97b6040dd9f50fb6;
+its isatty syscall loads the full command above and returns zero on error.
+
+The normal strict compiler verifies the final binary export against fixed
+commitments from the actual R13 binary (1,378,147 bytes,
+334f85991aa8b821efbd8ee793083d0031ff1ffbb9bddac7e928c5fa2092d42c)
+and its retained export (11,026,119 bytes,
+87199686510833e1f2424e12faa9510b900646adf3ad89628ebc68899be50e39).
+The proof rejects duplicate, non-concrete, missing, or expanded audit rules.
+It also checks all 28 raw base/xperm tables.
+
+The same comparison explicitly accounts for two separately reviewed normal
+startup fixes: the policy loader's access to PID 1's proc directory
+getattr/search, file getattr/open/read, and link read, plus the service
+executor's ioctl bit and sole FS_IOC_FSGETXATTR (0x581f) operation on
+p4_linux_logind_state_t directories. Their seven raw bits are zero in the
+baseline and must be present in the final concrete rows. Only those seven
+bits and that one directory xperm are subtracted for comparison.
+
+Base allow rows are merged by literal source, target, and class with sorted
+permission tokens, so libsepol's merging of an existing row cannot change the
+meaning of the comparison. Every other non-audit AST, including complete
+conditionals, constraints, transitions, and type/attribute membership, remains
+bound to the old baseline. Original audit rules remain exact after removing
+the 28 additions. The expected hashes are source constants derived from the
+old actual artifact; candidate output cannot create an expectation. A later
+independent policy change needs an explicitly reviewed composition.
+
+This is a source and policy-structure boundary. Successful compilation does
+not prove that the selected kernel has loaded the new policy or that a later
+boot retains complete audit evidence.

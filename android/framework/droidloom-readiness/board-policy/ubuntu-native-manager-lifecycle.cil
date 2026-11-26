@@ -379,3 +379,45 @@
 (typeattributeset p4_not_native_executor_key_owner (and (all) (not (p4_linux_service_executor_t))))
 (neverallow p4_linux_service_executor_t p4_not_native_executor_key_owner (key (view read write search link setattr create)))
 (neverallow p4_not_native_executor_key_owner p4_linux_service_executor_t (key (view read write search link setattr create)))
+
+; The fixed native regular-file terminal probe remains denied.
+; Normal glibc 2.43-2ubuntu2.7 isatty directly issues TCGETS2=0x802c542a;
+; systemd 259.9 read_line_full/isatty_safe treats EACCES and ENOTTY as false.
+; The 28 concrete pairs below produced 4373 captured R13 file/0x542a AVCs.
+; Their admitted baseline has no base ioctl allow and no xperm rules.
+; Selected 6.18 services_compute_xperms_drivers indexes DONTAUDIT even when
+; the base ioctl AV is denied; avc_xperms_audit_required suppresses only the
+; selected extended audit bit and preserves the EACCES decision.
+; The kernel matches only the low u16 command, not its high direction/size bits.
+; No chr_file, socket, FD-use or other ioctl audit is changed.
+; The checker verifies actual binary export commitments and the exact delta.
+; Kernel/systemd/glibc source pins belong to the separate sealed source review
+; recorded in the threat model; the checker does not reread those sources.
+(dontauditx init_t droidloom_package_early_unit_file (ioctl file (0x542a)))
+(dontauditx init_t droidloom_package_native_unit_file (ioctl file (0x542a)))
+(dontauditx init_t init_t (ioctl file (0x542a)))
+(dontauditx init_t p4_linux_apparmor_enabled_t (ioctl file (0x542a)))
+(dontauditx init_t p4_linux_cgroup_controller_list_t (ioctl file (0x542a)))
+(dontauditx init_t p4_linux_factory_unit_file_t (ioctl file (0x542a)))
+(dontauditx init_t p4_linux_machine_id_t (ioctl file (0x542a)))
+(dontauditx init_t p4_linux_native_config_t (ioctl file (0x542a)))
+(dontauditx init_t p4_linux_production_unit_file_t (ioctl file (0x542a)))
+(dontauditx init_t p4_linux_runtime_lib_t (ioctl file (0x542a)))
+(dontauditx init_t p4_linux_systemd_config_t (ioctl file (0x542a)))
+(dontauditx init_t p4_linux_systemd_memfd_t (ioctl file (0x542a)))
+(dontauditx init_t p4_linux_unit_cgroup_t (ioctl file (0x542a)))
+(dontauditx init_t proc_cpuinfo (ioctl file (0x542a)))
+(dontauditx init_t proc_pid_max (ioctl file (0x542a)))
+(dontauditx init_t sysfs (ioctl file (0x542a)))
+(dontauditx p4_linux_generator_t p4_linux_native_config_t (ioctl file (0x542a)))
+(dontauditx p4_linux_generator_t sysfs (ioctl file (0x542a)))
+(dontauditx p4_linux_journald_t init_t (ioctl file (0x542a)))
+(dontauditx p4_linux_journald_t p4_linux_journal_config_t (ioctl file (0x542a)))
+(dontauditx p4_linux_remount_t p4_linux_remount_t (ioctl file (0x542a)))
+(dontauditx p4_linux_service_executor_t p4_linux_apparmor_enabled_t (ioctl file (0x542a)))
+(dontauditx p4_linux_setup_t p4_linux_native_config_t (ioctl file (0x542a)))
+(dontauditx p4_linux_setup_t p4_linux_runtime_lib_t (ioctl file (0x542a)))
+(dontauditx p4_linux_setup_t p4_linux_setup_t (ioctl file (0x542a)))
+(dontauditx p4_linux_sysctl_t p4_linux_runtime_lib_t (ioctl file (0x542a)))
+(dontauditx p4_linux_udev_t p4_linux_native_config_t (ioctl file (0x542a)))
+(dontauditx p4_linux_udev_t p4_linux_udev_t (ioctl file (0x542a)))
