@@ -791,6 +791,10 @@ mod tests {
                 include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-udev-trigger-label.conf").as_slice(),
             ),
             (
+                "usr/lib/systemd/system/netplan-configure.service.d/50-droidloom-uevent-order.conf",
+                include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-netplan-trigger-order.conf").as_slice(),
+            ),
+            (
                 "usr/lib/systemd/system/mount.d/50-droidloom-private-keyring.conf",
                 include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-mount-private-keyring.conf").as_slice(),
             ),

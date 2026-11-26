@@ -38,6 +38,9 @@ from verify_native_calibration import verify_native_calibration, source_inputs a
 from verify_native_entropy import verify_native_entropy, source_inputs as native_entropy_source_inputs
 from verify_native_resolved_runtime import verify_native_resolved_runtime
 from verify_native_utility_bridges import verify_native_utility_bridges
+from verify_native_netplan_trigger import (verify_native_netplan_trigger,
+    source_inputs as native_netplan_trigger_source_inputs,
+    validate_sources as validate_netplan_trigger_sources)
 
 
 def sha256(path):
@@ -749,6 +752,8 @@ def verify_manager_file_contexts(here, work):
         ("/run/systemd/journal", stat.S_IFDIR, "p4_linux_journal_runtime_t"),
         ("/run/systemd/namespace-example", stat.S_IFDIR, "p4_linux_sandbox_dir_t"),
         ("/run/systemd/inaccessible", stat.S_IFDIR, "p4_linux_inaccessible_t"),
+        ("/usr/lib/systemd/system/netplan-configure.service.d", stat.S_IFDIR, "p4_linux_unit_directory_t"),
+        ("/usr/lib/systemd/system/netplan-configure.service.d/50-droidloom-uevent-order.conf", stat.S_IFREG, "p4_linux_unit_file_t"),
         ("/usr/lib/systemd/system/kmod-static-nodes.service.d", stat.S_IFDIR, "p4_linux_unit_directory_t"),
         ("/usr/lib/systemd/system/kmod-static-nodes.service.d/50-droidloom-runtime-directory.conf", stat.S_IFREG, "p4_linux_unit_file_t"),
         ("/usr/lib/systemd/system/mount.d", stat.S_IFDIR, "p4_linux_unit_directory_t"),
@@ -1671,6 +1676,7 @@ def main():
     args = parser.parse_args()
     here = Path(__file__).resolve().parent
     composed_file_contexts = verify_composed_file_contexts(here)
+    validate_netplan_trigger_sources(here)
     release = json.loads((here / "cp3a-kernel-handle-inputs.json").read_text())
     actual = sorted(sha256(path) for path in args.android_cil)
     expected = sorted(item["sha256"] for item in release["android_inputs"])
@@ -1754,6 +1760,7 @@ def main():
                here / "verify_native_entropy.py", *native_entropy_source_inputs(here),
                here / "verify_native_resolved_runtime.py", here / "native-resolved-runtime-source.json",
                here / "verify_native_utility_bridges.py", here / "native-utility-bridges-source.json",
+               here / "verify_native_netplan_trigger.py", *native_netplan_trigger_source_inputs(here),
                here.parents[3] / "packaging/ubuntu/systemd/source.lock.json",
                here.parents[3] / "packaging/ubuntu/systemd/p4-native-generator-tmpfs.patch",
                *(here / name for name in COMPOSED_FILE_CONTEXT_SOURCES)]
@@ -1895,6 +1902,8 @@ def main():
             library, linked, work / "host-control-binary.cil", here)
         native_entropy = verify_native_entropy(
             library, linked, work / "host-control-binary.cil", here)
+        native_netplan_trigger = verify_native_netplan_trigger(
+            library, linked, work / "host-control-binary.cil", here)
         manager_file_contexts = verify_manager_file_contexts(here, work)
         result = {
             "native_composed_file_contexts": composed_file_contexts,
@@ -1914,6 +1923,7 @@ def main():
             "native_early_entropy": native_entropy,
             "native_resolved_runtime": native_resolved_runtime,
             "native_utility_bridges": native_utility_bridges,
+            "native_netplan_trigger": native_netplan_trigger,
             "native_sysusers_lock": sysusers_access,
             "native_netplan": netplan_access,
             "native_user_cgroups": user_cgroups,
