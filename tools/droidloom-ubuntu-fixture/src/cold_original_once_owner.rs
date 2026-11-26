@@ -545,6 +545,10 @@ impl OriginalOwner {
         Ok(true)
     }
 
+    pub(super) fn label_sensitive_paths(&self) -> std::collections::BTreeSet<PathBuf> {
+        self.locks.iter().skip(1).map(|v| v.path.clone()).collect()
+    }
+
     pub(super) fn boot_id(&self) -> &str {
         &self.observation.boot_id
     }

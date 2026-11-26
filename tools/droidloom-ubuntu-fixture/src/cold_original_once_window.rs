@@ -12,7 +12,12 @@ use crate::{
     ensure, fs,
     model::Identity,
 };
-use std::{cell::RefCell, collections::BTreeMap, fs::File};
+use std::{
+    cell::RefCell,
+    collections::{BTreeMap, BTreeSet},
+    fs::File,
+    path::PathBuf,
+};
 
 struct CellCustody {
     held: File,
@@ -126,7 +131,7 @@ impl<'a> OriginalLabelWindow<'a> {
         frozen: &'a Quiescence,
     ) -> Result<Self> {
         authority.verify_current_owner()?;
-        frozen.verify()?;
+        frozen.verify_forward()?;
         ensure(
             frozen.candidate_id() == authority.candidate_id()
                 && authority.journal.borrow().phase() == Some(Phase::LabelsIntent),
@@ -161,11 +166,19 @@ impl<'a> OriginalLabelWindow<'a> {
     pub(crate) fn source_plan(&self) -> &FilePin {
         &self.plan
     }
+    /// Read-only metadata scheduling: these held host inodes must complete
+    /// their barrier and opaque identity rebind before the next custody fence.
+    /// This list does not admit a target or grant label write authority.
+    pub(crate) fn synchronous_paths(&self) -> Result<BTreeSet<PathBuf>> {
+        self.verify_step()?;
+        Ok(authority_synchronous_paths(self.authority))
+    }
+
     /// No source/archive body is re-read here. Every fixed open/named inode,
     /// all of its F9/attributes, actual locks/namespaces, selected cell, exact
     /// journal/plan and actual frozen cgroups are checked each time.
     pub(crate) fn verify_step(&self) -> Result<()> {
-        self.frozen.verify()?;
+        self.frozen.verify_forward()?;
         let a = self.authority;
         verify_authority_custody(a)?;
         ensure(
@@ -184,7 +197,7 @@ impl<'a> OriginalLabelWindow<'a> {
     /// validates held inode, generation, source-plan pin, actual label/xattrs,
     /// before/after metadata and durable xattr completion before updating locks.
     pub(crate) fn accept_derivation(&self, derivation: &OriginalLabelDerivation) -> Result<()> {
-        self.frozen.verify()?;
+        self.frozen.verify_forward()?;
         derivation.revalidate()?;
         ensure(
             derivation.candidate_id() == self.candidate_id()
@@ -271,7 +284,7 @@ impl<'a> OriginalRestoreLabelWindow<'a> {
         frozen: &'a Quiescence,
     ) -> Result<Self> {
         retirement.revalidate()?;
-        frozen.verify()?;
+        frozen.verify_restore()?;
         let a = retirement.authority();
         ensure(
             frozen.candidate_id() == retirement.candidate_id()
@@ -305,8 +318,18 @@ impl<'a> OriginalRestoreLabelWindow<'a> {
     pub(crate) fn source_plan(&self) -> &FilePin {
         &self.plan
     }
+    /// Read-only metadata scheduling: these held host inodes must complete
+    /// their barrier and opaque identity rebind before the next custody fence.
+    /// This list does not admit a target or grant label write authority.
+    pub(crate) fn synchronous_paths(&self) -> Result<BTreeSet<PathBuf>> {
+        self.verify_step()?;
+        let mut paths = authority_synchronous_paths(self.retirement.authority());
+        paths.extend(self.retirement.synchronous_paths());
+        Ok(paths)
+    }
+
     pub(crate) fn verify_step(&self) -> Result<()> {
-        self.frozen.verify()?;
+        self.frozen.verify_restore()?;
         self.retirement.revalidate_custody()?;
         let a = self.retirement.authority();
         ensure(
@@ -322,7 +345,7 @@ impl<'a> OriginalRestoreLabelWindow<'a> {
         self.frozen.verify()
     }
     pub(crate) fn accept_restoration(&self, actual: &OriginalLabelRestoration) -> Result<()> {
-        self.frozen.verify()?;
+        self.frozen.verify_restore()?;
         actual.revalidate()?;
         ensure(
             actual.candidate_id() == self.candidate_id()
@@ -354,4 +377,10 @@ impl<'a> OriginalRestoreLabelWindow<'a> {
         self.retirement.revalidate()?;
         self.frozen.verify()
     }
+}
+
+fn authority_synchronous_paths(a: &OriginalQualificationAuthority) -> BTreeSet<PathBuf> {
+    let mut paths = a.owner.borrow().label_sensitive_paths();
+    paths.insert(a.expected_cell().path.clone());
+    paths
 }

@@ -369,6 +369,7 @@ fn inventory_groups(
 /// same-source guard. There is no serde or caller-provided `quiet` flag.
 pub(super) struct Quiescence {
     candidate: String,
+    purpose: FreezePurpose,
     intent: SealedInput,
     groups: Vec<Group>,
     deadline: u64,
@@ -512,6 +513,7 @@ impl Quiescence {
         )?;
         let mut result = Self {
             candidate: a.candidate_id().into(),
+            purpose,
             intent: SealedInput::open(&pin)?,
             groups,
             deadline,
@@ -570,6 +572,20 @@ impl Quiescence {
             ensure(g.is_frozen()?, "a selected writer is no longer frozen")?;
         }
         Ok(())
+    }
+    pub(super) fn verify_forward(&self) -> Result<()> {
+        ensure(
+            self.purpose == FreezePurpose::Forward,
+            "forward window cannot use a returned-original freezer",
+        )?;
+        self.verify()
+    }
+    pub(super) fn verify_restore(&self) -> Result<()> {
+        ensure(
+            self.purpose == FreezePurpose::Restore,
+            "restore window cannot reuse an initial freezer",
+        )?;
+        self.verify()
     }
     pub(super) fn candidate_id(&self) -> &str {
         &self.candidate

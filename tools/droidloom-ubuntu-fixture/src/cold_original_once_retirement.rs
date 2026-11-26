@@ -596,6 +596,16 @@ impl OriginalRetirement {
     pub(crate) fn report_pin(&self) -> &FilePin {
         self.sealed.pin()
     }
+    pub(super) fn synchronous_paths(&self) -> BTreeSet<PathBuf> {
+        let mut paths = BTreeSet::from([self.grubenv.borrow().pin.path.clone()]);
+        if let Some(runtime) = &self.runtime {
+            paths.insert(runtime.directory.clone());
+            paths.insert(runtime.directory.join("owner.lock"));
+            paths.extend(runtime.files.borrow().values().map(|v| v.pin.path.clone()));
+        }
+        paths
+    }
+
     pub(crate) fn pair_intent(&self) -> &FilePin {
         self.working.pair_intent()
     }
