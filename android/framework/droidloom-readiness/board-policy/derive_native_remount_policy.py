@@ -131,6 +131,9 @@ def verify(library, binary, exported, here, expected, export):
         "p4_linux_runtime_lib_t": executable,
         "p4_linux_elf_interpreter_t": executable,
         "p4_linux_native_config_t": read,
+        # object_r also admits process types; AV rules select the concrete type.
+        # The same fixed own-proc view is checked under every admitted role.
+        ROLE: read,
         ENTRY: executable | {"entrypoint"},
         MOUNT: executable | {"execute_no_trans"},
         "p4_linux_console_ld_cache_native_config_t": read | {"map"},
@@ -153,10 +156,10 @@ def verify(library, binary, exported, here, expected, export):
 
     directories = {
         "p4_linux_rootdir_t", "p4_linux_etc_dir_t", "p4_linux_run_t",
-        "device", "p4_linux_native_dev_root_t", "proc",
+        "device", "p4_linux_native_dev_root_t", "proc", ROLE,
     }
     links = {"p4_linux_usrmerge_link_t", "p4_linux_timezone_link_t",
-             "p4_linux_native_config_t", "proc"}
+             "p4_linux_native_config_t", "proc", ROLE}
     for row in aliases:
         if row["class"] == "dir" and row["source"] in directories:
             directories.add(row["target"])
@@ -182,12 +185,13 @@ def verify(library, binary, exported, here, expected, export):
     # Every concrete actor and object is checked against every socket class.
     # Only the already inherited executor stream has read/write/getattr.
     targets = [("object_r", target) for target in objects] + actors
-    socket_classes = sorted(cls for cls in classes if cls.endswith("_socket"))
+    socket_classes = sorted(cls for cls in classes
+                            if cls == "socket" or cls.endswith("_socket"))
     for cls in socket_classes:
         for role, target in targets:
             wanted = ({"getattr", "read", "write"} if
                       cls == "unix_stream_socket" and
-                      (role, target) == ("system_r", EXECUTOR) else set())
+                      target == EXECUTOR else set())
             av(target, cls, wanted, target_role=role)
     return {
         "schema": "droidloom.native-remount-policy-proof.v1",
