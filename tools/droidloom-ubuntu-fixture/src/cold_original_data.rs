@@ -990,6 +990,21 @@ impl WorkingDataRetired {
     pub(super) fn evidence(&self) -> &Value {
         &self.evidence
     }
+    pub(super) fn verify_working_identity(&self, identity: &Identity) -> Result<()> {
+        self.revalidate()?;
+        let backings = self.backings.borrow();
+        ensure(
+            backings
+                .iter()
+                .filter(|(file, expected)| {
+                    expected == identity && fs::stat(file).is_ok_and(|actual| actual == *identity)
+                })
+                .count()
+                == 1,
+            "current identity is not exactly one synchronized working backing",
+        )?;
+        verify_retired_backings(&backings)
+    }
     pub(super) fn accept_label_restoration(
         &self,
         derivation: &labels::OriginalLabelRestoration,

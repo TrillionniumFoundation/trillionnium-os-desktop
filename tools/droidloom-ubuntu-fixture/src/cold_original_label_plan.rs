@@ -266,7 +266,7 @@ impl OriginalLabelSources {
             environment,
         })
     }
-    fn revalidate(&self) -> Result<()> {
+    pub(crate) fn revalidate(&self) -> Result<()> {
         for guard in &self.guards {
             guard.revalidate()?;
         }
