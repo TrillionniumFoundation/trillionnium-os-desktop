@@ -9,6 +9,8 @@
 mod cell;
 #[path = "cold_original_once_labels.rs"]
 mod labels;
+#[path = "cold_original_once_materials.rs"]
+mod materials;
 #[path = "cold_original_once_owner.rs"]
 mod owner;
 #[path = "cold_original_once_state.rs"]
@@ -79,6 +81,7 @@ pub(super) struct OriginalQualificationAuthority {
     retirement: RefCell<RetirementSource>,
     journal: RefCell<Journal>,
     label_plan: RefCell<Option<labels::LabelPlanBinding>>,
+    materials: materials::Materials,
 }
 
 fn same_pin(a: &FilePin, b: &FilePin) -> bool {
@@ -103,6 +106,10 @@ fn root_file_matches(pin: &FilePin) -> Result<bool> {
 }
 
 impl OriginalQualificationAuthority {
+    pub(super) fn label_sources(&self) -> &cold_original_data::labels::OriginalLabelSources {
+        self.materials.sources()
+    }
+
     pub(super) fn candidate_id(&self) -> &str {
         &self.candidate_id
     }
@@ -237,6 +244,7 @@ impl OriginalQualificationAuthority {
 
     pub(super) fn verify_current_owner(&self) -> Result<()> {
         self.owner.borrow().revalidate()?;
+        self.materials.revalidate()?;
         ensure(
             fs::valid_digest(&self.candidate_id)
                 && self.work.parent() == Some(Path::new("/var/lib/droidloom-qualification")),

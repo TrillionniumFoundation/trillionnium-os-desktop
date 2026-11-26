@@ -479,7 +479,7 @@ fn retired(pid: u32, exe: &Identity) -> Result<()> {
     Ok(())
 }
 
-pub fn run(config: &Path, expected: &str) -> Result<()> {
+fn verify_to_receipt(config: &Path, expected: &str) -> Result<FilePin> {
     let config_pin = boot_files::pin_file(config)?;
     ensure(
         config_pin.sha256 == expected,
@@ -820,11 +820,52 @@ pub fn run(config: &Path, expected: &str) -> Result<()> {
     });
     let output = verify_dir.join("OWNED-GUEST-VERIFIED.json");
     let sha = fs::write_json(&fs::absolute_string(&output)?, &result, 0)?;
-    println!(
-        "{}",
-        json!({"receipt":output,"sha256":sha,"scope":"owned_normal_guest_mechanism_only",
-        "physical_activation_authorized":false,"production_ready":false})
-    );
+    let pin = boot_files::pin_file(&output)?;
+    ensure(pin.sha256 == sha, "fresh owned output changed after publication")?;
+    Ok(pin)
+}
+
+/// The physical owner's admission calls the same full ended-disk verifier.
+/// Only its output name changes. No prior success field is accepted as authority.
+pub(super) fn verify_for_original_once(
+    input: &FilePin,
+    request: &Path,
+    verification_name: &str,
+) -> Result<Value> {
+    let mut custody = Custody::default();
+    let mut plan: Plan = serde_json::from_value(custody.json(input, 1024 * 1024)?)?;
+    let parent = request.parent().ok_or("once owned request parent absent")?;
+    let name = parent.file_name().and_then(|v| v.to_str()).ok_or("once work name absent")?;
+    let candidate = name.strip_prefix("original-once-").ok_or("once work prefix differs")?;
+    ensure(
+        parent.parent() == Some(Path::new(BASE))
+            && fs::valid_digest(candidate)
+            && request.file_name() == Some(std::ffi::OsStr::new("OWNED-VERIFY-INPUTS.json"))
+            && verification_name == format!("once-{}", &candidate[..24])
+            && safe_name(verification_name)
+            && plan.verification_name != verification_name,
+        "fresh owned verification must be bound to its once candidate work",
+    )?;
+    private(parent)?;
+    plan.verification_name = verification_name.into();
+    let sha = fs::write_json(&fs::absolute_string(request)?, &plan, 0)?;
+    let request_pin = boot_files::pin_file(request)?;
+    ensure(request_pin.sha256 == sha, "fresh owned request bytes differ")?;
+    custody.admit(&request_pin)?;
+    let receipt = verify_to_receipt(request, &sha)?;
+    let result = custody.json(&receipt, 16 * 1024 * 1024)?;
+    same_value_pin(&result["input"], &request_pin)?;
+    let files = custody.finish()?;
+    Ok(json!({"schema":"droidloom.original-once-owned-readback.v1",
+        "source_verification_input":input, "fresh_input":request_pin,
+        "receipt":receipt, "actual":result, "verified_file_custody":files}))
+}
+
+pub fn run(config: &Path, expected: &str) -> Result<()> {
+    let pin = verify_to_receipt(config, expected)?;
+    println!("{}", json!({"receipt":pin.path,"sha256":pin.sha256,
+        "scope":"owned_normal_guest_mechanism_only",
+        "physical_activation_authorized":false,"production_ready":false}));
     Ok(())
 }
 
