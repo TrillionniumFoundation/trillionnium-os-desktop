@@ -66,6 +66,19 @@ pub(crate) struct RecoveryRecipe {
     recovery: RecoveryBootSpec,
 }
 
+impl RecoveryRecipe {
+    /// The normal producer keeps these exact original inodes open throughout
+    /// its private build. This exposes source identity, never boot authority.
+    pub(crate) fn source_pins(&self) -> Vec<&FilePin> {
+        vec![
+            &self.source_input,
+            &self.source_producer,
+            &self.base_intent,
+            &self.early_configuration,
+        ]
+    }
+}
+
 struct Guard {
     pin: FilePin,
     file: File,
