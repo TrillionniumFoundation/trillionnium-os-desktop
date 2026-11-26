@@ -284,7 +284,7 @@
 (typeattribute p4_native_boot_proc_files)
 (typeattributeset p4_native_boot_proc_files (proc_cpuinfo proc_filesystems proc_pid_max proc_pressure_cpu proc_swaps proc_random))
 (typeattribute p4_nonboard_except_boot_proc_inputs)
-(typeattributeset p4_nonboard_except_boot_proc_inputs (and (p4_nonboard_except_kernel_cmdline) (not (p4_native_boot_proc_files))))
+(typeattributeset p4_nonboard_except_boot_proc_inputs (and (p4_all_nonboard) (not (or (proc_cmdline) (or (p4_kernel_ns_handle_t) (p4_native_boot_proc_files))))))
 (typeattribute p4_native_nonjournal_without_boot_proc_inputs)
 (typeattributeset p4_native_nonjournal_without_boot_proc_inputs (and (p4_native_nonjournal_without_module_reads) (not (p4_native_boot_proc_readers))))
 (typeattribute p4_native_nonjournal_boot_proc_inputs)
