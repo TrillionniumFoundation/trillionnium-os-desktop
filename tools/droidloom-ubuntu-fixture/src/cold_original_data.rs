@@ -822,8 +822,16 @@ impl Locations {
                 "private data member ownership, links or mode changed",
             )?;
             ensure(
-                if image(&name) && mutable {
-                    stable(&id, &old.identity)
+                if mutable {
+                    if image(&name) {
+                        stable(&id, &old.identity)
+                    } else {
+                        // This branch is only the current retirement observer.
+                        // The immutable proof bytes, mtime and every field except
+                        // ctime remain exact. Actual label admission separately
+                        // consumes the opaque source-bound label derivation.
+                        labels::only_ctime_changed(&old.identity, &id)
+                    }
                 } else {
                     id == old.identity
                 },
@@ -1030,7 +1038,8 @@ impl WorkingDataRetired {
         for (file, expected) in backings.iter_mut() {
             if inode(expected, derivation.before_identity()) {
                 ensure(
-                    expected == derivation.before_identity()
+                    (expected == derivation.before_identity()
+                        || expected == derivation.after_identity())
                         && fs::stat(file)? == *derivation.after_identity(),
                     "working retirement ctime cannot be rebound from an unrelated restoration",
                 )?;
@@ -1107,9 +1116,11 @@ impl OriginalDataTransaction {
         use crate::cold_original_qualification::OriginalDataStep;
         self.fence(authority, OriginalDataStep::WithdrawSelection)?;
         let before = self.transaction.observe(true)?;
-        if before.1 == SelectionState::Candidate {
-            self.transaction.restore_selection()?;
-        }
+        let labeled = labels::withdraw_labeled_selection(authority, self)?;
+        ensure(
+            labeled.is_some() || before.1 == SelectionState::Original,
+            "candidate selection lacks its actual durable source-bound rename history",
+        )?;
         self.fence(authority, OriginalDataStep::WithdrawSelection)?;
         let after = self.transaction.observe(true)?;
         ensure(
@@ -1123,7 +1134,8 @@ impl OriginalDataTransaction {
         let report = json!({"schema":"droidloom.original-selection-withdrawn.v1",
             "pair_intent":self.intent(),"candidate_id":authority.candidate_id(),
             "actual_original_selection":actual,"data_pair_restored":false,
-            "working_backings_synchronized":false,"runtime_or_migration_accepted":false});
+            "working_backings_synchronized":false,"runtime_or_migration_accepted":false,
+            "source_bound_label_evolution":labeled});
         const WITHDRAWN: &str = "DATA-SELECTION-WITHDRAWN.json";
         if named(&self.transaction.locations.work, WITHDRAWN)?.is_none() {
             self.transaction.locations.write_json(WITHDRAWN, &report)?;
@@ -1137,6 +1149,27 @@ impl OriginalDataTransaction {
         }
         self.fence(authority, OriginalDataStep::WithdrawSelection)?;
         Ok(report)
+    }
+
+    pub(super) fn publish_selection(
+        &self,
+        authority: &crate::cold_original_qualification::OriginalQualificationAuthority,
+        applied: &labels::OriginalLabelsApplied,
+    ) -> Result<Value> {
+        self.fence(
+            authority,
+            crate::cold_original_qualification::OriginalDataStep::PublishSelection,
+        )?;
+        let actual = applied.publish_selection(authority, self)?;
+        self.fence(
+            authority,
+            crate::cold_original_qualification::OriginalDataStep::PublishSelection,
+        )?;
+        ensure(
+            self.transaction.observe(true)? == (Layout::Switched, SelectionState::Candidate),
+            "complete actual labeled selection was not published",
+        )?;
+        Ok(actual)
     }
 
     pub(super) fn retire_working(
@@ -1674,6 +1707,28 @@ impl DataTransaction {
 mod tests {
     use super::*;
     use std::os::unix::fs::PermissionsExt;
+    #[test]
+    fn proof_ctime_is_only_a_retirement_observation_not_write_admission() {
+        let area = Fixture::new(false);
+        let transaction = area.open();
+        let proof_path = area
+            .root
+            .path()
+            .join("working-parent/working/WORKING-COPY.json");
+        let proof = File::open(&proof_path).unwrap();
+        let before = fs::stat(&proof).unwrap();
+        rustix::fs::fchmod(&proof, Mode::from_raw_mode(before.mode & 0o7777)).unwrap();
+        assert_ne!(before, fs::stat(&proof).unwrap());
+        assert!(transaction.observe(true).is_ok());
+        assert!(transaction.observe(false).is_err());
+        // A real proof payload or mtime change is still refused by the
+        // observer; only the actual label core can admit a ctime derivation.
+        rustix::fs::fchmod(&proof, Mode::from_raw_mode(0o600)).unwrap();
+        std::fs::write(&proof_path, b"changed proof").unwrap();
+        rustix::fs::fchmod(&proof, Mode::from_raw_mode(0o400)).unwrap();
+        assert!(transaction.observe(true).is_err());
+    }
+
     #[test]
     fn actual_retired_working_backings_reject_a_post_sync_write() {
         let tmp = tempfile::tempdir().unwrap();

@@ -18,7 +18,12 @@ mod journal;
 mod plan;
 #[path = "cold_original_label_scope.rs"]
 mod scope;
-pub(crate) use plan::{OriginalLabelRestoreSources, OriginalLabelSources, inspect_files as inspect_original_labels_files};
+pub(super) use journal::withdraw_labeled_selection;
+pub(crate) use journal::{OriginalLabelTransaction, OriginalLabelsApplied};
+pub(crate) use plan::{
+    OriginalLabelRestoreSources, OriginalLabelSources,
+    inspect_files as inspect_original_labels_files,
+};
 
 const LABEL: &str = "security.selinux";
 const MAX_NAMES: usize = 65_536;
@@ -303,7 +308,7 @@ fn snapshot(file: &File) -> Result<Snapshot> {
         attributes,
     })
 }
-fn only_ctime_changed(a: &Identity, b: &Identity) -> bool {
+pub(super) fn only_ctime_changed(a: &Identity, b: &Identity) -> bool {
     let mut actual = b.clone();
     actual.ctime_sec = a.ctime_sec;
     actual.ctime_nsec = a.ctime_nsec;
@@ -402,6 +407,18 @@ impl OriginalLabelDerivation {
             .attributes
             .get(LABEL)
             .ok_or("actual source-bound label missing")?;
+        let preimage: serde_json::Value =
+            serde_json::from_slice(&super::root_pin(&self.preimage, 32 * 1024 * 1024)?)?;
+        ensure(
+            preimage["schema"] == "droidloom.original-label-preimage.v1"
+                && preimage["candidate_id"] == self.candidate_id
+                && preimage["logical_path"] == self.logical_path.to_string_lossy().as_ref()
+                && preimage["source_plan"] == serde_json::to_value(&self.plan.pin)?
+                && preimage["attribute"] == LABEL
+                && preimage["desired"] == serde_json::to_value(label)?
+                && preimage["before"] == serde_json::to_value(&self.core.before)?,
+            "opaque label preimage is not this actual source-bound transition",
+        )?;
         wanted.insert(LABEL.into(), label.clone());
         ensure(
             only_ctime_changed(&self.core.before.identity, &self.core.after.identity)

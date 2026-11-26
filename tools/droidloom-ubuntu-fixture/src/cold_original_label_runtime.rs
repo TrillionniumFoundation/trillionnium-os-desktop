@@ -299,7 +299,8 @@ impl RuntimeRestoreAttempt {
         let durability = self.records.sync_target(&self.original.recovery, &after)?;
         let output = json!({"schema":"droidloom.current-label-restored.v1","current_preimage":self.pin,
             "original_preimage":self.original.pin,"retirement":self.current.retirement,
-            "before":observed,"after":after,"target_metadata_durability":durability,
+            "before":self.current.current,"observed_before_retry":observed,
+            "after":after,"target_metadata_durability":durability,
             "original_content_claimed_unchanged":self.current.class.is_none()});
         let pin = if self.records.exists("RESTORED.json")? {
             let (_, _, bytes) = self.records.read("RESTORED.json")?;
@@ -321,7 +322,7 @@ impl RuntimeRestoreAttempt {
         };
         let result = LabelDerivation {
             file: self.original.recovery.try_clone()?,
-            before: observed,
+            before: self.current.current.clone(),
             after,
         };
         result.revalidate()?;

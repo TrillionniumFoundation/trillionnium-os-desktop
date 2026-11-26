@@ -16,6 +16,10 @@ use std::{
 #[path = "cold_original_label_runtime.rs"]
 mod runtime;
 pub(super) use runtime::RuntimeRestoreAttempt;
+#[path = "cold_original_label_transaction.rs"]
+mod transaction;
+pub(in crate::cold_original_data) use transaction::withdraw_labeled_selection;
+pub(crate) use transaction::{OriginalLabelTransaction, OriginalLabelsApplied};
 
 const LIMIT: u64 = 32 * 1024 * 1024;
 
@@ -141,6 +145,68 @@ impl Records {
             Err(rustix::io::Errno::NOENT) => Ok(false),
             Err(e) => Err(e.into()),
         }
+    }
+    fn verify_unpublished_preimage(&self) -> Result<()> {
+        self.revalidate()?;
+        ensure(
+            !self.exists("PREIMAGE.json")?,
+            "published label preimage cannot be replaced",
+        )?;
+        let mut count = 0;
+        for entry in rustix::fs::Dir::read_from(&self.held)? {
+            let entry = entry?;
+            let name = entry.file_name().to_str()?;
+            if matches!(name, "." | "..") {
+                continue;
+            }
+            count += 1;
+            ensure(count <= 16, "too many interrupted preimage publications")?;
+            let pending = name == "PREIMAGE.json.pending";
+            let preserved = name.strip_prefix("PREIMAGE.json.pending.interrupted-");
+            ensure(
+                pending || preserved.is_some(),
+                "unpublished preimage directory has an unrelated record",
+            )?;
+            let file = File::from(rustix::fs::openat(
+                &self.held,
+                name,
+                OFlags::RDONLY
+                    | OFlags::NOFOLLOW
+                    | OFlags::CLOEXEC
+                    | OFlags::NONBLOCK
+                    | OFlags::NOATIME,
+                Mode::empty(),
+            )?);
+            let id = fs::stat(&file)?;
+            ensure(
+                FileType::from_raw_mode(id.mode) == FileType::RegularFile
+                    && id.uid == self.identity.uid
+                    && id.gid == self.identity.gid
+                    && id.nlink == 1
+                    && id.mode & 0o7777 == 0o400
+                    && id.size <= LIMIT
+                    && fs::xattrs(&file)?.is_empty(),
+                "interrupted preimage file lost custody",
+            )?;
+            let mut body = vec![0; id.size as usize];
+            file.read_exact_at(&mut body, 0)?;
+            if let Some(suffix) = preserved {
+                ensure(
+                    suffix == format!("{}-{}", id.ino, fs::digest(&body)),
+                    "preserved interrupted preimage no longer has its recorded bytes/inode",
+                )?;
+            }
+            ensure(
+                fs::stat(&file)? == id
+                    && fs::identity(&rustix::fs::statat(
+                        &self.held,
+                        name,
+                        AtFlags::SYMLINK_NOFOLLOW,
+                    )?) == id,
+                "interrupted preimage changed during actual readback",
+            )?;
+        }
+        self.revalidate()
     }
     fn preserve_interrupted(&self, name: &str) -> Result<()> {
         if !self.exists(name)? {
@@ -460,6 +526,58 @@ impl DurableAttempt {
         }
     }
 
+    /// Read back a completed or uncertain application without another target
+    /// xattr write. In particular this can reconstruct the opaque derivation
+    /// needed to rebind a held lock after setxattr succeeded but its caller was
+    /// interrupted before the normal post-write fence.
+    fn applied_readback(&self) -> Result<LabelDerivation> {
+        self.validate_intent()?;
+        ensure(
+            !self.restored_intent()?,
+            "a restoring label cannot become an application",
+        )?;
+        let (current, _) = self.classify(false)?;
+        let mut expected = self.preimage.before.attributes.clone();
+        expected.insert(
+            self.preimage.attribute.clone(),
+            self.preimage.desired.clone(),
+        );
+        ensure(
+            current.attributes == expected,
+            "readback cannot invent a label that the kernel has not applied",
+        )?;
+        if self.records.exists("APPLIED.json")? {
+            let (_, _, bytes) = self.records.read("APPLIED.json")?;
+            let value: Value = serde_json::from_slice(&bytes)?;
+            ensure(
+                value["schema"] == "droidloom.original-label-applied.v1"
+                    && value["preimage"] == serde_json::to_value(&self.pin)?
+                    && value["before"] == serde_json::to_value(&self.preimage.before)?
+                    && value["after"] == serde_json::to_value(&current)?
+                    && value["target_metadata_durability"]["operation"] == "syncfs"
+                    && value["target_metadata_durability"]["filesystem_dev"]
+                        == current.identity.dev,
+                "durable application does not describe this actual inode",
+            )?;
+        } else {
+            let durability = self.records.sync_target(&self.recovery, &current)?;
+            self.records.publish(
+                "APPLIED.json",
+                &json!({
+                "schema":"droidloom.original-label-applied.v1","preimage":self.pin,
+                "before":self.preimage.before,"after":current,
+                "target_metadata_durability":durability,"recognized_uncertain_application":true}),
+            )?;
+        }
+        let result = LabelDerivation {
+            file: self.recovery.try_clone()?,
+            before: self.preimage.before.clone(),
+            after: current,
+        };
+        result.revalidate()?;
+        Ok(result)
+    }
+
     fn restore(&self) -> Result<Snapshot> {
         self.validate_intent()?;
         let already = self.restored_intent()?;
@@ -555,6 +673,78 @@ mod tests {
         )
         .unwrap()
     }
+    #[test]
+    fn interruption_before_preimage_publication_preserves_partial_evidence() {
+        let tmp = tempfile::Builder::new()
+            .prefix(".p4-unpublished-label-")
+            .tempdir_in(std::env::current_dir().unwrap())
+            .unwrap();
+        let dir = tmp.path().join("journal");
+        std::fs::create_dir(&dir).unwrap();
+        std::fs::set_permissions(&dir, std::fs::Permissions::from_mode(0o700)).unwrap();
+        let target = tmp.path().join("inode");
+        std::fs::write(&target, b"unchanged original").unwrap();
+        let held = inode(&target);
+        let before = snapshot(&held).unwrap();
+        let pending = dir.join("PREIMAGE.json.pending");
+        std::fs::write(&pending, b"interrupted publication").unwrap();
+        std::fs::set_permissions(&pending, std::fs::Permissions::from_mode(0o400)).unwrap();
+        let records = Records::open(&dir).unwrap();
+        records.verify_unpublished_preimage().unwrap();
+        let plan = FilePin {
+            path: tmp.path().join("source-plan"),
+            bytes: 1,
+            sha256: "a".repeat(64),
+        };
+        let actual = DurableAttempt::prepare(
+            records,
+            held,
+            &"b".repeat(64),
+            &plan,
+            0,
+            Path::new("/var/log/owned-test"),
+            b"candidate",
+            TEST_LABEL,
+        )
+        .unwrap();
+        assert_eq!(actual.preimage.before, before);
+        assert_eq!(snapshot(&actual.recovery).unwrap(), before);
+        let saved = std::fs::read_dir(&dir)
+            .unwrap()
+            .filter_map(|row| {
+                let row = row.unwrap();
+                row.file_name()
+                    .to_str()
+                    .filter(|name| name.starts_with("PREIMAGE.json.pending.interrupted-"))
+                    .map(|_| row.path())
+            })
+            .collect::<Vec<_>>();
+        assert_eq!(saved.len(), 1);
+        assert_eq!(
+            std::fs::read(&saved[0]).unwrap(),
+            b"interrupted publication"
+        );
+        assert!(actual.records.verify_unpublished_preimage().is_err());
+    }
+    #[test]
+    fn uncertain_application_is_read_back_without_another_target_write() {
+        let tmp = tempfile::Builder::new()
+            .prefix(".p4-label-readback-")
+            .tempdir_in(std::env::current_dir().unwrap())
+            .unwrap();
+        let attempt = prepare(tmp.path());
+        set(&attempt.recovery, TEST_LABEL, Some(b"candidate")).unwrap();
+        let current = snapshot(&attempt.recovery).unwrap();
+        let first = attempt.applied_readback().unwrap();
+        assert_eq!(first.before, attempt.preimage.before);
+        assert_eq!(first.after, current);
+        assert_eq!(snapshot(&attempt.recovery).unwrap(), current);
+        let again = attempt.applied_readback().unwrap();
+        assert_eq!(again.after, current);
+        set(&attempt.recovery, "user.unrelated", Some(b"unexpected")).unwrap();
+        assert!(attempt.applied_readback().is_err());
+    }
+
     #[test]
     fn durable_preimage_recovers_a_write_with_no_success_record() {
         let tmp = tempfile::Builder::new()

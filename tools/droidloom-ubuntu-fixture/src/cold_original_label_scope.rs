@@ -13,7 +13,7 @@ use std::{
 
 const ROOT_UUID: &str = "01c27223-3933-481e-9836-7bd0ef1be8c9";
 const MAX_ENTRIES: usize = 1_000_000;
-const FIXED_EXCLUSIONS: [(&str, &str); 3] = [
+const FIXED_EXCLUSIONS: [(&str, &str); 4] = [
     ("/home/alex/work", "retained-historical-work"),
     (
         "/var/lib/droidloom-qualification",
@@ -22,6 +22,10 @@ const FIXED_EXCLUSIONS: [(&str, &str); 3] = [
     (
         "/var/lib/droidloom/users/1000/data",
         "separate-exact-working-pair-transaction",
+    ),
+    (
+        "/etc/droidloom/production/selected.json",
+        "separate-exact-selected-configuration-transaction",
     ),
 ];
 const DYNAMIC: [(&str, &str); 5] = [
@@ -251,10 +255,11 @@ struct Exclusion {
     original_label: Option<Vec<u8>>,
     mount: Option<Mount>,
 }
-#[derive(Serialize)]
+#[derive(Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
 pub(super) struct Inventory {
-    pub(super) schema: &'static str,
-    pub(super) root_uuid: &'static str,
+    pub(super) schema: String,
+    pub(super) root_uuid: String,
     pub(super) root_identity: Identity,
     pub(super) root_handle: PersistentHandle,
     pub(super) actual_capabilities: Value,
@@ -264,7 +269,7 @@ pub(super) struct Inventory {
     exclusions: Vec<Exclusion>,
     mounts: Vec<Mount>,
 }
-fn matcher_type(mode: u32) -> Result<&'static str> {
+pub(super) fn matcher_type(mode: u32) -> Result<&'static str> {
     Ok(match FileType::from_raw_mode(mode) {
         FileType::RegularFile => "file",
         FileType::Directory => "dir",
@@ -376,7 +381,7 @@ impl RootScope {
         result.revalidate()?;
         Ok(result)
     }
-    fn revalidate(&self) -> Result<()> {
+    pub(super) fn revalidate(&self) -> Result<()> {
         self.custody.revalidate()?;
         let current = File::from(rustix::fs::open(
             "/",
@@ -432,8 +437,8 @@ impl RootScope {
 
         self.revalidate()?;
         Ok(Inventory {
-            schema: "droidloom.original-root-label-scope.v1",
-            root_uuid: ROOT_UUID,
+            schema: "droidloom.original-root-label-scope.v1".into(),
+            root_uuid: ROOT_UUID.into(),
             root_identity: self.root_identity.clone(),
             root_handle: self.root_handle.clone(),
             actual_capabilities: self.actual_capabilities.clone(),
@@ -445,12 +450,19 @@ impl RootScope {
         })
     }
     pub(super) fn verify_inventory(&self, inventory: &Inventory) -> Result<Value> {
+        self.verify_inventory_updates(inventory, &BTreeMap::new())
+    }
+    pub(super) fn verify_inventory_updates(
+        &self,
+        inventory: &Inventory,
+        actual_labels: &BTreeMap<PathBuf, Snapshot>,
+    ) -> Result<Value> {
         self.revalidate()?;
         let mut excluded_readback = Vec::new();
         for entry in &inventory.entries {
             let held = self.open_named(&entry.path)?;
             ensure(
-                snapshot(&held)? == entry.snapshot,
+                snapshot(&held)? == *actual_labels.get(&entry.path).unwrap_or(&entry.snapshot),
                 "original label plan inode changed after source context lookup",
             )?;
         }
@@ -478,6 +490,20 @@ impl RootScope {
             }
             let held = self.open_named(&excluded.path)?;
             let current = snapshot(&held)?;
+            if excluded.path == Path::new("/var/lib/droidloom/users/1000/data") {
+                if let Some(actual) = actual_labels.get(&excluded.path) {
+                    ensure(
+                        current == *actual
+                            && Some(&current.handle) == excluded.persistent_handle.as_ref()
+                            && super::only_ctime_changed(&excluded.identity, &current.identity),
+                        "separate working-pair label is not its exact actual derivation",
+                    )?;
+                    excluded_readback.push(serde_json::json!({"path":excluded.path,
+                        "before":excluded.identity,"after":current.identity,
+                        "persistent_handle":current.handle,"separate_working_pair_label":true}));
+                    continue;
+                }
+            }
             ensure(
                 Some(&current.handle) == excluded.persistent_handle.as_ref()
                     && (
@@ -504,7 +530,7 @@ impl RootScope {
             serde_json::json!({"excluded_inode_readback":excluded_readback,"complete_included_count":inventory.entries.len()}),
         )
     }
-    fn open_named(&self, path: &Path) -> Result<File> {
+    pub(super) fn open_named(&self, path: &Path) -> Result<File> {
         if path == Path::new("/") {
             return Ok(self.root.try_clone()?);
         }
@@ -518,6 +544,28 @@ impl RootScope {
                 | ResolveFlags::NO_MAGICLINKS
                 | ResolveFlags::NO_XDEV,
         )?))
+    }
+    pub(super) fn reopen_generation(&self, expected: &PersistentHandle) -> Result<File> {
+        self.revalidate()?;
+        expected.reopen(&self.root)
+    }
+    pub(super) fn accept_root_label(
+        &mut self,
+        step: &super::OriginalLabelDerivation,
+    ) -> Result<()> {
+        if step.path() != Path::new("/") {
+            return Ok(());
+        }
+        step.revalidate()?;
+        ensure(
+            step.core.before.handle == self.root_handle
+                && (self.root_identity == step.core.before.identity
+                    || self.root_identity == step.core.after.identity)
+                && fs::stat(&self.root)? == step.core.after.identity,
+            "root identity can only follow its actual own label transition",
+        )?;
+        self.root_identity = step.core.after.identity.clone();
+        self.revalidate()
     }
     fn walk(
         &self,
