@@ -20,8 +20,8 @@ mod plan;
 mod scope;
 #[path = "cold_original_label_service_state.rs"]
 mod service_state;
-pub(super) use journal::withdraw_labeled_selection;
-pub(crate) use journal::{OriginalLabelTransaction, OriginalLabelsApplied};
+pub(crate) use journal::{OriginalLabelTransaction, OriginalLabelsApplied, OriginalPairRestored};
+pub(super) use journal::{restore_retired_pair, withdraw_labeled_selection};
 pub(crate) use plan::{
     OriginalLabelRestoreSources, OriginalLabelSources,
     inspect_files as inspect_original_labels_files,

@@ -567,6 +567,24 @@ impl RootScope {
         self.root_identity = step.core.after.identity.clone();
         self.revalidate()
     }
+    pub(super) fn accept_root_restoration(
+        &mut self,
+        step: &super::OriginalLabelRestoration,
+    ) -> Result<()> {
+        if step.path() != Path::new("/") {
+            return Ok(());
+        }
+        step.revalidate()?;
+        ensure(
+            step.core.before.handle == self.root_handle
+                && (self.root_identity == step.core.before.identity
+                    || self.root_identity == step.core.after.identity)
+                && fs::stat(&self.root)? == step.core.after.identity,
+            "root restoration is not the exact held generation and actual label transition",
+        )?;
+        self.root_identity = step.core.after.identity.clone();
+        self.revalidate()
+    }
     fn walk(
         &self,
         file: &File,

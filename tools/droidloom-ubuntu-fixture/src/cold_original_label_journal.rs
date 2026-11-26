@@ -18,8 +18,12 @@ mod runtime;
 pub(super) use runtime::RuntimeRestoreAttempt;
 #[path = "cold_original_label_transaction.rs"]
 mod transaction;
-pub(in crate::cold_original_data) use transaction::withdraw_labeled_selection;
-pub(crate) use transaction::{OriginalLabelTransaction, OriginalLabelsApplied};
+pub(crate) use transaction::{
+    OriginalLabelTransaction, OriginalLabelsApplied, OriginalPairRestored,
+};
+pub(in crate::cold_original_data) use transaction::{
+    restore_retired_pair, withdraw_labeled_selection,
+};
 
 const LIMIT: u64 = 32 * 1024 * 1024;
 

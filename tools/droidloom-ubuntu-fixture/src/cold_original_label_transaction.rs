@@ -15,6 +15,10 @@ use std::{
 #[path = "cold_original_label_selection.rs"]
 mod selection;
 pub(in crate::cold_original_data) use selection::withdraw as withdraw_labeled_selection;
+#[path = "cold_original_label_pair_restore.rs"]
+mod pair_restore;
+pub(crate) use pair_restore::OriginalPairRestored;
+pub(in crate::cold_original_data) use pair_restore::restore_pair as restore_retired_pair;
 
 const SCHEMA: &str = "droidloom.original-label-transaction-plan.v1";
 #[derive(Clone, Copy, Debug, Deserialize, Serialize, PartialEq, Eq)]

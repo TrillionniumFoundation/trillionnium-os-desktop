@@ -5,9 +5,9 @@ use super::*;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
-struct DirectoryState {
-    snapshot: Snapshot,
-    members: BTreeMap<String, Identity>,
+pub(super) struct DirectoryState {
+    pub(super) snapshot: Snapshot,
+    pub(super) members: BTreeMap<String, Identity>,
 }
 #[derive(Clone, Copy, Debug, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
@@ -24,6 +24,7 @@ struct SelectionIntent {
     source_plan: FilePin,
     operation: Operation,
     parent: DirectoryState,
+    work: DirectoryState,
     candidate: Snapshot,
     original: Option<Snapshot>,
 }
@@ -33,10 +34,11 @@ struct SelectionResult {
     schema: String,
     intent: FilePin,
     parent: DirectoryState,
+    work: DirectoryState,
     candidate: Snapshot,
     original: Option<Snapshot>,
 }
-fn directory_state(held: &File) -> Result<DirectoryState> {
+pub(super) fn directory_state(held: &File) -> Result<DirectoryState> {
     let before = snapshot(held)?;
     ensure(
         FileType::from_raw_mode(before.identity.mode) == FileType::Directory,
@@ -154,57 +156,82 @@ fn verify_result(intent: &SelectionIntent, actual: &SelectionResult) -> Result<(
         "selected rename result schema differs",
     )?;
     metadata_after_rename(&intent.candidate, &actual.candidate)?;
-    let expected_before = match intent.operation {
-        Operation::Publish => intent.original.as_ref().map(|n| &n.identity),
-        Operation::Withdraw => Some(&intent.candidate.identity),
+    let (public_before, public_after, private_before, private_after) = match intent.operation {
+        Operation::Publish => (
+            intent.original.as_ref().map(|n| &n.identity),
+            Some(&actual.candidate.identity),
+            Some(&intent.candidate.identity),
+            actual.original.as_ref().map(|n| &n.identity),
+        ),
+        Operation::Withdraw => (
+            Some(&intent.candidate.identity),
+            actual.original.as_ref().map(|n| &n.identity),
+            intent.original.as_ref().map(|n| &n.identity),
+            Some(&actual.candidate.identity),
+        ),
     };
-    ensure(
-        intent.parent.members.get("selected.json") == expected_before,
-        "durable selected parent does not contain the recorded preimage inode",
-    )?;
     match (&intent.original, &actual.original) {
         (Some(before), Some(after)) => metadata_after_rename(before, after)?,
         (None, None) => {}
         _ => return Err("original selected inode was lost or invented".into()),
     }
-    let before = &intent.parent.snapshot;
-    let after = &actual.parent.snapshot;
-    ensure(
-        before.handle == after.handle
-            && before.attributes == after.attributes
-            && (
-                before.identity.dev,
-                before.identity.ino,
-                before.identity.mode,
-                before.identity.uid,
-                before.identity.gid,
-                before.identity.nlink,
-            ) == (
-                after.identity.dev,
-                after.identity.ino,
-                after.identity.mode,
-                after.identity.uid,
-                after.identity.gid,
-                after.identity.nlink,
-            ),
-        "selected rename changed parent generation, authority, links or xattrs",
+    verify_directory_delta(
+        &intent.parent,
+        &actual.parent,
+        "selected.json",
+        public_before,
+        public_after,
     )?;
-    let mut expected = intent.parent.members.clone();
-    match intent.operation {
-        Operation::Publish => {
-            expected.insert("selected.json".into(), actual.candidate.identity.clone());
-        }
-        Operation::Withdraw => {
-            if let Some(old) = &actual.original {
-                expected.insert("selected.json".into(), old.identity.clone());
-            } else {
-                expected.remove("selected.json");
-            }
-        }
+    verify_directory_delta(
+        &intent.work,
+        &actual.work,
+        data::PENDING,
+        private_before,
+        private_after,
+    )
+}
+fn verify_directory_delta(
+    before: &DirectoryState,
+    after: &DirectoryState,
+    name: &str,
+    old: Option<&Identity>,
+    new: Option<&Identity>,
+) -> Result<()> {
+    ensure(
+        before.members.get(name) == old,
+        "rename parent does not contain the recorded preimage inode",
+    )?;
+    let a = &before.snapshot;
+    let b = &after.snapshot;
+    ensure(
+        a.handle == b.handle
+            && a.attributes == b.attributes
+            && (
+                a.identity.dev,
+                a.identity.ino,
+                a.identity.mode,
+                a.identity.uid,
+                a.identity.gid,
+                a.identity.nlink,
+            ) == (
+                b.identity.dev,
+                b.identity.ino,
+                b.identity.mode,
+                b.identity.uid,
+                b.identity.gid,
+                b.identity.nlink,
+            ),
+        "rename parent changed generation, authority, links or xattrs",
+    )?;
+    let mut expected = before.members.clone();
+    if let Some(identity) = new {
+        expected.insert(name.to_owned(), identity.clone());
+    } else {
+        expected.remove(name);
     }
     ensure(
-        expected == actual.parent.members,
-        "selected rename changed another parent member",
+        expected == after.members,
+        "rename changed another parent member",
     )
 }
 
@@ -237,9 +264,11 @@ mod tests {
             .unwrap();
         let parent = tmp.path().join("public");
         std::fs::create_dir(&parent).unwrap();
+        let work = tmp.path().join("private");
+        std::fs::create_dir(&work).unwrap();
         std::fs::set_permissions(&parent, std::fs::Permissions::from_mode(0o700)).unwrap();
         let target = parent.join("selected.json");
-        let pending = tmp.path().join("pending");
+        let pending = work.join(data::PENDING);
         std::fs::write(&target, b"original selected bytes").unwrap();
         std::fs::write(&pending, b"candidate selected bytes").unwrap();
         std::fs::write(parent.join("unrelated"), b"preserved").unwrap();
@@ -253,6 +282,7 @@ mod tests {
             source_plan: source(),
             operation: Operation::Publish,
             parent: directory_state(&held).unwrap(),
+            work: directory_state(&open(&work)).unwrap(),
             candidate: snapshot(&candidate).unwrap(),
             original: Some(snapshot(&old).unwrap()),
         };
@@ -265,11 +295,12 @@ mod tests {
         )
         .unwrap();
         File::open(&parent).unwrap().sync_all().unwrap();
-        File::open(tmp.path()).unwrap().sync_all().unwrap();
+        File::open(&work).unwrap().sync_all().unwrap();
         let output = SelectionResult {
             schema: "droidloom.original-selection-label-result.v1".into(),
             intent: source(),
             parent: directory_state(&held).unwrap(),
+            work: directory_state(&open(&work)).unwrap(),
             candidate: snapshot(&candidate).unwrap(),
             original: Some(snapshot(&old).unwrap()),
         };
@@ -300,6 +331,7 @@ mod tests {
             source_plan: source(),
             operation: Operation::Withdraw,
             parent: before.clone(),
+            work: before.clone(),
             candidate: node.clone(),
             original: None,
         };
@@ -313,6 +345,7 @@ mod tests {
             schema: "droidloom.original-selection-label-result.v1".into(),
             intent: source(),
             parent: changed,
+            work: intent.work.clone(),
             candidate: node,
             original: None,
         };
@@ -338,31 +371,68 @@ fn finish(
     )?;
     let parent = directory_state(&data.transaction.locations.selected_parent)?;
     let (candidate, original) = actual_pair(scope, data, expected)?;
+    let work = directory_state(&data.transaction.locations.work)?;
     let output = SelectionResult {
         schema: "droidloom.original-selection-label-result.v1".into(),
         intent: pin.clone(),
         parent,
+        work,
         candidate,
         original,
     };
-    verify_result(intent, &output)?;
-    data.transaction.locations.selected_parent.sync_all()?;
-    data.transaction.locations.work.sync_all()?;
-    ensure(
-        directory_state(&data.transaction.locations.selected_parent)?.snapshot
-            == output.parent.snapshot,
-        "selected parent changed across its durability barrier",
-    )?;
-    let result = if records.exists("RESULT.json")? {
+    let (result, output) = if records.exists("RESULT.json")? {
         let (_, _, body) = records.read("RESULT.json")?;
-        let previous: Value = serde_json::from_slice(&body)?;
+        let previous: SelectionResult = serde_json::from_slice(&body)?;
         ensure(
-            previous == serde_json::to_value(&output)?,
-            "selected rename result differs from complete actual readback",
+            pin_equal(&previous.intent, pin),
+            "completed selection uses another rename intent",
         )?;
-        record_pin(records, "RESULT.json")?
+        verify_result(intent, &previous)?;
+        ensure(
+            serde_json::to_value(&previous.parent)? == serde_json::to_value(&output.parent)?
+                && previous.candidate == output.candidate
+                && previous.original == output.original,
+            "completed selection's actual public parent or two inodes changed",
+        )?;
+        // The once owner may subsequently append its own durable phases under
+        // work. Their authority is checked separately; the complete pre/post
+        // private-parent evidence here describes exactly the completed rename.
+        let a = &previous.work.snapshot;
+        let b = &output.work.snapshot;
+        ensure(
+            a.handle == b.handle
+                && a.attributes == b.attributes
+                && (
+                    a.identity.dev,
+                    a.identity.ino,
+                    a.identity.mode,
+                    a.identity.uid,
+                    a.identity.gid,
+                ) == (
+                    b.identity.dev,
+                    b.identity.ino,
+                    b.identity.mode,
+                    b.identity.uid,
+                    b.identity.gid,
+                )
+                && previous.work.members.get(data::PENDING)
+                    == output.work.members.get(data::PENDING),
+            "completed selection lost private-parent custody or its exact pending inode",
+        )?;
+        (record_pin(records, "RESULT.json")?, previous)
     } else {
-        records.publish("RESULT.json", &output)?
+        verify_result(intent, &output)?;
+        data.transaction.locations.selected_parent.sync_all()?;
+        data.transaction.locations.work.sync_all()?;
+        ensure(
+            serde_json::to_value(directory_state(
+                &data.transaction.locations.selected_parent,
+            )?)? == serde_json::to_value(&output.parent)?
+                && serde_json::to_value(directory_state(&data.transaction.locations.work)?)?
+                    == serde_json::to_value(&output.work)?,
+            "selection parents changed across their durability barriers",
+        )?;
+        (records.publish("RESULT.json", &output)?, output)
     };
     authority.verify_label_plan(&intent.source_plan)?;
     data.binding(authority)?;
@@ -414,6 +484,7 @@ pub(super) fn publish(
                 source_plan: applied.source_plan().clone(),
                 operation: Operation::Publish,
                 parent,
+                work: directory_state(&data.transaction.locations.work)?,
                 candidate,
                 original,
             },
@@ -426,6 +497,8 @@ pub(super) fn publish(
         ensure(
             directory_state(&data.transaction.locations.selected_parent)?.snapshot
                 == intent.parent.snapshot
+                && serde_json::to_value(directory_state(&data.transaction.locations.work)?)?
+                    == serde_json::to_value(&intent.work)?
                 && candidate == intent.candidate
                 && original == intent.original,
             "selected publication preimage changed before its actual rename",
@@ -497,6 +570,7 @@ pub(in crate::cold_original_data) fn withdraw(
                 source_plan: forward_intent.source_plan.clone(),
                 operation: Operation::Withdraw,
                 parent: published.parent,
+                work: directory_state(&data.transaction.locations.work)?,
                 candidate: published.candidate,
                 original: published.original,
             },
@@ -509,7 +583,9 @@ pub(in crate::cold_original_data) fn withdraw(
             candidate == intent.candidate
                 && original == intent.original
                 && directory_state(&data.transaction.locations.selected_parent)?.snapshot
-                    == intent.parent.snapshot,
+                    == intent.parent.snapshot
+                && serde_json::to_value(directory_state(&data.transaction.locations.work)?)?
+                    == serde_json::to_value(&intent.work)?,
             "selected withdrawal changed after its durable actual preimage",
         )?;
         authority.verify_data_step(OriginalDataStep::WithdrawSelection)?;
@@ -555,4 +631,40 @@ pub(super) fn published_evolution(
     )?;
     authority.verify_current_owner()?;
     Ok((result.parent.snapshot, result.candidate))
+}
+
+pub(super) fn withdrawn_evolution(
+    retirement: &crate::cold_original_qualification::OriginalRetirement,
+    data: &OriginalDataTransaction,
+) -> Result<BTreeMap<PathBuf, (Snapshot, FilePin)>> {
+    let authority = retirement.authority();
+    retirement.revalidate()?;
+    data.binding(authority)?;
+    ensure(
+        data.transaction.observe(true)?.1 == data::SelectionState::Original,
+        "label restoration requires the actual original selection",
+    )?;
+    let path = authority.work().join("labels/selected-withdraw");
+    match std::fs::symlink_metadata(&path) {
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(BTreeMap::new()),
+        Err(e) => return Err(e.into()),
+        Ok(_) => {}
+    }
+    let records = Records::open(&path)?;
+    let (intent_pin, intent) = load(&records, authority, data, Operation::Withdraw)?;
+    let pin = record_pin(&records, "RESULT.json")?;
+    let (_, _, bytes) = records.read("RESULT.json")?;
+    let result: SelectionResult = serde_json::from_slice(&bytes)?;
+    ensure(
+        pin_equal(&result.intent, &intent_pin),
+        "withdrawn selection lacks its actual durable intent",
+    )?;
+    verify_result(&intent, &result)?;
+    Ok(BTreeMap::from([
+        (
+            PathBuf::from("/etc/droidloom/production"),
+            (result.parent.snapshot, pin.clone()),
+        ),
+        (PathBuf::from(data::SELECTED), (result.candidate, pin)),
+    ]))
 }

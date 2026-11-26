@@ -1227,6 +1227,12 @@ impl OriginalDataTransaction {
         self.fence(authority, OriginalDataStep::RetireWorking)?;
         Ok(result)
     }
+    pub(super) fn restore_pair(
+        &self,
+        retirement: &crate::cold_original_qualification::OriginalRetirement,
+    ) -> Result<labels::OriginalPairRestored> {
+        labels::restore_retired_pair(retirement, self)
+    }
 
     fn binding(
         &self,
