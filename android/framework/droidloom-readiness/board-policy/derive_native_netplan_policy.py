@@ -13,6 +13,7 @@ import stat
 from derive_native_uevent_policy import ContextPolicy, Membership, LEVELS
 from derive_native_console_policy import contract as console_contract
 from derive_native_sysusers_policy import ALIASES as SYSUSERS_ALIASES
+from derive_native_logind_state_policy import ALIASES as LOGIND_ALIASES
 from derive_preserved_alias_policy import (
     _roles, _context, _preserved_xperm_rules,
     derive_preserved_aliases, verify_preserved_aliases)
@@ -546,7 +547,7 @@ def verify(library, binary, exported, here, expected, export):
     }
     # These are explicit, source-owned alias sets, never a discovered directory
     # or an automatic permit for a previously unknown type.
-    for row in console_contract(here)["aliases"] + SYSUSERS_ALIASES:
+    for row in console_contract(here)["aliases"] + SYSUSERS_ALIASES + LOGIND_ALIASES:
         table = file_access if row["class"] == "file" else directories if row["class"] == "dir" else {}
         if row["source"] in table:
             table.setdefault(row["target"], set()).update(table[row["source"]])

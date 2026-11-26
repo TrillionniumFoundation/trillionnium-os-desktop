@@ -1,0 +1,111 @@
+{
+  "schema": "droidloom.native-logind-state-source.v1",
+  "package": "systemd:amd64",
+  "version": "259.9-0ubuntu0.1+p4gentmp2",
+  "aliases": [
+    {
+      "source": "p4_linux_rootdir_t",
+      "target": "p4_linux_systemd_state_parent_t",
+      "class": "dir"
+    }
+  ],
+  "source_documents": [
+    {
+      "path": "src/core/executor.c",
+      "bytes": 11487,
+      "sha256": "3cc97598a5d6bc2f0c78f971c5b9a5151ba47ace976ca01395a47453f99abafb",
+      "admission": "normal-dsc-roundtrip"
+    },
+    {
+      "path": "src/core/exec-invoke.c",
+      "bytes": 276788,
+      "sha256": "24eda88ee0914d0c43d30ebfb13f0f3aadd00391b5820fb6d6509278f0925dfe",
+      "admission": "normal-dsc-roundtrip"
+    },
+    {
+      "path": "src/core/execute.c",
+      "bytes": 111938,
+      "sha256": "3fdc25491919ccbe96812a8d56d20e34bbf367a29555b304b5fa0b06838c8a26",
+      "admission": "normal-dsc-roundtrip"
+    },
+    {
+      "path": "src/basic/mkdir.c",
+      "bytes": 9880,
+      "sha256": "88a9ce00bc2c05c0c5d329653c29846622356efcbc207639a5877b323d102756",
+      "admission": "normal-dsc-roundtrip"
+    },
+    {
+      "path": "src/shared/mkdir-label.c",
+      "bytes": 1389,
+      "sha256": "cb5470df867959d3668f22c41ef2d6a514e996f6c2348b8eee3f1c07800d6e5a",
+      "admission": "normal-dsc-roundtrip"
+    },
+    {
+      "path": "src/shared/selinux-util.c",
+      "bytes": 25770,
+      "sha256": "241a1cdb353d954a1a771e4b33709860a2df729bb7512130b5fb985fe1105df7",
+      "admission": "normal-dsc-roundtrip"
+    },
+    {
+      "path": "src/basic/fs-util.c",
+      "bytes": 52249,
+      "sha256": "de38f495f3be7fc9e80051487bac1242c71f2f38cffa4fba2d8f11380d3794d4",
+      "admission": "normal-dsc-roundtrip"
+    }
+  ],
+  "normal_files": [
+    {
+      "path": "/usr/lib/systemd/systemd-executor",
+      "bytes": 154176,
+      "sha256": "afdc9afa0073871b5b303c7eae2857da727abec5d9cfa5bcb63df96ac53da12f",
+      "mode": 493,
+      "type": "p4_linux_systemd_executor_t",
+      "uid": 0,
+      "gid": 0,
+      "nlink": 1
+    },
+    {
+      "path": "/usr/lib/systemd/systemd-logind",
+      "bytes": 338512,
+      "sha256": "37761fa22f4afd30d13bcfa90df3917681180f5c63d8fa534d493f716208aa6d",
+      "mode": 493,
+      "type": "p4_linux_logind_exec_t",
+      "uid": 0,
+      "gid": 0,
+      "nlink": 1
+    },
+    {
+      "path": "/usr/lib/systemd/system/systemd-logind.service",
+      "bytes": 2088,
+      "sha256": "37563c6df1a510141bfd0777c20dfcc1c17087cdb56d3f71971a57d3cd380e64",
+      "mode": 420,
+      "type": "p4_linux_unit_file_t",
+      "uid": 0,
+      "gid": 0,
+      "nlink": 1
+    }
+  ],
+  "parent": {
+    "path": "/var/lib/systemd",
+    "class": "dir",
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "source_type": "p4_linux_rootdir_t",
+    "target_type": "p4_linux_systemd_state_parent_t"
+  },
+  "state_directory": {
+    "unit": "systemd-logind.service",
+    "setting": "StateDirectory=systemd/linger",
+    "path": "/var/lib/systemd/linger",
+    "type": "p4_linux_logind_state_t",
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "creator": "p4_linux_service_executor_t",
+    "operation": "mkdir_label",
+    "normal_mode_and_ownership": "unchanged",
+    "fallback_transition": false
+  },
+  "runtime_qualified": false
+}

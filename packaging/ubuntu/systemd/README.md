@@ -205,8 +205,9 @@ inaccessible to this role.
 The two unit ExecStartPost udevadm commands are separately started by PID 1
 and continue to use the udev execution role.
 
-The normal producer derives Netplan aliases after remount, derives sysusers
-aliases last, then verifies every component against the final linked binary.
+The normal producer derives the logind state parent after remount, then
+Netplan aliases and finally sysusers aliases. Every component is checked
+against the final linked binary.
 All original actor vectors, transitions and extended ioctl masks are
 preserved. The explicit Netplan matrix covers file, directory, device,
 filesystem, capability and socket classes. Read-only fixture admission reports
@@ -273,3 +274,37 @@ private YAML, exact NSS file and public account files, and can perform
 normal chown(root,root)/fchmod on its own typed outputs. It gains no account
 database mutation, capability, child execution, interface operation or
 socket creation. Both static reports retain runtime_qualified=false.
+
+
+### Normal logind StateDirectory creation
+
+The normal gentmp2 executor creates `StateDirectory=systemd/linger` before
+executing the unchanged logind ELF. The completed R11 image has the existing
+root-owned 0755 `/var/lib/systemd` directory but no `linger` child; logind's
+executor reports `STATE_DIRECTORY` permission denied. Its normal source calls
+`mkdir_parents_label`, then `mkdir_label`. The latter uses the selected
+file-context database and `setfscreatecon_raw`, so the existing logind-state
+type and its directory create/setattr/filesystem-association permissions are
+the correct child contract. A missing or changed label input is not replaced
+by a new fallback transition.
+
+The exact directory `/var/lib/systemd` receives a narrower parent alias.
+Only the normal service executor gains `write` and `add_name` there; its
+existing getattr/search/mounton permissions remain. It gains no generic root
+directory mutation, parent removal, rename, child-file body access or extra
+SELinux query capability. The unit, binary, normal mode/ownership handling,
+and the existing `linger` context pattern remain unchanged. This change does
+not precreate a host directory or run logind during source verification.
+
+`native-logind-state-source.json` binds the normal package files and exact
+normal source call chain. The source-owned derivation preserves every other
+actor's full parent vector, transitions, constraints and ioctl masks. The
+executor is checked separately at raw TE, across every concrete file and
+directory object, and for every sampled source/target MLS pair. Original
+complete constraints and the hardware relabel predicate remain unchanged;
+the added startup writes are usable only at the normal s0 context. Exact
+class-aware matching checks the selected parent, neighboring paths, child
+label, executable and unit. Remount, Netplan and original-return verification
+retain their original read-only directory vectors for the alias. These
+static checks do not qualify logind runtime; the next enforcing normal boot
+must provide that result.

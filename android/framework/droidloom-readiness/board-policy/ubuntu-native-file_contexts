@@ -76,6 +76,7 @@
 /run/NetworkManager(/.*)? u:object_r:p4_linux_network_manager_run_t:s0
 /run/wpa_supplicant(/.*)? u:object_r:p4_linux_wpa_run_t:s0
 /run/systemd/resolve(/.*)? u:object_r:p4_linux_resolved_run_t:s0
+/var/lib/systemd -d u:object_r:p4_linux_systemd_state_parent_t:s0
 /var/lib/systemd/linger(/.*)? u:object_r:p4_linux_logind_state_t:s0
 /run/systemd/(sessions|seats|users|inhibit|shutdown)(/.*)? u:object_r:p4_linux_logind_run_t:s0
 /var/lib/AccountsService(/.*)? u:object_r:p4_linux_accounts_state_t:s0

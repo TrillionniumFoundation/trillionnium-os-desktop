@@ -14,6 +14,7 @@ from derive_native_uevent_policy import (derive_android as derive_uevent_android
     derive_native as derive_uevent_native, verify as verify_uevent)
 from derive_native_console_policy import derive as derive_console, verify as verify_console
 from derive_native_remount_policy import derive as derive_remount, verify as verify_remount
+from derive_native_logind_state_policy import derive as derive_logind_state, verify as verify_logind_state
 from derive_native_netplan_policy import derive as derive_netplan, verify as verify_netplan
 from derive_native_sysusers_policy import derive as derive_sysusers, verify as verify_sysusers
 from verify_native_user_cgroups import verify as verify_user_cgroups, source_inputs as user_cgroup_source_inputs
@@ -1618,7 +1619,8 @@ def main():
         "ubuntu-native-journal-storage.cil",
         "ubuntu-core-cgroup-ownership.cil", "ubuntu-native-user-cgroups.cil", "ubuntu-native-services.cil",
         "ubuntu-native-service-capabilities.cil", "ubuntu-native-console.cil",
-        "ubuntu-native-login-audit.cil", "ubuntu-native-remount.cil", "ubuntu-native-netplan.cil", "ubuntu-native-sysusers.cil",
+        "ubuntu-native-login-audit.cil", "ubuntu-native-remount.cil", "ubuntu-native-logind-state.cil",
+        "ubuntu-native-netplan.cil", "ubuntu-native-sysusers.cil",
         "ubuntu-native-service-runtime.cil", "ubuntu-native-sandbox.cil",
         "ubuntu-native-maintenance.cil", "ubuntu-original-once.cil",
         "frontend-android-interface.cil", "native-camera-interface.cil", "linux-frontend-observer.cil", "instance-launcher.cil",
@@ -1644,6 +1646,7 @@ def main():
                here / "derive_native_console_policy.py", here / "native-console-setup.json",
                here / "derive_preserved_alias_policy.py",
                here / "derive_native_remount_policy.py", here / "native-remount-source.json",
+               here / "derive_native_logind_state_policy.py", here / "native-logind-state-source.json",
                here / "derive_native_netplan_policy.py", here / "native-netplan-source.json",
                here / "native-netplan-private-source.json",
                here / "derive_native_sysusers_policy.py", here / "native-sysusers-source.json",
@@ -1695,19 +1698,27 @@ def main():
         compile_policy(compiler, [*args.android_cil, board, *components, shared,
                                  uevent_android, uevent_native, console_aliases, remount_aliases],
                        linked, contexts, environment)
+        logind_aliases = work / "native-logind-state-aliases.cil"
+        logind_contract = derive_logind_state(library, linked, work / "logind-state-before.cil",
+                                              here, logind_aliases, export_binary_policy)
+        compile_policy(compiler, [*args.android_cil, board, *components, shared,
+                                 uevent_android, uevent_native, console_aliases, remount_aliases,
+                                 logind_aliases], linked, contexts, environment)
         netplan_aliases = work / "native-netplan-aliases.cil"
         netplan_contract = derive_netplan(library, linked, work / "netplan-before.cil",
                                           here, netplan_aliases, export_binary_policy)
         compile_policy(compiler, [*args.android_cil, board, *components, shared,
                                  uevent_android, uevent_native, console_aliases, remount_aliases,
-                                 netplan_aliases], linked, contexts, environment)
+                                 logind_aliases, netplan_aliases], linked, contexts, environment)
         sysusers_aliases = work / "native-sysusers-aliases.cil"
         sysusers_contract = derive_sysusers(library, linked, work / "sysusers-before.cil",
                                            here, sysusers_aliases, export_binary_policy)
         compile_policy(compiler, [*args.android_cil, board, *components, shared,
                                  uevent_android, uevent_native, console_aliases, remount_aliases,
-                                 netplan_aliases, sysusers_aliases], linked, contexts, environment)
+                                 logind_aliases, netplan_aliases, sysusers_aliases], linked, contexts, environment)
         host_control = verify_host_control(library, linked, work / "host-control-binary.cil", contract)
+        logind_access = verify_logind_state(library, linked, work / "logind-state-after.cil",
+                                            here, logind_contract, export_binary_policy)
         netplan_access = verify_netplan(library, linked, work / "netplan-after.cil",
                                        here, netplan_contract, export_binary_policy)
         sysusers_access = verify_sysusers(library, linked, work / "sysusers-after.cil",
@@ -1734,6 +1745,7 @@ def main():
             "native_uevent": uevent_access,
             "native_console": console_access,
             "native_remount": remount_access,
+            "native_logind_state": logind_access,
             "native_sysusers_lock": sysusers_access,
             "native_netplan": netplan_access,
             "native_user_cgroups": user_cgroups,

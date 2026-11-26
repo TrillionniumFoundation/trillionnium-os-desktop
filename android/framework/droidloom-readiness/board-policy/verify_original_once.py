@@ -133,6 +133,7 @@ def verify_original_once(library, binary, export, export_binary_policy, here):
     exact(own, obj("p4_linux_mac_release_input_t"), "file", FILE, "getattr open read".split())
     for target in ("droidloom_package_config_dir", "droidloom_package_selection_dir"):
         exact(own, obj(target), "dir", DIRECTORY, ["getattr", "search"])
+    exact(own, obj("p4_linux_systemd_state_parent_t"), "dir", DIRECTORY, ["getattr", "search"])
     exact(own, obj(WITNESS), "file", FILE, "getattr open read".split())
     exact("u:r:kernel:s0", obj(WITNESS), "file", FILE, "create getattr open read write setattr".split())
     exact(own, obj(EVIDENCE), "file", FILE, "getattr open read write create setattr lock".split())
