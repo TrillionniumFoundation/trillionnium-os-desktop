@@ -7,6 +7,8 @@
 //! introducing a permissive production callback or mock authority.
 #[path = "cold_original_once_cell.rs"]
 mod cell;
+#[path = "cold_original_once_labels.rs"]
+mod labels;
 #[path = "cold_original_once_owner.rs"]
 mod owner;
 #[path = "cold_original_once_state.rs"]
@@ -76,6 +78,7 @@ pub(super) struct OriginalQualificationAuthority {
     cold_clone: SealedInput,
     retirement: RefCell<RetirementSource>,
     journal: RefCell<Journal>,
+    label_plan: RefCell<Option<labels::LabelPlanBinding>>,
 }
 
 fn same_pin(a: &FilePin, b: &FilePin) -> bool {
@@ -142,6 +145,44 @@ impl OriginalQualificationAuthority {
             ) => Ok(()),
             _ => Err("data adapter lacks the phase's actual immutable intent".into()),
         }
+    }
+
+    pub(super) fn accept_label_derivation(
+        &self,
+        derivation: &cold_original_data::labels::OriginalLabelDerivation,
+    ) -> Result<()> {
+        self.journal.borrow().revalidate()?;
+        ensure(
+            self.journal.borrow().phase() == Some(Phase::LabelsIntent),
+            "label derivation is outside the durable label intent",
+        )?;
+        self.intent.revalidate()?;
+        for input in &self.admitted_inputs {
+            input.revalidate()?;
+        }
+        derivation.revalidate()?;
+        ensure(
+            derivation.candidate_id() == self.candidate_id,
+            "opaque label derivation belongs to another candidate",
+        )?;
+        if self.label_plan.borrow().is_none() {
+            let binding = labels::LabelPlanBinding::open(self, derivation.source_plan())?;
+            *self.label_plan.borrow_mut() = Some(binding);
+        }
+        {
+            let binding = self.label_plan.borrow();
+            binding
+                .as_ref()
+                .ok_or("source label plan is not bound")?
+                .verify_pin(derivation.source_plan())?;
+        }
+        self.owner.borrow_mut().accept_lock_label(
+            derivation.path(),
+            derivation.before_identity(),
+            derivation.after_identity(),
+        )?;
+        self.verify_current_owner()?;
+        derivation.revalidate()
     }
 
     pub(super) fn verify_current_owner(&self) -> Result<()> {
@@ -231,6 +272,9 @@ impl OriginalQualificationAuthority {
                 )?;
                 intent.revalidate()?;
             }
+        }
+        if let Some(plan) = &*self.label_plan.borrow() {
+            plan.revalidate()?;
         }
         self.owner.borrow().revalidate()?;
         self.intent.revalidate()?;

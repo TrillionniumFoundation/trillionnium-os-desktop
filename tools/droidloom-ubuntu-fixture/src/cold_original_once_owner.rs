@@ -46,6 +46,11 @@ fn uuid(value: &str) -> bool {
         })
 }
 
+fn complete_hash(mut file: &File) -> Result<String> {
+    file.rewind()?;
+    fs::hash(file)
+}
+
 fn same_directory(a: &Identity, b: &Identity) -> bool {
     (a.dev, a.ino, a.mode, a.uid, a.gid) == (b.dev, b.ino, b.mode, b.uid, b.gid)
 }
@@ -61,6 +66,24 @@ struct OriginalObservation {
     boot: Identity,
     root_mount_id: u64,
     root_device: String,
+    control_group: String,
+    invocation_id: String,
+    capabilities: BTreeMap<String, u64>,
+}
+
+fn same_observation(a: &OriginalObservation, b: &OriginalObservation) -> bool {
+    a.boot_id == b.boot_id
+        && a.kernel == b.kernel
+        && a.pid == b.pid
+        && a.starttime == b.starttime
+        && a.namespaces == b.namespaces
+        && a.root_mount_id == b.root_mount_id
+        && a.root_device == b.root_device
+        && a.control_group == b.control_group
+        && a.invocation_id == b.invocation_id
+        && a.capabilities == b.capabilities
+        && same_directory(&a.root, &b.root)
+        && same_directory(&a.boot, &b.boot)
 }
 
 fn starttime(stat: &str) -> Result<(char, u64)> {
@@ -71,6 +94,76 @@ fn starttime(stat: &str) -> Result<(char, u64)> {
     Ok((state, fields[19].parse()?))
 }
 
+fn owner_capabilities(status: &str) -> Result<BTreeMap<String, u64>> {
+    let mut values = BTreeMap::new();
+    for line in status.lines() {
+        let Some((key, text)) = line.split_once(':') else {
+            continue;
+        };
+        if ![
+            "CapEff",
+            "CapPrm",
+            "CapBnd",
+            "CapInh",
+            "CapAmb",
+            "NoNewPrivs",
+        ]
+        .contains(&key)
+        {
+            continue;
+        }
+        let text = text.trim();
+        let value = if key == "NoNewPrivs" {
+            ensure(matches!(text, "0" | "1"), "invalid owner no-new-privileges")?;
+            text.parse()?
+        } else {
+            ensure(
+                text.len() == 16 && text.bytes().all(|b| b.is_ascii_hexdigit()),
+                "invalid original owner capability observation",
+            )?;
+            u64::from_str_radix(text, 16)?
+        };
+        ensure(
+            values.insert(key.into(), value).is_none(),
+            "duplicate owner credential observation",
+        )?;
+    }
+    ensure(values.len() == 6, "incomplete original owner capabilities")?;
+    // These are required by the actual original-root metadata and generation-
+    // handle operations. They are observed existing capabilities, never raised.
+    const REQUIRED: u64 = (1 << 2) | (1 << 21) | (1 << 33);
+    ensure(
+        ["CapEff", "CapPrm", "CapBnd"]
+            .iter()
+            .all(|key| values[*key] & REQUIRED == REQUIRED)
+            && values["CapInh"] == 0
+            && values["CapAmb"] == 0
+            && values["NoNewPrivs"] == 0,
+        "original owner lacks its existing metadata capabilities or has inherited credentials",
+    )?;
+    Ok(values)
+}
+
+fn original_owner_unit(cgroup: &str, invocation: &str) -> Result<String> {
+    let path = cgroup
+        .strip_prefix("0::")
+        .and_then(|s| s.strip_suffix('\n'))
+        .ok_or("original owner is not in one cgroup-v2 unit")?;
+    let candidate = path
+        .strip_prefix("/system.slice/droidloom-original-qualification@")
+        .and_then(|s| s.strip_suffix(".service"))
+        .ok_or("original qualification is not owned by its independent system unit")?;
+    ensure(
+        fs::valid_digest(candidate)
+            && invocation.len() == 32
+            && invocation
+                .bytes()
+                .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b)),
+        "original owner unit identity differs",
+    )?;
+    Ok(path.into())
+}
+
 fn original_observation() -> Result<OriginalObservation> {
     ensure(
         rustix::process::getuid().as_raw() == 0
@@ -78,6 +171,12 @@ fn original_observation() -> Result<OriginalObservation> {
             && rustix::process::getgid().as_raw() == 0
             && rustix::process::getegid().as_raw() == 0,
         "original qualification requires actual original root credentials",
+    )?;
+    let capabilities = owner_capabilities(&bounded(Path::new("/proc/self/status"), 64 * 1024)?)?;
+    let invocation_id = std::env::var("INVOCATION_ID")?;
+    let control_group = original_owner_unit(
+        &bounded(Path::new("/proc/self/cgroup"), 4096)?,
+        &invocation_id,
     )?;
     let pid = std::process::id();
     ensure(pid > 1, "original qualification owner cannot be PID1")?;
@@ -210,6 +309,9 @@ fn original_observation() -> Result<OriginalObservation> {
         boot,
         root_mount_id,
         root_device,
+        control_group,
+        invocation_id,
+        capabilities,
     })
 }
 
@@ -220,6 +322,7 @@ struct ExistingLock {
     name: String,
     held: File,
     identity: Identity,
+    sha256: String,
     path: PathBuf,
 }
 
@@ -249,16 +352,23 @@ impl ExistingLock {
                 && identity.uid == owner
                 && identity.gid == rustix::process::getegid().as_raw()
                 && identity.nlink == 1
+                && identity.size <= 1024 * 1024
                 && identity.mode & 0o7022 == 0,
             "existing lock is not a protected ordinary inode",
         )?;
         rustix::fs::flock(&held, FlockOperation::NonBlockingLockExclusive)?;
+        let sha256 = complete_hash(&held)?;
+        ensure(
+            fs::stat(&held)? == identity,
+            "fixed lock changed while pinning complete contents",
+        )?;
         let result = Self {
             parent,
             parent_identity,
             name,
             held,
             identity,
+            sha256,
             path: path.to_owned(),
         };
         result.revalidate()?;
@@ -286,7 +396,38 @@ impl ExistingLock {
         // This is the same private open file description; there is no exposed
         // descriptor or unlock API. Reassert the kernel lock at every fence.
         rustix::fs::flock(&self.held, FlockOperation::NonBlockingLockExclusive)?;
+        ensure(
+            complete_hash(&self.held)? == self.sha256 && fs::stat(&self.held)? == self.identity,
+            "fixed lock contents changed",
+        )?;
         Ok(())
+    }
+
+    fn accept_label_identity(&mut self, before: &Identity, after: &Identity) -> Result<()> {
+        let mut comparable = after.clone();
+        comparable.ctime_sec = before.ctime_sec;
+        comparable.ctime_nsec = before.ctime_nsec;
+        ensure(
+            self.identity == *before && comparable == *before,
+            "lock label derivation changes more than the observed ctime",
+        )?;
+        let (parent, leaf) = fs::absolute_parent(&fs::absolute_string(&self.path)?)?;
+        ensure(
+            leaf == self.name
+                && same_directory(&fs::stat(&parent)?, &self.parent_identity)
+                && same_directory(&fs::stat(&self.parent)?, &self.parent_identity)
+                && fs::stat(&self.held)? == *after
+                && fs::identity(&rustix::fs::statat(
+                    &parent,
+                    leaf.as_str(),
+                    AtFlags::SYMLINK_NOFOLLOW,
+                )?) == *after
+                && complete_hash(&self.held)? == self.sha256,
+            "labelled fixed lock was replaced or its contents changed",
+        )?;
+        rustix::fs::flock(&self.held, FlockOperation::NonBlockingLockExclusive)?;
+        self.identity = after.clone();
+        self.revalidate()
     }
 }
 
@@ -296,15 +437,20 @@ pub(super) struct OriginalOwner {
 }
 
 impl OriginalOwner {
-    pub(super) fn acquire(expected_boot_id: &str) -> Result<Self> {
+    pub(super) fn acquire(expected_boot_id: &str, candidate_id: &str) -> Result<Self> {
         ensure(
             uuid(expected_boot_id),
             "expected original boot ID is invalid",
         )?;
         let before = original_observation()?;
         ensure(
-            before.boot_id == expected_boot_id,
-            "original boot changed before qualification",
+            before.boot_id == expected_boot_id
+                && fs::valid_digest(candidate_id)
+                && before.control_group
+                    == format!(
+                        "/system.slice/droidloom-original-qualification@{candidate_id}.service"
+                    ),
+            "original boot or independently owned qualification unit differs",
         )?;
         let locks = LOCK_PATHS
             .iter()
@@ -324,18 +470,42 @@ impl OriginalOwner {
         }
         let current = original_observation()?;
         ensure(
-            current.boot_id == self.observation.boot_id
-                && current.kernel == self.observation.kernel
-                && current.pid == self.observation.pid
-                && current.starttime == self.observation.starttime
-                && current.namespaces == self.observation.namespaces
-                && current.root_mount_id == self.observation.root_mount_id
-                && current.root_device == self.observation.root_device
-                && same_directory(&current.root, &self.observation.root)
-                && same_directory(&current.boot, &self.observation.boot),
+            same_observation(&current, &self.observation),
             "original qualification owner changed",
         )?;
         Ok(())
+    }
+
+    // Only the parent qualification module can reach this identity helper.
+    // It first revalidates the opaque actual SELinux/xattr/generation derivation.
+    pub(super) fn accept_lock_label(
+        &mut self,
+        path: &Path,
+        before: &Identity,
+        after: &Identity,
+    ) -> Result<bool> {
+        let index = self.locks.iter().position(|l| l.path == path);
+        let Some(index) = index else {
+            self.revalidate()?;
+            return Ok(false);
+        };
+        ensure(
+            index != 0,
+            "the excluded VM-controller lock is never relabelled",
+        )?;
+        for (i, lock) in self.locks.iter().enumerate() {
+            if i != index {
+                lock.revalidate()?;
+            }
+        }
+        let current = original_observation()?;
+        ensure(
+            same_observation(&current, &self.observation),
+            "original label owner observation changed",
+        )?;
+        self.locks[index].accept_label_identity(before, after)?;
+        self.revalidate()?;
+        Ok(true)
     }
 
     pub(super) fn boot_id(&self) -> &str {
@@ -448,6 +618,30 @@ mod tests {
     }
 
     #[test]
+    fn lock_rebind_retains_original_flock_contents_and_every_nonctime_field() -> Result<()> {
+        let tmp = tempfile::tempdir()?;
+        let path = tmp.path().join("setup.lock");
+        files::write_new(&path, b"original-lock", 0o644)?;
+        let mut lock = ExistingLock::acquire(&path, rustix::process::geteuid().as_raw())?;
+        let before = fs::stat(&lock.held)?;
+        rustix::fs::fsetxattr(
+            &lock.held,
+            "user.original-once-test",
+            b"label-test",
+            rustix::fs::XattrFlags::CREATE,
+        )?;
+        let after = fs::stat(&lock.held)?;
+        assert!(lock.revalidate().is_err());
+        lock.accept_label_identity(&before, &after)?;
+        assert!(ExistingLock::acquire(&path, rustix::process::geteuid().as_raw()).is_err());
+        assert_eq!(std::fs::read(&path)?, b"original-lock");
+        std::fs::write(&path, b"unrelated-new-contents")?;
+        let changed = fs::stat(&lock.held)?;
+        assert!(lock.accept_label_identity(&after, &changed).is_err());
+        Ok(())
+    }
+
+    #[test]
     fn immutable_intent_rejects_same_bytes_on_a_replaced_inode_and_in_place_write() -> Result<()> {
         let tmp = tempfile::tempdir()?;
         let path = tmp.path().join("INTENT.json");
@@ -463,6 +657,37 @@ mod tests {
         std::fs::write(&path, b"{\"fixed\":null}\n")?;
         std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o400))?;
         assert!(newer.revalidate().is_err());
+        Ok(())
+    }
+
+    #[test]
+    fn original_owner_requires_its_own_system_unit_and_observed_metadata_capabilities() -> Result<()>
+    {
+        let cg = format!(
+            "0::/system.slice/droidloom-original-qualification@{}.service\n",
+            "a".repeat(64)
+        );
+        assert!(original_owner_unit(&cg, &"b".repeat(32)).is_ok());
+        for other in [
+            cg.replace("/system.slice/", "/user.slice/"),
+            cg.replace("droidloom-original-qualification@", "hepta-runtime@"),
+            cg.clone() + "1:name=systemd:/\n",
+            cg.replace(&"a".repeat(64), "short"),
+        ] {
+            assert!(original_owner_unit(&other, &"b".repeat(32)).is_err());
+        }
+        assert!(original_owner_unit(&cg, "").is_err());
+        let status = "CapEff:\t000001ffffffffff\nCapPrm:\t000001ffffffffff\nCapBnd:\t000001ffffffffff\nCapInh:\t0000000000000000\nCapAmb:\t0000000000000000\nNoNewPrivs:\t0\n";
+        assert_eq!(owner_capabilities(status)?["CapEff"], 0x1ffffffffff);
+        for changed in [
+            status.replace("CapEff:\t000001ffffffffff", "CapEff:\t000001ffffdffffb"),
+            status.replace("CapInh:\t0000000000000000", "CapInh:\t0000000800000000"),
+            status.replace("NoNewPrivs:\t0", "NoNewPrivs:\t1"),
+            status.to_owned() + "CapEff:\t000001ffffffffff\n",
+            status.replace("CapBnd:\t000001ffffffffff\n", ""),
+        ] {
+            assert!(owner_capabilities(&changed).is_err());
+        }
         Ok(())
     }
 
