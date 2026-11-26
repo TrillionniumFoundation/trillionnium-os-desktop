@@ -28,6 +28,7 @@ ROOT_LINK = "p4_linux_root_uuid_link_t"
 ROOT_BLOCK = "p4_linux_root_block_t"
 EARLY = "p4_linux_early_t"
 EXECUTOR = "p4_linux_service_executor_t"
+RETURN = "p4_linux_once_return_t"
 ALIASES = [
     {"source": "p4_linux_runtime_lib_t", "target": ENTRY, "class": "file"},
     {"source": "p4_linux_native_bin_t", "target": MOUNT, "class": "file"},
@@ -103,6 +104,10 @@ def derive(library, baseline, exported, here, output, export):
             (EARLY, FSTAB, "file"): {"getattr", "open", "read"},
             (EARLY, ROOT_LINK, "lnk_file"): {"relabelto"},
             (EARLY, ROOT_BLOCK, "blk_file"): {"relabelto"},
+            # These exact metadata permissions already exist in the once CIL.
+            # Keep them as explicit preimages; do not infer raw TE from MCS AVs.
+            (RETURN, ROOT_LINK, "lnk_file"): {"getattr", "read"},
+            (RETURN, ROOT_BLOCK, "blk_file"): {"getattr"},
         }, preamble=("; Preserve the real pre-remount-alias access of all existing actors.",),
         mcs_aliases={(ROOT_LINK, "lnk_file"), (ROOT_BLOCK, "blk_file")})
     expected["contract_sha256"] = hashlib.sha256(
