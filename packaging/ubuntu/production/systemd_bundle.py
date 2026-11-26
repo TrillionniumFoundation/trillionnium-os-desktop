@@ -146,10 +146,18 @@ def verify_sources(directory,index,build,root):
          and normal["normal_tests"]==build["normal_tests"]
          and normal["argv"]==command["command"][-5:] and normal["exit_code"]==0
          and normal["source_roundtrip"]==lock["patched_files"]
-         and len(normal["source_roundtrip"])==6
-         and admission["source"]["normal_changes"]==build["changes"]
-         and admission["source"]["normal_buildinfo"]==build["buildinfo"],
+         and len(normal["source_roundtrip"])==6,
          "same actual normal source build, tests and complete source roundtrip")
+    # The Rust admission keeps independent protected copies. Their full bytes
+    # and exact normal basenames match the producer; their inode paths differ.
+    for key in ("changes","buildinfo"):
+        preserved=admission["source"]["normal_"+key]
+        original=build[key]
+        expected_name="systemd_"+NEW+"_amd64."+key
+        need(Path(preserved["path"]).name==Path(original["path"]).name==expected_name
+             and {k:preserved[k] for k in ("bytes","sha256")}==
+                 {k:original[k] for k in ("bytes","sha256")}==index["files"]["normal."+key],
+             "normal source record copies differ in basename or complete bytes")
     need(len(admission["packages"])==len(NAMES)
          and {row["package"] for row in admission["packages"]}==set(NAMES)
          and all(row["version"]==NEW and row["architecture"]=="amd64"
