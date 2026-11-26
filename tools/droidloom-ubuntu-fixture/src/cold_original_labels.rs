@@ -18,6 +18,8 @@ mod journal;
 mod plan;
 #[path = "cold_original_label_scope.rs"]
 mod scope;
+#[path = "cold_original_label_service_state.rs"]
+mod service_state;
 pub(super) use journal::withdraw_labeled_selection;
 pub(crate) use journal::{OriginalLabelTransaction, OriginalLabelsApplied};
 pub(crate) use plan::{

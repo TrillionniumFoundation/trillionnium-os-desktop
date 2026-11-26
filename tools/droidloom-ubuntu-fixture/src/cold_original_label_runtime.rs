@@ -12,6 +12,8 @@ enum RuntimeClass {
     UserHome,
     ServiceHome,
     OnceEvidence,
+    SystemdState,
+    RandomSeed,
 }
 fn below(path: &str, prefix: &str) -> bool {
     path == prefix
@@ -20,6 +22,12 @@ fn below(path: &str, prefix: &str) -> bool {
             .is_some_and(|v| v.starts_with('/'))
 }
 fn runtime_class(path: &Path, candidate: &str) -> Option<RuntimeClass> {
+    if path == Path::new("/var/lib/systemd/random-seed") {
+        return Some(RuntimeClass::RandomSeed);
+    }
+    if super::super::service_state::state_path(path) {
+        return Some(RuntimeClass::SystemdState);
+    }
     let path = path.to_str()?;
     if below(path, "/home/alex/work")
         || below(path, "/var/lib/droidloom-qualification")
@@ -76,8 +84,28 @@ fn admit_current(
     current: &Snapshot,
     class: Option<RuntimeClass>,
 ) -> Result<()> {
+    let mut original_attributes = applied.attributes.clone();
+    let mut current_attributes = current.attributes.clone();
+    if class == Some(RuntimeClass::RandomSeed) {
+        let name = super::super::service_state::CREDITABLE;
+        for attrs in [&original_attributes, &current_attributes] {
+            ensure(
+                attrs.get(name).is_none_or(|value| value == b"1"),
+                "normal random-seed creditable state is not absent or exactly one byte 1",
+            )?;
+        }
+        original_attributes.remove(name);
+        current_attributes.remove(name);
+        ensure(
+            FileType::from_raw_mode(current.identity.mode) == FileType::RegularFile
+                && current.identity.mode & 0o7777 == 0o600
+                && current.identity.uid == 0
+                && current.identity.gid == 0,
+            "normal random-seed state lost its exact root-only authority",
+        )?;
+    }
     ensure(
-        applied.handle == current.handle && applied.attributes == current.attributes,
+        applied.handle == current.handle && original_attributes == current_attributes,
         "post-runtime label or an unrelated xattr no longer matches the actual applied inode",
     )?;
     if class.is_none() {
@@ -379,6 +407,40 @@ mod tests {
             bytes: 1,
             sha256: "c".repeat(64),
         }
+    }
+    #[test]
+    fn normal_seed_contract_only_allows_its_exact_creditable_attribute() {
+        let tmp = tempfile::Builder::new()
+            .prefix(".p4-seed-contract-")
+            .tempdir_in(std::env::current_dir().unwrap())
+            .unwrap();
+        let original = setup(tmp.path(), "/var/lib/systemd/random-seed");
+        // This is a pure metadata-contract check; no synthetic identity is
+        // submitted to a physical writer or used as retirement authority.
+        let mut before = snapshot(&original.recovery).unwrap();
+        before.identity.uid = 0;
+        before.identity.gid = 0;
+        before.identity.mode = (before.identity.mode & !0o7777) | 0o600;
+        let mut current = before.clone();
+        current.identity.mtime_sec += 1;
+        current.attributes.insert(
+            super::super::super::service_state::CREDITABLE.into(),
+            b"1".to_vec(),
+        );
+        admit_current(&before, &current, Some(RuntimeClass::RandomSeed)).unwrap();
+        assert!(admit_current(&before, &current, Some(RuntimeClass::Log)).is_err());
+        let mut wrong = current.clone();
+        wrong.attributes.insert("user.other".into(), b"1".to_vec());
+        assert!(admit_current(&before, &wrong, Some(RuntimeClass::RandomSeed)).is_err());
+        wrong = current.clone();
+        wrong.attributes.insert(
+            super::super::super::service_state::CREDITABLE.into(),
+            b"yes".to_vec(),
+        );
+        assert!(admit_current(&before, &wrong, Some(RuntimeClass::RandomSeed)).is_err());
+        wrong = current.clone();
+        wrong.identity.ino += 1;
+        assert!(admit_current(&before, &wrong, Some(RuntimeClass::RandomSeed)).is_err());
     }
     #[test]
     fn actual_runtime_append_is_preserved_while_only_our_label_is_restored() {

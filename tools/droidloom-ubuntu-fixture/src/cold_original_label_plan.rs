@@ -149,6 +149,108 @@ pub(crate) struct OriginalLabelSources {
     policy: FilePin,
     environment: BTreeMap<String, String>,
 }
+fn state_archive(report: &Value, package: &str) -> Result<FilePin> {
+    let selected = report["normal_materials"]["packages"]
+        .as_array()
+        .ok_or("normal package source roster missing")?
+        .iter()
+        .filter(|row| row["name"] == package)
+        .collect::<Vec<_>>();
+    ensure(
+        selected.len() == 1,
+        "normal systemd state unit package is not uniquely admitted",
+    )?;
+    Ok(serde_json::from_value(selected[0]["package"].clone())?)
+}
+fn admit_service_units(
+    work: &Path,
+    report: &Value,
+    extractor: &FilePin,
+    guards: &mut Vec<Guard>,
+) -> Result<Value> {
+    let root = work.join("normal-native-state-payload");
+    files::private_dir(&root)?;
+    let mut commands = BTreeMap::new();
+    for name in ["systemd", "systemd-timesyncd"] {
+        let archive = state_archive(report, name)?;
+        guards.push(Guard::open(&archive)?);
+        let destination = root.join(name);
+        files::private_dir(&destination)?;
+        let command = files::run_logged(
+            work,
+            &format!("normal-state-unit-{name}"),
+            &fs::absolute_string(&extractor.path)?,
+            &[
+                "--extract".into(),
+                fs::absolute_string(&archive.path)?,
+                fs::absolute_string(&destination)?,
+            ],
+            180,
+        )?;
+        commands.insert(name, command);
+    }
+    let mut rows = Vec::new();
+    for unit in super::service_state::UNITS {
+        let source = pin(&root
+            .join(unit.package)
+            .join("usr/lib/systemd/system")
+            .join(unit.name))?;
+        ensure(
+            source.bytes == unit.bytes && source.sha256 == unit.sha256,
+            "normal systemd unit no longer matches its exact source-owned state contract",
+        )?;
+        guards.push(Guard::open(&source)?);
+        rows.push(
+            json!({"unit":unit.name,"normal_archive":state_archive(report,unit.package)?,
+            "source":source,"state":unit.state}),
+        );
+    }
+    Ok(
+        json!({"schema":"droidloom.normal-systemd-label-state-contract.v1","units":rows,
+        "normal_extracts":commands,"random_seed_source_sha256":super::service_state::RANDOM_SEED_SOURCE,
+        "timesync_source_sha256":super::service_state::TIMESYNC_SOURCE}),
+    )
+}
+fn reopen_service_units(
+    work: &Path,
+    report: &Value,
+    value: &Value,
+    guards: &mut Vec<Guard>,
+) -> Result<()> {
+    ensure(
+        value["schema"] == "droidloom.normal-systemd-label-state-contract.v1"
+            && value["random_seed_source_sha256"] == super::service_state::RANDOM_SEED_SOURCE
+            && value["timesync_source_sha256"] == super::service_state::TIMESYNC_SOURCE,
+        "preserved normal systemd state contract differs",
+    )?;
+    let rows = value["units"]
+        .as_array()
+        .ok_or("normal systemd state unit proofs missing")?;
+    ensure(
+        rows.len() == super::service_state::UNITS.len(),
+        "normal systemd state unit count differs",
+    )?;
+    for (row, unit) in rows.iter().zip(super::service_state::UNITS) {
+        let source: FilePin = serde_json::from_value(row["source"].clone())?;
+        ensure(
+            row["unit"] == unit.name
+                && row["state"] == unit.state
+                && row["normal_archive"]
+                    == serde_json::to_value(state_archive(report, unit.package)?)?
+                && source.path
+                    == work
+                        .join("normal-native-state-payload")
+                        .join(unit.package)
+                        .join("usr/lib/systemd/system")
+                        .join(unit.name)
+                && source.bytes == unit.bytes
+                && source.sha256 == unit.sha256,
+            "preserved normal state unit no longer belongs to the admitted normal package",
+        )?;
+        guards.push(Guard::open(&source)?);
+    }
+    Ok(())
+}
 impl OriginalLabelSources {
     pub(crate) fn source_pin(&self) -> &FilePin {
         &self.source_record
@@ -242,6 +344,7 @@ impl OriginalLabelSources {
             60,
             &environment,
         )?;
+        let normal_service_state = admit_service_units(work, &report, &extract_tool, &mut guards)?;
         for guard in &guards {
             guard.revalidate()?;
         }
@@ -253,7 +356,8 @@ impl OriginalLabelSources {
             "normal_extractor":{"source":extract_tool,"identity":extract_guard.identity},
             "contexts":contexts,"joint_policy":policy,"normal_label_tools":tool_pins,"context_policy_validation":validation,
             "host_source_commit":report["host_source_commit"],"host_source_tree":report["host_source_tree"],
-            "normal_materials":report["normal_materials"],"physical_labels_applied":false}),
+            "normal_materials":report["normal_materials"],"normal_service_state":normal_service_state,
+            "physical_labels_applied":false}),
         )?;
         guards.push(Guard::open(&source)?);
         let matcher = tool_pins[1].clone();
@@ -684,6 +788,12 @@ impl OriginalLabelRestoreSources {
             )?;
             guards.push(guard);
         }
+        reopen_service_units(
+            work,
+            &historical,
+            &source["normal_service_state"],
+            &mut guards,
+        )?;
         let result = Self {
             source_record: source_record.clone(),
             historical_readback: historical,
