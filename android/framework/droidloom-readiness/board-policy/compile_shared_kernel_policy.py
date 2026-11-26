@@ -1024,7 +1024,8 @@ def verify_host_control(library, binary, export, original_contract):
                "debugfs_tracing_debug", "fusectlfs", "fs_bpf", "pstorefs",
                "binfmt_miscfs", "rootfs"]:
         check(executor, obj(fs), "filesystem", ["getattr", "remount", "unmount"], True)
-        check(executor, obj(fs), "filesystem", ["relabelto", "relabelfrom"], False)
+        check(executor, obj(fs), "filesystem", ["relabelto"], False)
+        check(executor, obj(fs), "filesystem", ["relabelfrom"], fs == "tmpfs")
     check(executor, obj("tmpfs"), "filesystem", ["mount"], True)
     check(executor, obj("selinuxfs"), "filesystem", ["mount"], False)
     for fs in ["labeledfs", "tmpfs"]:
@@ -1034,9 +1035,9 @@ def verify_host_control(library, binary, export, original_contract):
     check(executor, obj("p4_linux_cgroup_init_scope_t"), "dir", ["mounton", "relabelto", "relabelfrom"], False)
     check(executor, obj("p4_linux_cgroup_init_tasks_t"), "file", ["open", "write", "relabelto", "relabelfrom"], False)
     check(executor, obj("tmpfs"), "dir", ["relabelfrom"], True)
-    # Stock credential fsmount() reopens the still-unlabelled directory FD
-    # before label_fix_full(); enumeration, content mutation and relabel-to
-    # the generic tmpfs type remain prohibited.
+    # The normal credential patch labels the root in fsconfig before reopening
+    # its directory FD. The opaque tmpfs handle grant remains available to the
+    # stock namespace constructor; enumeration and generic mutation stay closed.
     check(executor, obj("tmpfs"), "dir", ["open"], True)
     check(executor, obj("tmpfs"), "dir", ["read", "write", "add_name", "remove_name", "relabelto"], False)
     for private in ["droidloom_public_apk_input", "p4_linux_product_store_t"]:
