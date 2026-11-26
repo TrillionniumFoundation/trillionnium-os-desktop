@@ -4,7 +4,7 @@
 use super::super::super::OriginalLabelRestoration;
 use super::super::runtime::{self, EvolutionKind, ExactEvolution};
 use super::*;
-use crate::cold_original_qualification::OriginalRetirement;
+use crate::cold_original_qualification::{OriginalRestoreLabelWindow, OriginalRetirement};
 
 #[derive(Clone, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
@@ -125,6 +125,18 @@ fn epoch(records: &Records, retirement: &OriginalRetirement) -> Result<Records> 
     Records::open(&path)
 }
 
+fn preparation_recovery(retirement: &OriginalRetirement) -> Result<()> {
+    // The scope comes only from the actual opaque once retirement factory.
+    // No candidate runtime may manufacture its missing pre-boot applications.
+    ensure(
+        matches!(
+            retirement.report()["scope"].as_str(),
+            Some("verified-unbooted-abort" | "verified-preparation-interrupted-return")
+        ),
+        "a candidate runtime cannot reconstruct missing original label application evidence",
+    )
+}
+
 pub(super) fn seal_pair_label_outcomes(
     retirement: &OriginalRetirement,
     data: &OriginalDataTransaction,
@@ -171,10 +183,7 @@ pub(super) fn seal_pair_label_outcomes(
             continue;
         }
         retirement.authority().verify_label_plan(&pin)?;
-        ensure(
-            retirement.report()["scope"] == "verified-unbooted-abort",
-            "a booted candidate cannot invent missing original label application evidence",
-        )?;
+        preparation_recovery(retirement)?;
         let held = scope.open_named(&target.aliases[0].physical)?;
         let original = load_original(&dir, held, target, &seal, &plan.candidate_id)?;
         let current = snapshot(&original.recovery)?;
@@ -267,7 +276,29 @@ impl<'a> OriginalLabelRestorationTransaction<'a> {
             "label restoration left the actually restored original pair layout",
         )
     }
-    fn evolution(&self, target: &Target, current: &Snapshot) -> Result<Option<ExactEvolution>> {
+    fn window_fence(
+        &self,
+        data: &OriginalDataTransaction,
+        window: &OriginalRestoreLabelWindow<'_>,
+    ) -> Result<()> {
+        window.verify_step()?;
+        self.seal.revalidate()?;
+        self.scope.revalidate()?;
+        ensure(
+            window.candidate_id() == self.plan.candidate_id
+                && pin_equal(window.source_plan(), &self.seal.pin)
+                && pin_equal(&self.plan.normal_sources, self.retirement.source_pin())
+                && pin_equal(&self.plan.pair_intent, data.intent()),
+            "bounded restoration window differs from the exact retired label/data source",
+        )?;
+        data.binding_custody(self.retirement.authority())
+    }
+    fn evolution(
+        &self,
+        target: &Target,
+        current: &Snapshot,
+        window: &OriginalRestoreLabelWindow<'_>,
+    ) -> Result<Option<ExactEvolution>> {
         let path = &target.aliases[0].logical;
         let value = if [
             "/var/lib/droidloom/users/1000/data/data.img",
@@ -275,14 +306,14 @@ impl<'a> OriginalLabelRestorationTransaction<'a> {
         ]
         .contains(&path.to_str().unwrap_or(""))
         {
-            self.retirement.verify_working_identity(&current.identity)?;
+            window.verify_working_identity(&current.identity)?;
             Some(ExactEvolution {
                 kind: EvolutionKind::WorkingBacking,
                 actual: current.clone(),
                 evidence: self.retirement.report_pin().clone(),
             })
         } else if path == Path::new("/boot/grub/grubenv") {
-            self.retirement.verify_grubenv_identity(&current.identity)?;
+            window.verify_grubenv_identity(&current.identity)?;
             Some(ExactEvolution {
                 kind: EvolutionKind::GrubEnvironment,
                 actual: current.clone(),
@@ -458,6 +489,7 @@ impl<'a> OriginalLabelRestorationTransaction<'a> {
         )?;
         let path = record_directory(&self.plan.work_directory, target.ordinal);
         let Some(original_pin) = &row.original_preimage else {
+            preparation_recovery(self.retirement)?;
             ensure(
                 row.restoration.is_none()
                     && row.recognized_history.is_none()
@@ -475,6 +507,7 @@ impl<'a> OriginalLabelRestorationTransaction<'a> {
             "saved target uses another original preimage",
         )?;
         let Some(restored_pin) = &row.restoration else {
+            preparation_recovery(self.retirement)?;
             ensure(
                 !original.records.exists("APPLIED.json")?
                     && row.current_before == row.restored
@@ -574,11 +607,12 @@ impl<'a> OriginalLabelRestorationTransaction<'a> {
             },
         };
         step.revalidate()?;
-        data.binding(self.retirement.authority())
+        data.binding_custody(self.retirement.authority())
     }
     pub(crate) fn restore(
         &mut self,
         data: &OriginalDataTransaction,
+        window: &OriginalRestoreLabelWindow<'_>,
     ) -> Result<OriginalLabelsRestored> {
         // A successful xattr syscall can precede a failed publication or owner
         // ctime rebind. Reconcile only that held active write, without another
@@ -600,11 +634,13 @@ impl<'a> OriginalLabelRestorationTransaction<'a> {
                     core,
                 };
                 self.scope.accept_root_restoration(&step)?;
-                self.retirement.accept_label_restoration(&step)?;
+                window.accept_restoration(&step)?;
             }
         }
         self.fence(data)?;
         self.seal.full_readback()?;
+        self.window_fence(data, window)?;
+        let started = std::time::Instant::now();
         let report_path = self.plan.work_directory.join(format!(
             "LABELS-RESTORED-{}.json",
             self.retirement.report_pin().sha256
@@ -632,6 +668,15 @@ impl<'a> OriginalLabelRestorationTransaction<'a> {
         }
         let mut rows = Vec::with_capacity(self.plan.targets.len());
         for index in 0..self.plan.targets.len() {
+            self.window_fence(data, window)?;
+            if index > 0 && index % 1000 == 0 {
+                eprintln!(
+                    "original-label-restore targets={}/{} elapsed_ms={}",
+                    index,
+                    self.plan.targets.len(),
+                    started.elapsed().as_millis()
+                );
+            }
             let target = self.plan.targets[index].clone();
             let (held, current) =
                 actual_named(&self.scope, &target, self.retirement.authority().work())?;
@@ -642,7 +687,8 @@ impl<'a> OriginalLabelRestorationTransaction<'a> {
                 Err(e) => return Err(e.into()),
             };
             if !exists {
-                self.fence(data)?;
+                preparation_recovery(self.retirement)?;
+                self.window_fence(data, window)?;
                 self.untouched(&target, &current)?;
                 rows.push(RestoredRow {
                     ordinal: target.ordinal,
@@ -658,7 +704,8 @@ impl<'a> OriginalLabelRestorationTransaction<'a> {
             }
             let records = Records::open(&path)?;
             if !records.exists("PREIMAGE.json")? {
-                self.fence(data)?;
+                preparation_recovery(self.retirement)?;
+                self.window_fence(data, window)?;
                 records.verify_unpublished_preimage()?;
                 self.untouched(&target, &current)?;
                 rows.push(RestoredRow {
@@ -685,7 +732,7 @@ impl<'a> OriginalLabelRestorationTransaction<'a> {
                 && current.attributes.get(LABEL) == target.before.attributes.get(LABEL)
             {
                 if let Some(history) = self.history(&path, &original.recovery, &target, &current)? {
-                    self.fence(data)?;
+                    self.window_fence(data, window)?;
                     let now = epoch(&records, self.retirement)?;
                     let durability = now.sync_target(&original.recovery, &current)?;
                     let value = json!({"schema":"droidloom.current-label-restored.v1","current_preimage":history,
@@ -716,7 +763,7 @@ impl<'a> OriginalLabelRestorationTransaction<'a> {
                     };
                     step.revalidate()?;
                     self.scope.accept_root_restoration(&step)?;
-                    self.retirement.accept_label_restoration(&step)?;
+                    window.accept_restoration(&step)?;
                     rows.push(RestoredRow {
                         ordinal: target.ordinal,
                         prelabel: target.before.clone(),
@@ -731,7 +778,8 @@ impl<'a> OriginalLabelRestorationTransaction<'a> {
                 }
             }
             if !original.records.exists("APPLIED.json")? {
-                self.fence(data)?;
+                preparation_recovery(self.retirement)?;
+                self.window_fence(data, window)?;
                 if current == target.before {
                     rows.push(RestoredRow {
                         ordinal: target.ordinal,
@@ -752,8 +800,8 @@ impl<'a> OriginalLabelRestorationTransaction<'a> {
                 let pin = record_pin(&now, "CURRENT-PREIMAGE.json")?;
                 RuntimeRestoreAttempt::reopen(original, now, &pin)?
             } else {
-                self.fence(data)?;
-                let evolution = self.evolution(&target, &current)?;
+                self.window_fence(data, window)?;
+                let evolution = self.evolution(&target, &current, window)?;
                 if evolution.is_none() {
                     let (_, after) = RuntimeRestoreAttempt::applied(&original)?;
                     for alias in &target.aliases {
@@ -778,7 +826,7 @@ impl<'a> OriginalLabelRestorationTransaction<'a> {
                 .ok_or("restoration recovery descriptor was lost")?;
             let (_, done) = attempt.classify()?;
             if !done {
-                self.fence(data)?;
+                self.window_fence(data, window)?;
             }
             let (core, pin) = attempt.restore()?;
             let row = RestoredRow {
@@ -802,19 +850,26 @@ impl<'a> OriginalLabelRestorationTransaction<'a> {
             };
             step.revalidate()?;
             self.scope.accept_root_restoration(&step)?;
-            self.retirement.accept_label_restoration(&step)?;
+            window.accept_restoration(&step)?;
             let (_, actual) =
                 actual_named(&self.scope, &target, self.retirement.authority().work())?;
             ensure(
                 actual == row.restored,
                 "restored named inode changed before completion",
             )?;
-            self.fence(data)?;
+            self.window_fence(data, window)?;
             rows.push(row);
             self.active.take();
         }
+        self.window_fence(data, window)?;
         self.fence(data)?;
         self.seal.full_readback()?;
+        eprintln!(
+            "original-label-restore targets={}/{} elapsed_ms={}",
+            self.plan.targets.len(),
+            self.plan.targets.len(),
+            started.elapsed().as_millis()
+        );
         let excluded = self
             .scope
             .verify_restored_exclusions(&self.plan.scope, data)?;
@@ -915,13 +970,57 @@ impl OriginalLabelsRestored {
         self.plan.full_readback()?;
         retirement.revalidate()
     }
+    /// Read-only derivation for the closed once configuration/rollback layer.
+    /// Call once with its complete finite target/parent set before any later
+    /// configuration mutation. Every requested path must already belong to
+    /// this exact immutable label plan; this object grants no extra writes.
+    pub(crate) fn restored_metadata_derivations(
+        &self,
+        retirement: &OriginalRetirement,
+        data: &OriginalDataTransaction,
+        paths: &[PathBuf],
+    ) -> Result<Value> {
+        ensure(
+            !paths.is_empty() && paths.len() <= 256,
+            "bounded complete restoration metadata query required",
+        )?;
+        let wanted = paths.iter().cloned().collect::<BTreeSet<_>>();
+        ensure(
+            wanted.len() == paths.len() && wanted.iter().all(|p| p.is_absolute()),
+            "duplicate or relative restoration metadata path",
+        )?;
+        self.verify_complete(retirement, data)?;
+        let mut rows = BTreeMap::new();
+        for (target, row) in self.targets.iter().zip(&self.rows) {
+            for alias in &target.aliases {
+                if wanted.contains(&alias.logical) {
+                    let path = alias
+                        .logical
+                        .to_str()
+                        .ok_or("canonical restoration metadata path missing")?;
+                    ensure(rows.insert(path.to_owned(),json!({"prelabel":row.prelabel,"current":row.current_before,
+                        "restored":row.restored,"original_preimage":row.original_preimage,
+                        "actual_restoration":row.restoration,"recognized_history":row.recognized_history})).is_none(),
+                        "ambiguous source-bound restoration metadata derivation")?;
+                }
+            }
+        }
+        ensure(
+            rows.len() == wanted.len(),
+            "requested metadata path is absent from the complete actual label plan",
+        )?;
+        Ok(
+            json!({"schema":"droidloom.original-restored-path-metadata.v1","candidate_id":self.candidate,
+            "normal_sources":self.normal_sources,"source_plan":self.plan.pin,"label_restoration":self.report,
+            "actual_retirement":retirement.report_pin(),"paths":rows}),
+        )
+    }
     pub(crate) fn preserved_metadata_derivations(
         &self,
         retirement: &OriginalRetirement,
         data: &OriginalDataTransaction,
     ) -> Result<Value> {
-        self.verify_complete(retirement, data)?;
-        let fixed = [
+        let mut paths = [
             "/etc/passwd",
             "/etc/group",
             "/etc/shadow",
@@ -929,32 +1028,23 @@ impl OriginalLabelsRestored {
             "/etc/ssh",
             "/etc/ssh/sshd_config",
             "/home/alex",
-        ];
-        let mut rows = BTreeMap::new();
-        for (target, row) in self.targets.iter().zip(&self.rows) {
+        ]
+        .into_iter()
+        .map(PathBuf::from)
+        .collect::<BTreeSet<_>>();
+        for target in &self.targets {
             for alias in &target.aliases {
-                let path = alias
-                    .logical
-                    .to_str()
-                    .ok_or("canonical preservation path missing")?;
-                if fixed.contains(&path) || alias.logical.parent() == Some(Path::new("/etc/ssh")) {
-                    ensure(rows.insert(path.to_owned(),json!({"prelabel":row.prelabel,"current":row.current_before,
-                        "restored":row.restored,"original_preimage":row.original_preimage,
-                        "actual_restoration":row.restoration,"recognized_history":row.recognized_history})).is_none(),
-                        "ambiguous preserved account/SSH/home derivation")?;
+                if alias.logical.parent() == Some(Path::new("/etc/ssh")) {
+                    paths.insert(alias.logical.clone());
                 }
             }
         }
-        for path in fixed {
-            ensure(
-                rows.contains_key(path),
-                "fixed preserved account/SSH/home path is missing",
-            )?;
-        }
-        Ok(
-            json!({"schema":"droidloom.original-preserved-label-metadata.v1","candidate_id":self.candidate,
-            "normal_sources":self.normal_sources,"source_plan":self.plan.pin,"label_restoration":self.report,
-            "actual_retirement":retirement.report_pin(),"paths":rows}),
-        )
+        let mut result = self.restored_metadata_derivations(
+            retirement,
+            data,
+            &paths.into_iter().collect::<Vec<_>>(),
+        )?;
+        result["schema"] = json!("droidloom.original-preserved-label-metadata.v1");
+        Ok(result)
     }
 }
