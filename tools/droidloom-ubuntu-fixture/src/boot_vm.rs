@@ -165,8 +165,16 @@ pub(super) fn kernel_command_line(uuid: &str, calibration: bool) -> Result<Strin
     } else {
         ("graphical.target", "info", "1")
     };
+    // /dev/kmsg also has a kernel per-writer limiter. The manager cannot
+    // change its global sysctl after entering its enforcing Linux role.
+    // Preserve the actual first failure in the isolated calibration guest.
+    let kernel_diagnostics = if calibration {
+        " printk.devkmsg=on log_buf_len=16M"
+    } else {
+        ""
+    };
     Ok(format!(
-        "console=ttyS0,115200 root=UUID={uuid} rootfstype=ext4 rw rootwait loglevel=7 enforcing=1 audit_backlog_limit=32768 sysctl.kernel.printk_ratelimit=0 lsm=lockdown,capability,landlock,yama,selinux,apparmor,bpf,ima,evm audit=1 init=/usr/lib/droidloom/production/current/droidloom-board-init systemd.unit={unit} systemd.log_target=journal-or-kmsg systemd.show_status=1 systemd.log_level={manager_log_level} systemd.log_ratelimit_kmsg={manager_kmsg_ratelimit}"
+        "console=ttyS0,115200 root=UUID={uuid} rootfstype=ext4 rw rootwait loglevel=7 enforcing=1 audit_backlog_limit=32768 sysctl.kernel.printk_ratelimit=0{kernel_diagnostics} lsm=lockdown,capability,landlock,yama,selinux,apparmor,bpf,ima,evm audit=1 init=/usr/lib/droidloom/production/current/droidloom-board-init systemd.unit={unit} systemd.log_target=journal-or-kmsg systemd.show_status=1 systemd.log_level={manager_log_level} systemd.log_ratelimit_kmsg={manager_kmsg_ratelimit}"
     ))
 }
 
