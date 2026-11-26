@@ -1,7 +1,7 @@
 //! Isolated complete public-root scale measurement. Never a physical authority.
 use super::*;
 use std::{collections::BTreeMap, os::unix::fs::MetadataExt, time::Instant};
-const BASE: &str = "/var/lib/droidloom-qualification/original-label-scale-4b91-r4";
+const BASE: &str = "/var/lib/droidloom-qualification/original-label-scale-4b91-r5";
 const SOURCE: &str = "/var/lib/droidloom-qualification/p4-complete-native-credentials-4b91-r2/root";
 
 #[test]
