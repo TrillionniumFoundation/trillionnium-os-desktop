@@ -14,7 +14,7 @@ use std::{
 
 pub(super) const ORIGINAL_KERNEL: &str = "7.0.14-p4cred1";
 pub(super) const ROOT_UUID: &str = "01c27223-3933-481e-9836-7bd0ef1be8c9";
-pub(super) const ORIGINAL_ENTRY: &str = "gnulinux-simple-01c27223-3933-481e-9836-7bd0ef1be8c9";
+pub(super) const ORIGINAL_ENTRY: &str = "gnulinux-advanced-01c27223-3933-481e-9836-7bd0ef1be8c9>gnulinux-7.0.14-p4cred1-advanced-01c27223-3933-481e-9836-7bd0ef1be8c9";
 const LOCK_PATHS: &[&str] = &[
     "/var/lib/droidloom-qualification/.p4-vm-controller-516eec.lock",
     "/etc/droidloom/setup.lock",

@@ -427,4 +427,63 @@ class PublicNamespaceTransaction(unittest.TestCase):
         path=self.root/"usr/lib/droidloom/public-test.bin";path.unlink();os.mkfifo(path,0o600)
         with self.assertRaises(release.Rejected):tx.capture()
 
+
+class OriginalGrubEntry(unittest.TestCase):
+    # Exact public stock 7.0.14 leaf observed on the original Pocket4.
+    # The simple entry in that same cfg selects 7.3, so it is not a synonym.
+    BODY = "\tmenuentry 'Ubuntu, with Linux 7.0.14-p4cred1' --class ubuntu --class gnu-linux --class gnu --class os $menuentry_id_option 'gnulinux-7.0.14-p4cred1-advanced-01c27223-3933-481e-9836-7bd0ef1be8c9' {\n\t\trecordfail\n\t\tload_video\n\t\tset gfxpayload=$linux_gfx_mode\n\t\tinsmod gzio\n\t\tif [ x$grub_platform = xxen ]; then insmod xzio; insmod lzopio; fi\n\t\tinsmod part_gpt\n\t\tinsmod ext2\n\t\tsearch --no-floppy --fs-uuid --set=root 01c27223-3933-481e-9836-7bd0ef1be8c9\n\t\techo\t'Loading Linux 7.0.14-p4cred1 ...'\n\t\tlinux\t/boot/vmlinuz-7.0.14-p4cred1 root=UUID=01c27223-3933-481e-9836-7bd0ef1be8c9 ro  quiet splash crashkernel=2G-4G:320M,4G-32G:512M,32G-64G:1024M,64G-128G:2048M,128G-:4096M\n\t\techo\t'Loading initial ramdisk ...'\n\t\tinitrd\t/boot/initrd.img-7.0.14-p4cred1\n\t}\n"
+    ROOT = "01c27223-3933-481e-9836-7bd0ef1be8c9"
+    PARENT = "gnulinux-advanced-"+ROOT
+    LEAF = "gnulinux-7.0.14-p4cred1-advanced-"+ROOT
+    ENTRY = PARENT+">"+LEAF
+
+    def observed(self):
+        return ('set default="$'+'{next_entry}"\nset default="'+self.ENTRY+'"\n'+
+                "submenu 'Advanced options for Ubuntu' $menuentry_id_option '"+self.PARENT+"' {\n"+
+                self.BODY+"}\n")
+
+    def verify(self, text, entry=None):
+        return release.verify_original_grub_entry(text,self.ROOT,entry or self.ENTRY,"7.0.14-p4cred1")
+
+    def test_actual_nested_leaf_is_selected_without_changing_default(self):
+        result=self.verify(self.observed().encode())
+        self.assertEqual(result["original_entry"],self.ENTRY)
+        self.assertEqual(result["kernel_path"],"/boot/vmlinuz-7.0.14-p4cred1")
+        self.assertEqual(result["initrd_path"],"/boot/initrd.img-7.0.14-p4cred1")
+        self.assertEqual(result["original_default"],self.ENTRY)
+        self.assertEqual(result["entry_body_bytes"],751)
+
+    def test_simple_id_cannot_stand_in_for_original_kernel(self):
+        with self.assertRaises(release.Rejected):
+            self.verify(self.observed(),"gnulinux-simple-"+self.ROOT)
+        with self.assertRaises(release.Rejected):
+            release.verify_original_grub_entry(self.observed(),self.ROOT,self.ENTRY,"7.3.0-10-generic")
+
+    def test_duplicate_or_outside_parent_leaf_is_rejected(self):
+        source=self.observed()
+        changed=(source+self.BODY,
+                 source.replace(self.BODY,"")+self.BODY,
+                 source.replace(self.BODY,"}\n"+self.BODY+"{\n"),
+                 source.replace("submenu 'Advanced options for Ubuntu'","submenu 'Changed'"),
+                 source.replace(self.BODY,"\tsubmenu 'Other' --id 'other' {\n"+self.BODY+"\t}\n"))
+        for item in changed:
+            with self.subTest(item=item[:80]),self.assertRaises(release.Rejected):self.verify(item)
+
+    def test_complete_boot_body_and_original_default_are_bound(self):
+        source=self.observed()
+        changed=(source.replace("/boot/vmlinuz-7.0.14-p4cred1","/boot/vmlinuz-7.3.0-10-generic"),
+                 source.replace("/boot/initrd.img-7.0.14-p4cred1","/boot/initrd.img-other"),
+                 source.replace("root=UUID="+self.ROOT,"root=UUID=00000000-0000-0000-0000-000000000000"),
+                 source.replace("\t\trecordfail\n","\t\trecordfail\n\t\tset root=other\n"),
+                 source.replace(" ro  quiet"," rw  quiet"),
+                 source.replace('set default="'+self.ENTRY+'"','set default="0"'),
+                 source+'set default="other"\n')
+        for item in changed:
+            with self.subTest(item=item[:80]),self.assertRaises(release.Rejected):self.verify(item)
+
+    def test_extra_candidate_does_not_reinterpret_original_entry(self):
+        result=self.verify(self.observed()+"menuentry 'Separate candidate' --id 'candidate' {\n}\n")
+        self.assertEqual(result["entry_body_sha256"],
+                         "2a4912fa11988ed2c07b8f5537d68f8a99b1471f71fde4e308e9d80e4e2d2ec2")
+
 if __name__=="__main__":unittest.main()

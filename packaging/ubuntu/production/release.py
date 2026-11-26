@@ -41,6 +41,11 @@ TOOLS = {
  "grub-editenv": ("/usr/bin/grub-editenv",1368360,"2e4f8b60ba8712989f87d927d731a368af8620da1227a3090455ea7897ce1338"),
 }
 ORIGINAL_KERNEL = "7.0.14-p4cred1"
+# The normal simple entry now selects a different kernel. The recovery target
+# is the observed original 7.0.14 leaf inside the stock advanced submenu.
+ORIGINAL_ROOT_UUID = "01c27223-3933-481e-9836-7bd0ef1be8c9"
+ORIGINAL_ENTRY_BODY_BYTES = 751
+ORIGINAL_ENTRY_BODY_SHA256 = "2a4912fa11988ed2c07b8f5537d68f8a99b1471f71fde4e308e9d80e4e2d2ec2"
 SYSTEMD_ORIGINAL_VERSION = "259.9-0ubuntu0.1"
 SYSTEMD_CANDIDATE_VERSION = "259.9-0ubuntu0.1+p4gentmp1"
 # These two ELF files were read back from the complete normally built systemd
@@ -418,13 +423,63 @@ def status():
             "system_units":unit_state(SYSTEM_UNITS),"user_units":unit_state(USER_UNITS,True),
             "production_ready_claimed":False}
 
+def original_grub_entry(root_uuid):
+    need(root_uuid==ORIGINAL_ROOT_UUID,"fixed original Ubuntu root UUID")
+    return "gnulinux-advanced-"+root_uuid+">gnulinux-"+ORIGINAL_KERNEL+"-advanced-"+root_uuid
+
+def verify_original_grub_entry(text, root_uuid, original_entry, original_kernel):
+    """Verify the exact observed stock return leaf, including its real parent.
+
+    This reads a normally generated, separately whole-file-pinned grub.cfg.
+    It does not modify GRUB or authorize a reboot. The complete leaf bytes
+    preserve the actual linux/initrd/root/arguments, not just a matching id.
+    """
+    need(original_kernel==ORIGINAL_KERNEL,"fixed original return kernel")
+    need(original_entry==original_grub_entry(root_uuid),"fixed original submenu/leaf chain")
+    if isinstance(text,bytes):
+        text=text.decode("utf-8","strict")
+    need(isinstance(text,str) and 0<len(text)<=16*1024*1024 and
+         "\x00" not in text and "\r" not in text and text.endswith("\n"),
+         "normal GRUB text bounds")
+    parent,leaf=original_entry.split(">")
+    header="submenu 'Advanced options for Ubuntu' $menuentry_id_option '"+parent+"' {"
+    entry="\tmenuentry 'Ubuntu, with Linux "+ORIGINAL_KERNEL+"' --class ubuntu --class gnu-linux --class gnu --class os $menuentry_id_option '"+leaf+"' {"
+    lines=text.splitlines(keepends=True)
+    for ident,wanted in ((parent,header),(leaf,entry)):
+        found=re.findall(r"(?m)^[ \t]*(?:submenu|menuentry)\b[^\n]*['\"]"+re.escape(ident)+r"['\"][^\n]*$",text)
+        need(found==[wanted],"unique exact original GRUB entry header")
+    start=lines.index(header+"\n")
+    ends=[i for i in range(start+1,len(lines)) if lines[i]=="}\n"]
+    need(ends,"original GRUB submenu terminator")
+    end=ends[0]
+    leaf_start=lines.index(entry+"\n")
+    need(start<leaf_start<end,"original leaf outside its actual submenu")
+    need(not any(l.lstrip().startswith("submenu ") for l in lines[start+1:end]),
+         "unexpected nested original GRUB submenu")
+    leaf_ends=[i for i in range(leaf_start+1,end) if lines[i]=="\t}\n"]
+    need(leaf_ends,"original GRUB leaf terminator")
+    body="".join(lines[leaf_start:leaf_ends[0]+1]).encode("utf-8")
+    need(len(body)==ORIGINAL_ENTRY_BODY_BYTES and
+         hashlib.sha256(body).hexdigest()==ORIGINAL_ENTRY_BODY_SHA256,
+         "original GRUB linux/initrd/root/arguments body changed")
+    defaults=[l.strip() for l in lines if re.match(r"^\s*set\s+default\s*=",l)]
+    need(defaults==['set default="$'+'{next_entry}"','set default="'+original_entry+'"'],
+         "original normal GRUB default changed")
+    return {"schema":"droidloom-original-grub-entry-v1",
+            "original_entry":original_entry,"parent_entry":parent,"leaf_entry":leaf,
+            "root_uuid":root_uuid,"original_kernel":original_kernel,
+            "kernel_path":"/boot/vmlinuz-"+original_kernel,
+            "initrd_path":"/boot/initrd.img-"+original_kernel,
+            "entry_body_bytes":len(body),"entry_body_sha256":hashlib.sha256(body).hexdigest(),
+            "original_default":original_entry}
+
 def installation():
     v,p=read_json_file(CONFIG,64*1024,True,{0o400,0o444})
     exact(v,("schema","release_id","root_uuid","original_entry","original_kernel",
              "grub_cfg","grubenv","installed_monotonic_ns"),"installation")
     need(v["schema"]=="droidloom-maintenance-installation-v1","installation schema")
     digest(v["release_id"]);need(UUID.fullmatch(v["root_uuid"]),"root UUID")
-    need(v["original_entry"]=="gnulinux-simple-"+v["root_uuid"],"fixed original Ubuntu entry")
+    need(v["original_entry"]==original_grub_entry(v["root_uuid"]),"fixed original Ubuntu entry")
     need(v["original_kernel"]=="7.0.14-p4cred1","admitted original maintenance kernel")
     for k in ("grub_cfg","grubenv"):
         pin_shape(v[k])
@@ -478,7 +533,7 @@ def collect():
 def rollback():
     conf,pin=installation()
     grub=read_pin(conf["grub_cfg"],16*1024*1024,True)
-    need(("'"+conf["original_entry"]+"'").encode() in grub,"original stock Ubuntu entry missing")
+    verify_original_grub_entry(grub,conf["root_uuid"],conf["original_entry"],conf["original_kernel"])
     # GRUB env is mutable by stock grub-reboot/grub-editenv. Bind its original
     # inode and root ownership, then read back the exact one-shot selection.
     with held("/boot/grub/grubenv",root=True,maximum=4096,mutable_grub=True) as (fd,st):
@@ -497,7 +552,7 @@ def rollback():
 def reboot():
     conf,_=installation()
     grub=read_pin(conf["grub_cfg"],16*1024*1024,True)
-    need(("'"+conf["original_entry"]+"'").encode() in grub,"original Ubuntu entry changed")
+    verify_original_grub_entry(grub,conf["root_uuid"],conf["original_entry"],conf["original_kernel"])
     with held("/boot/grub/grubenv",root=True,maximum=4096) as (fd,st):
         body=os.pread(fd,4096,0)
         need(body.splitlines().count(("next_entry="+conf["original_entry"]).encode())==1,
