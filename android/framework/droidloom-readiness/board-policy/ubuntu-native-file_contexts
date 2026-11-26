@@ -350,3 +350,7 @@
 
 # Only the 65 kernel-created Linux VT character inodes, not serial or PTY nodes.
 /dev/tty([0-9]|[1-5][0-9]|6[0-3]) -c u:object_r:p4_linux_console_vt_t:s0
+
+# Two exact normal package inodes for the stock root remount service.
+/usr/lib/systemd/systemd-remount-fs -- u:object_r:p4_linux_remount_exec_t:s0
+/usr/bin/mount -- u:object_r:p4_linux_remount_mount_exec_t:s0

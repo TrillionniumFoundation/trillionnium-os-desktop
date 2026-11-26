@@ -1,0 +1,73 @@
+{
+  "schema": "droidloom.native-remount-source-closure.v1",
+  "packages": {
+    "systemd:amd64": "259.9-0ubuntu0.1+p4gentmp2",
+    "mount:amd64": "2.41.3-3ubuntu2.2"
+  },
+  "aliases": [
+    {
+      "source": "p4_linux_runtime_lib_t",
+      "target": "p4_linux_remount_exec_t",
+      "class": "file"
+    },
+    {
+      "source": "p4_linux_native_bin_t",
+      "target": "p4_linux_remount_mount_exec_t",
+      "class": "file"
+    }
+  ],
+  "files": [
+    {
+      "path": "/usr/lib/systemd/systemd-remount-fs",
+      "bytes": 14792,
+      "sha256": "e66155ccdc398d72b0ab844174be217b99a28ce1585d9a41943e532c49263a1c",
+      "mode": 493,
+      "uid": 0,
+      "gid": 0,
+      "nlink": 1,
+      "source_type": "p4_linux_runtime_lib_t",
+      "target_type": "p4_linux_remount_exec_t"
+    },
+    {
+      "path": "/usr/bin/mount",
+      "bytes": 51664,
+      "sha256": "66a7104ffb87e469ee3aeb00baa8c73093d765a66242b1d2eb8d3e5c37dcc627",
+      "mode": 2541,
+      "uid": 0,
+      "gid": 0,
+      "nlink": 1,
+      "source_type": "p4_linux_native_bin_t",
+      "target_type": "p4_linux_remount_mount_exec_t"
+    },
+    {
+      "path": "/usr/lib/systemd/system/systemd-remount-fs.service",
+      "bytes": 758,
+      "sha256": "f7df65db122787c4e077ed79d7c59fccaea8a2fd2560c296c9dfcc103b39eb4e",
+      "mode": 420,
+      "uid": 0,
+      "gid": 0,
+      "nlink": 1,
+      "source_type": "p4_linux_unit_file_t",
+      "target_type": "p4_linux_unit_file_t"
+    }
+  ],
+  "command_links": [
+    {
+      "path": "/etc/mtab",
+      "target": "../proc/self/mounts",
+      "uid": 0,
+      "gid": 0
+    }
+  ],
+  "source_documents": [
+    {
+      "path": "src/remount-fs/remount-fs.c",
+      "bytes": 5553,
+      "sha256": "a40ea42b42010303ec5aa209ba206f1a18eafd7b74dea6291c8a06618137605d",
+      "source": "systemd",
+      "version": "259.9-0ubuntu0.1+p4gentmp2",
+      "admission": "normal-dsc-roundtrip"
+    }
+  ],
+  "runtime_qualified": false
+}

@@ -13,6 +13,7 @@ from derive_shared_payload_cgroup_policy import Decision, Policy, derive, verify
 from derive_native_uevent_policy import (derive_android as derive_uevent_android,
     derive_native as derive_uevent_native, verify as verify_uevent)
 from derive_native_console_policy import derive as derive_console, verify as verify_console
+from derive_native_remount_policy import derive as derive_remount, verify as verify_remount
 from verify_native_user_cgroups import verify as verify_user_cgroups, source_inputs as user_cgroup_source_inputs
 from verify_native_login_audit import verify_login_audit
 from verify_native_journal_storage import verify_journal_storage
@@ -1431,7 +1432,7 @@ def main():
         "ubuntu-native-journal-storage.cil",
         "ubuntu-core-cgroup-ownership.cil", "ubuntu-native-user-cgroups.cil", "ubuntu-native-services.cil",
         "ubuntu-native-service-capabilities.cil", "ubuntu-native-console.cil",
-        "ubuntu-native-login-audit.cil",
+        "ubuntu-native-login-audit.cil", "ubuntu-native-remount.cil",
         "ubuntu-native-service-runtime.cil", "ubuntu-native-sandbox.cil",
         "ubuntu-native-maintenance.cil",
         "frontend-android-interface.cil", "native-camera-interface.cil", "linux-frontend-observer.cil", "instance-launcher.cil",
@@ -1456,6 +1457,7 @@ def main():
                here / "verify_native_user_cgroups.py", here / "native-user-cgroups.json",
                here / "derive_native_console_policy.py", here / "native-console-setup.json",
                here / "derive_preserved_alias_policy.py",
+               here / "derive_native_remount_policy.py", here / "native-remount-source.json",
                *user_cgroup_source_inputs(here),
                here / "verify_native_login_audit.py", here / "verify_native_journal_storage.py",
                here / "verify_greeter_home.py", here / "verify_native_maintenance.py",
@@ -1496,6 +1498,14 @@ def main():
         compile_policy(compiler, [*args.android_cil, board, *components, shared,
                                  uevent_android, uevent_native, console_aliases],
                        linked, contexts, environment)
+        remount_aliases = work / "native-remount-aliases.cil"
+        remount_contract = derive_remount(library, linked, work / "remount-before.cil",
+                                          here, remount_aliases, export_binary_policy)
+        compile_policy(compiler, [*args.android_cil, board, *components, shared,
+                                 uevent_android, uevent_native, console_aliases, remount_aliases],
+                       linked, contexts, environment)
+        remount_access = verify_remount(library, linked, work / "remount-after.cil",
+                                       here, remount_contract, export_binary_policy)
         console_access = verify_console(library, linked, work / "console-after.cil",
                                         here, console_contract, export_binary_policy)
         uevent_access = verify_uevent(library, linked, uevent_contract,
@@ -1515,6 +1525,7 @@ def main():
         result = {
             "native_uevent": uevent_access,
             "native_console": console_access,
+            "native_remount": remount_access,
             "native_user_cgroups": user_cgroups,
             "native_manager_file_contexts": manager_file_contexts,
             "native_maintenance": native_maintenance,

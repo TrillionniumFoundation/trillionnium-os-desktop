@@ -551,6 +551,7 @@ pub fn initialize_complete(
         "complete initializer refuses the original source root",
     )?;
     let console_source = super::console::verify(&snapshot, manifest)?;
+    let remount_source = super::remount::verify(&snapshot, manifest)?;
     let tree = fs::Tree::open(&fs::absolute_string(root)?, 0)?;
     let work_tree = fs::Tree::open(&fs::absolute_string(work)?, 0)?;
     let work_id = fs::stat(&work_tree.root)?;
@@ -1015,6 +1016,7 @@ pub fn initialize_complete(
         "schema":SCHEMA,"root":root,"work":work,"inputs":inputs,
         "source_stage":authority.stage,"complete_source_root":authority.root,
         "normal_console_source_closure":console_source,
+        "normal_remount_source_closure":remount_source,
         "actions":actions,"native_commands":commands,"accounts":account_summary,
         "fresh_shadow_locked":true,"host_passwords_keys_homes_imported":false,
         "preimages_directory":work.join("complete-native-preimages"),

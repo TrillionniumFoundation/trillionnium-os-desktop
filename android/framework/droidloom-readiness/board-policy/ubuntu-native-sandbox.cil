@@ -42,7 +42,9 @@
 (typeattribute p4_native_mount_actors)
 (typeattributeset p4_native_mount_actors (init_t p4_linux_service_executor_t))
 (typeattribute p4_linux_without_native_mount_actors)
-(typeattributeset p4_linux_without_native_mount_actors (and (p4_linux_procs) (not (p4_native_mount_actors))))
+; A fixed root-remount service is not a namespace builder or cleanup writer.
+(typeattribute p4_native_root_remount_actors)
+(typeattributeset p4_linux_without_native_mount_actors (and (p4_linux_procs) (not (or (p4_native_mount_actors) (p4_native_root_remount_actors)))))
 (typeattribute p4_nonboard_without_shutdown_filesystems)
 (typeattributeset p4_nonboard_without_shutdown_filesystems (and (p4_all_nonboard) (not (p4_native_shutdown_filesystems))))
 (allow init_t self (capability (sys_admin)))
