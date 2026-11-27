@@ -28,6 +28,22 @@ const REQUEST: u8 = 1;
 const CREATED: u8 = 2;
 const REQUEST_APK_PIPE: u8 = 3;
 const CREATED_APK_PIPE: u8 = 4;
+const REQUEST_ACCOUNT_PIPE: u8 = 5;
+const CREATED_ACCOUNT_PIPE: u8 = 6;
+#[derive(Clone,Copy,Debug,Eq,PartialEq)]
+enum StdinKind { Null, Apk, AccountSecret }
+impl StdinKind {
+    const fn request(self)->u8 { match self {
+        Self::Null=>REQUEST,Self::Apk=>REQUEST_APK_PIPE,Self::AccountSecret=>REQUEST_ACCOUNT_PIPE } }
+    const fn created(self)->u8 { match self {
+        Self::Null=>CREATED,Self::Apk=>CREATED_APK_PIPE,Self::AccountSecret=>CREATED_ACCOUNT_PIPE } }
+    const fn has_pipe(self)->bool { !matches!(self,Self::Null) }
+    fn from_request(phase:u8)->Result<Self> { match phase {
+        REQUEST=>Ok(Self::Null),REQUEST_APK_PIPE=>Ok(Self::Apk),
+        REQUEST_ACCOUNT_PIPE=>Ok(Self::AccountSecret),
+        _=>Err(reject("query I/O first phase differs")) } }
+}
+
 
 /// The fixed five descriptors. Reads are nonblocking; query writes remain
 /// blocking. Every descriptor is CLOEXEC until the real query deliberately
@@ -93,7 +109,7 @@ impl Wire {
                 && &bytes[..8] == MAGIC
                 && matches!(
                     bytes[8],
-                    REQUEST | CREATED | REQUEST_APK_PIPE | CREATED_APK_PIPE
+                    REQUEST | CREATED | REQUEST_APK_PIPE | CREATED_APK_PIPE | REQUEST_ACCOUNT_PIPE | CREATED_ACCOUNT_PIPE
                 )
                 && bytes[9..16] == [0; 7],
             "query I/O wire format differs",
@@ -631,12 +647,12 @@ fn validate_input_pipe(read: &File, write: &File) -> Result<(u64, u64)> {
     )?;
     Ok((r.dev(), r.ino()))
 }
-fn assemble(mut files: Vec<File>, root: &File, apk_pipe: bool) -> Result<QueryIo> {
+fn assemble(mut files: Vec<File>, root: &File, input_pipe: bool) -> Result<QueryIo> {
     require(
-        files.len() == if apk_pipe { 6 } else { 5 },
+        files.len() == if input_pipe { 6 } else { 5 },
         "query I/O reply descriptor shape differs",
     )?;
-    let stdin_write = if apk_pipe { files.pop() } else { None };
+    let stdin_write = if input_pipe { files.pop() } else { None };
     let [stdin, stdout_read, stdout_write, stderr_read, stderr_write]: [File; 5] = files
         .try_into()
         .map_err(|_| reject("query I/O reply must contain exactly five descriptors"))?;
@@ -995,7 +1011,7 @@ pub(super) fn entry() -> Result<()> {
     require(parent > 1, "query I/O creator has no broker parent")?;
     let received = receive(3, 2, Instant::now() + LIMIT)?;
     require(
-        matches!(received.wire.phase, REQUEST | REQUEST_APK_PIPE),
+        matches!(received.wire.phase, REQUEST | REQUEST_APK_PIPE | REQUEST_ACCOUNT_PIPE),
         "query I/O first phase differs",
     )?;
     let [root, owner]: [File; 2] = received
@@ -1019,8 +1035,9 @@ pub(super) fn entry() -> Result<()> {
         "query I/O creator deadline exceeds fixed budget",
     )?;
     let deadline = Instant::now() + Duration::from_nanos(remaining);
-    let apk_pipe = received.wire.phase == REQUEST_APK_PIPE;
-    let (stdin, stdin_write) = if apk_pipe {
+    let kind=StdinKind::from_request(received.wire.phase)?;
+    let input_pipe = kind.has_pipe();
+    let (stdin, stdin_write) = if input_pipe {
         let (read, write) = new_input_pipe()?;
         (read, Some(write))
     } else {
@@ -1032,12 +1049,12 @@ pub(super) fn entry() -> Result<()> {
     if let Some(write) = stdin_write {
         files.push(write);
     }
-    let io = assemble(files, &root, apk_pipe)?;
+    let io = assemble(files, &root, input_pipe)?;
     mac_context(CREATOR)?;
     empty_capabilities()?;
     parent_identity(&owner, received.peer, parent)?;
     let reply = Wire {
-        phase: if apk_pipe { CREATED_APK_PIPE } else { CREATED },
+        phase: kind.created(),
         ..received.wire
     };
     let mut files = vec![
@@ -1417,13 +1434,19 @@ impl Drop for Child {
 
 /// Create the fixed query streams through one owned, separately exec'd creator.
 pub(crate) fn create(root: &File, deadline: Instant) -> Result<QueryIo> {
-    create_fixed(root, deadline, false)
+    create_fixed(root, deadline, StdinKind::Null)
 }
 /// Only the source-owned installation writer requests a third creator-origin pipe.
 pub(crate) fn create_apk_pipe(root: &File, deadline: Instant) -> Result<QueryIo> {
-    create_fixed(root, deadline, true)
+    create_fixed(root, deadline, StdinKind::Apk)
 }
-fn create_fixed(root: &File, deadline: Instant, apk_pipe: bool) -> Result<QueryIo> {
+/// A private source-owned AccountRead inlet. The creator never sees the key;
+/// only its actual original broker fills it after the creator was reaped.
+pub(super) fn create_account_secret_pipe(root:&File,deadline:Instant)->Result<QueryIo> {
+    create_fixed(root,deadline,StdinKind::AccountSecret)
+}
+fn create_fixed(root: &File, deadline: Instant, kind: StdinKind) -> Result<QueryIo> {
+    let input_pipe=kind.has_pipe();
     #[cfg(not(target_arch = "x86_64"))]
     return Err(reject("query I/O requires the reviewed native x86_64 ABI"));
     let deadline = deadline.min(Instant::now() + LIMIT);
@@ -1470,7 +1493,7 @@ fn create_fixed(root: &File, deadline: Instant, apk_pipe: bool) -> Result<QueryI
     let left = deadline.saturating_duration_since(Instant::now());
     crate::production_host_admission::check_observation_before(deadline)?;
     let wire = Wire {
-        phase: if apk_pipe { REQUEST_APK_PIPE } else { REQUEST },
+        phase: kind.request(),
         nonce,
         deadline_ns: super::protocol::monotonic_ns()?
             .checked_add(left.as_nanos() as u64)
@@ -1536,14 +1559,14 @@ fn create_fixed(root: &File, deadline: Instant, apk_pipe: bool) -> Result<QueryI
             &[root.as_raw_fd(), owner.as_raw_fd()],
             deadline,
         )?;
-        let reply = receive(channel.as_raw_fd(), if apk_pipe { 6 } else { 5 }, deadline)?;
+        let reply = receive(channel.as_raw_fd(), if input_pipe { 6 } else { 5 }, deadline)?;
         require(
             reply.peer.pid == pid as i32
                 && reply.peer.uid == 0
                 && reply.peer.gid == 0
                 && reply.wire
                     == Wire {
-                        phase: if apk_pipe { CREATED_APK_PIPE } else { CREATED },
+                        phase: kind.created(),
                         ..wire
                     },
             "query I/O creator reply identity differs",
@@ -1552,7 +1575,7 @@ fn create_fixed(root: &File, deadline: Instant, apk_pipe: bool) -> Result<QueryI
         // Descriptor validation happens only after actual successful reap.
         let (waitid_code, waitid_status) =
             child.terminal.ok_or(ApplicationError::RetirementUnproven)?;
-        let mut result = assemble(reply.files, root, apk_pipe)?;
+        let mut result = assemble(reply.files, root, input_pipe)?;
         result.creator = Some(CreatorReceipt {
             pid: child.pid,
             waitid_code,
@@ -1573,6 +1596,20 @@ fn create_fixed(root: &File, deadline: Instant, apk_pipe: bool) -> Result<QueryI
 mod tests {
     use super::*;
     #[test]
+    fn account_query_io_phase_is_distinct_from_null_and_apk() {
+        for kind in [StdinKind::Null,StdinKind::Apk,StdinKind::AccountSecret] {
+            assert_eq!(StdinKind::from_request(kind.request()).unwrap(),kind);
+            assert!(StdinKind::from_request(kind.created()).is_err());
+            assert_ne!(kind.request(),kind.created());
+        }
+        assert_eq!(StdinKind::AccountSecret.request(),5);
+        assert_eq!(StdinKind::AccountSecret.created(),6);
+        assert!(StdinKind::AccountSecret.has_pipe());
+        assert_ne!(StdinKind::AccountSecret.request(),StdinKind::Apk.request());
+        assert!(!StdinKind::Null.has_pipe());
+    }
+
+    #[test]
     fn query_io_wire_has_no_optional_path_label_or_pid_authority() {
         let w = Wire {
             phase: REQUEST,
@@ -1584,11 +1621,11 @@ mod tests {
         bytes[9] = 1;
         assert!(Wire::parse(&bytes).is_err());
         bytes = w.bytes();
-        for phase in [REQUEST, CREATED, REQUEST_APK_PIPE, CREATED_APK_PIPE] {
+        for phase in [REQUEST, CREATED, REQUEST_APK_PIPE, CREATED_APK_PIPE, REQUEST_ACCOUNT_PIPE, CREATED_ACCOUNT_PIPE] {
             bytes[8] = phase;
             assert_eq!(Wire::parse(&bytes).unwrap().phase, phase);
         }
-        bytes[8] = 5;
+        bytes[8] = 7;
         assert!(Wire::parse(&bytes).is_err());
         assert!(Wire::parse(&w.bytes()[..39]).is_err());
         let mut extra = w.bytes().to_vec();

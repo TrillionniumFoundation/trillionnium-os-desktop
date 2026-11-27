@@ -397,13 +397,13 @@ fn prepare(
         flags >= 0 && flags & (libc::O_ACCMODE | libc::O_NONBLOCK | libc::O_PATH) == libc::O_RDONLY,
         "query stdin is not a blocking readonly stream",
     )?;
-    if query.install_input_bytes().is_some() {
+    if query.install_input_bytes().is_some() || query.domain()==OperationDomain::AccountRead {
         fs(&files[STDIN], 0x5049_5045)?;
         require(
             input.mode() & libc::S_IFMT == libc::S_IFIFO
                 && identity(&files[STDIN])? != identity(&files[STDOUT])?
                 && identity(&files[STDIN])? != identity(&files[STDERR])?,
-            "install stdin is not its distinct creator-origin pipe",
+            "private input stdin is not its distinct creator-origin pipe",
         )?;
         pipe_label(&files[STDIN])?;
     } else {
@@ -534,6 +534,7 @@ fn native_domain(domain: OperationDomain) -> u32 {
         OperationDomain::CatalogRead => 6,
         OperationDomain::DisplayControl => 7,
         OperationDomain::AppOpsRead => 8,
+        OperationDomain::AccountRead => 9,
     }
 }
 unsafe extern "C" {
@@ -1589,12 +1590,34 @@ pub(super) fn run_with_input(
     input: Option<super::install_input::SegmentInput>,
     workflow_deadline: Instant,
 ) -> Result<LaunchCommandResult> {
+    run_private(authority,request,input,None,workflow_deadline)
+}
+pub(super) fn run_account(
+    authority: &dyn ApplicationWorkerAuthority,
+    request: &ApplicationOperation,
+    key: &super::account_secret::AccountAnonymityKey,
+    workflow_deadline: Instant,
+) -> Result<LaunchCommandResult> {
+    require(request.domain()==OperationDomain::AccountRead,
+        "private account stdin is exclusive to its fixed normal query")?;
+    run_private(authority,request,None,Some(key),workflow_deadline)
+}
+fn run_private(
+    authority: &dyn ApplicationWorkerAuthority,
+    request: &ApplicationOperation,
+    input: Option<super::install_input::SegmentInput>,
+    account_key: Option<&super::account_secret::AccountAnonymityKey>,
+    workflow_deadline: Instant,
+) -> Result<LaunchCommandResult> {
     use sha2::{Digest, Sha256};
     use std::os::unix::process::ExitStatusExt;
     let started = Instant::now();
     let deadline = (started + QUERY_LIMIT).min(workflow_deadline);
     crate::production_host_admission::check_observation_before(deadline)?;
     request.validate()?;
+    require(account_key.is_some()==(request.domain()==OperationDomain::AccountRead)
+        && !(account_key.is_some() && input.is_some()),
+        "query private stdin role differs")?;
     require(
         authority.query_projection() == QueryProjection::EarlyDev,
         "factory operation requires the original early projection",
@@ -1620,23 +1643,29 @@ pub(super) fn run_with_input(
         super::process::ExecutableBinding::from_held_role(&files[10], root_uid, root_gid, deadline)?
     };
     let shell_uid = root_uid
-        .checked_add(2000)
-        .ok_or_else(|| reject("query shell UID overflow"))?;
+        .checked_add(request.domain().guest_uid())
+        .ok_or_else(|| reject("query role UID overflow"))?;
     let shell_gid = root_gid
-        .checked_add(2000)
-        .ok_or_else(|| reject("query shell GID overflow"))?;
+        .checked_add(request.domain().guest_uid())
+        .ok_or_else(|| reject("query role GID overflow"))?;
     // The stdio creator is an independent real broker child, with its own
     // normal PIDFD wait. It is never presented as the query's creator.
     require(
         input.as_ref().map(|input| input.bytes()) == request.install_input_bytes(),
         "installation input is absent or outside its fixed write operation",
     )?;
-    let io = if input.is_some() {
+    let mut io = if account_key.is_some() {
+        super::query_io::create_account_secret_pipe(&files[2], deadline)?
+    } else if input.is_some() {
         super::query_io::create_apk_pipe(&files[2], deadline)?
     } else {
         super::query_io::create(&files[2], deadline)?
     };
     let stdio_creator = io.creator_receipt()?;
+    if let Some(key)=account_key {
+        let writer=io.stdin_write.take().ok_or_else(||reject("account creator omitted private stdin"))?;
+        key.write_creator_pipe(&io.stdin,writer,deadline)?;
+    }
     let mut input = match (input, io.stdin_write) {
         (Some(input), Some(writer)) => Some(super::install_input::InputPump::new(input, writer)?),
         (None, None) => None,
