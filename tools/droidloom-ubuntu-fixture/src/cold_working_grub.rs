@@ -211,6 +211,16 @@ impl WorkingGrubPreimage {
         }
         self.report.revalidate()
     }
+    pub(super) fn current_inputs(&self) -> Result<(FilePin, FilePin)> {
+        self.revalidate()?;
+        ensure(
+            self.current.len() == 4
+                && self.current[0].pin().path == Path::new("/boot/grub/grub.cfg")
+                && self.current[1].pin().path == Path::new("/boot/grub/grubenv"),
+            "actual current GRUB preimage roles differ",
+        )?;
+        Ok((self.current[0].pin().clone(), self.current[1].pin().clone()))
+    }
     pub(super) fn pin(&self) -> &FilePin {
         self.report.pin()
     }

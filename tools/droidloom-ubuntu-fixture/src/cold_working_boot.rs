@@ -221,6 +221,9 @@ impl PreparedWorkingBoot {
         }
         self.materials.revalidate()
     }
+    pub(super) fn materials(&self) -> &WorkingQualificationMaterials {
+        &self.materials
+    }
     pub(super) fn report(&self) -> &FilePin {
         self.report.pin()
     }

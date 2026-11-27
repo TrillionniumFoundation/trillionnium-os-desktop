@@ -231,50 +231,7 @@ impl Materials {
             "normal host relative member",
         )?;
         let admitted = self.admitted()?;
-        let host_pin: FilePin = serde_json::from_value(
-            admitted["fresh_owned"]["actual"]["normal_host_manifest"].clone(),
-        )?;
-        let host: crate::boot_host::HostManifest =
-            serde_json::from_slice(&files::read_pin(&host_pin, 1024 * 1024)?)?;
-        crate::boot_host::validate_manifest(&host)?;
-        let normal = &admitted["normal_initramfs"];
-        ensure(
-            host.commit == text(normal, "host_source_commit")?
-                && host.tree == text(normal, "host_source_tree")?,
-            "normal host file source differs from actual admission",
-        )?;
-        let rows = host
-            .files
-            .iter()
-            .filter(|f| f.path == relative)
-            .collect::<Vec<_>>();
-        ensure(
-            rows.len() == 1,
-            "normal package must contain the exact source-owned member once",
-        )?;
-        let row = rows[0];
-        let root = self
-            .source_pin()
-            .path
-            .parent()
-            .ok_or("normal source parent")?
-            .join("normal-host-payload");
-        let pin = FilePin {
-            path: root.join(relative),
-            bytes: row.size,
-            sha256: row.sha256.clone(),
-        };
-        let (file, identity) = files::open_pin(&pin)?;
-        ensure(
-            identity.uid == 0
-                && identity.gid == 0
-                && identity.nlink == 1
-                && identity.mode & 0o7777 == row.mode
-                && fs::hash(&file)? == pin.sha256
-                && fs::stat(&file)? == identity
-                && fs::xattrs(&file)?.is_empty(),
-            "normal package member body or metadata changed",
-        )?;
+        let pin = normal_host_file_from_admission(self.source_pin(), &admitted, relative)?;
         self.revalidate_custody()?;
         Ok(pin)
     }
@@ -307,6 +264,65 @@ impl Materials {
         Ok(())
     }
 }
+/// Internal read-only member comparison; only the surrounding actual source
+/// owners construct a guarded caller. The FilePin result conveys no authority.
+pub(super) fn normal_host_file_from_admission(
+    source_pin: &FilePin,
+    admitted: &Value,
+    relative: &str,
+) -> Result<FilePin> {
+    ensure(
+        !relative.starts_with('/')
+            && relative
+                .split('/')
+                .all(|p| !p.is_empty() && p != "." && p != ".."),
+        "normal host relative member",
+    )?;
+    let host_pin: FilePin =
+        serde_json::from_value(admitted["fresh_owned"]["actual"]["normal_host_manifest"].clone())?;
+    let host: crate::boot_host::HostManifest =
+        serde_json::from_slice(&files::read_pin(&host_pin, 1024 * 1024)?)?;
+    crate::boot_host::validate_manifest(&host)?;
+    let normal = &admitted["normal_initramfs"];
+    ensure(
+        host.commit == text(normal, "host_source_commit")?
+            && host.tree == text(normal, "host_source_tree")?,
+        "normal host file source differs from actual admission",
+    )?;
+    let rows = host
+        .files
+        .iter()
+        .filter(|f| f.path == relative)
+        .collect::<Vec<_>>();
+    ensure(
+        rows.len() == 1,
+        "normal package must contain the exact source-owned member once",
+    )?;
+    let row = rows[0];
+    let root = source_pin
+        .path
+        .parent()
+        .ok_or("normal source parent")?
+        .join("normal-host-payload");
+    let pin = FilePin {
+        path: root.join(relative),
+        bytes: row.size,
+        sha256: row.sha256.clone(),
+    };
+    let (file, identity) = files::open_pin(&pin)?;
+    ensure(
+        identity.uid == 0
+            && identity.gid == 0
+            && identity.nlink == 1
+            && identity.mode & 0o7777 == row.mode
+            && fs::hash(&file)? == pin.sha256
+            && fs::stat(&file)? == identity
+            && fs::xattrs(&file)?.is_empty(),
+        "normal package member body or metadata changed",
+    )?;
+    Ok(pin)
+}
+
 fn text<'a>(value: &'a Value, key: &str) -> Result<&'a str> {
     value[key]
         .as_str()
