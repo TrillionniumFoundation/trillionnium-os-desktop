@@ -33,6 +33,9 @@ profile droidloom-production-broker flags=(attach_disconnected.path=/.droidloom-
   @{PROC}/[0-9]*/maps r,
   # Fixed readonly selected engine: normal, early-slot and disconnected views.
   /{system,run/droidloom-early-slot/rootfs/system,.droidloom-kernel-apparmorfs/system}/system_ext/lib64/libberberis_arm64.so r,
+  # Fixed native executable and selected ART; actual PIDFD/VMA custody remains required.
+  /{system,run/droidloom-early-slot/rootfs/system,.droidloom-kernel-apparmorfs/system}/bin/app_process64 r,
+  /{apex,run/droidloom-early-slot/rootfs/apex,.droidloom-kernel-apparmorfs/apex}/com.android.art{,@371899999}/lib64/libart.so r,
   owner @{PROC}/[0-9]*/task/[0-9]*/{,status,stat,attr/,attr/{current,apparmor/,selinux/,apparmor/current,selinux/current},ns/,ns/{user,pid,net},fdinfo/,fdinfo/[0-9]*} r,
   # Only a held internal numeric FD is used for the fixed APK memfd name check.
   # The target 6.18 AA dentry lookup collapses anonymous IS_ROOT files to the
