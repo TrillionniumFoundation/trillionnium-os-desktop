@@ -113,6 +113,15 @@ impl NativeSourceRelease {
         result.guard()?;
         Ok(result)
     }
+    pub(super) fn attach_to_baseline(
+        &self, baseline: &mut droidloom_supervisor::native_leaf_baseline::NativeLeafBaselineObservation<'_>,
+    ) -> Result<(), String> {
+        self.guard()?;
+        if let Self::Working(release) = self {
+            baseline.attach_working_source(&release.custody).map_err(|e| e.to_string())?;
+        }
+        Ok(())
+    }
     pub(super) fn guard(&self) -> Result<(), String> {
         match self {
             Self::Legacy(release) => release.guard(),

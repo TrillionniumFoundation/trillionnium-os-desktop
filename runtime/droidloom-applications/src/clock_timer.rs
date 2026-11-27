@@ -814,6 +814,7 @@ fn observe_pair_with_limit(
     window(end, 2 * 250 + 2 * 510 + 3 * 70 + 30)?;
     let mut main = HeldMainCustody::observe(inspector, before_token, end)?;
     let mut baseline = main.baseline(inspector, end)?;
+    lease.attach_to_baseline(&mut baseline)?;
     lease.guard()?;
 
     let timer_plan = LeafPlan { route:Kind::Timer15.route(), request:timer.request.clone(), output:None };
