@@ -14,24 +14,43 @@ use std::io;
 use std::os::fd::AsRawFd;
 use std::os::unix::fs::{FileExt, MetadataExt, OpenOptionsExt};
 use std::path::{Path, PathBuf};
+use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 #[path = "physical_qualification_capture.rs"]
 mod capture;
 #[path = "physical_qualification_socket.rs"]
 mod socket;
+#[path = "physical_qualification_source_custody.rs"]
+mod source_custody;
+#[path = "physical_qualification_working_config.rs"]
+mod working_config;
 use super::application_leaf_unit::qualification::{ChildPeer, KernelProfile};
-pub use capture::{CapturedCompleteApplicationRun, capture_installed_physical_run};
+pub(crate) use capture::WorkingDocumentsBuildResources;
+pub use capture::{
+    CapturedCompleteApplicationRun, WorkingPreparationDirectory, WorkingQualificationOwner,
+};
+pub use source_custody::WorkingNativeSourceCustody;
+use working_config::AdmittedWorkingConfiguration;
+pub use working_config::{WorkingPayloadPin, WorkingSourcePins};
 
 #[path = "physical_qualification_budget.rs"]
 pub mod budget;
-pub use budget::{CASE_COUNT, FAMILY_CASE_COUNT, NATIVE_CASE_COUNT, NOFILE_LIMIT, RETIREMENT_SECONDS, SERVICE_SECONDS, SUITE_SECONDS};
+pub use budget::{
+    CASE_COUNT, FAMILY_CASE_COUNT, NATIVE_CASE_COUNT, NOFILE_LIMIT, RETIREMENT_SECONDS,
+    SERVICE_SECONDS, SUITE_SECONDS,
+};
 pub const SUMMARY_LIMIT: usize = 16 * 1024 * 1024;
 pub const BINDING_LIMIT: usize = 128 * 1024;
-pub(super) const EXE: &str = "/usr/bin/droidloom-applications";
-pub(super) const TEMPLATE_NAME: &str = "droidloom-physical-qualification@.service";
-pub(super) const TEMPLATE: &str =
-    include_str!("../../../packaging/systemd/system/droidloom-physical-qualification@.service");
+pub(super) const EXE: &str = crate::native_working_contract::APPLICATIONS_EXECUTABLE;
+pub(super) const UNIT_NAME: &str = crate::native_working_contract::PARENT_UNIT;
+pub(super) const UNIT_FRAGMENT: &str =
+    "/usr/lib/systemd/system/droidloom-working-qualification.service";
+pub(super) const UNIT_SOURCE: &str =
+    include_str!("../../../packaging/systemd/system/droidloom-working-qualification.service");
+pub(super) fn require_working_actor() -> io::Result<()> {
+    working_config::require_actor()
+}
 
 fn error(why: &str) -> io::Error {
     io::Error::new(io::ErrorKind::PermissionDenied, why)
@@ -79,30 +98,23 @@ pub(super) fn instant_until(ns: u64, ceiling: Instant) -> io::Result<Instant> {
         .map(|end| end.min(ceiling))
         .ok_or_else(|| error("qualification instant overflow"))
 }
-pub(super) fn plan_path(digest: &str) -> io::Result<PathBuf> {
-    if !digest_ok(digest) {
-        return Err(error("exact physical plan digest required"));
-    }
-    Ok(PathBuf::from(format!(
-        "/var/lib/droidloom-qualification/physical-{digest}/PLAN.json"
-    )))
+pub(super) fn unit_name() -> &'static str {
+    UNIT_NAME
 }
-pub(super) fn unit_name(digest: &str) -> io::Result<String> {
-    plan_path(digest)?;
-    Ok(format!("droidloom-physical-qualification@{digest}.service"))
-}
-pub(super) fn parent_argv(digest: &str) -> Vec<String> {
+pub(super) fn parent_argv() -> Vec<String> {
     vec![
         EXE.into(),
-        "--owned-physical-plan-sha256".into(),
-        digest.into(),
+        crate::native_working_contract::PARENT_MODE.into(),
     ]
 }
-pub(super) fn child_argv(digest: &str) -> io::Result<Vec<String>> {
+pub(super) fn child_argv(path: &Path, digest: &str) -> io::Result<Vec<String>> {
+    if !digest_ok(digest) || path.file_name().and_then(|n| n.to_str()) != Some("PLAN.json") {
+        return Err(error("exact held working plan required"));
+    }
     Ok(vec![
         EXE.into(),
         "--physical-application-plan".into(),
-        plan_path(digest)?.to_string_lossy().into_owned(),
+        path.to_string_lossy().into_owned(),
         "--expect-physical-plan-sha256".into(),
         digest.into(),
     ])
@@ -216,8 +228,10 @@ impl QualificationCase {
     }
     /// Complete original case budget; resource acknowledgements consume this window.
     pub fn window_seconds(self) -> u64 {
-        budget::NATIVE_CASE_WINDOWS.get(self as usize)
-            .copied().unwrap_or(budget::FAMILY_CASE_SECONDS)
+        budget::NATIVE_CASE_WINDOWS
+            .get(self as usize)
+            .copied()
+            .unwrap_or(budget::FAMILY_CASE_SECONDS)
     }
     /// Only these compiled selected packages have a family case. No caller
     /// ordinal, profile, command, or budget is admitted through this lookup.
@@ -359,10 +373,25 @@ pub(super) struct Plan {
     pub pin: [u64; 9],
     pub digest: String,
     parents: Vec<(PathBuf, File, [u64; 9])>,
+    configuration: Arc<AdmittedWorkingConfiguration>,
 }
 impl Plan {
     pub fn open(digest: &str) -> io::Result<Self> {
-        let path = plan_path(digest)?;
+        if !digest_ok(digest) {
+            return Err(error("exact working plan digest required"));
+        }
+        let configuration = Arc::new(AdmittedWorkingConfiguration::acquire()?);
+        let plan = Self::open_admitted(configuration)?;
+        if plan.digest != digest {
+            return Err(error(
+                "working plan differs from the parent's actual held input",
+            ));
+        }
+        Ok(plan)
+    }
+    fn open_admitted(configuration: Arc<AdmittedWorkingConfiguration>) -> io::Result<Self> {
+        configuration.guard()?;
+        let path = configuration.runtime_evidence_directory().join("PLAN.json");
         if path.canonicalize()? != path {
             return Err(error("physical plan path has an alias"));
         }
@@ -397,12 +426,21 @@ impl Plan {
         {
             return Err(error("root immutable regular physical plan required"));
         }
+        if crate::native_hardware_label::label(&file)? != working_config::PLAN_LABEL {
+            return Err(error("working PLAN lacks its immutable source-input label"));
+        }
+        let mut raw = vec![0; pin[6] as usize];
+        file.read_exact_at(&mut raw, 0)?;
+        if file.read_at(&mut [0; 1], pin[6])? != 0 || f9(&file)? != pin {
+            return Err(error("working PLAN changed during initial whole read"));
+        }
         let result = Self {
             path,
             file,
             pin,
-            digest: digest.into(),
+            digest: sha(&raw),
             parents,
+            configuration,
         };
         result.guard()?;
         Ok(result)
@@ -416,6 +454,7 @@ impl Plan {
         Ok(raw)
     }
     pub fn guard(&self) -> io::Result<()> {
+        self.configuration.guard()?;
         for (p, file, pin) in &self.parents {
             let named = OpenOptions::new()
                 .read(true)
@@ -429,7 +468,11 @@ impl Plan {
             .read(true)
             .custom_flags(libc::O_NOFOLLOW | libc::O_CLOEXEC)
             .open(&self.path)?;
-        if f9(&self.file)? != self.pin || f9(&named)? != self.pin {
+        if f9(&self.file)? != self.pin
+            || f9(&named)? != self.pin
+            || crate::native_hardware_label::label(&self.file)? != working_config::PLAN_LABEL
+            || crate::native_hardware_label::label(&named)? != working_config::PLAN_LABEL
+        {
             return Err(error("held physical plan changed"));
         }
         self.bytes()?;
@@ -437,6 +480,16 @@ impl Plan {
             return Err(error("physical plan changed during whole read"));
         }
         Ok(())
+    }
+    pub(super) fn working_applications_pin(
+        &self,
+    ) -> io::Result<&crate::native_working_contract::PayloadPin> {
+        self.configuration.guard()?;
+        Ok(self.configuration.applications_pin())
+    }
+    pub(super) fn working_runtime_evidence_directory(&self) -> io::Result<&Path> {
+        self.configuration.guard()?;
+        Ok(self.configuration.runtime_evidence_directory())
     }
 }
 
@@ -447,6 +500,28 @@ pub(super) struct Hello {
     pub plan_sha256: String,
     pub epoch: RuntimeEpoch,
     pub suite_seconds: u64,
+}
+#[derive(Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub(super) struct HelloAcknowledgement {
+    pub owner_start_ns: u64,
+    pub preparation_end_ns: u64,
+}
+impl HelloAcknowledgement {
+    fn validate(&self, suite_end_ns: u64) -> io::Result<()> {
+        let schedule = crate::native_working_contract::WorkingSchedule::selected();
+        if schedule.authorization_end_ns(self.owner_start_ns)? != suite_end_ns
+            || self
+                .owner_start_ns
+                .checked_add(budget::SOURCE_AND_CAPTURE_SECONDS * 1_000_000_000)
+                != Some(self.preparation_end_ns)
+        {
+            return Err(error(
+                "private parent ACK changed the original source preparation or suite end",
+            ));
+        }
+        Ok(())
+    }
 }
 #[derive(Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -462,10 +537,13 @@ pub(super) struct CompleteHeader {
 /// The child-side private connection. It cannot be made from a saved receipt.
 pub struct ChildChannel {
     socket: Option<socket::Socket>,
-    peer: ChildPeer,
-    plan: Plan,
+    peer: Arc<ChildPeer>,
+    plan: Arc<Plan>,
+    source: Option<WorkingNativeSourceCustody>,
+    probe_scope: Option<super::working_owned_probe::Scope>,
     epoch: RuntimeEpoch,
     end: Instant,
+    preparation_end: Instant,
     wire_end: u64,
     next_case: u8,
     sequence: u32,
@@ -480,13 +558,13 @@ impl ChildChannel {
         epoch: &RuntimeEpoch,
         original_end: Instant,
     ) -> io::Result<Self> {
-        let plan = Plan::open(digest)?;
+        let plan = Arc::new(Plan::open(digest)?);
         if path != plan.path || bytes != plan.pin[6] {
             return Err(error(
                 "child physical plan is not the exact parent-selected input",
             ));
         }
-        let peer = ChildPeer::capture(digest)?;
+        let peer = Arc::new(ChildPeer::capture(&plan)?);
         let socket = socket::Socket::inherited()?;
         let wire_end = end_ns(original_end)?;
         let hello = Hello {
@@ -499,8 +577,11 @@ impl ChildChannel {
             socket: Some(socket),
             peer,
             plan,
+            source: None,
+            probe_scope: None,
             epoch: epoch.clone(),
             end: original_end,
+            preparation_end: original_end,
             wire_end,
             next_case: 0,
             sequence: 0,
@@ -512,10 +593,37 @@ impl ChildChannel {
         }
         result.wire_end = ack.end_ns;
         result.end = instant_until(ack.end_ns, original_end)?;
+        let acknowledgement: HelloAcknowledgement = serde_json::from_slice(&ack.payload)?;
+        acknowledgement.validate(ack.end_ns)?;
+        result.preparation_end = instant_until(acknowledgement.preparation_end_ns, result.end)?;
+        result.source = Some(WorkingNativeSourceCustody::from_hello(
+            Arc::clone(&result.peer),
+            Arc::clone(&result.plan),
+            result.end,
+        )?);
+        result.probe_scope = Some(super::working_owned_probe::Scope::child(
+            &result.peer,
+            result.end,
+        )?);
         Ok(result)
     }
     pub fn deadline(&self) -> Instant {
         self.end
+    }
+    /// The same preparation end admitted from the actual parent's first start.
+    pub fn preparation_deadline(&self) -> Instant {
+        self.preparation_end
+    }
+    /// Retain the one actual inherited source owner after the private Hello ACK.
+    pub fn working_source_custody(&self) -> io::Result<WorkingNativeSourceCustody> {
+        self.peer.guard()?;
+        self.plan.guard()?;
+        let source = self
+            .source
+            .as_ref()
+            .ok_or_else(|| error("working source Hello has not completed"))?;
+        source.guard()?;
+        Ok(source.retained())
     }
     fn exchange(
         &mut self,
@@ -527,6 +635,9 @@ impl ChildChannel {
     ) -> io::Result<socket::Packet> {
         self.peer.guard()?;
         self.plan.guard()?;
+        if let Some(source) = &self.source {
+            source.guard()?;
+        }
         if self.complete || end > self.end {
             return Err(error("qualification channel is closed or extended"));
         }
@@ -546,7 +657,8 @@ impl ChildChannel {
         if ack.kind != 5
             || ack.sequence != self.sequence
             || ack.case != case
-            || !ack.payload.is_empty()
+            || (kind != 1 && !ack.payload.is_empty())
+            || (kind == 1 && (ack.payload.is_empty() || ack.payload.len() > 256))
         {
             self.socket.take();
             return Err(error(
@@ -555,6 +667,9 @@ impl ChildChannel {
         }
         self.peer.guard()?;
         self.plan.guard()?;
+        if let Some(source) = &self.source {
+            source.guard()?;
+        }
         if Instant::now() >= end {
             return Err(error(
                 "qualification acknowledgement exceeded original deadline",
@@ -688,10 +803,17 @@ mod tests {
         }
         assert_eq!(total, 25_430);
         assert_eq!(total, budget::NATIVE_SECONDS);
-        assert_eq!(total + FAMILY_CASE_COUNT as u64 * budget::FAMILY_CASE_SECONDS + 140 + 120, SUITE_SECONDS);
-        assert_eq!(SUITE_SECONDS, 114_505);
+        assert_eq!(
+            total
+                + FAMILY_CASE_COUNT as u64 * budget::FAMILY_CASE_SECONDS
+                + 140
+                + budget::SOURCE_AND_CAPTURE_SECONDS,
+            SUITE_SECONDS
+        );
+        assert_eq!(budget::SOURCE_AND_CAPTURE_SECONDS, 46_622);
+        assert_eq!(SUITE_SECONDS, 161_007);
         assert!(QualificationCase::from_ordinal(CASE_COUNT as u8).is_err());
-        assert!(plan_path("../caller").is_err());
+        assert!(child_argv(Path::new("/PLAN.json"), "../caller").is_err());
     }
     #[test]
     fn physical_family_channel_rejects_foreign_native_and_reordered_cases() {
@@ -711,8 +833,15 @@ mod tests {
             assert!(QualificationCase::for_family(case.package()).is_err());
             assert!(case.native_route().is_some());
         }
-        for package in ["", "../caller", "com.android.permissioncontroller", "org.droidloom.qa.editorcontract",
-            "com.Hyatt.hyt ", "com.hyatt.hyt", "caller.package"] {
+        for package in [
+            "",
+            "../caller",
+            "com.android.permissioncontroller",
+            "org.droidloom.qa.editorcontract",
+            "com.Hyatt.hyt ",
+            "com.hyatt.hyt",
+            "caller.package",
+        ] {
             assert!(QualificationCase::for_family(package).is_err(), "{package}");
         }
         assert_eq!(QualificationCase::FamilyHyatt.ordinal(), 14);
@@ -721,7 +850,7 @@ mod tests {
 
     #[test]
     fn physical_family_template_and_shared_budget_preserve_the_fixed_owner_bounds() {
-        let lines: std::collections::BTreeSet<_> = TEMPLATE.lines().collect();
+        let lines: std::collections::BTreeSet<_> = UNIT_SOURCE.lines().collect();
         for line in [
             format!("RuntimeMaxSec={}s", SERVICE_SECONDS),
             format!("TimeoutStopSec={}s", RETIREMENT_SECONDS),
@@ -730,7 +859,7 @@ mod tests {
             assert!(lines.contains(line.as_str()), "{line}");
         }
         assert_eq!(NOFILE_LIMIT, 32_768);
-        assert_eq!(SERVICE_SECONDS, 114_685);
+        assert_eq!(SERVICE_SECONDS, 161_187);
         assert!(lines.contains("MemoryMax=2147483648"));
         assert!(lines.contains("MemorySwapMax=0"));
         assert!(lines.contains("CPUQuota=200%"));

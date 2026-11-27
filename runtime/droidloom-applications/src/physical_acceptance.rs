@@ -6,7 +6,9 @@
 use super::clock_timer::{self, ClockResultCustody};
 use super::common_gate::{self, CommonGateFact};
 use super::family_observation::{self, FamilyObservation};
-use super::leaf_release::{self, NativeRelease};
+use super::leaf_release;
+use super::working_leaf_release::NativeSourceRelease as NativeRelease;
+use std::sync::Arc;
 use super::leaf_routes::{self, LeafPlan, Route};
 use super::native_business::{self, NativeBusinessFact, NativeCaseEvidence};
 use super::physical_gate_roster as roster;
@@ -935,6 +937,13 @@ pub fn run_physical_files(
     )
     .map_err(|e| e.to_string())?;
     let end = channel.deadline();
+    // The parent charged plan production and child setup to this same source
+    // window. The child never starts another 120-second preparation allowance.
+    let preparation_end = channel.preparation_deadline();
+    require(preparation_end <= end, "parent preparation end exceeds the original suite")?;
+    deadline(preparation_end)?;
+    let working_sources = Arc::new(channel.working_source_custody()
+        .map_err(|error| error.to_string())?);
     let selection = runtime
         .preparation_selection
         .clone()
@@ -947,6 +956,7 @@ pub fn run_physical_files(
         .ok_or("current material selection absent")?;
     inputs.read(&source_selection)?;
     for requested in &runtime.applications {
+        deadline(preparation_end)?;
         inputs.read(
             &requested
                 .expected_input
@@ -959,23 +969,23 @@ pub fn run_physical_files(
     // original factories still validate every transitive source and input.
     for row in &plan.applications {
         for case in &row.cases {
+            deadline(preparation_end)?;
             inputs.read(&case.leaf.request)?;
             inputs.read(&case.main_qualification)?;
         }
     }
+    deadline(preparation_end)?;
     let materials = runtime_identity::admit_plan(&runtime)?.ok_or(
         "complete physical qualification requires the source-admitted current normal batch",
     )?;
-    let source_owner = leaf_routes::qualification_release(&selection)?;
-    source_owner.cover_window(
-        end.checked_duration_since(Instant::now())
-            .ok_or("physical source preflight consumed its original window")?
-            .as_secs()
-            .saturating_add(1),
-    )?;
+    deadline(preparation_end)?;
+    let source_owner = leaf_routes::qualification_release(&selection, &working_sources)?;
+    source_owner.cover_until(end)?;
+    deadline(preparation_end)?;
     let mut inspector =
         control::NativeApplicationInspector::acquire(Path::new(control::DEFAULT_CONTROL_SOCKET))
             .map_err(|error| error.to_string())?;
+    deadline(preparation_end)?;
     let main = inspector
         .observe_main_until(&runtime.expected_epoch, end)
         .map_err(|error| error.to_string())?;
@@ -1029,6 +1039,7 @@ pub fn run_physical_files(
                         droidloom_supervisor::native_leaf_baseline::NativeLeafBaselineObservation::capture_from_observed(
                             &inspector, &main, &before, work_end,
                         ).map_err(|e|e.to_string())?;
+                    source_owner.attach_to_baseline(&mut baseline)?;
                     family_observation::run_family_case(&mut inspector, &mut baseline, work_end)?
                 };
                 let completed = HistoricalFamilyCase::from_observed(
@@ -1089,6 +1100,7 @@ pub fn run_physical_files(
                         &selection,
                         before,
                         case_end,
+                        &working_sources,
                     )?;
                     require(
                         after == actual,
@@ -1105,6 +1117,7 @@ pub fn run_physical_files(
                         &selection,
                         before,
                         case_end,
+                        &working_sources,
                     )?;
                     require(
                         after == actual,

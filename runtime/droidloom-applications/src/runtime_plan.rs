@@ -26,6 +26,8 @@ mod native_business;
 mod clock_timer;
 #[path = "leaf_release.rs"]
 mod leaf_release;
+#[path = "working_leaf_release.rs"]
+mod working_leaf_release;
 #[path = "leaf_adoption.rs"]
 mod leaf_adoption;
 #[path = "leaf_unit_entry.rs"]

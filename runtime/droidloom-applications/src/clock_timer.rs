@@ -18,7 +18,10 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use sha2::{Digest, Sha256};
 
-use super::leaf_release::{self, Inputs, NativeRelease};
+use super::leaf_release::{self, Inputs};
+use super::working_leaf_release::{NativeSourceRelease as NativeRelease, SourceContext};
+use droidloom_supervisor::control::physical_qualification_channel::WorkingNativeSourceCustody;
+use std::sync::Arc;
 use super::leaf_routes::{self, ExecutedClockCase, HeldMainCustody, LeafObservation, LeafPlan, Route};
 use super::runtime_identity::{IdentityObservation, VerifiedMaterialBatch};
 use super::{ApplicationPlan, FilePin, RuntimePlan};
@@ -581,9 +584,14 @@ impl ClockPairCustody {
 pub(super) struct ClockTimerEvidence {
     schema: &'static str,
     pair_request: FilePin,
-    native_release: FilePin,
-    original_owner_current: FilePin,
-    original_owner_current_f9: [u64; 9],
+    #[serde(skip_serializing_if = "Option::is_none")]
+    native_release: Option<FilePin>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    original_owner_current: Option<FilePin>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    original_owner_current_f9: Option<[u64; 9]>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    working_source: Option<Value>,
     selection: FilePin,
     #[serde(skip_serializing_if = "Option::is_none")]
     identity: Option<IdentityObservation>,
@@ -634,7 +642,7 @@ impl ClockTimerEvidence {
 
 pub(super) struct HistoricalClockTimerEvidence {
     main: HeldMainCustody,
-    source: leaf_release::HistoricalSourceWitness,
+    source: super::working_leaf_release::HistoricalNativeSourceWitness,
     timer15: ClockResultCustody,
     expiry06: ClockResultCustody,
     inputs: CaseInputs,
@@ -723,7 +731,7 @@ pub(super) fn observe_pair(
     leaf: &LeafPlan,
     selection: &FilePin,
 ) -> Result<(ApplicationInspection, ClockTimerEvidence), String> {
-    observe_pair_with_limit(inspector,materials,runtime,requested,expected,leaf,selection,None,None)
+    observe_pair_with_limit(inspector,materials,runtime,requested,expected,leaf,selection,None,None,SourceContext::Legacy)
 }
 
 pub(super) fn observe_pair_from_observed_until(
@@ -736,8 +744,10 @@ pub(super) fn observe_pair_from_observed_until(
     selection: &FilePin,
     before: control::ActualApplicationObservation,
     end: Instant,
+    source: &Arc<WorkingNativeSourceCustody>,
 ) -> Result<(ApplicationInspection, ClockTimerEvidence), String> {
-    observe_pair_with_limit(inspector,materials,runtime,requested,expected,leaf,selection,Some(before),Some(end))
+    observe_pair_with_limit(inspector,materials,runtime,requested,expected,leaf,selection,
+        Some(before),Some(end),SourceContext::Working(source))
 }
 
 fn observe_pair_with_limit(
@@ -750,6 +760,7 @@ fn observe_pair_with_limit(
     selection: &FilePin,
     initial: Option<control::ActualApplicationObservation>,
     inherited_end: Option<Instant>,
+    context: SourceContext<'_>,
 ) -> Result<(ApplicationInspection, ClockTimerEvidence), String> {
     require(leaf.route == Route::ClockTimerPair && leaf.output.is_none()
         && requested.package == PACKAGE && expected.package == PACKAGE
@@ -760,17 +771,24 @@ fn observe_pair_with_limit(
     let request: PairRequest = serde_json::from_value(read(&mut held, &leaf.request, 131_072)?)
         .map_err(|e| e.to_string())?;
     require(request.schema == REQUEST_SCHEMA, "Clock pair request schema differs")?;
-    let (lease, preparation, _) = leaf_routes::clock_pair_release(selection)?;
+    let (lease, preparation, _) = leaf_routes::clock_pair_release(selection, context)?;
     lease.cover_window(PAIR_WINDOW_SECONDS)?;
     let normal_end = Instant::now() + Duration::from_secs(PAIR_WINDOW_SECONDS);
     let end = inherited_end.map_or(normal_end, |limit| limit.min(normal_end));
-    let current_path = Path::new(leaf_release::CURRENT);
-    let current_raw = held.read(current_path, None, 2 * 1024 * 1024)?;
-    let current_value = leaf_release::json(&current_raw)?;
-    let current = FilePin { path:current_path.into(), bytes:current_raw.len() as u64,
-        sha256:hex::encode(Sha256::digest(&current_raw)) };
-    let current_f9 = held.identity(current_path)?;
-    let native_release = reference(&current_value, "native_application_leaf_release")?;
+    let working_source = lease.working_comparison()?;
+    let (native_release, current, current_f9) = match context {
+        SourceContext::Legacy => {
+            let current_path = Path::new(leaf_release::CURRENT);
+            let current_raw = held.read(current_path, None, 2 * 1024 * 1024)?;
+            let current_value = leaf_release::json(&current_raw)?;
+            let current = FilePin { path:current_path.into(), bytes:current_raw.len() as u64,
+                sha256:hex::encode(Sha256::digest(&current_raw)) };
+            let current_f9 = held.identity(current_path)?;
+            let native_release = reference(&current_value, "native_application_leaf_release")?;
+            (Some(native_release), Some(current), Some(current_f9))
+        }
+        SourceContext::Working(_) => (None, None, None),
+    };
     hold_sources(&mut held.sources, &preparation)?;
     let timer = case_input(&mut held, &request.timer15, Kind::Timer15, &preparation)?;
     let expiry = case_input(&mut held, &request.expiry06, Kind::Expiry06, &preparation)?;
@@ -796,6 +814,7 @@ fn observe_pair_with_limit(
     window(end, 2 * 250 + 2 * 510 + 3 * 70 + 30)?;
     let mut main = HeldMainCustody::observe(inspector, before_token, end)?;
     let mut baseline = main.baseline(inspector, end)?;
+    lease.attach_to_baseline(&mut baseline)?;
     lease.guard()?;
 
     let timer_plan = LeafPlan { route:Kind::Timer15.route(), request:timer.request.clone(), output:None };
@@ -862,8 +881,11 @@ fn observe_pair_with_limit(
     drop(baseline);
     main.retain_completed(after_main, after_token)?;
     let evidence = ClockTimerEvidence {
-        schema:"droidloom.clock-timer-pair-observation.v2", pair_request:leaf.request.clone(),
+        schema:if working_source.is_some() { "droidloom.clock-timer-pair-observation.v3" }
+            else { "droidloom.clock-timer-pair-observation.v2" },
+        pair_request:leaf.request.clone(),
         native_release, original_owner_current:current, original_owner_current_f9:current_f9,
+        working_source,
         selection:selection.clone(), identity:Some(identity), main_custody:main,
         custody:ClockPairCustody { lease, timer15:timer_result, expiry06:expiry_result, inputs:held, end },
         timer15, expiry06, timer15_details, expiry06_details,

@@ -10,6 +10,9 @@ use std::time::Instant;
 pub(super) const PAYLOAD_MAX: usize = 132 * 1024;
 const HEADER: usize = 32;
 const MAGIC: &[u8; 8] = b"P4QUAL01";
+// Hello uses 0, each compiled case contributes Begin and End, and Complete
+// uses the final sequence. ACK echoes that sequence without consuming another.
+const MAX_SEQUENCE: u32 = 1 + 2 * super::CASE_COUNT as u32;
 
 #[derive(Debug, PartialEq, Eq)]
 pub(super) struct Packet {
@@ -23,7 +26,7 @@ pub(super) struct Packet {
 impl Packet {
     pub fn bytes(&self) -> io::Result<Vec<u8>> {
         if self.payload.len() > PAYLOAD_MAX
-            || self.sequence > 30
+            || self.sequence > MAX_SEQUENCE
             || ![1, 2, 3, 4, 5].contains(&self.kind)
         {
             return Err(error("qualification packet bound or kind differs"));
@@ -339,6 +342,69 @@ impl Socket {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn complete_forty_five_case_transcript_and_acks_fit_the_wire_bound() {
+        // Hello is 0. Each actual case has Begin and End, then Complete.
+        // ACK echoes its request sequence rather than consuming another number.
+        assert_eq!(super::super::CASE_COUNT, 45);
+        let mut requests = vec![(1, 255)];
+        for ordinal in 0..super::super::CASE_COUNT {
+            requests.push((2, u8::try_from(ordinal).unwrap()));
+            requests.push((3, u8::try_from(ordinal).unwrap()));
+        }
+        requests.push((4, 255));
+        assert_eq!(requests.len(), 92);
+        for (sequence, (kind, case)) in requests.into_iter().enumerate() {
+            let packet = Packet {
+                sequence: u32::try_from(sequence).unwrap(),
+                kind,
+                case,
+                end_ns: 900,
+                payload: if kind == 1 || kind == 4 {
+                    b"{}".to_vec()
+                } else {
+                    Vec::new()
+                },
+            };
+            let raw = packet.bytes().unwrap_or_else(|error| {
+                panic!("valid sequence {sequence}, kind {kind}, case {case}: {error}")
+            });
+            assert_eq!(Packet::parse(&raw).unwrap(), packet);
+            let ack = Packet {
+                kind: 5,
+                payload: Vec::new(),
+                ..packet
+            };
+            assert_eq!(Packet::parse(&ack.bytes().unwrap()).unwrap(), ack);
+        }
+    }
+
+    #[test]
+    fn terminal_sequence_is_exact_and_larger_wire_values_are_rejected() {
+        let terminal = Packet {
+            sequence: 91,
+            kind: 4,
+            case: 255,
+            end_ns: 900,
+            payload: Vec::new(),
+        };
+        let raw = terminal.bytes().unwrap();
+        assert_eq!(Packet::parse(&raw).unwrap(), terminal);
+        for sequence in [92, u32::MAX] {
+            let packet = Packet {
+                sequence,
+                kind: terminal.kind,
+                case: terminal.case,
+                end_ns: terminal.end_ns,
+                payload: Vec::new(),
+            };
+            assert!(packet.bytes().is_err());
+            let mut changed = raw.clone();
+            changed[8..12].copy_from_slice(&sequence.to_le_bytes());
+            assert!(Packet::parse(&changed).is_err());
+        }
+    }
     #[test]
     fn exact_framing_rejects_suffix_reserved_truncation_and_unknown_kind() {
         let p = Packet {
