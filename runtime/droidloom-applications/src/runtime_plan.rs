@@ -6,10 +6,10 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant};
 
+use droidloom_supervisor::control::application_custody::ImageApplicationCustody;
 use droidloom_supervisor::control::application_probe::{
     ApplicationInspection, RuntimeEpoch, validate_https_url,
 };
-use droidloom_supervisor::control::application_custody::ImageApplicationCustody;
 use droidloom_supervisor::control::{self, ControlRequest};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
@@ -18,20 +18,20 @@ use sha2::{Digest, Sha256};
 mod firefox_wait_result;
 use firefox_wait_result::{FirefoxActivityStart, firefox_activity_start};
 
-#[path = "leaf_routes.rs"]
-mod leaf_routes;
-#[path = "native_business.rs"]
-mod native_business;
 #[path = "clock_timer.rs"]
 mod clock_timer;
-#[path = "leaf_release.rs"]
-mod leaf_release;
-#[path = "working_leaf_release.rs"]
-mod working_leaf_release;
 #[path = "leaf_adoption.rs"]
 mod leaf_adoption;
+#[path = "leaf_release.rs"]
+mod leaf_release;
+#[path = "leaf_routes.rs"]
+mod leaf_routes;
 #[path = "leaf_unit_entry.rs"]
 mod leaf_unit_entry;
+#[path = "native_business.rs"]
+mod native_business;
+#[path = "working_leaf_release.rs"]
+mod working_leaf_release;
 use leaf_routes::{LeafObservation, LeafPlan};
 #[path = "launch_route.rs"]
 mod launch_route;
@@ -40,16 +40,19 @@ use launch_route::{LaunchObservation, LaunchPlan};
 #[path = "runtime_prepare.rs"]
 mod runtime_prepare;
 pub use runtime_prepare::{PreparationReport, prepare_files};
-#[path = "runtime_identity.rs"]
-mod runtime_identity;
-#[path = "physical_gate_roster.rs"]
-mod physical_gate_roster;
 #[path = "common_gate.rs"]
 mod common_gate;
 #[path = "family_observation.rs"]
 mod family_observation;
 #[path = "physical_acceptance.rs"]
 mod physical_acceptance;
+#[path = "physical_plan_prepare.rs"]
+mod physical_plan_prepare;
+pub use physical_plan_prepare::prepare_owned_physical_plan;
+#[path = "physical_gate_roster.rs"]
+mod physical_gate_roster;
+#[path = "runtime_identity.rs"]
+mod runtime_identity;
 pub use physical_acceptance::{
     CompletePhysicalApplicationRun, PhysicalApplicationSummary, PhysicalRunOutcome,
     physical_qualification_window_seconds, run_physical_files,
@@ -58,7 +61,8 @@ pub use physical_acceptance::{
 /// Prepare the next normal material batch for source review. The result cannot
 /// extend the compiled admission table or authorize an application.
 pub fn prepare_identity_material_admission(
-    path: &Path, expected_sha256: &str,
+    path: &Path,
+    expected_sha256: &str,
 ) -> Result<serde_json::Value, String> {
     runtime_identity::prepare_admission_files(path, expected_sha256)
 }
@@ -71,7 +75,10 @@ pub fn run_owned_leaf_plan(profile: &str, expected_sha256: &str) -> Result<(), S
 
 /// Publish one explicitly pinned root CI/source release pairing under the
 /// original owner locks. This installs nothing and grants no Android success.
-pub fn adopt_native_leaf_release(path: &Path, expected_sha256: &str) -> Result<serde_json::Value, String> {
+pub fn adopt_native_leaf_release(
+    path: &Path,
+    expected_sha256: &str,
+) -> Result<serde_json::Value, String> {
     leaf_adoption::adopt(path, expected_sha256)
 }
 
@@ -183,14 +190,25 @@ struct GateAssertion {
 }
 
 fn pending_assertions(gates: &GateRegistry, profile: &str) -> Vec<GateAssertion> {
-    gates.common_gates.iter().map(|(id, description)| (id, description, "common"))
-        .chain(gates.profiles[profile].checks.iter()
-            .map(|(id, description)| (id, description, "business")))
+    gates
+        .common_gates
+        .iter()
+        .map(|(id, description)| (id, description, "common"))
+        .chain(
+            gates.profiles[profile]
+                .checks
+                .iter()
+                .map(|(id, description)| (id, description, "business")),
+        )
         .map(|(id, description, scope)| GateAssertion {
-            id: id.clone(), description: description.clone(), scope,
-            status: "pending", reason: "No complete assertion result for this gate in this run".into(),
+            id: id.clone(),
+            description: description.clone(),
+            scope,
+            status: "pending",
+            reason: "No complete assertion result for this gate in this run".into(),
             evidence: None,
-        }).collect()
+        })
+        .collect()
 }
 
 #[derive(Debug, Serialize)]
@@ -344,46 +362,91 @@ struct MaterialClient<'a> {
     actual_application: Option<control::ActualApplicationObservation>,
 }
 impl RuntimeClient for MaterialClient<'_> {
-    fn clock_timer_pair(&mut self, expected: &ApplicationInspection, plan: &LeafPlan,
-        selection: &FilePin) -> Result<(ApplicationInspection, clock_timer::ClockTimerEvidence), String> {
-        let requested = self.runtime.applications.iter()
+    fn clock_timer_pair(
+        &mut self,
+        expected: &ApplicationInspection,
+        plan: &LeafPlan,
+        selection: &FilePin,
+    ) -> Result<(ApplicationInspection, clock_timer::ClockTimerEvidence), String> {
+        let requested = self
+            .runtime
+            .applications
+            .iter()
             .find(|app| app.package == expected.package)
             .ok_or("Clock pair has no application in this admitted runtime plan")?;
         // The pair retains its existing three in-window PM observations.
         // Do not reuse or add a fourth observation to satisfy the new context.
         self.actual_application.take();
-        clock_timer::observe_pair(&mut self.inspector, self.materials, self.runtime,
-            requested, expected, plan, selection)
+        clock_timer::observe_pair(
+            &mut self.inspector,
+            self.materials,
+            self.runtime,
+            requested,
+            expected,
+            plan,
+            selection,
+        )
     }
     fn inspect(&mut self, package: &str, user: u32) -> Result<ApplicationInspection, String> {
         self.actual_application = None;
         let end = Instant::now() + Duration::from_secs(250);
-        let observed = self.inspector.inspect_observed_until(package, user, end)
+        let observed = self
+            .inspector
+            .inspect_observed_until(package, user, end)
             .map_err(|error| error.to_string())?;
         let application = observed.facts().clone();
         self.actual_application = Some(observed);
         Ok(application)
     }
-    fn launch(&mut self, expected: &ApplicationInspection, plan: &LaunchPlan,
-        source: &FilePin) -> Result<(ApplicationInspection, LaunchObservation), String> {
-        SocketClient { socket: self.socket }.launch(expected, plan, source)
+    fn launch(
+        &mut self,
+        expected: &ApplicationInspection,
+        plan: &LaunchPlan,
+        source: &FilePin,
+    ) -> Result<(ApplicationInspection, LaunchObservation), String> {
+        SocketClient {
+            socket: self.socket,
+        }
+        .launch(expected, plan, source)
     }
-    fn browser(&mut self, expected: &ApplicationInspection,
-        url: &str) -> Result<(ApplicationInspection, String), String> {
-        SocketClient { socket: self.socket }.browser(expected, url)
+    fn browser(
+        &mut self,
+        expected: &ApplicationInspection,
+        url: &str,
+    ) -> Result<(ApplicationInspection, String), String> {
+        SocketClient {
+            socket: self.socket,
+        }
+        .browser(expected, url)
     }
-    fn leaf(&mut self, expected: &ApplicationInspection, plan: &LeafPlan,
-        selection: &FilePin) -> Result<(ApplicationInspection, LeafObservation), String> {
-        let requested = self.runtime.applications.iter()
+    fn leaf(
+        &mut self,
+        expected: &ApplicationInspection,
+        plan: &LeafPlan,
+        selection: &FilePin,
+    ) -> Result<(ApplicationInspection, LeafObservation), String> {
+        let requested = self
+            .runtime
+            .applications
+            .iter()
             .find(|app| app.package == expected.package)
             .ok_or("leaf has no application in this admitted runtime plan")?;
-        let observed = self.actual_application.take()
+        let observed = self
+            .actual_application
+            .take()
             .ok_or("normal leaf has no retained actual pre-invocation PM token")?;
         if observed.facts() != expected {
             return Err("retained normal PM token differs from this selected row".into());
         }
-        leaf_routes::execute_admitted(&mut self.inspector, self.materials,
-            self.runtime, requested, plan, selection, observed)
+        leaf_routes::execute_admitted(
+            &mut self.inspector,
+            self.materials,
+            self.runtime,
+            requested,
+            plan,
+            selection,
+            observed,
+        )
     }
 }
 
@@ -440,13 +503,19 @@ fn validate(plan: &RuntimePlan, gates: &GateRegistry, expected_count: usize) -> 
             return Err("runtime selection repeats a package".into());
         }
         if let Some(error) = &app.binding_failure {
-            if error.trim().is_empty() || error.len() > 4096 || app.launch.is_some() || app.leaf.is_some() {
+            if error.trim().is_empty()
+                || error.len() > 4096
+                || app.launch.is_some()
+                || app.leaf.is_some()
+            {
                 return Err("a failed preparation binding must retain one bounded reason and no executable route".into());
             }
         }
         if let Some(launch) = &app.launch {
             launch.validate(&app.package)?;
-            if plan.schema != 3 || app.expected_input.is_none() || app.leaf.is_some()
+            if plan.schema != 3
+                || app.expected_input.is_none()
+                || app.leaf.is_some()
                 || (app.package == "org.mozilla.firefox" && plan.execute_public_browser)
             {
                 return Err("launch-only execution requires schema 3, complete reviewed input, and one explicit route per application".into());
@@ -475,7 +544,10 @@ fn validate(plan: &RuntimePlan, gates: &GateRegistry, expected_count: usize) -> 
         if profile.checks.is_empty()
             || profile.checks.len() > 128
             || profile.checks.values().any(|v| v.trim().is_empty())
-            || profile.checks.keys().any(|id| gates.common_gates.contains_key(id))
+            || profile
+                .checks
+                .keys()
+                .any(|id| gates.common_gates.contains_key(id))
         {
             return Err("business gate definitions are empty or unbounded".into());
         }
@@ -602,7 +674,9 @@ fn dispatch_with_materials(
                 {
                     row.reason = "current PM observation does not match the selected package/user and independently pinned live Main epoch".into();
                 } else if let Some(reason) = &app.binding_failure {
-                    row.reason = format!("read-only plan preparation remains blocked: {reason}; prepare a new pinned plan after resolution");
+                    row.reason = format!(
+                        "read-only plan preparation remains blocked: {reason}; prepare a new pinned plan after resolution"
+                    );
                 } else if app.expected_input.is_none() {
                     row.reason = "current package observed, but reviewed current official source/split delivery is missing".into();
                 } else if !source_matches(
@@ -614,7 +688,11 @@ fn dispatch_with_materials(
                     row.status = "identity_observation_only";
                     row.reason = "The explicit readonly identity command invokes no launch, leaf or browser. Complete business and unobserved common gates remain pending.".into();
                 } else if let Some(launch) = &app.launch {
-                    let source = &app.expected_input.as_ref().expect("checked above").source_receipt;
+                    let source = &app
+                        .expected_input
+                        .as_ref()
+                        .expect("checked above")
+                        .source_receipt;
                     match client.launch(&actual, launch, source) {
                         Ok((after, observation)) if after == actual => {
                             row.status = "launch_only_business_pending";
@@ -625,75 +703,100 @@ fn dispatch_with_materials(
                             row.reason = "launch returned a different Main epoch or installed identity; no automatic retry".into();
                         }
                         Err(error) => {
-                            row.reason = format!("launch-only observation failed; retain any actual task binding before an explicit retry: {error}");
+                            row.reason = format!(
+                                "launch-only observation failed; retain any actual task binding before an explicit retry: {error}"
+                            );
                         }
                     }
                 } else if let Some(leaf) = &app.leaf {
                     if leaf.route == leaf_routes::Route::ClockTimerPair {
-                        match client.clock_timer_pair(&actual, leaf,
-                            plan.preparation_selection.as_ref().expect("validated selection")) {
+                        match client.clock_timer_pair(
+                            &actual,
+                            leaf,
+                            plan.preparation_selection
+                                .as_ref()
+                                .expect("validated selection"),
+                        ) {
                             Ok((after, mut result)) if after == actual => {
-                                if let Err(error) = result.take_final_identity()
+                                if let Err(error) = result
+                                    .take_final_identity()
                                     .map(|identity| completed_identity = Some(identity))
                                 {
-                                    row.reason = format!("Clock pair retained custody failed: {error}");
+                                    row.reason =
+                                        format!("Clock pair retained custody failed: {error}");
                                 } else {
                                     row.status = "partial_leaf_observation";
                                     row.reason = "Both original Clock cases completed with one actual normal Main/copy-origin fact, complete package identity and unchanged source/owner lease. The scoped clock.timer assertion and actual identity observations are retained; other common/business gates still require their own observations.".into();
                                     for assertion in &mut row.gate_assertions {
                                         if assertion.scope == "business"
-                                            && result.verified_business_gates().contains(&assertion.id.as_str())
+                                            && result
+                                                .verified_business_gates()
+                                                .contains(&assertion.id.as_str())
                                         {
                                             assertion.status = "passed";
                                             assertion.reason = "Actual timer15 and expiry06 under the same opaque normal Main/copy-origin fact, original result FDs and fully retired leaf owners".into();
-                                            assertion.evidence = Some(result.evidence_pin().clone());
+                                            assertion.evidence =
+                                                Some(result.evidence_pin().clone());
                                         }
                                     }
                                     row.clock_timer_observation = Some(result);
                                 }
                             }
-                            Ok(_) => row.reason = "Clock pair returned another installed identity or Main epoch".into(),
-                            Err(error) => row.reason = format!(
-                                "Clock pair fact factory failed; retain original claims and logs without replay: {error}"),
-                        }
-                    } else {
-                    match client.leaf(
-                        &actual,
-                        leaf,
-                        plan.preparation_selection
-                            .as_ref()
-                            .expect("validated selection"),
-                    ) {
-                        Ok((after, mut result)) if after == actual => {
-                            if let Err(error) = result.take_final_identity()
-                                .map(|identity| completed_identity = Some(identity))
-                            {
-                                row.reason = format!("leaf retained normal Main/result custody failed: {error}");
-                            } else {
-                                row.status = "partial_leaf_observation";
-                                row.reason = "The original leaf completed with actual normal Main/copy-origin custody, unchanged installed identity, the original held result and retired host owner. Its scoped result does not complete all common or application release gates.".into();
-                                for assertion in &mut row.gate_assertions {
-                                    if result.verified_business_gates().contains(&assertion.id.as_str())
-                                        && assertion.scope == "business"
-                                    {
-                                        assertion.status = "passed";
-                                        assertion.reason = "Verified by the actual original leaf, retained result FD, cleanup, unchanged installed identity and opaque normal Main/copy-origin bookends".into();
-                                        assertion.evidence = Some(result.result.clone());
-                                    }
-                                }
-                                row.leaf_observation = Some(result);
+                            Ok(_) => {
+                                row.reason =
+                                    "Clock pair returned another installed identity or Main epoch"
+                                        .into()
+                            }
+                            Err(error) => {
+                                row.reason = format!(
+                                    "Clock pair fact factory failed; retain original claims and logs without replay: {error}"
+                                )
                             }
                         }
-                        Ok(_) => {
-                            row.reason =
-                                "leaf returned a different Main epoch or installed identity".into()
+                    } else {
+                        match client.leaf(
+                            &actual,
+                            leaf,
+                            plan.preparation_selection
+                                .as_ref()
+                                .expect("validated selection"),
+                        ) {
+                            Ok((after, mut result)) if after == actual => {
+                                if let Err(error) = result
+                                    .take_final_identity()
+                                    .map(|identity| completed_identity = Some(identity))
+                                {
+                                    row.reason = format!(
+                                        "leaf retained normal Main/result custody failed: {error}"
+                                    );
+                                } else {
+                                    row.status = "partial_leaf_observation";
+                                    row.reason = "The original leaf completed with actual normal Main/copy-origin custody, unchanged installed identity, the original held result and retired host owner. Its scoped result does not complete all common or application release gates.".into();
+                                    for assertion in &mut row.gate_assertions {
+                                        if result
+                                            .verified_business_gates()
+                                            .contains(&assertion.id.as_str())
+                                            && assertion.scope == "business"
+                                        {
+                                            assertion.status = "passed";
+                                            assertion.reason = "Verified by the actual original leaf, retained result FD, cleanup, unchanged installed identity and opaque normal Main/copy-origin bookends".into();
+                                            assertion.evidence = Some(result.result.clone());
+                                        }
+                                    }
+                                    row.leaf_observation = Some(result);
+                                }
+                            }
+                            Ok(_) => {
+                                row.reason =
+                                    "leaf returned a different Main epoch or installed identity"
+                                        .into()
+                            }
+                            Err(error) => {
+                                row.reason = format!(
+                                    "selected leaf precondition or execution failed; retain its original claim and logs, with no automatic replay: {error}"
+                                )
+                            }
                         }
-                        Err(error) => {
-                            row.reason = format!(
-                                "selected leaf precondition or execution failed; retain its original claim and logs, with no automatic replay: {error}"
-                            )
-                        }
-                    }
                     }
                 } else if app.package != "org.mozilla.firefox" {
                     row.status = "unsupported";
@@ -733,23 +836,41 @@ fn dispatch_with_materials(
                     // PM query or second ordinary-leaf final query is started.
                     materials.revalidate().map(|()| observation)
                 } else {
-                    client.inspect(&app.package, plan.android_user)
-                        .and_then(|after| materials.observe(
-                            app, plan.android_user, &plan.expected_epoch, before, &after,
-                        ))
-                }.and_then(|observation| {
-                        if let Some(leaf) = &row.leaf_observation { leaf.retained_bookends()?; }
-                        if let Some(clock) = &row.clock_timer_observation { clock.retained_bookends()?; }
-                        Ok(observation)
-                    });
+                    client
+                        .inspect(&app.package, plan.android_user)
+                        .and_then(|after| {
+                            materials.observe(
+                                app,
+                                plan.android_user,
+                                &plan.expected_epoch,
+                                before,
+                                &after,
+                            )
+                        })
+                }
+                .and_then(|observation| {
+                    if let Some(leaf) = &row.leaf_observation {
+                        leaf.retained_bookends()?;
+                    }
+                    if let Some(clock) = &row.clock_timer_observation {
+                        clock.retained_bookends()?;
+                    }
+                    Ok(observation)
+                });
                 match observation {
                     Ok(observation) => {
                         let complete_identity = observation.complete_identity_gate_passed();
                         row.identity_observation = Some(observation);
-                        if let Some(gate) = row.gate_assertions.iter_mut()
+                        if let Some(gate) = row
+                            .gate_assertions
+                            .iter_mut()
                             .find(|gate| gate.scope == "common" && gate.id == "identity")
                         {
-                            gate.status = if complete_identity { "passed" } else { "partial" };
+                            gate.status = if complete_identity {
+                                "passed"
+                            } else {
+                                "partial"
+                            };
                             gate.reason = if complete_identity {
                                 "Exact admitted APK/signing identity, user/UID/version and framework epoch are joined to retained actual Main and source-triggered running native/bridge mappings. This proves identity only, not translation business success or whole-App acceptance."
                             } else if row.clock_timer_observation.is_some()
@@ -763,7 +884,9 @@ fn dispatch_with_materials(
                     }
                     Err(error) => {
                         row.status = "blocked";
-                        row.reason = format!("live identity factory rejected the final observation: {error}");
+                        row.reason = format!(
+                            "live identity factory rejected the final observation: {error}"
+                        );
                         // A saved leaf result does not qualify another installed
                         // identity or Main epoch after this invocation.
                         for gate in &mut row.gate_assertions {
@@ -776,7 +899,9 @@ fn dispatch_with_materials(
             }
         }
         for assertion in &mut row.gate_assertions {
-            if assertion.status == "passed" { continue; }
+            if assertion.status == "passed" {
+                continue;
+            }
             if row.status == "blocked" {
                 assertion.status = "blocked";
                 assertion.reason = row.reason.clone();
@@ -787,10 +912,18 @@ fn dispatch_with_materials(
                 assertion.reason = "This plan has no executable assertion for this business gate; an observed launcher task cannot satisfy it".into();
             }
         }
-        row.pending_gates = row.gate_assertions.iter()
-            .filter(|gate| gate.status != "passed").map(|gate| gate.id.clone()).collect();
+        row.pending_gates = row
+            .gate_assertions
+            .iter()
+            .filter(|gate| gate.status != "passed")
+            .map(|gate| gate.id.clone())
+            .collect();
         row.pending_gates.sort();
-        row.accepted_gates = row.gate_assertions.iter().filter(|gate| gate.status == "passed").count();
+        row.accepted_gates = row
+            .gate_assertions
+            .iter()
+            .filter(|gate| gate.status == "passed")
+            .count();
         applications.push(row);
     }
     RuntimeReport {
@@ -821,12 +954,21 @@ fn dispatch_with_materials(
             .iter()
             .filter(|r| r.status == "launch_only_business_pending")
             .count(),
-        accepted_applications: applications.iter().filter(|row| {
-            row.status != "blocked" && !row.gate_assertions.is_empty()
-                && row.gate_assertions.iter().all(|gate| gate.status == "passed")
-        }).count(),
-        material_identity_observations: applications.iter()
-            .filter(|row| row.identity_observation.is_some()).count(),
+        accepted_applications: applications
+            .iter()
+            .filter(|row| {
+                row.status != "blocked"
+                    && !row.gate_assertions.is_empty()
+                    && row
+                        .gate_assertions
+                        .iter()
+                        .all(|gate| gate.status == "passed")
+            })
+            .count(),
+        material_identity_observations: applications
+            .iter()
+            .filter(|row| row.identity_observation.is_some())
+            .count(),
         native_inspection_peer: None,
         runtime_qualified: false,
         production_ready: false,
@@ -856,8 +998,12 @@ pub fn inspect_package_with_custody(
 ) -> Result<(ApplicationInspection, Option<ImageApplicationCustody>), String> {
     let reply = control::request(
         socket,
-        &ControlRequest::InspectApplication { package: package.into(), user },
-    ).map_err(|error| error.to_string())?;
+        &ControlRequest::InspectApplication {
+            package: package.into(),
+            user,
+        },
+    )
+    .map_err(|error| error.to_string())?;
     consume_inspection(reply, package, user)
 }
 
@@ -866,8 +1012,11 @@ fn consume_inspection(
     package: &str,
     user: u32,
 ) -> Result<(ApplicationInspection, Option<ImageApplicationCustody>), String> {
-    if !reply.ok { return Err(reply.message); }
-    let application = reply.inspection
+    if !reply.ok {
+        return Err(reply.message);
+    }
+    let application = reply
+        .inspection
         .ok_or("Daemon returned no current package inspection; update both tools")?;
     if application.package != package || application.user != user {
         return Err("Daemon returned a different installed package or Android user".into());
@@ -878,7 +1027,9 @@ fn consume_inspection(
     if reply.state != control::CellState::Running
         || reply.host_pid != Some(application.epoch.cell_host_pid)
     {
-        return Err("Application inspection does not belong to the current running daemon owner".into());
+        return Err(
+            "Application inspection does not belong to the current running daemon owner".into(),
+        );
     }
     if let Some(custody) = &reply.image_custody {
         custody.validate(&application)?;
@@ -892,14 +1043,26 @@ mod image_custody_consumer_tests {
 
     fn reply(package: &str) -> control::ControlResponse {
         control::ControlResponse {
-            ok: true, state: control::CellState::Running, message: "unit metadata model".into(),
-            host_pid: Some(321), launch: None, applications: None, application_icon: None,
-            diagnostics: None, image_custody: None, runtime_vintf: None,
+            ok: true,
+            state: control::CellState::Running,
+            message: "unit metadata model".into(),
+            host_pid: Some(321),
+            launch: None,
+            applications: None,
+            application_icon: None,
+            diagnostics: None,
+            image_custody: None,
+            runtime_vintf: None,
             inspection: Some(ApplicationInspection {
-                package: package.into(), user: 0, uid: 10064, version_code: 40030,
+                package: package.into(),
+                user: 0,
+                uid: 10064,
+                version_code: 40030,
                 epoch: RuntimeEpoch {
                     boot_id: "00000000-0000-0000-0000-000000000001".into(),
-                    cell_host_pid: 321, framework_host_pid: 322, framework_start_ticks: 101,
+                    cell_host_pid: 321,
+                    framework_host_pid: 322,
+                    framework_start_ticks: 101,
                 },
                 apks: Vec::new(),
             }),
@@ -908,14 +1071,17 @@ mod image_custody_consumer_tests {
 
     #[test]
     fn gallery_legacy_metadata_cannot_substitute_for_the_owned_image_producer() {
-        assert!(consume_inspection(reply("com.android.gallery3d"), "com.android.gallery3d", 0).is_err());
+        assert!(
+            consume_inspection(reply("com.android.gallery3d"), "com.android.gallery3d", 0).is_err()
+        );
     }
 
     #[test]
     fn unchanged_non_gallery_identity_shape_remains_available() {
         let response = reply("org.mozilla.firefox");
         let expected = response.inspection.clone().unwrap();
-        let (application, custody) = consume_inspection(response, "org.mozilla.firefox", 0).unwrap();
+        let (application, custody) =
+            consume_inspection(response, "org.mozilla.firefox", 0).unwrap();
         assert_eq!(application, expected);
         assert!(custody.is_none());
     }
@@ -932,8 +1098,12 @@ mod image_custody_consumer_tests {
 
     #[test]
     fn consumer_rejects_a_different_actual_package_or_user() {
-        assert!(consume_inspection(reply("org.mozilla.firefox"), "com.android.gallery3d", 0).is_err());
-        assert!(consume_inspection(reply("org.mozilla.firefox"), "org.mozilla.firefox", 1).is_err());
+        assert!(
+            consume_inspection(reply("org.mozilla.firefox"), "com.android.gallery3d", 0).is_err()
+        );
+        assert!(
+            consume_inspection(reply("org.mozilla.firefox"), "org.mozilla.firefox", 1).is_err()
+        );
     }
 }
 
@@ -1001,11 +1171,13 @@ fn run_files_mode(
             runtime: &plan,
             actual_application: None,
         };
-        let mut report = dispatch_with_materials(
-            &plan, &gates, &mut client, Some(materials), identity_only,
-        );
+        let mut report =
+            dispatch_with_materials(&plan, &gates, &mut client, Some(materials), identity_only);
         report.native_inspection_peer = Some(
-            client.inspector.observation().map_err(|error| error.to_string())?,
+            client
+                .inspector
+                .observation()
+                .map_err(|error| error.to_string())?,
         );
         materials.revalidate()?;
         report
@@ -1015,8 +1187,11 @@ fn run_files_mode(
     for row in &mut report.applications {
         row.source_context = source_annotations.remove(&row.package);
     }
-    report.runtime_plan = Some(FilePin { path: path.into(), bytes: raw.len() as u64,
-        sha256: expected_sha256.into() });
+    report.runtime_plan = Some(FilePin {
+        path: path.into(),
+        bytes: raw.len() as u64,
+        sha256: expected_sha256.into(),
+    });
     pinned(&plan.main_qualification)?;
     pinned(&plan.gate_registry)?;
     for app in &plan.applications {
@@ -1030,7 +1205,9 @@ fn run_files_mode(
     if let Some(selection) = &plan.preparation_selection {
         leaf_routes::validate_selection(selection)?;
     }
-    if let Some(selection) = &plan.source_selection { pinned(selection)?; }
+    if let Some(selection) = &plan.source_selection {
+        pinned(selection)?;
+    }
     if hex::encode(Sha256::digest(
         crate::release::read_frozen(path, INPUT_LIMIT).map_err(|e| e.to_string())?,
     )) != expected_sha256
@@ -1088,7 +1265,9 @@ mod tests {
             _: &FilePin,
         ) -> Result<(ApplicationInspection, LeafObservation), String> {
             self.leaf_calls += 1;
-            self.leaf_output.take().map(|observation| (expected.clone(), observation))
+            self.leaf_output
+                .take()
+                .map(|observation| (expected.clone(), observation))
                 .ok_or("fake fixture does not execute Android leaves".into())
         }
     }
@@ -1245,14 +1424,20 @@ mod tests {
         let row = &report.applications[0];
         let observed = row.firefox_activity_start.as_ref().unwrap();
         assert_eq!(observed.wait_time_ms, 17);
-        assert_eq!(observed.launch_state,
-            firefox_wait_result::ActivityLaunchState::Cold);
+        assert_eq!(
+            observed.launch_state,
+            firefox_wait_result::ActivityLaunchState::Cold
+        );
         assert_eq!(report.partial_browser_invocations, 1);
         assert_eq!(report.unsupported_business_flows, 41);
         assert_eq!(row.accepted_gates, 0);
         assert!(row.pending_gates.iter().any(|g| g == "browser.return"));
         assert!(!row.runtime_qualified && !row.production_ready);
-        assert!(report.applications[1..].iter().all(|r| r.firefox_activity_start.is_none()));
+        assert!(
+            report.applications[1..]
+                .iter()
+                .all(|r| r.firefox_activity_start.is_none())
+        );
 
         client.browser_output.push_str("\nStatus: timeout");
         let rejected = dispatch(&p, &g, &mut client);
@@ -1326,11 +1511,20 @@ mod tests {
     fn ordinary_socket_leaf_rejects_before_source_io_or_business_execution() {
         let (plan, _, client) = fixture();
         let actual = client.identities["org.mozilla.firefox"].clone();
-        let mut socket = SocketClient { socket: Path::new("/nonexistent-no-contact.sock") };
-        let leaf = LeafPlan { route: leaf_routes::Route::ContactsSearch,
-            request: plan.main_qualification.clone(), output: None };
-        assert!(socket.leaf(&actual, &leaf, &plan.main_qualification)
-            .unwrap_err().contains("normal opaque Main/copy-origin"));
+        let mut socket = SocketClient {
+            socket: Path::new("/nonexistent-no-contact.sock"),
+        };
+        let leaf = LeafPlan {
+            route: leaf_routes::Route::ContactsSearch,
+            request: plan.main_qualification.clone(),
+            output: None,
+        };
+        assert!(
+            socket
+                .leaf(&actual, &leaf, &plan.main_qualification)
+                .unwrap_err()
+                .contains("normal opaque Main/copy-origin")
+        );
     }
 
     #[test]
@@ -1343,9 +1537,15 @@ mod tests {
         c.identities.insert(package.clone(), observed);
         let mut profile = g.packages.remove(&old).unwrap();
         profile.profile = "clock".into();
-        g.profiles.insert("clock".into(), GateProfile {
-            checks: BTreeMap::from([("clock.timer".into(), "Start/pause/resume an owned timer and observe completion.".into())]),
-        });
+        g.profiles.insert(
+            "clock".into(),
+            GateProfile {
+                checks: BTreeMap::from([(
+                    "clock.timer".into(),
+                    "Start/pause/resume an owned timer and observe completion.".into(),
+                )]),
+            },
+        );
         g.packages.insert(package.clone(), profile);
         p.applications[1].package = package.clone();
         p.applications[1].leaf = Some(LeafPlan {
@@ -1358,7 +1558,11 @@ mod tests {
         p.preparation_selection = Some(p.main_qualification.clone());
         validate(&p, &g, 42).unwrap();
         let report = dispatch(&p, &g, &mut c);
-        let row = report.applications.iter().find(|r| r.package == package).unwrap();
+        let row = report
+            .applications
+            .iter()
+            .find(|r| r.package == package)
+            .unwrap();
         assert_eq!(row.status, "blocked");
         assert_eq!(row.accepted_gates, 0);
         assert!(row.clock_timer_observation.is_none());
@@ -1427,10 +1631,13 @@ mod tests {
         assert!(!report.production_ready && !report.runtime_qualified);
         assert!(report.applications.iter().all(|row| {
             row.status == "launch_only_business_pending"
-                && row.accepted_gates == 0 && !row.pending_gates.is_empty()
+                && row.accepted_gates == 0
+                && !row.pending_gates.is_empty()
                 && row.launch_observation.as_ref().is_some_and(|observation| {
-                    observation.business_pending && !observation.close_observed
-                        && !observation.reopen_observed && !observation.fresh_task_proven
+                    observation.business_pending
+                        && !observation.close_observed
+                        && !observation.reopen_observed
+                        && !observation.fresh_task_proven
                 })
         }));
         // Even a fully routed selection cannot silently shrink the release set.
@@ -1458,17 +1665,23 @@ mod tests {
         let (mut plan, gates, mut client) = fixture();
         plan.schema = 3;
         plan.execute_public_browser = false;
-        plan.applications[1].binding_failure = Some("selected split does not match live PM bytes".into());
+        plan.applications[1].binding_failure =
+            Some("selected split does not match live PM bytes".into());
         validate(&plan, &gates, 42).unwrap();
         let report = dispatch(&plan, &gates, &mut client);
         let row = &report.applications[1];
         assert_eq!(row.status, "blocked");
         assert!(row.reason.contains("selected split does not match"));
         assert!(row.expected_input.is_some() && row.inspection.is_some());
-        assert!(row.gate_assertions.iter().all(|gate| gate.status == "blocked" && gate.evidence.is_none()));
+        assert!(
+            row.gate_assertions
+                .iter()
+                .all(|gate| gate.status == "blocked" && gate.evidence.is_none())
+        );
         assert_eq!(client.launch_calls, 0);
         plan.applications[1].launch = Some(LaunchPlan {
-            specification: plan.main_qualification.clone(), component: "org.example.app1/.Main".into(),
+            specification: plan.main_qualification.clone(),
+            component: "org.example.app1/.Main".into(),
         });
         assert!(validate(&plan, &gates, 42).is_err());
     }
@@ -1485,24 +1698,45 @@ mod tests {
             let mut profile = gates.packages.remove(&old).unwrap();
             profile.profile = "settings".into();
             gates.packages.insert(package.clone(), profile);
-            gates.profiles.insert("settings".into(), GateProfile { checks: [
-                "settings.pages", "settings.roundtrip", "settings.permissions",
-            ].iter().map(|id| (id.to_string(), format!("Required {id}"))).collect() });
+            gates.profiles.insert(
+                "settings".into(),
+                GateProfile {
+                    checks: [
+                        "settings.pages",
+                        "settings.roundtrip",
+                        "settings.permissions",
+                    ]
+                    .iter()
+                    .map(|id| (id.to_string(), format!("Required {id}")))
+                    .collect(),
+                },
+            );
             let pin = plan.main_qualification.clone();
             plan.applications[1].package = package;
             plan.applications[1].leaf = Some(LeafPlan {
-                route: leaf_routes::Route::SettingsSupportedPages, request: pin.clone(), output: None,
+                route: leaf_routes::Route::SettingsSupportedPages,
+                request: pin.clone(),
+                output: None,
             });
             plan.schema = 3;
             plan.preparation_selection = Some(pin.clone());
             client.leaf_output = Some(LeafObservation {
-                route: leaf_routes::Route::SettingsSupportedPages, request: pin.clone(), preparation: pin.clone(),
-                entry_source: pin.clone(), result: pin.clone(), state: "SETTINGS_FONT_SCALE_RESTORED_WITH_PAGES".into(),
+                route: leaf_routes::Route::SettingsSupportedPages,
+                request: pin.clone(),
+                preparation: pin.clone(),
+                entry_source: pin.clone(),
+                result: pin.clone(),
+                state: "SETTINGS_FONT_SCALE_RESTORED_WITH_PAGES".into(),
                 custody: None,
                 engine_observations: None,
-                original_entry_result_verified: true, original_business_success_reported: true,
-                business_outcome_unknown: unknown, main_epoch_unchanged: true, owned_host_tree_retired: true,
-                automatic_retry: false, whole_app_business_accepted: false, production_ready: false,
+                original_entry_result_verified: true,
+                original_business_success_reported: true,
+                business_outcome_unknown: unknown,
+                main_epoch_unchanged: true,
+                owned_host_tree_retired: true,
+                automatic_retry: false,
+                whole_app_business_accepted: false,
+                production_ready: false,
                 remaining_scope: "unit transport model; permissions and common gates remain incomplete",
             });
             validate(&plan, &gates, 42).unwrap();
@@ -1544,5 +1778,4 @@ mod tests {
             assert_eq!(report.applications[0].status, "blocked");
         }
     }
-
 }

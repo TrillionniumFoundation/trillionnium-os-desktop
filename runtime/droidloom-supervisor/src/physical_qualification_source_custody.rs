@@ -471,6 +471,10 @@ impl WorkingNativeSourceCustody {
         }
         self.inner.executable.guard()
     }
+    pub fn runtime_evidence_directory(&self) -> io::Result<&Path> {
+        self.guard()?;
+        Ok(&self.inner.directory.path)
+    }
     pub fn applications_pin(&self) -> io::Result<(u64, &str)> {
         self.guard()?;
         Ok((

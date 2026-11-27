@@ -13,6 +13,7 @@ fn main() {
 
 pub mod application_exit_state;
 pub mod control;
+pub use control::native_leaf_business_capture;
 pub use control::physical_qualification_channel;
 mod cpu_placement;
 pub mod development;
@@ -38,6 +39,8 @@ mod native_leaf_baseline_programs;
 #[cfg(target_os = "linux")]
 mod native_leaf_engine;
 #[cfg(target_os = "linux")]
+mod native_leaf_installed_cohort;
+#[cfg(target_os = "linux")]
 mod native_once_capabilities;
 #[cfg(target_os = "linux")]
 mod native_once_contract;
@@ -48,6 +51,7 @@ pub mod native_uevent_label;
 #[cfg(target_os = "linux")]
 mod native_working_contract;
 pub mod native_working_preparation;
+pub mod native_working_preparation_execution;
 pub mod normal_host_release;
 mod package_cache;
 pub mod package_inventory_observation;

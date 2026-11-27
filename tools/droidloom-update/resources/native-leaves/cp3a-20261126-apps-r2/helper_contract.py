@@ -10,9 +10,11 @@ from pathlib import Path
 import re
 import stat
 import time
+import types
 
 COHORT=Path('/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2')
 QUALIFICATION=Path('/var/lib/droidloom/qualification/pocket4')
+CHANNEL={'path': '/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2/source/main/native_leaf_channel.py', 'bytes': 33518, 'sha256': 'b87eb453836022d772c11c6fa58ca55ab35348391f2e3445726adbe56720b826'}
 HELPER={'path':str(COHORT/'bin/held-namespace-entry'),'bytes':3972024,
         'sha256':'67cfd1c212e9f40ce3f0ff7be856a05f8189c674cbfa270757a672ea596a6c3f'}
 SOURCE={'path':str(COHORT/'source/held_namespace_entry.rs'),'bytes':21907,
@@ -43,7 +45,7 @@ def read_ref(ref,*,qualification=False,mode=None):
          type(ref['bytes']) is int and 0<=ref['bytes']<=8*1024*1024 and
          type(ref['sha256']) is str and re.fullmatch('[0-9a-f]{64}',ref['sha256']),
          'EXACT_HELPER_FILEPIN_REQUIRED')
-    path=Path(ref['path']);root=QUALIFICATION if qualification else COHORT
+    path=Path(ref['path']);root=qualification_root() if qualification else COHORT
     need(path.is_absolute() and path.resolve()==path and path.is_relative_to(root),
          'CANONICAL_HELPER_EVIDENCE_PATH_REQUIRED')
     for parent in path.parents:
@@ -223,3 +225,12 @@ def verify_shared_helper(baseline):
     result=verify_main_receipt(baseline.docs['runtime_observation'])
     baseline.guard()
     return result
+
+
+def qualification_root():
+    raw=read_ref(CHANNEL,mode=0o444)
+    module=types.ModuleType('fixed_working_main_channel');module.__file__=CHANNEL['path']
+    exec(compile(raw,CHANNEL['path'],'exec'),module.__dict__)
+    live=module.ComparisonChannel();runtime=live.working_runtime_root()
+    return (runtime/'native-baselines'/('capture-'+live.core['application']['package'])
+            if runtime is not None else QUALIFICATION)

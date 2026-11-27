@@ -118,8 +118,9 @@ def build(common, source_ref, output):
     baseline.require_preinstall_inventory()
     contract = manifest_contract(common, common.read_ref(source['files']['AndroidManifest.xml']))
     root = Path(output)
-    common.need(root.parent == Path('/home/alex/work') and root.parent.resolve() == root.parent and
-                re.fullmatch(r'pocket4-final-ihg-helper-build-[0-9a-f]{32}', root.name), 'NEW_PRIVATE_BUILD_ROOT_REQUIRED')
+    common.need(common.input_root_matches(root,'ihg-london','helper-build',
+                r'pocket4-final-ihg-helper-build-[0-9a-f]{32}',Path('/home/alex/work'))
+                and root.parent.resolve()==root.parent, 'NEW_PRIVATE_BUILD_ROOT_REQUIRED')
     pins = {name: tool_file(common, path) for name, (path, _) in TOOLS.items()}
     common.need(all(pins[name]['sha256'] == digest for name, (_, digest) in TOOLS.items()), 'ORIGINAL_BUILD_TOOL_PIN_CHANGED')
     os.umask(0o077); root.mkdir(mode=0o700); os.chown(root, 1000, 1000)
@@ -136,6 +137,7 @@ def build(common, source_ref, output):
     runtime = common.module(source['files']['app_runtime.py'], 'actual_helper_build_deadline')
     import types
     commands = runtime.PhaseCommands(modules['business_commands.py'], types.SimpleNamespace(c=common, deadline=deadline))
+    working_build=commands.working_build_context(root)
     environment = {'PATH': JDK + '/bin:/usr/bin:/bin', 'LANG': 'C', 'LC_ALL': 'C', 'JAVA_HOME': JDK}
     tool = {k: v[0] for k, v in TOOLS.items()}; java = [tool['java'], '-XX:ActiveProcessorCount=1', '-XX:+UseSerialGC', '-Xmx256m']
     def guard(*, action_attempted=False):
@@ -148,8 +150,9 @@ def build(common, source_ref, output):
         remaining = deadline - time.monotonic(); common.need(remaining > 0, 'ORIGINAL_BUILD_DEADLINE')
         actual = ['/usr/bin/sudo', '-n', '-u', '#1000', '--', '/usr/bin/env', '-i'] + [
             k + '=' + environment[k] for k in sorted(environment)] + list(argv)
-        value = commands.run_recorded(name, actual, timeout, journal, guard,
-            protected_pids=baseline.protected_pids, host_env=common.HOST_ENV)
+        value = commands.run_recorded(name, list(argv) if working_build is not None else actual, timeout, journal, guard,
+            protected_pids=baseline.protected_pids,
+            host_env=environment if working_build is not None else common.HOST_ENV,working_build=working_build)
         result['commands'].append({'name': name, 'logical_argv': list(argv),
             'result': common.regular(journal / (name + '.result.json'), contents=False)})
         return value.stdout
@@ -226,6 +229,7 @@ def build(common, source_ref, output):
         result['error'] = {'type': type(error).__name__, 'message': str(error), 'notes': getattr(error, '__notes__', [])}
         raise
     finally:
+        if working_build is not None:working_build.close()
         common.write_new(root / 'build-result.json', result)
     return common.regular(root / 'build-result.json', contents=False)
 
@@ -248,13 +252,17 @@ def verify_build(common, build_ref):
                     value['tools_before'][name]['sha256'] == digest, 'ACTUAL_BUILD_TOOL_PIN_CHANGED')
     common.need([r['name'] for r in value['commands']] == BUILD_COMMANDS, 'EXACT_ACTUAL_BUILD_COMMAND_SET_REQUIRED')
     root = Path(build_ref['path']).parent
+    environment={'PATH':JDK+'/bin:/usr/bin:/bin','LANG':'C','LC_ALL':'C','JAVA_HOME':JDK}
     for item in value['commands']:
         row = common.parse(common.read_ref(item['result']))
+        argv_checked=(modules['business_commands.py'].verify_working_build_record(
+            row,item['logical_argv'],root,environment) if common.working_runtime_root() is not None else
+            row['argv'][:7]==['/usr/bin/sudo','-n','-u','#1000','--','/usr/bin/env','-i']
+            and row['argv'][-len(item['logical_argv']):]==item['logical_argv'])
         common.need(Path(item['result']['path']) == root / 'observer' / (item['name'] + '.result.json') and
             row['host_retirement_proved'] is True and row['evidence_complete'] is True and
             row['returncode'] == 0 and row['timed_out'] is False and row['errors'] == [] and row.get('first_error') is None and
-            row['argv'][:7] == ['/usr/bin/sudo', '-n', '-u', '#1000', '--', '/usr/bin/env', '-i'] and
-            row['argv'][-len(item['logical_argv']):] == item['logical_argv'], 'ACTUAL_UNPRIVILEGED_RETIRED_BUILD_COMMAND_REQUIRED')
+            argv_checked, 'ACTUAL_UNPRIVILEGED_RETIRED_BUILD_COMMAND_REQUIRED')
         common.read_ref(row['stdout']); common.read_ref(row['stderr'])
     common.need(common.regular(value['APK']['path'], 2097152, contents=False) == value['APK'] and
                 Path(value['APK']['path']) == root / 'owned-ihg-qa.apk', 'ACTUAL_SIGNED_HELPER_APK_CHANGED')

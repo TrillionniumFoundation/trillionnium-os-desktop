@@ -368,10 +368,26 @@ fn bind_installed(
     actual: &ApplicationInspection,
     intent: &PreparationIntent,
 ) -> Result<ExpectedInput, String> {
+    bind_installed_materials(
+        app,
+        actual,
+        intent.android_user,
+        &intent.expected_epoch,
+        &intent.source_receipt,
+    )
+}
+
+fn bind_installed_materials(
+    app: &SourceApplication,
+    actual: &ApplicationInspection,
+    android_user: u32,
+    expected_epoch: &RuntimeEpoch,
+    source_receipt: &FilePin,
+) -> Result<ExpectedInput, String> {
     if actual.package != app.package
-        || actual.user != intent.android_user
-        || actual.uid / 100_000 != intent.android_user
-        || actual.epoch != intent.expected_epoch
+        || actual.user != android_user
+        || actual.uid / 100_000 != android_user
+        || &actual.epoch != expected_epoch
     {
         return Err("PM observation differs from the selected package/user or independently pinned physical Main epoch".into());
     }
@@ -421,8 +437,62 @@ fn bind_installed(
     Ok(ExpectedInput {
         version_code: app.version_code,
         apks,
-        source_receipt: intent.source_receipt.clone(),
+        source_receipt: source_receipt.clone(),
     })
+}
+
+/// Metadata preparation for the complete physical factory. The caller supplies
+/// facts borrowed from actual PM observation tokens; this creates no acceptance.
+pub(super) fn bind_physical_observations(
+    selection_pin: &FilePin,
+    source_receipt: &FilePin,
+    expected_epoch: &RuntimeEpoch,
+    actual: &[&ApplicationInspection],
+) -> Result<Vec<ApplicationPlan>, String> {
+    let selection: StaticSelection = serde_json::from_slice(&pinned(selection_pin)?)
+        .map_err(|e| format!("working physical source selection: {e}"))?;
+    validate_selection(&selection, super::physical_gate_roster::PACKAGE_COUNT)?;
+    let sources: BTreeMap<_, _> = selection
+        .applications
+        .iter()
+        .map(|row| (row.package.as_str(), row))
+        .collect();
+    let installed: BTreeMap<_, _> = actual
+        .iter()
+        .map(|row| (row.package.as_str(), *row))
+        .collect();
+    let wanted: BTreeSet<_> = super::physical_gate_roster::PACKAGES
+        .iter()
+        .map(|row| row.package)
+        .collect();
+    if sources.keys().copied().collect::<BTreeSet<_>>() != wanted
+        || installed.keys().copied().collect::<BTreeSet<_>>() != wanted
+        || installed.len() != actual.len()
+    {
+        return Err(
+            "physical preparation requires all 39 compiled source and actual PM rows".into(),
+        );
+    }
+    let mut rows = Vec::new();
+    for fixed in super::physical_gate_roster::PACKAGES {
+        let selected = sources[fixed.package];
+        validate_source(selected, source_receipt)?;
+        let expected = bind_installed_materials(
+            selected,
+            installed[fixed.package],
+            0,
+            expected_epoch,
+            source_receipt,
+        )?;
+        rows.push(ApplicationPlan {
+            package: fixed.package.into(),
+            expected_input: Some(expected),
+            leaf: None,
+            launch: None,
+            binding_failure: None,
+        });
+    }
+    Ok(rows)
 }
 
 fn enabled_candidates(

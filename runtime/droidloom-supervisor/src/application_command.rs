@@ -19,6 +19,8 @@ use std::time::{Duration, Instant};
 
 use crate::development::owned_process::{open_pidfd, pidfd_exited};
 
+#[path = "native_leaf_business_capture.rs"]
+pub mod native_leaf_business_capture;
 #[path = "physical_qualification_channel.rs"]
 pub mod physical_qualification_channel;
 
@@ -1269,7 +1271,15 @@ fn run_prepared_native_leaf_inner(
     };
     match kind {
         super::NativeLeafCommandKind::BaselineCapture => {
-            baseline_capture_command(&command)?;
+            if let Some(owner) = observation.observation.preparation_owner() {
+                native_leaf_business_capture::check_working_collector(
+                    &command,
+                    owner,
+                    &observation.observation.application().package,
+                )?;
+            } else {
+                baseline_capture_command(&command)?;
+            }
             run_prepared_host_leaf_observed(
                 command,
                 epoch,
@@ -1278,7 +1288,11 @@ fn run_prepared_native_leaf_inner(
             )
         }
         super::NativeLeafCommandKind::IhgPreparation { mode } => {
-            crate::native_ihg_preparation::check_command(&command, mode)?;
+            if let Some(owner) = observation.observation.preparation_owner() {
+                crate::native_ihg_preparation::check_working_command(&command, mode, owner)?;
+            } else {
+                crate::native_ihg_preparation::check_command(&command, mode)?;
+            }
             run_prepared_host_leaf_observed(command, epoch, mode.budget(), Some(observation))
         }
         super::NativeLeafCommandKind::Standard { budget } => {

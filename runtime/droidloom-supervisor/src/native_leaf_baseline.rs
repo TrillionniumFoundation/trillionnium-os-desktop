@@ -4,6 +4,9 @@
 //! Saved JSON is comparison data. This component grants no UI, engine, account
 //! content, application business or deployment qualification.
 use crate::control::application_probe::{ApplicationInspection, RuntimeEpoch};
+use crate::control::physical_qualification_channel::{
+    WorkingNativeSourceCustody, WorkingQualificationOwner,
+};
 use crate::control::{
     ActualApplicationObservation, ActualUserZeroPackageInventoryObservation, ControlError,
     NativeApplicationInspector,
@@ -12,9 +15,8 @@ use crate::main_custody::{MainCustodyObservation, RuntimeMainCustody};
 use crate::native_leaf_baseline_data::{HeldLeafData, LeafDataFacts};
 use crate::native_leaf_baseline_programs::NormalHostPrograms;
 use serde::Serialize;
-use std::time::Instant;
 use std::sync::Arc;
-use crate::control::physical_qualification_channel::{WorkingNativeSourceCustody, WorkingQualificationOwner};
+use std::time::Instant;
 
 pub const SCHEMA: &str = "droidloom.native-leaf-baseline.v1";
 
@@ -52,9 +54,25 @@ pub struct NativeLeafBaselineObservation<'a> {
     deadline: Instant,
     full_bookend_after: Instant,
     inventory: Option<ActualUserZeroPackageInventoryObservation>,
-    inventory_bookend: Option<ActualUserZeroPackageInventoryObservation>,
+    inventory_bookend: Option<Arc<ActualUserZeroPackageInventoryObservation>>,
+    working_inventory: Option<Arc<ActualUserZeroPackageInventoryObservation>>,
     working_source: Option<Arc<WorkingNativeSourceCustody>>,
     preparation_owner: Option<&'a WorkingQualificationOwner>,
+}
+/// Created only from the one real installation's observed inventory.
+/// No public constructor, Clone, Deserialize or receipt-based conversion exists.
+pub(crate) struct IhgInstallContinuation {
+    post: Arc<ActualUserZeroPackageInventoryObservation>,
+    previous_bookend: Instant,
+}
+fn same_completed_install<T>(
+    held: &Arc<T>,
+    offered: &Arc<T>,
+    observed: Instant,
+    previous: Instant,
+    finished: Instant,
+) -> bool {
+    Arc::ptr_eq(held, offered) && previous < observed && observed < finished
 }
 impl<'a> NativeLeafBaselineObservation<'a> {
     /// Consume the caller's existing actual PM and Main observations. This
@@ -90,6 +108,7 @@ impl<'a> NativeLeafBaselineObservation<'a> {
             full_bookend_after: Instant::now(),
             inventory: None,
             inventory_bookend: None,
+            working_inventory: None,
             working_source: None,
             preparation_owner: None,
         })
@@ -121,26 +140,38 @@ impl<'a> NativeLeafBaselineObservation<'a> {
     /// Attach only the actual authenticated working owner. Saved comparison
     /// facts cannot create this value or renew the existing case deadline.
     pub fn attach_working_source(
-        &mut self, source: &Arc<WorkingNativeSourceCustody>,
+        &mut self,
+        source: &Arc<WorkingNativeSourceCustody>,
     ) -> Result<(), ControlError> {
         before(self.deadline)?;
-        if self.working_source.is_some() || self.preparation_owner.is_some() || self.deadline > source.deadline() {
-            return Err(ControlError::Invalid("working source already attached or original end extended".into()));
+        if self.working_source.is_some()
+            || self.preparation_owner.is_some()
+            || self.deadline > source.deadline()
+        {
+            return Err(ControlError::Invalid(
+                "working source already attached or original end extended".into(),
+            ));
         }
-        source.guard().map_err(|e| ControlError::Invalid(e.to_string()))?;
+        source
+            .guard()
+            .map_err(|e| ControlError::Invalid(e.to_string()))?;
         self.working_source = Some(Arc::clone(source));
         Ok(())
     }
     /// Preparation borrows the real fixed parent before the suite child exists.
     /// Its source capture budget is the same original PID1-derived allowance.
     pub fn attach_preparation_owner(
-        &mut self, owner: &'a WorkingQualificationOwner,
+        &mut self,
+        owner: &'a WorkingQualificationOwner,
     ) -> Result<(), ControlError> {
         before(self.deadline)?;
-        if self.preparation_owner.is_some() || self.working_source.is_some()
+        if self.preparation_owner.is_some()
+            || self.working_source.is_some()
             || self.deadline > owner.preparation_deadline()
         {
-            return Err(ControlError::Invalid("preparation owner already attached or deadline extended".into()));
+            return Err(ControlError::Invalid(
+                "preparation owner already attached or deadline extended".into(),
+            ));
         }
         owner.guard().map_err(ControlError::Invalid)?;
         self.preparation_owner = Some(owner);
@@ -149,11 +180,20 @@ impl<'a> NativeLeafBaselineObservation<'a> {
     pub(crate) fn preparation_owner(&self) -> Option<&WorkingQualificationOwner> {
         self.preparation_owner
     }
-    pub(crate) fn working_source_comparison(&self) -> Result<Option<serde_json::Value>, ControlError> {
-        self.working_source.as_ref().map(|source| {
-            source.guard().map_err(|e| ControlError::Invalid(e.to_string()))?;
-            source.comparison().map_err(|e| ControlError::Invalid(e.to_string()))
-        }).transpose()
+    pub(crate) fn working_source_comparison(
+        &self,
+    ) -> Result<Option<serde_json::Value>, ControlError> {
+        self.working_source
+            .as_ref()
+            .map(|source| {
+                source
+                    .guard()
+                    .map_err(|e| ControlError::Invalid(e.to_string()))?;
+                source
+                    .comparison()
+                    .map_err(|e| ControlError::Invalid(e.to_string()))
+            })
+            .transpose()
     }
 
     /// Attach the fixed complete user-0 observation for IHG's original helper
@@ -187,6 +227,16 @@ impl<'a> NativeLeafBaselineObservation<'a> {
     ) -> Option<&crate::package_inventory_observation::UserZeroPackageInventoryFacts> {
         self.inventory.as_ref().map(|i| i.facts())
     }
+    // The immutable capture preimage remains available via inventory_facts().
+    // Only the same factory's completed actual install can advance preparation.
+    pub(crate) fn preparation_inventory_facts(
+        &self,
+    ) -> Option<&crate::package_inventory_observation::UserZeroPackageInventoryFacts> {
+        self.working_inventory
+            .as_deref()
+            .or(self.inventory.as_ref())
+            .map(|i| i.facts())
+    }
     pub fn requires_inventory_bookend(&self) -> bool {
         self.inventory.is_some()
     }
@@ -201,11 +251,15 @@ impl<'a> NativeLeafBaselineObservation<'a> {
         let end = until.min(self.deadline);
         self.verify_local(inspector, end)?;
         inspector.require_inventory_local(self.main, self.application, &after, end)?;
-        let before = self.inventory.as_ref().ok_or_else(|| {
-            ControlError::Invalid(
-                "complete inventory was not observed before the invocation".into(),
-            )
-        })?;
+        let before = self
+            .working_inventory
+            .as_deref()
+            .or(self.inventory.as_ref())
+            .ok_or_else(|| {
+                ControlError::Invalid(
+                    "complete inventory was not observed before the invocation".into(),
+                )
+            })?;
         if after.observed_at() <= self.full_bookend_after
             || !before.facts().same_table(after.facts())
         {
@@ -213,7 +267,7 @@ impl<'a> NativeLeafBaselineObservation<'a> {
                 "complete user-0 table changed or post observation is stale".into(),
             ));
         }
-        self.inventory_bookend = Some(after);
+        self.inventory_bookend = Some(Arc::new(after));
         Ok(())
     }
 
@@ -225,20 +279,59 @@ impl<'a> NativeLeafBaselineObservation<'a> {
         inspector: &NativeApplicationInspector,
         after: ActualUserZeroPackageInventoryObservation,
         until: Instant,
-    ) -> Result<(), ControlError> {
+    ) -> Result<IhgInstallContinuation, ControlError> {
         let end = until.min(self.deadline);
         self.verify_local(inspector, end)?;
         inspector.require_inventory_local(self.main, self.application, &after, end)?;
         if self.application.facts().package != crate::native_ihg_preparation::TARGET
             || self.inventory.is_none()
+            || self.working_inventory.is_some()
             || after.observed_at() <= self.full_bookend_after
         {
             return Err(ControlError::Invalid(
                 "fixed IHG installation lacks a fresh actual post inventory".into(),
             ));
         }
-        self.inventory_bookend = Some(after);
-        Ok(())
+        let after = Arc::new(after);
+        self.inventory_bookend = Some(Arc::clone(&after));
+        Ok(IhgInstallContinuation {
+            post: after,
+            previous_bookend: self.full_bookend_after,
+        })
+    }
+
+    pub(crate) fn continue_working_ihg_install(
+        &mut self,
+        inspector: &NativeApplicationInspector,
+        continuation: IhgInstallContinuation,
+        until: Instant,
+    ) -> Result<(), ControlError> {
+        let end = until.min(self.deadline);
+        self.verify_local(inspector, end)?;
+        let owner = self.preparation_owner.ok_or_else(|| {
+            ControlError::Invalid("IHG continuation requires the original working owner".into())
+        })?;
+        owner.guard().map_err(ControlError::Invalid)?;
+        if self.working_source.is_some()
+            || self.working_inventory.is_some()
+            || end > owner.preparation_deadline()
+            || self.inventory_bookend.as_ref().is_none_or(|post| {
+                !same_completed_install(
+                    post,
+                    &continuation.post,
+                    continuation.post.observed_at(),
+                    continuation.previous_bookend,
+                    self.full_bookend_after,
+                )
+            })
+        {
+            return Err(ControlError::Invalid(
+                "IHG continuation is not this baseline's fully finished actual post observation"
+                    .into(),
+            ));
+        }
+        self.working_inventory = Some(continuation.post);
+        self.verify_local(inspector, end)
     }
 
     /// G is local custody, not a new full Main/PM observation: all held/named
@@ -252,15 +345,19 @@ impl<'a> NativeLeafBaselineObservation<'a> {
         let end = until.min(self.deadline);
         before(end)?;
         if let Some(source) = &self.working_source {
-            source.guard().map_err(|e| ControlError::Invalid(e.to_string()))?;
+            source
+                .guard()
+                .map_err(|e| ControlError::Invalid(e.to_string()))?;
         }
         if let Some(owner) = self.preparation_owner {
             owner.guard().map_err(ControlError::Invalid)?;
         }
         inspector.require_observations_local(self.main, self.application, end)?;
-        for inventory in [&self.inventory, &self.inventory_bookend]
-            .into_iter()
-            .flatten()
+        for inventory in self
+            .inventory
+            .iter()
+            .chain(self.inventory_bookend.as_deref())
+            .chain(self.working_inventory.as_deref())
         {
             inspector.require_inventory_local(self.main, self.application, inventory, end)?;
         }
@@ -356,6 +453,38 @@ fn require_new_bookend(
 mod tests {
     use super::*;
     use std::time::Duration;
+    #[test]
+    fn working_ihg_cannot_continue_from_equal_receipts_or_unfinished_bookends() {
+        // This identity test creates no real inventory or working-owner authority.
+        let before = Instant::now();
+        let observed = before + Duration::from_millis(1);
+        let finished = observed + Duration::from_millis(1);
+        let actual = Arc::new(vec![1_u8, 2, 3]);
+        let same_values_from_another_observation = Arc::new(vec![1_u8, 2, 3]);
+        assert!(same_completed_install(
+            &actual,
+            &Arc::clone(&actual),
+            observed,
+            before,
+            finished
+        ));
+        assert!(!same_completed_install(
+            &actual,
+            &same_values_from_another_observation,
+            observed,
+            before,
+            finished
+        ));
+        assert!(!same_completed_install(
+            &actual, &actual, observed, observed, finished
+        ));
+        assert!(!same_completed_install(
+            &actual, &actual, observed, before, observed
+        ));
+        assert!(!same_completed_install(
+            &actual, &actual, before, observed, finished
+        ));
+    }
     #[test]
     fn native_leaf_bookend_cannot_reuse_earlier_or_between_tokens() {
         let before = Instant::now();

@@ -69,6 +69,28 @@ fn compiled_host_entries() -> io::Result<serde_json::Map<String, serde_json::Val
     Ok(out)
 }
 
+fn compiled_working_sources(custody: serde_json::Value) -> io::Result<serde_json::Value> {
+    // The actual installed applications ELF and this recipe are independently
+    // held by the opaque owner. These bytes are a comparison projection only.
+    const CATALOG: &[u8] = include_bytes!("../../droidloom-applications/src/leaf_sources.json");
+    let recipe: serde_json::Value = serde_json::from_slice(SOURCE_RECIPE)
+        .map_err(|_| invalid("compiled working source recipe differs"))?;
+    let rows = recipe["members"].as_array().ok_or_else(|| invalid("compiled source members absent"))?
+        .iter().filter(|row| row["relative_path"] == "selection/selection-14.json")
+        .collect::<Vec<_>>();
+    if rows.len() != 1 || rows[0]["output"]["path"]
+        != format!("{COHORT_ROOT}/selection/selection-14.json")
+    {
+        return Err(invalid("compiled working selector is not unique"));
+    }
+    let digest = format!("{:x}", Sha256::digest(CATALOG));
+    Ok(serde_json::json!({"schema":"droidloom.working-native-source-comparison.v1",
+        "custody":custody, "selection":rows[0]["output"],
+        "catalog":{"path":format!("/etc/droidloom/native-application-leaves/catalogs/{digest}.json"),
+            "bytes":CATALOG.len(),"sha256":digest},
+        "comparison_only":true}))
+}
+
 fn monotonic_end(end: Instant) -> io::Result<u64> {
     let mut clock: libc::timespec = unsafe { std::mem::zeroed() };
     if unsafe { libc::clock_gettime(libc::CLOCK_MONOTONIC, &mut clock) } != 0 {
@@ -157,7 +179,7 @@ impl NativeLeafChannel {
             .verify_local(inspector, deadline)
             .map_err(|e| e.to_string())?;
         let deadline = deadline.min(observation.deadline());
-        let bytes = serde_json::to_vec(&serde_json::json!({
+        let mut envelope = serde_json::json!({
             "schema":"droidloom.native-leaf-channel.v1",
             "baseline":observation.facts(),
             "user_zero_package_inventory":observation.inventory_facts(),
@@ -165,7 +187,21 @@ impl NativeLeafChannel {
             "normal_source_recipe":{"bytes":SOURCE_RECIPE.len(),"sha256":format!("{:x}", Sha256::digest(SOURCE_RECIPE))},
             "deadline_monotonic_ns":monotonic_end(deadline).map_err(|e|e.to_string())?,
             "comparison_only":true
-        })).map_err(|e|e.to_string())?;
+        });
+        if let Some(custody) = observation.working_source_comparison().map_err(|e|e.to_string())? {
+            envelope["schema"] = "droidloom.native-leaf-channel.v2".into();
+            envelope["working_native_source"] = compiled_working_sources(custody)
+                .map_err(|e|e.to_string())?;
+        } else if let Some(owner) = observation.preparation_owner() {
+            owner.guard()?;
+            envelope["schema"] = "droidloom.native-leaf-channel.v2".into();
+            envelope["working_preparation_owner"] = serde_json::json!({
+                "schema":"droidloom.working-native-preparation-comparison.v1",
+                "runtime_evidence_directory":owner.runtime_evidence_directory()?,
+                "actual_pid":std::process::id(),"comparison_only":true,
+            });
+        }
+        let bytes = serde_json::to_vec(&envelope).map_err(|e|e.to_string())?;
         Self::from_bytes(&bytes, deadline).map_err(|e| e.to_string())
     }
     fn from_bytes(bytes: &[u8], deadline: Instant) -> io::Result<Self> {

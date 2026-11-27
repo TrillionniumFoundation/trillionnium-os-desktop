@@ -203,8 +203,9 @@ def main():
                 expected = profiles.helper_expected(common, build, install['helper_uid'])
             else:
                 common.need(set(request) == {'baseline', 'qualification'}, 'ACTUAL_NEW_MAIN_IDENTITY_INPUTS')
-            common.need(args.output.parent == common.QUALIFICATION
-                and common.re.fullmatch(r'business-app-identity-[0-9a-f]{32}', args.output.name), 'NEW_IDENTITY_OUTPUT_ROOT')
+            common.need(common.input_root_matches(args.output,'ihg-london',
+                {'ihg':'target-identity','ihg-helper':'helper-identity'}.get(args.role,'legacy-identity'),
+                r'business-app-identity-[0-9a-f]{32}'), 'NEW_IDENTITY_OUTPUT_ROOT')
             ref = common.collect_identity({k: request[k] for k in ('baseline', 'qualification')}, args.output,
                 expected, source_ref(common, packet, 'app_common.py'))
             result = {'ok': True}

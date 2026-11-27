@@ -42,7 +42,8 @@ def source_packet(c,value,packet):
     c.need(type(value) is dict and set(value)==SOURCE_FIELDS and value['schema']=='pocket4-clock-fresh-source-v1',
         'EXACT_NEW_CLOCK_SOURCE_SCHEMA')
     root=Path(value['case_root'])
-    c.need(root.parent==c.QUALIFICATION and re.fullmatch('business-clock-case-[0-9a-f]{32}',root.name)
+    c.need(c.case_root_matches(root,{'timer15':'clock-timer15','expiry06':'clock-expiry06','alarm04':'clock-alarm'}[value['kind']],
+        'business-clock-case-[0-9a-f]{32}')
         and Path(value['task_source_manifest']['path'])==root/'task-source.json','NEW_PRIVATE_CLOCK_SOURCE_LOCATION')
     task=c.parse(c.read_ref(value['task_source_manifest']))
     expected=[{'path':str(root/'source'/Path(row['path']).name),'bytes':row['bytes'],'sha256':row['sha256']} for row in packet['files']]
@@ -77,7 +78,8 @@ def create_source(c,request,output,prep_ref):
     c.need(os.getuid()==os.geteuid()==0,'ROOT_EXPLICIT_FRESH_CLOCK_SOURCE_FACTORY')
     packet=preparation(c,prep_ref);baseline,_,profiles=inputs(c,request,packet)
     root=Path(output)
-    c.need(root.parent==c.QUALIFICATION and re.fullmatch('business-clock-case-[0-9a-f]{32}',root.name),
+    c.need(c.case_root_matches(root,{'timer15':'clock-timer15','expiry06':'clock-expiry06','alarm04':'clock-alarm'}[request['kind']],
+        'business-clock-case-[0-9a-f]{32}'),
         'EXPLICIT_NEW_CLOCK_CASE_ROOT')
     root=c.private_dir(root,create=True);src=c.private_dir(root/'source',create=True)
     files=[c.write_new(src/Path(row['path']).name,c.read_ref(row),0o400) for row in packet['files']]
