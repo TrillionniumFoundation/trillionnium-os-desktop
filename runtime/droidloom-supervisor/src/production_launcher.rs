@@ -122,6 +122,15 @@ impl SharedKernelLauncher {
         });
         let publication = public.as_ref().map(|p| (p.early, p.selected_digest.as_str()));
         let early = service_route(selection, publication).map_err(io::Error::other)?;
+        if early {
+            let release = record.as_ref().and_then(|r| r.normal_host_release.as_ref())
+                .ok_or_else(|| io::Error::other("early service has no normal host release"))?;
+            let launcher = public.as_ref().ok_or_else(|| io::Error::other("public early launcher absent"))?;
+            if (release.manager.bytes, release.manager.sha256.as_str())
+                != (launcher.entry_bytes, launcher.entry_digest.as_str()) {
+                return Err(io::Error::other("public manager differs from the same private normal host release"));
+            }
+        }
         if let Some((file, _)) = private { file.revalidate().map_err(io::Error::other)?; }
         if let Some(file) = public { file.revalidate()?; }
         Ok(early)
@@ -169,6 +178,13 @@ impl SharedKernelLauncher {
 pub struct PublishedServiceProgram(SealedFile);
 
 impl PublishedServiceProgram {
+    pub(crate) fn held_file(&self) -> &File { &self.0.file }
+
+    /// Full bytes were checked at acquisition. Subsequent local progress
+    /// retains those descriptors and checks all inode fields and the name.
+    pub(crate) fn revalidate_metadata(&self) -> io::Result<()> {
+        self.0.revalidate_path().map_err(io::Error::other)
+    }
     pub(crate) fn matches_executable(&self, actual: &File) -> io::Result<bool> {
         self.revalidate()?;
         let matches = Node::from(&actual.metadata()?) == self.0.node;
@@ -213,6 +229,22 @@ fn paired(host_managed: bool, selection_sha256: &str, published: Option<&str>) -
 }
 
 impl ProductionSelection {
+    pub(crate) fn normal_presenter(&self) -> Result<PublishedServiceProgram> {
+        let release = self.normal_host_release()?;
+        let pin = &release.presenter;
+        let (file, _) = SealedFile::read(
+            Path::new(crate::normal_host_release::PRESENTER),
+            crate::normal_host_release::MAX_PROGRAM_BYTES,
+        )?;
+        if file.node.mode != libc::S_IFREG | 0o755
+            || file.node.bytes != pin.bytes || file.sha256 != pin.sha256 {
+            return Err(SelectionError::Rejected("presenter differs from the same private normal host release"));
+        }
+        file.revalidate_path()?;
+        self.revalidate()?;
+        Ok(PublishedServiceProgram(file))
+    }
+
     pub(crate) fn host_managed_launcher(&self) -> Result<Option<SharedKernelLauncher>> {
         self.revalidate()?;
         if self.early_boot {return Err(SelectionError::Rejected("kernel-created Android requires its independent early-generation owner"));}

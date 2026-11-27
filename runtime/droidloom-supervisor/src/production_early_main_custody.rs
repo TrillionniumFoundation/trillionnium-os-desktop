@@ -38,6 +38,7 @@ impl EarlyApplicationAuthority<'_> {
             "Main comparison epoch differs from the actual original framework",
         )?;
         let owner = self.image_custody_owner(deadline)?;
+        let normal_host_release = self.base.board().selection().normal_host_release().map_err(external)?.clone();
         let data_admission =
             crate::production_mounts::persistent_data::EarlyStorageAdmission::acquire(
                 &self.base, self.group, self.owner,
@@ -92,6 +93,8 @@ impl EarlyApplicationAuthority<'_> {
         )?;
         self.verify_framework_processes(&held)?;
         self.check_request_deadline()?;
+        require(self.base.board().selection().normal_host_release().map_err(external)? == &normal_host_release,
+            "normal host selection changed during the same Main observation")?;
         let result = RuntimeMainCustody {
             schema: SCHEMA.into(),
             epoch: held.epoch.clone(),
@@ -101,6 +104,7 @@ impl EarlyApplicationAuthority<'_> {
             framework,
             framework_namespaces,
             persistent_data,
+            normal_host_release,
         };
         result
             .validate(expected)

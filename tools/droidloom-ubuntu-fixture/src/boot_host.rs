@@ -118,6 +118,40 @@ pub fn validate_manifest(m: &HostManifest) -> Result<()> {
     }
     Ok(())
 }
+
+/// Both programs are read from one already admitted normal host manifest.
+/// This returns comparison configuration; it does not install or execute them.
+pub(crate) fn normal_host_release(
+    root: &Path,
+    manifest: &HostManifest,
+) -> Result<crate::normal_host_release::NormalHostRelease> {
+    use crate::normal_host_release::{MANAGER, PRESENTER, NormalHostProgramPin, NormalHostRelease, SCHEMA};
+    validate_manifest(manifest)?;
+    let read = |path: &str| -> Result<NormalHostProgramPin> {
+        let relative = path.strip_prefix('/').ok_or("normal host program path")?;
+        let rows: Vec<_> = manifest.files.iter().filter(|row| row.path == relative).collect();
+        ensure(rows.len() == 1, "normal host program must occur exactly once in the same manifest")?;
+        let row = rows[0];
+        ensure(row.mode == 0o755, "normal host program manifest mode differs")?;
+        let pin = FilePin { path: root.join(relative), bytes: row.size, sha256: row.sha256.clone() };
+        let (file, before) = boot_files::open_pin(&pin)?;
+        ensure(
+            before.uid == 0 && before.gid == 0 && before.nlink == 1
+                && before.mode == 0o100755 && fs::xattrs(&file)?.is_empty(),
+            "normal host program lost its fixed executable custody",
+        )?;
+        ensure(fs::hash(&file)? == pin.sha256 && fs::stat(&file)? == before,
+            "normal host program complete bytes changed")?;
+        let (named, after) = boot_files::open_pin(&pin)?;
+        ensure(after == before && fs::stat(&file)? == before && fs::stat(&named)? == before,
+            "normal host program named and held identity differ")?;
+        Ok(NormalHostProgramPin { path: path.into(), bytes: pin.bytes, sha256: pin.sha256 })
+    };
+    let value = NormalHostRelease { schema: SCHEMA.into(), manager: read(MANAGER)?, presenter: read(PRESENTER)? };
+    value.validate().map_err(str::to_owned)?;
+    Ok(value)
+}
+
 pub(crate) fn octal(field: &[u8]) -> Result<u64> {
     ensure(
         field

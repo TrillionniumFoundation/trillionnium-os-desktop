@@ -105,12 +105,13 @@ pub(super) fn derive_original(
     cohort: &str,
     runtime: &str,
     persistent: &PersistentData,
+    normal_host_release: &crate::normal_host_release::NormalHostRelease,
 ) -> Result<DerivedCell> {
     ensure(
         original.len() == ORIGINAL_CELL_BYTES && fs::digest(original) == ORIGINAL_CELL_SHA,
         "original public cell is not the reviewed actual configuration",
     )?;
-    derive(original, cohort, runtime, persistent)
+    derive(original, cohort, runtime, persistent, normal_host_release)
 }
 
 fn derive(
@@ -118,12 +119,14 @@ fn derive(
     cohort: &str,
     runtime: &str,
     persistent: &PersistentData,
+    normal_host_release: &crate::normal_host_release::NormalHostRelease,
 ) -> Result<DerivedCell> {
     ensure(
         original.len() <= 1024 * 1024 && fs::valid_digest(cohort) && fs::valid_digest(runtime),
         "cell source or cohort identity is invalid",
     )?;
     persistent.validate()?;
+    normal_host_release.validate().map_err(str::to_owned)?;
     let old: Value = serde_json::from_slice(original)?;
     let object = old.as_object().ok_or("original cell is not an object")?;
     let permitted: BTreeSet<&str> = [
@@ -230,7 +233,7 @@ fn derive(
     let selected = json!({"schema":"droidloom-production-selection-v4",
         "launcher":"early_boot_shared_kernel_v1", "host_uid":1000,
         "cell_spec_bytes":cell.len(), "cell_spec_sha256":fs::digest(&cell),
-        "base_cohort_sha256":cohort,"runtime_manifest_sha256":runtime,"persistent_data":persistent});
+        "base_cohort_sha256":cohort,"runtime_manifest_sha256":runtime,"persistent_data":persistent,"normal_host_release":normal_host_release});
     let selection = canonical(&selected)?;
     ensure(
         selection.len() <= 16 * 1024,
@@ -256,6 +259,14 @@ mod tests {
                 "feature_compat":4156,"feature_incompat":8898,"feature_ro_compat":1131,
                 "guest_root_uid":0,"guest_root_gid":0,"guest_root_mode":493}})).unwrap()
     }
+    fn normal_release() -> crate::normal_host_release::NormalHostRelease {
+        use crate::normal_host_release::{NormalHostRelease, NormalHostProgramPin, SCHEMA, MANAGER, PRESENTER};
+        NormalHostRelease {
+            schema: SCHEMA.into(),
+            manager: NormalHostProgramPin {path: MANAGER.into(), bytes: 1024, sha256: "d".repeat(64)},
+            presenter: NormalHostProgramPin {path: PRESENTER.into(), bytes: 2048, sha256: "e".repeat(64)},
+        }
+    }
     fn original() -> Value {
         json!({"host_uid":1000,"subordinate_uids":{"start":100000,"count":100000},
             "subordinate_gids":{"start":100000,"count":100000},"image_dir":"/usr/lib/droidloom/images",
@@ -271,7 +282,7 @@ mod tests {
     -> Result<()> {
         let old = original();
         let bytes = canonical(&old)?;
-        let result = derive(&bytes, &"a".repeat(64), &"b".repeat(64), &persistent())?;
+        let result = derive(&bytes, &"a".repeat(64), &"b".repeat(64), &persistent(), &normal_release())?;
         let cell: Value = serde_json::from_slice(&result.cell)?;
         let selection: Value = serde_json::from_slice(&result.selection)?;
         for name in &result.preserved_fields {
@@ -283,7 +294,13 @@ mod tests {
         assert_eq!(cell["image_layout"], "gsi_system_as_root");
         assert_eq!(selection["cell_spec_sha256"], fs::digest(&result.cell));
         assert_eq!(selection["cell_spec_bytes"], result.cell.len());
-        assert_eq!(selection.as_object().unwrap().len(), 8);
+        assert_eq!(selection.as_object().unwrap().len(), 9);
+        assert_eq!(selection["normal_host_release"], serde_json::to_value(normal_release())?);
+        let mut other_release = normal_release();
+        other_release.presenter.sha256 = "f".repeat(64);
+        let changed_program = derive(&bytes, &"a".repeat(64), &"b".repeat(64), &persistent(), &other_release)?;
+        assert_eq!(result.cell, changed_program.cell);
+        assert_ne!(result.selection, changed_program.selection);
         assert_eq!(selection["persistent_data"]["original_copy"],
             serde_json::to_value(crate::cold_original_once_recovery::contract::OriginalCopyPolicy::reviewed())?);
         // The metadata input cannot supply its own lineage. Only this normal
@@ -292,7 +309,7 @@ mod tests {
         assert_eq!(result.changed_fields.len(), 6);
         // The production entry also requires the actual original bytes. This
         // synthetic test record never becomes real-machine admission.
-        assert!(derive_original(&bytes, &"a".repeat(64), &"b".repeat(64), &persistent()).is_err());
+        assert!(derive_original(&bytes, &"a".repeat(64), &"b".repeat(64), &persistent(), &normal_release()).is_err());
         Ok(())
     }
     #[test]
@@ -304,7 +321,8 @@ mod tests {
                 &canonical(&old)?,
                 &"a".repeat(64),
                 &"b".repeat(64),
-                &persistent()
+                &persistent(),
+                &normal_release()
             )
             .is_err()
         );
@@ -315,7 +333,8 @@ mod tests {
                 &canonical(&old)?,
                 &"a".repeat(64),
                 &"b".repeat(64),
-                &persistent()
+                &persistent(),
+                &normal_release()
             )
             .is_err()
         );
@@ -326,7 +345,8 @@ mod tests {
                 &canonical(&old)?,
                 &"a".repeat(64),
                 &"b".repeat(64),
-                &persistent()
+                &persistent(),
+                &normal_release()
             )
             .is_err()
         );

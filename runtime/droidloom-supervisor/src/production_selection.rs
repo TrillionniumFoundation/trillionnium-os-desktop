@@ -83,6 +83,8 @@ struct Record {
     runtime_manifest_sha256: String,
     #[serde(default)]
     persistent_data: Option<PersistentDataPolicy>,
+    #[serde(default)]
+    normal_host_release: Option<crate::normal_host_release::NormalHostRelease>,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -133,6 +135,7 @@ pub(crate) struct ProductionSelection {
     base_cohort: String,
     runtime_manifest: String,
     persistent_data: Option<PersistentDataPolicy>,
+    normal_host_release: Option<crate::normal_host_release::NormalHostRelease>,
 }
 
 impl ProductionSelection {
@@ -199,6 +202,7 @@ impl ProductionSelection {
             base_cohort: record.base_cohort_sha256,
             runtime_manifest: record.runtime_manifest_sha256,
             persistent_data: record.persistent_data,
+            normal_host_release: record.normal_host_release,
         })
     }
 
@@ -224,6 +228,7 @@ impl ProductionSelection {
             base_cohort: self.base_cohort.clone(),
             runtime_manifest: self.runtime_manifest.clone(),
             persistent_data: self.persistent_data.clone(),
+            normal_host_release: self.normal_host_release.clone(),
         };
         value.revalidate()?;
         self.revalidate()?;
@@ -255,6 +260,16 @@ impl ProductionSelection {
         hash.update(self.base_cohort.as_bytes());
         hash.update(self.runtime_manifest.as_bytes());
         hash.finalize().into()
+    }
+
+    /// Comparison pins from this same held private choice. No caller supplies
+    /// a path or a program, and this cannot authorize execution by itself.
+    pub(crate) fn normal_host_release(&self) -> Result<&crate::normal_host_release::NormalHostRelease> {
+        self.revalidate()?;
+        let value = self.normal_host_release.as_ref()
+            .ok_or(SelectionError::Rejected("normal host programs absent from the selected early release"))?;
+        value.validate().map_err(SelectionError::Rejected)?;
+        Ok(value)
     }
 
     pub(crate) fn is_kernel_first(&self) -> bool {
@@ -309,6 +324,8 @@ fn validate_record(record: &Record) -> Result<()> {
         _ => false,
     };
     if !valid_version
+        || (record.schema == EARLY_SCHEMA) != record.normal_host_release.is_some()
+        || record.normal_host_release.as_ref().is_some_and(|v| v.validate().is_err())
         || record.host_uid == 0
         || record.host_uid == u32::MAX
         || record.cell_spec_bytes == 0
@@ -594,6 +611,7 @@ mod tests {
             base_cohort_sha256: "b".repeat(64),
             runtime_manifest_sha256: "c".repeat(64),
             persistent_data: None,
+            normal_host_release: None,
         }
     }
 

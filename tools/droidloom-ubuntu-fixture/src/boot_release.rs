@@ -189,7 +189,7 @@ fn ext4_record(work: &Path, name: &str, path: &Path) -> Result<Value> {
     )
 }
 
-pub fn install_android(root: &Path, work: &Path, input: &AndroidInputs) -> Result<Value> {
+pub fn install_android(root: &Path, work: &Path, input: &AndroidInputs, host_manifest: &FilePin) -> Result<Value> {
     ensure(
         input.calibrate != input.mac_release.is_some(),
         "select exactly calibration or a normal five-file MAC release",
@@ -373,10 +373,12 @@ pub fn install_android(root: &Path, work: &Path, input: &AndroidInputs) -> Resul
         }
         persistent.insert(name.into(), ext4_record(work, name, &path)?);
     }
+    let host: crate::boot_host::HostManifest = serde_json::from_slice(&boot_files::read_pin(host_manifest, 1024 * 1024)?)?;
+    let normal_host_release = crate::boot_host::normal_host_release(root, &host)?;
     let selected = json!({"schema":"droidloom-production-selection-v4","launcher":"early_boot_shared_kernel_v1",
         "host_uid":1000,"cell_spec_bytes":spec.len(),"cell_spec_sha256":fs::digest(&spec),
         "base_cohort_sha256":generation,"runtime_manifest_sha256":input.runtime.sha256,
-        "persistent_data":persistent});
+        "persistent_data":persistent,"normal_host_release":normal_host_release});
     let selection = emit(
         root,
         "/etc/droidloom/production/selected.json",
@@ -384,8 +386,7 @@ pub fn install_android(root: &Path, work: &Path, input: &AndroidInputs) -> Resul
         0o400,
     )?;
     write(root, "/etc/droidloom/setup.lock", b"", 0o600)?;
-    let manager =
-        boot_files::pin_file(&root.join("usr/lib/droidloom/production/current/droidloomd"))?;
+    let manager = &normal_host_release.manager;
     let publication = json!({"schema":"droidloom-public-early-launcher-v1","launcher":"early_boot_shared_kernel_v1",
         "selection_sha256":selection,"manager_sha256":manager.sha256,"manager_bytes":manager.bytes});
     emit(

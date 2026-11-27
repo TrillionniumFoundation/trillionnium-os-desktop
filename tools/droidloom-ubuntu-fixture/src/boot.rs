@@ -593,7 +593,7 @@ pub fn prepare_boot(config: &Path, expected: &str) -> Result<()> {
             "normal host release lacks a complete public desktop executable",
         )?;
     }
-    let android = crate::boot_release::install_android(&root, &boot, &plan.android)?;
+    let android = crate::boot_release::install_android(&root, &boot, &plan.android, &plan.host_manifest)?;
     let public_apks = plan
         .public_apks
         .as_ref()

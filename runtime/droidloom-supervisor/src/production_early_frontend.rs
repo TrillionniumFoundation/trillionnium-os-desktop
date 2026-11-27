@@ -474,6 +474,7 @@ struct Lane {
 struct Programs {
     root: File,
     presenter: File,
+    presenter_release: crate::production_selection::PublishedServiceProgram,
     composer: File,
     input: File,
     jar: File,
@@ -577,6 +578,7 @@ impl Lane {
         programs: &Programs,
         original: Option<Node>,
     ) -> io::Result<()> {
+        programs.presenter_release.revalidate_metadata()?;
         self.control.revalidate()?;
         self.endpoint.revalidate()?;
         if let Some(c) = &self.android {
@@ -606,6 +608,7 @@ impl Lane {
         programs: &Programs,
         original: Option<Node>,
     ) -> io::Result<()> {
+        programs.presenter_release.revalidate_metadata()?;
         if let Err(e) = self.validate(board, programs, original) {
             self.revoke();
             board.revalidate()?;
@@ -778,20 +781,8 @@ impl<'a> Frontend<'a> {
     ) -> io::Result<Self> {
         board.revalidate()?;
         owner.objects().map_err(io::Error::other)?;
-        let presenter = wire::openat(
-            &wire::trusted_directory("/usr/bin")?,
-            c"droidloom-wayland",
-            libc::O_RDONLY,
-        )?;
-        let p = presenter.metadata()?;
-        check(
-            p.is_file()
-                && p.uid() == 0
-                && p.gid() == 0
-                && p.nlink() == 1
-                && p.mode() == libc::S_IFREG | 0o755,
-            "installed presenter is not its root-owned normal executable",
-        )?;
+        let presenter_release = board.selection().normal_presenter().map_err(io::Error::other)?;
+        let presenter = presenter_release.held_file().try_clone()?;
         let composer = image_file(root, &[c"vendor", c"bin", c"hw", COMPOSER], true)?;
         let input = image_file(root, &[c"system", c"bin", c"app_process64"], true)?;
         let jar = image_file(
@@ -807,6 +798,7 @@ impl<'a> Frontend<'a> {
         let programs = Programs {
             root: root.try_clone()?,
             presenter,
+            presenter_release,
             composer,
             input,
             jar_seal: Seal::of(&jar)?,

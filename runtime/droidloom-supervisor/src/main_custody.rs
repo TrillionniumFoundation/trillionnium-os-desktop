@@ -152,6 +152,8 @@ pub struct RuntimeMainCustody {
     pub framework: MainProcessCustody,
     pub framework_namespaces: Vec<CustodyNamespace>,
     pub persistent_data: MainPersistentCustody,
+    /// Selected comparison pins from the same live private configuration.
+    pub normal_host_release: crate::normal_host_release::NormalHostRelease,
 }
 
 fn require(value: bool, why: &'static str) -> Result<(), String> {
@@ -207,6 +209,7 @@ impl RuntimeMainCustody {
                 && digest(&self.owner.runtime_manifest_sha256),
             "Main owner or complete namespace binding differs",
         )?;
+        self.normal_host_release.validate().map_err(str::to_owned)?;
         let data = &self.persistent_data;
         let user = &self.owner.namespaces[5];
         let framework_user = &self.framework_namespaces[5];
@@ -363,6 +366,15 @@ pub(crate) mod tests {
             zygote: process(101, 100, 20),
             framework: process(102, 101, 30),
             framework_namespaces: nodes,
+            normal_host_release: crate::normal_host_release::NormalHostRelease {
+                schema: crate::normal_host_release::SCHEMA.into(),
+                manager: crate::normal_host_release::NormalHostProgramPin {
+                    path: crate::normal_host_release::MANAGER.into(), bytes: 1024, sha256: "d".repeat(64),
+                },
+                presenter: crate::normal_host_release::NormalHostProgramPin {
+                    path: crate::normal_host_release::PRESENTER.into(), bytes: 2048, sha256: "e".repeat(64),
+                },
+            },
             persistent_data: MainPersistentCustody {
                 host_uid: 1000,
                 base_cohort_sha256: "b".repeat(64),

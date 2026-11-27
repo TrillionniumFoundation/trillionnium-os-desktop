@@ -22,6 +22,8 @@ mod boot_qemu;
 mod boot_query;
 mod boot_query_image;
 mod boot_release;
+#[path = "../../../runtime/droidloom-supervisor/src/normal_host_release.rs"]
+mod normal_host_release;
 mod boot_runtime;
 mod boot_systemd_candidate;
 mod boot_vm;

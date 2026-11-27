@@ -31,6 +31,26 @@ use std::{
     rc::Rc,
 };
 
+
+/// Reuse the exact normal host Debian payload, manifest and source identity
+/// from the already observed normal initramfs and owned-guest factories.
+fn selected_host_release(
+    source: &FilePin,
+    normal: &Value,
+    owned: &Value,
+) -> Result<crate::normal_host_release::NormalHostRelease> {
+    let host_pin: FilePin = serde_json::from_value(owned["actual"]["normal_host_manifest"].clone())?;
+    let host: crate::boot_host::HostManifest =
+        serde_json::from_slice(&files::read_pin(&host_pin, 1024 * 1024)?)?;
+    ensure(
+        host.commit == text(normal, "host_source_commit")?
+            && host.tree == text(normal, "host_source_tree")?,
+        "selected host programs differ from the same admitted normal source",
+    )?;
+    let root = source.path.parent().ok_or("normal source parent")?.join("normal-host-payload");
+    crate::boot_host::normal_host_release(&root, &host)
+}
+
 const BASE: &str = "/var/lib/droidloom-qualification";
 const EXT4_SHA: &str = "ad1cf15518ad638e016278312739166b89e88b5c7299caeac41501bcb6da840b";
 const DEBUGFS_SHA: &str = "864e1d7b445e7b5bfc831da78330dbcafc590fa82b89ea9de60b7527f989954f";
@@ -1033,11 +1053,15 @@ pub(super) fn admit(input: &FilePin) -> Result<Rc<OriginalQualificationAuthority
     let original_cell_pin = files::pin_file(&original_cell)?;
     let normal = sources.fresh_initramfs_report();
     let m = &normal["normal_materials"];
+    sources.revalidate_custody()?;
+    let normal_host_release = selected_host_release(sources.source_pin(), normal, &owned)?;
+    sources.revalidate_custody()?;
     let derived = cell::derive_original(
         &files::read_pin(&original_cell_pin, 1024 * 1024)?,
         text(m, "cohort_sha256")?,
         text(m, "runtime_sha256")?,
         &persistent,
+        &normal_host_release,
     )?;
     files::write_new(&work.join("CANDIDATE-CELL.json"), &derived.cell, 0o400)?;
     files::write_new(&work.join("SELECTION.json"), &derived.selection, 0o400)?;
@@ -1383,11 +1407,15 @@ pub(super) fn resume(intent_pin: &FilePin) -> Result<Rc<OriginalQualificationAut
     let persistent: cell::PersistentData = serde_json::from_value(ext4["persistent_data"].clone())?;
     let normal = sources.historical_initramfs_readback();
     let m = &normal["normal_materials"];
+    sources.revalidate_custody()?;
+    let normal_host_release = selected_host_release(sources.source_pin(), normal, &report["fresh_owned"])?;
+    sources.revalidate_custody()?;
     let derived = cell::derive_original(
         &original_cell.read()?,
         text(m, "cohort_sha256")?,
         text(m, "runtime_sha256")?,
         &persistent,
+        &normal_host_release,
     )?;
     ensure(
         new_cell.read()? == derived.cell && selection.read()? == derived.selection,
