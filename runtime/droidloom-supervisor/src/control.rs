@@ -127,7 +127,11 @@ pub fn run_prepared_settings_pages_leaf(
 
 /// Existing source-owned leaf profiles; no serialized command authority.
 pub enum NativeLeafCommandKind {
-    Standard { budget: std::time::Duration },
+    /// The fixed normal read-only baseline collector, never an arbitrary leaf.
+    BaselineCapture,
+    Standard {
+        budget: std::time::Duration,
+    },
     GalleryImage,
     CalendarReminder,
     SettingsPages,
@@ -140,11 +144,18 @@ pub fn run_prepared_native_leaf_until(
     command: std::process::Command,
     epoch: &application_probe::RuntimeEpoch,
     kind: NativeLeafCommandKind,
-    inspector:&mut NativeApplicationInspector,
+    inspector: &mut NativeApplicationInspector,
     observation: &mut crate::native_leaf_baseline::NativeLeafBaselineObservation<'_>,
-    until:Instant,
-) -> Result<std::process::Output,String> {
-    application_command::run_prepared_native_leaf_until(command,epoch,kind,inspector,observation,until)
+    until: Instant,
+) -> Result<std::process::Output, String> {
+    application_command::run_prepared_native_leaf_until(
+        command,
+        epoch,
+        kind,
+        inspector,
+        observation,
+        until,
+    )
 }
 
 /// Default root-owned lifecycle socket.

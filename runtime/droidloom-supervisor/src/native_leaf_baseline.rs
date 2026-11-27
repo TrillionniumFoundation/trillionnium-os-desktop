@@ -7,6 +7,7 @@ use crate::control::application_probe::{ApplicationInspection, RuntimeEpoch};
 use crate::control::{ActualApplicationObservation, ControlError, NativeApplicationInspector};
 use crate::main_custody::{MainCustodyObservation, RuntimeMainCustody};
 use crate::native_leaf_baseline_data::{HeldLeafData, LeafDataFacts};
+use crate::native_leaf_baseline_programs::NormalHostPrograms;
 use serde::Serialize;
 use std::time::Instant;
 
@@ -42,6 +43,7 @@ pub struct NativeLeafBaselineObservation<'a> {
     main: &'a MainCustodyObservation,
     application: &'a ActualApplicationObservation,
     data: HeldLeafData,
+    programs: NormalHostPrograms,
     deadline: Instant,
     full_bookend_after: Instant,
 }
@@ -61,6 +63,9 @@ impl<'a> NativeLeafBaselineObservation<'a> {
         )
         .map_err(|e| ControlError::Invalid(e.to_string()))?;
         inspector.require_observations_local(main, application, deadline)?;
+        let programs = NormalHostPrograms::capture(main, deadline).map_err(|e| {
+            ControlError::Invalid(format!("native leaf normal program custody: {e}"))
+        })?;
         let data = HeldLeafData::capture(main.facts(), application.facts())
             .map_err(|e| ControlError::Invalid(format!("native leaf actual data metadata: {e}")))?;
         inspector.require_observations_local(main, application, deadline)?;
@@ -71,6 +76,7 @@ impl<'a> NativeLeafBaselineObservation<'a> {
             main,
             application,
             data,
+            programs,
             deadline,
             full_bookend_after: Instant::now(),
         })
@@ -108,6 +114,9 @@ impl<'a> NativeLeafBaselineObservation<'a> {
         let end = until.min(self.deadline);
         before(end)?;
         inspector.require_observations_local(self.main, self.application, end)?;
+        self.programs
+            .verify(end)
+            .map_err(|e| ControlError::Invalid(e.to_string()))?;
         self.data
             .verify()
             .map_err(|e| ControlError::Invalid(e.to_string()))?;
@@ -143,6 +152,10 @@ impl<'a> NativeLeafBaselineObservation<'a> {
                 "actual Main or complete installed identity changed across native leaf".into(),
             ));
         }
+        self.verify_local(inspector, end)?;
+        self.programs
+            .verify_contents(end)
+            .map_err(|e| ControlError::Invalid(e.to_string()))?;
         self.verify_local(inspector, end)?;
         self.full_bookend_after = Instant::now();
         Ok(())

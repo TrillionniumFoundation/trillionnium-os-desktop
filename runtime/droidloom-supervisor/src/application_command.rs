@@ -19,10 +19,10 @@ use std::time::{Duration, Instant};
 
 use crate::development::owned_process::{open_pidfd, pidfd_exited};
 
-#[path = "application_leaf_resources.rs"]
-mod gallery_resources;
 #[path = "application_leaf_unit.rs"]
 mod application_leaf_unit;
+#[path = "application_leaf_resources.rs"]
+mod gallery_resources;
 pub use application_leaf_unit::{NativeOwnedLeafUnit, OwnedLeafProfile};
 
 const OUTPUT_LIMIT: usize = 64 * 1024;
@@ -316,10 +316,14 @@ impl OwnedCgroup {
         }
         let gallery_scope = if let Some(profile) = profile {
             gallery_resources::require_original_cpu_available()?;
-            Some(gallery_resources::Scope::capture(&parent, &directory, profile)?)
-        } else { None };
+            Some(gallery_resources::Scope::capture(
+                &parent, &directory, profile,
+            )?)
+        } else {
+            None
+        };
         let nonce = NEXT_GROUP.fetch_add(1, Ordering::Relaxed);
-        let prefix = profile.map_or("droidloom-app-probe",gallery_resources::Profile::prefix);
+        let prefix = profile.map_or("droidloom-app-probe", gallery_resources::Profile::prefix);
         let path = parent.join(format!("{prefix}-{}-{nonce}", std::process::id()));
         // create_dir refuses an existing name; no existing group is adopted.
         fs::create_dir(&path)?;
@@ -368,7 +372,9 @@ impl OwnedCgroup {
     }
 
     fn validate_resources(&self) -> io::Result<()> {
-        self.gallery_scope.as_ref().map_or(Ok(()), gallery_resources::Scope::validate)
+        self.gallery_scope
+            .as_ref()
+            .map_or(Ok(()), gallery_resources::Scope::validate)
     }
 
     fn populated(&mut self) -> io::Result<bool> {
@@ -497,28 +503,39 @@ fn run_owned_with_resources(
     run_owned_observed(command, inherit, alive_pidfds, deadline, profile, None)
 }
 
-struct NativeLeafRun<'a,'b> {
-    observation:&'a mut crate::native_leaf_baseline::NativeLeafBaselineObservation<'b>,
-    inspector:&'a mut super::NativeApplicationInspector,
-    until:Instant,
+struct NativeLeafRun<'a, 'b> {
+    observation: &'a mut crate::native_leaf_baseline::NativeLeafBaselineObservation<'b>,
+    inspector: &'a mut super::NativeApplicationInspector,
+    until: Instant,
 }
-impl NativeLeafRun<'_,'_> {
-    fn work_deadline(&self,budget:Duration)->Result<Instant,String> {
-        let app=self.observation.application();
-        let after=super::progress::response_timeout(&super::ControlRequest::InspectApplication {
-            package:app.package.clone(),user:app.user,
-        })+super::progress::response_timeout(&super::ControlRequest::ObserveRuntimeMain {
-            expected_epoch:app.epoch.clone(),
-        })+RETIRE_TIMEOUT;
-        native_leaf_work_deadline(Instant::now(),
-            self.until.min(self.observation.deadline()),budget,after)
+impl NativeLeafRun<'_, '_> {
+    fn work_deadline(&self, budget: Duration) -> Result<Instant, String> {
+        let app = self.observation.application();
+        let after =
+            super::progress::response_timeout(&super::ControlRequest::InspectApplication {
+                package: app.package.clone(),
+                user: app.user,
+            }) + super::progress::response_timeout(&super::ControlRequest::ObserveRuntimeMain {
+                expected_epoch: app.epoch.clone(),
+            }) + RETIRE_TIMEOUT;
+        native_leaf_work_deadline(
+            Instant::now(),
+            self.until.min(self.observation.deadline()),
+            budget,
+            after,
+        )
     }
 }
-fn native_leaf_work_deadline(now:Instant,original:Instant,route:Duration,after:Duration)
-    ->Result<Instant,String> {
-    let work=original.checked_sub(after).filter(|end|*end>now)
-        .ok_or("native leaf original lease cannot cover its normal postcheck and retirement caps")?;
-    Ok((now+route).min(work))
+fn native_leaf_work_deadline(
+    now: Instant,
+    original: Instant,
+    route: Duration,
+    after: Duration,
+) -> Result<Instant, String> {
+    let work = original.checked_sub(after).filter(|end| *end > now).ok_or(
+        "native leaf original lease cannot cover its normal postcheck and retirement caps",
+    )?;
+    Ok((now + route).min(work))
 }
 
 fn run_owned_observed(
@@ -529,12 +546,21 @@ fn run_owned_observed(
     profile: Option<gallery_resources::Profile>,
     mut observation: Option<NativeLeafRun<'_, '_>>,
 ) -> Result<Output, String> {
-    let mut channel=observation.as_mut()
-        .map(|value| crate::native_leaf_baseline_channel::NativeLeafChannel::new(value.observation,value.inspector,deadline))
+    let mut channel = observation
+        .as_mut()
+        .map(|value| {
+            crate::native_leaf_baseline_channel::NativeLeafChannel::new(
+                value.observation,
+                value.inspector,
+                deadline,
+            )
+        })
         .transpose()?;
-    let mut inherited=inherit.to_vec();
-    if let Some(value)=&channel { inherited.extend(value.prepare(&mut command)); }
-    let inherit=inherited.as_slice();
+    let mut inherited = inherit.to_vec();
+    if let Some(value) = &channel {
+        inherited.extend(value.prepare(&mut command));
+    }
+    let inherit = inherited.as_slice();
     let gallery = profile.is_some();
     let mut retained = loop {
         match RETAINED.try_lock() {
@@ -562,16 +588,29 @@ fn run_owned_observed(
     if Instant::now() >= deadline {
         return Err("application command deadline exceeded before spawn".into());
     }
-    let mut group = (if gallery { OwnedCgroup::create_owned(profile) } else { OwnedCgroup::create() })
-        .map_err(|e| format!("invocation cgroup precondition failed: {e}"))?;
+    let mut group = (if gallery {
+        OwnedCgroup::create_owned(profile)
+    } else {
+        OwnedCgroup::create()
+    })
+    .map_err(|e| format!("invocation cgroup precondition failed: {e}"))?;
     if let Err(error) = group.prepare_resources() {
         let cleanup = group.remove();
         if let Err(cleanup) = cleanup {
             let path = group.path.clone();
-            *retained = Some(Invocation { child: None, status: None, group });
-            return Err(format!("Gallery resources changed before spawn: {error}; empty owned group retained at {}: {cleanup}", path.display()));
+            *retained = Some(Invocation {
+                child: None,
+                status: None,
+                group,
+            });
+            return Err(format!(
+                "Gallery resources changed before spawn: {error}; empty owned group retained at {}: {cleanup}",
+                path.display()
+            ));
         }
-        return Err(format!("Gallery resources changed before spawn: {error}; new empty group removed"));
+        return Err(format!(
+            "Gallery resources changed before spawn: {error}; new empty group removed"
+        ));
     }
     let group_fd = group.procs.as_raw_fd();
     let inherit = inherit.to_vec();
@@ -589,9 +628,18 @@ fn run_owned_observed(
                 let mut affinity: libc::cpu_set_t = std::mem::zeroed();
                 libc::CPU_ZERO(&mut affinity);
                 libc::CPU_SET(20, &mut affinity);
-                if libc::sched_setaffinity(0, std::mem::size_of::<libc::cpu_set_t>(), &affinity) != 0
-                    || libc::setrlimit(libc::RLIMIT_CORE, &libc::rlimit { rlim_cur: 0, rlim_max: 0 }) != 0
-                { return Err(io::Error::last_os_error()); }
+                if libc::sched_setaffinity(0, std::mem::size_of::<libc::cpu_set_t>(), &affinity)
+                    != 0
+                    || libc::setrlimit(
+                        libc::RLIMIT_CORE,
+                        &libc::rlimit {
+                            rlim_cur: 0,
+                            rlim_max: 0,
+                        },
+                    ) != 0
+                {
+                    return Err(io::Error::last_os_error());
+                }
             }
             if libc::write(group_fd, b"0\n".as_ptr().cast(), 2) != 2 {
                 return Err(io::Error::last_os_error());
@@ -641,14 +689,19 @@ fn run_owned_observed(
                 let mut resource_bookend = Instant::now();
                 loop {
                     if gallery && Instant::now() >= resource_bookend {
-                        invocation.group.validate_resources().map_err(|e| e.to_string())?;
+                        invocation
+                            .group
+                            .validate_resources()
+                            .map_err(|e| e.to_string())?;
                         resource_bookend = Instant::now() + Duration::from_millis(100);
                     }
                     if Instant::now() >= deadline {
                         return Err("application command deadline exceeded".into());
                     }
-                    if let (Some(channel),Some(observation))=(channel.as_mut(),observation.as_mut()) {
-                        channel.serve(observation.observation,observation.inspector)?;
+                    if let (Some(channel), Some(observation)) =
+                        (channel.as_mut(), observation.as_mut())
+                    {
+                        channel.serve(observation.observation, observation.inspector)?;
                     }
                     drain(&mut stdout, &mut out)
                         .and_then(|_| drain(&mut stderr, &mut err))
@@ -692,13 +745,21 @@ fn run_owned_observed(
             path.display()
         ));
     }
-    let resources = invocation.group.validate_resources().map_err(|e| e.to_string());
+    let resources = invocation
+        .group
+        .validate_resources()
+        .map_err(|e| e.to_string());
     result
         .and_then(|output| resources.map(|()| output))
         .and_then(|output| {
-            if let Some(channel)=&channel { channel.finish()?; }
-            if let Some(observation)=observation.as_mut() {
-                observation.observation.verify_local(observation.inspector,deadline).map_err(|e|e.to_string())?;
+            if let Some(channel) = &channel {
+                channel.finish()?;
+            }
+            if let Some(observation) = observation.as_mut() {
+                observation
+                    .observation
+                    .verify_local(observation.inspector, deadline)
+                    .map_err(|e| e.to_string())?;
             }
             Ok(output)
         })
@@ -724,14 +785,20 @@ fn run_prepared_host_leaf_observed(
     budget: Duration,
     observation: Option<NativeLeafRun<'_, '_>>,
 ) -> Result<Output, String> {
-    if let Some(value)=&observation { value.observation.require_epoch(epoch)?; }
+    if let Some(value) = &observation {
+        value.observation.require_epoch(epoch)?;
+    }
     if budget.is_zero()
         || budget > Duration::from_secs(1200)
         || command.get_program() != "/usr/bin/python3"
     {
         return Err("invalid bounded prepared host-leaf command".into());
     }
-    let deadline = if let Some(value)=&observation { value.work_deadline(budget)? } else { Instant::now() + budget };
+    let deadline = if let Some(value) = &observation {
+        value.work_deadline(budget)?
+    } else {
+        Instant::now() + budget
+    };
     let check_boot = || -> Result<(), String> {
         if fs::read_to_string("/proc/sys/kernel/random/boot_id")
             .map_err(|e| e.to_string())?
@@ -765,54 +832,152 @@ fn run_prepared_host_leaf_observed(
     success_before_deadline(output, deadline)
 }
 
-fn gallery_command(command: &Command) -> Result<(), String> {
-    const ROOT: &str = "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2";
-    let args = command.get_args().map(|v| v.to_str()).collect::<Option<Vec<_>>>()
-        .ok_or("Gallery argv is not UTF-8")?;
-    let hash = |v: &str| v.len() == 64 && v.bytes().all(|c| c.is_ascii_digit() || (b'a'..=b'f').contains(&c));
-    let allowed_preparation = ["rotation", "video", "seek", "album"].iter()
-        .any(|name| args.get(4).is_some_and(|arg| *arg == format!("{ROOT}/preparations/gallery-{name}.json")));
-    if command.get_program() != "/usr/bin/python3" || args.len() != 12
-        || args[..2] != ["-I", "-B"] || args[2] != format!("{ROOT}/source/gallery/source/gallery_image_entry.py")
-        || args[3] != "--preparation" || !allowed_preparation
-        || args[5] != "--expect-preparation-sha256" || !hash(args[6])
-        || args[7] != "execute" || args[8] != "--request" || !Path::new(args[9]).is_absolute()
-        || args[10] != "--expect-request-sha256" || !hash(args[11])
+fn baseline_capture_command(command: &Command) -> Result<(), String> {
+    const COLLECTOR: &str = "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2/source/main/kernel_native_observation.py";
+    const OUTPUT_PARENT: &str = "/var/lib/droidloom/qualification/pocket4";
+    let args = command
+        .get_args()
+        .map(|v| v.to_str())
+        .collect::<Option<Vec<_>>>()
+        .ok_or("normal baseline collector argv is not UTF-8")?;
+    if command.get_program() != "/usr/bin/python3"
+        || args.len() != 6
+        || args[..5] != ["-I", "-B", COLLECTOR, "--collect", "--output-directory"]
     {
-        return Err("only the exact selected current-image Gallery entry receives its fixed outer budget".into());
+        return Err(
+            "only the exact source-owned normal baseline collector may use this profile".into(),
+        );
+    }
+    let path = Path::new(args[5]);
+    let name = path
+        .file_name()
+        .and_then(|n| n.to_str())
+        .ok_or("normal capture directory name absent")?;
+    if path.parent() != Some(Path::new(OUTPUT_PARENT))
+        || !name.starts_with("native-leaf-")
+        || name.len() > 80
+        || !name
+            .bytes()
+            .all(|c| c.is_ascii_alphanumeric() || b"_-".contains(&c))
+        || fs::canonicalize(path).map_err(|e| e.to_string())? != path
+    {
+        return Err("normal baseline capture must use its fresh fixed private root".into());
+    }
+    use std::os::unix::fs::MetadataExt;
+    let m = fs::symlink_metadata(path).map_err(|e| e.to_string())?;
+    if !m.is_dir() || m.uid() != 0 || m.gid() != 0 || m.mode() & 0o7777 != 0o700 {
+        return Err("normal baseline capture output ownership differs".into());
     }
     Ok(())
 }
 
-fn calendar_command(command: &Command) -> Result<(),String> {
-    const ROOT: &str = "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2";
-    let args = command.get_args().map(|v|v.to_str()).collect::<Option<Vec<_>>>()
+fn gallery_command(command: &Command) -> Result<(), String> {
+    const ROOT: &str =
+        "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2";
+    let args = command
+        .get_args()
+        .map(|v| v.to_str())
+        .collect::<Option<Vec<_>>>()
+        .ok_or("Gallery argv is not UTF-8")?;
+    let hash = |v: &str| {
+        v.len() == 64
+            && v.bytes()
+                .all(|c| c.is_ascii_digit() || (b'a'..=b'f').contains(&c))
+    };
+    let allowed_preparation = ["rotation", "video", "seek", "album"].iter().any(|name| {
+        args.get(4)
+            .is_some_and(|arg| *arg == format!("{ROOT}/preparations/gallery-{name}.json"))
+    });
+    if command.get_program() != "/usr/bin/python3"
+        || args.len() != 12
+        || args[..2] != ["-I", "-B"]
+        || args[2] != format!("{ROOT}/source/gallery/source/gallery_image_entry.py")
+        || args[3] != "--preparation"
+        || !allowed_preparation
+        || args[5] != "--expect-preparation-sha256"
+        || !hash(args[6])
+        || args[7] != "execute"
+        || args[8] != "--request"
+        || !Path::new(args[9]).is_absolute()
+        || args[10] != "--expect-request-sha256"
+        || !hash(args[11])
+    {
+        return Err(
+            "only the exact selected current-image Gallery entry receives its fixed outer budget"
+                .into(),
+        );
+    }
+    Ok(())
+}
+
+fn calendar_command(command: &Command) -> Result<(), String> {
+    const ROOT: &str =
+        "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2";
+    let args = command
+        .get_args()
+        .map(|v| v.to_str())
+        .collect::<Option<Vec<_>>>()
         .ok_or("Calendar argv is not UTF-8")?;
-    let hash=|value:&str| value.len()==64 && value.bytes().all(|c|c.is_ascii_digit()||(b'a'..=b'f').contains(&c));
-    if command.get_program()!="/usr/bin/python3" || args.len()!=12 || args[..2]!=["-I","-B"]
-        || args[2]!=format!("{ROOT}/source/calendar-reminder/system_entry.py") || args[3]!="--preparation"
-        || args[4]!=format!("{ROOT}/preparations/calendar-reminder.json") || args[5]!="--expect-preparation-sha256"
-        || !hash(args[6]) || args[7]!="execute" || args[8]!="--request"
-        || !Path::new(args[9]).is_absolute() || args[10]!="--expect-request-sha256" || !hash(args[11])
-    { return Err("only the exact current Calendar reminder entry receives its original resource profile".into()); }
+    let hash = |value: &str| {
+        value.len() == 64
+            && value
+                .bytes()
+                .all(|c| c.is_ascii_digit() || (b'a'..=b'f').contains(&c))
+    };
+    if command.get_program() != "/usr/bin/python3"
+        || args.len() != 12
+        || args[..2] != ["-I", "-B"]
+        || args[2] != format!("{ROOT}/source/calendar-reminder/system_entry.py")
+        || args[3] != "--preparation"
+        || args[4] != format!("{ROOT}/preparations/calendar-reminder.json")
+        || args[5] != "--expect-preparation-sha256"
+        || !hash(args[6])
+        || args[7] != "execute"
+        || args[8] != "--request"
+        || !Path::new(args[9]).is_absolute()
+        || args[10] != "--expect-request-sha256"
+        || !hash(args[11])
+    {
+        return Err(
+            "only the exact current Calendar reminder entry receives its original resource profile"
+                .into(),
+        );
+    }
     Ok(())
 }
 
 fn settings_command(command: &Command) -> Result<(), String> {
-    const ROOT: &str = "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2";
-    let args = command.get_args().map(|value| value.to_str()).collect::<Option<Vec<_>>>()
+    const ROOT: &str =
+        "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2";
+    let args = command
+        .get_args()
+        .map(|value| value.to_str())
+        .collect::<Option<Vec<_>>>()
         .ok_or("Settings argv is not UTF-8")?;
-    let hash = |value: &str| value.len() == 64
-        && value.bytes().all(|ch| ch.is_ascii_digit() || (b'a'..=b'f').contains(&ch));
-    if command.get_program() != "/usr/bin/python3" || args.len() != 12
+    let hash = |value: &str| {
+        value.len() == 64
+            && value
+                .bytes()
+                .all(|ch| ch.is_ascii_digit() || (b'a'..=b'f').contains(&ch))
+    };
+    if command.get_program() != "/usr/bin/python3"
+        || args.len() != 12
         || args[..2] != ["-I", "-B"]
         || args[2] != format!("{ROOT}/source/settings/settings_entry.py")
-        || args[3] != "--preparation" || args[4] != format!("{ROOT}/preparations/settings.json")
-        || args[5] != "--expect-preparation-sha256" || !hash(args[6])
-        || args[7] != "execute" || args[8] != "--request" || !Path::new(args[9]).is_absolute()
-        || args[10] != "--expect-request-sha256" || !hash(args[11])
+        || args[3] != "--preparation"
+        || args[4] != format!("{ROOT}/preparations/settings.json")
+        || args[5] != "--expect-preparation-sha256"
+        || !hash(args[6])
+        || args[7] != "execute"
+        || args[8] != "--request"
+        || !Path::new(args[9]).is_absolute()
+        || args[10] != "--expect-request-sha256"
+        || !hash(args[11])
     {
-        return Err("only the exact current Settings pages entry receives its fixed resource profile".into());
+        return Err(
+            "only the exact current Settings pages entry receives its fixed resource profile"
+                .into(),
+        );
     }
     Ok(())
 }
@@ -824,7 +989,12 @@ pub(super) fn run_prepared_settings_pages_leaf(
     settings_command(&command)?;
     // The consumer retains its exact 600-second business and 120-second cleanup
     // lease. The fixed outer reserve covers source/identity bookends only.
-    run_prepared_resource_leaf(command, epoch, Duration::from_secs(900), gallery_resources::Profile::SettingsPages)
+    run_prepared_resource_leaf(
+        command,
+        epoch,
+        Duration::from_secs(900),
+        gallery_resources::Profile::SettingsPages,
+    )
 }
 
 pub(super) fn run_prepared_gallery_image_leaf(
@@ -832,7 +1002,12 @@ pub(super) fn run_prepared_gallery_image_leaf(
     epoch: &super::application_probe::RuntimeEpoch,
 ) -> Result<Output, String> {
     gallery_command(&command)?;
-    run_prepared_resource_leaf(command, epoch, Duration::from_secs(1530), gallery_resources::Profile::Gallery)
+    run_prepared_resource_leaf(
+        command,
+        epoch,
+        Duration::from_secs(1530),
+        gallery_resources::Profile::Gallery,
+    )
 }
 
 pub(super) fn run_prepared_calendar_reminder_leaf(
@@ -840,7 +1015,12 @@ pub(super) fn run_prepared_calendar_reminder_leaf(
     epoch: &super::application_probe::RuntimeEpoch,
 ) -> Result<Output, String> {
     calendar_command(&command)?;
-    run_prepared_resource_leaf(command, epoch, Duration::from_secs(690), gallery_resources::Profile::CalendarReminder)
+    run_prepared_resource_leaf(
+        command,
+        epoch,
+        Duration::from_secs(690),
+        gallery_resources::Profile::CalendarReminder,
+    )
 }
 
 fn run_prepared_resource_leaf(
@@ -848,8 +1028,8 @@ fn run_prepared_resource_leaf(
     epoch: &super::application_probe::RuntimeEpoch,
     budget: Duration,
     profile: gallery_resources::Profile,
-) -> Result<Output,String> {
-    run_prepared_resource_leaf_observed(command,epoch,budget,profile,None)
+) -> Result<Output, String> {
+    run_prepared_resource_leaf_observed(command, epoch, budget, profile, None)
 }
 
 fn run_prepared_resource_leaf_observed(
@@ -858,25 +1038,47 @@ fn run_prepared_resource_leaf_observed(
     budget: Duration,
     profile: gallery_resources::Profile,
     observation: Option<NativeLeafRun<'_, '_>>,
-) -> Result<Output,String> {
-    if let Some(value)=&observation { value.observation.require_epoch(epoch)?; }
-    let deadline = if let Some(value)=&observation { value.work_deadline(budget)? } else { Instant::now() + budget };
+) -> Result<Output, String> {
+    if let Some(value) = &observation {
+        value.observation.require_epoch(epoch)?;
+    }
+    let deadline = if let Some(value) = &observation {
+        value.work_deadline(budget)?
+    } else {
+        Instant::now() + budget
+    };
     let check_boot = || -> Result<(), String> {
-        if fs::read_to_string("/proc/sys/kernel/random/boot_id").map_err(|e| e.to_string())?.trim() != epoch.boot_id {
+        if fs::read_to_string("/proc/sys/kernel/random/boot_id")
+            .map_err(|e| e.to_string())?
+            .trim()
+            != epoch.boot_id
+        {
             return Err("host boot differs from the admitted Gallery Main".into());
         }
         Ok(())
     };
     check_boot()?;
-    let target = NamespaceTarget::capture(epoch.cell_host_pid, epoch.framework_host_pid, epoch.framework_start_ticks)
-        .map_err(|e| e.to_string())?;
-    let output = run_owned_observed(command, &[],
-        &[target.cell.pidfd.as_raw_fd(), target.framework.pidfd.as_raw_fd()], deadline, Some(profile), observation)?;
+    let target = NamespaceTarget::capture(
+        epoch.cell_host_pid,
+        epoch.framework_host_pid,
+        epoch.framework_start_ticks,
+    )
+    .map_err(|e| e.to_string())?;
+    let output = run_owned_observed(
+        command,
+        &[],
+        &[
+            target.cell.pidfd.as_raw_fd(),
+            target.framework.pidfd.as_raw_fd(),
+        ],
+        deadline,
+        Some(profile),
+        observation,
+    )?;
     target.validate().map_err(|e| e.to_string())?;
     check_boot()?;
     success_before_deadline(output, deadline)
 }
-
 
 /// Exact existing profiles plus one real retained baseline; this does not
 /// authorize a new command or widen any resource or namespace-entry boundary.
@@ -884,28 +1086,57 @@ pub(super) fn run_prepared_native_leaf_until(
     command: Command,
     epoch: &super::application_probe::RuntimeEpoch,
     kind: super::NativeLeafCommandKind,
-    inspector:&mut super::NativeApplicationInspector,
+    inspector: &mut super::NativeApplicationInspector,
     baseline: &mut crate::native_leaf_baseline::NativeLeafBaselineObservation<'_>,
-    until:Instant,
-) -> Result<Output,String> {
-    let observation=NativeLeafRun { observation:baseline,inspector,until };
+    until: Instant,
+) -> Result<Output, String> {
+    let observation = NativeLeafRun {
+        observation: baseline,
+        inspector,
+        until,
+    };
     match kind {
-        super::NativeLeafCommandKind::Standard { budget } =>
-            run_prepared_host_leaf_observed(command,epoch,budget,Some(observation)),
+        super::NativeLeafCommandKind::BaselineCapture => {
+            baseline_capture_command(&command)?;
+            run_prepared_host_leaf_observed(
+                command,
+                epoch,
+                Duration::from_secs(240),
+                Some(observation),
+            )
+        }
+        super::NativeLeafCommandKind::Standard { budget } => {
+            run_prepared_host_leaf_observed(command, epoch, budget, Some(observation))
+        }
         super::NativeLeafCommandKind::GalleryImage => {
             gallery_command(&command)?;
-            run_prepared_resource_leaf_observed(command,epoch,Duration::from_secs(1530),
-                gallery_resources::Profile::Gallery,Some(observation))
+            run_prepared_resource_leaf_observed(
+                command,
+                epoch,
+                Duration::from_secs(1530),
+                gallery_resources::Profile::Gallery,
+                Some(observation),
+            )
         }
         super::NativeLeafCommandKind::CalendarReminder => {
             calendar_command(&command)?;
-            run_prepared_resource_leaf_observed(command,epoch,Duration::from_secs(690),
-                gallery_resources::Profile::CalendarReminder,Some(observation))
+            run_prepared_resource_leaf_observed(
+                command,
+                epoch,
+                Duration::from_secs(690),
+                gallery_resources::Profile::CalendarReminder,
+                Some(observation),
+            )
         }
         super::NativeLeafCommandKind::SettingsPages => {
             settings_command(&command)?;
-            run_prepared_resource_leaf_observed(command,epoch,Duration::from_secs(900),
-                gallery_resources::Profile::SettingsPages,Some(observation))
+            run_prepared_resource_leaf_observed(
+                command,
+                epoch,
+                Duration::from_secs(900),
+                gallery_resources::Profile::SettingsPages,
+                Some(observation),
+            )
         }
     }
 }
@@ -917,32 +1148,55 @@ mod gallery_tests {
     fn selected_command(preparation: &str) -> Command {
         let root = "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2";
         let mut command = Command::new("/usr/bin/python3");
-        command.args(["-I", "-B"]).arg(format!("{root}/source/gallery/source/gallery_image_entry.py"))
-            .arg("--preparation").arg(format!("{root}/preparations/gallery-{preparation}.json"))
-            .arg("--expect-preparation-sha256").arg("a".repeat(64)).arg("execute")
-            .arg("--request").arg("/fixture/request.json").arg("--expect-request-sha256").arg("b".repeat(64));
+        command
+            .args(["-I", "-B"])
+            .arg(format!(
+                "{root}/source/gallery/source/gallery_image_entry.py"
+            ))
+            .arg("--preparation")
+            .arg(format!("{root}/preparations/gallery-{preparation}.json"))
+            .arg("--expect-preparation-sha256")
+            .arg("a".repeat(64))
+            .arg("execute")
+            .arg("--request")
+            .arg("/fixture/request.json")
+            .arg("--expect-request-sha256")
+            .arg("b".repeat(64));
         command
     }
 
     #[test]
     fn native_leaf_stage_keeps_route_cap_and_reserves_original_postchecks() {
-        let now=Instant::now();
-        let route=Duration::from_secs(900);
-        let after=Duration::from_secs(322);
-        assert_eq!(native_leaf_work_deadline(now,now+Duration::from_secs(1300),route,after).unwrap(),now+route);
-        assert_eq!(native_leaf_work_deadline(now,now+Duration::from_secs(1000),route,after).unwrap(),now+Duration::from_secs(678));
-        assert!(native_leaf_work_deadline(now,now+after,route,after).is_err());
+        let now = Instant::now();
+        let route = Duration::from_secs(900);
+        let after = Duration::from_secs(322);
+        assert_eq!(
+            native_leaf_work_deadline(now, now + Duration::from_secs(1300), route, after).unwrap(),
+            now + route
+        );
+        assert_eq!(
+            native_leaf_work_deadline(now, now + Duration::from_secs(1000), route, after).unwrap(),
+            now + Duration::from_secs(678)
+        );
+        assert!(native_leaf_work_deadline(now, now + after, route, after).is_err());
     }
 
     #[test]
     fn settings_resource_profile_rejects_other_entries_and_extra_arguments() {
         let root = "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2";
         let mut command = Command::new("/usr/bin/python3");
-        command.args(["-I", "-B"]).arg(format!("{root}/source/settings/settings_entry.py"))
-            .arg("--preparation").arg(format!("{root}/preparations/settings.json"))
-            .arg("--expect-preparation-sha256").arg("a".repeat(64)).arg("execute")
-            .arg("--request").arg("/private/request.json")
-            .arg("--expect-request-sha256").arg("b".repeat(64));
+        command
+            .args(["-I", "-B"])
+            .arg(format!("{root}/source/settings/settings_entry.py"))
+            .arg("--preparation")
+            .arg(format!("{root}/preparations/settings.json"))
+            .arg("--expect-preparation-sha256")
+            .arg("a".repeat(64))
+            .arg("execute")
+            .arg("--request")
+            .arg("/private/request.json")
+            .arg("--expect-request-sha256")
+            .arg("b".repeat(64));
         settings_command(&command).unwrap();
         assert!(gallery_command(&command).is_err());
         assert!(calendar_command(&command).is_err());
@@ -958,19 +1212,28 @@ mod gallery_tests {
         }
         assert!(gallery_command(&selected_command("identity")).is_err());
         assert!(gallery_command(&selected_command("../rotation")).is_err());
-        let mut extra = selected_command("rotation"); extra.arg("--disable-source-check");
+        let mut extra = selected_command("rotation");
+        extra.arg("--disable-source-check");
         assert!(gallery_command(&extra).is_err());
         assert!(gallery_command(&Command::new("/usr/bin/python3")).is_err());
     }
 
     #[test]
     fn calendar_resource_profile_cannot_be_selected_by_an_unrelated_entry() {
-        let root="/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2";
-        let mut command=Command::new("/usr/bin/python3");
-        command.args(["-I","-B"]).arg(format!("{root}/source/calendar-reminder/system_entry.py"))
-            .arg("--preparation").arg(format!("{root}/preparations/calendar-reminder.json"))
-            .arg("--expect-preparation-sha256").arg("a".repeat(64)).arg("execute")
-            .arg("--request").arg("/fixture/request.json").arg("--expect-request-sha256").arg("b".repeat(64));
+        let root = "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2";
+        let mut command = Command::new("/usr/bin/python3");
+        command
+            .args(["-I", "-B"])
+            .arg(format!("{root}/source/calendar-reminder/system_entry.py"))
+            .arg("--preparation")
+            .arg(format!("{root}/preparations/calendar-reminder.json"))
+            .arg("--expect-preparation-sha256")
+            .arg("a".repeat(64))
+            .arg("execute")
+            .arg("--request")
+            .arg("/fixture/request.json")
+            .arg("--expect-request-sha256")
+            .arg("b".repeat(64));
         calendar_command(&command).unwrap();
         assert!(gallery_command(&command).is_err());
         assert!(calendar_command(&selected_command("rotation")).is_err());

@@ -56,6 +56,7 @@ struct CohortRecipe {
     semantic_changes: Vec<Value>,
     settings_v3: Value,
     ihg_material: Value,
+    native_kernel_baseline: Value,
     runtime_prerequisites: Vec<String>,
     source_only: bool,
     installation_authorized: bool,
@@ -89,9 +90,89 @@ fn embedded(name: &str) -> Result<&'static [u8]> {
         "settings_roundtrip.py" => include_bytes!(
             "../../resources/native-leaves/cp3a-20261126-apps-r2/settings_roundtrip.py"
         ),
+        "native_leaf_channel.py" => include_bytes!(
+            "../../resources/native-leaves/cp3a-20261126-apps-r2/native_leaf_channel.py"
+        ),
+        "kernel_native_observation.py" => include_bytes!(
+            "../../resources/native-leaves/cp3a-20261126-apps-r2/kernel_native_observation.py"
+        ),
+        "business_baseline.py" => include_bytes!(
+            "../../resources/native-leaves/cp3a-20261126-apps-r2/business_baseline.py"
+        ),
+        "helper_contract.py" => {
+            include_bytes!("../../resources/native-leaves/cp3a-20261126-apps-r2/helper_contract.py")
+        }
+        "main_readonly_entry.py" => include_bytes!(
+            "../../resources/native-leaves/cp3a-20261126-apps-r2/main_readonly_entry.py"
+        ),
+        "support_business_ui_entry.py" => include_bytes!(
+            "../../resources/native-leaves/cp3a-20261126-apps-r2/support_business_ui_entry.py"
+        ),
+        "clock_business_ui_entry.py" => include_bytes!(
+            "../../resources/native-leaves/cp3a-20261126-apps-r2/clock_business_ui_entry.py"
+        ),
         _ => return fail("unlisted embedded leaf source"),
     })
 }
+
+const EMBEDDED_MEMBERS: [(&str, &str); 15] = [
+    ("source/settings/settings_case.py", "settings_case.py"),
+    ("source/settings/settings_runtime.py", "settings_runtime.py"),
+    ("source/settings/settings_guard.py", "settings_guard.py"),
+    ("source/settings/settings_policy.py", "settings_policy.py"),
+    (
+        "source/settings/settings_profiles.py",
+        "settings_profiles.py",
+    ),
+    ("source/settings/settings_entry.py", "settings_entry.py"),
+    (
+        "source/settings/settings_roundtrip.py",
+        "settings_roundtrip.py",
+    ),
+    (
+        "source/main/native_leaf_channel.py",
+        "native_leaf_channel.py",
+    ),
+    (
+        "source/main/kernel_native_observation.py",
+        "kernel_native_observation.py",
+    ),
+    (
+        "source/support/business_baseline.py",
+        "business_baseline.py",
+    ),
+    (
+        "source/clock-support/business_baseline.py",
+        "business_baseline.py",
+    ),
+    ("source/main/helper_contract.py", "helper_contract.py"),
+    (
+        "source/main/main_readonly_entry.py",
+        "main_readonly_entry.py",
+    ),
+    (
+        "source/support/business_ui_entry.py",
+        "support_business_ui_entry.py",
+    ),
+    (
+        "source/clock-support/business_ui_entry.py",
+        "clock_business_ui_entry.py",
+    ),
+];
+const NEW_MEMBERS: [(&str, &str); 3] = [
+    (
+        "source/settings/settings_roundtrip.py",
+        "settings_roundtrip.py",
+    ),
+    (
+        "source/main/native_leaf_channel.py",
+        "native_leaf_channel.py",
+    ),
+    (
+        "source/main/kernel_native_observation.py",
+        "kernel_native_observation.py",
+    ),
+];
 
 fn fixed_recipe() -> Result<CohortRecipe> {
     let r: CohortRecipe = serde_json::from_str(COHORT_RECIPE)?;
@@ -102,7 +183,7 @@ fn fixed_recipe() -> Result<CohortRecipe> {
             != "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261120-apps-r1"
         || r.input_file_count != 477
         || r.recovered_source_input_count != 476
-        || r.output_file_count != 476
+        || r.output_file_count != 478
         || r.helper_binary.path != "held-namespace-entry"
         || r.helper_binary.bytes != FIXED_HELPER_BYTES
         || r.helper_binary.sha256 != FIXED_HELPER_SHA256
@@ -118,6 +199,23 @@ fn fixed_recipe() -> Result<CohortRecipe> {
         || r.whole_app_business_accepted
         || r.production_ready
         || r.runtime_prerequisites.len() != 6
+        || r.native_kernel_baseline["schema"]
+            != "droidloom.native-leaf-kernel-baseline-migration.v1"
+        || r.native_kernel_baseline["baseline_schema"]
+            != "droidloom.native-leaf-business-baseline.v1"
+        || r.native_kernel_baseline["qualification_schema"]
+            != "droidloom.native-leaf-business-qualification.v1"
+        || r.native_kernel_baseline["channel_schema"] != "droidloom.native-leaf-channel.v1"
+        || r.native_kernel_baseline["new_source_members"]
+            != json!([
+                "source/main/native_leaf_channel.py",
+                "source/main/kernel_native_observation.py"
+            ])
+        || r.native_kernel_baseline["fresh_full_Main_from_python"] != false
+        || r.native_kernel_baseline["installed"] != false
+        || r.native_kernel_baseline["leaf_executed"] != false
+        || r.native_kernel_baseline["runtime_qualified"] != false
+        || r.native_kernel_baseline["whole_app_business_accepted"] != false
     {
         return fail("invalid source-only successor recipe");
     }
@@ -129,6 +227,7 @@ fn fixed_recipe() -> Result<CohortRecipe> {
     let mut names = BTreeSet::new();
     let mut origins = BTreeSet::new();
     let mut embedded_names = BTreeSet::new();
+    let mut embedded_members = BTreeSet::new();
     let mut total = 0u64;
     let mut new_sources = 0;
     let mut binaries = 0;
@@ -175,19 +274,22 @@ fn fixed_recipe() -> Result<CohortRecipe> {
             None if row.fixed_binary_input => {}
             None => {
                 new_sources += 1;
-                if row.relative_path != "source/settings/settings_roundtrip.py"
-                    || row.embedded_source.as_deref() != Some("settings_roundtrip.py")
-                {
+                if !NEW_MEMBERS.iter().any(|(path, name)| {
+                    row.relative_path == *path && row.embedded_source.as_deref() == Some(*name)
+                }) {
                     return fail("unreviewed new leaf source");
                 }
             }
         }
         if let Some(name) = &row.embedded_source {
-            if row.relative_path != format!("source/settings/{name}")
-                || !embedded_names.insert(name.clone())
+            if !EMBEDDED_MEMBERS
+                .iter()
+                .any(|(path, asset)| row.relative_path == *path && name == *asset)
+                || !embedded_members.insert(row.relative_path.clone())
             {
                 return fail("embedded leaf source used outside its fixed member");
             }
+            embedded_names.insert(name.clone());
             let raw = embedded(name)?;
             if raw.len() as u64 != row.before.bytes || digest(raw) != row.before.sha256 {
                 return fail("embedded leaf source and recipe differ");
@@ -206,9 +308,10 @@ fn fixed_recipe() -> Result<CohortRecipe> {
         }
     }
     if origins.len() != 474
-        || new_sources != 1
+        || new_sources != 3
         || binaries != 1
-        || embedded_names.len() != 7
+        || embedded_names.len() != 14
+        || embedded_members.len() != 15
         || total != r.output_bytes
     {
         return fail("fixed successor source closure differs");
@@ -316,7 +419,7 @@ fn check_json_pins(
 }
 
 fn validate_cohort(outputs: &BTreeMap<String, Vec<u8>>) -> Result<Value> {
-    if outputs.len() != 476 {
+    if outputs.len() != 478 {
         return fail("incomplete successor member set");
     }
     let catalog: Vec<CurrentLeaf> = serde_json::from_slice(
@@ -500,7 +603,7 @@ pub(crate) fn materialize(input: &Path, helper: &Path, output: &Path) -> Result<
         "input_count":held.len()+1,"recovered_source_input_count":held.len(),"cohort_file_count":outputs.len(),"cohort_bytes":r.output_bytes,
         "package":{"path":output.join("COHORT.tar"),"pin":archive,"format":"canonical-ustar","member_count":outputs.len(),"root_owner_required_for_directory_input":true,"ordinary_public_archive_import_supported":true},
         "closure":closure,"semantic_changes":r.semantic_changes,"settings_v3":r.settings_v3,
-        "ihg_material":r.ihg_material,"runtime_prerequisites":r.runtime_prerequisites,
+        "ihg_material":r.ihg_material,"native_kernel_baseline":r.native_kernel_baseline,"runtime_prerequisites":r.runtime_prerequisites,
         "full_source_bookends_equal":true,"output_full_readback":true,
         "source_only":true,"installation_performed":false,"leaf_execution_performed":false,
         "native_helper_binary_deployed":false,"Main_qualified":false,"runtime_qualified":false,
@@ -615,20 +718,20 @@ mod tests {
     #[test]
     fn compiled_successor_has_only_exact_source_owned_members() {
         let r = fixed_recipe().unwrap();
-        assert_eq!(r.members.len(), 476);
+        assert_eq!(r.members.len(), 478);
         assert_eq!(
             r.members
                 .iter()
                 .filter(|m| m.embedded_source.is_some())
                 .count(),
-            7
+            15
         );
         assert_eq!(
             r.members
                 .iter()
                 .filter(|m| m.recovered_member.is_none())
                 .count(),
-            2
+            4
         );
         assert!(embedded("../settings_case.py").is_err());
     }

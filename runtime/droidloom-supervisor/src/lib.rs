@@ -11,32 +11,34 @@ fn main() {
     production_mac::run_actual_board_epoch_fixture();
 }
 
-#[cfg(target_os = "linux")]
-pub mod native_hardware_label;
-#[cfg(target_os = "linux")]
-pub mod native_uevent_label;
-#[cfg(target_os = "linux")]
-mod native_once_contract;
-#[cfg(target_os = "linux")]
-mod native_once_capabilities;
-#[cfg(target_os = "linux")]
-pub mod native_once_return;
 pub mod control;
-pub mod main_custody;
-pub mod normal_host_release;
 pub mod engine_custody;
-#[cfg(target_os = "linux")]
-pub mod native_leaf_baseline;
-#[cfg(target_os = "linux")]
-mod native_leaf_baseline_data;
-#[cfg(target_os = "linux")]
-mod native_leaf_baseline_channel;
 mod cpu_placement;
 pub mod development;
 mod development_network;
 pub mod gapps;
 mod image_layout;
 pub mod linux_plan;
+pub mod main_custody;
+#[cfg(target_os = "linux")]
+pub mod native_hardware_label;
+#[cfg(target_os = "linux")]
+pub mod native_leaf_baseline;
+#[cfg(target_os = "linux")]
+mod native_leaf_baseline_channel;
+#[cfg(target_os = "linux")]
+mod native_leaf_baseline_data;
+#[cfg(target_os = "linux")]
+mod native_leaf_baseline_programs;
+#[cfg(target_os = "linux")]
+mod native_once_capabilities;
+#[cfg(target_os = "linux")]
+mod native_once_contract;
+#[cfg(target_os = "linux")]
+pub mod native_once_return;
+#[cfg(target_os = "linux")]
+pub mod native_uevent_label;
+pub mod normal_host_release;
 mod package_cache;
 #[cfg(target_os = "linux")]
 mod production_activation_command;
@@ -54,6 +56,8 @@ mod production_cell;
 mod production_cgroup;
 #[cfg(target_os = "linux")]
 pub mod production_configuration;
+#[cfg(target_os = "linux")]
+mod production_cp3a_init_identity;
 #[cfg(target_os = "linux")]
 mod production_devices;
 #[cfg(target_os = "linux")]
@@ -82,8 +86,6 @@ mod production_runtime_seccomp;
 mod production_selection;
 #[cfg(target_os = "linux")]
 mod production_service_elf;
-#[cfg(target_os = "linux")]
-mod production_cp3a_init_identity;
 #[cfg(target_os = "linux")]
 pub(crate) use production_mounts::runtime_assets as production_runtime_assets;
 

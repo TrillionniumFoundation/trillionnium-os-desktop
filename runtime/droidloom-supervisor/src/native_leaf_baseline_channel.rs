@@ -2,12 +2,101 @@
 //! Only a live NativeLeafBaselineObservation can create the production payload.
 //! No pathname listener, command/PID/UID input or deserializable authority exists.
 use crate::native_leaf_baseline::NativeLeafBaselineObservation;
+use sha2::{Digest, Sha256};
 use std::fs::File;
 use std::io::{self, Read, Write};
 use std::os::fd::{AsRawFd, FromRawFd, RawFd};
 use std::os::unix::net::UnixDatagram;
 use std::process::Command;
-use std::time::Instant;
+use std::time::{Duration, Instant};
+
+// This is source-shared comparison identity, not a caller-selected member map.
+const SOURCE_RECIPE: &[u8] =
+    include_bytes!("../../../android/manifest/native-application-leaf-cohort-r2.json");
+const COHORT_ROOT: &str =
+    "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2";
+const HOST_ENTRIES: [&str; 5] = [
+    "source/support/business_ui_entry.py",
+    "source/clock-support/business_ui_entry.py",
+    "source/clock/clock_entry.py",
+    "source/ihg/app_entry.py",
+    "source/camera-photo/camera_entry.py",
+];
+fn compiled_host_entries() -> io::Result<serde_json::Map<String, serde_json::Value>> {
+    let recipe: serde_json::Value = serde_json::from_slice(SOURCE_RECIPE)
+        .map_err(|_| invalid("compiled leaf recipe JSON differs"))?;
+    if recipe["schema"] != "droidloom.native-leaf-cohort-source-recipe.v1"
+        || recipe["canonical_root"] != COHORT_ROOT
+        || recipe["cohort"] != "cp3a-20261126-apps-r2"
+    {
+        return Err(invalid("compiled leaf source recipe identity differs"));
+    }
+    let members = recipe["members"]
+        .as_array()
+        .ok_or_else(|| invalid("compiled leaf member table absent"))?;
+    if members.len() > 512 || recipe["output_file_count"].as_u64() != Some(members.len() as u64) {
+        return Err(invalid("compiled leaf source member count differs"));
+    }
+    let mut out = serde_json::Map::new();
+    for name in HOST_ENTRIES {
+        let rows = members
+            .iter()
+            .filter(|row| row["relative_path"] == name)
+            .collect::<Vec<_>>();
+        if rows.len() != 1 {
+            return Err(invalid("compiled fixed host entry is not unique"));
+        }
+        let pin = &rows[0]["output"];
+        let path = format!("{COHORT_ROOT}/{name}");
+        let object = pin
+            .as_object()
+            .ok_or_else(|| invalid("compiled host entry pin absent"))?;
+        if object.len() != 3
+            || pin["path"] != path
+            || !pin["bytes"]
+                .as_u64()
+                .is_some_and(|v| (1..=2 * 1024 * 1024).contains(&v))
+            || !pin["sha256"].as_str().is_some_and(|s| {
+                s.len() == 64
+                    && s.bytes()
+                        .all(|c| c.is_ascii_digit() || (b'a'..=b'f').contains(&c))
+            })
+        {
+            return Err(invalid("compiled host entry full pin differs"));
+        }
+        out.insert(path, pin.clone());
+    }
+    Ok(out)
+}
+
+fn monotonic_end(end: Instant) -> io::Result<u64> {
+    let mut clock: libc::timespec = unsafe { std::mem::zeroed() };
+    if unsafe { libc::clock_gettime(libc::CLOCK_MONOTONIC, &mut clock) } != 0 {
+        return Err(io::Error::last_os_error());
+    }
+    // Sample the monotonic clock first, so conversion cannot extend the budget.
+    let remaining = end
+        .checked_duration_since(Instant::now())
+        .ok_or_else(|| invalid("native leaf original deadline expired"))?;
+    if remaining.is_zero()
+        || remaining > Duration::from_secs(7200)
+        || clock.tv_sec < 0
+        || !(0..1_000_000_000).contains(&clock.tv_nsec)
+    {
+        return Err(invalid(
+            "native leaf original deadline is outside its bound",
+        ));
+    }
+    let now = (clock.tv_sec as u64)
+        .checked_mul(1_000_000_000)
+        .and_then(|v| v.checked_add(clock.tv_nsec as u64))
+        .ok_or_else(|| invalid("monotonic clock overflow"))?;
+    now.checked_add(
+        u64::try_from(remaining.as_nanos())
+            .map_err(|_| invalid("native leaf deadline overflow"))?,
+    )
+    .ok_or_else(|| invalid("native leaf deadline overflow"))
+}
 
 pub(crate) const FACTS_ENV: &str = "DROIDLOOM_NATIVE_LEAF_FACTS_FD";
 pub(crate) const GUARD_ENV: &str = "DROIDLOOM_NATIVE_LEAF_GUARD_FD";
@@ -63,7 +152,15 @@ impl NativeLeafChannel {
         observation
             .verify_local(inspector, deadline)
             .map_err(|e| e.to_string())?;
-        let bytes = serde_json::to_vec(&observation.facts()).map_err(|e| e.to_string())?;
+        let deadline = deadline.min(observation.deadline());
+        let bytes = serde_json::to_vec(&serde_json::json!({
+            "schema":"droidloom.native-leaf-channel.v1",
+            "baseline":observation.facts(),
+            "host_source_entries":compiled_host_entries().map_err(|e|e.to_string())?,
+            "normal_source_recipe":{"bytes":SOURCE_RECIPE.len(),"sha256":format!("{:x}", Sha256::digest(SOURCE_RECIPE))},
+            "deadline_monotonic_ns":monotonic_end(deadline).map_err(|e|e.to_string())?,
+            "comparison_only":true
+        })).map_err(|e|e.to_string())?;
         Self::from_bytes(&bytes, deadline).map_err(|e| e.to_string())
     }
     fn from_bytes(bytes: &[u8], deadline: Instant) -> io::Result<Self> {
@@ -149,6 +246,21 @@ impl NativeLeafChannel {
 mod tests {
     use super::*;
     use std::time::Duration;
+    #[test]
+    fn native_leaf_monotonic_deadline_never_renews_original_budget() {
+        let before = Instant::now();
+        assert!(monotonic_end(before).is_err());
+        assert!(monotonic_end(before + Duration::from_secs(7201)).is_err());
+        let end = before + Duration::from_secs(2);
+        let projected = monotonic_end(end).unwrap();
+        let mut actual: libc::timespec = unsafe { std::mem::zeroed() };
+        assert_eq!(
+            unsafe { libc::clock_gettime(libc::CLOCK_MONOTONIC, &mut actual) },
+            0
+        );
+        let actual = actual.tv_sec as u64 * 1_000_000_000 + actual.tv_nsec as u64;
+        assert!(projected > actual && projected - actual <= 2_000_000_000);
+    }
     #[test]
     fn native_leaf_channel_seals_real_payload_and_has_no_path_listener() {
         let mut ch = NativeLeafChannel::from_bytes(

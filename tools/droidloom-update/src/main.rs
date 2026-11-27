@@ -3,22 +3,22 @@ mod android;
 mod assemble;
 mod bundle;
 mod coherent_images;
+mod container_entry_build;
 mod dependencies;
 mod host_archive;
 mod image_policy;
-mod kernel_first_mac;
-mod native_leaf_sources;
-mod native_leaf_baseline;
 mod install;
+mod kernel_first_mac;
 mod licenses;
 mod native_bridge;
 mod native_engine;
 mod native_generation;
 mod native_generation_art;
 mod native_generation_pair_build;
+mod native_leaf_baseline;
+mod native_leaf_sources;
 mod native_role_ingress;
 mod package;
-mod container_entry_build;
 mod python;
 mod util;
 use clap::{Parser, Subcommand};
@@ -49,16 +49,26 @@ struct Args {
 }
 #[derive(Subcommand)]
 enum Action {
+    /// Capture the current normal Main, target metadata and three fixed readonly helper observations.
+    CaptureNativeLeafBusinessBaseline {
+        #[arg(long)]
+        package: String,
+    },
     /// Observe actual Main/working target metadata; no leaf execution or acceptance.
     ObserveNativeLeafBaseline {
-        #[arg(long)] package: String,
-        #[arg(long)] output: PathBuf,
+        #[arg(long)]
+        package: String,
+        #[arg(long)]
+        output: PathBuf,
     },
     /// Compare a saved document to a freshly observed normal owner; no authority from JSON.
     CompareNativeLeafBaseline {
-        #[arg(long)] package: String,
-        #[arg(long)] reference: PathBuf,
-        #[arg(long)] reference_sha256: String,
+        #[arg(long)]
+        package: String,
+        #[arg(long)]
+        reference: PathBuf,
+        #[arg(long)]
+        reference_sha256: String,
     },
     /// Reproduce the fixed recovered leaf sources in fresh staging; never install or execute them.
     MaterializeNativeLeafSources {
@@ -89,16 +99,23 @@ enum Action {
     },
     /// Materialize the five sealed files from a witnessed kernel-first board capture.
     PackageKernelFirstMac {
-        #[arg(long)] capture: PathBuf,
-        #[arg(long)] capture_sha256: String,
-        #[arg(long)] base_sha256: String,
-        #[arg(long)] runtime_sha256: String,
-        #[arg(long)] output: PathBuf,
+        #[arg(long)]
+        capture: PathBuf,
+        #[arg(long)]
+        capture_sha256: String,
+        #[arg(long)]
+        base_sha256: String,
+        #[arg(long)]
+        runtime_sha256: String,
+        #[arg(long)]
+        output: PathBuf,
     },
     /// Bind stock second-stage init to an existing selected four-image candidate.
     BindKernelFirstRuntime {
-        #[arg(long)] package: PathBuf,
-        #[arg(long)] base_sha256: String,
+        #[arg(long)]
+        package: PathBuf,
+        #[arg(long)]
+        base_sha256: String,
     },
     /// Package the original GSI and the raw independent vendor from a completed normal build.
     PackageOfficialBase {
@@ -127,7 +144,7 @@ enum Action {
         /// Private ordinary-user workspace in which Cargo outputs and the staged payload are kept.
         #[arg(long)]
         work: PathBuf,
-        #[arg(long, default_value_t=1)]
+        #[arg(long, default_value_t = 1)]
         jobs: usize,
         /// Export files and the protected empty StateDirectory to this fresh child of work.
         #[arg(long, requires = "board_policy_inputs")]
@@ -150,21 +167,34 @@ enum Action {
     },
     /// Continue normal vendor targets from a verified completed cache, then assemble fresh outputs.
     OfficialGsiVendorResume {
-        #[arg(long)] work: PathBuf,
-        #[arg(long)] built_out: PathBuf,
-        #[arg(long)] out: PathBuf,
-        #[arg(long)] system_image: PathBuf,
-        #[arg(long)] references: PathBuf,
-        #[arg(long)] native_inputs_sha256: String,
-        #[arg(long)] vendor_result_sha256: String,
-        #[arg(long)] native_projection_sha256: String,
-        #[arg(long)] native_source_sha256: String,
-        #[arg(long)] native_producer_commit: String,
+        #[arg(long)]
+        work: PathBuf,
+        #[arg(long)]
+        built_out: PathBuf,
+        #[arg(long)]
+        out: PathBuf,
+        #[arg(long)]
+        system_image: PathBuf,
+        #[arg(long)]
+        references: PathBuf,
+        #[arg(long)]
+        native_inputs_sha256: String,
+        #[arg(long)]
+        vendor_result_sha256: String,
+        #[arg(long)]
+        native_projection_sha256: String,
+        #[arg(long)]
+        native_source_sha256: String,
+        #[arg(long)]
+        native_producer_commit: String,
         /// Validate the retained native inputs and restore source without compiling vendor.
-        #[arg(long)] verify_native_only: bool,
+        #[arg(long)]
+        verify_native_only: bool,
         /// Reuse the pinned preserved evidence of a retired failed resume.
-        #[arg(long, requires = "previous_attempt_sha256")] previous_attempt: Option<PathBuf>,
-        #[arg(long, requires = "previous_attempt")] previous_attempt_sha256: Option<String>,
+        #[arg(long, requires = "previous_attempt_sha256")]
+        previous_attempt: Option<PathBuf>,
+        #[arg(long, requires = "previous_attempt")]
+        previous_attempt_sha256: Option<String>,
     },
     /// Build the complete framework Java library and Android JNI runtime only.
     /// Uses its independent exact source lock; does not install or enable roles.
@@ -529,47 +559,154 @@ fn execute(args: Args) -> Result<()> {
     {
         return fail("fixed vendor policy does not accept cleanup, bundle or bootstrap options");
     }
-    if let Some(Action::OfficialGsiVendorResume { work, built_out, out, system_image, references, native_inputs_sha256, vendor_result_sha256, native_projection_sha256, native_source_sha256, native_producer_commit, verify_native_only, previous_attempt, previous_attempt_sha256 }) = &args.command {
-        if args.clean || args.build_only || args.bootstrapped { return fail("vendor resume does not accept cleanup or bootstrap options"); }
+    if let Some(Action::OfficialGsiVendorResume {
+        work,
+        built_out,
+        out,
+        system_image,
+        references,
+        native_inputs_sha256,
+        vendor_result_sha256,
+        native_projection_sha256,
+        native_source_sha256,
+        native_producer_commit,
+        verify_native_only,
+        previous_attempt,
+        previous_attempt_sha256,
+    }) = &args.command
+    {
+        if args.clean || args.build_only || args.bootstrapped {
+            return fail("vendor resume does not accept cleanup or bootstrap options");
+        }
         let repo = repository(args.source.clone())?;
-        let capacity = std::thread::available_parallelism().map(|n| n.get()).unwrap_or(1).saturating_sub(2).max(1);
+        let capacity = std::thread::available_parallelism()
+            .map(|n| n.get())
+            .unwrap_or(1)
+            .saturating_sub(2)
+            .max(1);
         let jobs = args.jobs.unwrap_or(6).min(capacity);
-        if jobs == 0 { return fail("jobs must be positive"); }
-        return android::official_vendor::resume::run(&repo, work, built_out, out, system_image, references, native_inputs_sha256, vendor_result_sha256, jobs, native_projection_sha256, native_source_sha256, native_producer_commit, *verify_native_only, previous_attempt.as_deref(), previous_attempt_sha256.as_deref());
+        if jobs == 0 {
+            return fail("jobs must be positive");
+        }
+        return android::official_vendor::resume::run(
+            &repo,
+            work,
+            built_out,
+            out,
+            system_image,
+            references,
+            native_inputs_sha256,
+            vendor_result_sha256,
+            jobs,
+            native_projection_sha256,
+            native_source_sha256,
+            native_producer_commit,
+            *verify_native_only,
+            previous_attempt.as_deref(),
+            previous_attempt_sha256.as_deref(),
+        );
     }
     match &args.command {
-        Some(Action::ObserveNativeLeafBaseline { package, output }) => {
-            if args.clean || args.build_only || args.bootstrapped || args.jobs.is_some() || args.source.is_some() {
-                return fail("native leaf baseline observation accepts no build, cleanup or activation options");
+        Some(Action::CaptureNativeLeafBusinessBaseline { package }) => {
+            if args.clean
+                || args.build_only
+                || args.bootstrapped
+                || args.jobs.is_some()
+                || args.source.is_some()
+            {
+                return fail(
+                    "normal business baseline capture accepts no build, cleanup or activation options",
+                );
             }
-            println!("{}",serde_json::to_string_pretty(&native_leaf_baseline::capture(package,output)?)?);
+            println!(
+                "{}",
+                serde_json::to_string_pretty(&native_leaf_baseline::capture_business(package)?)?
+            );
             return Ok(());
         }
-        Some(Action::CompareNativeLeafBaseline { package, reference, reference_sha256 }) => {
-            if args.clean || args.build_only || args.bootstrapped || args.jobs.is_some() || args.source.is_some() {
-                return fail("native leaf baseline comparison accepts no build, cleanup or activation options");
+        Some(Action::ObserveNativeLeafBaseline { package, output }) => {
+            if args.clean
+                || args.build_only
+                || args.bootstrapped
+                || args.jobs.is_some()
+                || args.source.is_some()
+            {
+                return fail(
+                    "native leaf baseline observation accepts no build, cleanup or activation options",
+                );
             }
-            println!("{}",serde_json::to_string_pretty(&native_leaf_baseline::compare(package,reference,reference_sha256)?)?);
+            println!(
+                "{}",
+                serde_json::to_string_pretty(&native_leaf_baseline::capture(package, output)?)?
+            );
+            return Ok(());
+        }
+        Some(Action::CompareNativeLeafBaseline {
+            package,
+            reference,
+            reference_sha256,
+        }) => {
+            if args.clean
+                || args.build_only
+                || args.bootstrapped
+                || args.jobs.is_some()
+                || args.source.is_some()
+            {
+                return fail(
+                    "native leaf baseline comparison accepts no build, cleanup or activation options",
+                );
+            }
+            println!(
+                "{}",
+                serde_json::to_string_pretty(&native_leaf_baseline::compare(
+                    package,
+                    reference,
+                    reference_sha256
+                )?)?
+            );
             return Ok(());
         }
         Some(Action::MaterializeNativeLeafSources { input, output }) => {
-            if args.clean || args.build_only || args.bootstrapped || args.jobs.is_some() || args.source.is_some() {
-                return fail("leaf source staging accepts no build, cleanup, repository or activation options");
+            if args.clean
+                || args.build_only
+                || args.bootstrapped
+                || args.jobs.is_some()
+                || args.source.is_some()
+            {
+                return fail(
+                    "leaf source staging accepts no build, cleanup, repository or activation options",
+                );
             }
             let result = native_leaf_sources::materialize(input, output)?;
             println!("{}", serde_json::to_string_pretty(&result)?);
             return Ok(());
         }
-        Some(Action::MaterializeNativeLeafCohort { input, helper, output }) => {
-            if args.clean || args.build_only || args.bootstrapped || args.jobs.is_some() || args.source.is_some() {
-                return fail("leaf cohort staging accepts no build, cleanup, repository or activation options");
+        Some(Action::MaterializeNativeLeafCohort {
+            input,
+            helper,
+            output,
+        }) => {
+            if args.clean
+                || args.build_only
+                || args.bootstrapped
+                || args.jobs.is_some()
+                || args.source.is_some()
+            {
+                return fail(
+                    "leaf cohort staging accepts no build, cleanup, repository or activation options",
+                );
             }
             let result = native_leaf_sources::cohort::materialize(input, helper, output)?;
             println!("{}", serde_json::to_string_pretty(&result)?);
             return Ok(());
         }
         Some(Action::InstallNativeLeafCohort { input, package }) => {
-            if args.clean || args.build_only || args.bootstrapped || args.jobs.is_some() || args.source.is_some() {
+            if args.clean
+                || args.build_only
+                || args.bootstrapped
+                || args.jobs.is_some()
+                || args.source.is_some()
+            {
                 return fail("cohort installation cannot be combined with source/build options");
             }
             let result = match (input, package) {
@@ -609,12 +746,27 @@ fn execute(args: Args) -> Result<()> {
         }) => {
             return image_policy::prune(image, destination, vendor_properties);
         }
-        Some(Action::PackageKernelFirstMac { capture, capture_sha256, base_sha256, runtime_sha256, output }) => {
-            let result = kernel_first_mac::stage(capture,&capture_sha256,&base_sha256,&runtime_sha256,output)?;
+        Some(Action::PackageKernelFirstMac {
+            capture,
+            capture_sha256,
+            base_sha256,
+            runtime_sha256,
+            output,
+        }) => {
+            let result = kernel_first_mac::stage(
+                capture,
+                &capture_sha256,
+                &base_sha256,
+                &runtime_sha256,
+                output,
+            )?;
             println!("{}", serde_json::to_string_pretty(&result)?);
             return Ok(());
         }
-        Some(Action::BindKernelFirstRuntime { package, base_sha256 }) => {
+        Some(Action::BindKernelFirstRuntime {
+            package,
+            base_sha256,
+        }) => {
             let result = coherent_images::kernel_first::bind_existing(package, base_sha256)?;
             println!("{}", serde_json::to_string_pretty(&result)?);
             return Ok(());
@@ -640,14 +792,26 @@ fn execute(args: Args) -> Result<()> {
             println!("{}", serde_json::to_string_pretty(&receipt)?);
             return Ok(());
         }
-        Some(Action::PackageContainerHostStage { work, jobs, board_policy_inputs, archive_output }) => {
+        Some(Action::PackageContainerHostStage {
+            work,
+            jobs,
+            board_policy_inputs,
+            archive_output,
+        }) => {
             let repo = repository(args.source.clone())?;
             if let Some(destination) = archive_output {
-                let inputs = board_policy_inputs.as_deref().ok_or("host archive requires board policy inputs")?;
+                let inputs = board_policy_inputs
+                    .as_deref()
+                    .ok_or("host archive requires board policy inputs")?;
                 let release = host_archive::stage(&repo, work, *jobs, inputs, destination)?;
                 println!("{}", serde_json::to_string_pretty(&release)?);
             } else {
-                let stage = package::stage_container_host(&repo, work, *jobs, board_policy_inputs.as_deref())?;
+                let stage = package::stage_container_host(
+                    &repo,
+                    work,
+                    *jobs,
+                    board_policy_inputs.as_deref(),
+                )?;
                 println!("{}", stage.display());
             }
             return Ok(());
@@ -787,8 +951,12 @@ fn execute(args: Args) -> Result<()> {
         _ => None,
     };
     let official_webview_input = match &args.command {
-        Some(Action::OfficialGsiVendorBuild { webview_apk: Some(path), .. }) =>
-            Some(droidloom_image::webview_provider::verify_webview_provider(path)?),
+        Some(Action::OfficialGsiVendorBuild {
+            webview_apk: Some(path),
+            ..
+        }) => Some(droidloom_image::webview_provider::verify_webview_provider(
+            path,
+        )?),
         _ => None,
     };
     if work.join("source-projection.json").exists() {
@@ -870,7 +1038,16 @@ fn execute(args: Args) -> Result<()> {
         return android::build_vendor_image(&repo, &source, &out, &work, product, jobs);
     }
     if let Some(inputs) = &official_vendor_inputs {
-        return android::build_official_vendor(&repo, &source, &out, &work, product, jobs, inputs, official_webview_input);
+        return android::build_official_vendor(
+            &repo,
+            &source,
+            &out,
+            &work,
+            product,
+            jobs,
+            inputs,
+            official_webview_input,
+        );
     }
     if matches!(args.command, Some(Action::VendorPolicyBuild { .. })) {
         eprintln!(

@@ -177,7 +177,7 @@ droidloom-update materialize-native-leaf-cohort \
   --output FRESH_STAGING_DIRECTORY
 ```
 
-It verifies all 477 fixed inputs and generates 476 cohort members, 14 preparations
+It verifies all 477 fixed inputs and generates 478 cohort members, 14 preparations
 and ten entrypoints, plus the source manifest, exact compiled recipe and
 `COHORT.tar`. The canonical ustar package has only the ordered regular
 members authorized by that recipe. It is a separate release artifact; it is not
@@ -209,6 +209,39 @@ application authority. The normal release must bind the package/materialization
 receipt and actual installation result separately. The new Rust modules,
 compiled recipes and embedded sources belong to the actual Cargo dependency
 closure, even though the existing host install-layout names are unchanged.
+
+### Kernel-first baseline capture
+
+The same normal release provides a fixed capture operation:
+
+```sh
+droidloom-update capture-native-leaf-business-baseline --package PACKAGE_NAME
+```
+
+This operation requires the already running kernel-first owner and the protected
+r2 cohort. The Rust producer obtains actual PackageManager and Main observations
+from the authenticated normal peer, holds the target working-data directories,
+and checks the selected manager and presenter against the same private release.
+It runs the fixed cohort collector under one absolute deadline and the existing
+owned child-retirement boundary. The collector retains the original three
+read-only namespace diagnostics. The final Rust bookend obtains new PM/Main
+observations, rechecks the complete installed source set and every recorded
+output, and creates new baseline and qualification documents in its own private
+qualification directory. There is no caller-provided result, command or hash map.
+
+The compiled recipe adds two explicit kernel-first comparison modules and binds
+14 embedded source assets to 15 members. Its comparison channel is inherited only
+by the five reviewed host entrypoints and their exact argument shapes. Android
+commands, the namespace helper and independent monitor/display observers do not
+receive it. Saved comparison documents cannot construct opaque Main authority.
+
+The baseline distinguishes original-to-working image lineage from the current
+target package's working CE/DE directory identities. It does not claim a global
+installed-package UID inventory. IHG retains that complete-table prerequisite
+before any helper installation; target-only metadata cannot satisfy it. Baseline
+capture and materialization leave business acceptance, application readiness and
+production qualification false. The normal App owner must still perform the
+actual qualified business invocation and its final custody checks.
 
 ## Explicit launch observations in runtime plans
 
