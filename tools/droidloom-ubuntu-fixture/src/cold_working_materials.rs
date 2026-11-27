@@ -387,3 +387,109 @@ impl WorkingQualificationMaterials {
         self.report.pin()
     }
 }
+
+/// Immutable normal materials moved from the still-live cold preparation.
+pub(super) struct WorkingMaterialSources {
+    public_materials: CurrentPublicMaterials,
+    runtime_inputs: runtime_inputs::RuntimeInputs,
+    sources: Arc<OriginalLabelSources>,
+    fresh_owned: WorkingOwnedObservation,
+    guards: Vec<Guard>,
+    input: SealedInput,
+    work: PathBuf,
+    work_fd: File,
+    work_identity: Identity,
+    candidate: String,
+    report: SealedInput,
+    intent: SealedInput,
+    mac_files: Vec<SealedInput>,
+    records: Vec<SealedInput>,
+}
+impl WorkingMaterialSources {
+    pub(super) fn revalidate(&self) -> Result<()> {
+        let named = fs::Tree::open(&fs::absolute_string(&self.work)?, 0)?;
+        let actual = fs::stat(&self.work_fd)?;
+        ensure(
+            actual == fs::stat(&named.root)?
+                && same_work(&self.work_identity, &actual)
+                && self.work
+                    == Path::new(BASE).join(format!("working-qualification-{}", self.candidate)),
+            "working qualification lost its actual private work inode",
+        )?;
+        self.input.revalidate()?;
+        self.sources.revalidate_custody()?;
+        self.fresh_owned.revalidate()?;
+        self.public_materials.revalidate()?;
+        self.runtime_inputs.revalidate()?;
+        for guard in &self.guards {
+            guard.revalidate()?;
+        }
+        for record in self.mac_files.iter().chain(&self.records) {
+            record.revalidate()?;
+        }
+        self.report.revalidate()?;
+        self.intent.revalidate()?;
+        Ok(())
+    }
+    pub(super) fn candidate(&self) -> &str {
+        &self.candidate
+    }
+    pub(super) fn work(&self) -> &Path {
+        &self.work
+    }
+    pub(super) fn label_sources(&self) -> &Arc<OriginalLabelSources> {
+        &self.sources
+    }
+}
+impl WorkingQualificationMaterials {
+    pub(super) fn into_sources(
+        self,
+    ) -> Result<(
+        WorkingMaterialSources,
+        PreparedWorkingCopyObservation,
+        Guard,
+        WorkingGrubPreimage,
+    )> {
+        self.revalidate()?;
+        let Self {
+            returned,
+            public_materials,
+            runtime_inputs,
+            sources,
+            fresh_owned,
+            guards,
+            input,
+            original_cell,
+            grub,
+            work,
+            work_fd,
+            work_identity,
+            candidate,
+            report,
+            intent,
+            mac_files,
+            records,
+        } = self;
+        Ok((
+            WorkingMaterialSources {
+                public_materials,
+                runtime_inputs,
+                sources,
+                fresh_owned,
+                guards,
+                input,
+                work,
+                work_fd,
+                work_identity,
+                candidate,
+                report,
+                intent,
+                mac_files,
+                records,
+            },
+            returned,
+            original_cell,
+            grub,
+        ))
+    }
+}

@@ -145,7 +145,7 @@ fn working_arguments(intent: &str, early: &str, returned: &str) -> Result<String
 
 /// These entries are comparisons, never an independently serializable publisher.
 /// A later publisher must consume the owning PreparedWorkingRuntime itself.
-pub(super) struct RuntimeFile {
+pub(super) struct WorkingRuntimeFile {
     destination: PathBuf,
     source: FilePin,
     mode: u32,
@@ -160,7 +160,7 @@ pub(super) struct PreparedWorkingRuntime {
     installation: SealedInput,
     launcher: SealedInput,
     sources: Vec<Guard>,
-    entries: Vec<RuntimeFile>,
+    entries: Vec<WorkingRuntimeFile>,
     arguments: String,
     report: SealedInput,
 }
@@ -261,34 +261,34 @@ impl PreparedWorkingRuntime {
             &returned.pin().sha256,
         )?;
         let mut entries = vec![
-            RuntimeFile {
+            WorkingRuntimeFile {
                 destination: PathBuf::from("/etc/droidloom/cell.json"),
                 source: cell,
                 mode: 0o644,
             },
-            RuntimeFile {
+            WorkingRuntimeFile {
                 destination: PathBuf::from("/etc/droidloom/container-launcher.json"),
                 source: launcher.pin().clone(),
                 mode: 0o644,
             },
-            RuntimeFile {
+            WorkingRuntimeFile {
                 destination: PathBuf::from(c::INSTALLATION),
                 source: installation.pin().clone(),
                 mode: 0o400,
             },
-            RuntimeFile {
+            WorkingRuntimeFile {
                 destination: PathBuf::from(c::EARLY_CONFIG),
                 source: boot.early().clone(),
                 mode: 0o400,
             },
-            RuntimeFile {
+            WorkingRuntimeFile {
                 destination: PathBuf::from(c::RETURN_CONFIG),
                 source: returned.pin().clone(),
                 mode: 0o400,
             },
         ];
         for pin in mac_files {
-            entries.push(RuntimeFile {
+            entries.push(WorkingRuntimeFile {
                 destination: Path::new("/etc/droidloom/host-mac")
                     .join(pin.path.file_name().ok_or("normal MAC member absent")?),
                 source: pin,
@@ -306,7 +306,7 @@ impl PreparedWorkingRuntime {
             )?;
             verify_unit_source(name, &files::read_pin(&pin, 65536)?)?;
             guard.revalidate()?;
-            entries.push(RuntimeFile {
+            entries.push(WorkingRuntimeFile {
                 destination,
                 source: pin,
                 mode: 0o644,
@@ -466,5 +466,191 @@ mod tests {
         ] {
             assert!(c::boot_arguments(&format!("{args} {extra}")).is_err());
         }
+    }
+}
+
+/// The fixed runtime input roster, still bound to the actual original-kernel
+/// owner, normal sources, and the same four image OFDs. It is consumed by the
+/// normal publisher; neither a report nor a caller path constructs this object.
+pub(super) struct WorkingRuntimeSources {
+    custody: std::rc::Rc<super::working_custody::WorkingColdCustody>,
+    configuration: WorkingReturnConfiguration,
+    returned: SealedInput,
+    installation: SealedInput,
+    launcher: SealedInput,
+    sources: Vec<Guard>,
+    entries: Vec<WorkingRuntimeFile>,
+    arguments: String,
+    report: SealedInput,
+}
+pub(super) struct WorkingOriginalCellPreimage {
+    custody: std::rc::Rc<super::working_custody::WorkingColdCustody>,
+    original: Guard,
+}
+pub(super) struct WorkingGrubSource {
+    custody: std::rc::Rc<super::working_custody::WorkingColdCustody>,
+    original: super::working_grub::WorkingGrubPreimage,
+}
+impl WorkingRuntimeFile {
+    pub(super) fn target(&self) -> &Path {
+        &self.destination
+    }
+    pub(super) fn source_pin(&self) -> &FilePin {
+        &self.source
+    }
+    pub(super) fn mode(&self) -> u32 {
+        self.mode
+    }
+}
+impl PreparedWorkingRuntime {
+    pub(super) fn into_publication_sources(
+        self,
+    ) -> Result<(
+        WorkingRuntimeSources,
+        WorkingOriginalCellPreimage,
+        WorkingGrubSource,
+    )> {
+        self.revalidate()?;
+        let Self {
+            boot,
+            configuration,
+            returned,
+            installation,
+            launcher,
+            sources,
+            entries,
+            arguments,
+            report,
+        } = self;
+        let (boot, materials) = boot.into_sources()?;
+        let (materials, pair, original_cell, grub) = materials.into_sources()?;
+        let custody = std::rc::Rc::new(super::working_custody::WorkingColdCustody::new(
+            materials, boot, pair,
+        )?);
+        let original_cell = WorkingOriginalCellPreimage {
+            custody: std::rc::Rc::clone(&custody),
+            original: original_cell,
+        };
+        let grub = WorkingGrubSource {
+            custody: std::rc::Rc::clone(&custody),
+            original: grub,
+        };
+        let value = WorkingRuntimeSources {
+            custody,
+            configuration,
+            returned,
+            installation,
+            launcher,
+            sources,
+            entries,
+            arguments,
+            report,
+        };
+        value.revalidate()?;
+        original_cell.revalidate()?;
+        grub.revalidate()?;
+        Ok((value, original_cell, grub))
+    }
+}
+impl WorkingRuntimeSources {
+    pub(super) fn revalidate(&self) -> Result<()> {
+        self.custody.revalidate()?;
+        self.configuration.validate()?;
+        no_unit_overrides()?;
+        for source in [
+            &self.returned,
+            &self.installation,
+            &self.launcher,
+            &self.report,
+        ] {
+            source.revalidate()?;
+        }
+        for source in &self.sources {
+            source.revalidate()?;
+        }
+        let readback: WorkingReturnConfiguration = serde_json::from_slice(&self.returned.read()?)?;
+        ensure(
+            serde_json::to_value(readback)? == serde_json::to_value(&self.configuration)?,
+            "held working return configuration differs from its actual factory",
+        )?;
+        ensure(
+            self.arguments
+                == working_arguments(
+                    &self.configuration.intent_sha256,
+                    &self.configuration.early_config_sha256,
+                    &self.returned.pin().sha256,
+                )?,
+            "working command line left its actual held configuration",
+        )?;
+        ensure(
+            self.entries.len() == 13,
+            "fixed working runtime source roster changed",
+        )?;
+        self.custody.revalidate()
+    }
+    pub(super) fn candidate(&self) -> &str {
+        self.custody.materials().candidate()
+    }
+    pub(super) fn work(&self) -> &Path {
+        self.custody.materials().work()
+    }
+    pub(super) fn entries(&self) -> &[WorkingRuntimeFile] {
+        &self.entries
+    }
+    pub(super) fn report(&self) -> &FilePin {
+        self.report.pin()
+    }
+    pub(super) fn arguments(&self) -> &str {
+        &self.arguments
+    }
+    pub(super) fn configuration(&self) -> &WorkingReturnConfiguration {
+        &self.configuration
+    }
+    pub(super) fn boot_intent(&self) -> &FilePin {
+        self.custody.boot().intent()
+    }
+    pub(super) fn recovery_initrd(&self) -> &FilePin {
+        self.custody.boot().initrd()
+    }
+    pub(super) fn label_sources(
+        &self,
+    ) -> &std::sync::Arc<crate::cold_original_data::labels::OriginalLabelSources> {
+        self.custody.materials().label_sources()
+    }
+}
+impl WorkingOriginalCellPreimage {
+    pub(super) fn revalidate(&self) -> Result<()> {
+        self.custody.revalidate()?;
+        self.original.revalidate()?;
+        self.custody.revalidate()
+    }
+    pub(super) fn require_sources(&self, source: &WorkingRuntimeSources) -> Result<()> {
+        ensure(
+            std::rc::Rc::ptr_eq(&self.custody, &source.custody),
+            "working cell preimage belongs to a different live source owner",
+        )?;
+        self.revalidate()?;
+        source.revalidate()
+    }
+    pub(super) fn pin(&self) -> &FilePin {
+        self.original.pin()
+    }
+    pub(super) fn identity(&self) -> &crate::model::Identity {
+        self.original.identity()
+    }
+}
+impl WorkingGrubSource {
+    pub(super) fn revalidate(&self) -> Result<()> {
+        self.custody.revalidate()?;
+        self.original.revalidate()?;
+        self.custody.revalidate()
+    }
+    pub(super) fn require_sources(&self, source: &WorkingRuntimeSources) -> Result<()> {
+        ensure(
+            std::rc::Rc::ptr_eq(&self.custody, &source.custody),
+            "working GRUB preimage belongs to a different live source owner",
+        )?;
+        self.revalidate()?;
+        source.revalidate()
     }
 }

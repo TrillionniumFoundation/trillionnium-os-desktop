@@ -270,3 +270,78 @@ mod tests {
         Ok(())
     }
 }
+
+/// Actual normal recovery sources after the mutable targets are separated.
+pub(super) struct WorkingBootSources {
+    contract: WorkingBootSpec,
+    intent: SealedInput,
+    early: SealedInput,
+    recipe: SealedInput,
+    producer_plan: SealedInput,
+    normal_prepared: SealedInput,
+    initrd: Guard,
+    retained_sources: Vec<Guard>,
+    report: SealedInput,
+}
+impl WorkingBootSources {
+    pub(super) fn revalidate(&self) -> Result<()> {
+        self.contract.validate()?;
+        for value in [
+            &self.intent,
+            &self.early,
+            &self.recipe,
+            &self.producer_plan,
+            &self.normal_prepared,
+            &self.report,
+        ] {
+            value.revalidate()?;
+        }
+        self.initrd.revalidate()?;
+        for guard in &self.retained_sources {
+            guard.revalidate()?;
+        }
+        Ok(())
+    }
+    pub(super) fn recovery(&self) -> &WorkingBootSpec {
+        &self.contract
+    }
+    pub(super) fn intent(&self) -> &FilePin {
+        self.intent.pin()
+    }
+    pub(super) fn initrd(&self) -> &FilePin {
+        self.initrd.pin()
+    }
+}
+impl PreparedWorkingBoot {
+    pub(super) fn into_sources(
+        self,
+    ) -> Result<(WorkingBootSources, WorkingQualificationMaterials)> {
+        self.revalidate()?;
+        let Self {
+            materials,
+            contract,
+            intent,
+            early,
+            recipe,
+            producer_plan,
+            normal_prepared,
+            initrd,
+            retained_sources,
+            report,
+        } = self;
+        Ok((
+            WorkingBootSources {
+                contract,
+                intent,
+                early,
+                recipe,
+                producer_plan,
+                normal_prepared,
+                initrd,
+                retained_sources,
+                report,
+            },
+            materials,
+        ))
+    }
+}
