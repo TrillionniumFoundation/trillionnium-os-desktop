@@ -1721,6 +1721,7 @@ fn execute_admitted_with_limit(
     materials.observe(requested, runtime.android_user, &runtime.expected_epoch, &actual, &actual)?;
     let mut main = HeldMainCustody::observe(inspector, actual_token, end)?;
     let mut baseline = main.baseline(inspector, end)?;
+    release.attach_to_baseline(&mut baseline)?;
     let inventory_window = if actual.package == "com.ihg.apps.android" { 70 } else { 0 };
     if inventory_window != 0 {
         leaf_window(end, 70 + 250 + 70 + 70 + 30)?;

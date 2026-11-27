@@ -1039,6 +1039,7 @@ pub fn run_physical_files(
                         droidloom_supervisor::native_leaf_baseline::NativeLeafBaselineObservation::capture_from_observed(
                             &inspector, &main, &before, work_end,
                         ).map_err(|e|e.to_string())?;
+                    source_owner.attach_to_baseline(&mut baseline)?;
                     family_observation::run_family_case(&mut inspector, &mut baseline, work_end)?
                 };
                 let completed = HistoricalFamilyCase::from_observed(

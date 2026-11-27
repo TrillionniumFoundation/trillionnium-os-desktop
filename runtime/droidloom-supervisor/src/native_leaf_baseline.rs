@@ -13,6 +13,8 @@ use crate::native_leaf_baseline_data::{HeldLeafData, LeafDataFacts};
 use crate::native_leaf_baseline_programs::NormalHostPrograms;
 use serde::Serialize;
 use std::time::Instant;
+use std::sync::Arc;
+use crate::control::physical_qualification_channel::{WorkingNativeSourceCustody, WorkingQualificationOwner};
 
 pub const SCHEMA: &str = "droidloom.native-leaf-baseline.v1";
 
@@ -51,6 +53,8 @@ pub struct NativeLeafBaselineObservation<'a> {
     full_bookend_after: Instant,
     inventory: Option<ActualUserZeroPackageInventoryObservation>,
     inventory_bookend: Option<ActualUserZeroPackageInventoryObservation>,
+    working_source: Option<Arc<WorkingNativeSourceCustody>>,
+    preparation_owner: Option<&'a WorkingQualificationOwner>,
 }
 impl<'a> NativeLeafBaselineObservation<'a> {
     /// Consume the caller's existing actual PM and Main observations. This
@@ -86,6 +90,8 @@ impl<'a> NativeLeafBaselineObservation<'a> {
             full_bookend_after: Instant::now(),
             inventory: None,
             inventory_bookend: None,
+            working_source: None,
+            preparation_owner: None,
         })
     }
     pub fn facts(&self) -> NativeLeafBaselineFacts<'_> {
@@ -111,6 +117,40 @@ impl<'a> NativeLeafBaselineObservation<'a> {
     }
     pub fn deadline(&self) -> Instant {
         self.deadline
+    }
+    /// Attach only the actual authenticated working owner. Saved comparison
+    /// facts cannot create this value or renew the existing case deadline.
+    pub fn attach_working_source(
+        &mut self, source: &Arc<WorkingNativeSourceCustody>,
+    ) -> Result<(), ControlError> {
+        before(self.deadline)?;
+        if self.working_source.is_some() || self.preparation_owner.is_some() || self.deadline > source.deadline() {
+            return Err(ControlError::Invalid("working source already attached or original end extended".into()));
+        }
+        source.guard().map_err(|e| ControlError::Invalid(e.to_string()))?;
+        self.working_source = Some(Arc::clone(source));
+        Ok(())
+    }
+    /// Preparation borrows the real fixed parent before the suite child exists.
+    /// Its source capture budget is the same original PID1-derived allowance.
+    pub fn attach_preparation_owner(
+        &mut self, owner: &'a WorkingQualificationOwner,
+    ) -> Result<(), ControlError> {
+        before(self.deadline)?;
+        if self.preparation_owner.is_some() || self.working_source.is_some()
+            || self.deadline > owner.preparation_deadline()
+        {
+            return Err(ControlError::Invalid("preparation owner already attached or deadline extended".into()));
+        }
+        owner.guard().map_err(ControlError::Invalid)?;
+        self.preparation_owner = Some(owner);
+        Ok(())
+    }
+    pub(crate) fn working_source_comparison(&self) -> Result<Option<serde_json::Value>, ControlError> {
+        self.working_source.as_ref().map(|source| {
+            source.guard().map_err(|e| ControlError::Invalid(e.to_string()))?;
+            source.comparison().map_err(|e| ControlError::Invalid(e.to_string()))
+        }).transpose()
     }
 
     /// Attach the fixed complete user-0 observation for IHG's original helper
@@ -208,6 +248,12 @@ impl<'a> NativeLeafBaselineObservation<'a> {
     ) -> Result<(), ControlError> {
         let end = until.min(self.deadline);
         before(end)?;
+        if let Some(source) = &self.working_source {
+            source.guard().map_err(|e| ControlError::Invalid(e.to_string()))?;
+        }
+        if let Some(owner) = self.preparation_owner {
+            owner.guard().map_err(ControlError::Invalid)?;
+        }
         inspector.require_observations_local(self.main, self.application, end)?;
         for inventory in [&self.inventory, &self.inventory_bookend]
             .into_iter()
