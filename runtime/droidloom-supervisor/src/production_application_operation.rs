@@ -12,6 +12,7 @@ pub(crate) enum OperationDomain {
     LaunchStart,
     Install,
     CatalogRead,
+    AppOpsRead,
     DisplayControl,
 }
 impl OperationDomain {
@@ -24,6 +25,7 @@ impl OperationDomain {
             Self::LaunchStart => "u:r:droidloom_launch_start:s0",
             Self::Install => "u:r:droidloom_install:s0",
             Self::CatalogRead => "u:r:droidloom_catalog_read:s0",
+            Self::AppOpsRead => "u:r:droidloom_appops_read:s0",
             Self::DisplayControl => "u:r:droidloom_display_control:s0",
         }
     }
@@ -37,6 +39,7 @@ impl OperationDomain {
             Self::LaunchStart => b"u:r:droidloom_launch_start:s0\0",
             Self::Install => b"u:r:droidloom_install:s0\0",
             Self::CatalogRead => b"u:r:droidloom_catalog_read:s0\0",
+            Self::AppOpsRead => b"u:r:droidloom_appops_read:s0\0",
             Self::DisplayControl => b"u:r:droidloom_display_control:s0\0",
         }
     }
@@ -159,6 +162,7 @@ pub(super) enum ApplicationOperation {
     RuntimeAbi { value: super::runtime_abi_query::RuntimeAbiRead },
     ApplicationExitState { value: super::application_exit_state_query::ApplicationExitStateRead },
     ApplicationPermissionState { value: super::application_permission_state_query::ApplicationPermissionStateRead },
+    ApplicationAppOpsState { value: super::application_appops_state_query::ApplicationAppOpsStateRead },
     UserZeroPackageInventory { value: super::package_inventory_query::UserZeroPackageInventoryRead },
     Browser { value: BrowserCommand },
     ContactsRead { value: ContactsQuery },
@@ -176,6 +180,7 @@ impl ApplicationOperation {
             Self::RuntimeAbi { value } => value.validate(),
             Self::ApplicationExitState { value } => value.validate(),
             Self::ApplicationPermissionState { value } => value.validate(),
+            Self::ApplicationAppOpsState { value } => value.validate(),
             Self::UserZeroPackageInventory { value } => value.validate(),
             Self::Browser { value } => value.validate(),
             Self::ContactsRead { value } => value.validate(),
@@ -187,11 +192,12 @@ impl ApplicationOperation {
     }
 
     pub(super) const fn uses_app_process(&self) -> bool {
-        matches!(self, Self::ContactsRead { .. } | Self::Catalog { .. })
+        matches!(self, Self::ContactsRead { .. } | Self::Catalog { .. } | Self::ApplicationAppOpsState { .. })
     }
     pub(super) fn catalog_jar_digest(&self) -> Option<&str> {
         match self {
             Self::Catalog { value } => Some(value.jar_digest()),
+            Self::ApplicationAppOpsState { value } => Some(value.jar_digest()),
             _ => None,
         }
     }
@@ -202,6 +208,7 @@ impl ApplicationOperation {
             Self::RuntimeAbi { .. } => super::runtime_abi::OUTPUT_BYTES,
             Self::ApplicationExitState { .. } => crate::application_exit_state::OUTPUT_BYTES,
             Self::ApplicationPermissionState { .. } => crate::application_permission_state::OUTPUT_BYTES,
+            Self::ApplicationAppOpsState { .. } => crate::application_appops_state::OUTPUT_BYTES,
             Self::UserZeroPackageInventory { .. } => super::package_inventory::OUTPUT_BYTES,
             _ => OUTPUT_LIMIT,
         }
@@ -237,7 +244,7 @@ impl ApplicationOperation {
         }
         if self.needs_content_jar() {
             values.push(projection.content_classpath());
-        } else if matches!(self, Self::Catalog { .. }) {
+        } else if matches!(self, Self::Catalog { .. } | Self::ApplicationAppOpsState { .. }) {
             values.push(c"CLASSPATH=/system/system_ext/framework/droidloom-input-bridge.jar");
         }
         values
@@ -248,7 +255,7 @@ impl ApplicationOperation {
             Self::Read { value } => value.binary(),
             Self::Vintf { value } => value.binary(),
             Self::Browser { .. } | Self::RuntimeAbi { .. } | Self::ApplicationExitState { .. } | Self::ApplicationPermissionState { .. } | Self::UserZeroPackageInventory { .. } => c"cmd",
-            Self::ContactsRead { .. } | Self::Catalog { .. } => c"app_process64",
+            Self::ContactsRead { .. } | Self::Catalog { .. } | Self::ApplicationAppOpsState { .. } => c"app_process64",
             Self::Launch { .. } | Self::Install { .. } | Self::Display { .. } => c"cmd",
         }
     }
@@ -260,6 +267,7 @@ impl ApplicationOperation {
             Self::RuntimeAbi { value } => value.arguments(),
             Self::ApplicationExitState { value } => value.arguments(),
             Self::ApplicationPermissionState { value } => value.arguments(),
+            Self::ApplicationAppOpsState { value } => value.arguments(),
             Self::UserZeroPackageInventory { value } => value.arguments(),
             Self::Browser { value } => value.arguments(),
             Self::ContactsRead { value } => value.arguments(),
@@ -279,6 +287,7 @@ impl ApplicationOperation {
             Self::Launch { value } => value.domain(),
             Self::Install { .. } => OperationDomain::Install,
             Self::Catalog { .. } => OperationDomain::CatalogRead,
+            Self::ApplicationAppOpsState { .. } => OperationDomain::AppOpsRead,
             Self::Display { .. } => OperationDomain::DisplayControl,
         }
     }

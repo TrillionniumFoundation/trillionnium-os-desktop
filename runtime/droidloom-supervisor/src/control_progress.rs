@@ -36,7 +36,8 @@ pub(super) fn response_timeout(request: &ControlRequest) -> Duration {
         | ControlRequest::ObserveApplicationEngine { .. }
         | ControlRequest::ObserveUserZeroPackageInventory { .. }
         | ControlRequest::ObserveApplicationExitState { .. }
-        | ControlRequest::ObserveApplicationPermissionState { .. } => Duration::from_secs(70),
+        | ControlRequest::ObserveApplicationPermissionState { .. }
+        | ControlRequest::ObserveApplicationAppOpsState { .. } => Duration::from_secs(70),
         _ => REQUEST_TIMEOUT,
     }
 }

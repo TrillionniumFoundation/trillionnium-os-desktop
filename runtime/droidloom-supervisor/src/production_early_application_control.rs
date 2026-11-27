@@ -101,7 +101,7 @@ impl EarlyApplicationControl {
             // The finite read starts its one absolute budget before original
             // owner acquisition. Main custody uses this same metadata-only budget;
             // other request lifetimes keep their existing limits.
-            vintf_budget = matches!(&request, ControlRequest::ObserveRuntimeVintf { .. } | ControlRequest::ObserveRuntimeMain { .. } | ControlRequest::ObserveApplicationEngine { .. } | ControlRequest::ObserveUserZeroPackageInventory { .. } | ControlRequest::ObserveApplicationExitState { .. } | ControlRequest::ObserveApplicationPermissionState { .. })
+            vintf_budget = matches!(&request, ControlRequest::ObserveRuntimeVintf { .. } | ControlRequest::ObserveRuntimeMain { .. } | ControlRequest::ObserveApplicationEngine { .. } | ControlRequest::ObserveUserZeroPackageInventory { .. } | ControlRequest::ObserveApplicationExitState { .. } | ControlRequest::ObserveApplicationPermissionState { .. } | ControlRequest::ObserveApplicationAppOpsState { .. })
                 .then(crate::production_application::RuntimeVintfBudget::start);
             let observation_deadline = vintf_budget.as_ref().map(|budget| budget.work_deadline());
             // Request-local acquisition starts only after transport admission.
@@ -272,6 +272,28 @@ impl EarlyApplicationControl {
                     }
                     response.diagnostics=Some(body);
                     response.message="Complete user-zero PackageManager permissions observed with actual query retirement; account, AppOps, persistent data and acceptance remain separate".into();
+                }
+                ControlRequest::ObserveApplicationAppOpsState { package, expected_epoch } => {
+                    validate_package(&package)?;
+                    if !crate::engine_custody::selected_package(&package) {
+                        return Err(ControlError::Invalid("AppOps requires a source-selected application".into()));
+                    }
+                    let deadline=vintf_budget.as_ref().expect("fixed AppOps request budget").work_deadline();
+                    let observed=crate::production_application::read_application_appops_state(
+                        authority,&package,&expected_epoch,deadline,
+                    ).map_err(|e|{
+                        vintf_failure=Some(classify_vintf_failure(&e,deadline));
+                        early_application_error(e,&mut acquisition_quarantined)
+                    })?;
+                    let facts=crate::application_appops_state::ApplicationAppOpsStateFacts::from_actual(
+                        &observed,&expected_epoch,
+                    ).map_err(ControlError::Invalid)?;
+                    let body=serde_json::to_string(&facts)?;
+                    if body.len()>crate::application_appops_state::MAX_WIRE_BYTES {
+                        return Err(ControlError::Invalid("complete AppOps exceeded its fixed bound".into()));
+                    }
+                    response.diagnostics=Some(body);
+                    response.message="Complete user-zero scoped AppOps modes observed with actual query retirement; account, PM permissions, persistent data and acceptance remain separate".into();
                 }
                 ControlRequest::ObserveUserZeroPackageInventory { expected_epoch } => {
                     let deadline = vintf_budget.as_ref().expect("fixed user-0 inventory budget").work_deadline();

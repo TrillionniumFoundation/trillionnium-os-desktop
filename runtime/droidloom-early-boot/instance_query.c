@@ -60,6 +60,7 @@ static const char *exec_context(uint32_t domain) {
     case 5:return "u:r:droidloom_install:s0";
     case 6:return "u:r:droidloom_catalog_read:s0";
     case 7:return "u:r:droidloom_display_control:s0";
+    case 8:return "u:r:droidloom_appops_read:s0";
     default:return NULL;
     }
 }
