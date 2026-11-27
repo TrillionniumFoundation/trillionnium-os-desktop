@@ -80,3 +80,10 @@ impl InstalledCohort {
         Ok(Path::new(&pin.path))
     }
 }
+
+/// Keep all source-recovery assertions of the original command before sharing
+/// the fixed installed-output reader with the runtime preparation factory.
+pub(crate) fn validate_compiled_recipe() -> Result<()> {
+    cohort::installed_members()?;
+    Ok(())
+}

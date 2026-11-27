@@ -14,6 +14,9 @@ fn main() {
 pub mod application_exit_state;
 pub mod control;
 pub use control::physical_qualification_channel;
+pub use control::native_leaf_business_capture;
+#[cfg(target_os = "linux")]
+mod native_leaf_installed_cohort;
 mod cpu_placement;
 pub mod development;
 mod development_network;
