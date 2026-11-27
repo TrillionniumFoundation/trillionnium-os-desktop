@@ -76,11 +76,8 @@ def mount_identity(path):
     need(isinstance(row.get("source"),str) and row["source"].startswith("/dev/"),"actual block-backed root")
     return row
 
-def preflight(output):
-    output=safe_absolute(str(output))
-    need(output.parent==Path("/home/alex/work/p4-native-maintenance-cutover-516eec-r1")
-         and re.fullmatch(r"COLD-PREFLIGHT-[a-z0-9-]+\.json",output.name),
-         "preflight output is confined to the fixed public evidence directory")
+def observe_target():
+    """Observe the original host; no exported description grants installation."""
     need(os.geteuid()==0 and os.getuid()==0,"public cold preflight requires original root")
     need(os.uname().release==ORIGINAL_KERNEL,"cold preflight must run on original Ubuntu kernel")
     need(Path("/proc/self/uid_map").read_text().split()==["0","0","4294967295"],"initial user namespace")
@@ -107,10 +104,65 @@ def preflight(output):
             "preserved_metadata_only":preserved,"account_or_secret_bytes_read":False,
             "original_android_data_accessed":False,"system_modified":False,
             "runtime_qualified":False}
-    new_file(safe_absolute(str(output)),canonical(result),0o444)
+    return result
+
+def preflight(output):
+    output=safe_absolute(str(output))
+    need(output.parent==Path("/home/alex/work/p4-native-maintenance-cutover-516eec-r1")
+         and re.fullmatch(r"COLD-PREFLIGHT-[a-z0-9-]+\.json",output.name),
+         "preflight output is confined to the fixed public evidence directory")
+    result=observe_target()
+    new_file(output,canonical(result),0o444)
     return {"preflight":file_pin(output),"system_modified":False}
 
-def admit_target(pin):
+def export_target(output):
+    """Export a pinned public GRUB snapshot for ordinary candidate composition.
+
+    The actual protected original remains open across observation, copying and
+    readback. Consumers compare the complete snapshot bytes to the actual
+    preflight pin. Physical owners still reopen and retain the real original.
+    """
+    output=safe_absolute(str(output))
+    need(output.parent==Path("/var/lib/droidloom-qualification")
+         and 20<=len(output.name)<=80
+         and re.fullmatch(r"cold-target-export-[a-z0-9-]+",output.name),
+         "target export is a fresh protected qualification child")
+    parent=os.stat(output.parent,follow_symlinks=False)
+    need(stat.S_ISDIR(parent.st_mode) and parent.st_uid==parent.st_gid==0
+         and not(parent.st_mode&0o022),"target export parent is not protected")
+    with held("/boot/grub/grub.cfg",root=True,maximum=16*1024*1024) as (fd,before):
+        original_sha=hash_fd(fd)
+        body=os.read(fd,16*1024*1024+1)
+        need(len(body)==before.st_size and hashlib.sha256(body).hexdigest()==original_sha,
+             "complete original GRUB snapshot changed")
+        target=observe_target()
+        original=target["public_originals"]["/boot/grub/grub.cfg"]
+        need(original["identity"]==list(f9(before))
+             and original["pin"]["bytes"]==len(body)
+             and original["pin"]["sha256"]==original_sha,
+             "preflight is not the still-held original GRUB inode")
+        verify_original_grub_entry(body,ROOT_UUID,ORIGINAL_ENTRY,ORIGINAL_KERNEL)
+        mkdir_new(output)
+        snapshot=output/"ORIGINAL-GRUB.cfg"
+        observed=output/"COLD-PREFLIGHT.json"
+        new_file(snapshot,body,0o444)
+        new_file(observed,canonical(target),0o444)
+        snapshot_pin=file_pin(snapshot);preflight_pin=file_pin(observed)
+        need(read_pin(snapshot_pin,16*1024*1024,True)==body
+             and read_pin(preflight_pin,1024*1024,True)==canonical(target),
+             "protected target export readback differs")
+        need(f9(os.fstat(fd))==f9(before)
+             and f9(os.stat("/boot/grub/grub.cfg",follow_symlinks=False))==f9(before)
+             and hash_fd(fd)==original_sha,"actual original changed during export")
+        result={"schema":"droidloom-cold-target-export-v1",
+                "target_preflight":preflight_pin,"target_grub_snapshot":snapshot_pin,
+                "actual_original_grub":original,
+                "composition_only":True,"physical_install":False,
+                "runtime_qualified":False,"system_modified":False}
+    new_file(output/"RESULT.json",canonical(result),0o444)
+    return result
+
+def admit_target(pin,grub_snapshot=None):
     target=json_bytes(read_pin(pin,1024*1024))
     exact(target,("schema","kernel","root_uuid","original_entry","root_mount","boot_mount",
                  "root_identity","boot_id","observed_monotonic_ns","public_originals",
@@ -134,7 +186,19 @@ def admit_target(pin):
     # The source pin must still contain the observed original kernel leaf in
     # its real submenu. A matching id string or the stock simple entry is not
     # evidence of the original 7.0 kernel, initrd, root arguments and default.
-    grub=read_pin(target["public_originals"]["/boot/grub/grub.cfg"]["pin"],16*1024*1024,True)
+    original=target["public_originals"]["/boot/grub/grub.cfg"]["pin"]
+    if grub_snapshot is None:
+        # Existing on-device admission keeps its direct protected-source read.
+        grub=read_pin(original,16*1024*1024,True)
+    else:
+        # This is only a candidate's comparison source. It does not refresh or
+        # replace the physical owner's actual GRUB descriptor or metadata.
+        pin_shape(grub_snapshot)
+        need(grub_snapshot["path"]!=original["path"]
+             and (grub_snapshot["bytes"],grub_snapshot["sha256"])==
+                 (original["bytes"],original["sha256"]),
+             "candidate GRUB snapshot does not match the actual target preflight")
+        grub=read_pin(grub_snapshot,16*1024*1024)
     verify_original_grub_entry(grub,ROOT_UUID,ORIGINAL_ENTRY,ORIGINAL_KERNEL)
     return target
 
@@ -235,11 +299,17 @@ def grub_candidate(deployment_id):
 def prepare(plan_path,output):
     need(os.geteuid()!=0,"release preparation runs as an ordinary build user")
     plan,planpin=read_json_file(plan_path,1024*1024)
-    exact(plan,("schema","components","target_preflight"),"cold release plan")
-    need(plan["schema"]=="droidloom-cold-release-preparation-v1","cold release plan schema")
+    need(isinstance(plan,dict),"cold release plan object")
+    exported=plan.get("schema")=="droidloom-cold-release-preparation-v2"
+    keys=("schema","components","target_preflight")
+    exact(plan,(*keys,"target_grub_snapshot") if exported else keys,"cold release plan")
+    need(plan["schema"] in ("droidloom-cold-release-preparation-v1",
+                            "droidloom-cold-release-preparation-v2"),"cold release plan schema")
     exact(plan["components"],("host","kernel","android"),"normal component roles")
-    target=admit_target(pin_shape(plan["target_preflight"]))
+    snapshot=pin_shape(plan["target_grub_snapshot"]) if exported else None
+    target=admit_target(pin_shape(plan["target_preflight"]),snapshot)
     all_inputs={"target-preflight.json":plan["target_preflight"]}
+    if snapshot is not None:all_inputs["target-original-grub.cfg"]=snapshot
     details={};controls={}
     for role in ("host","kernel","android"):
         files,info,control=component(role,pin_shape(plan["components"][role]))
@@ -393,7 +463,8 @@ def initramfs_materials(bundle,release_id,native_bundle,native_id,output):
 def main():
     p=argparse.ArgumentParser(description=__doc__)
     sub=p.add_subparsers(dest="command",required=True)
-    q=sub.add_parser("preflight");q.add_argument("--output",required=True,type=Path)
+    for name in ("preflight","export-target"):
+        q=sub.add_parser(name);q.add_argument("--output",required=True,type=Path)
     q=sub.add_parser("prepare");q.add_argument("--plan",required=True,type=Path);q.add_argument("--output",required=True,type=Path)
     q=sub.add_parser("initramfs-materials")
     q.add_argument("--bundle",required=True,type=Path);q.add_argument("--release",required=True)
@@ -403,6 +474,7 @@ def main():
         q=sub.add_parser(name);q.add_argument("--bundle",required=True,type=Path);q.add_argument("--release",required=True)
     a=p.parse_args()
     if a.command=="preflight":result=preflight(a.output)
+    elif a.command=="export-target":result=export_target(a.output)
     elif a.command=="prepare":result=prepare(a.plan,a.output)
     elif a.command=="verify":result=verify(a.bundle,a.release)
     elif a.command=="initramfs-materials":result=initramfs_materials(a.bundle,a.release,a.native_bundle,a.native_release,a.output)

@@ -524,4 +524,82 @@ class ColdTargetOriginalGrub(unittest.TestCase):
         target=self.target();target["original_entry"]="gnulinux-simple-"+target["root_uuid"]
         with self.assertRaises(release.Rejected):self.admit(target,OriginalGrubEntry().observed().encode())
 
+
+class ColdTargetExportedGrub(unittest.TestCase):
+    """Actual ordinary files exercise the new comparison boundary, not a host gate."""
+    def setUp(self):
+        import tempfile
+        from pathlib import Path
+        self.temp=tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root=Path(self.temp.name)
+        self.body=OriginalGrubEntry().observed().encode()
+        self.snapshot=self.root/"ORIGINAL-GRUB.cfg"
+        self.snapshot.write_bytes(self.body);self.snapshot.chmod(0o400)
+        self.target=ColdTargetOriginalGrub().target()
+        self.bind_target(self.body)
+
+    def bind_target(self,body):
+        import hashlib
+        row=self.target["public_originals"]["/boot/grub/grub.cfg"]
+        row["pin"]["bytes"]=len(body)
+        row["pin"]["sha256"]=hashlib.sha256(body).hexdigest()
+        row["identity"][6]=len(body)
+        self.preflight=self.root/"COLD-PREFLIGHT.json"
+        self.preflight.write_bytes(release.canonical(self.target))
+        self.preflight.chmod(0o400)
+
+    def admit(self,pin=None):
+        import cold_transaction as cold
+        return cold.admit_target(release.file_pin(self.preflight),
+                                 pin if pin is not None else release.file_pin(self.snapshot))
+
+    def test_actual_exported_bytes_admit_without_original_root_file_access(self):
+        self.assertEqual(self.admit()["original_entry"],OriginalGrubEntry.ENTRY)
+        self.assertFalse(self.admit()["runtime_qualified"])
+
+    def test_different_actual_snapshot_cannot_replace_preflight_original(self):
+        self.snapshot.chmod(0o600)
+        self.snapshot.write_bytes(self.body+b"# changed\n")
+        self.snapshot.chmod(0o400)
+        with self.assertRaises(release.Rejected):self.admit()
+
+    def test_changed_bytes_reject_an_old_snapshot_pin(self):
+        pin=release.file_pin(self.snapshot)
+        self.snapshot.chmod(0o600)
+        self.snapshot.write_bytes(self.body.replace(b"Ubuntu",b"UbuXtu",1))
+        self.snapshot.chmod(0o400)
+        with self.assertRaises(release.Rejected):self.admit(pin)
+
+    def test_matching_preflight_hash_does_not_replace_full_original_boot_validation(self):
+        body=self.body.replace(b"/boot/vmlinuz-7.0.14-p4cred1",b"/boot/vmlinuz-other")
+        self.snapshot.chmod(0o600);self.snapshot.write_bytes(body);self.snapshot.chmod(0o400)
+        self.preflight.chmod(0o600);self.bind_target(body)
+        with self.assertRaises(release.Rejected):self.admit()
+
+    def test_symlink_and_hard_link_snapshots_are_not_regular_single_sources(self):
+        pin=release.file_pin(self.snapshot)
+        moved=self.root/"moved.cfg";self.snapshot.rename(moved)
+        self.snapshot.symlink_to(moved)
+        with self.assertRaises((release.Rejected,OSError)):self.admit(pin)
+        self.snapshot.unlink();os.link(moved,self.snapshot)
+        with self.assertRaises(release.Rejected):self.admit(pin)
+
+    def test_live_original_path_is_not_an_exported_snapshot(self):
+        pin={**release.file_pin(self.snapshot),"path":"/boot/grub/grub.cfg"}
+        with self.assertRaises(release.Rejected):self.admit(pin)
+
+    def test_v2_requires_the_explicit_snapshot_and_rejects_extra_fields(self):
+        import cold_transaction as cold
+        plan={"schema":"droidloom-cold-release-preparation-v2",
+              "components":{},"target_preflight":release.file_pin(self.preflight)}
+        path=self.root/"PLAN.json"
+        path.write_bytes(release.canonical(plan));path.chmod(0o400)
+        with self.assertRaises(release.Rejected):cold.prepare(path,self.root/"candidate")
+        self.assertFalse((self.root/"candidate").exists())
+        plan["target_grub_snapshot"]=release.file_pin(self.snapshot);plan["qualified"]=True
+        path.chmod(0o600);path.write_bytes(release.canonical(plan));path.chmod(0o400)
+        with self.assertRaises(release.Rejected):cold.prepare(path,self.root/"candidate")
+        self.assertFalse((self.root/"candidate").exists())
+
 if __name__=="__main__":unittest.main()

@@ -209,9 +209,24 @@ python3 packaging/ubuntu/production/cold_transaction.py prepare \
   --plan /absolute/COLD-PLAN.json --output /absolute/fresh-candidate
 ~~~
 
-The cold plan has schema droidloom-cold-release-preparation-v1, exactly three
-components (host/kernel/android normal result FilePins), and one target_preflight
-FilePin. Preparation checks the source-bound host manifest, completed normal
+For ordinary build users, the cold plan uses
+droidloom-cold-release-preparation-v2, exactly three components
+(host/kernel/android normal result FilePins), target_preflight and
+target_grub_snapshot FilePins. The root-only export-target command writes a
+create-only cold-target-export-* child of /var/lib/droidloom-qualification. It
+retains the actual protected GRUB descriptor across the original-host
+observation, complete snapshot copy and readback. Its ORIGINAL-GRUB.cfg and
+COLD-PREFLIGHT.json may then be copied as public composition inputs; they contain
+no account or Android data. Preparation requires the complete snapshot bytes and
+hash to match the preflight's original GRUB pin, and verifies the full original
+submenu, boot body and default. It includes that snapshot in the flat release.
+
+The v1 plan retains its direct read of the actual protected original. The v2
+snapshot is comparison data only. It grants no physical source custody or
+installation authority; original-host initramfs and once owners still directly
+open and retain the actual root-owned boot files and validate their identities.
+
+Preparation also checks the source-bound host manifest, completed normal
 kernel/Android cohorts, real Debian control archives, and all original package
 bytes. The flat release directory is compatible with the fixed maintenance
 verify command after a later protected import. RELEASE.json always says
