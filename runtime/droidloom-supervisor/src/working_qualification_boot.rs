@@ -21,8 +21,26 @@ use std::{
     },
     path::{Path, PathBuf},
 };
-const ROLE: &[u8] = b"u:system_r:p4_linux_working_qualification_t:s0";
-const PROFILE: &[u8] = b"droidloom-working-qualification (enforce)";
+#[derive(Clone, Copy, Eq, PartialEq)]
+enum EntryRole {
+    Parent,
+    Return,
+}
+impl EntryRole {
+    fn role(self) -> &'static [u8] {
+        match self {
+            Self::Parent => c::layout::WORKING_PARENT_ROLE,
+            Self::Return => c::layout::WORKING_RETURN_ROLE,
+        }
+    }
+    fn profile(self) -> &'static [u8] {
+        match self {
+            Self::Parent => c::layout::WORKING_PARENT_PROFILE,
+            Self::Return => c::layout::WORKING_RETURN_PROFILE,
+        }
+    }
+}
+
 const CONFIG_LABEL: &[u8] = b"u:object_r:p4_linux_working_config_t:s0";
 const WITNESS: &str = "/run/droidloom-early/host-mount-identity.json";
 fn reject(why: &'static str) -> io::Error {
@@ -56,6 +74,17 @@ impl Node {
     fn of(file: &File) -> io::Result<Self> {
         Ok(Self::from(&file.metadata()?))
     }
+}
+fn node_f9(node: &Node) -> io::Result<[u64; 9]> {
+    let ns = |pair: [i64; 2]| {
+        u64::try_from(i128::from(pair[0]) * 1_000_000_000 + i128::from(pair[1]))
+            .map_err(|_| reject("working normal input timestamp is outside the source range"))
+    };
+    let mut value = [0; 9];
+    value[..7].copy_from_slice(&node.stable);
+    value[7] = ns(node.modified)?;
+    value[8] = ns(node.changed)?;
+    Ok(value)
 }
 fn root_directory(path: &Path) -> io::Result<File> {
     if !path.is_absolute() {
@@ -231,7 +260,16 @@ struct MountWitness {
     inode: u64,
 }
 
-pub(super) struct BootOwner {
+struct ReturnInputs {
+    executable: Input,
+    maintenance: Input,
+    installation: Input,
+}
+/// Opaque current-boot custody. Return construction is a separate actual MAC
+/// entry; it cannot be selected by a caller-supplied role or configuration.
+pub(crate) struct BootOwner {
+    role: EntryRole,
+    return_inputs: Option<ReturnInputs>,
     root: File,
     root_identity: [u64; 5],
     boot_id: String,
@@ -246,6 +284,12 @@ pub(super) struct BootOwner {
 }
 impl BootOwner {
     pub(super) fn open() -> io::Result<Self> {
+        Self::open_role(EntryRole::Parent)
+    }
+    pub(crate) fn for_return() -> io::Result<Self> {
+        Self::open_role(EntryRole::Return)
+    }
+    fn open_role(role: EntryRole) -> io::Result<Self> {
         if unsafe {
             (
                 libc::getuid(),
@@ -254,8 +298,8 @@ impl BootOwner {
                 libc::getegid(),
             )
         } != (0, 0, 0, 0)
-            || held::current(101)? != ROLE
-            || held::current(104)? != PROFILE
+            || held::current(101)? != role.role()
+            || held::current(104)? != role.profile()
         {
             return Err(reject(
                 "working owner requires its exact normal root and MAC entry",
@@ -317,9 +361,51 @@ impl BootOwner {
             &[0o755],
             None,
         )?;
-        if Node::from(&fs::metadata("/proc/self/exe")?) != applications.node {
+        let return_inputs = if role == EntryRole::Return {
+            crate::native_once_capabilities::revalidate()?;
+            let executable = Input::open(
+                Path::new(c::RETURN_EXECUTABLE),
+                &config.executable,
+                &[0o755],
+                None,
+            )?;
+            let maintenance = Input::open(
+                Path::new(c::MAINTENANCE_EXECUTABLE),
+                &config.maintenance,
+                &[0o755],
+                None,
+            )?;
+            let installation = Input::open(
+                Path::new(c::INSTALLATION),
+                &config.installation,
+                &[0o400, 0o444],
+                None,
+            )?;
+            let installed: Value =
+                serde_json::from_slice(&installation.bytes()?).map_err(io::Error::other)?;
+            if installed["schema"] != "droidloom-maintenance-installation-v1"
+                || installed["root_uuid"] != c::ROOT_UUID
+                || installed["original_kernel"] != c::ORIGINAL_KERNEL
+                || installed["original_entry"] != c::ORIGINAL_ENTRY
+            {
+                return Err(reject(
+                    "working return maintenance has another original entry",
+                ));
+            }
+            Some(ReturnInputs {
+                executable,
+                maintenance,
+                installation,
+            })
+        } else {
+            None
+        };
+        let executing = return_inputs
+            .as_ref()
+            .map_or(&applications, |v| &v.executable);
+        if Node::from(&fs::metadata("/proc/self/exe")?) != executing.node {
             return Err(reject(
-                "working owner is not the boot-admitted normal applications ELF",
+                "working entry is not its boot-admitted normal executable",
             ));
         }
         let cell = Input::open(
@@ -375,6 +461,8 @@ impl BootOwner {
             .try_into()
             .map_err(|_| reject("root identity"))?;
         let value = Self {
+            role,
+            return_inputs,
             root,
             root_identity,
             boot_id,
@@ -390,10 +478,10 @@ impl BootOwner {
         value.guard()?;
         Ok(value)
     }
-    pub(super) fn guard(&self) -> io::Result<()> {
+    pub(crate) fn guard(&self) -> io::Result<()> {
         if self.pid != std::process::id()
-            || held::current(101)? != ROLE
-            || held::current(104)? != PROFILE
+            || held::current(101)? != self.role.role()
+            || held::current(104)? != self.role.profile()
             || text("/proc/sys/kernel/random/boot_id", 64)? != self.boot_id
             || text("/proc/sys/kernel/osrelease", 256)? != c::KERNEL
             || text("/sys/fs/selinux/enforce", 8)? != "1"
@@ -412,7 +500,21 @@ impl BootOwner {
         ] {
             input.guard()?;
         }
-        if Node::from(&fs::metadata("/proc/self/exe")?) != self.applications.node {
+        if let Some(inputs) = &self.return_inputs {
+            crate::native_once_capabilities::revalidate()?;
+            for input in [
+                &inputs.executable,
+                &inputs.maintenance,
+                &inputs.installation,
+            ] {
+                input.guard()?;
+            }
+        }
+        let executing = self
+            .return_inputs
+            .as_ref()
+            .map_or(&self.applications, |v| &v.executable);
+        if Node::from(&fs::metadata("/proc/self/exe")?) != executing.node {
             return Err(reject("working normal executable changed"));
         }
         let witness: MountWitness =
@@ -510,11 +612,41 @@ impl BootOwner {
         // permanent production qualification.
         Ok(())
     }
-    pub(super) fn config(&self) -> &c::WorkingReturnConfiguration {
+    pub(crate) fn config(&self) -> &c::WorkingReturnConfiguration {
         &self.config
     }
-    pub(super) fn boot_id(&self) -> &str {
+    pub(crate) fn boot_id(&self) -> &str {
         &self.boot_id
+    }
+    pub(crate) fn require_return(&self) -> io::Result<()> {
+        if self.role != EntryRole::Return || self.return_inputs.is_none() {
+            return Err(reject(
+                "working retirement requires the independent return entry",
+            ));
+        }
+        self.guard()
+    }
+    pub(crate) fn maintenance_executable(&self) -> io::Result<&File> {
+        self.require_return()?;
+        Ok(&self
+            .return_inputs
+            .as_ref()
+            .ok_or_else(|| reject("return inputs absent"))?
+            .maintenance
+            .file)
+    }
+    pub(crate) fn applications_identity(&self) -> io::Result<[u64; 9]> {
+        node_f9(&self.applications.node)
+    }
+    /// Comparison only, used after the independent return factory has held a
+    /// normal parent-only CAPTURE inode and the actual stopped PID1 invocation.
+    /// It never deserializes a live MainCustodyObservation.
+    pub(super) fn compare_protected_main(&self, main: &RuntimeMainCustody) -> io::Result<()> {
+        self.require_return()?;
+        main.validate(&main.epoch)
+            .map_err(|_| reject("protected Main comparison shape differs"))?;
+        self.compare_facts(main)?;
+        self.guard()
     }
     pub(super) fn observation(&self) -> Value {
         json!({"schema":"droidloom.working-boot-source-custody.v1","candidate_id":self.config.candidate_id,

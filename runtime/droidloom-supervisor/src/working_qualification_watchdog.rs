@@ -519,3 +519,77 @@ mod tests {
         assert_eq!(schedule.watchdog_interval_seconds, 900);
     }
 }
+
+/// Independent return observes only sysfs and an O_PATH device inode. It never
+/// opens the watchdog driver, holds its write lease, feeds it or changes timeout.
+pub(super) struct ArmedWatchdog {
+    base: Directory,
+    sys: Directory,
+    dev: Directory,
+    name: String,
+    attributes: Vec<Attribute>,
+    device: File,
+    pin: [u64; 6],
+    rdev: libc::dev_t,
+    pid: u32,
+}
+impl ArmedWatchdog {
+    pub(super) fn observe() -> io::Result<Self> {
+        let base = Directory::open(Path::new(SYSFS), Some(SYSFS_MAGIC))?;
+        let name = unique_software(&base)?;
+        let sys = Directory::open(&base.path.join(&name), Some(SYSFS_MAGIC))?;
+        let attributes = ["identity", "state", "nowayout", "timeout", "dev"]
+            .into_iter()
+            .map(|name| Attribute::open(&sys, name))
+            .collect::<io::Result<Vec<_>>>()?;
+        let rdev = dev_number(&attributes[4].text(&sys)?)?;
+        let dev = Directory::open(Path::new("/dev"), Some(TMPFS_MAGIC))?;
+        let device = held::path_at(
+            dev.file.as_raw_fd(),
+            &CString::new(name.as_bytes()).map_err(io::Error::other)?,
+        )?;
+        let pin = stable(&device)?;
+        let value = Self {
+            base,
+            sys,
+            dev,
+            name,
+            attributes,
+            device,
+            pin,
+            rdev,
+            pid: std::process::id(),
+        };
+        value.guard()?;
+        Ok(value)
+    }
+    pub(super) fn guard(&self) -> io::Result<()> {
+        if self.pid != std::process::id() {
+            return Err(denied("return watchdog observation changed process"));
+        }
+        self.base.guard()?;
+        self.sys.guard()?;
+        self.dev.guard()?;
+        if unique_software(&self.base)? != self.name {
+            return Err(denied("return observed another software watchdog"));
+        }
+        let named = held::path_at(
+            self.dev.file.as_raw_fd(),
+            &CString::new(self.name.as_bytes()).map_err(io::Error::other)?,
+        )?;
+        if self.pin[2] != u64::from(libc::S_IFCHR | 0o600)
+            || self.pin[3..6] != [0, 0, 1]
+            || stable(&self.device)? != self.pin
+            || stable(&named)? != self.pin
+            || self.device.metadata()?.rdev() != self.rdev
+            || named.metadata()?.rdev() != self.rdev
+            || held::label(&self.device)? != DEVICE_LABEL
+            || held::label(&named)? != DEVICE_LABEL
+        {
+            return Err(denied(
+                "return watchdog metadata no longer names the normal device",
+            ));
+        }
+        require_armed(&self.sys, &self.attributes, self.rdev)
+    }
+}

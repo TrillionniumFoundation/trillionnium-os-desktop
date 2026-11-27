@@ -8,6 +8,15 @@ pub const WORKING_CANDIDATE_PREFIX: &str = "working-qualification-";
 pub const WORKING_INPUT_DIRECTORY: &str = "inputs";
 pub const WORKING_EVIDENCE_DIRECTORY: &str = "runtime-evidence";
 pub const WORKING_BOOT_EVIDENCE_DIRECTORY: &str = "boot-evidence";
+pub const WORKING_RETURN_EVIDENCE_DIRECTORY: &str = "return";
+pub const WORKING_BOOT_EVIDENCE_DIRECTORY_LABEL: &[u8] =
+    b"u:object_r:p4_linux_working_boot_evidence_dir_t:s0";
+pub const WORKING_RETURN_EVIDENCE_DIRECTORY_LABEL: &[u8] =
+    b"u:object_r:p4_linux_working_return_evidence_dir_t:s0";
+pub const WORKING_RETURN_EVIDENCE_FILE_LABEL: &[u8] =
+    b"u:object_r:p4_linux_working_return_evidence_t:s0";
+pub const WORKING_SOURCE_LOCK_LABEL: &[u8] = b"u:object_r:p4_linux_working_source_lock_t:s0";
+pub const WORKING_RETURN_LOCK_LABEL: &[u8] = b"u:object_r:p4_linux_working_return_lock_t:s0";
 pub const WORKING_ADMITTED_MATERIALS_FILE: &str = "ADMITTED-MATERIALS.json";
 /// Exact ordered roles in current_public_materials.documents.
 pub const WORKING_APPLICATION_INPUT_FILES: [&str; 4] = [
@@ -28,9 +37,11 @@ pub const WORKING_NATIVE_CLAIMS_DIRECTORY: &str = "native-claims";
 
 pub const WORKING_PARENT_ROLE: &[u8] = b"u:system_r:p4_linux_working_qualification_t:s0";
 pub const WORKING_SUITE_ROLE: &[u8] = b"u:system_r:p4_linux_working_suite_t:s0";
+pub const WORKING_RETURN_ROLE: &[u8] = b"u:system_r:p4_linux_working_return_t:s0";
 pub const WORKING_LEAF_ROLE: &[u8] = b"u:system_r:p4_linux_working_leaf_t:s0";
 pub const WORKING_PARENT_PROFILE: &[u8] = b"droidloom-working-qualification (enforce)";
 pub const WORKING_SUITE_PROFILE: &[u8] = b"droidloom-working-suite (enforce)";
+pub const WORKING_RETURN_PROFILE: &[u8] = b"droidloom-working-return (enforce)";
 pub const WORKING_LEAF_PROFILE: &[u8] = b"droidloom-working-leaf (enforce)";
 /// Fixed common ancestor; installed through the normal H2 host label roster.
 pub const WORKING_ROOT_DIRECTORY_LABEL: &[u8] = b"u:object_r:p4_linux_working_root_dir_t:s0";

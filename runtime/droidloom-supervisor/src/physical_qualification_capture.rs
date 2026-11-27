@@ -291,6 +291,17 @@ fn validate_case_summaries(package: &str, row: &Value, epoch: &RuntimeEpoch) -> 
 }
 
 fn validate_summary(raw: &[u8], plan: &Plan, epoch: &RuntimeEpoch) -> io::Result<Value> {
+    compare_summary(raw, &plan.path, plan.pin[6], &plan.digest, epoch)
+}
+/// Structural comparison shared with the independent protected-file reader.
+/// This helper cannot mint a Complete, captured run or retired-parent owner.
+pub(super) fn compare_summary(
+    raw: &[u8],
+    plan_path: &Path,
+    plan_bytes: u64,
+    plan_sha: &str,
+    epoch: &RuntimeEpoch,
+) -> io::Result<Value> {
     if raw.last() != Some(&b'\n') {
         return Err(error(
             "complete summary requires its entire normal trailing newline",
@@ -316,9 +327,9 @@ fn validate_summary(raw: &[u8], plan: &Plan, epoch: &RuntimeEpoch) -> io::Result
         || get("original_window_seconds")? != SUITE_SECONDS
         || get("gate_registry")?.get("bytes") != Some(&json!(27_878))
         || get("gate_registry")?.get("sha256") != Some(&json!(roster::REGISTRY_SHA))
-        || get("plan")?.get("sha256") != Some(&Value::String(plan.digest.clone()))
-        || get("plan")?.get("bytes") != Some(&json!(plan.pin[6]))
-        || get("plan")?.get("path") != Some(&json!(plan.path))
+        || get("plan")?.get("sha256") != Some(&Value::String(plan_sha.into()))
+        || get("plan")?.get("bytes") != Some(&json!(plan_bytes))
+        || get("plan")?.get("path") != Some(&json!(plan_path))
     {
         return Err(error(
             "actual complete summary is partial or belongs to another plan/epoch",

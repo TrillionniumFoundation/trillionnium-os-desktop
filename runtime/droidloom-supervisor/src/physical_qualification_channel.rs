@@ -33,6 +33,10 @@ pub use capture::{
     CapturedCompleteApplicationRun, WorkingPreparationDirectory, WorkingQualificationOwner,
 };
 pub use source_custody::WorkingNativeSourceCustody;
+/// Fixed independent return entry; actual role, unit and boot are verified before work.
+pub fn dispatch_working_return(args: &[std::ffi::OsString]) -> io::Result<bool> {
+    working_runtime::dispatch_working_return(args)
+}
 use working_config::AdmittedWorkingConfiguration;
 pub use working_config::{WorkingPayloadPin, WorkingSourcePins};
 

@@ -210,7 +210,46 @@ pub(super) struct Invocation {
     pub(super) id: [u8; 16],
 }
 
+/// This object is minted only by a fresh fixed-name query on the already
+/// authenticated original PID1 socket. It is never a deserialized Invocation.
+#[derive(Debug, Eq, PartialEq)]
+pub(super) struct WorkingParentObject {
+    path: String,
+}
+
 impl PrivateBus {
+    pub(super) fn working_parent(&self, deadline: Instant) -> Result<WorkingParentObject> {
+        let request = self.request(
+            c"/org/freedesktop/systemd1",
+            c"org.freedesktop.systemd1.Manager",
+            c"GetUnit",
+        )?;
+        status(unsafe {
+            sd_bus_message_append_basic(
+                request.0.as_ptr(),
+                b's' as c_char,
+                c"droidloom-working-qualification.service".as_ptr().cast(),
+            )
+        })?;
+        let mut reply = self.call(request, deadline)?;
+        reply.signature("o")?;
+        let path = reply.string(b'o')?;
+        reply.end()?;
+        require(
+            path == "/org/freedesktop/systemd1/unit/droidloom_2dworking_2dqualification_2eservice",
+            "fixed working parent returned another manager object",
+        )?;
+        remaining(deadline)?;
+        Ok(WorkingParentObject { path })
+    }
+    pub(super) fn working_parent_properties(
+        &self,
+        parent: &WorkingParentObject,
+        interface: Interface,
+        deadline: Instant,
+    ) -> Result<Properties> {
+        self.properties_at(&parent.path, interface, deadline)
+    }
     pub(super) fn from_authenticated_socket(socket: &File, deadline: Instant) -> Result<Self> {
         remaining(deadline)?;
         let mut pointer = ptr::null_mut();
@@ -330,8 +369,16 @@ impl PrivateBus {
         interface: Interface,
         deadline: Instant,
     ) -> Result<Properties> {
-        let path = CString::new(invocation.path.as_bytes())
-            .map_err(|_| invalid("invalid manager unit object"))?;
+        self.properties_at(&invocation.path, interface, deadline)
+    }
+    fn properties_at(
+        &self,
+        path: &str,
+        interface: Interface,
+        deadline: Instant,
+    ) -> Result<Properties> {
+        let path =
+            CString::new(path.as_bytes()).map_err(|_| invalid("invalid manager unit object"))?;
         let request = self.request(&path, c"org.freedesktop.DBus.Properties", c"GetAll")?;
         status(unsafe {
             sd_bus_message_append_basic(
@@ -398,6 +445,7 @@ impl Interface {
             },
             Self::Service => match name {
                 "Type"
+                | "Result"
                 | "ExitType"
                 | "Restart"
                 | "KillMode"
@@ -427,10 +475,11 @@ impl Interface {
                 | "TasksMax"
                 | "CPUQuotaPerSecUSec"
                 | "CPUQuotaPeriodUSec"
-                | "AmbientCapabilities" => Some(c"t"),
+                | "AmbientCapabilities"
+                | "CapabilityBoundingSet" => Some(c"t"),
                 "DelegateControllers" => Some(c"as"),
                 "CPUAffinity" => Some(c"ay"),
-                "AppArmorProfile" => Some(c"(bs)"),
+                "AppArmorProfile" | "SELinuxContext" => Some(c"(bs)"),
                 "ExecConditionEx" | "ExecStartPreEx" | "ExecStartEx" | "ExecStartPostEx"
                 | "ExecReloadEx" | "ExecStopEx" | "ExecStopPostEx" => Some(c"a(sasasttttuii)"),
                 _ => None,

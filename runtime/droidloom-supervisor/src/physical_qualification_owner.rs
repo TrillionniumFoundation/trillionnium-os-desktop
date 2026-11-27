@@ -5,6 +5,8 @@ use super::super::physical_qualification_channel as protocol;
 use super::*;
 use std::cell::{Cell, RefCell};
 use std::io::{Read, Write};
+#[path = "working_qualification_retirement.rs"]
+pub(crate) mod retirement;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub(crate) enum KernelProfile {
@@ -340,6 +342,7 @@ impl Control {
 /// held for the whole invocation. A same-byte alias or a replaced parent is not
 /// the source object authenticated at entry.
 struct SourceUnit {
+    source: &'static str,
     path: PathBuf,
     file: File,
     pin: [u64; 9],
@@ -347,7 +350,18 @@ struct SourceUnit {
 }
 impl SourceUnit {
     fn open() -> io::Result<Self> {
-        let path = Path::new("/usr/lib/systemd/system").join(protocol::UNIT_NAME);
+        Self::open_fixed(protocol::UNIT_NAME, protocol::UNIT_SOURCE)
+    }
+    fn open_return() -> io::Result<Self> {
+        Self::open_fixed(
+            crate::native_working_contract::RETURN_UNIT,
+            include_str!(
+                "../../../packaging/systemd/system/droidloom-working-qualification-return.service"
+            ),
+        )
+    }
+    fn open_fixed(unit: &'static str, source: &'static str) -> io::Result<Self> {
+        let path = Path::new("/usr/lib/systemd/system").join(unit);
         if path.canonicalize()? != path {
             return Err(invalid("physical source unit alias"));
         }
@@ -378,11 +392,12 @@ impl SourceUnit {
         if pin[2] & libc::S_IFMT as u64 != libc::S_IFREG as u64
             || pin[2] & 0o6022 != 0
             || pin[3..6] != [0, 0, 1]
-            || pin[6] != protocol::UNIT_SOURCE.len() as u64
+            || pin[6] != source.len() as u64
         {
             return Err(invalid("normal physical source unit metadata differs"));
         }
         let result = Self {
+            source,
             path,
             file,
             pin,
@@ -414,9 +429,9 @@ impl SourceUnit {
         if identity(&self.file)? != self.pin || identity(&named)? != self.pin {
             return Err(invalid("held physical source unit changed"));
         }
-        let mut bytes = vec![0; protocol::UNIT_SOURCE.len()];
+        let mut bytes = vec![0; self.source.len()];
         self.file.read_exact_at(&mut bytes, 0)?;
-        if bytes != protocol::UNIT_SOURCE.as_bytes()
+        if bytes != self.source.as_bytes()
             || self.file.read_at(&mut [0; 1], self.pin[6])? != 0
             || identity(&self.file)? != self.pin
             || identity(&named)? != self.pin
@@ -1080,6 +1095,7 @@ mod tests {
         let directory = File::open(&parent).unwrap();
         let directory_pin = identity(&directory).unwrap();
         SourceUnit {
+            source: protocol::UNIT_SOURCE,
             path,
             file,
             pin,
