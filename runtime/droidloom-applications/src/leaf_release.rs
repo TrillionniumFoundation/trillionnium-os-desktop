@@ -19,6 +19,10 @@ use serde_json::Value;
 use sha2::{Digest, Sha256};
 
 use super::FilePin;
+#[path = "leaf_release_working.rs"]
+mod working_release;
+use working_release::ReleaseManifest;
+use droidloom_supervisor::working_qualification::WorkingSourceWitness;
 
 pub(super) const CURRENT: &str = "/home/alex/work/pocket4-android-final/CONTINUATION_CURRENT.json";
 pub(super) const ROOT: &str = "/etc/droidloom/native-application-leaves";
@@ -297,7 +301,8 @@ fn forward_relation(before:&Value,current:&Value,reference:&FilePin) -> Result<(
 pub(super) struct NativeRelease {
     locks:NativeApplicationSourceLocks,
     inputs:Inputs,
-    manifest:Manifest,
+    manifest:ReleaseManifest,
+    working:Option<WorkingSourceWitness>,
     self_exe:File,
     self_identity:[u64;9],
     pid:u32,
@@ -314,7 +319,7 @@ impl NativeRelease {
 
     pub(super) fn cover_window(&self, seconds: u64) -> Result<(),String> {
         self.guard()?;
-        require(self.manifest.owner_expires_unix_seconds>now()?.saturating_add(seconds),
+        require(self.manifest.expiry()>now()?.saturating_add(seconds),
             "original owner window cannot cover the complete owned controller and retirement")
     }
 
@@ -336,34 +341,41 @@ impl NativeRelease {
         let mut inputs=Inputs::new();
         let current=json(&inputs.read(Path::new(CURRENT),None,2*1024*1024,false,false)?)?;
         require(current.get("native_application_leaf_release")==Some(&serde_json::to_value(reference).map_err(|e|e.to_string())?),"detached release is not selected by canonical CURRENT")?;
-        let manifest:Manifest=serde_json::from_value(json(&inputs.read(&reference.path,Some(reference),65536,true,false)?)?).map_err(|e|e.to_string())?;
-        manifest.validate()?;
-        require(manifest.owner_expires_unix_seconds>now()?.saturating_add(1530+60),"original owner window must cover the whole leaf and retirement")?;
-        let owner=serde_json::to_value(&manifest.foreground_owner).map_err(|e|e.to_string())?;
-        require(current.get("foreground_owner")==Some(&owner) && manifest.selection==*selection
+        let manifest=ReleaseManifest::parse(&inputs.read(&reference.path,Some(reference),65536,true,false)?)?;
+        require(manifest.expiry()>now()?.saturating_add(1530+60),"original owner window must cover the whole leaf and retirement")?;
+        let owner=manifest.owner()?;
+        require(current.get("foreground_owner")==Some(&owner) && manifest.selection()==*selection
             && current.get("application_qualification_preparations")==Some(&serde_json::to_value(selection).map_err(|e|e.to_string())?),"CURRENT owner or compiled source selection differs from release")?;
-        let before=json(&inputs.read(&manifest.before_current_copy.path,Some(&manifest.before_current_copy),2*1024*1024,true,false)?)?;
-        require(before.get("foreground_owner")==Some(&owner),"preserved original CURRENT owner differs")?;
-        forward_relation(&before,&current,reference)?;
+        let before_copy=manifest.before_copy();
+        let before=json(&inputs.read(&before_copy.path,Some(&before_copy),2*1024*1024,true,false)?)?;
+        manifest.relation(&before,&current,reference)?;
+        let binary=manifest.binary();
         inputs.read(&selection.path,Some(selection),1024*1024,true,false)?;
         let catalog_pin=FilePin {path:PathBuf::from(format!("{ROOT}/catalogs/{}.json",hex::encode(Sha256::digest(catalog)))),
             bytes:catalog.len() as u64,sha256:hex::encode(Sha256::digest(catalog))};
-        require(manifest.catalog==catalog_pin,"root release catalog differs from independently compiled source anchor")?;
+        require(manifest.catalog()==catalog_pin,"root release catalog differs from independently compiled source anchor")?;
         require(inputs.read(&catalog_pin.path,Some(&catalog_pin),65536,true,false)?==catalog.as_bytes(),"compiled catalog body differs")?;
         inputs.read(&preparation.path,Some(preparation),1024*1024,true,false)?;
         inputs.read(&entry.path,Some(entry),262144,true,false)?;
-        inputs.read(Path::new(CLI),Some(&manifest.binary),64*1024*1024,true,true)?;
+        inputs.read(Path::new(CLI),Some(&binary),64*1024*1024,true,true)?;
         // This deliberate kernel magic-link open captures the running image's
         // actual OFD, not argv[0], current_exe() or a pathname-only assertion.
         let self_exe=File::open("/proc/self/exe").map_err(|e|e.to_string())?;
         let self_identity=f9(&self_exe.metadata().map_err(|e|e.to_string())?)?;
         require(self_identity==inputs.identity(Path::new(CLI))?,"actual /proc/self/exe OFD differs from canonical installed release binary")?;
-        let result=Self {locks,inputs,manifest,self_exe,self_identity,pid:std::process::id()};
+        let working=manifest.working_witness()?;
+        let result=Self {locks,inputs,manifest,working,self_exe,self_identity,pid:std::process::id()};
         result.guard()?; Ok(result)
     }
 
+    pub(super) fn compare_working_main(&self, main:&droidloom_supervisor::control::MainCustodyObservation) -> Result<(),String> {
+        self.guard()?;
+        if let Some(working)=&self.working { working.compare_main(main)?; }
+        self.guard()
+    }
+
     pub(super) fn guard(&self) -> Result<(),String> {
-        require(self.pid==std::process::id() && self.manifest.owner_expires_unix_seconds>now()?.saturating_add(30),"same-process live native release owner required")?;
+        require(self.pid==std::process::id() && self.manifest.expiry()>now()?.saturating_add(30),"same-process live native release owner required")?;
         self.guard_immutable()
     }
 
@@ -372,11 +384,12 @@ impl NativeRelease {
     fn guard_immutable(&self) -> Result<(),String> {
         require(self.pid==std::process::id(),"historical source belongs to another process")?;
         self.locks.validate().map_err(|e|e.to_string())?;
+        if let Some(working)=&self.working { working.guard()?; }
         self.inputs.guard()?;
         let actual=File::open("/proc/self/exe").map_err(|e|e.to_string())?;
         require(f9(&actual.metadata().map_err(|e|e.to_string())?)?==self.self_identity
             && f9(&self.self_exe.metadata().map_err(|e|e.to_string())?)?==self.self_identity
-            && hex::encode(Sha256::digest(body(&self.self_exe,self.self_identity[6])?))==self.manifest.binary.sha256
+            && hex::encode(Sha256::digest(body(&self.self_exe,self.self_identity[6])?))==self.manifest.binary().sha256
             && f9(&self.self_exe.metadata().map_err(|e|e.to_string())?)?==self.self_identity,
             "actual native executable identity/body changed")
     }

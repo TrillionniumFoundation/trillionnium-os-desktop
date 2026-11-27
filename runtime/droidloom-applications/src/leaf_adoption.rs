@@ -70,7 +70,7 @@ fn reference(path:PathBuf,raw:&[u8]) -> FilePin {
     FilePin {path,bytes:raw.len() as u64,sha256:hex::encode(Sha256::digest(raw))}
 }
 
-fn content_file(folder:&str,raw:&[u8]) -> Result<FilePin,String> {
+pub(super) fn content_file(folder:&str,raw:&[u8]) -> Result<FilePin,String> {
     let result=reference(PathBuf::from(format!("{ROOT}/{folder}/{}.json",hex::encode(Sha256::digest(raw)))),raw);
     // The administrator's deployment layout must already contain each private
     // root-owned directory. Never create or relax a shared parent here.

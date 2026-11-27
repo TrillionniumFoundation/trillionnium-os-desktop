@@ -293,6 +293,10 @@ need(original_cold_context()==context,'original kernel/root/boot changed during 
 print(json.dumps(serialize({'schema':'droidloom.original-once-fixed-command-result.v1','operation':op,'candidate_id':request['candidate_id'],'intent':request['intent'],'original':context,'result':result}),sort_keys=True))
 "#;
 
+pub(super) fn historical_driver_source() -> &'static str {
+    DRIVER
+}
+
 pub(super) struct CommandEvidence {
     pub(super) report: Value,
     pub(super) pin: FilePin,

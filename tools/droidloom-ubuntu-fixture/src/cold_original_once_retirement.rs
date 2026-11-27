@@ -471,6 +471,28 @@ fn normal_chain(
     let Some(reboot) = runtime.command("reboot", intent, boot)? else {
         return Ok(false);
     };
+    normal_chain_outputs(
+        &collect,
+        &rollback,
+        &reboot,
+        &runtime.json,
+        intent,
+        boot,
+        actual,
+    )
+}
+
+/// Pure historical comparison shared by the live return factory and the
+/// separate read-only archive observer. It cannot construct either authority.
+pub(super) fn normal_chain_outputs(
+    collect: &Value,
+    rollback: &Value,
+    reboot: &Value,
+    runtime_json: &BTreeMap<String, Value>,
+    intent: &str,
+    boot: &str,
+    actual: &Value,
+) -> Result<bool> {
     let status = |s: &Value| {
         s["boot_id"] == boot
             && s["kernel"] == c::KERNEL
@@ -506,7 +528,7 @@ fn normal_chain(
             "droidloom.original-once-return-requested.v1",
         ),
     ] {
-        let Some(v) = runtime.json.get(name) else {
+        let Some(v) = runtime_json.get(name) else {
             return Ok(false);
         };
         ensure(

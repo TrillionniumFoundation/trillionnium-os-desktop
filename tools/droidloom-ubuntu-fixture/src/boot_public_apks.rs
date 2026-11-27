@@ -643,7 +643,81 @@ fn recheck_held_source(
 
 /// Read-only check of the same pinned material contract consumed by install.
 /// It does not infer a guest, Main, epoch, labels, installation or business result.
-pub(crate) fn verify_inputs_report(config: &Path, expected: &str) -> Result<serde_json::Value> {
+/// One source-admitted public document under the existing public-material
+/// ownership rules. This keeps the actual descriptor across the successor
+/// preparation; it does not grant installed-application or runtime authority.
+pub(crate) struct VerifiedSourceDocument {
+    pin: FilePin,
+    file: std::fs::File,
+    identity: crate::model::Identity,
+}
+impl VerifiedSourceDocument {
+    pub(crate) fn observe(pin: &FilePin, limit: u64) -> Result<Self> {
+        ensure(
+            pin.bytes > 0 && pin.bytes <= limit,
+            "bounded public source document required",
+        )?;
+        let (file, identity) = hold_verified_source(pin, false)?;
+        let value = Self {
+            pin: pin.clone(),
+            file,
+            identity,
+        };
+        value.revalidate()?;
+        Ok(value)
+    }
+    pub(crate) fn pin(&self) -> &FilePin {
+        &self.pin
+    }
+    pub(crate) fn identity(&self) -> &crate::model::Identity {
+        &self.identity
+    }
+    pub(crate) fn revalidate(&self) -> Result<()> {
+        recheck_held_source(&self.pin, false, &self.file, &self.identity)
+    }
+    pub(crate) fn json(&self, limit: u64) -> Result<Value> {
+        use std::os::unix::fs::FileExt;
+        ensure(
+            self.pin.bytes <= limit,
+            "public document read exceeds its source bound",
+        )?;
+        self.revalidate()?;
+        let mut raw = vec![0; usize::try_from(self.pin.bytes)?];
+        self.file.read_exact_at(&mut raw, 0)?;
+        ensure(
+            fs::digest(&raw) == self.pin.sha256,
+            "held public document bytes changed",
+        )?;
+        self.revalidate()?;
+        Ok(serde_json::from_slice(&raw)?)
+    }
+}
+
+/// Retained result of the real normal input verifier. It is neither a saved
+/// report constructor nor an application/runtime authority. The same descriptors
+/// remain held for the enclosing cold preparation.
+pub(crate) struct VerifiedInputs {
+    sources: Vec<(FilePin, bool)>,
+    held: Vec<(std::fs::File, crate::model::Identity)>,
+    report: Value,
+}
+impl VerifiedInputs {
+    pub(crate) fn report(&self) -> &Value {
+        &self.report
+    }
+    pub(crate) fn revalidate(&self) -> Result<()> {
+        ensure(
+            self.sources.len() == self.held.len(),
+            "public input custody roster differs",
+        )?;
+        for ((source, apk), (file, before)) in self.sources.iter().zip(&self.held) {
+            recheck_held_source(source, *apk, file, before)?;
+        }
+        Ok(())
+    }
+}
+
+pub(crate) fn observe_inputs(config: &Path, expected: &str) -> Result<VerifiedInputs> {
     let input = boot_files::pin_file(config)?;
     ensure(input.sha256 == expected, "public APK import digest differs")?;
     let (staged, provenance) = read_materials(&input)?;
@@ -665,7 +739,7 @@ pub(crate) fn verify_inputs_report(config: &Path, expected: &str) -> Result<serd
             "complete_sha256_verified":true
         }));
     }
-    Ok(json!({
+    let report = json!({
         "schema":"droidloom.public-apk-inputs-verified.v1",
         "scope":"source_materials_only",
         "import":input,
@@ -685,7 +759,17 @@ pub(crate) fn verify_inputs_report(config: &Path, expected: &str) -> Result<serd
         "latest_qualification_evaluated":false,
         "guest_qualified":false,
         "production_ready":false
-    }))
+    });
+    Ok(VerifiedInputs {
+        sources,
+        held,
+        report,
+    })
+}
+
+/// Preserve the original report-only API and its exact normal verification.
+pub(crate) fn verify_inputs_report(config: &Path, expected: &str) -> Result<Value> {
+    Ok(observe_inputs(config, expected)?.report)
 }
 
 pub fn verify_inputs(config: &Path, expected: &str) -> Result<()> {

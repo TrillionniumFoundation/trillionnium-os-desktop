@@ -16,6 +16,7 @@ pub mod application_permission_state;
 pub mod application_appops_state;
 pub mod control;
 pub use control::physical_qualification_channel;
+pub use control::working_qualification;
 pub mod engine_custody;
 mod cpu_placement;
 pub mod development;
@@ -40,6 +41,7 @@ mod native_leaf_engine;
 mod native_once_capabilities;
 #[cfg(target_os = "linux")]
 mod native_once_contract;
+mod native_working_contract;
 #[cfg(target_os = "linux")]
 pub mod native_once_return;
 #[cfg(target_os = "linux")]

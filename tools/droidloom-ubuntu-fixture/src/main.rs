@@ -22,8 +22,6 @@ mod boot_qemu;
 mod boot_query;
 mod boot_query_image;
 mod boot_release;
-#[path = "../../../runtime/droidloom-supervisor/src/normal_host_release.rs"]
-mod normal_host_release;
 mod boot_runtime;
 mod boot_systemd_candidate;
 mod boot_vm;
@@ -33,11 +31,16 @@ mod cold_original_initramfs;
 mod cold_original_once_initramfs;
 mod cold_original_once_recovery;
 mod cold_original_qualification;
+mod cold_recovery_recipe;
+mod cold_working_initramfs;
+mod cold_working_recovery;
 mod complete_native;
 mod complete_snapshot;
 mod fs;
 mod materialize;
 mod model;
+#[path = "../../../runtime/droidloom-supervisor/src/normal_host_release.rs"]
+mod normal_host_release;
 mod paths;
 #[cfg(test)]
 mod tests;
@@ -81,6 +84,8 @@ enum Command {
     },
     #[command(hide = true)]
     OriginalOnceEarlyRecovery,
+    #[command(hide = true)]
+    WorkingQualificationEarlyRecovery,
     VerifyNetplanProfiles {
         #[arg(long)]
         root: PathBuf,
@@ -90,6 +95,11 @@ enum Command {
         config: PathBuf,
         #[arg(long)]
         config_sha256: String,
+    },
+    /// Observe the exact returned first-once history and retired working pair.
+    InspectReturnedWorkingCopy {
+        #[arg(long)]
+        candidate: String,
     },
     InspectOriginalDataPair {
         #[arg(long)]
@@ -271,11 +281,17 @@ fn run() -> Result<()> {
             config_sha256,
         } => cold_original_qualification::run_thaw_guard(&config, &config_sha256)?,
         Command::OriginalOnceEarlyRecovery => cold_original_once_recovery::early()?,
+        Command::WorkingQualificationEarlyRecovery => cold_working_recovery::early()?,
         Command::VerifyNetplanProfiles { root } => boot_netplan_profiles::run(&root)?,
         Command::VerifyPublicApkInputs {
             config,
             config_sha256,
         } => boot_public_apks::verify_inputs(&config, &config_sha256)?,
+        Command::InspectReturnedWorkingCopy { candidate } => {
+            let observation =
+                cold_original_qualification::inspect_returned_working_copy(&candidate)?;
+            println!("{}", serde_json::to_string_pretty(&observation)?);
+        }
         Command::InspectOriginalDataPair {
             config,
             config_sha256,

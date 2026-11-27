@@ -90,6 +90,7 @@ mod application_leaf_locks;
 pub use application_command::{SettingsPermissionCaseObservation, run_settings_permission_case, settings_permission_case_window_seconds, NativeOwnedLeafUnit, OwnedLeafProfile, CameraPhotoObservation, CameraPhotoSceneObservation, CameraPhotoCaseObservation, camera_photo_case_window_seconds, run_camera_photo_case, RetainedScopedWindowPixels, RetainedNativeUiTranscript, ScopedWindowPixels, NativeUiSession, NativeUiTranscript, NativeUiStabilityWindow, NativeUiStabilityEvidence, NativeUiStabilitySummary, stability_additional_window_seconds, NativeUiPermissionWindow, NativeUiPermissionPreservation, permission_preservation_additional_window_seconds};
 pub use crate::native_application_ui_protocol::{Selector as NativeUiSelector, Reply as NativeUiReply, ProtocolError as NativeUiError};
 pub use application_command::physical_qualification_channel;
+pub use application_command::working_qualification;
 pub use crate::native_leaf_engine::{NativeLeafEngineEvidence, NativeLeafExecution};
 pub use application_leaf_locks::NativeApplicationSourceLocks;
 
@@ -292,6 +293,10 @@ pub enum ControlRequest {
         /// Previously observed generation; never a process selector.
         expected_epoch: application_probe::RuntimeEpoch,
     },
+    /// Observe the current Ready owner's Main resources without a caller epoch.
+    /// The authenticated owner selects its held framework generation; no process,
+    /// pathname, descriptor, success value or working-copy assertion is accepted.
+    ObserveCurrentRuntimeMain {},
     /// Observe the engine mapped by a currently running selected user-0 package.
     /// Inputs compare the current owner; no PID, path, label or hash is accepted.
     ObserveApplicationEngine {
@@ -563,7 +568,8 @@ impl Daemon {
             ControlRequest::ObserveUserZeroPackageInventory { .. } => Err(ControlError::Invalid(
                 "complete user-0 inventory requires the original kernel-first Ready owner".into(),
             )),
-            ControlRequest::ObserveRuntimeMain { .. } => Err(ControlError::Invalid(
+            ControlRequest::ObserveRuntimeMain { .. }
+            | ControlRequest::ObserveCurrentRuntimeMain {} => Err(ControlError::Invalid(
                 "Main resource observation requires the original kernel-first Ready owner".into(),
             )),
             ControlRequest::ObserveRuntimeVintf { .. } => Err(ControlError::Invalid(

@@ -32,6 +32,8 @@ mod clock_timer;
 mod leaf_release;
 #[path = "leaf_adoption.rs"]
 mod leaf_adoption;
+#[path = "leaf_working_adoption.rs"]
+mod leaf_working_adoption;
 #[path = "leaf_unit_entry.rs"]
 mod leaf_unit_entry;
 use leaf_routes::{LeafObservation, LeafPlan};
@@ -56,6 +58,14 @@ pub use physical_acceptance::{
     CompletePhysicalApplicationRun, PhysicalApplicationSummary, PhysicalRunOutcome,
     physical_qualification_window_seconds, run_physical_files,
 };
+
+/// Publish the initial source pair only from the actual fixed H2 owner.
+/// This source-only operation does not construct Main or application acceptance.
+pub fn publish_working_native_source(
+    owner: &mut droidloom_supervisor::working_qualification::WorkingQualificationOwner,
+) -> Result<FilePin, String> {
+    leaf_working_adoption::publish(owner)
+}
 
 /// Prepare the next normal material batch for source review. The result cannot
 /// extend the compiled admission table or authorize an application.

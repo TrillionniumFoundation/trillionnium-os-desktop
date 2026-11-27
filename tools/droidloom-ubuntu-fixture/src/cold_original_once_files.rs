@@ -2760,3 +2760,7 @@ mod tests {
         publish_one(&i)
     }
 }
+
+#[path = "cold_original_returned_archive.rs"]
+mod returned_archive;
+pub(super) use returned_archive::ArchivedRuntime;

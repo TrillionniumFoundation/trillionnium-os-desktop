@@ -614,9 +614,30 @@ fn validate_readonly_receipt(
     }
     Ok(())
 }
+/// The original normal producer's fixed window, also used by the working owner.
+pub const BUSINESS_CAPTURE_SECONDS: u64 = 1200;
+/// Each fixed IHG preparation invocation keeps its original CLI upper bound.
+pub const IHG_PREPARATION_SECONDS: u64 = 1800;
+
+fn preparation_end(until: Instant, original_seconds: u64) -> Result<Instant> {
+    let now = Instant::now();
+    let original = now.checked_add(Duration::from_secs(original_seconds))
+        .ok_or("normal preparation window overflow")?;
+    let end = until.min(original);
+    check_before(end)?;
+    Ok(end)
+}
+
 pub fn capture_business(package: &str) -> Result<Value> {
+    capture_business_until(package, Instant::now() + Duration::from_secs(BUSINESS_CAPTURE_SECONDS))
+}
+
+/// Reuse the exact normal collector under its original cap and an earlier
+/// source-owned parent's absolute end. The deadline grants no Main authority:
+/// actual PM/Main, source custody, observations and retirement remain below.
+pub fn capture_business_until(package: &str, until: Instant) -> Result<Value> {
     use droidloom_supervisor::control::{NativeLeafCommandKind, run_prepared_native_leaf_until};
-    let end = Instant::now() + Duration::from_secs(1200);
+    let end = preparation_end(until, BUSINESS_CAPTURE_SECONDS)?;
     let (mut inspector, main, application) = actual(package, end)?;
     let mut observed =
         NativeLeafBaselineObservation::capture_from_observed(&inspector, &main, &application, end)?;
@@ -771,9 +792,21 @@ pub fn capture_business(package: &str) -> Result<Value> {
 /// Source-owned IHG preparation adapter. The public request contains only the
 /// normal comparison/artifact pins for one fixed mode; it cannot select argv.
 pub fn prepare_ihg(mode_name: &str, request: &Path, request_sha256: &str) -> Result<Value> {
+    prepare_ihg_until(mode_name, request, request_sha256,
+        Instant::now() + Duration::from_secs(IHG_PREPARATION_SECONDS))
+}
+
+/// The same six normal fixed modes; this accepts only an earlier absolute
+/// ceiling, never a caller-selected operation, resource profile or authority.
+pub fn prepare_ihg_until(
+    mode_name: &str,
+    request: &Path,
+    request_sha256: &str,
+    until: Instant,
+) -> Result<Value> {
     use droidloom_supervisor::native_ihg_preparation::{self, IhgPreparationMode};
     let mode = IhgPreparationMode::parse(mode_name).map_err(|e| format!("IHG mode: {e}"))?;
-    let end = Instant::now() + Duration::from_secs(1800);
+    let end = preparation_end(until, IHG_PREPARATION_SECONDS)?;
     let (root, root_fd, identity) = private_capture_root()?;
     let operation = (|| -> Result<Value> {
         let mut random = [0_u8; 16];
@@ -803,7 +836,7 @@ pub fn prepare_ihg(mode_name: &str, request: &Path, request_sha256: &str) -> Res
                 "fixed_output":output,"normal_source_recipe":sources.recipe(),
                 "actual_owner_comparison":observed.facts(),
                 "complete_user_zero_inventory":observed.inventory_facts(),
-                "original_budget_seconds":1800,"fixed_source_entry_required":true,
+                "original_budget_seconds":IHG_PREPARATION_SECONDS,"fixed_source_entry_required":true,
                 "application_business_actions":0,"automatic_retry":false,
                 "whole_app_business_accepted":false,"production_ready":false
             }),
@@ -864,6 +897,20 @@ pub fn prepare_ihg(mode_name: &str, request: &Path, request_sha256: &str) -> Res
 #[cfg(test)]
 mod business_capture_tests {
     use super::*;
+    #[test]
+    fn normal_preparation_uses_the_earlier_original_end_without_extending_any_cap() {
+        assert_eq!(BUSINESS_CAPTURE_SECONDS, 1200);
+        assert_eq!(IHG_PREPARATION_SECONDS, 1800);
+        let near = Instant::now() + Duration::from_secs(1);
+        assert_eq!(preparation_end(near, BUSINESS_CAPTURE_SECONDS).unwrap(), near);
+        let before = Instant::now();
+        let far = before + Duration::from_secs(3600);
+        let selected = preparation_end(far, IHG_PREPARATION_SECONDS).unwrap();
+        assert!(selected >= before + Duration::from_secs(IHG_PREPARATION_SECONDS));
+        assert!(selected <= Instant::now() + Duration::from_secs(IHG_PREPARATION_SECONDS));
+        assert!(selected < far);
+        assert!(preparation_end(before - Duration::from_secs(1), BUSINESS_CAPTURE_SECONDS).is_err());
+    }
     fn fixture() -> (Value, Value) {
         let application = json!({"package":"com.example.bound","uid":10123,"user":0});
         let directories = json!([

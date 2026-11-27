@@ -27,16 +27,34 @@ impl EarlyApplicationAuthority<'_> {
         expected: &RuntimeEpoch,
         deadline: Instant,
     ) -> Result<RuntimeMainCustody> {
+        self.observe_selected_main_custody(Some(expected), deadline)
+    }
+    /// The actual owner chooses its already held framework, never a caller PID
+    /// or a serialized qualification. All original storage/owner bookends below
+    /// are shared with the explicit-epoch observation.
+    pub(crate) fn observe_current_main_custody(
+        &self,
+        deadline: Instant,
+    ) -> Result<RuntimeMainCustody> {
+        self.observe_selected_main_custody(None, deadline)
+    }
+    fn observe_selected_main_custody(
+        &self,
+        expected: Option<&RuntimeEpoch>,
+        deadline: Instant,
+    ) -> Result<RuntimeMainCustody> {
         require(
             self.request_deadline() == Some(deadline),
             "Main observation requires the admitted private absolute deadline",
         )?;
         self.check_request_deadline()?;
         let held = self.observe_framework()?;
-        require(
-            &held.epoch == expected,
-            "Main comparison epoch differs from the actual original framework",
-        )?;
+        if let Some(expected) = expected {
+            require(
+                &held.epoch == expected,
+                "Main comparison epoch differs from the actual original framework",
+            )?;
+        }
         let owner = self.image_custody_owner(deadline)?;
         let normal_host_release = self.base.board().selection().normal_host_release().map_err(external)?.clone();
         let data_admission =
@@ -107,7 +125,7 @@ impl EarlyApplicationAuthority<'_> {
             normal_host_release,
         };
         result
-            .validate(expected)
+            .validate(expected.unwrap_or(&held.epoch))
             .map_err(|why| NamespaceError::RuntimeResource(why))?;
         Ok(result)
     }

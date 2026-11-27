@@ -33,6 +33,7 @@ pub(super) fn response_timeout(request: &ControlRequest) -> Duration {
         // absolute 60-second work-and-retirement budget.
         ControlRequest::ObserveRuntimeVintf { .. }
         | ControlRequest::ObserveRuntimeMain { .. }
+        | ControlRequest::ObserveCurrentRuntimeMain {}
         | ControlRequest::ObserveApplicationEngine { .. }
         | ControlRequest::ObserveUserZeroPackageInventory { .. }
         | ControlRequest::ObserveApplicationExitState { .. }

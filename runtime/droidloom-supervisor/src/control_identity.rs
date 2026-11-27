@@ -451,6 +451,25 @@ fn main_response(
     Ok(facts)
 }
 
+// Comparison of an already authenticated response. This helper returns only
+// data; the private client below must retain its actual normal peer PIDFD.
+fn current_main_response(
+    response: ControlResponse,
+    actual_boot_id: &str,
+) -> Result<crate::main_custody::RuntimeMainCustody, ControlError> {
+    let body = response.diagnostics.as_deref().ok_or_else(|| {
+        ControlError::Invalid("current Main observation omitted its body".into())
+    })?;
+    if body.len() > 32768 {
+        return Err(ControlError::Invalid("current Main observation exceeds bound".into()));
+    }
+    let observed: crate::main_custody::RuntimeMainCustody = serde_json::from_str(body)?;
+    if observed.epoch.boot_id != actual_boot_id {
+        return Err(ControlError::Invalid("current Main response belongs to another actual host boot".into()));
+    }
+    main_response(response, &observed.epoch)
+}
+
 /// A process-local read-only client. It never accepts an executable hash, PID,
 /// invocation or socket pathname selected by a material/acceptance document.
 pub struct NativeApplicationInspector {
@@ -810,6 +829,30 @@ impl NativeApplicationInspector {
             ));
         }
         check_deadline(Some(deadline))
+    }
+
+    /// Obtain the first actual Main epoch from the same fixed authenticated
+    /// Ready owner. This reads no APK, accepts no epoch/selector, and uses the
+    /// existing 70-second transport inside the caller's original absolute end.
+    pub fn observe_current_main_until(
+        &mut self,
+        deadline: Instant,
+    ) -> Result<MainCustodyObservation, ControlError> {
+        check_deadline(Some(deadline))?;
+        self.revalidate()?;
+        let request = ControlRequest::ObserveCurrentRuntimeMain {};
+        if deadline.saturating_duration_since(Instant::now()) < progress::response_timeout(&request) {
+            return Err(ControlError::Invalid("original source/capture window cannot fit current Main observation".into()));
+        }
+        let response = self.request_fixed_until(&request, Some(deadline))?;
+        let facts = current_main_response(response, &self.boot_id)?;
+        let peer = self.observation()?;
+        let pidfd = self.pidfd.try_clone()
+            .map_err(|e| io_error("retain actual current Main peer", e))?;
+        live(&pidfd).map_err(|e| io_error("check actual current Main peer", e))?;
+        self.revalidate()?;
+        check_deadline(Some(deadline))?;
+        Ok(MainCustodyObservation { facts, peer, pidfd, observed_at: Instant::now() })
     }
 
     /// Observe only the original normal owner's current process, namespace,
@@ -1410,6 +1453,48 @@ mod tests {
         // A parsed body remains comparison data. This test never constructs
         // MainCustodyObservation, whose only production constructor needs the
         // selected program, root socket and an actual original peer PIDFD.
+    }
+
+    #[test]
+    fn current_main_request_accepts_no_caller_epoch_pid_or_qualification() {
+        let value = serde_json::json!({"command":"observe_current_runtime_main"});
+        let request: ControlRequest = serde_json::from_value(value.clone()).unwrap();
+        assert!(matches!(request, ControlRequest::ObserveCurrentRuntimeMain {}));
+        assert_eq!(progress::response_timeout(&request), Duration::from_secs(70));
+        for (key, extra) in [("expected_epoch", serde_json::json!({})),
+            ("pid", serde_json::json!(1234)), ("path", serde_json::json!("/proc/1")),
+            ("runtime_qualified", serde_json::json!(true))] {
+            let mut bad = value.clone();
+            bad[key] = extra;
+            assert!(serde_json::from_value::<ControlRequest>(bad).is_err());
+        }
+    }
+
+    #[test]
+    fn current_main_response_requires_actual_boot_and_full_normal_response() {
+        let facts = crate::main_custody::tests::sample();
+        let response = ControlResponse {
+            ok: true, state: CellState::Running, message: String::new(),
+            host_pid: Some(facts.epoch.cell_host_pid), launch: None,
+            applications: None, application_icon: None,
+            diagnostics: Some(serde_json::to_string(&facts).unwrap()),
+            inspection: None, image_custody: None, runtime_vintf: None,
+        };
+        assert_eq!(current_main_response(response.clone(), &facts.epoch.boot_id).unwrap(), facts);
+        assert!(current_main_response(response.clone(), "other-boot").is_err());
+        for case in 0..6 {
+            let mut bad = response.clone();
+            match case {
+                0 => bad.ok = false,
+                1 => bad.state = CellState::Starting,
+                2 => bad.host_pid = Some(999),
+                3 => bad.launch = Some("unrelated".into()),
+                4 => bad.diagnostics = None,
+                _ => bad.diagnostics = Some("true".into()),
+            }
+            assert!(current_main_response(bad, &facts.epoch.boot_id).is_err());
+        }
+        // These are comparison-parser tests, never an opaque Main factory.
     }
 
     #[test]
