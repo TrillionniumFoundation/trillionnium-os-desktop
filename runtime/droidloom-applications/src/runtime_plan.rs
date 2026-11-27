@@ -20,6 +20,8 @@ use firefox_wait_result::{FirefoxActivityStart, firefox_activity_start};
 
 #[path = "leaf_routes.rs"]
 mod leaf_routes;
+#[path = "native_business.rs"]
+mod native_business;
 #[path = "clock_timer.rs"]
 mod clock_timer;
 #[path = "leaf_release.rs"]
