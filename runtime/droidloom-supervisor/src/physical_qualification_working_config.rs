@@ -384,6 +384,7 @@ pub(super) struct AdmittedWorkingConfiguration {
     config: WorkingReturnConfiguration,
     comparisons: WorkingSourcePins,
     namespace_entry: contract::WorkingNamespaceEntryPin,
+    owned_files_entry: contract::WorkingOwnedFilesEntryPin,
     runtime_directory: PathBuf,
     input_directory: PathBuf,
     inputs: [SourceInput; 4],
@@ -469,14 +470,18 @@ impl AdmittedWorkingConfiguration {
             16 * 1024 * 1024,
             MATERIAL_LABEL,
         )?;
+        let admitted_bytes = materials.bytes()?;
         let namespace_entry =
-            contract::WorkingNamespaceEntryPin::from_admitted_materials(&materials.bytes()?)?;
+            contract::WorkingNamespaceEntryPin::from_admitted_materials(&admitted_bytes)?;
+        let owned_files_entry =
+            contract::WorkingOwnedFilesEntryPin::from_admitted_materials(&admitted_bytes)?;
         let result = Self {
             actor,
             installed_directories,
             config,
             comparisons,
             namespace_entry,
+            owned_files_entry,
             runtime_directory,
             input_directory,
             inputs: [input, early_input, witness, materials],
@@ -535,6 +540,9 @@ impl AdmittedWorkingConfiguration {
     }
     pub(super) fn namespace_entry_pin(&self) -> &contract::WorkingNamespaceEntryPin {
         &self.namespace_entry
+    }
+    pub(super) fn owned_files_entry_pin(&self) -> &contract::WorkingOwnedFilesEntryPin {
+        &self.owned_files_entry
     }
     pub(super) fn applications_pin(&self) -> &PayloadPin {
         &self.config.applications

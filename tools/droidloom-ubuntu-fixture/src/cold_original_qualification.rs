@@ -49,6 +49,7 @@ mod working_materials;
 mod working_qualification;
 #[path = "cold_working_runtime.rs"]
 mod working_runtime;
+pub(crate) use working_runtime::{WorkingLabelSourceIdentity, WorkingRuntimeSources};
 pub(super) use retirement::OriginalRetirement;
 pub(super) use working_qualification::inspect as inspect_returned_working_copy;
 

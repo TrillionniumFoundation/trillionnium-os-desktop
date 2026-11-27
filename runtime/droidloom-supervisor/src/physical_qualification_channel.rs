@@ -548,6 +548,12 @@ impl Plan {
         self.configuration.guard()?;
         Ok(self.configuration.namespace_entry_pin())
     }
+    pub(super) fn working_owned_files_entry_pin(
+        &self,
+    ) -> io::Result<&crate::native_working_contract::WorkingOwnedFilesEntryPin> {
+        self.configuration.guard()?;
+        Ok(self.configuration.owned_files_entry_pin())
+    }
     pub(super) fn working_applications_pin(
         &self,
     ) -> io::Result<&crate::native_working_contract::PayloadPin> {
