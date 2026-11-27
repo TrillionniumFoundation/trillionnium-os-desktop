@@ -124,12 +124,12 @@ struct Stage {
     producer: FilePin,
     input: FilePin,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    recovery_recipe: Option<crate::cold_original_once_initramfs::RecoveryRecipe>,
+    recovery_recipe: Option<crate::cold_recovery_recipe::RecoveryRecipe>,
 }
 
 type RecoverySourceGuard = (FilePin, Identity, File);
 fn recovery_source_guards(
-    recipe: Option<&crate::cold_original_once_initramfs::RecoveryRecipe>,
+    recipe: Option<&crate::cold_recovery_recipe::RecoveryRecipe>,
 ) -> Result<Vec<RecoverySourceGuard>> {
     recipe
         .map(|recipe| {
@@ -161,34 +161,20 @@ fn recovery_source_readback(guards: &[RecoverySourceGuard]) -> Result<Value> {
     Ok(json!({"schema":"droidloom.original-recovery-source-custody.v1","sources":rows}))
 }
 fn verify_recovery_stage(
-    admitted: &crate::cold_original_once_initramfs::RecoveryRecipe,
-    staged: &crate::cold_original_once_initramfs::RecoveryRecipe,
+    admitted: &crate::cold_recovery_recipe::RecoveryRecipe,
+    staged: &crate::cold_recovery_recipe::RecoveryRecipe,
 ) -> Result<()> {
-    // These are the four exact path/schema substitutions made by the normal
-    // staging producer. No other recipe byte, source pin or recovery contract
-    // may be replaced by private input JSON.
-    let mut expected = serde_json::to_value(admitted)?;
-    ensure(
-        expected["schema"] == "droidloom.original-once-initramfs-recipe.v1",
-        "normal recovery source recipe schema differs",
-    )?;
-    expected["schema"] = json!("droidloom.original-once-staged-recovery.v1");
-    expected["helper"]["path"] = json!("/build/producer");
-    expected["base_intent"]["path"] = json!("/build/recovery/INTENT.json");
-    expected["early_configuration"]["path"] = json!("/build/recovery/EARLY.json");
-    ensure(
-        expected == serde_json::to_value(staged)?,
-        "normal recovery private staging differs from its source recipe",
-    )
+    crate::cold_recovery_recipe::verify_staged(admitted, staged)
 }
+
 fn recovery_image_readback(
-    recipe: Option<&crate::cold_original_once_initramfs::RecoveryRecipe>,
+    recipe: Option<&crate::cold_recovery_recipe::RecoveryRecipe>,
     unpacked: &Path,
 ) -> Result<Option<Value>> {
     if let Some(recipe) = recipe {
-        return Ok(Some(
-            crate::cold_original_once_initramfs::verify_recovery_image(recipe, unpacked)?,
-        ));
+        return Ok(Some(crate::cold_recovery_recipe::verify_recovery_image(
+            recipe, unpacked,
+        )?));
     }
     let roots = [unpacked.to_owned(), unpacked.join("main")]
         .into_iter()
@@ -203,6 +189,9 @@ fn recovery_image_readback(
         "/usr/lib/droidloom/qualification/once-recovery",
         "/etc/droidloom/qualification/early.json",
         "/scripts/init-top/00-droidloom-original-once-recovery",
+        "/usr/lib/droidloom/qualification/working-recovery",
+        "/etc/droidloom/qualification/working-early.json",
+        "/scripts/init-top/00-droidloom-working-qualification-recovery",
     ] {
         match tree.identity(name) {
             Err(error)
@@ -747,7 +736,7 @@ pub fn prepare(path: &Path, expected: &str) -> Result<()> {
         .recovery_recipe
         .as_ref()
         .map(|pin| {
-            crate::cold_original_once_initramfs::admit_recovery_recipe(
+            crate::cold_recovery_recipe::admit_recovery_recipe(
                 pin,
                 &producer,
                 &serde_json::to_value(&materials)?,
@@ -757,7 +746,7 @@ pub fn prepare(path: &Path, expected: &str) -> Result<()> {
     let recovery_guards = recovery_source_guards(admitted_recovery.as_ref())?;
     let staged_recovery = admitted_recovery
         .as_ref()
-        .map(|recipe| crate::cold_original_once_initramfs::stage_recovery_recipe(recipe, &build))
+        .map(|recipe| crate::cold_recovery_recipe::stage_recovery_recipe(recipe, &build))
         .transpose()?;
     if let (Some(admitted), Some(staged)) = (&admitted_recovery, &staged_recovery) {
         verify_recovery_stage(admitted, staged)?;
@@ -1899,7 +1888,7 @@ pub fn build(path: &Path, expected: &str) -> Result<()> {
         .recovery_recipe
         .as_ref()
         .map(|recipe| {
-            crate::cold_original_once_initramfs::install_private_recipe(
+            crate::cold_recovery_recipe::install_private_recipe(
                 recipe,
                 &stage.producer,
                 &stage.original,
