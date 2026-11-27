@@ -3,6 +3,8 @@
 //! not admit a release, authorize data mutation, or grant permanent activation.
 use crate::{Result, boot_files as files, ensure, fs, model::Identity};
 use files::FilePin;
+#[path = "cold_working_owner.rs"]
+mod working;
 use rustix::fs::{AtFlags, FileType, FlockOperation, Mode, OFlags};
 use serde::Serialize;
 use std::{
@@ -11,6 +13,7 @@ use std::{
     io::{Read, Seek},
     path::{Path, PathBuf},
 };
+pub(super) use working::WorkingColdOwner;
 
 pub(super) const ORIGINAL_KERNEL: &str = "7.0.14-p4cred1";
 pub(super) const ROOT_UUID: &str = "01c27223-3933-481e-9836-7bd0ef1be8c9";

@@ -23,6 +23,17 @@ impl ReturnedWorkingCopyObservation {
         value.guard()?;
         Ok(value)
     }
+    pub(super) fn observe_working(
+        candidate: &str,
+        working_candidate: &str,
+        input: &FilePin,
+    ) -> Result<Self> {
+        let mut history = ReturnedOnceHistory::open_working(candidate, working_candidate, input)?;
+        let data = ReturnedWorkingPair::open(&mut history)?;
+        let value = Self { history, data };
+        value.guard()?;
+        Ok(value)
+    }
     pub(super) fn history(&self) -> &ReturnedOnceHistory {
         &self.history
     }

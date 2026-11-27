@@ -486,3 +486,26 @@ pub(super) fn run(input: &Path, expected: &str) -> Result<serde_json::Value> {
 pub(super) fn run_thaw_guard(input: &Path, expected: &str) -> Result<()> {
     quiescence::run_thaw_guard(input, expected)
 }
+
+pub(super) fn prepare_working(input: &Path, expected: &str) -> Result<serde_json::Value> {
+    ensure(
+        fs::valid_digest(expected),
+        "complete working preparation input hash required",
+    )?;
+    let pin = files::pin_file(input)?;
+    ensure(
+        pin.sha256 == expected,
+        "actual working preparation input differs",
+    )?;
+    let materials = working_materials::WorkingQualificationMaterials::admit(&pin)?;
+    let prepared = working_boot::PreparedWorkingBoot::prepare(materials)?;
+    prepared.revalidate()?;
+    let result: serde_json::Value =
+        serde_json::from_slice(&files::read_pin(prepared.report(), 16 * 1024 * 1024)?)?;
+    ensure(
+        result["boot_armed"] == false && result["production_ready"] == false,
+        "normal recovery preparation must not claim a later live phase",
+    )?;
+    prepared.revalidate()?;
+    Ok(result)
+}

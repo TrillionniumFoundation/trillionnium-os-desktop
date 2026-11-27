@@ -4,7 +4,7 @@
 use super::{
     configurations::ArchivedRuntime,
     materials,
-    owner::OriginalOwner,
+    owner::{OriginalOwner, WorkingColdOwner},
     returned_custody::{HeldDirectory, HeldFile, Records},
     state::{Journal, Phase},
 };
@@ -64,8 +64,33 @@ fn read_in(
 
 /// This opaque observation keeps the old normal sources, current original
 /// owner and complete returned event chain held. It confers no write permit.
+enum ReturnedObserver {
+    Original(OriginalOwner),
+    Working(WorkingColdOwner),
+}
+impl ReturnedObserver {
+    fn revalidate(&self) -> Result<()> {
+        match self {
+            Self::Original(v) => v.revalidate(),
+            Self::Working(v) => v.revalidate(),
+        }
+    }
+    fn boot_id(&self) -> &str {
+        match self {
+            Self::Original(v) => v.boot_id(),
+            Self::Working(v) => v.boot_id(),
+        }
+    }
+    fn evidence(&self) -> Value {
+        match self {
+            Self::Original(v) => v.evidence(),
+            Self::Working(v) => v.evidence(),
+        }
+    }
+}
+
 pub(crate) struct ReturnedOnceHistory {
-    owner: OriginalOwner,
+    owner: ReturnedObserver,
     journal: Journal,
     directories: Vec<HeldDirectory>,
     records: Records,
@@ -95,6 +120,24 @@ impl ReturnedOnceHistory {
         )?;
         let boot = std::fs::read_to_string("/proc/sys/kernel/random/boot_id")?;
         let owner = OriginalOwner::acquire(boot.trim(), candidate)?;
+        Self::open_observed(candidate, ReturnedObserver::Original(owner))
+    }
+
+    pub(super) fn open_working(
+        candidate: &str,
+        working_candidate: &str,
+        input: &FilePin,
+    ) -> Result<Self> {
+        ensure(
+            fs::valid_digest(candidate) && candidate != working_candidate,
+            "working history requires a distinct complete first-once candidate",
+        )?;
+        let owner = WorkingColdOwner::acquire(working_candidate, input)?;
+        Self::open_observed(candidate, ReturnedObserver::Working(owner))
+    }
+
+    fn open_observed(candidate: &str, owner: ReturnedObserver) -> Result<Self> {
+        owner.revalidate()?;
         let work = Path::new("/var/lib/droidloom-qualification")
             .join(format!("original-once-{candidate}"));
         let work_guard = HeldDirectory::open(&work, 4096)?;

@@ -107,9 +107,13 @@ impl WorkingQualificationMaterials {
         let input_guard = SealedInput::open(input)?;
         let plan: Plan = serde_json::from_slice(&input_guard.read()?)?;
         validate_plan(&plan)?;
-        // The historical factory obtains the actual original owner and its four
-        // locks. No second lock open and no old live authority is attempted.
-        let returned = ReturnedWorkingCopyObservation::observe(&plan.first_once_candidate)?;
+        // A new live cold unit owns the unchanged historical observation and
+        // the same four existing locks. No old live retirement is reconstructed.
+        let returned = ReturnedWorkingCopyObservation::observe_working(
+            &plan.first_once_candidate,
+            &plan.candidate_id,
+            input,
+        )?;
         ensure(
             returned.history().current_boot_id() == plan.original_boot_id,
             "working plan does not name this actual returned original boot",
