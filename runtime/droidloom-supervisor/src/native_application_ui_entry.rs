@@ -26,6 +26,10 @@ use std::process::{Command, Output};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::{Duration, Instant};
 
+#[path = "native_application_ui_pair.rs"]
+mod pair;
+pub use pair::{NativeUiPairSession, RetainedNativeUiPairTranscript, pair_additional_window_seconds};
+
 #[path = "native_application_ui_common.rs"]
 mod common;
 #[path = "native_application_ui_tasks.rs"]

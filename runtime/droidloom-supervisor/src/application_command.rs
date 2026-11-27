@@ -37,6 +37,7 @@ pub use native_application_ui_entry::{NativeFamilyUiEvidence, observe_native_fam
 pub use application_leaf_unit::{NativeOwnedLeafUnit, OwnedLeafProfile};
 pub use native_application_ui_entry::{
     CameraPhotoCaseObservation, CameraPhotoObservation, CameraPhotoSceneObservation,
+    NativeUiPairSession, RetainedNativeUiPairTranscript, pair_additional_window_seconds,
     NativeUiSession, NativeUiStabilityEvidence, NativeUiStabilitySummary, NativeUiStabilityWindow,
     NativeUiTranscript, RetainedNativeUiTranscript, RetainedScopedWindowPixels, ScopedWindowPixels,
     camera_photo_case_window_seconds, run_camera_photo_case, stability_additional_window_seconds,
