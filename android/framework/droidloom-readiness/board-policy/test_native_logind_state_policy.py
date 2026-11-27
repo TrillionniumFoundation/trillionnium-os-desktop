@@ -33,6 +33,41 @@ class LogindStateContract(unittest.TestCase):
         self.assertFalse(contract(self.here)["runtime_qualified"])
         self.assertEqual(verify_file_contexts(self.here, self.here)["selected_and_negative_cases"], 20)
 
+    def test_composed_var_alias_must_not_revert_to_its_source_label(self):
+        p = self.here / "ubuntu-real-root-file_contexts"
+        before = p.read_text()
+        selected = "/var -d u:object_r:p4_linux_update_done_var_dir_t:s0"
+        self.assertEqual(before.count(selected), 1)
+        p.write_text(before.replace(selected,
+            "/var -d u:object_r:p4_linux_rootdir_t:s0"))
+        with self.assertRaisesRegex(ValueError, "changed another directory: /var$"):
+            verify_file_contexts(self.here, self.here)
+
+    def test_parent_alias_cannot_replace_any_unselected_directory(self):
+        p = self.here / "ubuntu-real-root-file_contexts"
+        before = p.read_text()
+        for filename in ("/var", "/var/lib", "/var/lib/systemd-extra",
+                         "/var/lib/systemdx", "/var/lib/other/systemd",
+                         "/var/lib/systemd/unselected",
+                         "/var/lib/systemd/linger-extra", "/var/lib/systemd/lingers"):
+            with self.subTest(path=filename):
+                selected = filename + " -d u:object_r:p4_linux_systemd_state_parent_t:s0"
+                if filename in ("/var", "/var/lib"):
+                    source = ("p4_linux_update_done_var_dir_t" if filename == "/var"
+                              else "p4_linux_rootdir_t")
+                    original = filename + " -d u:object_r:" + source + ":s0"
+                    self.assertEqual(before.count(original), 1)
+                    changed = before.replace(original, selected)
+                else:
+                    changed = before + selected + "\n"
+                try:
+                    p.write_text(changed)
+                    with self.assertRaisesRegex(ValueError,
+                            "changed another directory: " + filename + "$"):
+                        verify_file_contexts(self.here, self.here)
+                finally:
+                    p.write_text(before)
+
     def test_parent_path_cannot_be_generalized(self):
         self.edit(lambda v: v["parent"].update(path="/var/lib"))
         with self.assertRaisesRegex(ValueError, "one existing directory"):
