@@ -472,7 +472,7 @@ mod tests {
 /// The fixed runtime input roster, still bound to the actual original-kernel
 /// owner, normal sources, and the same four image OFDs. It is consumed by the
 /// normal publisher; neither a report nor a caller path constructs this object.
-pub(super) struct WorkingRuntimeSources {
+pub(crate) struct WorkingRuntimeSources {
     custody: std::rc::Rc<super::working_custody::WorkingColdCustody>,
     configuration: WorkingReturnConfiguration,
     returned: SealedInput,
@@ -483,7 +483,7 @@ pub(super) struct WorkingRuntimeSources {
     arguments: String,
     report: SealedInput,
 }
-pub(super) struct WorkingOriginalCellPreimage {
+pub(crate) struct WorkingOriginalCellPreimage {
     custody: std::rc::Rc<super::working_custody::WorkingColdCustody>,
     original: Guard,
 }
@@ -553,7 +553,7 @@ impl PreparedWorkingRuntime {
     }
 }
 impl WorkingRuntimeSources {
-    pub(super) fn revalidate(&self) -> Result<()> {
+    pub(crate) fn revalidate(&self) -> Result<()> {
         self.custody.revalidate()?;
         self.configuration.validate()?;
         no_unit_overrides()?;
@@ -588,10 +588,10 @@ impl WorkingRuntimeSources {
         )?;
         self.custody.revalidate()
     }
-    pub(super) fn candidate(&self) -> &str {
+    pub(crate) fn candidate(&self) -> &str {
         self.custody.materials().candidate()
     }
-    pub(super) fn work(&self) -> &Path {
+    pub(crate) fn work(&self) -> &Path {
         self.custody.materials().work()
     }
     pub(super) fn entries(&self) -> &[WorkingRuntimeFile] {
@@ -603,16 +603,29 @@ impl WorkingRuntimeSources {
     pub(super) fn arguments(&self) -> &str {
         &self.arguments
     }
-    pub(super) fn configuration(&self) -> &WorkingReturnConfiguration {
+    pub(crate) fn configuration(&self) -> &WorkingReturnConfiguration {
         &self.configuration
     }
-    pub(super) fn boot_intent(&self) -> &FilePin {
+    pub(crate) fn boot_intent(&self) -> &FilePin {
         self.custody.boot().intent()
     }
     pub(super) fn recovery_initrd(&self) -> &FilePin {
         self.custody.boot().initrd()
     }
-    pub(super) fn label_sources(
+    /// Comparison of the one still-held private normal selection source.
+    /// Publication and pair movement continue to require their actual owner.
+    pub(crate) fn selection_source(&self) -> Result<FilePin> {
+        self.revalidate()?;
+        let pin = self.custody.materials().selection_source()?;
+        ensure(
+            pin.bytes == self.configuration.selection.bytes
+                && pin.sha256 == self.configuration.selection.sha256,
+            "working selection left its source-owned boot binding",
+        )?;
+        self.revalidate()?;
+        Ok(pin)
+    }
+    pub(crate) fn label_sources(
         &self,
     ) -> &std::sync::Arc<crate::cold_original_data::labels::OriginalLabelSources> {
         self.custody.materials().label_sources()

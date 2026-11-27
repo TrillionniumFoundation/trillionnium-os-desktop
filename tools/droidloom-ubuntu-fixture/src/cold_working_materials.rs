@@ -437,6 +437,23 @@ impl WorkingMaterialSources {
     pub(super) fn work(&self) -> &Path {
         &self.work
     }
+    pub(super) fn selection_source(&self) -> Result<FilePin> {
+        self.revalidate()?;
+        let path = self.work.join("SELECTION.json");
+        let rows: Vec<_> = self
+            .records
+            .iter()
+            .filter(|v| v.pin().path == path)
+            .collect();
+        ensure(
+            rows.len() == 1,
+            "one held normal working selection source required",
+        )?;
+        rows[0].revalidate()?;
+        let pin = rows[0].pin().clone();
+        self.revalidate()?;
+        Ok(pin)
+    }
     pub(super) fn label_sources(&self) -> &Arc<OriginalLabelSources> {
         &self.sources
     }
