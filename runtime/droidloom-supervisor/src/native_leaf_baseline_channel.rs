@@ -156,6 +156,7 @@ impl NativeLeafChannel {
         let bytes = serde_json::to_vec(&serde_json::json!({
             "schema":"droidloom.native-leaf-channel.v1",
             "baseline":observation.facts(),
+            "user_zero_package_inventory":observation.inventory_facts(),
             "host_source_entries":compiled_host_entries().map_err(|e|e.to_string())?,
             "normal_source_recipe":{"bytes":SOURCE_RECIPE.len(),"sha256":format!("{:x}", Sha256::digest(SOURCE_RECIPE))},
             "deadline_monotonic_ns":monotonic_end(deadline).map_err(|e|e.to_string())?,

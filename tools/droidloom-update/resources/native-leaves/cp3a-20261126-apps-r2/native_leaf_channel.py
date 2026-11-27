@@ -101,6 +101,58 @@ def validate_core(core):
          'NORMAL_SELECTED_MANAGER_AND_ACTUAL_PEER_MUST_MATCH')
     return core
 
+
+def inventory_table(value,core):
+    """Validate comparison data only; the actual token stays in the Rust owner."""
+    if value is None:
+        need(core['application']['package']!='com.ihg.apps.android',
+             'IHG_REQUIRES_COMPLETE_ACTUAL_USER0_INVENTORY')
+        return None
+    need(core['application']['package']=='com.ihg.apps.android' and
+         type(value) is dict and set(value)=={'schema','epoch','records','records_sha256',
+             'stdout_bytes','stdout_sha256','query_receipt','comparison_only'} and
+         value['schema']=='droidloom.user-zero-package-inventory.v1' and
+         value['epoch']==core['main']['epoch'] and value['comparison_only'] is True and
+         type(value['records']) is list and 1<=len(value['records'])<=2048 and
+         number(value['stdout_bytes'],1,65536) and
+         all(type(value[k]) is str and re.fullmatch('[0-9a-f]{64}',value[k])
+             for k in ('stdout_sha256','records_sha256')),
+         'EXACT_COMPLETE_USER0_INVENTORY_COMPARISON_REQUIRED')
+    rows=value['records'];names=[];records={};size=0
+    for row in rows:
+        need(type(row) is dict and set(row)=={'package','uid'} and
+             type(row['package']) is str and 1<=len(row['package'])<=255 and
+             (row['package']=='android' or ('.' in row['package'] and
+                 all(re.fullmatch('[A-Za-z0-9_]+',p) for p in row['package'].split('.')))) and
+             number(row['uid'],0,99999),
+             'COMPLETE_USER0_INVENTORY_ROW_DIFFERS')
+        name,uid=row['package'],row['uid'];need(name not in records,'DUPLICATE_USER0_PACKAGE')
+        names.append(name);records[name]=uid
+        size+=len(('package:'+name+' uid:'+str(uid)+'\n').encode())
+    need(names==sorted(names) and size==value['stdout_bytes'] and
+         sha(canonical(rows))==value['records_sha256'] and
+         records.get(core['application']['package'])==core['application']['uid'],
+         'COMPLETE_USER0_INVENTORY_BODY_OR_TARGET_DIFFERS')
+    r=value['query_receipt'];life=r.get('lifecycle',{}) if type(r) is dict else {}
+    io=life.get('stdio_creator',{}) if type(life) is dict else {}
+    need(type(r) is dict and set(r)=={'schema','lifecycle','query_pid','query_waitid_code',
+         'query_waitid_status','exec','output_bytes','output_sha256','elapsed_millis','cgroup_removed'} and
+         r['schema']==2 and number(r['query_pid'],2,2**32-1) and
+         r['query_waitid_code']==1 and r['query_waitid_status']==0 and
+         r['cgroup_removed'] is True and type(r['exec']) is dict and
+         r['output_bytes']==value['stdout_bytes'] and r['output_sha256']==value['stdout_sha256'] and
+         type(life) is dict and set(life)=={'owner','factory_pid','factory_tid','factory_pidfd_device',
+             'factory_pidfd_inode','query_pidfd_device','query_pidfd_inode','stdio_creator','release_acknowledged'} and
+         life['owner']=='instance_factory' and number(life['factory_pid'],2,2**32-1) and
+         life['factory_pid']==life['factory_tid'] and life['factory_pid']!=r['query_pid'] and
+         all(number(life[k],1) for k in ('factory_pidfd_device','factory_pidfd_inode',
+             'query_pidfd_device','query_pidfd_inode')) and life['release_acknowledged'] is True and
+         type(io) is dict and set(io)=={'pid','waitid_code','waitid_status'} and
+         number(io['pid'],2,2**32-1) and io['pid'] not in (life['factory_pid'],r['query_pid']) and
+         io['waitid_code']==1 and io['waitid_status']==0,
+         'ACTUAL_RETIRED_FIXED_QUERY_COMPARISON_REQUIRED')
+    return records
+
 class ComparisonChannel:
     def __init__(self):
         self.pid=os.getpid()
@@ -127,7 +179,7 @@ class ComparisonChannel:
              'COMPLETE_NORMAL_COMPARISON_MEMFD_REQUIRED')
         envelope=parse(self.raw)
         need(type(envelope) is dict and set(envelope)=={
-            'schema','baseline','normal_source_recipe','host_source_entries',
+            'schema','baseline','normal_source_recipe','host_source_entries','user_zero_package_inventory',
             'deadline_monotonic_ns','comparison_only'} and
             envelope['schema']=='droidloom.native-leaf-channel.v1' and
             envelope['comparison_only'] is True and
@@ -136,6 +188,8 @@ class ComparisonChannel:
             'ORIGINAL_NORMAL_LEAF_ABSOLUTE_DEADLINE_REQUIRED')
         self.deadline_ns=envelope['deadline_monotonic_ns']
         self.core=validate_core(envelope['baseline'])
+        self.user_zero_package_inventory=envelope['user_zero_package_inventory']
+        self.user_zero_records=inventory_table(self.user_zero_package_inventory,self.core)
         self.normal_host_release=self.core['main']['normal_host_release']
         self.normal_source_recipe=envelope['normal_source_recipe']
         need(type(self.normal_source_recipe) is dict and set(self.normal_source_recipe)=={'bytes','sha256'} and
@@ -158,6 +212,11 @@ class ComparisonChannel:
                  sock.getsockname() in ('',b'') and sock.getpeername() in ('',b''),
                  'UNNAMED_NORMAL_CHECK_SOCKETPAIR_REQUIRED')
         self.guard()
+
+    def validate_inventory_comparison(self,value):
+        # A stored pre-install table is compared explicitly by the fixed IHG
+        # source/install chain. It is never a replacement for this live token.
+        return inventory_table(value,self.core)
 
     @property
     def deadline(self):return self.deadline_ns/10**9

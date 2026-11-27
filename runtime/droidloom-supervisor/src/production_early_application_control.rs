@@ -101,7 +101,7 @@ impl EarlyApplicationControl {
             // The finite read starts its one absolute budget before original
             // owner acquisition. Main custody uses this same metadata-only budget;
             // other request lifetimes keep their existing limits.
-            vintf_budget = matches!(&request, ControlRequest::ObserveRuntimeVintf { .. } | ControlRequest::ObserveRuntimeMain { .. } | ControlRequest::ObserveApplicationEngine { .. })
+            vintf_budget = matches!(&request, ControlRequest::ObserveRuntimeVintf { .. } | ControlRequest::ObserveRuntimeMain { .. } | ControlRequest::ObserveApplicationEngine { .. } | ControlRequest::ObserveUserZeroPackageInventory { .. })
                 .then(crate::production_application::RuntimeVintfBudget::start);
             let observation_deadline = vintf_budget.as_ref().map(|budget| budget.work_deadline());
             // Request-local acquisition starts only after transport admission.
@@ -228,6 +228,23 @@ impl EarlyApplicationControl {
                     })?;
                     response.runtime_vintf = Some(observed);
                     response.message = "Public runtime metadata observed with unchanged owner and namespace bookends; VINTF compatibility and application acceptance remain unevaluated".into();
+                }
+                ControlRequest::ObserveUserZeroPackageInventory { expected_epoch } => {
+                    let deadline = vintf_budget.as_ref().expect("fixed user-0 inventory budget").work_deadline();
+                    let observed = crate::production_application::read_user_zero_package_inventory(authority, deadline)
+                        .map_err(|e| {
+                            vintf_failure = Some(classify_vintf_failure(&e, deadline));
+                            early_application_error(e, &mut acquisition_quarantined)
+                        })?;
+                    let facts = crate::package_inventory_observation::UserZeroPackageInventoryFacts::from_actual(
+                        &observed, &expected_epoch,
+                    ).map_err(ControlError::Invalid)?;
+                    let body = serde_json::to_string(&facts)?;
+                    if body.len() > crate::package_inventory_observation::MAX_WIRE_BYTES {
+                        return Err(ControlError::Invalid("complete user-0 inventory exceeded its bound".into()));
+                    }
+                    response.diagnostics = Some(body);
+                    response.message = "Complete user-0 package UID table observed with actual query retirement; package business and data contents remain unevaluated".into();
                 }
                 ControlRequest::ObserveRuntimeMain { expected_epoch } => {
                     let deadline = vintf_budget.as_ref().expect("fixed Main request budget").work_deadline();

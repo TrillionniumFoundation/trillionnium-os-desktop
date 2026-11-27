@@ -111,11 +111,46 @@ fn embedded(name: &str) -> Result<&'static [u8]> {
         "clock_business_ui_entry.py" => include_bytes!(
             "../../resources/native-leaves/cp3a-20261126-apps-r2/clock_business_ui_entry.py"
         ),
+        "clock_notify_supervisor.py" => include_bytes!(
+            "../../resources/native-leaves/cp3a-20261126-apps-r2/clock_notify_supervisor.py"
+        ),
+        "clock_plan.py" => {
+            include_bytes!("../../resources/native-leaves/cp3a-20261126-apps-r2/clock_plan.py")
+        }
+        "ihg_app_entry.py" => {
+            include_bytes!("../../resources/native-leaves/cp3a-20261126-apps-r2/ihg_app_entry.py")
+        }
+        "ihg_case.py" => {
+            include_bytes!("../../resources/native-leaves/cp3a-20261126-apps-r2/ihg_case.py")
+        }
+        "ihg_helper_build.py" => include_bytes!(
+            "../../resources/native-leaves/cp3a-20261126-apps-r2/ihg_helper_build.py"
+        ),
+        "ihg_helper_factory.py" => include_bytes!(
+            "../../resources/native-leaves/cp3a-20261126-apps-r2/ihg_helper_factory.py"
+        ),
+        "ihg_helper_install.py" => include_bytes!(
+            "../../resources/native-leaves/cp3a-20261126-apps-r2/ihg_helper_install.py"
+        ),
+        "app_common.py" => {
+            include_bytes!("../../resources/native-leaves/cp3a-20261126-apps-r2/app_common.py")
+        }
         _ => return fail("unlisted embedded leaf source"),
     })
 }
 
-const EMBEDDED_MEMBERS: [(&str, &str); 15] = [
+const EMBEDDED_MEMBERS: [(&str, &str); 23] = [
+    (
+        "source/clock/clock_notify_supervisor.py",
+        "clock_notify_supervisor.py",
+    ),
+    ("source/clock/clock_plan.py", "clock_plan.py"),
+    ("source/ihg/app_entry.py", "ihg_app_entry.py"),
+    ("source/ihg/ihg_case.py", "ihg_case.py"),
+    ("source/ihg/ihg_helper_build.py", "ihg_helper_build.py"),
+    ("source/ihg/ihg_helper_factory.py", "ihg_helper_factory.py"),
+    ("source/ihg/ihg_helper_install.py", "ihg_helper_install.py"),
+    ("source/shared/app_common.py", "app_common.py"),
     ("source/settings/settings_case.py", "settings_case.py"),
     ("source/settings/settings_runtime.py", "settings_runtime.py"),
     ("source/settings/settings_guard.py", "settings_guard.py"),
@@ -310,8 +345,8 @@ fn fixed_recipe() -> Result<CohortRecipe> {
     if origins.len() != 474
         || new_sources != 3
         || binaries != 1
-        || embedded_names.len() != 14
-        || embedded_members.len() != 15
+        || embedded_names.len() != 22
+        || embedded_members.len() != 23
         || total != r.output_bytes
     {
         return fail("fixed successor source closure differs");
@@ -724,7 +759,7 @@ mod tests {
                 .iter()
                 .filter(|m| m.embedded_source.is_some())
                 .count(),
-            15
+            23
         );
         assert_eq!(
             r.members

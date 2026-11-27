@@ -511,13 +511,18 @@ struct NativeLeafRun<'a, 'b> {
 impl NativeLeafRun<'_, '_> {
     fn work_deadline(&self, budget: Duration) -> Result<Instant, String> {
         let app = self.observation.application();
-        let after =
+        let mut after =
             super::progress::response_timeout(&super::ControlRequest::InspectApplication {
                 package: app.package.clone(),
                 user: app.user,
             }) + super::progress::response_timeout(&super::ControlRequest::ObserveRuntimeMain {
                 expected_epoch: app.epoch.clone(),
             }) + RETIRE_TIMEOUT;
+        if self.observation.requires_inventory_bookend() {
+            after += super::progress::response_timeout(&super::ControlRequest::ObserveUserZeroPackageInventory {
+                expected_epoch: app.epoch.clone(),
+            });
+        }
         native_leaf_work_deadline(
             Instant::now(),
             self.until.min(self.observation.deadline()),
@@ -1104,6 +1109,10 @@ pub(super) fn run_prepared_native_leaf_until(
                 Duration::from_secs(240),
                 Some(observation),
             )
+        }
+        super::NativeLeafCommandKind::IhgPreparation { mode } => {
+            crate::native_ihg_preparation::check_command(&command, mode)?;
+            run_prepared_host_leaf_observed(command, epoch, mode.budget(), Some(observation))
         }
         super::NativeLeafCommandKind::Standard { budget } => {
             run_prepared_host_leaf_observed(command, epoch, budget, Some(observation))
