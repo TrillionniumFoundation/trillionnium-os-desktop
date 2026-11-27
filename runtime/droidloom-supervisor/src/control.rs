@@ -53,7 +53,7 @@ mod progress;
 #[path = "control_identity.rs"]
 mod identity;
 pub use identity::{
-    ActualApplicationObservation, ActualApplicationExitObservation, ActualApplicationPermissionObservation, ActualUserZeroPackageInventoryObservation,
+    ActualApplicationObservation, ActualApplicationExitObservation, ActualApplicationPermissionObservation, ActualApplicationAppOpsObservation, ActualUserZeroPackageInventoryObservation,
     EngineMappingObservation, MainCustodyObservation, NativeApplicationInspector,
     NativeInspectionPeer,
 };
@@ -311,6 +311,12 @@ pub enum ControlRequest {
         package: String,
         expected_epoch: application_probe::RuntimeEpoch,
     },
+    /// Observe the complete scoped AppOps modes for one selected user-zero
+    /// application. UID and default tables are read by the original Android owner.
+    ObserveApplicationAppOpsState {
+        package: String,
+        expected_epoch: application_probe::RuntimeEpoch,
+    },
     /// Read the complete fixed user-0 package/UID table from the actual owner.
     /// No caller can select a package, user, command, UID, PID or query role.
     ObserveUserZeroPackageInventory {
@@ -550,6 +556,9 @@ impl Daemon {
             )),
             ControlRequest::ObserveApplicationPermissionState { .. } => Err(ControlError::Invalid(
                 "PM permission observation requires the original kernel-first Ready owner".into(),
+            )),
+            ControlRequest::ObserveApplicationAppOpsState { .. } => Err(ControlError::Invalid(
+                "AppOps observation requires the original kernel-first Ready owner".into(),
             )),
             ControlRequest::ObserveUserZeroPackageInventory { .. } => Err(ControlError::Invalid(
                 "complete user-0 inventory requires the original kernel-first Ready owner".into(),
