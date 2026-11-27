@@ -1,0 +1,5 @@
+[Unit]
+Description=Droidloom working-copy qualification boot
+Requires=droidloom-container-entry.service droidloom-working-qualification.service
+After=droidloom-container-entry.service droidloom-working-qualification.service
+ConditionKernelCommandLine=droidloom.working

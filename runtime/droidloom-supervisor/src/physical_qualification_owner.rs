@@ -903,6 +903,8 @@ impl UnitOwner {
             "unit":self.invocation.unit,"invocation":self.invocation.id.iter().map(|b| format!("{b:02x}")).collect::<String>(),
             "parent_pid":self.current.identity.pid,"parent_start_ticks":self.current.identity.start_ticks,
             "properties":self.properties,"cgroup":self.group_path,"cgroup_identity":self.group_pin,
+            "normal_unit":{"path":self.source_unit.path,"f9":self.source_unit.pin,
+                "sha256":format!("{:x}",Sha256::digest(protocol::UNIT_SOURCE.as_bytes()))},
             "normal_executable":{"path":self.executable.path,"f9":self.executable.identity,"sha256":self.executable.sha},
             "profile":format!("{:?}",self.profile.get()),"all_child_processes_retired":true,
             "parent_unit_retirement_requires_external_readback":true})
@@ -922,6 +924,15 @@ fn qualification_properties(
         || unit.get("Transient") != Some(&V::Boolean(false))
         || unit.get("NeedDaemonReload") != Some(&V::Boolean(false))
         || unit.get("DropInPaths") != Some(&V::Strings(Vec::new()))
+        || ["OnSuccess", "OnFailure"].iter().any(|key| {
+            unit.get(*key)
+                != Some(&V::Strings(vec![
+                    crate::native_working_contract::RETURN_UNIT.into(),
+                ]))
+        })
+        || ["OnSuccessJobMode", "OnFailureJobMode"]
+            .iter()
+            .any(|key| unit.get(*key) != Some(&V::Text("replace".into())))
     {
         return Err("fixed installed physical unit or invocation metadata differs".into());
     }
@@ -1015,13 +1026,17 @@ fn qualification_properties(
         || command.arguments != protocol::parent_argv()
         || !command.flags.is_empty()
         || command.pid != pid
-        || command.started[1] == 0
+        || command.started.iter().any(|n| *n == 0)
         || command.exited != [0, 0]
         || command.code != 0
         || command.status != 0
     {
         return Err("physical qualifier exact normal command differs".into());
     }
+    values.insert(
+        "ExecStartCommandRealtime".into(),
+        command.started[0].to_string(),
+    );
     values.insert(
         "ExecStartCommandMonotonic".into(),
         command.started[1].to_string(),
@@ -1159,6 +1174,15 @@ mod tests {
         unit.insert("Transient".into(), V::Boolean(false));
         unit.insert("NeedDaemonReload".into(), V::Boolean(false));
         unit.insert("DropInPaths".into(), V::Strings(vec![]));
+        for name in ["OnSuccess", "OnFailure"] {
+            unit.insert(
+                name.into(),
+                V::Strings(vec![crate::native_working_contract::RETURN_UNIT.into()]),
+            );
+        }
+        for name in ["OnSuccessJobMode", "OnFailureJobMode"] {
+            unit.insert(name.into(), V::Text("replace".into()));
+        }
         for (key, value) in [
             ("Type", "exec"),
             ("User", "root"),
@@ -1290,6 +1314,30 @@ mod tests {
         let mut wrong = service.clone();
         wrong.insert("ExecStartPostEx".into(), service["ExecStartEx"].clone());
         assert!(qualification_properties(&unit, &wrong, &invocation, 1234).is_err());
+    }
+    #[test]
+    fn physical_qualification_rejects_missing_or_foreign_independent_return() {
+        use bus::Value as V;
+        let (unit, service, invocation) = fixture();
+        for key in ["OnSuccess", "OnFailure"] {
+            for destinations in [
+                vec![],
+                vec!["caller.service".into()],
+                vec![
+                    crate::native_working_contract::RETURN_UNIT.into(),
+                    "caller.service".into(),
+                ],
+            ] {
+                let mut wrong = unit.clone();
+                wrong.insert(key.into(), V::Strings(destinations));
+                assert!(qualification_properties(&wrong, &service, &invocation, 1234).is_err());
+            }
+        }
+        for key in ["OnSuccessJobMode", "OnFailureJobMode"] {
+            let mut wrong = unit.clone();
+            wrong.insert(key.into(), V::Text("ignore-dependencies".into()));
+            assert!(qualification_properties(&wrong, &service, &invocation, 1234).is_err());
+        }
     }
     #[test]
     fn physical_qualification_profiles_preserve_original_exact_memory_and_quota() {
