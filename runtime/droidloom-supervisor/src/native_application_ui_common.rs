@@ -145,25 +145,110 @@ fn names(journal: &Journal) -> Result<BTreeSet<String>, String> {
     journal.verify()?;
     Ok(result)
 }
+
+// Only these two source-owned constructors select the required member set.
+// No caller can supply a schema, list of names, passed map or copied transcript.
+#[derive(Clone, Copy)]
+enum JournalKind {
+    Finished,
+    Stability,
+}
+fn required_members(kind: JournalKind) -> &'static [&'static str] {
+    match kind {
+        JournalKind::Finished => &[
+            "BASELINE.json",
+            "LAUNCH-INTENT.json",
+            "LAUNCH-RESULT.json",
+            "OWNED-TASK.json",
+            "CLEANUP-INTENT.json",
+            "CLEANUP-COMPLETE.json",
+            "FINISHED.json",
+        ],
+        JournalKind::Stability => &[
+            "BASELINE.json",
+            "OWNED-TASK.json",
+            "FINISHED.json",
+            "STABILITY-BEGIN.json",
+            "STABILITY-SAMPLE-1.json",
+            "STABILITY-SAMPLE-2.json",
+            "STABILITY-SAMPLE-3.json",
+            "STABILITY-AFTER-CLOSE.json",
+        ],
+    }
+}
+fn require_members(kind: JournalKind, names: &BTreeSet<String>) -> Result<(), String> {
+    need(
+        required_members(kind)
+            .iter()
+            .all(|name| names.contains(*name)),
+        "actual native finished/stability journal is incomplete",
+    )
+}
+
+/// Historical close/retirement custody. It is deliberately separate from
+/// NativeUiStabilityEvidence: no repeat/soak or business gate is supplied.
+pub struct RetainedNativeUiTranscript {
+    transcript: NativeUiTranscript,
+    journal: RetainedJournal,
+}
+impl NativeUiTranscript {
+    pub fn into_retained(self) -> Result<RetainedNativeUiTranscript, String> {
+        before(self.original_end)?;
+        let journal = RetainedJournal::capture(
+            &self.journal_custody,
+            self.original_end,
+            JournalKind::Finished,
+        )?;
+        let result = RetainedNativeUiTranscript {
+            transcript: self,
+            journal,
+        };
+        result.guard_immutable()?;
+        before(result.transcript.original_end)?;
+        Ok(result)
+    }
+}
+impl RetainedNativeUiTranscript {
+    pub fn transcript(&self) -> &NativeUiTranscript {
+        &self.transcript
+    }
+    pub fn guard_immutable(&self) -> Result<(), String> {
+        self.journal.guard(&self.transcript.journal_custody)
+    }
+    pub fn require_subject(
+        &self,
+        main: &RuntimeMainCustody,
+        application: &ApplicationInspection,
+    ) -> Result<(), String> {
+        need(
+            self.transcript.engine().facts().main == *main
+                && self.transcript.engine().application() == application,
+            "finished native transcript has another actual Main or complete application identity",
+        )?;
+        self.guard_immutable()
+    }
+    pub fn comparison(&self) -> Result<Value, String> {
+        self.guard_immutable()?;
+        Ok(serde_json::json!({
+            "schema":"droidloom.native-ui-retained-finished.v1",
+            "main":self.transcript.engine().facts().main,
+            "application":self.transcript.engine().application(),
+            "task":self.transcript.task(),"journal":self.transcript.journal(),
+            "journal_identity":self.journal.directory_identity,
+            "operations":self.transcript.operations(),"actions":self.transcript.actions(),
+            "retained_members":self.journal.files.len(),
+            "normal_owned_close_and_full_bookends_completed":true,
+            "source_result_fds_retained":true,"live_execution_authority_retained":false,
+            "stability_or_business_gate_supplied":false
+        }))
+    }
+}
+
 impl RetainedJournal {
-    fn capture(journal: &Journal, end: Instant) -> Result<Self, String> {
+    fn capture(journal: &Journal, end: Instant, kind: JournalKind) -> Result<Self, String> {
         before(end)?;
         let wanted = names(journal)?;
-        need(
-            [
-                "BASELINE.json",
-                "OWNED-TASK.json",
-                "FINISHED.json",
-                "STABILITY-BEGIN.json",
-                "STABILITY-SAMPLE-1.json",
-                "STABILITY-SAMPLE-2.json",
-                "STABILITY-SAMPLE-3.json",
-                "STABILITY-AFTER-CLOSE.json",
-            ]
-            .into_iter()
-            .all(|name| wanted.contains(name)),
-            "actual native common journal is incomplete",
-        )?;
+        require_members(kind, &wanted)?;
         let mut files = Vec::new();
         let mut total = 0_u64;
         for name in &wanted {
@@ -561,7 +646,11 @@ impl NativeUiStabilityWindow {
             Err(error) => return Err(session.observation_failure(inspector, error)),
         };
         let transcript = session.finish_bookends(inspector)?;
-        let journal = RetainedJournal::capture(&transcript.journal_custody, self.end)?;
+        let journal = RetainedJournal::capture(
+            &transcript.journal_custody,
+            self.end,
+            JournalKind::Stability,
+        )?;
         let first = self.samples[0].at;
         let last = self.samples[SAMPLES - 1].at;
         let summary = NativeUiStabilitySummary {
@@ -719,5 +808,30 @@ mod tests {
             assert!(require_cadence(&times).is_err());
         }
         assert_eq!(stability_additional_window_seconds(), 680);
+    }
+    #[test]
+    fn native_camera_case_finished_journal_cannot_substitute_stability_or_omit_close() {
+        let full = required_members(JournalKind::Finished)
+            .iter()
+            .map(|x| x.to_string())
+            .collect::<BTreeSet<_>>();
+        assert_eq!(full.len(), 7);
+        assert!(require_members(JournalKind::Finished, &full).is_ok());
+        for name in required_members(JournalKind::Finished) {
+            let mut missing = full.clone();
+            missing.remove(*name);
+            assert!(
+                require_members(JournalKind::Finished, &missing).is_err(),
+                "{name}"
+            );
+        }
+        let stability = required_members(JournalKind::Stability)
+            .iter()
+            .map(|x| x.to_string())
+            .collect::<BTreeSet<_>>();
+        assert_eq!(stability.len(), 8);
+        assert!(require_members(JournalKind::Stability, &stability).is_ok());
+        assert!(require_members(JournalKind::Finished, &stability).is_err());
+        assert!(require_members(JournalKind::Stability, &full).is_err());
     }
 }

@@ -96,7 +96,7 @@ impl WorkingSchedule {
             || self.watchdog_interval_seconds > u32::from(u16::MAX)
             || self.keepalive_period_seconds + self.main_revalidation_seconds
                 >= u64::from(self.watchdog_interval_seconds)
-            || self.owner_start_by_boot_seconds + self.main_revalidation_seconds
+            || self.owner_start_by_boot_seconds + budget::PREPARATION_BOOTSTRAP_SECONDS
                 >= u64::from(self.watchdog_interval_seconds)
             || self.normal_return_seconds >= u64::from(self.watchdog_interval_seconds)
         {
@@ -388,14 +388,15 @@ mod tests {
         s.validate().unwrap();
         assert_eq!(
             (s.native_case_count, s.family_case_count, s.case_count),
-            (14, 31, 45)
+            (14, 31, 46)
         );
         assert_eq!(budget::SOURCE_AND_CAPTURE_SECONDS, 46622);
-        assert_eq!(s.whole_suite_seconds, 161007);
+        assert_eq!(s.whole_suite_seconds, 165297);
         assert_eq!(
             s.whole_suite_seconds,
             budget::NATIVE_CASE_WINDOWS.iter().sum::<u64>()
                 + 31 * (250 + 2615)
+                + budget::CAMERA_PHOTO_CASE_SECONDS
                 + 140
                 + budget::SOURCE_AND_CAPTURE_SECONDS
         );

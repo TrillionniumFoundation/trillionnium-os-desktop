@@ -249,7 +249,7 @@ fn require_armed(sys: &Directory, attributes: &[Attribute], rdev: libc::dev_t) -
     sys.guard()
 }
 
-fn require_timely(last: Option<u64>, now: u64) -> io::Result<()> {
+fn require_timely(last: Option<u64>, owner_start_ns: u64, now: u64) -> io::Result<()> {
     if let Some(last) = last {
         let gap = now
             .checked_sub(last)
@@ -257,6 +257,15 @@ fn require_timely(last: Option<u64>, now: u64) -> io::Result<()> {
         if gap > contract::KEEPALIVE_PERIOD_SECONDS * 1_000_000_000 {
             return Err(denied(
                 "working owner missed its original 120-second progress bound",
+            ));
+        }
+    } else {
+        let elapsed = now
+            .checked_sub(owner_start_ns)
+            .ok_or_else(|| denied("initial watchdog feed preceded the actual PID1 start"))?;
+        if elapsed > contract::budget::PREPARATION_BOOTSTRAP_SECONDS * 1_000_000_000 {
+            return Err(denied(
+                "initial watchdog feed missed the original bootstrap prefix",
             ));
         }
     }
@@ -391,7 +400,7 @@ impl SoftwareWatchdog {
         if !self.due(now) {
             return Err(denied("duplicate early watchdog feed"));
         }
-        require_timely(self.last_ping_ns, now)?;
+        require_timely(self.last_ping_ns, start_ns, now)?;
         let mut unused: libc::c_int = 0;
         // SAFETY: one held exclusive watchdog FD, the selected Linux UAPI
         // KEEPALIVE command and correctly sized int storage. No generic ioctl.
@@ -401,7 +410,7 @@ impl SoftwareWatchdog {
         let after = monotonic_ns()?;
         let previous = self.last_ping_ns;
         self.last_ping_ns = Some(after);
-        require_timely(previous, after)?;
+        require_timely(previous, start_ns, after)?;
         self.pings = self
             .pings
             .checked_add(1)
@@ -430,10 +439,22 @@ mod tests {
     #[test]
     fn working_watchdog_late_progress_never_renews_a_failed_owner() {
         let second = 1_000_000_000;
-        require_timely(Some(second), second + 120 * second).unwrap();
-        assert!(require_timely(Some(second), second + 120 * second + 1).is_err());
-        assert!(require_timely(Some(second), 0).is_err());
+        require_timely(Some(second), second, second + 120 * second).unwrap();
+        assert!(require_timely(Some(second), second, second + 120 * second + 1).is_err());
+        assert!(require_timely(Some(second), second, 0).is_err());
         assert_eq!(contract::KEEPALIVE_PERIOD_SECONDS - FEED_MARGIN_SECONDS, 90);
+    }
+    #[test]
+    fn working_watchdog_initial_feed_is_bounded_from_original_pid1_start() {
+        let second = 1_000_000_000;
+        let start = contract::OWNER_START_BY_BOOT_SECONDS * second;
+        let end = start + contract::budget::PREPARATION_BOOTSTRAP_SECONDS * second;
+        assert_eq!(contract::budget::PREPARATION_BOOTSTRAP_SECONDS, 190);
+        require_timely(None, start, start).unwrap();
+        require_timely(None, start, end).unwrap();
+        assert!(require_timely(None, start, start - 1).is_err());
+        assert!(require_timely(None, start, end + 1).is_err());
+        assert!(end < u64::from(contract::WATCHDOG_INTERVAL_SECONDS) * second);
     }
     #[test]
     fn working_watchdog_selected_names_and_device_pairs_are_canonical() {

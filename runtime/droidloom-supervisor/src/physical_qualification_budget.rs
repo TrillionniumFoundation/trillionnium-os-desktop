@@ -4,13 +4,17 @@
 //! remain required for every case and for the final 39/377 Complete.
 pub const NATIVE_CASE_COUNT: usize = 14;
 pub const FAMILY_CASE_COUNT: usize = 31;
-pub const CASE_COUNT: usize = NATIVE_CASE_COUNT + FAMILY_CASE_COUNT;
+pub const PHOTO_CASE_COUNT: usize = 1;
+pub const CASE_COUNT: usize = NATIVE_CASE_COUNT + FAMILY_CASE_COUNT + PHOTO_CASE_COUNT;
 // Complete preparation work from the finite normal factories, charged once
 // to the actual PID1 parent start. NativeLeafRun reserves post work from each
 // call; only its caller executes that PM/Main bookend, so it is counted once.
 pub const PREPARATION_LOCAL_SECONDS: u64 = 120;
 pub const PREPARATION_IDENTITY_SECONDS: u64 = 38 * 250 + 330;
 pub const PREPARATION_MAIN_SECONDS: u64 = 70;
+// Initial local admission and the one actual Main bootstrap share these
+// existing preparation components. This is a prefix, never another allowance.
+pub const PREPARATION_BOOTSTRAP_SECONDS: u64 = PREPARATION_LOCAL_SECONDS + PREPARATION_MAIN_SECONDS;
 pub const PREPARATION_BASELINE_SECONDS: u64 = 8 * 1_200;
 pub const PREPARATION_CHILD_SECONDS: u64 = 11_520;
 pub const PREPARATION_BOOKEND_SECONDS: u64 = 15_232;
@@ -26,6 +30,10 @@ pub const MAIN_SECONDS: u64 = 70;
 pub const INSPECT_SECONDS: u64 = 250;
 pub const FAMILY_WORK_SECONDS: u64 = 2_615;
 pub const FAMILY_CASE_SECONDS: u64 = INSPECT_SECONDS + FAMILY_WORK_SECONDS;
+// The supplementary real single-shutter/reopen case retains the old Camera leaf.
+// Its normal pre-inspection is separate from the two-session factory's window.
+pub const CAMERA_PHOTO_WORK_SECONDS: u64 = 4_040;
+pub const CAMERA_PHOTO_CASE_SECONDS: u64 = INSPECT_SECONDS + CAMERA_PHOTO_WORK_SECONDS;
 pub const NATIVE_CASE_WINDOWS: [u64; NATIVE_CASE_COUNT] = [
     1690, 1450, 1260, 1180, 2100, 1570, 1960, 1960, 2290, 2290, 2290, 2290, 1660, 1440,
 ];
@@ -45,7 +53,8 @@ pub const NATIVE_SECONDS: u64 = native_seconds();
 pub const SUITE_SECONDS: u64 = SOURCE_AND_CAPTURE_SECONDS
     + 2 * MAIN_SECONDS
     + NATIVE_SECONDS
-    + FAMILY_CASE_COUNT as u64 * FAMILY_CASE_SECONDS;
+    + FAMILY_CASE_COUNT as u64 * FAMILY_CASE_SECONDS
+    + PHOTO_CASE_COUNT as u64 * CAMERA_PHOTO_CASE_SECONDS;
 pub const RETIREMENT_SECONDS: u64 = 180;
 pub const SERVICE_SECONDS: u64 = SUITE_SECONDS + RETIREMENT_SECONDS;
 pub const NOFILE_LIMIT: u64 = 32_768;

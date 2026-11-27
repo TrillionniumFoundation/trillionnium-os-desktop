@@ -34,9 +34,10 @@ mod native_application_ui_entry;
 mod working_owned_probe;
 pub use application_leaf_unit::{NativeOwnedLeafUnit, OwnedLeafProfile};
 pub use native_application_ui_entry::{
-    CameraPhotoObservation, NativeUiSession, NativeUiStabilityEvidence, NativeUiStabilitySummary,
-    NativeUiStabilityWindow, NativeUiTranscript, RetainedScopedWindowPixels, ScopedWindowPixels,
-    stability_additional_window_seconds,
+    CameraPhotoCaseObservation, CameraPhotoObservation, CameraPhotoSceneObservation,
+    NativeUiSession, NativeUiStabilityEvidence, NativeUiStabilitySummary, NativeUiStabilityWindow,
+    NativeUiTranscript, RetainedNativeUiTranscript, RetainedScopedWindowPixels, ScopedWindowPixels,
+    camera_photo_case_window_seconds, run_camera_photo_case, stability_additional_window_seconds,
 };
 
 const OUTPUT_LIMIT: usize = 64 * 1024;
@@ -736,7 +737,9 @@ fn run_owned_bounded(
     unsafe {
         command.pre_exec(move || {
             if let Some(fd) = watchdog_fd {
-                if libc::close(fd) != 0 { return Err(io::Error::last_os_error()); }
+                if libc::close(fd) != 0 {
+                    return Err(io::Error::last_os_error());
+                }
             }
             if gallery || documents {
                 let mut affinity: libc::cpu_set_t = std::mem::zeroed();

@@ -41,8 +41,8 @@ pub mod budget;
 #[path = "native_working_layout.rs"]
 pub mod layout;
 pub use budget::{
-    CASE_COUNT, FAMILY_CASE_COUNT, NATIVE_CASE_COUNT, NOFILE_LIMIT, RETIREMENT_SECONDS,
-    SERVICE_SECONDS, SUITE_SECONDS,
+    CASE_COUNT, FAMILY_CASE_COUNT, NATIVE_CASE_COUNT, NOFILE_LIMIT, PHOTO_CASE_COUNT,
+    RETIREMENT_SECONDS, SERVICE_SECONDS, SUITE_SECONDS,
 };
 pub const SUMMARY_LIMIT: usize = 16 * 1024 * 1024;
 pub const BINDING_LIMIT: usize = 128 * 1024;
@@ -179,6 +179,8 @@ pub enum QualificationCase {
     FamilyFcitx,
     FamilyFirefox,
     FamilyBilibili,
+    // Append after all original fourteen native and thirty-one family cases.
+    CameraPhotoCaptureReopen,
 }
 impl QualificationCase {
     pub(super) fn ordinal(self) -> u8 {
@@ -231,6 +233,7 @@ impl QualificationCase {
             QualificationCase::FamilyFcitx,
             QualificationCase::FamilyFirefox,
             QualificationCase::FamilyBilibili,
+            QualificationCase::CameraPhotoCaptureReopen,
         ];
         ALL.get(value as usize)
             .copied()
@@ -238,10 +241,14 @@ impl QualificationCase {
     }
     /// Complete original case budget; resource acknowledgements consume this window.
     pub fn window_seconds(self) -> u64 {
-        budget::NATIVE_CASE_WINDOWS
-            .get(self as usize)
-            .copied()
-            .unwrap_or(budget::FAMILY_CASE_SECONDS)
+        if self == Self::CameraPhotoCaptureReopen {
+            budget::CAMERA_PHOTO_CASE_SECONDS
+        } else {
+            budget::NATIVE_CASE_WINDOWS
+                .get(self as usize)
+                .copied()
+                .unwrap_or(budget::FAMILY_CASE_SECONDS)
+        }
     }
     /// Only these compiled selected packages have a family case. No caller
     /// ordinal, profile, command, or budget is admitted through this lookup.
@@ -285,7 +292,7 @@ impl QualificationCase {
         match self {
             Self::CalendarCore => "com.android.calendar",
             Self::CalendarReminder => "com.android.calendar",
-            Self::CameraPhoto => "com.android.camera2",
+            Self::CameraPhoto | Self::CameraPhotoCaptureReopen => "com.android.camera2",
             Self::ContactsSearch => "com.android.contacts",
             Self::ClockTimerPair => "com.android.deskclock",
             Self::ClockAlarm => "com.android.deskclock",
@@ -443,7 +450,9 @@ impl Plan {
             return Err(error("working PLAN lacks its immutable source-input label"));
         }
         let mut raw = vec![0; pin[6] as usize];
-        crate::control::physical_qualification_channel::working_runtime::read_exact_at_progress(&file, &mut raw, 0)?;
+        crate::control::physical_qualification_channel::working_runtime::read_exact_at_progress(
+            &file, &mut raw, 0,
+        )?;
         if file.read_at(&mut [0; 1], pin[6])? != 0 || f9(&file)? != pin {
             return Err(error("working PLAN changed during initial whole read"));
         }
@@ -460,7 +469,9 @@ impl Plan {
     }
     pub fn bytes(&self) -> io::Result<Vec<u8>> {
         let mut raw = vec![0; self.pin[6] as usize];
-        crate::control::physical_qualification_channel::working_runtime::read_exact_at_progress(&self.file, &mut raw, 0)?;
+        crate::control::physical_qualification_channel::working_runtime::read_exact_at_progress(
+            &self.file, &mut raw, 0,
+        )?;
         if self.file.read_at(&mut [0; 1], self.pin[6])? != 0 || sha(&raw) != self.digest {
             return Err(error("actual whole physical plan differs"));
         }
@@ -819,19 +830,32 @@ mod tests {
         assert_eq!(
             total
                 + FAMILY_CASE_COUNT as u64 * budget::FAMILY_CASE_SECONDS
+                + budget::CAMERA_PHOTO_CASE_SECONDS
                 + 140
                 + budget::SOURCE_AND_CAPTURE_SECONDS,
             SUITE_SECONDS
         );
         assert_eq!(budget::SOURCE_AND_CAPTURE_SECONDS, 46_622);
-        assert_eq!(SUITE_SECONDS, 161_007);
+        assert_eq!(SUITE_SECONDS, 165_297);
+        assert_eq!(CASE_COUNT, 46);
+        assert_eq!(PHOTO_CASE_COUNT, 1);
+        assert_eq!(QualificationCase::CameraPhoto.ordinal(), 2);
+        assert_eq!(QualificationCase::CameraPhoto.window_seconds(), 1_260);
+        assert_eq!(QualificationCase::FamilyBilibili.ordinal(), 44);
+        let photo = QualificationCase::from_ordinal(45).unwrap();
+        assert_eq!(photo, QualificationCase::CameraPhotoCaptureReopen);
+        assert_eq!(photo.package(), "com.android.camera2");
+        assert_eq!(photo.window_seconds(), 250 + 4_040);
+        assert_eq!(photo.profile(), KernelProfile::Standard);
+        assert!(photo.native_route().is_none());
+        assert!(QualificationCase::for_family(photo.package()).is_err());
         assert!(QualificationCase::from_ordinal(CASE_COUNT as u8).is_err());
         assert!(child_argv(Path::new("/PLAN.json"), "../caller").is_err());
     }
     #[test]
     fn physical_family_channel_rejects_foreign_native_and_reordered_cases() {
         let mut selected = std::collections::BTreeSet::new();
-        for ordinal in NATIVE_CASE_COUNT..CASE_COUNT {
+        for ordinal in NATIVE_CASE_COUNT..NATIVE_CASE_COUNT + FAMILY_CASE_COUNT {
             let case = QualificationCase::from_ordinal(ordinal as u8).unwrap();
             assert_eq!(case.ordinal() as usize, ordinal);
             assert_eq!(QualificationCase::for_family(case.package()).unwrap(), case);
@@ -872,7 +896,7 @@ mod tests {
             assert!(lines.contains(line.as_str()), "{line}");
         }
         assert_eq!(NOFILE_LIMIT, 32_768);
-        assert_eq!(SERVICE_SECONDS, 161_187);
+        assert_eq!(SERVICE_SECONDS, 165_477);
         assert!(lines.contains("MemoryMax=2147483648"));
         assert!(lines.contains("MemorySwapMax=0"));
         assert!(lines.contains("CPUQuota=200%"));

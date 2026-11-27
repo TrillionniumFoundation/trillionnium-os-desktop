@@ -14,7 +14,7 @@ use std::{
     path::Path,
     rc::{Rc, Weak},
     sync::Arc,
-    time::Instant,
+    time::{Duration, Instant},
 };
 
 #[path = "working_qualification_boot.rs"]
@@ -66,6 +66,25 @@ impl LivePulse {
         end: Instant,
         preparation_end: Instant,
     ) -> Result<(Rc<Self>, NativeApplicationInspector, MainCustodyObservation), String> {
+        // Derive the initial prefix from the same actual PID1 start. It spends
+        // the already-counted local/Main components and never resets at acquire.
+        let sampled_instant = Instant::now();
+        let sampled_ns = watchdog::monotonic_ns().map_err(|e| e.to_string())?;
+        let first_feed_ns = start_ns
+            .checked_add(
+                crate::native_working_contract::budget::PREPARATION_BOOTSTRAP_SECONDS
+                    .checked_mul(1_000_000_000)
+                    .ok_or("working bootstrap duration overflow")?,
+            )
+            .ok_or("working bootstrap monotonic end overflow")?;
+        let remaining = first_feed_ns
+            .checked_sub(sampled_ns)
+            .filter(|remaining| *remaining != 0)
+            .ok_or("working initial bootstrap already exceeded its original prefix")?;
+        let bootstrap_end = sampled_instant
+            .checked_add(Duration::from_nanos(remaining))
+            .ok_or("working initial bootstrap Instant overflow")?
+            .min(preparation_end);
         configuration.guard().map_err(|e| e.to_string())?;
         let boot = boot::BootOwner::open().map_err(|e| e.to_string())?;
         configuration
@@ -76,17 +95,20 @@ impl LivePulse {
         // the first PM request and the exact actual token is moved to preparation.
         let mut inspector = NativeApplicationInspector::acquire_until(
             Path::new(DEFAULT_CONTROL_SOCKET),
-            preparation_end,
+            bootstrap_end,
         )
         .map_err(|e| e.to_string())?;
         let main = inspector
-            .observe_current_main_until(preparation_end)
+            .observe_current_main_until(bootstrap_end)
             .map_err(|e| e.to_string())?;
         boot.compare_main(&main).map_err(|e| e.to_string())?;
         let programs =
-            NormalHostPrograms::capture(&main, preparation_end).map_err(|e| e.to_string())?;
+            NormalHostPrograms::capture(&main, bootstrap_end).map_err(|e| e.to_string())?;
         let kernel_main = HeldWorkingMain::capture(&main).map_err(|e| e.to_string())?;
         inspector.revalidate().map_err(|e| e.to_string())?;
+        if Instant::now() >= bootstrap_end {
+            return Err("working initial Main/source capture exhausted its original prefix".into());
+        }
         let value = Rc::new(Self {
             owner,
             configuration,
