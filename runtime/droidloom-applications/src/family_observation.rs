@@ -33,7 +33,7 @@ const FAMILY_BUSINESS_GATE_COUNT: usize = 114;
 // read, one removal and 1..=32 bounded asynchronous confirmation reads.
 const MAX_UI_COMMANDS: u32 = 5 + 3 * 3 + 2 * 7 + 2 + 32;
 pub(super) fn retained_journal_members_bound() -> usize {
-    4 * MAX_UI_COMMANDS as usize + 16 + 6 // Separate fixed PM/AppOps journal.
+    4 * MAX_UI_COMMANDS as usize + 16 + 8 // Separate fixed PM/AppOps/account journal.
 }
 fn fixed_history_shape(operations: u32, actions: u32) -> bool {
     (operations == 29 && actions == 0)
@@ -184,7 +184,7 @@ impl FamilyObservation {
         self.stability.guard_immutable()?;
         let transcript = self.stability.transcript();
         let engine = transcript.engine();
-        // Mandatory partial PM/AppOps facts, bound to this exact normal-close
+        // Mandatory partial PM/AppOps/account facts, bound to this exact normal-close
         // transcript. It never supplies common.data_permissions or accounts.
         self.permissions.require_transcript(transcript)?;
         require(
@@ -258,7 +258,7 @@ pub(super) fn run_family_case(
         .verify_local(inspector, original_end)
         .map_err(|error| error.to_string())?;
     let permission_window = NativeUiPermissionWindow::begin(inspector, baseline, original_end)?;
-    // Keep the original 2615-second UI maximum and reserve both actual after
+    // Keep the original 2615-second UI maximum and reserve all three actual after
     // queries under the same case end. Fast pre-queries cannot renew it.
     let ui_end = (Instant::now() + Duration::from_secs(ui_window_seconds()))
         .min(permission_window.ui_deadline());
@@ -348,8 +348,8 @@ mod tests {
     fn family_observation_budget_rejects_renewal_and_outliving_original_baseline() {
         assert_eq!(stability_additional_window_seconds(), 680);
         assert_eq!(ui_window_seconds(), 2615);
-        assert_eq!(permission_preservation_additional_window_seconds(), 280);
-        assert_eq!(window_seconds(), 2895);
+        assert_eq!(permission_preservation_additional_window_seconds(), 420);
+        assert_eq!(window_seconds(), 3035);
         let now = Instant::now();
         let end = now + Duration::from_secs(window_seconds());
         require_window(now, end, end).unwrap();
@@ -371,7 +371,7 @@ mod tests {
     #[test]
     fn family_observation_history_bounds_allow_only_fixed_reads_and_one_owned_close() {
         assert_eq!(MAX_UI_COMMANDS, 62);
-        assert_eq!(retained_journal_members_bound(), 270);
+        assert_eq!(retained_journal_members_bound(), 272);
         assert!(fixed_history_shape(29, 0));
         for operations in 31..=62 {
             assert!(fixed_history_shape(operations, 1));
