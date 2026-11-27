@@ -1271,7 +1271,15 @@ fn run_prepared_native_leaf_inner(
     };
     match kind {
         super::NativeLeafCommandKind::BaselineCapture => {
-            baseline_capture_command(&command)?;
+            if let Some(owner) = observation.observation.preparation_owner() {
+                native_leaf_business_capture::check_working_collector(
+                    &command,
+                    owner,
+                    &observation.observation.application().package,
+                )?;
+            } else {
+                baseline_capture_command(&command)?;
+            }
             run_prepared_host_leaf_observed(
                 command,
                 epoch,

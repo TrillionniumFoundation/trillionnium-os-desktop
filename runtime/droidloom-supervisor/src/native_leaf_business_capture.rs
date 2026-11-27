@@ -510,7 +510,6 @@ fn validate_readonly_receipt(
 }
 /// Capture the ordinary command's real comparison within its original 1200-second window.
 pub fn capture_business(package: &str) -> Result<Value> {
-    use crate::control::{NativeLeafCommandKind, run_prepared_native_leaf_until};
     let end = Instant::now() + Duration::from_secs(1200);
     let (mut inspector, main, application) = actual(package, end)?;
     let mut observed =
@@ -520,10 +519,33 @@ pub fn capture_business(package: &str) -> Result<Value> {
             inspector.observe_user_zero_package_inventory_until(&main, &application, end)?;
         observed.attach_user_zero_inventory(&inspector, inventory)?;
     }
-    let inventory = serde_json::to_value(observed.inventory_facts())?;
-    let core = serde_json::to_value(observed.facts())?;
     let mut sources = InstalledCohort::capture(end)?;
     let (root, root_fd, identity) = private_capture_root()?;
+    capture_at(
+        &mut inspector,
+        &mut observed,
+        &mut sources,
+        &root,
+        &root_fd,
+        identity,
+        end,
+    )
+}
+
+fn capture_at(
+    inspector: &mut NativeApplicationInspector,
+    observed: &mut NativeLeafBaselineObservation<'_>,
+    sources: &mut InstalledCohort,
+    root: &Path,
+    root_fd: &File,
+    identity: [u64; 5],
+    end: Instant,
+) -> Result<Value> {
+    use crate::control::{NativeLeafCommandKind, run_prepared_native_leaf_until};
+    let package = observed.application().package.clone();
+    let epoch = observed.application().epoch.clone();
+    let inventory = serde_json::to_value(observed.inventory_facts())?;
+    let core = serde_json::to_value(observed.facts())?;
     let operation = (|| -> Result<Value> {
         check_before(end)?;
         write_value(
@@ -545,10 +567,10 @@ pub fn capture_business(package: &str) -> Result<Value> {
             .env("LANG", "C.UTF-8");
         let output = run_prepared_native_leaf_until(
             command,
-            &application.facts().epoch,
+            &epoch,
             NativeLeafCommandKind::BaselineCapture,
-            &mut inspector,
-            &mut observed,
+            inspector,
+            observed,
             end,
         )
         .map_err(|e| format!("normal fixed comparison collector failed: {e}"))?;
@@ -606,13 +628,13 @@ pub fn capture_business(package: &str) -> Result<Value> {
         validate_current_observation(&value, &core, &inventory)?;
         validate_readonly_receipt(&root, &value, &evidence)?;
         sources.recheck(end)?;
-        bookend(&mut inspector, &mut observed, end)?;
+        bookend(inspector, observed, end)?;
         for row in evidence.values_mut() {
             check_before(end)?;
             row.recheck(&root)?;
         }
         sources.recheck(end)?;
-        observed.verify_local(&inspector, end)?;
+        observed.verify_local(inspector, end)?;
         let raw = &evidence
             .get("OBSERVED.json")
             .ok_or("normal observation disappeared")?
@@ -631,7 +653,7 @@ pub fn capture_business(package: &str) -> Result<Value> {
             "comparison_only":true,"account_contents_read":false,"business_actions_admitted":false,
             "whole_app_business_accepted":false,"production_ready":false,"observation_fds":value["observation_fds"]}),
         )?;
-        observed.verify_local(&inspector, end)?;
+        observed.verify_local(inspector, end)?;
         if directory_identity(&root_fd.metadata()?) != identity
             || directory_identity(&fs::symlink_metadata(&root)?) != identity
         {
@@ -777,3 +799,8 @@ mod business_capture_tests {
         assert!(validate_current_observation(&bad, &core, &Value::Null).is_err());
     }
 }
+
+#[path = "native_leaf_working_capture.rs"]
+mod working;
+pub(super) use working::check_working_collector;
+pub use working::{WorkingBusinessBaseline, capture_working_business_from_observed};

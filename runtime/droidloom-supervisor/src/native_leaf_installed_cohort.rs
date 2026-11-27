@@ -141,7 +141,7 @@ fn beneath(parent: &File, name: &str, directory: bool) -> Result<File> {
     }
     Ok(unsafe { File::from_raw_fd(fd as i32) })
 }
-fn open_absolute_directory(path: &Path) -> Result<File> {
+pub(crate) fn open_absolute_directory(path: &Path) -> Result<File> {
     absolute(path)?;
     let root = File::open("/")?;
     if path == Path::new("/") {
