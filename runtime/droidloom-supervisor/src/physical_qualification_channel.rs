@@ -866,3 +866,35 @@ mod tests {
         assert!(lines.contains("TasksMax=64"));
     }
 }
+
+/// Fence the privileged installed ELF before Clap handles help or any public
+/// session action. Only the source-owned parent and authenticated child modes
+/// exist in this role; ordinary clients retain their existing public commands.
+pub fn admit_working_entry(arguments: &[std::ffi::OsString]) -> io::Result<()> {
+    let requested = arguments.first().is_some_and(|v| {
+        v == crate::native_working_contract::PARENT_MODE || v == "--physical-application-plan"
+    });
+    let role = crate::native_hardware_label::current(101);
+    let owner = role.as_ref().is_ok_and(|v| v == working_config::ROLE);
+    if !requested && !owner {
+        return Ok(());
+    }
+    if !owner || !working_entry_arguments(arguments) {
+        return Err(error(
+            "working actor accepts only its source-owned parent or private child entry",
+        ));
+    }
+    require_working_actor()
+}
+fn working_entry_arguments(arguments: &[std::ffi::OsString]) -> bool {
+    match arguments {
+        [mode] => mode == crate::native_working_contract::PARENT_MODE,
+        [mode, path, expected, digest] => {
+            mode == "--physical-application-plan"
+                && expected == "--expect-physical-plan-sha256"
+                && Path::new(path).file_name() == Some(std::ffi::OsStr::new("PLAN.json"))
+                && digest.to_str().is_some_and(digest_ok)
+        }
+        _ => false,
+    }
+}
