@@ -57,6 +57,8 @@ pub enum WorkingNativePreparationStep {
 pub enum PreparationOutput {
     /// A fresh directory under the candidate's native-inputs/<case>.
     Input,
+    /// Camera prepares its base plan separately from the fresh display output.
+    BasePlan,
     /// The fixed native-cases/<case> directory created by the existing factory.
     Case,
     /// Existing source chooses its own case directory; no output argv is sent.
@@ -307,7 +309,7 @@ impl WorkingNativePreparationStep {
                 role: None,
                 kind: None,
                 purpose: "plan",
-                output: Case,
+                output: BasePlan,
                 result_name: "plan.json",
                 child_seconds: 180,
                 ihg_factory: false,
