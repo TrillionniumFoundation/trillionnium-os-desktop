@@ -558,6 +558,8 @@ struct ClockPairCustody {
     lease: NativeRelease,
     timer15: ClockResultCustody,
     expiry06: ClockResultCustody,
+    inputs: CaseInputs,
+    end: Instant,
 }
 impl std::fmt::Debug for ClockPairCustody {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -568,7 +570,8 @@ impl ClockPairCustody {
     fn guard(&self) -> Result<(), String> {
         self.lease.guard()?;
         self.timer15.guard()?;
-        self.expiry06.guard()
+        self.expiry06.guard()?;
+        self.inputs.guard()
     }
 }
 
@@ -628,6 +631,73 @@ impl ClockTimerEvidence {
     }
 }
 
+
+pub(super) struct HistoricalClockTimerEvidence {
+    main: HeldMainCustody,
+    source: leaf_release::HistoricalSourceWitness,
+    timer15: ClockResultCustody,
+    expiry06: ClockResultCustody,
+    inputs: CaseInputs,
+    engines: [control::NativeLeafEngineEvidence;2],
+    identity: IdentityObservation,
+}
+impl HistoricalClockTimerEvidence {
+    pub(super) fn binding(&self) -> &droidloom_supervisor::main_custody::RuntimeMainCustody {
+        self.main.normal_observation().facts()
+    }
+    pub(super) fn guard_immutable(&self) -> Result<(),String> {
+        self.main.require_completed()?;
+        self.source.guard_immutable()?;
+        self.timer15.guard()?; self.expiry06.guard()?; self.inputs.guard()?;
+        self.identity.require_application(self.main.actual_application())?;
+        for engine in &self.engines { self.main.require_engine(engine)?; }
+        Ok(())
+    }
+}
+impl ClockTimerEvidence {
+    pub(super) fn actual_application(&self) -> &ApplicationInspection {
+        self.main_custody.actual_application()
+    }
+    pub(super) fn retained_case_values(&self) -> Result<(Value,Value),String> {
+        self.retained_bookends()?;
+        let pair=(self.custody.timer15.read()?,self.custody.expiry06.read()?);
+        self.retained_bookends()?;
+        Ok(pair)
+    }
+    pub(super) fn seal_history_before(mut self,end:Instant) -> Result<(
+        HistoricalClockTimerEvidence,Vec<super::common_gate::CommonGateFact>,Vec<&'static str>,
+        Value,ApplicationInspection,Value),String>
+    {
+        let original_end=self.custody.end.min(end);
+        window(original_end,0)?;
+        self.retained_bookends()?;
+        require(self.clock_timer_gate_passed && self.original_host_process_trees_retired
+            && self.original_source_and_owner_bookends_verified
+            && self.same_normal_peer_source_owner_and_epoch && !self.automatic_retry,
+            "only the successful actual two-case Clock factory can seal history")?;
+        let identity=self.take_final_identity()?;
+        let common=super::common_gate::from_clock(&self,&identity)?;
+        let business=self.verified_business_gates().to_vec();
+        let evidence=serde_json::json!({
+            "original_execution":serde_json::to_value(&self).map_err(|error|error.to_string())?,
+            "actual_material_identity":serde_json::to_value(&identity).map_err(|error|error.to_string())?,
+        });
+        let actual=self.actual_application().clone();
+        self.main_custody.require_completed()?;
+        let timer_engine=self.timer15.engine_observations.take().ok_or("timer15 actual Engine history absent")?;
+        let expiry_engine=self.expiry06.engine_observations.take().ok_or("expiry06 actual Engine history absent")?;
+        let ClockPairCustody {lease,timer15,expiry06,inputs,end:_}=self.custody;
+        let source=lease.seal_history_before(original_end)?;
+        let source_comparison=source.comparison()?;
+        let history=HistoricalClockTimerEvidence {main:self.main_custody,source,
+            timer15,expiry06,inputs,engines:[timer_engine,expiry_engine],identity};
+        history.guard_immutable()?;
+        window(original_end,0)?;
+        Ok((history,common,business,evidence,actual,source_comparison))
+    }
+}
+pub(super) fn pair_window_seconds() -> u64 { PAIR_WINDOW_SECONDS }
+
 fn inspect(inspector: &mut control::NativeApplicationInspector,
     expected: &ApplicationInspection, end:Instant,
 ) -> Result<control::ActualApplicationObservation, String> {
@@ -653,6 +723,34 @@ pub(super) fn observe_pair(
     leaf: &LeafPlan,
     selection: &FilePin,
 ) -> Result<(ApplicationInspection, ClockTimerEvidence), String> {
+    observe_pair_with_limit(inspector,materials,runtime,requested,expected,leaf,selection,None,None)
+}
+
+pub(super) fn observe_pair_from_observed_until(
+    inspector: &mut control::NativeApplicationInspector,
+    materials: &VerifiedMaterialBatch,
+    runtime: &RuntimePlan,
+    requested: &ApplicationPlan,
+    expected: &ApplicationInspection,
+    leaf: &LeafPlan,
+    selection: &FilePin,
+    before: control::ActualApplicationObservation,
+    end: Instant,
+) -> Result<(ApplicationInspection, ClockTimerEvidence), String> {
+    observe_pair_with_limit(inspector,materials,runtime,requested,expected,leaf,selection,Some(before),Some(end))
+}
+
+fn observe_pair_with_limit(
+    inspector: &mut control::NativeApplicationInspector,
+    materials: &VerifiedMaterialBatch,
+    runtime: &RuntimePlan,
+    requested: &ApplicationPlan,
+    expected: &ApplicationInspection,
+    leaf: &LeafPlan,
+    selection: &FilePin,
+    initial: Option<control::ActualApplicationObservation>,
+    inherited_end: Option<Instant>,
+) -> Result<(ApplicationInspection, ClockTimerEvidence), String> {
     require(leaf.route == Route::ClockTimerPair && leaf.output.is_none()
         && requested.package == PACKAGE && expected.package == PACKAGE
         && runtime.android_user == 0 && expected.user == 0
@@ -664,7 +762,8 @@ pub(super) fn observe_pair(
     require(request.schema == REQUEST_SCHEMA, "Clock pair request schema differs")?;
     let (lease, preparation, _) = leaf_routes::clock_pair_release(selection)?;
     lease.cover_window(PAIR_WINDOW_SECONDS)?;
-    let end = Instant::now() + Duration::from_secs(PAIR_WINDOW_SECONDS);
+    let normal_end = Instant::now() + Duration::from_secs(PAIR_WINDOW_SECONDS);
+    let end = inherited_end.map_or(normal_end, |limit| limit.min(normal_end));
     let current_path = Path::new(leaf_release::CURRENT);
     let current_raw = held.read(current_path, None, 2 * 1024 * 1024)?;
     let current_value = leaf_release::json(&current_raw)?;
@@ -681,8 +780,16 @@ pub(super) fn observe_pair(
     materials.revalidate()?;
     held.guard()?;
     lease.guard()?;
-    window(end, 3 * 250 + 2 * 510 + 3 * 70 + 30)?;
-    let before_token = inspect(inspector, expected, end)?;
+    let before_token = if let Some(actual) = initial {
+        // Reuse the normal inspector's actual pre-observation inside this same
+        // case window; do not add the old outer dispatch's fourth PM query.
+        window(end, 2 * 250 + 2 * 510 + 3 * 70 + 30)?;
+        require(actual.facts() == expected, "Clock supplied actual PM token differs")?;
+        actual
+    } else {
+        window(end, 3 * 250 + 2 * 510 + 3 * 70 + 30)?;
+        inspect(inspector, expected, end)?
+    };
     let before = before_token.facts().clone();
     materials.observe(requested, 0, &runtime.expected_epoch, &before, &before)?;
 
@@ -758,7 +865,7 @@ pub(super) fn observe_pair(
         schema:"droidloom.clock-timer-pair-observation.v2", pair_request:leaf.request.clone(),
         native_release, original_owner_current:current, original_owner_current_f9:current_f9,
         selection:selection.clone(), identity:Some(identity), main_custody:main,
-        custody:ClockPairCustody { lease, timer15:timer_result, expiry06:expiry_result },
+        custody:ClockPairCustody { lease, timer15:timer_result, expiry06:expiry_result, inputs:held, end },
         timer15, expiry06, timer15_details, expiry06_details,
         timer15_result_f9, expiry06_result_f9,
         same_normal_peer_source_owner_and_epoch:true, original_host_process_trees_retired:true,

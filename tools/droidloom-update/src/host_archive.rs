@@ -18,6 +18,9 @@ const MANIFEST: &str = "HOST-STAGE.json";
 // /usr and SELinux trees. Do not admit arbitrary systemd configuration or @ paths.
 const NATIVE_RUNTIME_DROPIN: &str =
     "etc/systemd/system/user-runtime-dir@.service.d/50-droidloom-native-session.conf";
+// One fixed source-owned qualification template; other @ paths stay rejected.
+const PHYSICAL_QUALIFICATION_UNIT: &str =
+    "usr/lib/systemd/system/droidloom-physical-qualification@.service";
 
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 struct Member {
@@ -71,6 +74,7 @@ fn snapshot(stage: &Path) -> Result<(Vec<Member>, Vec<Node>)> {
             .to_str()
             .ok_or("non-UTF8 host member")?;
         if relative != NATIVE_RUNTIME_DROPIN
+            && relative != PHYSICAL_QUALIFICATION_UNIT
             && (!(relative.starts_with("usr/") || relative.starts_with("etc/selinux/"))
                 || !relative
                     .bytes()
@@ -351,6 +355,10 @@ mod tests {
             (
                 "usr/lib/systemd/system/kmod-static-nodes.service.d/50-droidloom-runtime-directory.conf",
                 include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-kmod-static-nodes-runtime.conf").as_slice(),
+            ),
+            (
+                "usr/lib/systemd/system/droidloom-physical-qualification@.service",
+                include_bytes!("../../../packaging/systemd/system/droidloom-physical-qualification@.service").as_slice(),
             ),
             (
                 "etc/systemd/system/user-runtime-dir@.service.d/50-droidloom-native-session.conf",

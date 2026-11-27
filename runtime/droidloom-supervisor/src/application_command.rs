@@ -19,10 +19,16 @@ use std::time::{Duration, Instant};
 
 use crate::development::owned_process::{open_pidfd, pidfd_exited};
 
+#[path = "physical_qualification_channel.rs"]
+pub mod physical_qualification_channel;
+
 #[path = "application_leaf_unit.rs"]
 mod application_leaf_unit;
 #[path = "application_leaf_resources.rs"]
 mod gallery_resources;
+#[path = "native_application_ui_entry.rs"]
+mod native_application_ui_entry;
+pub use native_application_ui_entry::{CameraPhotoObservation, CameraPhotoSceneObservation, CameraPhotoCaseObservation, camera_photo_case_window_seconds, run_camera_photo_case, RetainedScopedWindowPixels, RetainedNativeUiTranscript, ScopedWindowPixels, NativeUiSession, NativeUiTranscript, NativeUiStabilityWindow, NativeUiStabilityEvidence, NativeUiStabilitySummary, stability_additional_window_seconds};
 pub use application_leaf_unit::{NativeOwnedLeafUnit, OwnedLeafProfile};
 
 const OUTPUT_LIMIT: usize = 64 * 1024;
@@ -460,12 +466,15 @@ fn nonblocking(fd: RawFd) -> io::Result<()> {
 }
 
 fn drain(stream: &mut impl Read, bytes: &mut Vec<u8>) -> io::Result<()> {
+    drain_bounded(stream, bytes, OUTPUT_LIMIT)
+}
+fn drain_bounded(stream: &mut impl Read, bytes: &mut Vec<u8>, limit: usize) -> io::Result<()> {
     let mut buffer = [0_u8; 4096];
     loop {
         match stream.read(&mut buffer) {
             Ok(0) => return Ok(()),
             Ok(count) => {
-                if count > OUTPUT_LIMIT.saturating_sub(bytes.len()) {
+                if count > limit.saturating_sub(bytes.len()) {
                     return Err(invalid("application command output bound exceeded"));
                 }
                 bytes.extend_from_slice(&buffer[..count]);
@@ -545,13 +554,46 @@ fn native_leaf_work_deadline(
 }
 
 fn run_owned_observed(
+    command: Command,
+    inherit: &[RawFd],
+    alive_pidfds: &[RawFd],
+    deadline: Instant,
+    profile: Option<gallery_resources::Profile>,
+    observation: Option<NativeLeafRun<'_, '_>>,
+) -> Result<Output, String> {
+    run_owned_bounded(command, inherit, alive_pidfds, deadline, profile, observation, OUTPUT_LIMIT, None)
+}
+
+#[derive(Clone, Copy)]
+enum NativeUiOutput { Small, Helper, Image }
+fn run_owned_native_ui(
+    command: Command,
+    inherit: &[RawFd],
+    alive_pidfds: &[RawFd],
+    deadline: Instant,
+    output: NativeUiOutput,
+    guard: &mut dyn FnMut() -> Result<(), String>,
+) -> Result<Output, String> {
+    let limit = match output {
+        NativeUiOutput::Small => OUTPUT_LIMIT,
+        NativeUiOutput::Helper => crate::native_application_ui_protocol::WIRE_REPLY_BYTES,
+        NativeUiOutput::Image => 32 * 1024 * 1024,
+    };
+    run_owned_bounded(command, inherit, alive_pidfds, deadline,
+        Some(gallery_resources::Profile::ApplicationUi), None, limit, Some(guard))
+}
+
+fn run_owned_bounded(
     mut command: Command,
     inherit: &[RawFd],
     alive_pidfds: &[RawFd],
     deadline: Instant,
     profile: Option<gallery_resources::Profile>,
     mut observation: Option<NativeLeafRun<'_, '_>>,
+    stdout_limit: usize,
+    mut guard: Option<&mut dyn FnMut() -> Result<(), String>>,
 ) -> Result<Output, String> {
+    if let Some(check) = guard.as_mut() { check()?; }
     let mut channel = observation
         .as_mut()
         .map(|value| {
@@ -693,7 +735,12 @@ fn run_owned_observed(
                 let mut out = Vec::new();
                 let mut err = Vec::new();
                 let mut resource_bookend = Instant::now();
+                let mut local_bookend = Instant::now();
                 loop {
+                    if Instant::now() >= local_bookend {
+                        if let Some(check) = guard.as_mut() { check()?; }
+                        local_bookend = Instant::now() + Duration::from_millis(100);
+                    }
                     if gallery && Instant::now() >= resource_bookend {
                         invocation
                             .group
@@ -712,7 +759,7 @@ fn run_owned_observed(
                             observation.engines.as_deref_mut(),
                         )?;
                     }
-                    drain(&mut stdout, &mut out)
+                    drain_bounded(&mut stdout, &mut out, stdout_limit)
                         .and_then(|_| drain(&mut stderr, &mut err))
                         .map_err(|e| e.to_string())?;
                     if let Some(status) = invocation.poll().map_err(|e| e.to_string())? {
@@ -723,7 +770,7 @@ fn run_owned_observed(
                         }
                         // The producer is reaped. Drain buffered bytes without
                         // waiting for EOF or joining a potentially stuck reader.
-                        drain(&mut stdout, &mut out)
+                        drain_bounded(&mut stdout, &mut out, stdout_limit)
                             .and_then(|_| drain(&mut stderr, &mut err))
                             .map_err(|e| e.to_string())?;
                         return success_before_deadline(
@@ -761,6 +808,7 @@ fn run_owned_observed(
     result
         .and_then(|output| resources.map(|()| output))
         .and_then(|output| {
+            if let Some(check) = guard.as_mut() { check()?; }
             if let Some(channel) = &channel {
                 channel.finish()?;
             }

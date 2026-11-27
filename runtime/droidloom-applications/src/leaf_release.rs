@@ -304,6 +304,14 @@ pub(super) struct NativeRelease {
 }
 
 impl NativeRelease {
+    pub(super) fn seal_history_before(self,end:std::time::Instant) -> Result<HistoricalSourceWitness,String> {
+        require(std::time::Instant::now()<end,"case cannot seal history after its original deadline")?;
+        self.guard()?;
+        let sealed_at=std::time::Instant::now();
+        require(sealed_at<end,"source custody check exhausted the original case window")?;
+        Ok(HistoricalSourceWitness {release:self,sealed_at})
+    }
+
     pub(super) fn cover_window(&self, seconds: u64) -> Result<(),String> {
         self.guard()?;
         require(self.manifest.owner_expires_unix_seconds>now()?.saturating_add(seconds),
@@ -356,6 +364,13 @@ impl NativeRelease {
 
     pub(super) fn guard(&self) -> Result<(),String> {
         require(self.pid==std::process::id() && self.manifest.owner_expires_unix_seconds>now()?.saturating_add(30),"same-process live native release owner required")?;
+        self.guard_immutable()
+    }
+
+    // Shared byte/custody checks do not authorize an action. Live callers still
+    // pass the unchanged expiry gate above.
+    fn guard_immutable(&self) -> Result<(),String> {
+        require(self.pid==std::process::id(),"historical source belongs to another process")?;
         self.locks.validate().map_err(|e|e.to_string())?;
         self.inputs.guard()?;
         let actual=File::open("/proc/self/exe").map_err(|e|e.to_string())?;
@@ -364,6 +379,32 @@ impl NativeRelease {
             && hex::encode(Sha256::digest(body(&self.self_exe,self.self_identity[6])?))==self.manifest.binary.sha256
             && f9(&self.self_exe.metadata().map_err(|e|e.to_string())?)?==self.self_identity,
             "actual native executable identity/body changed")
+    }
+}
+
+
+pub(super) struct HistoricalSourceWitness {
+    release: NativeRelease,
+    sealed_at: std::time::Instant,
+}
+impl HistoricalSourceWitness {
+    /// Historical bytes and the originating process remain held. This method
+    /// has no execution/lease API and does not exempt NativeRelease::guard.
+    pub(super) fn guard_immutable(&self) -> Result<(),String> {
+        require(std::time::Instant::now() >= self.sealed_at,
+            "historical source witness clock moved before its seal")?;
+        self.release.guard_immutable()
+    }
+    pub(super) fn comparison(&self) -> Result<Value,String> {
+        self.guard_immutable()?;
+        Ok(serde_json::json!({
+            "schema":"droidloom.historical-native-source-witness.v1",
+            "normal_release":self.release.manifest,
+            "running_executable_f9":self.release.self_identity,
+            "source_pid":self.release.pid,
+            "sealed_while_original_owner_live":true,
+            "execution_or_lease_extension_authorized":false,
+        }))
     }
 }
 

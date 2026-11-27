@@ -34,7 +34,8 @@ pub(super) fn response_timeout(request: &ControlRequest) -> Duration {
         ControlRequest::ObserveRuntimeVintf { .. }
         | ControlRequest::ObserveRuntimeMain { .. }
         | ControlRequest::ObserveApplicationEngine { .. }
-        | ControlRequest::ObserveUserZeroPackageInventory { .. } => Duration::from_secs(70),
+        | ControlRequest::ObserveUserZeroPackageInventory { .. }
+        | ControlRequest::ObserveApplicationExitState { .. } => Duration::from_secs(70),
         _ => REQUEST_TIMEOUT,
     }
 }

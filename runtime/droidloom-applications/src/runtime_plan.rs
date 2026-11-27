@@ -2,6 +2,8 @@
 //!
 //! This preserves every selected row. A real browser invocation remains partial
 //! progress; unsupported profiles and pending gates never become acceptance.
+#[path = "native_camera_photo.rs"]
+mod native_camera_photo;
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant};
@@ -20,6 +22,8 @@ use firefox_wait_result::{FirefoxActivityStart, firefox_activity_start};
 
 #[path = "leaf_routes.rs"]
 mod leaf_routes;
+#[path = "native_business.rs"]
+mod native_business;
 #[path = "clock_timer.rs"]
 mod clock_timer;
 #[path = "leaf_release.rs"]
@@ -38,6 +42,18 @@ mod runtime_prepare;
 pub use runtime_prepare::{PreparationReport, prepare_files};
 #[path = "runtime_identity.rs"]
 mod runtime_identity;
+#[path = "physical_gate_roster.rs"]
+mod physical_gate_roster;
+#[path = "common_gate.rs"]
+mod common_gate;
+#[path = "family_observation.rs"]
+mod family_observation;
+#[path = "physical_acceptance.rs"]
+mod physical_acceptance;
+pub use physical_acceptance::{
+    CompletePhysicalApplicationRun, PhysicalApplicationSummary, PhysicalRunOutcome,
+    physical_qualification_window_seconds, run_physical_files,
+};
 
 /// Prepare the next normal material batch for source review. The result cannot
 /// extend the compiled admission table or authorize an application.

@@ -25,7 +25,7 @@ use super::runtime_identity::{IdentityObservation, VerifiedMaterialBatch};
 const QUALIFICATION: &str = "/var/lib/droidloom/qualification/pocket4";
 const SELECTION_PATH: &str = "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2/selection/selection-14.json";
 const SELECTION_BYTES: u64 = 4769;
-const SELECTION_SHA: &str = "f979bda38d95c6ad0bf25a52e2fc85b92e24f84672c5bbd6db62065f6ed558a4";
+const SELECTION_SHA: &str = "e46570ce965d4cb1abd9a9b2433fa71293525ccad8b4ed6ed65e19c4dfc85c73";
 const SOURCE_CATALOG: &str = include_str!("leaf_sources.json");
 
 pub(super) fn compiled_release_sources() -> (FilePin, &'static str) {
@@ -123,6 +123,12 @@ fn require_working_origin(
 }
 
 impl HeldMainCustody {
+    pub(super) fn actual_application(&self) -> &ApplicationInspection { self.application.facts() }
+    pub(super) fn require_completed(&self) -> Result<(),String> {
+        self.guard_projection()?;
+        require(self.completed.is_some(),"case has no actual final Main and PM observations")
+    }
+
     pub(super) fn observe(
         inspector: &mut control::NativeApplicationInspector,
         application: control::ActualApplicationObservation,
@@ -223,6 +229,7 @@ pub(super) struct HeldLeafCustody {
     release: NativeRelease,
     result: super::clock_timer::ClockResultCustody,
     final_identity: Option<IdentityObservation>,
+    end: Instant,
 }
 
 impl fmt::Debug for HeldLeafCustody {
@@ -351,6 +358,75 @@ impl LeafObservation {
         } else {
             &[]
         }
+    }
+}
+
+
+/// A completed historical case cannot launch work or renew a source lease.
+/// It retains actual PM/Main tokens, Engine observations, original result FD,
+/// source witness and final material fact from the one successful invocation.
+pub(super) struct HistoricalLeafObservation {
+    route: Route,
+    main: HeldMainCustody,
+    source: super::leaf_release::HistoricalSourceWitness,
+    result: super::clock_timer::ClockResultCustody,
+    engine: Option<control::NativeLeafEngineEvidence>,
+    identity: IdentityObservation,
+}
+impl HistoricalLeafObservation {
+    pub(super) fn route(&self) -> Route { self.route }
+    pub(super) fn binding(&self) -> &droidloom_supervisor::main_custody::RuntimeMainCustody {
+        self.main.normal_observation().facts()
+    }
+    pub(super) fn guard_immutable(&self) -> Result<(),String> {
+        self.main.guard_projection()?;
+        require(self.main.completed.is_some(), "historical leaf lacks its actual final PM/Main bookend")?;
+        self.source.guard_immutable()?;
+        self.result.guard()?;
+        self.identity.require_application(self.main.application.facts())?;
+        if let Some(engine)=&self.engine { self.main.require_engine(engine)?; }
+        Ok(())
+    }
+}
+
+impl LeafObservation {
+    pub(super) fn actual_application(&self) -> Result<&ApplicationInspection,String> {
+        Ok(self.custody.as_ref().ok_or("leaf has no actual application custody")?.main.application.facts())
+    }
+    pub(super) fn retained_result_value(&self) -> Result<Value,String> {
+        self.retained_bookends()?;
+        let value=self.custody.as_ref().ok_or("leaf has no result custody")?.result.read()?;
+        self.retained_bookends()?;
+        Ok(value)
+    }
+    pub(super) fn seal_history_before(mut self, end: Instant) -> Result<(
+        HistoricalLeafObservation,Vec<super::common_gate::CommonGateFact>,Vec<&'static str>,
+        Value,ApplicationInspection,Value),String>
+    {
+        let original_end=self.custody.as_ref().ok_or("leaf history lacks actual custody")?.end.min(end);
+        leaf_window(original_end,0)?;
+        self.retained_bookends()?;
+        require(self.original_entry_result_verified && self.main_epoch_unchanged
+            && self.owned_host_tree_retired && !self.automatic_retry,
+            "only the successful original retired leaf can seal case history")?;
+        let identity=self.take_final_identity()?;
+        let common=super::common_gate::from_leaf(&self,&identity)?;
+        let business=self.verified_business_gates().to_vec();
+        let evidence=serde_json::json!({
+            "original_execution":serde_json::to_value(&self).map_err(|error|error.to_string())?,
+            "actual_material_identity":serde_json::to_value(&identity).map_err(|error|error.to_string())?,
+        });
+        let actual=self.actual_application()?.clone();
+        let HeldLeafCustody {main,release,result,final_identity:_,end:_} =
+            self.custody.take().ok_or("leaf history custody already consumed")?;
+        require(main.completed.is_some(), "history needs the real completed Main/PM pair")?;
+        let source=release.seal_history_before(original_end)?;
+        let source_comparison=source.comparison()?;
+        let history=HistoricalLeafObservation {route:self.route,main,source,result,
+            engine:self.engine_observations.take(),identity};
+        history.guard_immutable()?;
+        leaf_window(original_end,0)?;
+        Ok((history,common,business,evidence,actual,source_comparison))
     }
 }
 
@@ -511,6 +587,19 @@ impl Route {
     pub(super) fn package(self) -> &'static str {
         self.definition().package
     }
+}
+
+pub(super) fn original_window_seconds(route: Route) -> u64 {
+    route.definition().seconds + 2 * 70 + 250 + 120
+}
+
+/// Bind the one canonical source/actual executable owner before a complete
+/// qualification run. This grants no Main or application gate.
+pub(super) fn qualification_release(selection:&FilePin) -> Result<NativeRelease,String> {
+    validate_selection(selection)?;
+    let sources=fixed_sources()?;
+    let source=&sources[0];
+    NativeRelease::bind_current(selection,SOURCE_CATALOG,&source.preparation,&source.entry)
 }
 
 fn require(ok: bool, message: &str) -> Result<(), String> {
@@ -1568,6 +1657,32 @@ pub(super) fn execute_admitted(
     selection: &FilePin,
     actual_token: control::ActualApplicationObservation,
 ) -> Result<(ApplicationInspection, LeafObservation), String> {
+    execute_admitted_with_limit(inspector,materials,runtime,requested,plan,selection,actual_token,None)
+}
+
+pub(super) fn execute_admitted_until(
+    inspector: &mut control::NativeApplicationInspector,
+    materials: &VerifiedMaterialBatch,
+    runtime: &RuntimePlan,
+    requested: &ApplicationPlan,
+    plan: &LeafPlan,
+    selection: &FilePin,
+    actual_token: control::ActualApplicationObservation,
+    end: Instant,
+) -> Result<(ApplicationInspection, LeafObservation), String> {
+    execute_admitted_with_limit(inspector,materials,runtime,requested,plan,selection,actual_token,Some(end))
+}
+
+fn execute_admitted_with_limit(
+    inspector: &mut control::NativeApplicationInspector,
+    materials: &VerifiedMaterialBatch,
+    runtime: &RuntimePlan,
+    requested: &ApplicationPlan,
+    plan: &LeafPlan,
+    selection: &FilePin,
+    actual_token: control::ActualApplicationObservation,
+    inherited_end: Option<Instant>,
+) -> Result<(ApplicationInspection, LeafObservation), String> {
     require(plan.route != Route::ClockTimerPair,
         "Clock pair requires its one shared two-case Main and owner factory")?;
     let actual = actual_token.facts().clone();
@@ -1576,10 +1691,11 @@ pub(super) fn execute_admitted(
     // normal package inspection, and finite source/retirement bookends.
     // The original pre-leaf PM token comes from MaterialClient, with no RPC
     // added by baseline capture, each G, or finish_from_observed.
-    let window = seconds + 2 * 70 + 250 + 120;
+    let window = original_window_seconds(plan.route);
     let release = normal_route_release(plan, selection)?;
     release.cover_window(window)?;
-    let end = Instant::now() + Duration::from_secs(window);
+    let normal_end = Instant::now() + Duration::from_secs(window);
+    let end = inherited_end.map_or(normal_end, |limit| limit.min(normal_end));
     leaf_window(end, seconds + 2 * 70 + 250 + 30)?;
     materials.revalidate()?;
     materials.observe(requested, runtime.android_user, &runtime.expected_epoch, &actual, &actual)?;
@@ -1640,7 +1756,7 @@ pub(super) fn execute_admitted(
     drop(baseline);
     main.retain_completed(after_main, after_token)?;
     observation.custody = Some(HeldLeafCustody {
-        main, release, result, final_identity: Some(final_identity),
+        main, release, result, final_identity: Some(final_identity), end,
     });
     observation.retained_bookends()?;
     Ok((after, observation))
