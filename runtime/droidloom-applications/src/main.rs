@@ -18,6 +18,25 @@ mod cli_tests {
     use super::*;
 
     #[test]
+    fn physical_parent_allows_only_the_one_fixed_plan_digest() {
+        let args = ["apps", "--owned-physical-plan-sha256", "a"];
+        assert!(Cli::try_parse_from(args).is_ok());
+        assert!(Cli::try_parse_from(["apps", "--owned-physical-plan-sha256"]).is_err());
+        for extra in [
+            vec!["--physical-application-plan", "/other", "--expect-physical-plan-sha256", "sha"],
+            vec!["--socket", "/other"], vec!["--user", "1"], vec!["--once"],
+            vec!["--remove-managed"], vec!["--expect-app-count", "39"],
+            vec!["--owned-leaf-profile", "gallery", "--owned-leaf-plan-sha256", "sha"],
+            vec!["--runtime-plan", "/other", "--expect-runtime-plan-sha256", "sha", "--expect-app-count", "39"],
+            vec!["--release-check", "/other"],
+        ] {
+            let mut combined = args.to_vec();
+            combined.extend(extra);
+            assert!(Cli::try_parse_from(combined).is_err());
+        }
+    }
+
+    #[test]
     fn physical_case_execution_uses_only_its_complete_source_owned_plan() {
         assert!(Cli::try_parse_from(["apps","--physical-application-plan","/plan"]).is_err());
         assert!(Cli::try_parse_from(["apps","--expect-physical-plan-sha256","sha"]).is_err());
@@ -179,6 +198,13 @@ mod cli_tests {
 #[command(name = "droidloom-applications", version, about)]
 #[command(group(clap::ArgGroup::new("release_action").args(["release_check", "runtime_plan", "prepare_runtime_plan", "verify_material_identity"])))]
 struct Cli {
+    /// Run the exact root-owned physical plan through its installed same-ELF parent unit.
+    #[arg(long, conflicts_with_all = ["physical_application_plan", "expect_physical_plan_sha256",
+        "verify_material_identity", "prepare_material_admission", "owned_leaf_profile",
+        "adopt_native_leaf_release", "release_check", "runtime_plan", "prepare_runtime_plan",
+        "inspect_package", "inspect_contacts_fixture", "remove_managed", "socket", "user",
+        "once", "refresh_seconds", "expect_app_count"])]
+    owned_physical_plan_sha256: Option<String>,
     /// Execute the source-owned complete physical case roster on the current working copy.
     #[arg(long, requires = "expect_physical_plan_sha256",
         conflicts_with_all = ["verify_material_identity","prepare_material_admission",
@@ -283,13 +309,25 @@ fn main() {
 
 fn run() -> Result<(), Box<dyn std::error::Error>> {
     let cli = Cli::parse();
+    if let Some(sha) = &cli.owned_physical_plan_sha256 {
+        let captured = droidloom_supervisor::control::physical_qualification_channel::
+            capture_installed_physical_run(sha)?;
+        captured.guard()?;
+        let receipt = captured.write_receipt()?;
+        println!("{}", serde_json::to_string_pretty(&serde_json::json!({
+            "schema":"droidloom.physical-application-parent-completed.v1",
+            "receipt":receipt, "actual_capture":captured.observation(),
+            "parent_unit_retirement_pending":true, "production_ready":false,
+        }))?);
+        captured.guard()?;
+        return Ok(());
+    }
     if let Some(path)=&cli.physical_application_plan {
         let outcome=droidloom_applications::runtime_plan::run_physical_files(path,
             cli.expect_physical_plan_sha256.as_deref().ok_or("physical input pin missing")?)?;
         return match outcome.into_complete() {
             Ok(mut complete)=>{
-                complete.guard()?;
-                println!("{}",serde_json::to_string_pretty(complete.summary())?);
+                complete.write_owned_completion()?;
                 Ok(())
             }
             Err(partial)=>{

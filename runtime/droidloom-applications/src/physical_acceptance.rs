@@ -10,6 +10,9 @@ use super::leaf_routes::{self, LeafPlan, Route};
 use super::physical_gate_roster as roster;
 use super::runtime_identity::VerifiedMaterialBatch;
 use super::*;
+use droidloom_supervisor::control::physical_qualification_channel::{
+    self as owned_channel, ChildChannel, QualificationCase,
+};
 use droidloom_supervisor::main_custody::RuntimeMainCustody;
 use serde_json::Value;
 
@@ -74,6 +77,53 @@ fn case_window_seconds(route: Route) -> u64 {
     } else {
         INSPECT_SECONDS + leaf_routes::original_window_seconds(route)
     }
+}
+
+/// This bridge is compiled from the actual case roster, never selected by an external ordinal.
+fn qualification_case(route: Route) -> Result<QualificationCase, String> {
+    Ok(match route {
+        Route::CalendarCore => QualificationCase::CalendarCore,
+        Route::CalendarReminder => QualificationCase::CalendarReminder,
+        Route::CameraPhoto => QualificationCase::CameraPhoto,
+        Route::ContactsSearch => QualificationCase::ContactsSearch,
+        Route::ClockTimerPair => QualificationCase::ClockTimerPair,
+        Route::ClockAlarm => QualificationCase::ClockAlarm,
+        Route::DocumentsSaf => QualificationCase::DocumentsSaf,
+        Route::DocumentsSearchSort => QualificationCase::DocumentsSearchSort,
+        Route::GalleryRotation => QualificationCase::GalleryRotation,
+        Route::GalleryVideo => QualificationCase::GalleryVideo,
+        Route::GallerySeek => QualificationCase::GallerySeek,
+        Route::GalleryAlbum => QualificationCase::GalleryAlbum,
+        Route::SettingsSupportedPages => QualificationCase::SettingsSupportedPages,
+        Route::IhgLondon => QualificationCase::IhgLondon,
+        _ => {
+            return Err(
+                "physical channel has no source-owned case for this legacy single route".into(),
+            );
+        }
+    })
+}
+
+fn require_channel_roster() -> Result<(), String> {
+    require(
+        physical_qualification_window_seconds() == owned_channel::SUITE_SECONDS,
+        "physical producer and normal parent suite bounds differ",
+    )?;
+    let mut ordinal = 0usize;
+    for row in roster::PACKAGES {
+        for route in row.cases {
+            let case = qualification_case(*route)?;
+            require(
+                case as usize == ordinal && case.window_seconds() == case_window_seconds(*route),
+                "physical producer case order or original bound differs from its normal parent",
+            )?;
+            ordinal += 1;
+        }
+    }
+    require(
+        ordinal == owned_channel::CASE_COUNT,
+        "physical parent case coverage differs",
+    )
 }
 
 fn require_compiled_roster(
@@ -384,6 +434,7 @@ struct RunCustody {
     inputs: PlanInputs,
     source_owner: NativeRelease,
     histories: Vec<HistoricalCompletedCase>,
+    channel: ChildChannel,
     end: Instant,
 }
 impl RunCustody {
@@ -440,6 +491,33 @@ impl CompletePhysicalApplicationRun {
     /// suite's current Main is refreshed within the original suite deadline.
     pub fn guard(&mut self) -> Result<(), String> {
         self.custody.refresh()
+    }
+    /// Only this actual opaque Complete can publish the matching normal stdout
+    /// and private frame. All source/results/Main facts stay held until ACK.
+    pub fn write_owned_completion(&mut self) -> Result<(), String> {
+        use std::io::Write;
+        self.guard()?;
+        let mut bytes = serde_json::to_vec_pretty(self.summary()).map_err(|e| e.to_string())?;
+        bytes.push(b'\n');
+        {
+            let mut output = std::io::stdout().lock();
+            output
+                .write_all(&bytes)
+                .and_then(|_| output.flush())
+                .map_err(|e| e.to_string())?;
+        }
+        self.custody.guard_immutable()?;
+        let binding = self
+            .custody
+            .final_main
+            .as_ref()
+            .ok_or("Complete lost its actual final Main")?
+            .facts();
+        self.custody
+            .channel
+            .complete(&bytes, binding, self.custody.end)
+            .map_err(|e| e.to_string())?;
+        self.custody.guard_immutable()
     }
 }
 struct PartialPhysicalApplicationRun {
@@ -563,6 +641,17 @@ pub fn run_physical_files(
         .map_err(|error| error.to_string())?;
     validate(&runtime, &gates, roster::PACKAGE_COUNT)?;
     require_compiled_roster(&plan, &runtime, &gates)?;
+    require_channel_roster()?;
+    // Acquire the fixed parent's actual private channel before any PM/Main or leaf action.
+    let mut channel = ChildChannel::acquire(
+        &plan_pin.path,
+        plan_pin.bytes,
+        &plan_pin.sha256,
+        &runtime.expected_epoch,
+        end,
+    )
+    .map_err(|e| e.to_string())?;
+    let end = channel.deadline();
     let selection = runtime
         .preparation_selection
         .clone()
@@ -655,6 +744,9 @@ pub fn run_physical_files(
                 let case_end = (Instant::now()
                     + Duration::from_secs(case_window_seconds(case.leaf.route)))
                 .min(end);
+                let case_owner = channel
+                    .begin_case(qualification_case(case.leaf.route)?, case_end)
+                    .map_err(|e| e.to_string())?;
                 let inspection_end =
                     (Instant::now() + Duration::from_secs(INSPECT_SECONDS)).min(case_end);
                 let before = inspector
@@ -709,6 +801,11 @@ pub fn run_physical_files(
                 materials.revalidate()?;
                 source_owner.guard()?;
                 deadline(case_end)?;
+                // The original factory has consumed its live lease into immutable history;
+                // the parent also checks the actual prior child cgroups are empty.
+                case_owner
+                    .finish_after_history(case_end)
+                    .map_err(|e| e.to_string())?;
                 Ok(completed)
             })();
             match result {
@@ -802,6 +899,7 @@ pub fn run_physical_files(
         inputs,
         source_owner,
         histories,
+        channel,
         end,
     };
     let outcome = if qualified {
@@ -895,6 +993,19 @@ mod tests {
         };
         (plan, runtime, gates)
     }
+    #[test]
+    fn physical_channel_uses_exact_source_order_windows_and_no_legacy_single_case() {
+        require_channel_roster().unwrap();
+        assert_eq!(physical_qualification_window_seconds(), 33_440);
+        for route in [
+            Route::ClockTimer,
+            Route::ClockTimerRemaining,
+            Route::ClockExpiry,
+        ] {
+            assert!(qualification_case(route).is_err());
+        }
+    }
+
     #[test]
     fn physical_roster_rejects_a_same_count_gate_substitution_or_stale_materials() {
         let (plan, runtime, mut gates) = fixture();
