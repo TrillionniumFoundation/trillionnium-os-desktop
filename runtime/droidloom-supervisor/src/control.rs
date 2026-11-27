@@ -50,6 +50,12 @@ pub(crate) mod apk_payload;
 #[path = "control_progress.rs"]
 mod progress;
 
+#[path = "control_working_install.rs"]
+mod working_install;
+#[path = "working_install_peer.rs"]
+pub(crate) mod working_install_peer;
+pub use working_install::{WorkingApkPin, install_working_public_apks, working_system_package};
+
 #[path = "control_identity.rs"]
 mod identity;
 pub use identity::{
@@ -240,6 +246,16 @@ pub enum ControlRequest {
         user: u32,
         /// Exact byte length of each untouched original APK in descriptor order.
         lengths: Vec<u64>,
+    },
+    /// Install an original set only in the explicitly observed current epoch.
+    /// This never starts a cell or grants an uninstall/downgrade operation.
+    InstallCurrentMultiple {
+        /// Android user identifier.
+        user: u32,
+        /// Complete original segment lengths in base/split order.
+        lengths: Vec<u64>,
+        /// Comparison against the live authority before the first PM effect.
+        expected_epoch: application_probe::RuntimeEpoch,
     },
     /// Start the cell if it is not already running.
     Start {
@@ -539,6 +555,9 @@ impl Daemon {
             ControlRequest::InstallMultiple { user, lengths } => {
                 self.install_multiple(peer_uid, user, &lengths, file)
             }
+            ControlRequest::InstallCurrentMultiple { .. } => Err(ControlError::Invalid(
+                "current-epoch installation requires the selected early shared-kernel owner".into(),
+            )),
             ControlRequest::Start { spec } => self.start(peer_uid, &spec),
             ControlRequest::Stop => self.stop(peer_uid),
             ControlRequest::Restart { spec } => self.restart(peer_uid, &spec),
@@ -1360,6 +1379,7 @@ fn receive_request(
         && !matches!(
             request,
             ControlRequest::Install { .. } | ControlRequest::InstallMultiple { .. }
+                | ControlRequest::InstallCurrentMultiple { .. }
         )
     {
         return Err(ControlError::Invalid(

@@ -634,15 +634,12 @@ pub fn prepare_owned_physical_plan(owner: &WorkingQualificationOwner) -> Result<
     // startup. Its original 70-second observation is not issued a second time.
     let (mut inspector, main) = owner.take_preparation_bootstrap()?;
     let epoch = main.facts().epoch.clone();
-    let mut observations = Vec::with_capacity(roster::PACKAGE_COUNT);
-    for fixed in roster::PACKAGES {
-        owner.guard()?;
-        observations.push(
-            inspector
-                .inspect_observed_until(fixed.package, 0, end)
-                .map_err(|e| e.to_string())?,
-        );
-    }
+    let installed = super::physical_plan_install::prepare(
+        owner, &mut inspector, &main, &inputs.selection, &inputs.signatures,
+    )?;
+    files.save(&root.join("application-installation.json"), &installed.report)?;
+    require(installed.blockers.is_empty(), &installed.blockers.join("; "))?;
+    let observations = installed.observations;
     require(
         observations.len() == roster::PACKAGE_COUNT
             && observations.iter().all(|row| row.facts().epoch == epoch),

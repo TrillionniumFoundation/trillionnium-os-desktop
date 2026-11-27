@@ -236,6 +236,16 @@ impl LivePulse {
         // comparison after the same child and complete Main still pass guard.
         Ok(self.main.facts().clone())
     }
+    pub(super) fn require_preparation_binding(
+        &self,
+        actual: &RuntimeMainCustody,
+    ) -> Result<(), String> {
+        self.guard().map_err(|e| e.to_string())?;
+        if self.phase.get() != Phase::Preparation || self.main.facts() != actual {
+            return Err("working preparation belongs to another complete actual Main custody".into());
+        }
+        self.main.guard().map_err(|e| e.to_string())
+    }
     pub(super) fn require_complete_binding(
         &self,
         actual: &RuntimeMainCustody,

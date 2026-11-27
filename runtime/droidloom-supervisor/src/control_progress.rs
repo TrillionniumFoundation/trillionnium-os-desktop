@@ -149,8 +149,18 @@ pub(super) fn request_on(
 /// Bound the existing transport by the original caller's absolute deadline.
 /// This is an in-process bound; it grants no operation or wire authority.
 pub(super) fn request_on_until(
+    stream: UnixStream,
+    request: &ControlRequest,
+    deadline: Instant,
+) -> Result<ControlResponse, ControlError> {
+    request_on_file_until(stream, request, None, deadline)
+}
+
+/// The same deadline and one original SCM_RIGHTS payload, without reconnecting.
+pub(super) fn request_on_file_until(
     mut stream: UnixStream,
     request: &ControlRequest,
+    file: Option<&fs::File>,
     deadline: Instant,
 ) -> Result<ControlResponse, ControlError> {
     let started=Instant::now();
@@ -163,6 +173,12 @@ pub(super) fn request_on_until(
         return Err(ControlError::Invalid("lifecycle request is too large".into()));
     }
     let mut pending=encoded.as_slice();
+    if let Some(file) = file {
+        stream.set_write_timeout(Some(remaining()?.min(Duration::from_secs(2))))
+            .map_err(|e|io_error("bound original descriptor transfer",e))?;
+        apk::send_file(&stream, encoded[0], file)?;
+        pending=&encoded[1..];
+    }
     while !pending.is_empty() {
         stream.set_write_timeout(Some(remaining()?.min(Duration::from_secs(2))))
             .map_err(|e|io_error("bound original request write",e))?;
@@ -180,6 +196,7 @@ pub(super) fn request_on_until(
     remaining()?;
     Ok(result)
 }
+
 
 pub(super) fn connect(path: &Path) -> io::Result<UnixStream> {
     // Blocking connect can wait indefinitely when a busy daemon's accept queue
@@ -581,5 +598,40 @@ mod tests {
         let error = connect(&socket).unwrap_err().to_string();
         assert!(started.elapsed() < Duration::from_secs(1));
         assert!(error.contains("request queue is full"));
+    }
+}
+
+#[cfg(test)]
+mod current_install_wire_tests {
+    use super::*;
+    #[test]
+    fn bounded_current_install_transfers_the_exact_sealed_descriptor_and_epoch() {
+        let input=super::super::apk_payload::test_payload(b"PK\x03\x04original");
+        let expected_epoch=super::super::application_probe::RuntimeEpoch {
+            boot_id:"00000000-0000-0000-0000-000000000001".into(),
+            cell_host_pid:100,framework_host_pid:101,framework_start_ticks:70,
+        };
+        let request=ControlRequest::InstallCurrentMultiple{
+            user:0,lengths:vec![12],expected_epoch:expected_epoch.clone()};
+        assert_eq!(response_timeout(&request).as_secs(),
+            super::super::physical_qualification_channel::budget::APPLICATION_INSTALL_TRANSPORT_SECONDS);
+        let (client,mut server)=UnixStream::pair().unwrap();
+        let server_request=request.clone();
+        let worker=std::thread::spawn(move || {
+            let (_,actual,file,_)=super::super::receive_request(&mut server).unwrap();
+            assert_eq!(actual,server_request);
+            let mut file=file.unwrap();
+            super::super::apk_payload::validate(&file,&[12]).unwrap();
+            let mut got=Vec::new();file.read_to_end(&mut got).unwrap();
+            assert_eq!(got,b"PK\x03\x04original");
+            server.write_all(b"{\"ok\":true,\"state\":\"running\",\"message\":\"confirmed\"}\n").unwrap();
+        });
+        let response=request_on_file_until(client,&request,Some(&input),
+            Instant::now()+Duration::from_secs(2)).unwrap();
+        assert!(response.ok);worker.join().unwrap();
+        let (client,mut server)=UnixStream::pair().unwrap();
+        assert!(request_on_file_until(client,&request,Some(&input),Instant::now()).is_err());
+        let mut body=Vec::new();server.read_to_end(&mut body).unwrap();
+        assert!(body.is_empty());
     }
 }

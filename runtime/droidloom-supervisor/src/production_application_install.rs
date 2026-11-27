@@ -15,6 +15,7 @@ struct CommandObservation {
 pub(crate) struct InstallObservation {
     pub(crate) session: u32,
     pub(crate) user: u32,
+    pub(crate) epoch: RuntimeEpoch,
     pub(crate) bytes: u64,
     pub(crate) segments: Vec<SegmentObservation>,
     commands: Vec<CommandObservation>,
@@ -127,23 +128,36 @@ fn transact(
     }
     Ok(id)
 }
+fn require_install_epoch(actual: &RuntimeEpoch, expected: Option<&RuntimeEpoch>) -> Result<()> {
+    require(
+        expected.is_none_or(|expected| expected == actual),
+        "current installation belongs to another actual Android epoch; no PM session was created",
+    )
+}
 pub(crate) fn install_early(
     authority: &EarlyApplicationAuthority<'_>,
     user: u32,
     file: File,
     lengths: &[u64],
     overall_deadline: Instant,
+    expected_epoch: Option<&RuntimeEpoch>,
+    working_peer: Option<&crate::control::working_install_peer::WorkingInstallPeer>,
 ) -> Result<InstallObservation> {
+    require(expected_epoch.is_some()==working_peer.is_some(),
+        "current installation requires its actual held normal parent")?;
     let deadline = (Instant::now() + SESSION_LIMIT).min(overall_deadline);
     authority.ready().map_err(external)?;
     let framework = authority.observe_framework().map_err(external)?;
     let epoch = authority.epoch(&framework).map_err(external)?;
+    require_install_epoch(&epoch, expected_epoch)?;
     let mut progress = || {
-        authority
-            .progress_inherited_native(deadline)
-            .map_err(external)
+        if let Some(peer)=working_peer {peer.guard().map_err(external)?;}
+        authority.progress_inherited_native(deadline).map_err(external)
     };
-    crate::control::apk_payload::validate_production_context(&file).map_err(external)?;
+    match working_peer {
+        Some(peer)=>crate::control::apk_payload::validate_working_context(&file,peer).map_err(external)?,
+        None=>crate::control::apk_payload::validate_production_context(&file).map_err(external)?,
+    }
     let payload = Payload::prepare(file, lengths, deadline, &mut progress)?;
     let mut records = Vec::new();
     let mut call = |command: &InstallCommand,
@@ -158,6 +172,7 @@ pub(crate) fn install_early(
             authority.epoch(&framework).map_err(external)? == epoch,
             "Android framework changed during installation",
         )?;
+        if let Some(peer)=working_peer {peer.guard().map_err(external)?;}
         let operation = ApplicationOperation::Install {
             value: command.clone(),
         };
@@ -166,7 +181,11 @@ pub(crate) fn install_early(
         // stronger original-child retirement failure with a later ready error.
         let result = workflow::finish_effect(
             result,
-            || authority.ready().map_err(external),
+            || {
+                authority.ready().map_err(external)?;
+                if let Some(peer)=working_peer {peer.guard().map_err(external)?;}
+                Ok(())
+            },
             command_deadline,
         )?;
         require(
@@ -195,6 +214,7 @@ pub(crate) fn install_early(
         Ok(stdout)
     };
     let session = transact(&payload, user, deadline, &mut call, &mut progress)?;
+    if let Some(peer)=working_peer {peer.guard().map_err(external)?;}
     authority.ready().map_err(external)?;
     require(
         authority.epoch(&framework).map_err(external)? == epoch,
@@ -203,6 +223,7 @@ pub(crate) fn install_early(
     let observed = InstallObservation {
         session,
         user,
+        epoch,
         bytes: payload.total(),
         segments: payload.observations(),
         commands: records,
@@ -335,5 +356,24 @@ mod tests {
         ] {
             assert!(confirm(value, "Success").is_err());
         }
+    }
+}
+
+#[cfg(test)]
+mod current_epoch_tests {
+    use super::*;
+    #[test]
+    fn current_install_rejects_every_changed_runtime_identity_before_a_session() {
+        let actual=RuntimeEpoch{boot_id:"00000000-0000-0000-0000-000000000001".into(),
+            cell_host_pid:100,framework_host_pid:101,framework_start_ticks:70};
+        require_install_epoch(&actual,Some(&actual)).unwrap();
+        let mut other=actual.clone();other.boot_id="00000000-0000-0000-0000-000000000002".into();
+        assert!(require_install_epoch(&actual,Some(&other)).is_err());
+        let mut other=actual.clone();other.cell_host_pid+=1;
+        assert!(require_install_epoch(&actual,Some(&other)).is_err());
+        let mut other=actual.clone();other.framework_host_pid+=1;
+        assert!(require_install_epoch(&actual,Some(&other)).is_err());
+        let mut other=actual.clone();other.framework_start_ticks+=1;
+        assert!(require_install_epoch(&actual,Some(&other)).is_err());
     }
 }

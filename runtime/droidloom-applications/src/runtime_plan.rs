@@ -54,6 +54,8 @@ mod family_retail;
 mod physical_acceptance;
 #[path = "physical_plan_prepare.rs"]
 mod physical_plan_prepare;
+#[path = "physical_plan_install.rs"]
+mod physical_plan_install;
 pub use physical_plan_prepare::prepare_owned_physical_plan;
 #[path = "physical_gate_roster.rs"]
 mod physical_gate_roster;

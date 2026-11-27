@@ -96,6 +96,7 @@ impl EarlyApplicationControl {
             let installation = matches!(
                 &request,
                 ControlRequest::Install { .. } | ControlRequest::InstallMultiple { .. }
+                    | ControlRequest::InstallCurrentMultiple { .. }
             );
             if file.is_some() != installation {
                 return Err(ControlError::Invalid(
@@ -190,6 +191,8 @@ impl EarlyApplicationControl {
                         file,
                         &[bytes],
                         launch_deadline,
+                        None,
+                        None,
                     )
                     .map_err(|e| early_application_error(e, &mut acquisition_quarantined))?;
                     response.message = format!(
@@ -210,12 +213,31 @@ impl EarlyApplicationControl {
                         file,
                         &lengths,
                         launch_deadline,
+                        None,
+                        None,
                     )
                     .map_err(|e| early_application_error(e, &mut acquisition_quarantined))?;
                     response.message = format!(
                         "Android confirmed atomic install session {} with {} original APK segments; application acceptance remains pending",
                         result.session,
                         result.segments.len()
+                    );
+                }
+                ControlRequest::InstallCurrentMultiple { user, lengths, expected_epoch } => {
+                    if user != 0 {
+                        return Err(ControlError::Invalid("working installation is fixed to user zero".into()));
+                    }
+                    let file = file.ok_or_else(|| ControlError::Invalid(
+                        "current original APK set descriptor missing".into()))?;
+                    crate::control::working_install_peer::validate_current_payload(&file, &lengths)?;
+                    let source_peer=crate::control::working_install_peer::WorkingInstallPeer::capture(stream,launch_deadline)?;
+                    let result = crate::production_application::install_early(
+                        authority, user, file, &lengths, launch_deadline, Some(&expected_epoch), Some(&source_peer),
+                    ).map_err(|e| early_application_error(e, &mut acquisition_quarantined))?;
+                    response.diagnostics = Some(serde_json::to_string(&result)?);
+                    response.message = format!(
+                        "Android confirmed current atomic install session {}; complete installed identity and application acceptance remain pending",
+                        result.session,
                     );
                 }
                 ControlRequest::ObserveRuntimeVintf { expected_epoch } => {

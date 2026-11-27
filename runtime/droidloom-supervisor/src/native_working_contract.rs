@@ -521,8 +521,8 @@ mod tests {
             (s.native_case_count, s.family_case_count, s.photo_case_count, s.settings_case_count, s.case_count),
             (14, 31, 1, 1, 47)
         );
-        assert_eq!(budget::SOURCE_AND_CAPTURE_SECONDS, 46_622);
-        assert_eq!(s.whole_suite_seconds, 315_742);
+        assert_eq!(budget::SOURCE_AND_CAPTURE_SECONDS, 64_052);
+        assert_eq!(s.whole_suite_seconds, 333_172);
         assert_eq!(
             s.whole_suite_seconds,
             budget::NATIVE_CASE_WINDOWS.iter().sum::<u64>()

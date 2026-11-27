@@ -235,17 +235,18 @@ fn signer_set(values: &[String]) -> Result<BTreeSet<String>, String> {
     }
     Ok(set)
 }
-struct VerifiedApk {
-    bytes: u64,
-    sha256: String,
-    is_base: bool,
-    manifest_split: Option<String>,
+pub(super) struct VerifiedApk {
+    pub(super) bytes: u64,
+    pub(super) sha256: String,
+    pub(super) is_base: bool,
+    pub(super) manifest_split: Option<String>,
 }
-struct VerifiedApplication {
-    version_code: u64,
-    version_name: String,
-    signers: BTreeSet<String>,
-    apks: Vec<VerifiedApk>,
+pub(super) struct VerifiedApplication {
+    pub(super) role: String,
+    pub(super) version_code: u64,
+    pub(super) version_name: String,
+    pub(super) signers: BTreeSet<String>,
+    pub(super) apks: Vec<VerifiedApk>,
 }
 
 /// Only the source-table admission path constructs this value in production.
@@ -383,6 +384,7 @@ fn parse_materials(
                 .insert(
                     row.package,
                     VerifiedApplication {
+                        role: row.role,
                         version_code: row.version_code,
                         version_name: row.version_name,
                         signers,
@@ -398,6 +400,26 @@ fn parse_materials(
         return Err("normal selection full APK byte/file totals differ".into());
     }
     Ok(result)
+}
+
+/// Admit the same source-owned complete SDK material table before any install.
+/// Paths/hashes supplied by a caller never extend the compiled admission table.
+pub(super) fn admit_source_materials(
+    selection: &FilePin,
+    signature: &FilePin,
+) -> Result<Option<VerifiedMaterialBatch>, String> {
+    let Some(admission) = admissions()?.into_iter().find(|a| a.selection.matches(selection))
+        else { return Ok(None); };
+    if !admission.signature_receipt.matches(signature) {
+        return Err("source installation signature receipt differs from the admitted batch".into());
+    }
+    let (held_selection, selected_bytes) = HeldDocument::open(selection)?;
+    let (held_signature, signed_bytes) = HeldDocument::open(signature)?;
+    let applications = parse_materials(&admission, &selected_bytes, &signed_bytes)?;
+    Ok(Some(VerifiedMaterialBatch {
+        admission, selection: selection.clone(), signature_receipt: signature.clone(),
+        applications, held_selection, held_signature,
+    }))
 }
 
 /// An unrecognized batch remains unqualified. Caller hashes cannot extend the
@@ -592,6 +614,38 @@ impl IdentityObservation {
 }
 
 impl VerifiedMaterialBatch {
+    pub(super) fn source(&self, package: &str) -> Result<&VerifiedApplication, String> {
+        self.applications.get(package).ok_or_else(|| "package absent from admitted material batch".into())
+    }
+    pub(super) fn packages(&self) -> BTreeSet<&str> {
+        self.applications.keys().map(String::as_str).collect()
+    }
+    /// Compare actual PM output to every original signed APK. A false value is
+    /// an update decision, never a failed inspection treated as absence.
+    pub(super) fn is_current(
+        &self, package: &str, epoch: &RuntimeEpoch, actual: &ApplicationInspection,
+    ) -> Result<bool, String> {
+        if actual.package != package || actual.user != 0 || actual.uid == 0
+            || actual.uid / 100_000 != 0 || actual.epoch != *epoch {
+            return Err("installation PM observation has another package, user, UID or actual epoch".into());
+        }
+        let source = self.source(package)?;
+        let expected: BTreeSet<_> = source.apks.iter()
+            .map(|a| (a.bytes, a.sha256.as_str(), a.is_base)).collect();
+        let mut names = BTreeSet::new();
+        let mut observed = BTreeSet::new();
+        for apk in &actual.apks {
+            if apk.name.is_empty() || apk.name.len()>255 || !apk.name.ends_with(".apk")
+                || apk.name.bytes().any(|b| b == b'/' || b == 92) || !names.insert(apk.name.as_str())
+                || !Path::new(&apk.path).is_absolute() || apk.bytes<4
+                || !crate::release::valid_sha(&apk.sha256)
+                || !observed.insert((apk.bytes, apk.sha256.as_str(), apk.name=="base.apk")) {
+                return Err("installation PM observation is not a complete unambiguous APK identity".into());
+            }
+        }
+        Ok(actual.version_code == source.version_code && names.contains("base.apk")
+            && observed == expected && actual.apks.len() == source.apks.len())
+    }
     pub(super) fn revalidate(&self) -> Result<(), String> {
         self.admission
             .selection

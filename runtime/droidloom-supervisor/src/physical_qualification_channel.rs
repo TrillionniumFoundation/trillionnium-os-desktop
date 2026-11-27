@@ -875,9 +875,9 @@ mod tests {
         assert_eq!(total + budget::FAMILY_SECONDS + budget::CAMERA_PHOTO_CASE_SECONDS
             + budget::SETTINGS_PERMISSION_CASE_SECONDS + 2 * budget::MAIN_SECONDS
             + budget::SOURCE_AND_CAPTURE_SECONDS, SUITE_SECONDS);
-        assert_eq!(budget::SOURCE_AND_CAPTURE_SECONDS, 46_622);
-        assert_eq!(SUITE_SECONDS, 315_742);
-        assert_eq!(SERVICE_SECONDS, 315_922);
+        assert_eq!(budget::SOURCE_AND_CAPTURE_SECONDS, 64_052);
+        assert_eq!(SUITE_SECONDS, 333_172);
+        assert_eq!(SERVICE_SECONDS, 333_352);
         assert_eq!(budget::RETAIL_WORK_SECONDS, 9_110);
         assert_eq!(CASE_COUNT, 47);
         assert_eq!(SETTINGS_CASE_COUNT, 1);
@@ -954,7 +954,7 @@ mod tests {
             assert!(lines.contains(line.as_str()), "{line}");
         }
         assert_eq!(NOFILE_LIMIT, 32_768);
-        assert_eq!(SERVICE_SECONDS, 315_922);
+        assert_eq!(SERVICE_SECONDS, 333_352);
         assert!(lines.contains("MemoryMax=2147483648"));
         assert!(lines.contains("MemorySwapMax=0"));
         assert!(lines.contains("CPUQuota=200%"));

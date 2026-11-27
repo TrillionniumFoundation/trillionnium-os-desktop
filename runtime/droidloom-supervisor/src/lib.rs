@@ -80,6 +80,7 @@ mod production_cp3a_init_identity;
 mod production_devices;
 #[cfg(target_os = "linux")]
 mod production_execution;
+mod production_frontend_protocol;
 #[cfg(target_os = "linux")]
 mod production_execution_profile;
 #[cfg(target_os = "linux")]

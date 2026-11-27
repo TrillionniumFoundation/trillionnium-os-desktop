@@ -742,6 +742,14 @@ impl NativeApplicationInspector {
         request: &ControlRequest,
         deadline: Option<Instant>,
     ) -> Result<ControlResponse, ControlError> {
+        self.request_fixed_file_until(request, None, deadline)
+    }
+    pub(crate) fn request_fixed_file_until(
+        &mut self,
+        request: &ControlRequest,
+        file: Option<&fs::File>,
+        deadline: Option<Instant>,
+    ) -> Result<ControlResponse, ControlError> {
         check_deadline(deadline)?;
         self.revalidate()?;
         check_deadline(deadline)?;
@@ -760,9 +768,9 @@ impl NativeApplicationInspector {
         }
         check_deadline(deadline)?;
         let result = if let Some(end) = deadline {
-            progress::request_on_until(stream, request, end)
+            progress::request_on_file_until(stream, request, file, end)
         } else {
-            progress::request_on(stream, Instant::now(), request, None, None)
+            progress::request_on(stream, Instant::now(), request, file, None)
         };
         live(&current_pidfd).map_err(|e| io_error("recheck current control peer", e))?;
         self.revalidate()?;
@@ -840,6 +848,24 @@ impl NativeApplicationInspector {
             pidfd,
             observed_at: Instant::now(),
         })
+    }
+
+    /// Bind an actual Main token to this same retained normal peer, without RPC.
+    pub(crate) fn require_main_local(
+        &self,
+        main: &MainCustodyObservation,
+        deadline: Instant,
+    ) -> Result<(), ControlError> {
+        check_deadline(Some(deadline))?;
+        live(&main.pidfd).map_err(|e| io_error("check original Main peer", e))?;
+        let held = main.pidfd.metadata().map_err(|e| io_error("stat original Main peer", e))?;
+        let current = self.pidfd.metadata().map_err(|e| io_error("stat live Main peer", e))?;
+        if (held.dev(), held.ino()) != (current.dev(), current.ino())
+            || main.peer != self.observation()? {
+            return Err(ControlError::Invalid("working install Main belongs to another actual peer".into()));
+        }
+        self.revalidate()?;
+        check_deadline(Some(deadline))
     }
 
     /// Local custody only: held peer/process/source and both original opaque

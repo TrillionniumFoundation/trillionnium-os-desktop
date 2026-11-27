@@ -484,6 +484,12 @@ impl WorkingQualificationOwner {
         self.directory.guard().map_err(|e| e.to_string())?;
         self.pulse.guard().map_err(|e| e.to_string())
     }
+    /// Compare the complete actual bootstrap Main while this owner still holds
+    /// its working boot/backings. A serialized receipt cannot call this method.
+    pub fn compare_preparation_main(&self, main: &MainCustodyObservation) -> Result<(), String> {
+        self.guard()?;
+        self.pulse.require_preparation_binding(main.facts())
+    }
     /// Move the one real bootstrap pair to the normal preparation producer.
     /// No caller epoch, saved Main receipt or replacement token is accepted.
     pub fn take_preparation_bootstrap(

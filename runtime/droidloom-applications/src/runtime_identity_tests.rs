@@ -485,3 +485,19 @@ fn an_approved_document_prefix_is_not_the_complete_admitted_file() {
     std::fs::write(&path, with_unpinned_tail).unwrap();
     assert!(HeldDocument::open(&pin).is_err());
 }
+
+#[test]
+fn current_install_decision_requires_full_source_identity_and_rejects_wrong_epoch() {
+    let (_temp,batch,_plan,actual)=materials();
+    assert!(batch.is_current(&actual.package,&actual.epoch,&actual).unwrap());
+    let mut changed=actual.clone();changed.version_code+=1;
+    assert!(!batch.is_current(&actual.package,&actual.epoch,&changed).unwrap());
+    let mut changed=actual.clone();changed.apks.pop();
+    assert!(!batch.is_current(&actual.package,&actual.epoch,&changed).unwrap());
+    let mut changed=actual.clone();changed.apks[1].sha256="d".repeat(64);
+    assert!(!batch.is_current(&actual.package,&actual.epoch,&changed).unwrap());
+    let mut changed=actual.clone();changed.epoch.framework_start_ticks+=1;
+    assert!(batch.is_current(&actual.package,&actual.epoch,&changed).is_err());
+    let mut changed=actual.clone();changed.uid=100000;
+    assert!(batch.is_current(&actual.package,&actual.epoch,&changed).is_err());
+}

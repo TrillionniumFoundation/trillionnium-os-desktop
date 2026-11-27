@@ -28,7 +28,8 @@ fn before(deadline: Instant) -> Result<(), ControlError> {
     if Instant::now() >= deadline {
         return Err(invalid("original APK capture deadline expired"));
     }
-    Ok(())
+    super::physical_qualification_channel::working_runtime::progress()
+        .map_err(invalid)
 }
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 struct Node {
@@ -120,20 +121,45 @@ fn seal(writer: File) -> Result<File, ControlError> {
 
 /// Both public CLI forms use this exact original-byte transport.
 pub(crate) fn prepare(paths: &[PathBuf]) -> Result<(File, Vec<u64>), ControlError> {
-    if !(1..=32).contains(&paths.len()) {
+    prepare_bound(SourceInputs::Paths(paths), Instant::now() + PREPARE_LIMIT)
+}
+
+/// Source-admitted whole-file comparisons, still using the original sealed
+/// descriptor transport and the caller's one absolute preparation deadline.
+pub(crate) fn prepare_pinned_until(
+    files: &[&File],
+    expected: &[(u64, [u8; 32])],
+    deadline: Instant,
+) -> Result<(File, Vec<u64>), ControlError> {
+    if files.len() != expected.len() {
+        return Err(invalid("complete APK paths and source pins differ"));
+    }
+    prepare_bound(SourceInputs::Pinned(files, expected), deadline)
+}
+
+enum SourceInputs<'a> {
+    Paths(&'a [PathBuf]),
+    Pinned(&'a [&'a File], &'a [(u64, [u8; 32])]),
+}
+fn prepare_bound(
+    source: SourceInputs<'_>,
+    caller_deadline: Instant,
+) -> Result<(File, Vec<u64>), ControlError> {
+    let count=match &source { SourceInputs::Paths(p)=>p.len(), SourceInputs::Pinned(f,_)=>f.len() };
+    if !(1..=32).contains(&count) {
         return Err(invalid("supply one through 32 original APK files"));
     }
-    let deadline = Instant::now() + PREPARE_LIMIT;
-    let mut inputs = Vec::with_capacity(paths.len());
-    let mut lengths = Vec::with_capacity(paths.len());
+    let deadline = (Instant::now() + PREPARE_LIMIT).min(caller_deadline);
+    let mut inputs = Vec::with_capacity(count);
+    let mut lengths = Vec::with_capacity(count);
     let mut total = 0_u64;
-    for path in paths {
+    for index in 0..count {
         before(deadline)?;
-        let file = OpenOptions::new()
-            .read(true)
-            .custom_flags(libc::O_NONBLOCK | libc::O_CLOEXEC)
-            .open(path)
-            .map_err(|e| io_error("open original APK with caller permissions", e))?;
+        let file = match &source {
+            SourceInputs::Paths(paths)=>OpenOptions::new().read(true)
+                .custom_flags(libc::O_NONBLOCK | libc::O_CLOEXEC).open(&paths[index]),
+            SourceInputs::Pinned(files,_)=>files[index].try_clone(),
+        }.map_err(|e| io_error("open original APK with caller permissions", e))?;
         let original = observe(&file)?;
         let length = apk::validate(&file)?;
         total = total
@@ -141,6 +167,9 @@ pub(crate) fn prepare(paths: &[PathBuf]) -> Result<(File, Vec<u64>), ControlErro
             .filter(|n| *n <= MAX_BYTES)
             .ok_or_else(|| invalid("complete original APK set exceeds 2 GiB"))?;
         let digest = hash(&file, 0, length, deadline)?;
+        if matches!(&source, SourceInputs::Pinned(_, pins) if pins[index] != (length, digest)) {
+            return Err(invalid("original APK differs from the complete source-admitted bytes"));
+        }
         if observe(&file)? != original {
             return Err(invalid("original APK changed during initial capture"));
         }
@@ -292,6 +321,17 @@ pub(crate) fn validate(file: &File, lengths: &[u64]) -> Result<(), ControlError>
 /// Production additionally requires the real fixed SELinux object context.
 /// A host unit test without the joint policy cannot qualify this check.
 pub(crate) fn validate_production_context(file: &File) -> Result<(), ControlError> {
+    validate_context(file,PAYLOAD_CONTEXT)
+}
+pub(crate) fn validate_working_context(
+    file:&File,
+    peer:&super::working_install_peer::WorkingInstallPeer,
+)->Result<(),ControlError>{
+    peer.guard()?;
+    validate_context(file,b"u:object_r:p4_linux_working_comparison_t:s0")?;
+    peer.guard()
+}
+fn validate_context(file:&File,expected:&[u8])->Result<(),ControlError>{
     let mut bytes = [0_u8; 256];
     // SAFETY: a source-owned key and bounded writable buffer stay live.
     let n = unsafe {
@@ -310,7 +350,7 @@ pub(crate) fn validate_production_context(file: &File) -> Result<(), ControlErro
     }
     let got = &bytes[..usize::try_from(n).map_err(|_| invalid("invalid APK context length"))?];
     let got = got.strip_suffix(&[0]).unwrap_or(got);
-    if got != PAYLOAD_CONTEXT {
+    if got != expected {
         return Err(invalid("APK payload has a different SELinux source type"));
     }
     Ok(())

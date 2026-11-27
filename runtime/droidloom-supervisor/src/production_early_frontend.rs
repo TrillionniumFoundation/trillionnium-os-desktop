@@ -8,8 +8,7 @@ mod observation;
 pub(crate) use observation::{QueryObservation, observe_query};
 #[path = "production_frontend_camera.rs"]
 mod camera;
-#[path = "production_frontend_protocol.rs"]
-mod wire;
+use crate::production_frontend_protocol as wire;
 use std::ffi::{CStr, CString};
 use std::fs::{self, File};
 use std::io::{self, Read};

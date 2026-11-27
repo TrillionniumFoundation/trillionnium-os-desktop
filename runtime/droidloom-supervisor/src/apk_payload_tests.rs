@@ -279,3 +279,27 @@ fn identical_sealed_bytes_with_a_different_kernel_name_are_rejected() {
     let input = seal(writer).unwrap();
     assert!(validate(&input, &[8]).is_err());
 }
+
+#[test]
+fn working_pinned_capture_uses_held_descriptors_and_rejects_wrong_bytes_or_renewed_time() {
+    let d=tempfile::tempdir().unwrap();
+    let original=b"PK\x03\x04original";
+    let path=write_source(d.path(),"held.apk",original);
+    let held=File::open(&path).unwrap();
+    let expected=(original.len() as u64,<[u8;32]>::from(Sha256::digest(original)));
+    std::fs::rename(&path,d.path().join("old.apk")).unwrap();
+    std::fs::write(&path,b"PK\x03\x04replaced").unwrap();
+    let (mut actual,lengths)=prepare_pinned_until(&[&held],&[expected],
+        Instant::now()+Duration::from_secs(2)).unwrap();
+    let mut bytes=Vec::new();actual.read_to_end(&mut bytes).unwrap();
+    assert_eq!(bytes,original);
+    assert_eq!(lengths,[original.len() as u64]);
+    assert!(prepare_pinned_until(&[&held],&[(expected.0,[0;32])],
+        Instant::now()+Duration::from_secs(2)).is_err());
+    assert!(prepare_pinned_until(&[&held],&[(expected.0+1,expected.1)],
+        Instant::now()+Duration::from_secs(2)).is_err());
+    assert!(prepare_pinned_until(&[&held],&[expected],Instant::now()).is_err());
+    assert!(prepare_pinned_until(&[&held],&[],Instant::now()+Duration::from_secs(2)).is_err());
+    assert_eq!(PREPARE_LIMIT.as_secs(),
+        super::super::physical_qualification_channel::budget::APPLICATION_INSTALL_PAYLOAD_SECONDS);
+}
