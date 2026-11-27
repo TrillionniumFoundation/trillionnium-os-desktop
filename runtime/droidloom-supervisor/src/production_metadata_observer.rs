@@ -61,6 +61,7 @@ pub(crate) enum MetadataRole {
     LaunchStart,
     Install,
     CatalogRead,
+    AppOpsRead,
     DisplayControl,
 }
 impl MetadataRole {
@@ -84,6 +85,7 @@ impl MetadataRole {
             Self::LaunchStart => b"u:r:droidloom_launch_start:s0",
             Self::Install => b"u:r:droidloom_install:s0",
             Self::CatalogRead => b"u:r:droidloom_catalog_read:s0",
+            Self::AppOpsRead => b"u:r:droidloom_appops_read:s0",
             Self::DisplayControl => b"u:r:droidloom_display_control:s0",
         }
     }
@@ -100,6 +102,7 @@ impl MetadataRole {
             super::OperationDomain::LaunchStart => Self::LaunchStart,
             super::OperationDomain::Install => Self::Install,
             super::OperationDomain::CatalogRead => Self::CatalogRead,
+            super::OperationDomain::AppOpsRead => Self::AppOpsRead,
             super::OperationDomain::DisplayControl => Self::DisplayControl,
         }
     }

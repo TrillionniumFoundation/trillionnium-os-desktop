@@ -533,6 +533,7 @@ fn native_domain(domain: OperationDomain) -> u32 {
         OperationDomain::Install => 5,
         OperationDomain::CatalogRead => 6,
         OperationDomain::DisplayControl => 7,
+        OperationDomain::AppOpsRead => 8,
     }
 }
 unsafe extern "C" {
