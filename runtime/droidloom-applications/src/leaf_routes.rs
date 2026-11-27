@@ -22,9 +22,9 @@ use super::{ApplicationPlan, FilePin, RuntimePlan, pinned};
 use super::runtime_identity::{IdentityObservation, VerifiedMaterialBatch};
 
 const QUALIFICATION: &str = "/var/lib/droidloom/qualification/pocket4";
-const SELECTION_PATH: &str = "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261120-apps-r1/selection/selection-14.json";
-const SELECTION_BYTES: u64 = 4669;
-const SELECTION_SHA: &str = "40ec943537a140b11a055587e9b7bd4bb39f944429e6d509df6241842e9be1c9";
+const SELECTION_PATH: &str = "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2/selection/selection-14.json";
+const SELECTION_BYTES: u64 = 4769;
+const SELECTION_SHA: &str = "b84572b1ee5929b615b95c613aae3f0529702d411e5b9d04fa4620d239fad35a";
 const SOURCE_CATALOG: &str = include_str!("leaf_sources.json");
 
 pub(super) fn compiled_release_sources() -> (FilePin, &'static str) {
@@ -284,7 +284,7 @@ impl LeafObservation {
     pub(super) fn verified_business_gates(&self) -> &'static [&'static str] {
         if self.custody.is_some()
             && self.route == Route::SettingsSupportedPages
-            && self.state == "SETTINGS_PAGES_ROUNDTRIP_VERIFIED_RESTORED"
+            && self.state == "SETTINGS_FONT_SCALE_RESTORED_WITH_PAGES"
             && self.original_entry_result_verified && self.original_business_success_reported
             && !self.business_outcome_unknown && self.main_epoch_unchanged
             && self.owned_host_tree_retired && !self.automatic_retry
@@ -349,8 +349,8 @@ impl Route {
                 plan_schema: Some("pocket4-settings-pages-plan-v2"),
                 kind: Some("settings_supported_pages"),
                 seconds: 900,
-                state: Some("SETTINGS_PAGES_ROUNDTRIP_VERIFIED_RESTORED"),
-                result_schema: "pocket4-settings-pages-case-result-v2",
+                state: Some("SETTINGS_FONT_SCALE_RESTORED_WITH_PAGES"),
+                result_schema: "pocket4-settings-pages-case-result-v3",
             },
             CameraPhoto => Definition {
                 source: 3,
@@ -504,6 +504,8 @@ fn validate_selection_document(
         &[
             "schema",
             "selection_only",
+            "source_controlled_cohort",
+            "current_fixed_r1_bytes_recovered",
             "Android_actions",
             "Main_actions",
             "CURRENT_writes",
@@ -519,6 +521,8 @@ fn validate_selection_document(
     require(
         selection["schema"] == "current-application-preparation-selection-v1"
             && selection["selection_only"] == true
+            && selection["source_controlled_cohort"] == "cp3a-20261126-apps-r2"
+            && selection["current_fixed_r1_bytes_recovered"] == false
             && selection["Android_actions"] == 0
             && selection["Main_actions"] == 0
             && selection["CURRENT_writes"] == 0
@@ -577,7 +581,7 @@ fn validate_selection_document(
             && selection["runtime_qualified"] == false
             && selection["production_ready"] == false
             && ref_field(update,"catalog")? == (FilePin {
-                path: "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261120-apps-r1/selection/leaf_sources.json".into(),
+                path: "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2/selection/leaf_sources.json".into(),
                 bytes: SOURCE_CATALOG.len() as u64,
                 sha256: hex::encode(Sha256::digest(SOURCE_CATALOG)),
             }),
@@ -887,6 +891,289 @@ fn claim(
     Ok(())
 }
 
+// These comparisons consume only the result returned by the actually executed,
+// source-admitted entry. They cannot construct HeldLeafCustody or grant Main.
+fn settings_pin(value: &Value) -> Result<FilePin, String> {
+    let pin = reference(value)?;
+    require(pin.path.is_absolute()
+        && !pin.path.components().any(|part| matches!(part,
+            std::path::Component::ParentDir | std::path::Component::CurDir))
+        && crate::release::valid_sha(&pin.sha256),
+        "Settings observation has an invalid bounded evidence reference")?;
+    Ok(pin)
+}
+
+fn settings_provider(value: &Value) -> Result<f64, String> {
+    exact_keys(value, &["present", "text", "effective"])?;
+    let number = value["effective"].as_f64().ok_or("Settings provider scale is not numeric")?;
+    require(number.is_finite() && (0.5..=2.0).contains(&number),
+        "Settings provider scale is outside the source-owned range")?;
+    match value["present"].as_bool() {
+        Some(false) => require(value["text"].is_null() && number == 1.0,
+            "Absent font_scale must retain its actual default effect")?,
+        Some(true) => {
+            let text = value["text"].as_str().ok_or("Present font_scale lacks its original text")?;
+            let parts: Vec<_> = text.split('.').collect();
+            let canonical = (1..=2).contains(&parts.len())
+                && !parts[0].is_empty()
+                && parts[0].bytes().all(|byte| byte.is_ascii_digit())
+                && (parts[0] == "0" || !parts[0].starts_with('0'))
+                && (parts.len() == 1 || ((1..=8).contains(&parts[1].len())
+                    && parts[1].bytes().all(|byte| byte.is_ascii_digit())));
+            require(canonical && text.parse::<f64>().ok() == Some(number),
+                "Settings original provider text and numeric value differ")?;
+        }
+        _ => return Err("Settings provider presence must be a real boolean".into()),
+    }
+    Ok(number)
+}
+
+fn settings_configuration(value: &Value) -> Result<f64, String> {
+    exact_keys(value, &["font_scale", "other_configuration_fields", "resource_fields", "raw_sha256"])?;
+    let number = value["font_scale"].as_f64().ok_or("Settings configuration lacks font_scale")?;
+    require(number.is_finite() && (0.5..=2.0).contains(&number)
+        && value["raw_sha256"].as_str().is_some_and(crate::release::valid_sha),
+        "Settings actual configuration has invalid scale or full digest")?;
+    for key in ["other_configuration_fields", "resource_fields"] {
+        let rows = value[key].as_array().ok_or("Settings configuration complement missing")?;
+        require(rows.len() <= 128 && rows.iter().all(|row| row.as_str().is_some_and(|text|
+            !text.is_empty() && text.len() <= 131072 && text.len() % 2 == 0
+                && text.bytes().all(|byte| byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte)))),
+            "Settings configuration complement is not bounded encoded source data")?;
+    }
+    Ok(number)
+}
+
+fn settings_command(value: &Value, operation: &str, argv: &[&str], mutation: bool)
+    -> Result<(), String>
+{
+    exact_keys(value, &["operation", "argv", "mutation", "result", "stdout", "stderr"])?;
+    require(value["operation"] == operation && value["argv"] == json!(argv)
+        && value["mutation"] == mutation,
+        "Settings command differs from the fixed actual font_scale operation")?;
+    require(settings_pin(&value["result"])?.bytes > 0,
+        "Settings command lacks its completed recorder result")?;
+    settings_pin(&value["stdout"])?;
+    settings_pin(&value["stderr"])?;
+    Ok(())
+}
+
+fn settings_snapshot<'a>(value: &'a Value, phase: &str, expected: &Value,
+    scope: &Value, complement: &Value) -> Result<(&'a Value, &'a Value, f64), String>
+{
+    exact_keys(value, &["phase", "provider", "configuration", "provider_command",
+        "configuration_command", "scope"])?;
+    settings_provider(&value["provider"])?;
+    let scale = settings_configuration(&value["configuration"])?;
+    require(value["phase"] == phase && value["provider"] == *expected
+        && value["scope"] == *scope
+        && value["configuration"]["other_configuration_fields"] == complement["other_configuration_fields"]
+        && value["configuration"]["resource_fields"] == complement["resource_fields"],
+        "Settings snapshot changed phase, original owner, value or unrelated configuration")?;
+    let provider = &value["provider_command"];
+    let config = &value["configuration_command"];
+    settings_command(provider, &format!("{phase}-value"),
+        &["/system/bin/settings", "--user", "0", "get", "system", "font_scale"], false)?;
+    settings_command(config, &format!("{phase}-config"),
+        &["/system/bin/am", "get-config", "--proto"], false)?;
+    let raw = format!("{}\n", if expected["present"] == true {
+        expected["text"].as_str().ok_or("Settings expected text missing")?
+    } else { "null" });
+    let stdout = settings_pin(&provider["stdout"])?;
+    let config_stdout = settings_pin(&config["stdout"])?;
+    require(stdout.bytes == raw.len() as u64
+        && stdout.sha256 == hex::encode(Sha256::digest(raw.as_bytes()))
+        && (1..=65536).contains(&config_stdout.bytes)
+        && config_stdout.sha256 == value["configuration"]["raw_sha256"],
+        "Settings snapshot differs from its actual provider/configuration stdout pins")?;
+    Ok((provider, config, scale))
+}
+
+fn settings_settle<'a>(snapshots: &'a [Value], cursor: &mut usize, prefix: &str,
+    expected: &Value, scope: &Value, complement: &Value,
+    commands: &mut Vec<&'a Value>) -> Result<(), String>
+{
+    let mut count = 0;
+    let mut last = None;
+    while *cursor < snapshots.len() && snapshots[*cursor]["phase"].as_str()
+        .is_some_and(|phase| phase.starts_with(&format!("{prefix}-"))) {
+        require(count < 12, "Settings effect sampling exceeded its fixed source bound")?;
+        let (provider, config, scale) = settings_snapshot(&snapshots[*cursor],
+            &format!("{prefix}-{count:02}"), expected, scope, complement)?;
+        commands.extend([provider, config]);
+        last = Some(scale);
+        count += 1;
+        *cursor += 1;
+    }
+    let expected_scale = settings_provider(expected)?;
+    require(count > 0 && last.is_some_and(|scale| (scale - expected_scale).abs() <= 0.00001),
+        "Settings apply/reopen/restore lacks the actual final framework effect")
+}
+
+fn settings_font_scale_facts(result: &Value) -> Result<(), String> {
+    let value = &result["setting_roundtrip"];
+    exact_keys(value, &["schema", "namespace", "key", "user", "original", "selected",
+        "state", "apply_observed", "reopen_observed", "restore_observed", "apply_claim",
+        "reopen_claim", "provider_writes", "readonly_commands", "commands", "snapshots",
+        "pending_command", "automatic_write_retry", "compare_and_swap_claimed",
+        "permission_or_account_write_authorized", "whole_app_business_accepted"])?;
+    let original_scale = settings_provider(&value["original"])?;
+    let selected = if (original_scale - 1.15).abs() <= 0.00001 { "1.0" } else { "1.15" };
+    require(value["schema"] == "pocket4-settings-font-scale-facts-v1"
+        && value["namespace"] == "system" && value["key"] == "font_scale" && value["user"] == 0
+        && value["selected"] == selected && value["state"] == "restored_verified"
+        && value["apply_observed"] == true && value["reopen_observed"] == true
+        && value["restore_observed"] == true && value["provider_writes"] == 2
+        && value["pending_command"].is_null() && value["automatic_write_retry"] == false
+        && value["compare_and_swap_claimed"] == false
+        && value["permission_or_account_write_authorized"] == false
+        && value["whole_app_business_accepted"] == false,
+        "Settings requires its one actual changed, reopened and restored font_scale transaction")?;
+    let claims = result["native_claims"].as_array().ok_or("Settings owned claims missing")?;
+    let scopes = result["recorder_scopes"].as_array().ok_or("Settings original recorder scopes missing")?;
+    require(claims.len() == 2 && scopes.len() == 2 && claims[0] != claims[1] && scopes[0] != scopes[1]
+        && value["apply_claim"] == claims[0] && value["reopen_claim"] == claims[1]
+        && result["normally_closed_claims"] == result["native_claims"]
+        && result["host_flow_contexts_closed"] == result["recorder_scopes"],
+        "Settings persistence must use two distinct normally closed owned launches")?;
+    for row in claims.iter().chain(scopes.iter()) { settings_pin(row)?; }
+    let snapshots = value["snapshots"].as_array().ok_or("Settings actual snapshots missing")?;
+    let commands = value["commands"].as_array().ok_or("Settings actual command chain missing")?;
+    require((6..=39).contains(&snapshots.len()) && commands.len() == snapshots.len() * 2 + 2
+        && value["readonly_commands"].as_u64() == Some((snapshots.len() * 2) as u64),
+        "Settings bounded read/write counts differ from the complete actual trace")?;
+    let original = &value["original"];
+    let complement = &snapshots[0]["configuration"];
+    let selected_value = json!({"present":true, "text":selected,
+        "effective":selected.parse::<f64>().map_err(|e| e.to_string())?});
+    let mut expected_commands = Vec::new();
+    for (index, phase) in ["original", "before-apply"].iter().enumerate() {
+        let (provider, config, scale) = settings_snapshot(&snapshots[index], phase,
+            original, &scopes[0], complement)?;
+        require((scale - original_scale).abs() <= 0.00001,
+            "Settings original provider and framework effect disagree before mutation")?;
+        expected_commands.extend([provider, config]);
+    }
+    let apply = &commands[expected_commands.len()];
+    settings_command(apply, "apply",
+        &["/system/bin/settings", "--user", "0", "put", "system", "font_scale", selected], true)?;
+    require(settings_pin(&apply["stdout"])?.bytes == 0,
+        "Settings normal apply returned unexpected output")?;
+    expected_commands.push(apply);
+    let mut cursor = 2;
+    settings_settle(snapshots, &mut cursor, "applied", &selected_value, &scopes[0],
+        complement, &mut expected_commands)?;
+    settings_settle(snapshots, &mut cursor, "reopened", &selected_value, &scopes[1],
+        complement, &mut expected_commands)?;
+    let snapshot = snapshots.get(cursor).ok_or("Settings before-restore snapshot missing")?;
+    let (provider, config, _) = settings_snapshot(snapshot, "before-restore",
+        &selected_value, &scopes[1], complement)?;
+    expected_commands.extend([provider, config]);
+    cursor += 1;
+    let restore = commands.get(expected_commands.len()).ok_or("Settings normal restore command missing")?;
+    let mut restore_argv = vec!["/system/bin/settings", "--user", "0"];
+    let restore_stdout: &[u8] = if original["present"] == true {
+        restore_argv.extend(["put", "system", "font_scale",
+            original["text"].as_str().ok_or("Settings original string missing")?]);
+        b""
+    } else {
+        restore_argv.extend(["delete", "system", "font_scale"]);
+        b"Deleted 1 rows\n"
+    };
+    settings_command(restore, "restore", &restore_argv, true)?;
+    let restore_pin = settings_pin(&restore["stdout"])?;
+    require(restore_pin.bytes == restore_stdout.len() as u64
+        && restore_pin.sha256 == hex::encode(Sha256::digest(restore_stdout)),
+        "Settings restore must preserve the exact original string or absence")?;
+    expected_commands.push(restore);
+    settings_settle(snapshots, &mut cursor, "restored", original, &scopes[1],
+        complement, &mut expected_commands)?;
+    require(cursor == snapshots.len() && expected_commands.len() == commands.len()
+        && expected_commands.iter().zip(commands).all(|(expected, actual)| **expected == *actual)
+        && commands.iter().map(|row| row["result"].clone()).collect::<Vec<_>>()
+            .iter().enumerate().all(|(index, pin)| !commands[..index].iter().any(|row| row["result"] == *pin)),
+        "Settings complete command chain was reordered, repeated or extended")?;
+    Ok(())
+}
+
+fn settings_v3_terminal(printed: &Value, result: &Value, case_ref: Option<&FilePin>)
+    -> Result<(), String>
+{
+    exact_keys(printed, &["result", "state", "case_business_success_verified", "scope",
+        "whole_app_business_accepted"])?;
+    let empty = |key: &str| result["cancellation_commit"][key].as_array().is_some_and(Vec::is_empty);
+    let two = |key: &str| result[key].as_array().is_some_and(|rows| rows.len() == 2);
+    require(result["case_business_success_verified"] == true
+        && printed["case_business_success_verified"] == true && printed["state"] == result["state"]
+        && result["scope"] == json!(["settings.pages", "settings.roundtrip"])
+        && printed["scope"] == result["scope"] && result["accepted_gates"] == result["scope"]
+        && result["remaining_gates"] == json!(["settings.permissions", "identity", "lifecycle",
+            "stability", "data_permissions", "release_scope", "ui_observation"])
+        && Some(ref_field(result, "base_plan")?).as_ref() == case_ref
+        && result["all_five_pages_observed"] == true
+        && result["identity_permissions_directories_preserved"] == true
+        && result["permission_interfaces"] == json!({"settings_permissions_gate_accepted":false,
+            "readonly_input_error_verified":false, "account_state_observed":false})
+        && result["complete_task_baseline_restored"] == true
+        && result["final_source_identity_chain_unchanged"] == true && result["evidence_witness_closed"] == true
+        && result["native_launch_count"] == 2 && result["page_route_count"] == 5
+        && result["observation_count"] == 9 && two("launches") && two("normal_closes")
+        && ["pending_route", "pending_UI"].iter().all(|key| result.get(*key).is_some_and(Value::is_null))
+        && result.get("unknown_retained_without_further_mutation").is_none_or(|v| v == false)
+        && result.get("unknown_or_conflicting_setting_retained_without_replay").is_none_or(|v| v == false)
+        && result["setting_writes"] == 2 && result["provider_writes"] == 2
+        && ["permission_writes", "account_writes", "package_writes", "other_provider_writes"]
+            .iter().all(|key| result[*key] == 0)
+        && result["Android_runtime_qualification_inferred_from_source"] == false
+        && result["Binder_UID_cleanup_verified"] == false
+        && result["Main_before"].is_object() && result["Main_before"] == result["Main_after"]
+        && empty("observed_before_commit") && empty("pending_at_commit")
+        && result["cancellation_commit"]["decision_frozen_after_host_context_close"] == true,
+        "Settings v3 requires exact pages/restore, original retirement and no other business credit")?;
+    let pages = result["pages"].as_array().ok_or("Settings five actual pages missing")?;
+    require(pages.len() == 5, "Settings requires all five source-owned page classes")?;
+    let profile = [
+        ("system", "com.android.settings.Settings$SystemDashboardActivity"),
+        ("network", "com.android.settings.Settings$NetworkDashboardActivity"),
+        ("display", "com.android.settings.Settings$DisplaySettingsActivity"),
+        ("storage", "com.android.settings.Settings$StorageDashboardActivity"),
+        ("applications", "com.android.settings.Settings$ManageApplicationsActivity"),
+    ];
+    let home = "com.android.settings.homepage.SettingsHomepageActivity";
+    let mut observations = vec![(&result["initial_home"], "home", home)];
+    observations.extend(pages.iter().zip(profile).map(|(row, (name, activity))| (row, name, activity)));
+    observations.push((&result["applied_page"], profile[4].0, profile[4].1));
+    observations.push((&result["reopened_home"], "home", home));
+    observations.push((&result["restored_home"], "home", home));
+    let mut init = None;
+    let mut receipts = BTreeSet::new();
+    for (row, name, activity) in observations {
+        exact_keys(row, &["summary", "recorder_result", "observation", "PNG"])?;
+        let summary = &row["summary"];
+        let pid = summary["android_init_host_pid"].as_u64().filter(|pid| *pid > 0 && *pid <= i32::MAX as u64)
+            .ok_or("Settings actual Main pid is missing")?;
+        require(summary["page"] == name && summary["package"] == "com.android.settings"
+            && summary["activity"] == activity && init.is_none_or(|old| old == pid)
+            && summary["expected_title_observed"] == true
+            && summary["source"] == "actual-native-tree-and-scoped-PNG"
+            && summary["whole_app_business_accepted"] == false
+            && summary["visible_control_count"].as_u64().is_some_and(|n| (2..=8192).contains(&n))
+            && summary["visible_label_count"].as_u64().is_some_and(|n| (3..=8192).contains(&n))
+            && summary["scoped_pixel_sha256"].as_str().is_some_and(crate::release::valid_sha)
+            && summary["window_token"].as_str().is_some_and(|s| (1..=32).contains(&s.len())
+                && s.bytes().all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))),
+            "Settings page lacks its exact actual window, native controls or scoped pixels")?;
+        init = Some(pid);
+        let recorder = settings_pin(&row["recorder_result"])?;
+        require(recorder.bytes > 0 && receipts.insert(recorder.path),
+            "Settings repeated or omitted an actual UI recorder result")?;
+        require(settings_pin(&row["observation"])?.bytes > 0
+            && (1..=32 * 1024 * 1024).contains(&settings_pin(&row["PNG"])?.bytes),
+            "Settings actual observation or bounded PNG missing")?;
+    }
+    settings_font_scale_facts(result)
+}
+
 fn terminal_result(
     route: Route,
     printed: &Value,
@@ -937,99 +1224,7 @@ fn terminal_result(
             "gallery result lacks completed business/cleanup scope for this Main and preparation",
         )?;
     } else if route == Route::SettingsSupportedPages {
-        exact_keys(
-            printed,
-            &[
-                "result",
-                "state",
-                "case_business_success_verified",
-                "scope",
-                "accepted_gates",
-                "whole_app_business_accepted",
-            ],
-        )?;
-        let empty = |key: &str| {
-            result["cancellation_commit"][key]
-                .as_array()
-                .is_some_and(Vec::is_empty)
-        };
-        let two = |key: &str| result[key].as_array().is_some_and(|rows| rows.len() == 2);
-        require(
-            result["case_business_success_verified"] == true
-                && printed["case_business_success_verified"] == true
-                && printed["state"] == result["state"]
-                && result["scope"] == json!(["settings.pages", "settings.roundtrip"])
-                && printed["scope"] == result["scope"]
-                && result["accepted_gates"] == result["scope"]
-                && printed["accepted_gates"] == result["accepted_gates"]
-                && result["remaining_gates"]
-                    == json!([
-                        "settings.permissions",
-                        "identity",
-                        "lifecycle",
-                        "stability",
-                        "data_permissions",
-                        "release_scope",
-                        "ui_observation"
-                    ])
-                && Some(ref_field(result, "base_plan")?).as_ref() == case_ref
-                && result["all_five_pages_observed"] == true
-                && result["pages"].as_array().is_some_and(|v| v.len() == 5)
-                && result["identity_permissions_directories_preserved"] == true
-                && result["permission_account_state_preserved"] == true
-                && result["permission_interfaces"]["settings_permissions_gate_accepted"] == false
-                && result["permission_interfaces"]["readonly_input_error_verified"] == true
-                && result["complete_task_baseline_restored"] == true
-                && result["final_source_identity_chain_unchanged"] == true
-                && result["evidence_witness_closed"] == true
-                && result["native_launch_count"] == 2
-                && result["page_route_count"] == 11
-                && result["observation_count"] == 13
-                && two("native_claims")
-                && result["normally_closed_claims"] == result["native_claims"]
-                && two("launches")
-                && two("normal_closes")
-                && two("host_flow_contexts_closed")
-                && [
-                    "pending_route",
-                    "pending_UI",
-                    "pending_setting",
-                    "pending_native",
-                ]
-                .iter()
-                .all(|key| result.get(*key).is_some_and(Value::is_null))
-                && result
-                    .get("unknown_retained_without_further_mutation")
-                    .is_none_or(|v| v == false)
-                && result
-                    .get("unknown_or_conflicting_setting_retained_without_replay")
-                    .is_none_or(|v| v == false)
-                && result["setting_writes"] == 2
-                && result["provider_writes"] == 2
-                && [
-                    "permission_writes",
-                    "account_writes",
-                    "package_writes",
-                    "other_provider_writes",
-                ]
-                .iter()
-                .all(|key| result[*key] == 0)
-                && [
-                    "apply_readback_verified",
-                    "effect_verified",
-                    "reopen_persistence_verified",
-                    "restore_readback_verified",
-                    "restored_effect_verified",
-                ]
-                .iter()
-                .all(|key| result["setting_roundtrip"][*key] == true)
-                && result["Android_runtime_qualification_inferred_from_source"] == false
-                && empty("observed_before_commit")
-                && empty("pending_at_commit")
-                && result["cancellation_commit"]["decision_frozen_after_host_context_close"]
-                    == true,
-            "Settings result must prove pages and exact restored roundtrip with two owned launches/closes; permissions remain pending and unknown effects forbid credit",
-        )?;
+        settings_v3_terminal(printed, result, case_ref)?;
     } else if route == Route::CameraPhoto {
         require(
             printed["success"] == true
@@ -1327,7 +1522,8 @@ fn execute_observed(
 #[cfg(test)]
 mod tests {
     use super::*;
-    const CURRENT_SELECTION: &str = include_str!("../tests/fixtures/selection-14-20261120.json");
+    const CURRENT_SELECTION: &str = include_str!("../tests/fixtures/selection-14-20261126.json");
+    const RETIRED_R1_SELECTION: &str = include_str!("../tests/fixtures/selection-14-20261120.json");
     const OLD_SELECTION: &str = include_str!("../tests/fixtures/selection-13-20261120.json");
 
     fn current_selection() -> Value {
@@ -1364,104 +1560,213 @@ mod tests {
         }
     }
 
-    #[test]
-    fn settings_pages_terminal_keeps_partial_scope_and_rejects_unknown_or_extra_credit() {
-        let source = SelectedSource {
-            index: 13,
-            preparation: pin("settings-prep"),
-            entry: pin("settings-entry"),
-        };
+    // Structural fixtures only: none can construct opaque Main, retained result
+    // custody, a normal launch, or an application business acceptance.
+    fn settings_v3_shape(present: bool, text: &str) -> (Value, Value, FilePin) {
+        fn raw_pin(name: &str, raw: &[u8]) -> Value {
+            json!({"path":format!("/fixture/{name}"),"bytes":raw.len(),
+                "sha256":hex::encode(Sha256::digest(raw))})
+        }
+        fn command(operation: &str, argv: Vec<&str>, mutation: bool, raw: &[u8]) -> Value {
+            json!({"operation":operation,"argv":argv,"mutation":mutation,
+                "result":pin(&format!("{operation}.result")),
+                "stdout":raw_pin(&format!("{operation}.stdout"),raw),
+                "stderr":raw_pin(&format!("{operation}.stderr"),b"")})
+        }
+        fn observation(index: usize, page: &str, activity: &str) -> Value {
+            let summary = json!({"page":page,"package":"com.android.settings","activity":activity,
+                "android_init_host_pid":17,"window_token":"12ab","expected_title_observed":true,
+                "source":"actual-native-tree-and-scoped-PNG","whole_app_business_accepted":false,
+                "visible_control_count":3,"visible_label_count":4,"scoped_pixel_sha256":"c".repeat(64)});
+            json!({"summary":summary,"recorder_result":pin(&format!("ui-{index}.recorder")),
+                "observation":pin(&format!("ui-{index}.json")),"PNG":pin(&format!("ui-{index}.png"))})
+        }
+        let original = if present {
+            json!({"present":true,"text":text,"effective":text.parse::<f64>().unwrap()})
+        } else { json!({"present":false,"text":null,"effective":1.0}) };
+        let selected = if (original["effective"].as_f64().unwrap() - 1.15).abs() <= 0.00001 {
+            "1.0"
+        } else { "1.15" };
+        let changed = json!({"present":true,"text":selected,"effective":selected.parse::<f64>().unwrap()});
+        let claims = json!([pin("first-claim"),pin("second-claim")]);
+        let scopes = json!([pin("first-scope"),pin("second-scope")]);
+        let mut commands = Vec::new();
+        let mut snapshots = Vec::new();
+        for (phase, provider, scope) in [
+            ("original", &original, &scopes[0]),
+            ("before-apply", &original, &scopes[0]),
+            ("applied-00", &changed, &scopes[0]),
+            ("reopened-00", &changed, &scopes[1]),
+            ("before-restore", &changed, &scopes[1]),
+            ("restored-00", &original, &scopes[1]),
+        ] {
+            if phase == "applied-00" {
+                commands.push(command("apply",
+                    vec!["/system/bin/settings","--user","0","put","system","font_scale",selected],
+                    true,b""));
+            }
+            if phase == "restored-00" {
+                let mut argv = vec!["/system/bin/settings","--user","0"];
+                if present { argv.extend(["put","system","font_scale",text]); }
+                else { argv.extend(["delete","system","font_scale"]); }
+                commands.push(command("restore",argv,true,if present { b"" } else { b"Deleted 1 rows\n" }));
+            }
+            let raw = format!("{}\n",if provider["present"]==true {
+                provider["text"].as_str().unwrap()
+            } else { "null" });
+            // Synthetic config bytes model consistency only; the real producer
+            // validates actual am get-config protobuf inside its held source path.
+            let config_raw = format!("synthetic-{phase}").into_bytes();
+            let provider_command = command(&format!("{phase}-value"),
+                vec!["/system/bin/settings","--user","0","get","system","font_scale"],false,raw.as_bytes());
+            let configuration_command = command(&format!("{phase}-config"),
+                vec!["/system/bin/am","get-config","--proto"],false,&config_raw);
+            let configuration = json!({"font_scale":provider["effective"],
+                "other_configuration_fields":["1001"],"resource_fields":["2001"],
+                "raw_sha256":hex::encode(Sha256::digest(&config_raw))});
+            snapshots.push(json!({"phase":phase,"provider":provider,"configuration":configuration,
+                "scope":scope,"provider_command":provider_command,"configuration_command":configuration_command}));
+            commands.extend([provider_command,configuration_command]);
+        }
+        let font = json!({"schema":"pocket4-settings-font-scale-facts-v1","namespace":"system",
+            "key":"font_scale","user":0,"original":original,"selected":selected,"state":"restored_verified",
+            "apply_observed":true,"reopen_observed":true,"restore_observed":true,
+            "apply_claim":claims[0],"reopen_claim":claims[1],"provider_writes":2,
+            "readonly_commands":12,"commands":commands,"snapshots":snapshots,"pending_command":null,
+            "automatic_write_retry":false,"compare_and_swap_claimed":false,
+            "permission_or_account_write_authorized":false,"whole_app_business_accepted":false});
+        let profile = [
+            ("system","com.android.settings.Settings$SystemDashboardActivity"),
+            ("network","com.android.settings.Settings$NetworkDashboardActivity"),
+            ("display","com.android.settings.Settings$DisplaySettingsActivity"),
+            ("storage","com.android.settings.Settings$StorageDashboardActivity"),
+            ("applications","com.android.settings.Settings$ManageApplicationsActivity"),
+        ];
+        let home = "com.android.settings.homepage.SettingsHomepageActivity";
+        let pages: Vec<Value> = profile.iter().enumerate()
+            .map(|(n,(name,activity))|observation(n+1,name,activity)).collect();
         let plan = pin("settings-plan");
-        let baseline = pin("baseline");
-        let qualification = pin("qualification");
-        let result_pin = pin("settings-result");
-        let printed = json!({"result":result_pin,"state":"SETTINGS_PAGES_ROUNDTRIP_VERIFIED_RESTORED",
-            "case_business_success_verified":true,"scope":["settings.pages","settings.roundtrip"],
-            "accepted_gates":["settings.pages","settings.roundtrip"],"whole_app_business_accepted":false});
-        let result = json!({"schema":"pocket4-settings-pages-case-result-v2","state":"SETTINGS_PAGES_ROUNDTRIP_VERIFIED_RESTORED",
-            "whole_app_business_accepted":false,"automatic_retry":false,"case_business_success_verified":true,
-            "scope":["settings.pages","settings.roundtrip"],"accepted_gates":["settings.pages","settings.roundtrip"],"base_plan":plan,
-            "remaining_gates":["settings.permissions","identity","lifecycle","stability","data_permissions","release_scope","ui_observation"],
-            "all_five_pages_observed":true,"pages":[0,1,2,3,4],"identity_permissions_directories_preserved":true,
-            "complete_task_baseline_restored":true,"final_source_identity_chain_unchanged":true,"evidence_witness_closed":true,
-            "permission_account_state_preserved":true,"permission_interfaces":{"settings_permissions_gate_accepted":false,"readonly_input_error_verified":true},
-            "native_launch_count":2,"page_route_count":11,"observation_count":13,
-            "native_claims":["one","two"],"normally_closed_claims":["one","two"],"launches":[0,1],"normal_closes":[0,1],
-            "host_flow_contexts_closed":[0,1],"pending_route":null,"pending_UI":null,"pending_setting":null,"pending_native":null,
-            "setting_writes":2,"provider_writes":2,"other_provider_writes":0,"permission_writes":0,"account_writes":0,"package_writes":0,
-            "setting_roundtrip":{"apply_readback_verified":true,"effect_verified":true,"reopen_persistence_verified":true,"restore_readback_verified":true,"restored_effect_verified":true},
-            "Android_runtime_qualification_inferred_from_source":false,
-            "cancellation_commit":{"observed_before_commit":[],"pending_at_commit":[],"decision_frozen_after_host_context_close":true}});
-        let check = |value: &Value| {
-            terminal_result(
-                Route::SettingsSupportedPages,
-                &printed,
-                value,
-                Some(&plan),
-                &baseline,
-                &qualification,
-                &source,
-            )
+        let mut result = json!({"schema":"pocket4-settings-pages-case-result-v3",
+            "state":"SETTINGS_FONT_SCALE_RESTORED_WITH_PAGES","whole_app_business_accepted":false,
+            "automatic_retry":false,"case_business_success_verified":true,
+            "scope":["settings.pages","settings.roundtrip"],"accepted_gates":["settings.pages","settings.roundtrip"],
+            "base_plan":plan,"remaining_gates":["settings.permissions","identity","lifecycle",
+                "stability","data_permissions","release_scope","ui_observation"]});
+        for part in [
+            json!({"all_five_pages_observed":true,"pages":pages,
+                "initial_home":observation(0,"home",home),
+                "applied_page":observation(6,profile[4].0,profile[4].1),
+                "reopened_home":observation(7,"home",home),"restored_home":observation(8,"home",home),
+                "identity_permissions_directories_preserved":true,
+                "permission_interfaces":{"settings_permissions_gate_accepted":false,
+                    "readonly_input_error_verified":false,"account_state_observed":false}}),
+            json!({"complete_task_baseline_restored":true,"final_source_identity_chain_unchanged":true,
+                "evidence_witness_closed":true,"native_launch_count":2,"page_route_count":5,
+                "observation_count":9,"native_claims":claims,"normally_closed_claims":claims,
+                "recorder_scopes":scopes,"host_flow_contexts_closed":scopes,
+                "launches":[0,1],"normal_closes":[0,1],"pending_route":null,"pending_UI":null}),
+            json!({"setting_writes":2,"provider_writes":2,"other_provider_writes":0,
+                "permission_writes":0,"account_writes":0,"package_writes":0,"setting_roundtrip":font,
+                "Android_runtime_qualification_inferred_from_source":false,"Binder_UID_cleanup_verified":false,
+                "Main_before":{"comparison_only":true},"Main_after":{"comparison_only":true},
+                "cancellation_commit":{"observed_before_commit":[],"pending_at_commit":[],
+                    "decision_frozen_after_host_context_close":true}}),
+        ] { result.as_object_mut().unwrap().extend(part.as_object().unwrap().clone()); }
+        let printed = json!({"result":pin("settings-result"),"state":result["state"],
+            "case_business_success_verified":true,"scope":result["scope"],"whole_app_business_accepted":false});
+        (printed,result,plan)
+    }
+
+    fn check_settings_v3(printed: &Value, result: &Value, plan: &FilePin) -> Result<(), String> {
+        let source = SelectedSource { index:13, preparation:pin("settings-prep"), entry:pin("settings-entry") };
+        terminal_result(Route::SettingsSupportedPages,printed,result,Some(plan),
+            &pin("baseline"),&pin("qualification"),&source)
+    }
+
+    #[test]
+    fn settings_v3_consumes_actual_source_shape_with_original_string_or_absence() {
+        for (present,text) in [(true,"1.0"),(true,"1.15"),(false,"")] {
+            let (printed,result,plan)=settings_v3_shape(present,text);
+            check_settings_v3(&printed,&result,&plan).unwrap();
+            // Passing these comparisons is not a normal-execution token.
+            assert_eq!(Route::SettingsSupportedPages.definition().seconds,900);
+            assert_eq!(Route::SettingsSupportedPages.definition().source,13);
+        }
+    }
+
+    #[test]
+    fn settings_v3_rejects_old_counts_unknown_cleanup_and_expanded_scope() {
+        let (printed,result,plan)=settings_v3_shape(true,"1.0");
+        for (key,value) in [
+            ("schema",json!("pocket4-settings-pages-case-result-v2")),
+            ("state",json!("SETTINGS_PAGES_ROUNDTRIP_VERIFIED_RESTORED")),
+            ("accepted_gates",json!(["settings.pages","settings.roundtrip","settings.permissions"])),
+            ("page_route_count",json!(11)),("observation_count",json!(13)),
+            ("provider_writes",json!(0)),("setting_writes",json!(1)),
+            ("permission_writes",json!(1)),("account_writes",json!(1)),
+            ("remaining_gates",json!([])),("whole_app_business_accepted",json!(true)),
+            ("unknown_retained_without_further_mutation",json!(true)),
+            ("normal_closes",json!([0])),("base_plan",json!(pin("other-plan"))),
+            ("Main_after",json!({"changed":true})),
+            ("permission_interfaces",json!({"settings_permissions_gate_accepted":false,
+                "readonly_input_error_verified":true,"account_state_observed":false})),
+        ] {
+            let mut bad=result.clone();bad[key]=value;
+            assert!(check_settings_v3(&printed,&bad,&plan).is_err(),"{key}");
+        }
+        for key in ["pending_route","pending_UI"] {
+            let mut bad=result.clone();bad.as_object_mut().unwrap().remove(key);
+            assert!(check_settings_v3(&printed,&bad,&plan).is_err(),"missing {key}");
+        }
+        let mut bad=result.clone();bad["cancellation_commit"]["pending_at_commit"]=json!([15]);
+        assert!(check_settings_v3(&printed,&bad,&plan).is_err());
+        let mut old_stdout=printed.clone();old_stdout["accepted_gates"]=result["scope"].clone();
+        assert!(check_settings_v3(&old_stdout,&result,&plan).is_err());
+        let mut bad=result;bad["pages"][1]=bad["pages"][0].clone();
+        assert!(check_settings_v3(&printed,&bad,&plan).is_err());
+    }
+
+    #[test]
+    fn settings_v3_rejects_missing_reopen_wrong_restore_and_unowned_command_chain() {
+        let (printed,result,plan)=settings_v3_shape(false,"");
+        for change in 0..14 {
+            let mut bad=result.clone();
+            let fact=&mut bad["setting_roundtrip"];
+            match change {
+                0=>fact["selected"]=json!("2.0"),
+                1=>fact["reopen_observed"]=json!(false),
+                2=>fact["restore_observed"]=json!(false),
+                3=>fact["reopen_claim"]=fact["apply_claim"].clone(),
+                4=>fact["pending_command"]=json!({"sent":true}),
+                5=>fact["commands"][4]["argv"][5]=json!("screen_brightness"),
+                6=>fact["commands"][11]["argv"]=json!(["/system/bin/settings","--user","0","put","system","font_scale","1.0"]),
+                7=>fact["commands"][4]["mutation"]=json!(false),
+                8=>fact["snapshots"][3]["phase"]=json!("applied-01"),
+                9=>fact["snapshots"][5]["configuration"]["font_scale"]=json!(1.15),
+                10=>fact["snapshots"][4]["configuration"]["other_configuration_fields"]=json!(["1002"]),
+                11=>fact["snapshots"][5]["scope"]=fact["snapshots"][0]["scope"].clone(),
+                12=>fact["readonly_commands"]=json!(13),
+                _=>fact["commands"][0]["stdout"]["sha256"]=json!("0".repeat(64)),
+            }
+            assert!(check_settings_v3(&printed,&bad,&plan).is_err(),"change {change}");
+        }
+    }
+
+    #[test]
+    fn r2_selector_rejects_retired_r1_pins_and_mixed_source_documents() {
+        let old:Value=serde_json::from_str(RETIRED_R1_SELECTION).unwrap();
+        let old_pin=FilePin{
+            path:"/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261120-apps-r1/selection/selection-14.json".into(),
+            bytes:RETIRED_R1_SELECTION.len() as u64,
+            sha256:hex::encode(Sha256::digest(RETIRED_R1_SELECTION)),
         };
-        check(&result).unwrap();
-        for (key, value) in [
-            (
-                "accepted_gates",
-                json!([
-                    "settings.pages",
-                    "settings.roundtrip",
-                    "settings.permissions"
-                ]),
-            ),
-            ("schema", json!("pocket4-settings-pages-case-result-v1")),
-            (
-                "setting_roundtrip",
-                json!({"restore_readback_verified":false}),
-            ),
-            (
-                "permission_interfaces",
-                json!({"settings_permissions_gate_accepted":false,"readonly_input_error_verified":false}),
-            ),
-            ("pending_setting", json!({"sent":true})),
-            ("pending_native", json!({"scope":"unknown"})),
-            ("provider_writes", json!(0)),
-            ("permission_writes", json!(1)),
-            ("remaining_gates", json!([])),
-            ("whole_app_business_accepted", json!(true)),
-            ("setting_writes", json!(1)),
-            ("unknown_retained_without_further_mutation", json!(true)),
-            ("normal_closes", json!([0])),
-            ("base_plan", json!(pin("another-plan"))),
-        ] {
-            let mut changed = result.clone();
-            changed[key] = value;
-            assert!(check(&changed).is_err(), "{key}");
-        }
-        for key in [
-            "pending_route",
-            "pending_UI",
-            "pending_setting",
-            "pending_native",
-        ] {
-            let mut missing = result.clone();
-            missing.as_object_mut().unwrap().remove(key);
-            assert!(check(&missing).is_err(), "missing {key}");
-        }
-        let mut missing_input_error = result.clone();
-        missing_input_error["permission_interfaces"]
-            .as_object_mut()
-            .unwrap()
-            .remove("readonly_input_error_verified");
-        assert!(check(&missing_input_error).is_err());
-        let mut cancelled = result;
-        cancelled["cancellation_commit"]["pending_at_commit"] = json!([15]);
-        assert!(check(&cancelled).is_err());
-        assert_eq!(Route::SettingsSupportedPages.definition().source, 13);
-        assert_eq!(Route::SettingsSupportedPages.definition().seconds, 900);
-        assert_eq!(
-            Route::SettingsSupportedPages.package(),
-            "com.android.settings"
-        );
+        assert!(validate_selection_pin(&old_pin).is_err());
+        assert!(validate_selection_document(&old,&fixed_sources().unwrap()).is_err());
+        let current=current_selection();
+        validate_selection_document(&current,&fixed_sources().unwrap()).unwrap();
+        assert!(fixed_sources().unwrap().iter().all(|source|
+            source.preparation.path.starts_with("/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2")
+            && source.entry.path.starts_with("/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2")));
     }
 
     #[test]
@@ -1539,7 +1844,7 @@ mod tests {
         assert_eq!(
             source.entry.path,
             Path::new(
-                "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261120-apps-r1/source/ihg/app_entry.py"
+                "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2/source/ihg/app_entry.py"
             )
         );
         assert_eq!(source.entry.bytes, 13828);
@@ -1638,6 +1943,8 @@ mod tests {
         let sources = fixed_sources().unwrap();
         for (key, value) in [
             ("selection_only", json!(false)),
+            ("source_controlled_cohort", json!("cp3a-20261120-apps-r1")),
+            ("current_fixed_r1_bytes_recovered", json!(true)),
             ("Android_actions", json!(1)),
             ("Main_actions", json!(1)),
             ("CURRENT_writes", json!(1)),

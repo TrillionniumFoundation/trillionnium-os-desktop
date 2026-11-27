@@ -1460,7 +1460,7 @@ mod tests {
             plan.preparation_selection = Some(pin.clone());
             client.leaf_output = Some(LeafObservation {
                 route: leaf_routes::Route::SettingsSupportedPages, request: pin.clone(), preparation: pin.clone(),
-                entry_source: pin.clone(), result: pin.clone(), state: "SETTINGS_PAGES_ROUNDTRIP_VERIFIED_RESTORED".into(),
+                entry_source: pin.clone(), result: pin.clone(), state: "SETTINGS_FONT_SCALE_RESTORED_WITH_PAGES".into(),
                 custody: None,
                 original_entry_result_verified: true, original_business_success_reported: true,
                 business_outcome_unknown: unknown, main_epoch_unchanged: true, owned_host_tree_retired: true,
