@@ -320,8 +320,8 @@ mod tests {
         }
         assert_eq!(count, 377);
         assert_eq!(COMMON.len(), 6);
-        use super::super::super::{CASE_COUNT, FAMILY_CASE_COUNT, NATIVE_CASE_COUNT, PHOTO_CASE_COUNT, QualificationCase};
-        assert_eq!(CASE_COUNT, NATIVE_CASE_COUNT + FAMILY_CASE_COUNT + PHOTO_CASE_COUNT);
+        use super::super::super::{CASE_COUNT, FAMILY_CASE_COUNT, NATIVE_CASE_COUNT, PHOTO_CASE_COUNT, SETTINGS_CASE_COUNT, QualificationCase};
+        assert_eq!(CASE_COUNT, NATIVE_CASE_COUNT + FAMILY_CASE_COUNT + PHOTO_CASE_COUNT + SETTINGS_CASE_COUNT);
         let families = PACKAGES.iter()
             .filter(|(package, _)| QualificationCase::for_family(package).is_ok()).count();
         assert_eq!(families, FAMILY_CASE_COUNT);
@@ -329,6 +329,6 @@ mod tests {
         assert_eq!(all_cases.iter().filter(|case| case.native_route().is_some()).count(), NATIVE_CASE_COUNT);
         let covered: BTreeSet<_> = all_cases.iter().map(|case| case.package()).collect();
         assert_eq!(covered, packages);
-        // Forty-six observed histories are still not any of the 377 opaque gate facts.
+        // Forty-seven observed histories are still not any of the 377 opaque gate facts.
     }
 }

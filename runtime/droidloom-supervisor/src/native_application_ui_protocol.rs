@@ -161,6 +161,12 @@ pub(crate) struct Request {
     operation: Operation,
 }
 impl Request {
+    // A fixed read-only companion vocabulary, never an execution authority.
+    // The live Settings owner must bind actual selected PM/UID/task/window.
+    pub(crate) fn permission_controller_dump() -> Self {
+        Self { package: "com.android.permissioncontroller".into(), operation: Operation::Dump }
+    }
+
     pub(crate) fn new(package: &str, operation: Operation) -> Result<Self> {
         need(
             crate::engine_custody::selected_package(package),
@@ -995,5 +1001,20 @@ mod tests {
             }
             assert!(Reply::parse(&req, &success(changed)).is_err());
         }
+    }
+}
+
+#[cfg(test)]
+mod settings_companion_tests {
+    use super::*;
+    #[test]
+    fn settings_permissions_companion_request_is_one_fixed_read_without_selected39_extension() {
+        let request=Request::permission_controller_dump();
+        assert_eq!(request.package,"com.android.permissioncontroller");
+        assert!(matches!(request.operation,Operation::Dump));
+        assert!(!request.mutation());
+        assert!(Request::new("com.android.permissioncontroller",Operation::Dump).is_err());
+        assert!(Request::new("com.android.permissioncontroller",Operation::Click(Selector::editable())).is_err());
+        assert!(request.arguments().is_ok());
     }
 }

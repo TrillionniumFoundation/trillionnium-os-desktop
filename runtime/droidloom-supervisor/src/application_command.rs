@@ -28,7 +28,7 @@ mod application_leaf_unit;
 mod gallery_resources;
 #[path = "native_application_ui_entry.rs"]
 mod native_application_ui_entry;
-pub use native_application_ui_entry::{CameraPhotoObservation, CameraPhotoSceneObservation, CameraPhotoCaseObservation, camera_photo_case_window_seconds, run_camera_photo_case, RetainedScopedWindowPixels, RetainedNativeUiTranscript, ScopedWindowPixels, NativeUiSession, NativeUiTranscript, NativeUiStabilityWindow, NativeUiStabilityEvidence, NativeUiStabilitySummary, stability_additional_window_seconds, NativeUiPermissionWindow, NativeUiPermissionPreservation, permission_preservation_additional_window_seconds};
+pub use native_application_ui_entry::{SettingsPermissionCaseObservation, run_settings_permission_case, settings_permission_case_window_seconds, CameraPhotoObservation, CameraPhotoSceneObservation, CameraPhotoCaseObservation, camera_photo_case_window_seconds, run_camera_photo_case, RetainedScopedWindowPixels, RetainedNativeUiTranscript, ScopedWindowPixels, NativeUiSession, NativeUiTranscript, NativeUiStabilityWindow, NativeUiStabilityEvidence, NativeUiStabilitySummary, stability_additional_window_seconds, NativeUiPermissionWindow, NativeUiPermissionPreservation, permission_preservation_additional_window_seconds};
 pub use application_leaf_unit::{NativeOwnedLeafUnit, OwnedLeafProfile};
 
 const OUTPUT_LIMIT: usize = 64 * 1024;

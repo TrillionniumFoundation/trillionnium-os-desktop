@@ -33,6 +33,9 @@ pub use common::{RetainedNativeUiTranscript, NativeUiStabilityWindow, NativeUiSt
 #[path = "native_application_ui_permissions.rs"]
 mod permissions;
 pub use permissions::{NativeUiPermissionWindow, NativeUiPermissionPreservation, permission_preservation_additional_window_seconds};
+#[path = "native_application_ui_settings.rs"]
+mod settings;
+pub use settings::{SettingsPermissionCaseObservation, run_settings_permission_case, settings_permission_case_window_seconds};
 #[path = "native_application_ui_media.rs"]
 mod media;
 pub use media::{CameraPhotoObservation, CameraPhotoSceneObservation, CameraPhotoCaseObservation, camera_photo_case_window_seconds, run_camera_photo_case, RetainedScopedWindowPixels, ScopedWindowPixels};

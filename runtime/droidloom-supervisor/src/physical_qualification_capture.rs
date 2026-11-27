@@ -239,6 +239,8 @@ fn validate_case_summaries(package: &str, row: &Value, epoch: &RuntimeEpoch) -> 
             (Some(route), _) => history.get("route") == Some(&json!(route)) && history.get("kind").is_none(),
             (None, QualificationCase::CameraPhotoCaptureReopen) =>
                 history.get("kind") == Some(&json!("camera_photo_capture_reopen")) && history.get("route").is_none(),
+            (None, QualificationCase::SettingsPermissionInterfaces) =>
+                history.get("kind") == Some(&json!("settings_permission_interfaces")) && history.get("route").is_none(),
             (None, _) => history.get("kind") == Some(&json!("family_observation")) && history.get("route").is_none(),
         };
         if !kind_matches
@@ -752,6 +754,8 @@ mod tests {
                     history["route"] = json!(route);
                 } else if case == QualificationCase::CameraPhotoCaptureReopen {
                     history["kind"] = json!("camera_photo_capture_reopen");
+                } else if case == QualificationCase::SettingsPermissionInterfaces {
+                    history["kind"] = json!("settings_permission_interfaces");
                 } else {
                     history["kind"] = json!("family_observation");
                 }
@@ -783,6 +787,20 @@ mod tests {
         let mut wrong = camera;
         wrong["cases"][1]["route"] = json!("camera_photo");
         assert!(validate_case_summaries("com.android.camera2", &wrong, &epoch).is_err());
+        let settings = make("com.android.settings");
+        assert_eq!(settings["cases"].as_array().unwrap().len(), 2);
+        assert_eq!(settings["cases"][0]["route"], "settings_supported_pages");
+        assert_eq!(settings["cases"][1]["kind"], "settings_permission_interfaces");
+        for changed in 0..4 {
+            let mut wrong = settings.clone();
+            match changed {
+                0 => { wrong["cases"].as_array_mut().unwrap().pop(); }
+                1 => { wrong["cases"].as_array_mut().unwrap().swap(0, 1); }
+                2 => { wrong["cases"][1]["kind"] = json!("family_observation"); }
+                _ => { wrong["cases"][1]["actual"]["package"] = json!("com.android.permissioncontroller"); }
+            }
+            assert!(validate_case_summaries("com.android.settings", &wrong, &epoch).is_err());
+        }
         let family = make("org.mozilla.firefox");
         let mut wrong = family.clone();
         wrong["cases"] = json!([]);

@@ -25,7 +25,7 @@ pub use capture::{CapturedCompleteApplicationRun, capture_installed_physical_run
 
 #[path = "physical_qualification_budget.rs"]
 pub mod budget;
-pub use budget::{CASE_COUNT, FAMILY_CASE_COUNT, NATIVE_CASE_COUNT, PHOTO_CASE_COUNT, NOFILE_LIMIT, RETIREMENT_SECONDS, SERVICE_SECONDS, SUITE_SECONDS};
+pub use budget::{CASE_COUNT, FAMILY_CASE_COUNT, NATIVE_CASE_COUNT, PHOTO_CASE_COUNT, SETTINGS_CASE_COUNT, NOFILE_LIMIT, RETIREMENT_SECONDS, SERVICE_SECONDS, SUITE_SECONDS};
 pub const SUMMARY_LIMIT: usize = 16 * 1024 * 1024;
 pub const BINDING_LIMIT: usize = 128 * 1024;
 pub(super) const EXE: &str = "/usr/bin/droidloom-applications";
@@ -159,6 +159,7 @@ pub enum QualificationCase {
     FamilyBilibili,
     // Append after all original fourteen native and thirty-one family cases.
     CameraPhotoCaptureReopen,
+    SettingsPermissionInterfaces,
 }
 impl QualificationCase {
     pub(super) fn ordinal(self) -> u8 {
@@ -212,6 +213,7 @@ impl QualificationCase {
             QualificationCase::FamilyFirefox,
             QualificationCase::FamilyBilibili,
             QualificationCase::CameraPhotoCaptureReopen,
+            QualificationCase::SettingsPermissionInterfaces,
         ];
         ALL.get(value as usize)
             .copied()
@@ -221,6 +223,8 @@ impl QualificationCase {
     pub fn window_seconds(self) -> u64 {
         if self == Self::CameraPhotoCaptureReopen {
             budget::CAMERA_PHOTO_CASE_SECONDS
+        } else if self == Self::SettingsPermissionInterfaces {
+            budget::SETTINGS_PERMISSION_CASE_SECONDS
         } else {
             budget::NATIVE_CASE_WINDOWS.get(self as usize)
                 .copied().unwrap_or(budget::FAMILY_CASE_SECONDS)
@@ -278,7 +282,7 @@ impl QualificationCase {
             Self::GalleryVideo => "com.android.gallery3d",
             Self::GallerySeek => "com.android.gallery3d",
             Self::GalleryAlbum => "com.android.gallery3d",
-            Self::SettingsSupportedPages => "com.android.settings",
+            Self::SettingsSupportedPages | Self::SettingsPermissionInterfaces => "com.android.settings",
             Self::IhgLondon => "com.ihg.apps.android",
             Self::FamilyHyatt => "com.Hyatt.hyt",
             Self::FamilyMobileTicket => "com.MobileTicket",
@@ -696,9 +700,11 @@ mod tests {
         assert_eq!(total, 25_430);
         assert_eq!(total, budget::NATIVE_SECONDS);
         assert_eq!(total + FAMILY_CASE_COUNT as u64 * budget::FAMILY_CASE_SECONDS
-            + budget::CAMERA_PHOTO_CASE_SECONDS + 140 + 120, SUITE_SECONDS);
-        assert_eq!(SUITE_SECONDS, 123_135);
-        assert_eq!(CASE_COUNT, 46);
+            + budget::CAMERA_PHOTO_CASE_SECONDS + budget::SETTINGS_PERMISSION_CASE_SECONDS
+            + 140 + 120, SUITE_SECONDS);
+        assert_eq!(SUITE_SECONDS, 129_435);
+        assert_eq!(CASE_COUNT, 47);
+        assert_eq!(SETTINGS_CASE_COUNT, 1);
         assert_eq!(PHOTO_CASE_COUNT, 1);
         assert_eq!(QualificationCase::CameraPhoto.ordinal(), 2);
         assert_eq!(QualificationCase::CameraPhoto.window_seconds(), 1_260);
@@ -710,6 +716,13 @@ mod tests {
         assert_eq!(photo.profile(), KernelProfile::Standard);
         assert!(photo.native_route().is_none());
         assert!(QualificationCase::for_family(photo.package()).is_err());
+        let settings = QualificationCase::from_ordinal(46).unwrap();
+        assert_eq!(settings, QualificationCase::SettingsPermissionInterfaces);
+        assert_eq!(settings.package(), "com.android.settings");
+        assert_eq!(settings.window_seconds(), 250 + 6_050);
+        assert_eq!(settings.profile(), KernelProfile::Standard);
+        assert!(settings.native_route().is_none());
+        assert!(QualificationCase::for_family(settings.package()).is_err());
         assert!(QualificationCase::from_ordinal(CASE_COUNT as u8).is_err());
         assert!(plan_path("../caller").is_err());
     }
@@ -750,7 +763,7 @@ mod tests {
             assert!(lines.contains(line.as_str()), "{line}");
         }
         assert_eq!(NOFILE_LIMIT, 32_768);
-        assert_eq!(SERVICE_SECONDS, 123_315);
+        assert_eq!(SERVICE_SECONDS, 129_615);
         assert!(lines.contains("MemoryMax=2147483648"));
         assert!(lines.contains("MemorySwapMax=0"));
         assert!(lines.contains("CPUQuota=200%"));
