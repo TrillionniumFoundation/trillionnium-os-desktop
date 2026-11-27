@@ -7,6 +7,7 @@ use super::super::working_runtime::{WorkingOriginalCellPreimage, WorkingRuntimeS
 use crate::{
     Result,
     boot_files::{self as files, FilePin},
+    cold_original_data::labels::WorkingLabelBatch,
     cold_working_recovery::contract as c,
     ensure, fs,
 };
@@ -111,8 +112,8 @@ impl Publication {
         self.transaction.apply_labels(&contexts)?;
         self.cell.require_sources(&self.source)?;
         // Every private inode has its actual normal context before any public
-        // rename. No later label phase receives permission to refresh this
-        // publisher's full inode or parent checkpoints.
+        // rename. Later full-root label batches may advance only held parent
+        // differences proved by their actual source-owned inode transitions.
         for index in 0..self.transaction.len() {
             self.source.revalidate()?;
             self.transaction.guard()?;
@@ -199,6 +200,15 @@ impl PublishedWorkingRuntime {
         )?;
         self.publication.transaction.guard()?;
         self.publication.source.revalidate()
+    }
+    /// Accept the same live owner's completed label batch after source and
+    /// GRUB custody have accepted it. The window driver performs the final
+    /// source-wide guards only after every consumer has advanced this batch.
+    pub(crate) fn accept_working_label_batch(&mut self, batch: &WorkingLabelBatch) -> Result<()> {
+        batch.require_source(&self.publication.source)?;
+        self.publication
+            .transaction
+            .accept_working_label_batch(batch)
     }
     pub(crate) fn restore(
         self,

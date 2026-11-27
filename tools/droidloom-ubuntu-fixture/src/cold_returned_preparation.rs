@@ -3,8 +3,11 @@
 //! The old Returned guard is unchanged; only this exact successful operation
 //! rebinds the qualification parent's complete current snapshot.
 use super::*;
+#[path = "cold_working_pair.rs"]
+mod working;
 use crate::boot_runtime::LabelTools;
 use crate::cold_original_data::labels::OriginalLabelSources;
+pub(crate) use working::WorkingPairTransaction;
 
 const QUALIFICATION: &str = "/var/lib/droidloom-qualification";
 const MAX_PARENT_MEMBERS: usize = 4096;

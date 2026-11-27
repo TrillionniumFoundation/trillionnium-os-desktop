@@ -6,7 +6,7 @@ use crate::cold_original_qualification::ReturnedOnceHistory;
 use std::collections::BTreeSet;
 #[path = "cold_returned_preparation.rs"]
 mod preparation;
-pub(crate) use preparation::PreparedReturnedPair;
+pub(crate) use preparation::{PreparedReturnedPair, WorkingPairTransaction};
 
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]

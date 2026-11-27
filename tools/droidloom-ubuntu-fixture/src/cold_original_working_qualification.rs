@@ -117,3 +117,42 @@ impl PreparedWorkingCopyObservation {
         )
     }
 }
+
+// These bridges expose only operations of the actual still-owned observation.
+// No path, PID, boot ID or deserialized report can manufacture the transaction.
+impl PreparedWorkingCopyObservation {
+    pub(super) fn prepare_pair(
+        &self,
+        published: &super::PublishedWorkingRuntime,
+    ) -> Result<crate::cold_original_data::WorkingPairTransaction> {
+        crate::cold_original_data::WorkingPairTransaction::prepare(
+            &self.data,
+            &self.history,
+            published,
+        )
+    }
+    pub(super) fn guard_pair(
+        &self,
+        pair: &crate::cold_original_data::WorkingPairTransaction,
+    ) -> Result<()> {
+        pair.guard(&self.data, &self.history)
+    }
+    pub(super) fn advance_pair(
+        &self,
+        pair: &mut crate::cold_original_data::WorkingPairTransaction,
+    ) -> Result<()> {
+        pair.advance(&self.data, &self.history)
+    }
+    pub(super) fn pair_exchanged(
+        &self,
+        pair: &crate::cold_original_data::WorkingPairTransaction,
+    ) -> Result<bool> {
+        pair.exchanged(&self.data, &self.history)
+    }
+    pub(super) fn restore_pair_cold(
+        &self,
+        pair: &mut crate::cold_original_data::WorkingPairTransaction,
+    ) -> Result<()> {
+        pair.restore_cold(&self.data, &self.history)
+    }
+}

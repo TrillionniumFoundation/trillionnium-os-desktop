@@ -81,6 +81,45 @@ fn same_work(before: &Identity, actual: &Identity) -> bool {
         && actual.gid == 0
 }
 
+// The helper comparison is derived from the freshly admitted normal host
+// manifest and its actual extracted member. No caller supplies its path/hash.
+fn normal_namespace_entry(
+    sources: &OriginalLabelSources,
+    owned: &WorkingOwnedObservation,
+    guards: &mut Vec<Guard>,
+) -> Result<crate::cold_working_recovery::contract::WorkingNamespaceEntryPin> {
+    use crate::cold_working_recovery::contract::{WorkingNamespaceEntryPin, layout};
+    sources.revalidate_custody()?;
+    owned.revalidate()?;
+    let admitted = json!({
+        "fresh_owned": owned.report(),
+        "normal_initramfs": sources.fresh_initramfs_report(),
+    });
+    let member = materials::normal_host_file_from_admission(
+        sources.source_pin(),
+        &admitted,
+        layout::WORKING_NAMESPACE_ENTRY
+            .strip_prefix('/')
+            .ok_or("normal working namespace path is not absolute")?,
+    )?;
+    let held = Guard::open(&member)?;
+    ensure(
+        held.identity().mode == 0o100755,
+        "normal working namespace member is not its exact executable mode",
+    )?;
+    let comparison = WorkingNamespaceEntryPin {
+        path: layout::WORKING_NAMESPACE_ENTRY.into(),
+        bytes: member.bytes,
+        sha256: member.sha256.clone(),
+    };
+    comparison.validate()?;
+    held.revalidate()?;
+    guards.push(held);
+    owned.revalidate()?;
+    sources.revalidate_custody()?;
+    Ok(comparison)
+}
+
 /// Actual cold resources, current public inputs, fresh H2 normal sources and the
 /// freshly rerun ended-guest verifier stay owned by this one preparation.
 /// Serialized receipts describe these facts but cannot construct this type.
@@ -208,6 +247,7 @@ impl WorkingQualificationMaterials {
             guard.revalidate()?;
         }
         let actual_pair = returned.summary()?;
+        let working_namespace_entry = normal_namespace_entry(&sources, &fresh_owned, &mut guards)?;
         let report = save(
             &work.join("ADMITTED-MATERIALS.json"),
             &json!({
@@ -224,6 +264,7 @@ impl WorkingQualificationMaterials {
                 "actual_original_cell_identity":original_cell.identity(),
                 "candidate_cell":new_cell,"selection":selection,
                 "normal_host_release":normal_host_release,"current_original_grub":grub.pin(),
+                "working_namespace_entry":working_namespace_entry,
                 "preserved_cell_fields":derived.preserved_fields,"changed_cell_fields":derived.changed_fields,
                 "retained_sources":guards.iter().map(|g| json!({
                     "source":g.pin(),"identity":g.identity()
