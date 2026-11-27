@@ -18,7 +18,9 @@ use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 
-use super::leaf_release::NativeRelease;
+use super::working_leaf_release::{NativeSourceRelease as NativeRelease, SourceContext};
+use droidloom_supervisor::control::physical_qualification_channel::WorkingNativeSourceCustody;
+use std::sync::Arc;
 use super::{ApplicationPlan, FilePin, RuntimePlan, pinned};
 use super::runtime_identity::{IdentityObservation, VerifiedMaterialBatch};
 
@@ -368,7 +370,7 @@ impl LeafObservation {
 pub(super) struct HistoricalLeafObservation {
     route: Route,
     main: HeldMainCustody,
-    source: super::leaf_release::HistoricalSourceWitness,
+    source: super::working_leaf_release::HistoricalNativeSourceWitness,
     result: super::clock_timer::ClockResultCustody,
     engine: Option<control::NativeLeafEngineEvidence>,
     identity: IdentityObservation,
@@ -595,11 +597,14 @@ pub(super) fn original_window_seconds(route: Route) -> u64 {
 
 /// Bind the one canonical source/actual executable owner before a complete
 /// qualification run. This grants no Main or application gate.
-pub(super) fn qualification_release(selection:&FilePin) -> Result<NativeRelease,String> {
+pub(super) fn qualification_release(
+    selection: &FilePin, custody: &Arc<WorkingNativeSourceCustody>,
+) -> Result<NativeRelease, String> {
     validate_selection(selection)?;
-    let sources=fixed_sources()?;
-    let source=&sources[0];
-    NativeRelease::bind_current(selection,SOURCE_CATALOG,&source.preparation,&source.entry)
+    let sources = fixed_sources()?;
+    let source = &sources[0];
+    NativeRelease::bind_working(custody, selection, SOURCE_CATALOG,
+        &source.preparation, &source.entry)
 }
 
 fn require(ok: bool, message: &str) -> Result<(), String> {
@@ -1587,13 +1592,19 @@ fn terminal_result(
 /// both cases. This is source/lease custody, not Main or business acceptance.
 pub(super) fn clock_pair_release(
     selection: &FilePin,
+    context: SourceContext<'_>,
 ) -> Result<(NativeRelease, FilePin, FilePin), String> {
     validate_selection(selection)?;
     let sources = fixed_sources()?;
     let source = &sources[4];
-    let lease = NativeRelease::bind_current(
-        selection, SOURCE_CATALOG, &source.preparation, &source.entry,
-    )?;
+    let lease = match context {
+        SourceContext::Legacy => NativeRelease::bind_current(
+            selection, SOURCE_CATALOG, &source.preparation, &source.entry,
+        )?,
+        SourceContext::Working(custody) => NativeRelease::bind_working(
+            custody, selection, SOURCE_CATALOG, &source.preparation, &source.entry,
+        )?,
+    };
     Ok((lease, source.preparation.clone(), source.entry.clone()))
 }
 
@@ -1627,10 +1638,16 @@ pub(super) fn execute_clock_case(
 }
 
 
-fn normal_route_release(plan: &LeafPlan, selection: &FilePin) -> Result<NativeRelease, String> {
+fn normal_route_release(
+    plan: &LeafPlan, selection: &FilePin, context: SourceContext<'_>,
+) -> Result<NativeRelease, String> {
     validate_selection(selection)?;
     let sources = fixed_sources()?;
     let source = &sources[plan.route.definition().source];
+    if let SourceContext::Working(custody) = context {
+        return NativeRelease::bind_working(custody, selection, SOURCE_CATALOG,
+            &source.preparation, &source.entry);
+    }
     if plan.route.current_gallery() {
         let request = value(&plan.request)?;
         NativeRelease::bind(&ref_field(&request, "native_release")?, selection, SOURCE_CATALOG,
@@ -1657,7 +1674,7 @@ pub(super) fn execute_admitted(
     selection: &FilePin,
     actual_token: control::ActualApplicationObservation,
 ) -> Result<(ApplicationInspection, LeafObservation), String> {
-    execute_admitted_with_limit(inspector,materials,runtime,requested,plan,selection,actual_token,None)
+    execute_admitted_with_limit(inspector,materials,runtime,requested,plan,selection,actual_token,None,SourceContext::Legacy)
 }
 
 pub(super) fn execute_admitted_until(
@@ -1669,8 +1686,10 @@ pub(super) fn execute_admitted_until(
     selection: &FilePin,
     actual_token: control::ActualApplicationObservation,
     end: Instant,
+    source: &Arc<WorkingNativeSourceCustody>,
 ) -> Result<(ApplicationInspection, LeafObservation), String> {
-    execute_admitted_with_limit(inspector,materials,runtime,requested,plan,selection,actual_token,Some(end))
+    execute_admitted_with_limit(inspector,materials,runtime,requested,plan,selection,actual_token,
+        Some(end),SourceContext::Working(source))
 }
 
 fn execute_admitted_with_limit(
@@ -1682,6 +1701,7 @@ fn execute_admitted_with_limit(
     selection: &FilePin,
     actual_token: control::ActualApplicationObservation,
     inherited_end: Option<Instant>,
+    context: SourceContext<'_>,
 ) -> Result<(ApplicationInspection, LeafObservation), String> {
     require(plan.route != Route::ClockTimerPair,
         "Clock pair requires its one shared two-case Main and owner factory")?;
@@ -1692,7 +1712,7 @@ fn execute_admitted_with_limit(
     // The original pre-leaf PM token comes from MaterialClient, with no RPC
     // added by baseline capture, each G, or finish_from_observed.
     let window = original_window_seconds(plan.route);
-    let release = normal_route_release(plan, selection)?;
+    let release = normal_route_release(plan, selection, context)?;
     release.cover_window(window)?;
     let normal_end = Instant::now() + Duration::from_secs(window);
     let end = inherited_end.map_or(normal_end, |limit| limit.min(normal_end));
@@ -1701,6 +1721,7 @@ fn execute_admitted_with_limit(
     materials.observe(requested, runtime.android_user, &runtime.expected_epoch, &actual, &actual)?;
     let mut main = HeldMainCustody::observe(inspector, actual_token, end)?;
     let mut baseline = main.baseline(inspector, end)?;
+    release.attach_to_baseline(&mut baseline)?;
     let inventory_window = if actual.package == "com.ihg.apps.android" { 70 } else { 0 };
     if inventory_window != 0 {
         leaf_window(end, 70 + 250 + 70 + 70 + 30)?;

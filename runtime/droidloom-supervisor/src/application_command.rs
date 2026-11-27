@@ -30,8 +30,14 @@ mod application_leaf_unit;
 mod gallery_resources;
 #[path = "native_application_ui_entry.rs"]
 mod native_application_ui_entry;
-pub use native_application_ui_entry::{CameraPhotoObservation, RetainedScopedWindowPixels, ScopedWindowPixels, NativeUiSession, NativeUiTranscript, NativeUiStabilityWindow, NativeUiStabilityEvidence, NativeUiStabilitySummary, stability_additional_window_seconds};
+#[path = "working_owned_probe.rs"]
+mod working_owned_probe;
 pub use application_leaf_unit::{NativeOwnedLeafUnit, OwnedLeafProfile};
+pub use native_application_ui_entry::{
+    CameraPhotoObservation, NativeUiSession, NativeUiStabilityEvidence, NativeUiStabilitySummary,
+    NativeUiStabilityWindow, NativeUiTranscript, RetainedScopedWindowPixels, ScopedWindowPixels,
+    stability_additional_window_seconds,
+};
 
 const OUTPUT_LIMIT: usize = 64 * 1024;
 const RETIRE_TIMEOUT: Duration = Duration::from_secs(2);
@@ -279,6 +285,8 @@ struct OwnedCgroup {
     events: File,
     kill: File,
     gallery_scope: Option<gallery_resources::Scope>,
+    working: Option<working_owned_probe::Lease>,
+    documents: bool,
 }
 
 fn current_cgroup_parent() -> io::Result<PathBuf> {
@@ -312,6 +320,15 @@ impl OwnedCgroup {
 
     fn create_owned(profile: Option<gallery_resources::Profile>) -> io::Result<Self> {
         let parent = current_cgroup_parent()?;
+        let working = working_owned_probe::factory()?;
+        let documents = working
+            .as_ref()
+            .is_some_and(working_owned_probe::FactoryScope::documents);
+        let profile = if documents {
+            Some(gallery_resources::Profile::DocumentsBuild)
+        } else {
+            profile
+        };
         let directory = File::open(&parent)?;
         let mut stat = std::mem::MaybeUninit::<libc::statfs>::uninit();
         // SAFETY: the FD is held; stat points to writable storage for statfs.
@@ -332,7 +349,10 @@ impl OwnedCgroup {
         };
         let nonce = NEXT_GROUP.fetch_add(1, Ordering::Relaxed);
         let prefix = profile.map_or("droidloom-app-probe", gallery_resources::Profile::prefix);
-        let path = parent.join(format!("{prefix}-{}-{nonce}", std::process::id()));
+        let path = working.as_ref().map_or_else(
+            || parent.join(format!("{prefix}-{}-{nonce}", std::process::id())),
+            working_owned_probe::FactoryScope::path,
+        );
         // create_dir refuses an existing name; no existing group is adopted.
         fs::create_dir(&path)?;
         let result = (|| {
@@ -355,14 +375,20 @@ impl OwnedCgroup {
                 c"cgroup.kill",
                 libc::O_WRONLY | libc::O_NOFOLLOW,
             )?;
-            Ok(Self {
+            let mut group = Self {
                 path: path.clone(),
                 directory,
                 procs,
                 events,
                 kill,
                 gallery_scope,
-            })
+                working: None,
+                documents,
+            };
+            if let Some(scope) = working {
+                group.working = Some(scope.register(&group)?);
+            }
+            Ok(group)
         })();
         if result.is_err() {
             let _ = fs::remove_dir(&path);
@@ -380,6 +406,9 @@ impl OwnedCgroup {
     }
 
     fn validate_resources(&self) -> io::Result<()> {
+        if let Some(working) = &self.working {
+            working.guard_group()?;
+        }
         self.gallery_scope
             .as_ref()
             .map_or(Ok(()), gallery_resources::Scope::validate)
@@ -419,7 +448,11 @@ impl OwnedCgroup {
         if !current.is_dir() || current.dev() != held.dev() || current.ino() != held.ino() {
             return Err(invalid("owned invocation cgroup path changed"));
         }
-        fs::remove_dir(&self.path)
+        fs::remove_dir(&self.path)?;
+        if let Some(working) = self.working.take() {
+            working.retired()?;
+        }
+        Ok(())
     }
 }
 
@@ -531,9 +564,11 @@ impl NativeLeafRun<'_, '_> {
                 expected_epoch: app.epoch.clone(),
             }) + RETIRE_TIMEOUT;
         if self.observation.requires_inventory_bookend() {
-            after += super::progress::response_timeout(&super::ControlRequest::ObserveUserZeroPackageInventory {
-                expected_epoch: app.epoch.clone(),
-            });
+            after += super::progress::response_timeout(
+                &super::ControlRequest::ObserveUserZeroPackageInventory {
+                    expected_epoch: app.epoch.clone(),
+                },
+            );
         }
         native_leaf_work_deadline(
             Instant::now(),
@@ -563,11 +598,24 @@ fn run_owned_observed(
     profile: Option<gallery_resources::Profile>,
     observation: Option<NativeLeafRun<'_, '_>>,
 ) -> Result<Output, String> {
-    run_owned_bounded(command, inherit, alive_pidfds, deadline, profile, observation, OUTPUT_LIMIT, None)
+    run_owned_bounded(
+        command,
+        inherit,
+        alive_pidfds,
+        deadline,
+        profile,
+        observation,
+        OUTPUT_LIMIT,
+        None,
+    )
 }
 
 #[derive(Clone, Copy)]
-enum NativeUiOutput { Small, Helper, Image }
+enum NativeUiOutput {
+    Small,
+    Helper,
+    Image,
+}
 fn run_owned_native_ui(
     command: Command,
     inherit: &[RawFd],
@@ -581,8 +629,16 @@ fn run_owned_native_ui(
         NativeUiOutput::Helper => crate::native_application_ui_protocol::WIRE_REPLY_BYTES,
         NativeUiOutput::Image => 32 * 1024 * 1024,
     };
-    run_owned_bounded(command, inherit, alive_pidfds, deadline,
-        Some(gallery_resources::Profile::ApplicationUi), None, limit, Some(guard))
+    run_owned_bounded(
+        command,
+        inherit,
+        alive_pidfds,
+        deadline,
+        Some(gallery_resources::Profile::ApplicationUi),
+        None,
+        limit,
+        Some(guard),
+    )
 }
 
 fn run_owned_bounded(
@@ -595,7 +651,9 @@ fn run_owned_bounded(
     stdout_limit: usize,
     mut guard: Option<&mut dyn FnMut() -> Result<(), String>>,
 ) -> Result<Output, String> {
-    if let Some(check) = guard.as_mut() { check()?; }
+    if let Some(check) = guard.as_mut() {
+        check()?;
+    }
     let mut channel = observation
         .as_mut()
         .map(|value| {
@@ -663,6 +721,7 @@ fn run_owned_bounded(
         ));
     }
     let group_fd = group.procs.as_raw_fd();
+    let documents = group.documents;
     let inherit = inherit.to_vec();
     let alive_pidfds = alive_pidfds.to_vec();
     command
@@ -674,7 +733,7 @@ fn run_owned_bounded(
     // nsenter. Every descendant therefore inherits invocation ownership.
     unsafe {
         command.pre_exec(move || {
-            if gallery {
+            if gallery || documents {
                 let mut affinity: libc::cpu_set_t = std::mem::zeroed();
                 libc::CPU_ZERO(&mut affinity);
                 libc::CPU_SET(20, &mut affinity);
@@ -690,6 +749,9 @@ fn run_owned_bounded(
                 {
                     return Err(io::Error::last_os_error());
                 }
+            }
+            if documents && libc::setpriority(libc::PRIO_PROCESS, 0, 10) != 0 {
+                return Err(io::Error::last_os_error());
             }
             if libc::write(group_fd, b"0\n".as_ptr().cast(), 2) != 2 {
                 return Err(io::Error::last_os_error());
@@ -728,6 +790,11 @@ fn run_owned_bounded(
             let pipes = (child.stdout.take(), child.stderr.take());
             invocation.child = Some(child);
             (|| -> Result<Output, String> {
+                if let Some(working) = &invocation.group.working {
+                    working
+                        .bind_spawned(invocation.child.as_ref().ok_or("spawned child absent")?)
+                        .map_err(|e| e.to_string())?;
+                }
                 let (Some(mut stdout), Some(mut stderr)) = pipes else {
                     return Err("application pipes unavailable".into());
                 };
@@ -740,10 +807,12 @@ fn run_owned_bounded(
                 let mut local_bookend = Instant::now();
                 loop {
                     if Instant::now() >= local_bookend {
-                        if let Some(check) = guard.as_mut() { check()?; }
+                        if let Some(check) = guard.as_mut() {
+                            check()?;
+                        }
                         local_bookend = Instant::now() + Duration::from_millis(100);
                     }
-                    if gallery && Instant::now() >= resource_bookend {
+                    if (gallery || documents) && Instant::now() >= resource_bookend {
                         invocation
                             .group
                             .validate_resources()
@@ -757,7 +826,8 @@ fn run_owned_bounded(
                         (channel.as_mut(), observation.as_mut())
                     {
                         channel.serve(
-                            observation.observation, observation.inspector,
+                            observation.observation,
+                            observation.inspector,
                             observation.engines.as_deref_mut(),
                         )?;
                     }
@@ -810,7 +880,9 @@ fn run_owned_bounded(
     result
         .and_then(|output| resources.map(|()| output))
         .and_then(|output| {
-            if let Some(check) = guard.as_mut() { check()?; }
+            if let Some(check) = guard.as_mut() {
+                check()?;
+            }
             if let Some(channel) = &channel {
                 channel.finish()?;
             }
@@ -1160,16 +1232,24 @@ pub(super) fn run_prepared_native_leaf_observed_until(
     baseline: &mut crate::native_leaf_baseline::NativeLeafBaselineObservation<'_>,
     until: Instant,
 ) -> Result<crate::native_leaf_engine::NativeLeafExecution, String> {
-    if !matches!(&kind, super::NativeLeafCommandKind::Standard { .. }
-        | super::NativeLeafCommandKind::GalleryImage
-        | super::NativeLeafCommandKind::CalendarReminder
-        | super::NativeLeafCommandKind::SettingsPages)
-    {
+    if !matches!(
+        &kind,
+        super::NativeLeafCommandKind::Standard { .. }
+            | super::NativeLeafCommandKind::GalleryImage
+            | super::NativeLeafCommandKind::CalendarReminder
+            | super::NativeLeafCommandKind::SettingsPages
+    ) {
         return Err("capture or preparation cannot request a running-engine checkpoint".into());
     }
     let mut engines = crate::native_leaf_engine::PendingLeafEngines::new(until)?;
     let output = run_prepared_native_leaf_inner(
-        command, epoch, kind, inspector, baseline, until, Some(&mut engines),
+        command,
+        epoch,
+        kind,
+        inspector,
+        baseline,
+        until,
+        Some(&mut engines),
     )?;
     engines.finish(output)
 }
