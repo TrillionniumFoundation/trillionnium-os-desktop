@@ -184,6 +184,12 @@ impl MainCustodyObservation {
     pub(crate) fn observed_at(&self) -> Instant {
         self.observed_at
     }
+    /// Retain this real observation's original peer for the private working
+    /// owner. This cannot be called with a serialized Main comparison.
+    pub(crate) fn retain_working_peer_pidfd(&self) -> Result<fs::File, ControlError> {
+        live(&self.pidfd).map_err(|e| io_error("retain working Main peer", e))?;
+        self.pidfd.try_clone().map_err(|e| io_error("duplicate actual Main peer", e))
+    }
 }
 
 /// Actual PM output minted only after a successful fixed request to the held

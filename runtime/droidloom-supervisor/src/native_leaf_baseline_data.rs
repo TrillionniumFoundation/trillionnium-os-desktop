@@ -3,6 +3,8 @@
 //! This module never opens an account file, copies an image, selects a caller
 //! pathname, changes a namespace, or mutates an Android directory. The input
 //! process identity comes only from the live normal Main factory.
+#[path = "working_qualification_main.rs"]
+pub(crate) mod working_main;
 use crate::control::application_probe::ApplicationInspection;
 use crate::main_custody::{MainDataRole, MainMountRoot, MainNodeIdentity, RuntimeMainCustody};
 use serde::{Deserialize, Serialize};

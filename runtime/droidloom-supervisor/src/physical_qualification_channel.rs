@@ -25,6 +25,8 @@ mod socket;
 mod source_custody;
 #[path = "physical_qualification_working_config.rs"]
 mod working_config;
+#[path = "working_qualification_runtime.rs"]
+pub(crate) mod working_runtime;
 use super::application_leaf_unit::qualification::{ChildPeer, KernelProfile};
 pub(crate) use capture::WorkingDocumentsBuildResources;
 pub use capture::{
@@ -441,7 +443,7 @@ impl Plan {
             return Err(error("working PLAN lacks its immutable source-input label"));
         }
         let mut raw = vec![0; pin[6] as usize];
-        file.read_exact_at(&mut raw, 0)?;
+        crate::control::physical_qualification_channel::working_runtime::read_exact_at_progress(&file, &mut raw, 0)?;
         if file.read_at(&mut [0; 1], pin[6])? != 0 || f9(&file)? != pin {
             return Err(error("working PLAN changed during initial whole read"));
         }
@@ -458,7 +460,7 @@ impl Plan {
     }
     pub fn bytes(&self) -> io::Result<Vec<u8>> {
         let mut raw = vec![0; self.pin[6] as usize];
-        self.file.read_exact_at(&mut raw, 0)?;
+        crate::control::physical_qualification_channel::working_runtime::read_exact_at_progress(&self.file, &mut raw, 0)?;
         if self.file.read_at(&mut [0; 1], self.pin[6])? != 0 || sha(&raw) != self.digest {
             return Err(error("actual whole physical plan differs"));
         }

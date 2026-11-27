@@ -677,6 +677,7 @@ fn run_owned_bounded(
                 return Err("application invocation owner lock poisoned".into());
             }
             Err(TryLockError::WouldBlock) if Instant::now() < deadline => {
+                physical_qualification_channel::working_runtime::progress()?;
                 thread::sleep(POLL_INTERVAL)
             }
             Err(TryLockError::WouldBlock) => {
@@ -722,6 +723,7 @@ fn run_owned_bounded(
     }
     let group_fd = group.procs.as_raw_fd();
     let documents = group.documents;
+    let watchdog_fd = physical_qualification_channel::working_runtime::inherited_watchdog_fd()?;
     let inherit = inherit.to_vec();
     let alive_pidfds = alive_pidfds.to_vec();
     command
@@ -733,6 +735,9 @@ fn run_owned_bounded(
     // nsenter. Every descendant therefore inherits invocation ownership.
     unsafe {
         command.pre_exec(move || {
+            if let Some(fd) = watchdog_fd {
+                if libc::close(fd) != 0 { return Err(io::Error::last_os_error()); }
+            }
             if gallery || documents {
                 let mut affinity: libc::cpu_set_t = std::mem::zeroed();
                 libc::CPU_ZERO(&mut affinity);
@@ -806,6 +811,7 @@ fn run_owned_bounded(
                 let mut resource_bookend = Instant::now();
                 let mut local_bookend = Instant::now();
                 loop {
+                    physical_qualification_channel::working_runtime::progress()?;
                     if Instant::now() >= local_bookend {
                         if let Some(check) = guard.as_mut() {
                             check()?;
