@@ -288,6 +288,26 @@ impl WorkingColdOwner {
         value.revalidate()?;
         Ok(value)
     }
+    pub(crate) fn revalidate_label_custody(&self) -> Result<()> {
+        for lock in &self.locks {
+            lock.revalidate()?;
+        }
+        let observed = working_observation(&self.candidate)?;
+        ensure(
+            same_observation(&observed, &self.observation),
+            "working cold owner changed boot, process, unit or namespace",
+        )?;
+        singleton(&observed)?;
+        self.input.revalidate_custody()?;
+        self.executable.revalidate_custody()?;
+        ensure(
+            fs::stat(&File::open("/proc/self/exe")?)? == *self.executable.identity()
+                && bounded(Path::new("/proc/self/cmdline"), 32768)? == self.arguments,
+            "working cold actual producer or argv changed",
+        )?;
+        Ok(())
+    }
+
     pub(crate) fn revalidate(&self) -> Result<()> {
         for lock in &self.locks {
             lock.revalidate()?;
@@ -324,8 +344,8 @@ impl WorkingColdOwner {
         // The caller's entry source and immutable plan remain under the fixed
         // private RootScope exclusions (or already have their final labels).
         // They are never rebound through a JSON comparison or a fresh open.
-        self.input.revalidate()?;
-        self.executable.revalidate()?;
+        self.input.revalidate_custody()?;
+        self.executable.revalidate_custody()?;
         let updates = self
             .locks
             .iter()
@@ -352,7 +372,7 @@ impl WorkingColdOwner {
         for (lock, (before, after)) in self.locks.iter_mut().zip(updates) {
             lock.accept_label_identity(&before, &after)?;
         }
-        self.revalidate()
+        self.revalidate_label_custody()
     }
 
     pub(crate) fn boot_id(&self) -> &str {

@@ -168,6 +168,30 @@ impl Held {
         )
     }
 
+    fn revalidate_custody(&self) -> Result<()> {
+        let actual = snapshot(&self.file)?;
+        let same_identity = if self.body.is_some() {
+            actual.identity == self.after.identity
+        } else {
+            // The publisher may subsequently create the fixed boot/runtime
+            // children. Those directory entries do not change inode custody.
+            stable_directory(&actual.identity, &self.after.identity)
+        };
+        ensure(
+            same_identity
+                && actual.handle == self.after.handle
+                && actual.attributes == self.after.attributes
+                && fs::xattrs(&self.file)?.is_empty(),
+            "applied working input label, inode or unrelated attributes changed",
+        )?;
+        named_identity(&self.path, &actual.identity)?;
+
+        ensure(
+            snapshot(&self.file)? == actual,
+            "working label custody changed during readback",
+        )
+    }
+
     fn revalidate(&self) -> Result<()> {
         let actual = snapshot(&self.file)?;
         let same_identity = if self.body.is_some() {
@@ -228,6 +252,19 @@ pub(crate) struct WorkingInputLabelsApplied {
 }
 
 impl WorkingInputLabelsApplied {
+    pub(crate) fn revalidate_custody(&self) -> Result<()> {
+        self.sources.revalidate_custody()?;
+        ensure(
+            fs::stat(&self.lookup_file)? == self.lookup_identity,
+            "normal working context lookup evidence changed",
+        )?;
+        named_identity(&self.lookups.path, &self.lookup_identity)?;
+        for held in &self.held {
+            held.revalidate_custody()?;
+        }
+        self.sources.revalidate_custody()
+    }
+
     pub(crate) fn revalidate(&self) -> Result<()> {
         self.sources.revalidate()?;
         ensure(
@@ -432,5 +469,66 @@ mod tests {
             }
             assert!(!stable_directory(&before, &other));
         }
+    }
+}
+
+#[cfg(test)]
+mod window_custody_tests {
+    use super::*;
+    use std::io::{Seek, SeekFrom};
+    use std::os::unix::fs::PermissionsExt;
+
+    fn actual() -> (tempfile::TempDir, PathBuf, Held) {
+        assert_eq!(rustix::process::geteuid().as_raw(), 0);
+        let root = tempfile::Builder::new()
+            .prefix(".p4-working-window-custody-")
+            .tempdir_in("/root")
+            .unwrap();
+        let path = root.path().join("input");
+        std::fs::write(&path, b"fixed actual working source\n").unwrap();
+        std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o400)).unwrap();
+        let file = File::open(&path).unwrap();
+        let held = Held::capture(path.clone(), &file, false).unwrap();
+        (root, path, held)
+    }
+
+    #[test]
+    fn working_window_custody_keeps_complete_inode_and_does_not_reread_body() {
+        let (_root, _path, mut held) = actual();
+        held.file.seek(SeekFrom::Start(5)).unwrap();
+        held.revalidate_custody().unwrap();
+        assert_eq!(held.file.stream_position().unwrap(), 5);
+        held.revalidate().unwrap();
+        held.revalidate_custody().unwrap();
+    }
+
+    #[test]
+    fn working_window_custody_rejects_equal_bytes_replacement() {
+        let (_root, path, held) = actual();
+        let bytes = std::fs::read(&path).unwrap();
+        std::fs::remove_file(&path).unwrap();
+        std::fs::write(&path, bytes).unwrap();
+        std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o400)).unwrap();
+        assert!(held.revalidate_custody().is_err());
+        assert!(held.revalidate().is_err());
+    }
+
+    #[test]
+    fn working_window_custody_rejects_same_length_body_and_unrelated_xattr_changes() {
+        let (_root, path, held) = actual();
+        let mut bytes = std::fs::read(&path).unwrap();
+        bytes[0] ^= 1;
+        std::fs::write(path, bytes).unwrap();
+        assert!(held.revalidate_custody().is_err());
+        let (_root, _path, held) = actual();
+        rustix::fs::fsetxattr(
+            &held.file,
+            "user.p4-window-negative",
+            b"unrelated",
+            rustix::fs::XattrFlags::empty(),
+        )
+        .unwrap();
+        assert!(held.revalidate_custody().is_err());
+        assert!(held.revalidate().is_err());
     }
 }

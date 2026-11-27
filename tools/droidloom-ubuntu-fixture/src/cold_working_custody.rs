@@ -36,6 +36,21 @@ impl WorkingColdCustody {
         value.revalidate()?;
         Ok(value)
     }
+    fn guard_pair_label_custody(&self) -> Result<()> {
+        let returned = self
+            .returned
+            .try_borrow()
+            .map_err(|_| "working Returned observation is already borrowed")?;
+        let pair = self
+            .pair
+            .try_borrow()
+            .map_err(|_| "working pair mutation is already in progress")?;
+        match pair.as_ref() {
+            Some(pair) => returned.guard_pair_label_custody(pair),
+            None => Err("working label window lacks the actual exchanged pair".into()),
+        }
+    }
+
     fn guard_pair(&self) -> Result<()> {
         let returned = self
             .returned
@@ -50,6 +65,13 @@ impl WorkingColdCustody {
             None => returned.guard(),
         }
     }
+    pub(super) fn revalidate_label_custody(&self) -> Result<()> {
+        self.guard_pair_label_custody()?;
+        self.materials.revalidate_label_custody()?;
+        self.boot.revalidate_label_custody()?;
+        self.guard_pair_label_custody()
+    }
+
     pub(super) fn revalidate(&self) -> Result<()> {
         self.guard_pair()?;
         self.materials.revalidate()?;

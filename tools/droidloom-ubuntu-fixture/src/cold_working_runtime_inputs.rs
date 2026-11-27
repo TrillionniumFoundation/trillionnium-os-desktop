@@ -353,6 +353,32 @@ impl RuntimeInputs {
         Ok(value)
     }
 
+    pub(super) fn revalidate_label_custody(&self) -> Result<()> {
+        self.labels.revalidate_custody()?;
+        fs::assert_root_namespace(&fs::absolute_string(&self.candidate)?, &self.candidate_tree)?;
+        fs::assert_root_namespace(
+            &fs::absolute_string(&self.candidate.join(layout::WORKING_INPUT_DIRECTORY))?,
+            &self.inputs,
+        )?;
+        let mut expected = NAMES
+            .iter()
+            .map(|name| (*name).to_owned())
+            .collect::<Vec<_>>();
+        expected.sort();
+        ensure(
+            private(&self.candidate_tree.root, 0)? == self.candidate_identity
+                && private(&self.inputs.root, 0)? == self.inputs_identity
+                && names(&self.candidate_tree.root)? == [layout::WORKING_INPUT_DIRECTORY]
+                && names(&self.inputs.root)? == expected
+                && self.records.len() == NAMES.len(),
+            "cold working runtime input inode or exact membership changed",
+        )?;
+        for record in &self.records {
+            record.revalidate_custody()?;
+        }
+        Ok(())
+    }
+
     pub(super) fn revalidate(&self) -> Result<()> {
         self.labels.revalidate()?;
         fs::assert_root_namespace(&fs::absolute_string(&self.candidate)?, &self.candidate_tree)?;
