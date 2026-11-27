@@ -180,6 +180,9 @@ impl<'a> NativeLeafBaselineObservation<'a> {
     pub(crate) fn preparation_owner(&self) -> Option<&WorkingQualificationOwner> {
         self.preparation_owner
     }
+    pub(crate) fn working_source_custody(&self) -> Option<&Arc<WorkingNativeSourceCustody>> {
+        self.working_source.as_ref()
+    }
     pub(crate) fn working_source_comparison(
         &self,
     ) -> Result<Option<serde_json::Value>, ControlError> {

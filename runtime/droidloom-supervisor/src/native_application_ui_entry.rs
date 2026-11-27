@@ -10,6 +10,7 @@ use crate::control::{
 use crate::main_custody::{MainNodeIdentity, RuntimeMainCustody};
 use crate::native_application_ui_protocol as wire;
 use crate::native_leaf_baseline::NativeLeafBaselineObservation;
+use crate::native_working_contract::{WorkingNamespaceEntryPin, layout as working_layout};
 use serde::Serialize;
 use serde_json::Value;
 use sha2::{Digest, Sha256};
@@ -182,12 +183,33 @@ fn verify_parents(parents: &[Parent]) -> io::Result<()> {
     }
     Ok(())
 }
+fn working_label(file: &File, expected: &[u8]) -> Result<(), String> {
+    let mut bytes = [0_u8; 256];
+    let count = unsafe {
+        libc::fgetxattr(
+            file.as_raw_fd(),
+            c"security.selinux".as_ptr(),
+            bytes.as_mut_ptr().cast(),
+            bytes.len(),
+        )
+    };
+    if count <= 0 || count as usize >= bytes.len() {
+        return Err("working native UI expected a finite normal SELinux label".into());
+    }
+    let mut actual = &bytes[..count as usize];
+    if actual.last() == Some(&0) {
+        actual = &actual[..actual.len() - 1];
+    }
+    need(actual == expected, "working native UI normal label differs")
+}
+
 struct HeldInput {
     path: PathBuf,
     file: File,
     parents: Vec<Parent>,
     identity: Identity,
     sha256: String,
+    required_label: Option<&'static [u8]>,
 }
 impl HeldInput {
     fn open(path: &Path, bytes: u64, sha256: &str, mode: u32) -> Result<Self, String> {
@@ -200,6 +222,56 @@ impl HeldInput {
                     .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b)),
             "native UI source-owned helper input differs",
         )?;
+        Self::open_verified(path, bytes, sha256, mode, None)
+    }
+    fn open_working(pin: &WorkingNamespaceEntryPin) -> Result<Self, String> {
+        pin.validate().map_err(|e| e.to_string())?;
+        let input = Self::open_verified(
+            Path::new(&pin.path),
+            pin.bytes,
+            &pin.sha256,
+            0o755,
+            Some(working_layout::WORKING_NAMESPACE_ENTRY_EXEC_LABEL),
+        )?;
+        let mut elf = [0_u8; 64];
+        input
+            .file
+            .read_exact_at(&mut elf, 0)
+            .map_err(|e| e.to_string())?;
+        need(
+            &elf[..7] == b"\x7fELF\x02\x01\x01"
+                && matches!(u16::from_le_bytes([elf[16], elf[17]]), 2 | 3)
+                && u16::from_le_bytes([elf[18], elf[19]]) == 62,
+            "working namespace entry is not its normal x86-64 ELF",
+        )?;
+        for attribute in [
+            c"security.capability",
+            c"system.posix_acl_access",
+            c"system.posix_acl_default",
+        ] {
+            let count = unsafe {
+                libc::fgetxattr(
+                    input.file.as_raw_fd(),
+                    attribute.as_ptr(),
+                    std::ptr::null_mut(),
+                    0,
+                )
+            };
+            need(
+                count < 0 && io::Error::last_os_error().raw_os_error() == Some(libc::ENODATA),
+                "working namespace entry has an unadmitted capability or ACL",
+            )?;
+        }
+        input.verify()?;
+        Ok(input)
+    }
+    fn open_verified(
+        path: &Path,
+        bytes: u64,
+        sha256: &str,
+        mode: u32,
+        required_label: Option<&'static [u8]>,
+    ) -> Result<Self, String> {
         let parents = protected_parents(path).map_err(|e| e.to_string())?;
         let name = CString::new(
             path.file_name()
@@ -228,12 +300,16 @@ impl HeldInput {
             parents,
             identity,
             sha256: sha256.into(),
+            required_label,
         };
         result.full()?;
         Ok(result)
     }
     fn verify(&self) -> Result<(), String> {
         verify_parents(&self.parents).map_err(|e| e.to_string())?;
+        if let Some(label) = self.required_label {
+            working_label(&self.file, label)?;
+        }
         need(
             Identity::of(&self.file.metadata().map_err(|e| e.to_string())?) == self.identity
                 && Identity::of(&fs::symlink_metadata(&self.path).map_err(|e| e.to_string())?)
@@ -270,7 +346,23 @@ struct HelperInputs {
     held: Vec<HeldInput>,
 }
 impl HelperInputs {
-    fn capture() -> Result<Self, String> {
+    fn capture(baseline: &NativeLeafBaselineObservation<'_>) -> Result<Self, String> {
+        let working = if let Some(source) = baseline.working_source_custody() {
+            Some(source.namespace_entry_pin().map_err(|e| e.to_string())?)
+        } else if let Some(owner) = baseline.preparation_owner() {
+            Some(owner.namespace_entry_pin()?)
+        } else {
+            None
+        };
+        if let Some(pin) = working {
+            // This independently built normal host member cannot inherit any
+            // historical cohort proof credit. Its actual Main entry is tested.
+            let result = Self {
+                held: vec![HeldInput::open_working(pin)?],
+            };
+            result.verify()?;
+            return Ok(result);
+        }
         let binary = HeldInput::open(Path::new(HELPER), 3_972_024, HELPER_SHA, 0o755)?;
         let source = HeldInput::open(
             &Path::new(COHORT).join("source/held_namespace_entry.rs"),
@@ -336,6 +428,9 @@ impl HelperInputs {
     }
     fn binary(&self) -> &File {
         &self.held[0].file
+    }
+    fn path(&self) -> &Path {
+        &self.held[0].path
     }
     fn verify(&self) -> Result<(), String> {
         for input in &self.held {
@@ -572,7 +667,7 @@ impl Target {
             helper.binary().as_raw_fd()
         ));
         command
-            .arg0(HELPER)
+            .arg0(helper.path())
             .env_clear()
             .env("PATH", "/usr/sbin:/usr/bin:/sbin:/bin")
             .env("LANG", "C.UTF-8");
@@ -614,26 +709,96 @@ impl Target {
         Ok((command, inherit))
     }
 }
+struct WorkingJournalRoot {
+    path: PathBuf,
+    file: File,
+    identity: [u64; 5],
+}
+impl WorkingJournalRoot {
+    fn open(runtime: &Path) -> Result<Self, String> {
+        let path = runtime.join(working_layout::WORKING_NATIVE_UI_DIRECTORY);
+        let file = OpenOptions::new()
+            .read(true)
+            .custom_flags(libc::O_DIRECTORY | libc::O_NOFOLLOW | libc::O_CLOEXEC)
+            .open(&path)
+            .map_err(|e| e.to_string())?;
+        let identity = directory_identity(&file).map_err(|e| e.to_string())?;
+        need(
+            identity[2] == u64::from(libc::S_IFDIR | 0o700),
+            "working native UI parent was not privately created by its real owner",
+        )?;
+        working_label(&file, working_layout::WORKING_NATIVE_UI_DIRECTORY_LABEL)?;
+        let root = Self {
+            path,
+            file,
+            identity,
+        };
+        root.verify()?;
+        Ok(root)
+    }
+    fn verify(&self) -> Result<(), String> {
+        let named = OpenOptions::new()
+            .read(true)
+            .custom_flags(libc::O_DIRECTORY | libc::O_NOFOLLOW | libc::O_CLOEXEC)
+            .open(&self.path)
+            .map_err(|e| e.to_string())?;
+        for file in [&self.file, &named] {
+            need(
+                directory_identity(file).map_err(|e| e.to_string())? == self.identity,
+                "working native UI root changed",
+            )?;
+            working_label(file, working_layout::WORKING_NATIVE_UI_DIRECTORY_LABEL)?;
+        }
+        Ok(())
+    }
+}
 struct Journal {
     path: PathBuf,
     directory: File,
     identity: [u64; 5],
     parents: Vec<Parent>,
+    working_root: Option<WorkingJournalRoot>,
 }
 impl Journal {
-    fn create() -> Result<Self, String> {
+    fn create(baseline: &NativeLeafBaselineObservation<'_>) -> Result<Self, String> {
+        let runtime = if let Some(source) = baseline.working_source_custody() {
+            Some(
+                source
+                    .runtime_evidence_directory()
+                    .map_err(|e| e.to_string())?,
+            )
+        } else if let Some(owner) = baseline.preparation_owner() {
+            Some(owner.runtime_evidence_directory()?)
+        } else {
+            None
+        };
+        let working_root = runtime.map(WorkingJournalRoot::open).transpose()?;
         let stamp = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
             .map_err(|_| "native UI journal clock unavailable")?
             .as_nanos();
-        let path = Path::new(JOURNALS).join(format!(
+        let name = format!(
             "native-ui-{}-{stamp}-{}",
             std::process::id(),
             NEXT_JOURNAL.fetch_add(1, Ordering::Relaxed)
-        ));
+        );
+        let parent = working_root
+            .as_ref()
+            .map_or(Path::new(JOURNALS), |root| &root.path);
+        let path = parent.join(&name);
         let parents = protected_parents(&path).map_err(|e| e.to_string())?;
-        fs::create_dir(&path).map_err(|e| e.to_string())?;
-        fs::set_permissions(&path, fs::Permissions::from_mode(0o700)).map_err(|e| e.to_string())?;
+        if let Some(root) = &working_root {
+            root.verify()?;
+            let leaf = CString::new(name).map_err(|e| e.to_string())?;
+            if unsafe { libc::mkdirat(root.file.as_raw_fd(), leaf.as_ptr(), 0o700) } != 0 {
+                return Err(io::Error::last_os_error().to_string());
+            }
+            root.file.sync_all().map_err(|e| e.to_string())?;
+        } else {
+            fs::create_dir(&path).map_err(|e| e.to_string())?;
+            fs::set_permissions(&path, fs::Permissions::from_mode(0o700))
+                .map_err(|e| e.to_string())?;
+        }
         let directory = OpenOptions::new()
             .read(true)
             .custom_flags(libc::O_DIRECTORY | libc::O_NOFOLLOW | libc::O_CLOEXEC)
@@ -645,12 +810,24 @@ impl Journal {
             directory,
             identity,
             parents,
+            working_root,
         };
         result.verify()?;
         Ok(result)
     }
     fn verify(&self) -> Result<(), String> {
         verify_parents(&self.parents).map_err(|e| e.to_string())?;
+        if let Some(root) = &self.working_root {
+            root.verify()?;
+            need(
+                self.identity[2] == u64::from(libc::S_IFDIR | 0o700),
+                "working native UI session directory mode differs",
+            )?;
+            working_label(
+                &self.directory,
+                working_layout::WORKING_NATIVE_UI_SESSION_DIRECTORY_LABEL,
+            )?;
+        }
         let named = OpenOptions::new()
             .read(true)
             .custom_flags(libc::O_DIRECTORY | libc::O_NOFOLLOW | libc::O_CLOEXEC)
@@ -686,6 +863,17 @@ impl Journal {
         }
         use std::os::fd::FromRawFd;
         let mut file = unsafe { File::from_raw_fd(fd) };
+        if self.working_root.is_some() {
+            working_label(&file, working_layout::WORKING_NATIVE_UI_RECORD_LABEL)?;
+            let metadata = file.metadata().map_err(|e| e.to_string())?;
+            need(
+                metadata.mode() == libc::S_IFREG | 0o600
+                    && metadata.uid() == 0
+                    && metadata.gid() == 0
+                    && metadata.nlink() == 1,
+                "working native UI record metadata differs",
+            )?;
+        }
         file.write_all(bytes)
             .and_then(|_| file.sync_all())
             .and_then(|_| self.directory.sync_all())
@@ -757,6 +945,7 @@ pub struct NativeUiSession<'a, 'b> {
     end: Instant,
     work_end: Instant,
     before_tasks: BTreeSet<u32>,
+    before_task_tree: Option<tasks::Tasks>,
     task: Option<u32>,
     sequence: u32,
     poisoned: bool,
@@ -832,7 +1021,7 @@ impl<'a, 'b> NativeUiSession<'a, 'b> {
                 "native UI original lease cannot cover cleanup and actual normal post observations",
             )?;
         let lock = ActionLock::acquire()?;
-        let helper = HelperInputs::capture()?;
+        let helper = HelperInputs::capture(baseline)?;
         let target = Target::capture(baseline)?;
         let helper_pm = inspector
             .inspect_observed_until(wire::HELPER_PACKAGE, 0, work_end)
@@ -852,7 +1041,7 @@ impl<'a, 'b> NativeUiSession<'a, 'b> {
                 && h.apks[0].sha256 == wire::HELPER_APK_SHA256,
             "native UI actual helper complete installed identity differs",
         )?;
-        let journal = Journal::create()?;
+        let journal = Journal::create(baseline)?;
         journal.json("BASELINE.json", &serde_json::json!({"schema":"droidloom.native-ui-live.v1",
             "main":baseline.main().facts(),"application":baseline.application(),"helper":h,
             "automatic_retry":false,"production_ready":false,"comparison_documents_create_authority":false}))?;
@@ -866,6 +1055,7 @@ impl<'a, 'b> NativeUiSession<'a, 'b> {
             end,
             work_end,
             before_tasks: BTreeSet::new(),
+            before_task_tree: None,
             task: None,
             sequence: 0,
             poisoned: false,
@@ -1117,6 +1307,9 @@ impl<'a, 'b> NativeUiSession<'a, 'b> {
             return Err("native UI launch did not create exactly one new owned freeform leaf; no cleanup guessed".into());
         }
         self.task = Some(task);
+        // Retain the actual complete pre-launch tree for a later strict pair
+        // consumer. The existing single-task checks remain unchanged.
+        self.before_task_tree = Some(before);
         self.journal.json(
             "OWNED-TASK.json",
             &serde_json::json!({"task":task,"package":package,

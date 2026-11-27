@@ -41,6 +41,44 @@ pub(crate) const MAIN_REVALIDATION_SECONDS: u64 = 70;
 pub(crate) const RETURN_SECONDS: u64 = 180;
 pub(crate) const PANIC_SECONDS: u32 = 10;
 
+/// Comparison copied from the unique normal host payload member. The complete
+/// ADMITTED-MATERIALS input is already held and boot-hash authenticated before
+/// a live owner may expose this pin. Deserialization alone grants no execution.
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
+pub(crate) struct WorkingNamespaceEntryPin {
+    pub(crate) path: String,
+    pub(crate) bytes: u64,
+    pub(crate) sha256: String,
+}
+impl WorkingNamespaceEntryPin {
+    pub(crate) fn validate(&self) -> io::Result<()> {
+        if self.path != layout::WORKING_NAMESPACE_ENTRY
+            || !(1024..=layout::WORKING_NAMESPACE_ENTRY_MAX_BYTES).contains(&self.bytes)
+            || !digest(&self.sha256)
+        {
+            return Err(reject(
+                "working namespace entry differs from its fixed normal member",
+            ));
+        }
+        Ok(())
+    }
+    pub(crate) fn from_admitted_materials(bytes: &[u8]) -> io::Result<Self> {
+        if bytes.len() > 16 * 1024 * 1024 {
+            return Err(reject(
+                "working admitted material comparison exceeds its fixed bound",
+            ));
+        }
+        let document: serde_json::Value = serde_json::from_slice(bytes)?;
+        let value = document
+            .get("working_namespace_entry")
+            .ok_or_else(|| reject("normal working namespace entry member is absent"))?;
+        let pin: Self = serde_json::from_value(value.clone())?;
+        pin.validate()?;
+        Ok(pin)
+    }
+}
+
 /// Two distinct clocks: one immutable source-derived work end and a shorter
 /// failure-recovery interval. Refreshing the latter cannot alter the former.
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
@@ -398,6 +436,40 @@ mod tests {
                 .collect::<Vec<_>>()
                 .join(" ")
         )
+    }
+    #[test]
+    fn physical_working_namespace_pin_requires_exact_normal_member() {
+        let good = serde_json::json!({"working_namespace_entry":{
+            "path":layout::WORKING_NAMESPACE_ENTRY, "bytes":4096, "sha256":"a".repeat(64)}});
+        let read = |v: &serde_json::Value| {
+            WorkingNamespaceEntryPin::from_admitted_materials(&serde_json::to_vec(v).unwrap())
+        };
+        read(&good).unwrap();
+        for path in [
+            "",
+            "/usr/bin/droidloom-applications",
+            "/usr/lib/droidloom/qualification/../qualification/working-namespace-entry",
+            "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2/bin/held-namespace-entry",
+        ] {
+            let mut bad = good.clone();
+            bad["working_namespace_entry"]["path"] = path.into();
+            assert!(read(&bad).is_err());
+        }
+        for bytes in [0, 1023, layout::WORKING_NAMESPACE_ENTRY_MAX_BYTES + 1] {
+            let mut bad = good.clone();
+            bad["working_namespace_entry"]["bytes"] = bytes.into();
+            assert!(read(&bad).is_err());
+        }
+        for sha in ["a".repeat(63), "A".repeat(64), "g".repeat(64)] {
+            let mut bad = good.clone();
+            bad["working_namespace_entry"]["sha256"] = sha.into();
+            assert!(read(&bad).is_err());
+        }
+        let mut bad = good.clone();
+        bad["working_namespace_entry"]["runtime_qualified"] = true.into();
+        assert!(read(&bad).is_err());
+        assert!(read(&serde_json::json!({"production_ready":true})).is_err());
+        assert!(read(&serde_json::json!({"working_namespace_entry":null})).is_err());
     }
     #[test]
     fn working_dual_clock_is_source_sum_not_softdog_duration() {

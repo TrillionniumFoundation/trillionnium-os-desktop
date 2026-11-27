@@ -518,6 +518,12 @@ impl Plan {
         }
         Ok(())
     }
+    pub(super) fn working_namespace_entry_pin(
+        &self,
+    ) -> io::Result<&crate::native_working_contract::WorkingNamespaceEntryPin> {
+        self.configuration.guard()?;
+        Ok(self.configuration.namespace_entry_pin())
+    }
     pub(super) fn working_applications_pin(
         &self,
     ) -> io::Result<&crate::native_working_contract::PayloadPin> {

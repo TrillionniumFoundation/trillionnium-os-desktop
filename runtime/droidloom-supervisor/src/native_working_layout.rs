@@ -34,6 +34,16 @@ pub const WORKING_NATIVE_BASELINES_DIRECTORY: &str = "native-baselines";
 pub const WORKING_NATIVE_INPUTS_DIRECTORY: &str = "native-inputs";
 pub const WORKING_NATIVE_CASES_DIRECTORY: &str = "native-cases";
 pub const WORKING_NATIVE_CLAIMS_DIRECTORY: &str = "native-claims";
+pub const WORKING_NATIVE_UI_DIRECTORY: &str = "native-ui";
+pub const WORKING_NAMESPACE_ENTRY: &str =
+    "/usr/lib/droidloom/qualification/working-namespace-entry";
+pub const WORKING_NAMESPACE_ENTRY_MAX_BYTES: u64 = 32 * 1024 * 1024;
+pub const WORKING_NAMESPACE_ENTRY_EXEC_LABEL: &[u8] =
+    b"u:object_r:p4_linux_working_namespace_entry_exec_t:s0";
+pub const WORKING_NATIVE_UI_DIRECTORY_LABEL: &[u8] = b"u:object_r:p4_linux_working_ui_dir_t:s0";
+pub const WORKING_NATIVE_UI_SESSION_DIRECTORY_LABEL: &[u8] =
+    b"u:object_r:p4_linux_working_ui_session_dir_t:s0";
+pub const WORKING_NATIVE_UI_RECORD_LABEL: &[u8] = b"u:object_r:p4_linux_working_ui_record_t:s0";
 
 pub const WORKING_PARENT_ROLE: &[u8] = b"u:system_r:p4_linux_working_qualification_t:s0";
 pub const WORKING_SUITE_ROLE: &[u8] = b"u:system_r:p4_linux_working_suite_t:s0";
@@ -156,6 +166,8 @@ mod tests {
             WORKING_NATIVE_INPUTS_DIRECTORY_LABEL,
             WORKING_NATIVE_CASES_DIRECTORY_LABEL,
             WORKING_NATIVE_CLAIMS_DIRECTORY_LABEL,
+            WORKING_NATIVE_UI_DIRECTORY_LABEL,
+            WORKING_NATIVE_UI_SESSION_DIRECTORY_LABEL,
         ] {
             assert!(labels.insert(label));
         }
@@ -172,6 +184,7 @@ mod tests {
         for name in [
             WORKING_EVIDENCE_DIRECTORY,
             WORKING_NATIVE_CLAIMS_DIRECTORY,
+            WORKING_NATIVE_UI_DIRECTORY,
             WORKING_CAPTURE_FILE,
             "../native-cases",
         ] {
