@@ -292,6 +292,10 @@ pub enum ControlRequest {
         /// Previously observed generation; never a process selector.
         expected_epoch: application_probe::RuntimeEpoch,
     },
+    /// Observe the current Ready owner's Main resources without a caller epoch.
+    /// The authenticated owner selects its held framework generation; no process,
+    /// pathname, descriptor, success value or working-copy assertion is accepted.
+    ObserveCurrentRuntimeMain {},
     /// Observe the engine mapped by a currently running selected user-0 package.
     /// Inputs compare the current owner; no PID, path, label or hash is accepted.
     ObserveApplicationEngine {
@@ -545,7 +549,8 @@ impl Daemon {
             ControlRequest::ObserveUserZeroPackageInventory { .. } => Err(ControlError::Invalid(
                 "complete user-0 inventory requires the original kernel-first Ready owner".into(),
             )),
-            ControlRequest::ObserveRuntimeMain { .. } => Err(ControlError::Invalid(
+            ControlRequest::ObserveRuntimeMain { .. }
+            | ControlRequest::ObserveCurrentRuntimeMain {} => Err(ControlError::Invalid(
                 "Main resource observation requires the original kernel-first Ready owner".into(),
             )),
             ControlRequest::ObserveRuntimeVintf { .. } => Err(ControlError::Invalid(
