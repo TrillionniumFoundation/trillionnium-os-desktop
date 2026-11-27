@@ -821,7 +821,10 @@ fn verify_to_receipt(config: &Path, expected: &str) -> Result<FilePin> {
     let output = verify_dir.join("OWNED-GUEST-VERIFIED.json");
     let sha = fs::write_json(&fs::absolute_string(&output)?, &result, 0)?;
     let pin = boot_files::pin_file(&output)?;
-    ensure(pin.sha256 == sha, "fresh owned output changed after publication")?;
+    ensure(
+        pin.sha256 == sha,
+        "fresh owned output changed after publication",
+    )?;
     Ok(pin)
 }
 
@@ -920,11 +923,136 @@ pub(super) fn verify_for_original_once(
         "receipt":receipt, "actual":result, "verified_file_custody":files}))
 }
 
+/// Fresh normal full-guest observation retained by the returned-copy successor.
+/// No constructor accepts a saved successful report. The private custody and the
+/// held work inode are established by the actual verifier below.
+pub(crate) struct WorkingOwnedObservation {
+    custody: Custody,
+    work: File,
+    parent: PathBuf,
+    work_identity: Identity,
+    report: Value,
+}
+impl WorkingOwnedObservation {
+    pub(crate) fn report(&self) -> &Value {
+        &self.report
+    }
+    pub(crate) fn revalidate(&self) -> Result<()> {
+        // The enclosing normal preparation may add its own MAC/cold-source
+        // subdirectories after this verifier returns. The held root identity,
+        // ownership and every already admitted file stay exact; directory
+        // link-count growth does not replace the work inode.
+        private(&self.parent)?;
+        let named = fs::Tree::open(&fs::absolute_string(&self.parent)?, 0)?;
+        let actual = fs::stat(&self.work)?;
+        let expected = &self.work_identity;
+        ensure(
+            actual == fs::stat(&named.root)?
+                && (actual.dev, actual.ino, actual.mode, actual.uid, actual.gid)
+                    == (
+                        expected.dev,
+                        expected.ino,
+                        expected.mode,
+                        expected.uid,
+                        expected.gid,
+                    )
+                && actual.mode == 0o40700
+                && actual.uid == 0
+                && actual.gid == 0,
+            "working owned observation lost its held/named root identity",
+        )?;
+        self.custody.finish()?;
+        ensure(
+            fs::stat(&self.work)? == actual && fs::stat(&named.root)? == actual,
+            "working owned root changed during evidence revalidation",
+        )
+    }
+}
+
+fn working_qualification_verification_name(request: &Path, work: &Identity) -> Result<String> {
+    let parent = request
+        .parent()
+        .ok_or("working owned request parent absent")?;
+    let component = parent
+        .file_name()
+        .and_then(|v| v.to_str())
+        .ok_or("working qualification work name absent")?;
+    let candidate = component
+        .strip_prefix("working-qualification-")
+        .ok_or("working qualification work prefix differs")?;
+    ensure(
+        parent.parent() == Some(Path::new(BASE))
+            && fs::valid_digest(candidate)
+            && request.file_name() == Some(std::ffi::OsStr::new("OWNED-VERIFY-INPUTS.json"))
+            && work.ino != 0,
+        "fresh owned verification must name its exact new qualification work",
+    )?;
+    let name = format!("qual-{}-{}", &candidate[..24], work.ino);
+    ensure(
+        safe_name(&name) && format!("{name}-journals").len() <= 64,
+        "working owned verification or collection name exceeds its normal consumer bound",
+    )?;
+    Ok(name)
+}
+
+/// The new stage uses the same real ended-disk verifier, with a separate exact
+/// namespace derived from its held work directory. The old once API, name and
+/// deadline are unchanged.
+pub(crate) fn verify_for_working_qualification(
+    input: &FilePin,
+    request: &Path,
+    work: &File,
+) -> Result<WorkingOwnedObservation> {
+    let mut custody = Custody::default();
+    let mut plan: Plan = serde_json::from_value(custody.json(input, 1024 * 1024)?)?;
+    let parent = request
+        .parent()
+        .ok_or("working owned request parent absent")?;
+    let work_identity = fs::stat(work)?;
+    revalidate_once_work(work, parent, &work_identity)?;
+    let verification_name = working_qualification_verification_name(request, &work_identity)?;
+    ensure(
+        plan.verification_name != verification_name,
+        "working qualification cannot reuse a historical verification name",
+    )?;
+    plan.verification_name = verification_name;
+    let sha = fs::write_json(&fs::absolute_string(request)?, &plan, 0)?;
+    let request_pin = boot_files::pin_file(request)?;
+    ensure(
+        request_pin.sha256 == sha,
+        "fresh working owned request bytes differ",
+    )?;
+    custody.admit(&request_pin)?;
+    revalidate_once_work(work, parent, &work_identity)?;
+    let receipt = verify_to_receipt(request, &sha)?;
+    let actual = custody.json(&receipt, 16 * 1024 * 1024)?;
+    same_value_pin(&actual["input"], &request_pin)?;
+    let files = custody.finish()?;
+    revalidate_once_work(work, parent, &work_identity)?;
+    let value = WorkingOwnedObservation {
+        custody,
+        work: work.try_clone()?,
+        parent: parent.to_owned(),
+        work_identity,
+        report: json!({
+            "schema":"droidloom.working-qualification-owned-readback.v1",
+            "source_verification_input":input,"fresh_input":request_pin,
+            "receipt":receipt,"actual":actual,"verified_file_custody":files,
+            "old_once_authority_reconstructed":false
+        }),
+    };
+    value.revalidate()?;
+    Ok(value)
+}
+
 pub fn run(config: &Path, expected: &str) -> Result<()> {
     let pin = verify_to_receipt(config, expected)?;
-    println!("{}", json!({"receipt":pin.path,"sha256":pin.sha256,
+    println!(
+        "{}",
+        json!({"receipt":pin.path,"sha256":pin.sha256,
         "scope":"owned_normal_guest_mechanism_only",
-        "physical_activation_authorized":false,"production_ready":false}));
+        "physical_activation_authorized":false,"production_ready":false})
+    );
     Ok(())
 }
 
@@ -1010,6 +1138,63 @@ mod tests {
         publication.mtime_sec += 1;
         publication.ctime_sec += 1;
         assert!(same_once_work(&original, &publication));
+        Ok(())
+    }
+
+    #[test]
+    fn working_qualification_owned_name_binds_actual_inode_and_separate_stage() -> Result<()> {
+        let root = tempfile::tempdir()?;
+        let work = root.path().join("work");
+        std::fs::create_dir(&work)?;
+        let held = File::open(&work)?;
+        let before = fs::stat(&held)?;
+        let candidate = "a".repeat(64);
+        let request = Path::new(BASE)
+            .join(format!("working-qualification-{candidate}"))
+            .join("OWNED-VERIFY-INPUTS.json");
+        let first = working_qualification_verification_name(&request, &before)?;
+        assert_eq!(first, format!("qual-{}-{}", &candidate[..24], before.ino));
+        assert!(first.len() <= 48 && format!("{first}-journals").len() <= 64);
+        assert!(original_once_verification_name(&request, &before).is_err());
+        std::fs::rename(&work, root.path().join("retained"))?;
+        std::fs::create_dir(&work)?;
+        let replaced = fs::stat(&File::open(&work)?)?;
+        assert_eq!(
+            (fs::stat(&held)?.dev, fs::stat(&held)?.ino),
+            (before.dev, before.ino)
+        );
+        assert_ne!(
+            first,
+            working_qualification_verification_name(&request, &replaced)?
+        );
+        Ok(())
+    }
+    #[test]
+    fn working_qualification_owned_name_rejects_foreign_path_and_overflow() -> Result<()> {
+        let root = tempfile::tempdir()?;
+        let mut identity = fs::stat(&File::open(root.path())?)?;
+        let valid = Path::new(BASE)
+            .join(format!("working-qualification-{}", "a".repeat(64)))
+            .join("OWNED-VERIFY-INPUTS.json");
+        working_qualification_verification_name(&valid, &identity)?;
+        for path in [
+            Path::new(BASE).join(format!(
+                "original-once-{}/OWNED-VERIFY-INPUTS.json",
+                "a".repeat(64)
+            )),
+            valid.with_file_name("unreviewed.json"),
+            Path::new("/tmp").join(valid.strip_prefix("/")?),
+            valid
+                .parent()
+                .unwrap()
+                .join("extra/OWNED-VERIFY-INPUTS.json"),
+        ] {
+            assert!(working_qualification_verification_name(&path, &identity).is_err());
+        }
+        identity.ino = 0;
+        assert!(working_qualification_verification_name(&valid, &identity).is_err());
+        identity.ino = u64::MAX;
+        assert!(working_qualification_verification_name(&valid, &identity).is_err());
         Ok(())
     }
 

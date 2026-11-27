@@ -496,6 +496,24 @@ impl ReturnedOnceHistory {
         )?;
         self.owner.revalidate()
     }
+    /// These are comparisons from the still-held returned source, not a new
+    /// mutable owner or a reconstruction of its historical live retirement.
+    pub(super) fn current_boot_id(&self) -> &str {
+        self.owner.boot_id()
+    }
+    pub(super) fn current_owner_evidence(&self) -> Value {
+        self.owner.evidence()
+    }
+    pub(super) fn retained_cold_clone(&self) -> Result<FilePin> {
+        self.guard()?;
+        let retained = pin(&self.intent["cold_clone"])?;
+        ensure(
+            serde_json::to_value(&retained)? == self.admitted["retained_cold_clone"],
+            "returned cold source differs from its original retained admission",
+        )?;
+        inside(&self.work, &retained.path)?;
+        Ok(retained)
+    }
     pub(crate) fn candidate(&self) -> &str {
         &self.candidate
     }

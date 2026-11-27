@@ -33,7 +33,7 @@ use std::{
 
 /// Reuse the exact normal host Debian payload, manifest and source identity
 /// from the already observed normal initramfs and owned-guest factories.
-fn selected_host_release(
+pub(super) fn selected_host_release(
     source: &FilePin,
     normal: &Value,
     owned: &Value,
@@ -85,13 +85,13 @@ pub(super) struct Plan {
     watchdog_seconds: u32,
 }
 
-struct Guard {
+pub(super) struct Guard {
     pin: FilePin,
     file: File,
     identity: Identity,
 }
 impl Guard {
-    fn open(pin: &FilePin) -> Result<Self> {
+    pub(super) fn open(pin: &FilePin) -> Result<Self> {
         let tree = fs::Tree::open("/", 0)?;
         tree.parent(&fs::absolute_string(&pin.path)?)?;
         let (file, identity) = files::open_pin(pin)?;
@@ -111,7 +111,7 @@ impl Guard {
         result.revalidate()?;
         Ok(result)
     }
-    fn revalidate_custody(&self) -> Result<()> {
+    pub(super) fn revalidate_custody(&self) -> Result<()> {
         let named = fs::Tree::open("/", 0)?.file(&fs::absolute_string(&self.pin.path)?)?;
         ensure(
             fs::stat(&self.file)? == self.identity
@@ -123,7 +123,7 @@ impl Guard {
             "normal material held/named full identity or attributes changed",
         )
     }
-    fn revalidate(&self) -> Result<()> {
+    pub(super) fn revalidate(&self) -> Result<()> {
         self.revalidate_custody()?;
         (&self.file).rewind()?;
         ensure(
@@ -135,13 +135,19 @@ impl Guard {
             "normal once material changed its complete bytes or inode",
         )
     }
-    fn command_path(&self) -> Result<String> {
+    pub(super) fn command_path(&self) -> Result<String> {
         self.revalidate()?;
         Ok(format!(
             "/proc/{}/fd/{}",
             std::process::id(),
             self.file.as_raw_fd()
         ))
+    }
+    pub(super) fn pin(&self) -> &FilePin {
+        &self.pin
+    }
+    pub(super) fn identity(&self) -> &Identity {
+        &self.identity
     }
 }
 
@@ -332,11 +338,42 @@ pub(super) fn compare_candidates(
     owned: &Value,
     producer: &FilePin,
 ) -> Result<()> {
+    ensure(
+        owned["schema"] == "droidloom.original-once-owned-readback.v1",
+        "once preparation requires a fresh actual ordinary calibration from the full guest verifier",
+    )?;
+    compare_normal_candidate(candidate, normal, &owned["actual"], producer)
+}
+
+pub(super) fn compare_working_candidates(
+    candidate: &str,
+    sources: &OriginalLabelSources,
+    owned: &crate::boot_owned_evidence::WorkingOwnedObservation,
+    producer: &FilePin,
+) -> Result<()> {
+    sources.revalidate_custody()?;
+    owned.revalidate()?;
+    ensure(
+        owned.report()["schema"] == "droidloom.working-qualification-owned-readback.v1",
+        "working candidate lacks its actual fresh normal owned observation",
+    )?;
+    compare_normal_candidate(
+        candidate,
+        sources.fresh_initramfs_report(),
+        &owned.report()["actual"],
+        producer,
+    )
+}
+
+fn compare_normal_candidate(
+    candidate: &str,
+    normal: &Value,
+    actual: &Value,
+    producer: &FilePin,
+) -> Result<()> {
     let m = &normal["normal_materials"];
-    let actual = &owned["actual"];
     ensure(
         normal["schema"] == "droidloom.original-initramfs-readback.v1"
-            && owned["schema"] == "droidloom.original-once-owned-readback.v1"
             && actual["schema"] == "droidloom.owned-full-guest-evidence.v1"
             && actual["boot_phase"] == "mac_calibration"
             && actual["actual_native_observations"]["ordinary_guest_shutdown"] == true
@@ -459,18 +496,25 @@ fn ext4_fields(sb: &[u8]) -> Result<Value> {
 }
 
 fn original_ext4(plan: &Plan, work: &Path) -> Result<(cell::PersistentData, FilePin)> {
+    original_ext4_from_sources(&plan.original_ext4_metadata, &plan.cold_clone, work)
+}
+
+pub(super) fn original_ext4_from_sources(
+    metadata: &FilePin,
+    cold_clone: &FilePin,
+    work: &Path,
+) -> Result<(cell::PersistentData, FilePin)> {
     ensure(
-        plan.original_ext4_metadata.bytes == 4970 && plan.original_ext4_metadata.sha256 == EXT4_SHA,
+        metadata.bytes == 4970 && metadata.sha256 == EXT4_SHA,
         "exact original cold-clone filesystem observation required",
     )?;
-    let historical: Value =
-        serde_json::from_slice(&files::read_pin(&plan.original_ext4_metadata, 65536)?)?;
-    let clone: Value = serde_json::from_slice(&files::read_pin(&plan.cold_clone, 65536)?)?;
+    let historical: Value = serde_json::from_slice(&files::read_pin(metadata, 65536)?)?;
+    let clone: Value = serde_json::from_slice(&files::read_pin(cold_clone, 65536)?)?;
     ensure(
         historical["schema"] == "droidloom.original-cold-clone-ext4-metadata.v1"
             && same_bytes(
                 &pin(&historical["sources"]["COLD-CLONE-VERIFIED.json"])?,
-                &plan.cold_clone,
+                cold_clone,
             ),
         "filesystem metadata lost its exact original clone source",
     )?;
@@ -575,14 +619,14 @@ fn original_ext4(plan: &Plan, work: &Path) -> Result<(cell::PersistentData, File
     let proof = save(
         &work.join("ORIGINAL-EXT4-READBACK.json"),
         &json!({
-        "schema":"droidloom.original-once-ext4-readback.v1","historical":plan.original_ext4_metadata,
-        "cold_clone":plan.cold_clone,"normal_tool":debugfs,"normal_tool_identity":debugfs_guard.identity,"filesystems":observations,
+        "schema":"droidloom.original-once-ext4-readback.v1","historical":metadata,
+        "cold_clone":cold_clone,"normal_tool":debugfs,"normal_tool_identity":debugfs_guard.identity,"filesystems":observations,
         "persistent_data":persistent,"original_image_bodies_opened":false,"runtime_accepted":false}),
     )?;
     Ok((persistent, proof))
 }
 
-fn normal_mac(
+pub(super) fn normal_mac(
     sources: &OriginalLabelSources,
     owned: &Value,
     work: &Path,

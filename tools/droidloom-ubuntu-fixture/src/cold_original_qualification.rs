@@ -32,6 +32,12 @@ mod returned_history;
 #[path = "cold_original_once_state.rs"]
 mod state;
 pub(crate) use returned_history::ReturnedOnceHistory;
+#[path = "cold_working_grub.rs"]
+mod working_grub;
+#[path = "cold_working_material_policy.rs"]
+mod working_material_policy;
+#[path = "cold_working_materials.rs"]
+mod working_materials;
 #[path = "cold_original_working_qualification.rs"]
 mod working_qualification;
 pub(super) use retirement::OriginalRetirement;

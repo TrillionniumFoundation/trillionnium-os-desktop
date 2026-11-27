@@ -4,6 +4,9 @@
 use super::*;
 use crate::cold_original_qualification::ReturnedOnceHistory;
 use std::collections::BTreeSet;
+#[path = "cold_returned_preparation.rs"]
+mod preparation;
+pub(crate) use preparation::PreparedReturnedPair;
 
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]

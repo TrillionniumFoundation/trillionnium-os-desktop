@@ -22,7 +22,7 @@ pub(super) mod labels;
 mod reference_scan;
 #[path = "cold_original_returned_data.rs"]
 mod returned_data;
-pub(crate) use returned_data::ReturnedWorkingPair;
+pub(crate) use returned_data::{PreparedReturnedPair, ReturnedWorkingPair};
 
 const IMAGES: [&str; 2] = ["data.img", "metadata.img"];
 const ORIGINAL: &str = "/var/lib/droidloom/users/1000/data";
