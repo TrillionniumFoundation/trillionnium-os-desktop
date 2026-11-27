@@ -1,9 +1,17 @@
 """Exact shared console-cache transition and source-contract regressions."""
+import hashlib
+import json
+import shutil
+import sys
+import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 import derive_native_console_policy as console
 import derive_native_ldconfig_policy as ldconfig
+import compile_shared_kernel_policy as compiler
+import verify_original_once as once
 
 HERE = Path(__file__).resolve().parent
 CACHE_TRANSITION = ('(typetransition p4_linux_ldconfig_t '
@@ -76,6 +84,86 @@ class ConsoleTransitions(unittest.TestCase):
             console._verify_transitions(self.complete(), [INHERITED])
         with self.assertRaisesRegex(ValueError, "Console transition set differs"):
             console._verify_transitions(lines, [])
+
+
+class OriginalOnceSourceContract(unittest.TestCase):
+    """Reject stale console closure pins before expensive linking and again after it."""
+
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+        self.here = self.root / "android/framework/droidloom-readiness/board-policy"
+        for relative in once.SOURCE_PATHS:
+            target = self.root / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(HERE.parents[3] / relative, target)
+        self.manifest = self.here / "original-once-source.json"
+        shutil.copyfile(HERE / self.manifest.name, self.manifest)
+        self.console = self.here / "derive_native_console_policy.py"
+        for name in compiler.COMPOSED_FILE_CONTEXT_SOURCES:
+            shutil.copyfile(HERE / name, self.here / name)
+
+    def compiler_args(self):
+        return ["compile_shared_kernel_policy.py", "--secilc", "/missing/secilc",
+                "--sepol-library", "/missing/libsepol.so.2", "--android-cil",
+                "/missing/android.cil", "--linux-board-cil", "/missing/board.cil",
+                "--output", str(self.root / "must-not-be-produced.policy")]
+
+    def test_current_console_is_in_complete_original_once_closure(self):
+        expected = json.loads(self.manifest.read_text())["files"]
+        self.assertEqual(once.verify_sources(self.here), expected)
+        self.assertEqual(set(expected), set(once.SOURCE_PATHS))
+        self.assertEqual(expected["android/framework/droidloom-readiness/board-policy/"
+                                  "derive_native_console_policy.py"]["sha256"],
+                         hashlib.sha256(self.console.read_bytes()).hexdigest())
+
+    def test_historical_console_pin_reproduces_failure(self):
+        contract = json.loads(self.manifest.read_text())
+        contract["files"]["android/framework/droidloom-readiness/board-policy/"
+                          "derive_native_console_policy.py"] = {
+            "bytes": 29713,
+            "sha256": "3bcc8eb3139f1819bb20fc1ad895cecf6ba3f0c9f850d93c6cdf8459101e6777"}
+        self.manifest.write_text(json.dumps(contract))
+        with self.assertRaisesRegex(ValueError, "Changed original-once source: .*derive_native_console_policy"):
+            once.verify_sources(self.here)
+
+    def test_changed_bytes_and_changed_length_remain_rejected(self):
+        original = self.console.read_bytes()
+        for body in (original + b"\n", b"!" + original[1:]):
+            with self.subTest(bytes=len(body)):
+                self.console.write_bytes(body)
+                with self.assertRaisesRegex(ValueError, "Changed original-once source"):
+                    once.verify_sources(self.here)
+
+    def test_main_rejects_changed_source_before_compiler_or_work_directory(self):
+        self.console.write_bytes(self.console.read_bytes() + b"\n")
+        with mock.patch.object(compiler, "__file__", str(self.here / "compile_shared_kernel_policy.py")), \
+                mock.patch.object(sys, "argv", self.compiler_args()), \
+                mock.patch.object(compiler.subprocess, "run") as external, \
+                mock.patch.object(compiler, "policy_work_directory") as workspace:
+            with self.assertRaisesRegex(ValueError, "Changed original-once source"):
+                compiler.main()
+            external.assert_not_called()
+            workspace.assert_not_called()
+        self.assertFalse((self.root / "must-not-be-produced.policy").exists())
+
+    def test_valid_source_reaches_following_source_check(self):
+        class FollowingBoundary(Exception):
+            pass
+        with mock.patch.object(compiler, "__file__", str(self.here / "compile_shared_kernel_policy.py")), \
+                mock.patch.object(sys, "argv", self.compiler_args()), \
+                mock.patch.object(compiler, "validate_netplan_trigger_sources",
+                                  side_effect=FollowingBoundary) as following:
+            with self.assertRaises(FollowingBoundary):
+                compiler.main()
+            following.assert_called_once_with(self.here)
+
+    def test_post_link_verifier_still_rejects_a_later_source_change(self):
+        once.verify_sources(self.here)
+        self.console.write_bytes(self.console.read_bytes() + b"\n")
+        with self.assertRaisesRegex(ValueError, "Changed original-once source"):
+            once.verify_original_once(None, None, None, None, self.here)
 
 
 if __name__ == "__main__":
