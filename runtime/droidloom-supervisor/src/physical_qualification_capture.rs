@@ -235,9 +235,11 @@ fn validate_case_summaries(package: &str, row: &Value, epoch: &RuntimeEpoch) -> 
     }
     let epoch = serde_json::to_value(epoch)?;
     for (case, history) in expected.iter().zip(actual) {
-        let kind_matches = match case.native_route() {
-            Some(route) => history.get("route") == Some(&json!(route)) && history.get("kind").is_none(),
-            None => history.get("kind") == Some(&json!("family_observation")) && history.get("route").is_none(),
+        let kind_matches = match (case.native_route(), *case) {
+            (Some(route), _) => history.get("route") == Some(&json!(route)) && history.get("kind").is_none(),
+            (None, QualificationCase::CameraPhotoCaptureReopen) =>
+                history.get("kind") == Some(&json!("camera_photo_capture_reopen")) && history.get("route").is_none(),
+            (None, _) => history.get("kind") == Some(&json!("family_observation")) && history.get("route").is_none(),
         };
         if !kind_matches
             || history.get("sealed_inside_original_case_window") != Some(&json!(true))
@@ -748,6 +750,8 @@ mod tests {
                 });
                 if let Some(route) = case.native_route() {
                     history["route"] = json!(route);
+                } else if case == QualificationCase::CameraPhotoCaptureReopen {
+                    history["kind"] = json!("camera_photo_capture_reopen");
                 } else {
                     history["kind"] = json!("family_observation");
                 }
@@ -760,6 +764,25 @@ mod tests {
             total += validate_case_summaries(package, &make(package), &epoch).unwrap();
         }
         assert_eq!(total, CASE_COUNT);
+        let camera = make("com.android.camera2");
+        assert_eq!(camera["cases"].as_array().unwrap().len(), 2);
+        assert_eq!(camera["cases"][0]["route"], "camera_photo");
+        assert_eq!(camera["cases"][1]["kind"], "camera_photo_capture_reopen");
+        let mut wrong = camera.clone();
+        wrong["cases"].as_array_mut().unwrap().pop();
+        assert!(validate_case_summaries("com.android.camera2", &wrong, &epoch).is_err());
+        let mut wrong = camera.clone();
+        wrong["cases"].as_array_mut().unwrap().swap(0, 1);
+        assert!(validate_case_summaries("com.android.camera2", &wrong, &epoch).is_err());
+        let mut wrong = camera.clone();
+        wrong["cases"][1]["kind"] = json!("family_observation");
+        assert!(validate_case_summaries("com.android.camera2", &wrong, &epoch).is_err());
+        let mut wrong = camera.clone();
+        wrong["cases"][1]["actual"]["epoch"]["framework_start_ticks"] = json!(44);
+        assert!(validate_case_summaries("com.android.camera2", &wrong, &epoch).is_err());
+        let mut wrong = camera;
+        wrong["cases"][1]["route"] = json!("camera_photo");
+        assert!(validate_case_summaries("com.android.camera2", &wrong, &epoch).is_err());
         let family = make("org.mozilla.firefox");
         let mut wrong = family.clone();
         wrong["cases"] = json!([]);

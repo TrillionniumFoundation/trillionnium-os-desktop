@@ -9,6 +9,7 @@ use super::family_observation::{self, FamilyObservation};
 use super::leaf_release::{self, NativeRelease};
 use super::leaf_routes::{self, LeafPlan, Route};
 use super::native_business::{self, NativeBusinessFact, NativeCaseEvidence};
+use super::native_camera_photo::{self, CameraPhotoBusinessFact};
 use super::physical_gate_roster as roster;
 use super::runtime_identity::{IdentityObservation, VerifiedMaterialBatch};
 use super::*;
@@ -59,7 +60,8 @@ fn deadline(end: Instant) -> Result<(), String> {
 /// The native fourteen keep their original work/retirement bounds. The fixed
 /// thirty-one family observations each add their reviewed UI/stability window
 /// to the existing pre-inspection. All cases share one original suite end;
-/// no case lease is renewed by this source-owned sum.
+/// the extra single-shutter/reopen Camera case appends its own original window.
+/// No case lease is renewed by this source-owned sum.
 pub fn physical_qualification_window_seconds() -> u64 {
     owned_channel::SUITE_SECONDS
 }
@@ -76,6 +78,7 @@ fn actual_source_window_seconds() -> u64 {
                 }
             })
             .sum::<u64>()
+        + camera_photo_window_seconds()
 }
 fn family_window_seconds() -> u64 {
     INSPECT_SECONDS + family_observation::window_seconds()
@@ -84,6 +87,14 @@ fn family_work_end(now: Instant, case_end: Instant) -> Result<Instant, String> {
     require(now < case_end, "family pre-inspection consumed its original case deadline")?;
     Ok(now.checked_add(Duration::from_secs(family_observation::window_seconds()))
         .ok_or("family work deadline overflow")?.min(case_end))
+}
+fn camera_photo_window_seconds() -> u64 {
+    INSPECT_SECONDS + native_camera_photo::window_seconds()
+}
+fn camera_photo_work_end(now: Instant, case_end: Instant) -> Result<Instant, String> {
+    require(now < case_end, "Camera photo pre-inspection consumed its original case deadline")?;
+    Ok(now.checked_add(Duration::from_secs(native_camera_photo::window_seconds()))
+        .ok_or("Camera photo work deadline overflow")?.min(case_end))
 }
 fn case_window_seconds(route: Route) -> u64 {
     if route == Route::ClockTimerPair {
@@ -121,7 +132,8 @@ fn qualification_case(route: Route) -> Result<QualificationCase, String> {
 fn require_channel_roster() -> Result<(), String> {
     require(
         actual_source_window_seconds() == owned_channel::SUITE_SECONDS
-            && family_observation::window_seconds() == owned_channel::budget::FAMILY_WORK_SECONDS,
+            && family_observation::window_seconds() == owned_channel::budget::FAMILY_WORK_SECONDS
+            && native_camera_photo::window_seconds() == owned_channel::budget::CAMERA_PHOTO_WORK_SECONDS,
         "physical producer and normal parent suite bounds differ",
     )?;
     let mut ordinal = 0usize;
@@ -145,6 +157,13 @@ fn require_channel_roster() -> Result<(), String> {
         )?;
         ordinal += 1;
     }
+    let photo = QualificationCase::CameraPhotoCaptureReopen;
+    require(
+        photo as usize == ordinal && photo.window_seconds() == camera_photo_window_seconds()
+            && owned_channel::PHOTO_CASE_COUNT == 1,
+        "physical Camera photo append order or original bound differs from its normal parent",
+    )?;
+    ordinal += 1;
     require(
         ordinal == owned_channel::CASE_COUNT,
         "physical parent case coverage differs",
@@ -531,6 +550,107 @@ impl HistoricalFamilyCase {
     }
 }
 
+
+/// The supplementary photo owns both actual Finished journals, the original
+/// complete PM token and its admitted material comparison. Finished is never
+/// converted to Stability or another common/business gate.
+#[derive(Debug, Serialize)]
+struct CameraPhotoCaseSummary {
+    kind: &'static str,
+    actual: ApplicationInspection,
+    evidence: Value,
+    material_identity: Value,
+    business_gates: [&'static str; 1],
+    common_gates_supplied: bool,
+    sealed_inside_original_case_window: bool,
+    historical_observation: bool,
+    continuous_app_or_target_directory_custody_after_case_claimed: bool,
+}
+struct HistoricalCameraPhotoCase {
+    summary: CameraPhotoCaseSummary,
+    fact: CameraPhotoBusinessFact,
+    material_identity: IdentityObservation,
+    before: control::ActualApplicationObservation,
+}
+impl HistoricalCameraPhotoCase {
+    fn from_observed(
+        fact: CameraPhotoBusinessFact,
+        identity: IdentityObservation,
+        before: control::ActualApplicationObservation,
+        main: &control::MainCustodyObservation,
+        end: Instant,
+    ) -> Result<Self, String> {
+        deadline(end)?;
+        let actual = before.facts();
+        require(
+            actual.package == "com.android.camera2" && actual.user == 0
+                && fact.gate() == "camera.photo"
+                && roster::package(&actual.package)?.business.contains(&fact.gate()),
+            "photo history has a different selected Camera or business assertion",
+        )?;
+        fact.require_subject(main.facts(), actual)?;
+        identity.require_application(actual)?;
+        for retained in [fact.observation().first(), fact.observation().reopened()] {
+            let engine = retained.transcript().engine();
+            require(
+                engine.peer() == main.peer() && engine.application() == actual
+                    && &engine.facts().main == main.facts(),
+                "photo history changed its actual Main peer or complete installed identity",
+            )?;
+        }
+        let summary = CameraPhotoCaseSummary {
+            kind: "camera_photo_capture_reopen",
+            actual: actual.clone(),
+            evidence: fact.comparison()?,
+            material_identity: serde_json::to_value(&identity).map_err(|e|e.to_string())?,
+            business_gates: [fact.gate()],
+            common_gates_supplied: false,
+            sealed_inside_original_case_window: true,
+            historical_observation: true,
+            continuous_app_or_target_directory_custody_after_case_claimed: false,
+        };
+        let value = Self { summary, fact, material_identity: identity, before };
+        value.guard()?;
+        deadline(end)?;
+        Ok(value)
+    }
+    fn binding(&self) -> &RuntimeMainCustody {
+        &self.fact.observation().first().transcript().engine().facts().main
+    }
+    fn require_original_case(&self, histories: &[HistoricalCompletedCase]) -> Result<(), String> {
+        require_camera_photo_predecessor(histories, self.before.facts(), self.binding())
+    }
+    fn guard(&self) -> Result<(), String> {
+        let actual = self.before.facts();
+        require(
+            actual == &self.summary.actual && actual.package == "com.android.camera2"
+                && actual.user == 0 && self.summary.business_gates == [self.fact.gate()]
+                && self.fact.gate() == "camera.photo" && !self.summary.common_gates_supplied,
+            "retained photo history changed its actual subject or exact business assertion",
+        )?;
+        self.fact.guard_immutable()?;
+        self.fact.require_subject(self.binding(), actual)?;
+        self.material_identity.require_application(actual)
+    }
+}
+
+fn require_camera_photo_predecessor(
+    histories: &[HistoricalCompletedCase],
+    actual: &ApplicationInspection,
+    main: &RuntimeMainCustody,
+) -> Result<(), String> {
+    let mut matching = histories.iter().filter(|case|
+        case.summary.route == Route::CameraPhoto && case.summary.actual.package == "com.android.camera2");
+    let original = matching.next().ok_or("supplementary photo lacks its original Camera case")?;
+    require(matching.next().is_none(), "supplementary photo has ambiguous original Camera histories")?;
+    original.guard()?;
+    require_same_main(original.binding(), main)?;
+    require(
+        &original.summary.actual == actual,
+        "Camera photo cannot join another UID/version/full APK identity to its original Camera case",
+    )
+}
+
 fn require_main(binding: &RuntimeMainCustody, expected_epoch: &RuntimeEpoch) -> Result<(), String> {
     require(
         binding.epoch == *expected_epoch,
@@ -670,6 +790,7 @@ struct RunCustody {
     source_owner: NativeRelease,
     histories: Vec<HistoricalCompletedCase>,
     family_histories: Vec<HistoricalFamilyCase>,
+    photo_history: Option<HistoricalCameraPhotoCase>,
     native_facts: Vec<HistoricalNativeBusinessFact>,
     channel: ChildChannel,
     end: Instant,
@@ -697,6 +818,11 @@ impl RunCustody {
         for family in &self.family_histories {
             family.guard()?;
             require_same_main(family.binding(), self.original_main.facts())?;
+        }
+        if let Some(photo) = &self.photo_history {
+            photo.guard()?;
+            photo.require_original_case(&self.histories)?;
+            require_same_main(photo.binding(), self.original_main.facts())?;
         }
         for fact in &self.native_facts {
             fact.require_retained_binding(&self.histories)?;
@@ -798,8 +924,18 @@ fn summarize_rows(
     histories: &[HistoricalCompletedCase],
     native_facts: &[HistoricalNativeBusinessFact],
     family_histories: &[HistoricalFamilyCase],
+    photo_history: Option<&HistoricalCameraPhotoCase>,
     errors: &BTreeMap<String, String>,
 ) -> Result<Vec<ApplicationSummary>, String> {
+    if let Some(photo) = photo_history {
+        photo.guard()?;
+        photo.require_original_case(histories)?;
+        require(
+            histories.len() == owned_channel::NATIVE_CASE_COUNT
+                && family_histories.len() == owned_channel::FAMILY_CASE_COUNT,
+            "supplementary photo history lacks its complete original preceding cases",
+        )?;
+    }
     let mut rows = Vec::new();
     for fixed in roster::PACKAGES {
         let cases = histories
@@ -843,6 +979,12 @@ fn summarize_rows(
                     indices.push(histories.len() + *index);
                 }
             }
+            if let Some(photo) = photo_history.filter(|photo|
+                photo.summary.actual.package == fixed.package && photo.fact.gate() == id)
+            {
+                photo.guard()?;
+                indices.push(QualificationCase::CameraPhotoCaptureReopen as usize);
+            }
             indices.sort_unstable();
             indices.dedup();
             let passed = !indices.is_empty() && !errors.contains_key(fixed.package);
@@ -868,6 +1010,7 @@ fn summarize_rows(
         )?;
         let complete = cases.len() == expected.len()
             && families.len() == usize::from(expected.is_empty())
+            && (fixed.package != "com.android.camera2" || photo_history.is_some())
             && !errors.contains_key(fixed.package)
             && assertions.iter().all(|gate| gate.status == "passed");
         rows.push(ApplicationSummary {
@@ -883,6 +1026,8 @@ fn summarize_rows(
                         .is_some_and(|case| case.summary.actual.package == fixed.package)
                 }))
                 .map(|fact| fact.fact.comparison())
+                .chain(photo_history.filter(|photo| photo.summary.actual.package == fixed.package)
+                    .map(|photo| photo.fact.comparison()))
                 .collect::<Result<Vec<_>, _>>()?,
             blocked_gates: families.iter().flat_map(|(_, history)| history.custody.blocked())
                 .map(|blocked| serde_json::to_value(blocked).map_err(|e|e.to_string()))
@@ -982,6 +1127,7 @@ pub fn run_physical_files(
     require_main(main.facts(), &runtime.expected_epoch)?;
     let mut histories = Vec::new();
     let mut family_histories = Vec::new();
+    let mut photo_history = None;
     let mut errors = BTreeMap::new();
     let mut first_failure: Option<String> = None;
     // Preserve the original fourteen native cases, then append the fixed
@@ -1135,6 +1281,66 @@ pub fn run_physical_files(
             }
         }
     }
+
+    // This extra source-owned case is deliberately after all original 14/31.
+    // It is not selected by a caller route, nor substituted for the old Camera
+    // leaf. The same suite end caps the pre-PM, actual work, retention and ACK.
+    if let Some(reason) = &first_failure {
+        errors.entry("com.android.camera2".into()).or_insert_with(||
+            format!("photo capture/reopen not executed after an earlier retained failure: {reason}"));
+    } else {
+        let result = (|| -> Result<HistoricalCameraPhotoCase, String> {
+            deadline(end)?;
+            let case_end = (Instant::now()
+                + Duration::from_secs(camera_photo_window_seconds())).min(end);
+            let case_owner = channel.begin_case(
+                QualificationCase::CameraPhotoCaptureReopen, case_end,
+            ).map_err(|e|e.to_string())?;
+            let requested = runtime.applications.iter()
+                .find(|app| app.package == "com.android.camera2")
+                .ok_or("source-admitted Camera photo row absent")?;
+            let cutoff = (Instant::now() + Duration::from_secs(INSPECT_SECONDS)).min(case_end);
+            let before = inspector.inspect_observed_until("com.android.camera2", 0, cutoff)
+                .map_err(|error| error.to_string())?;
+            let actual = before.facts();
+            require(
+                actual.package == "com.android.camera2" && actual.user == 0
+                    && actual.epoch == runtime.expected_epoch,
+                "photo pre-inspection changed actual Camera/user/Main epoch",
+            )?;
+            let identity = materials.observe(
+                requested, 0, &runtime.expected_epoch, actual, actual,
+            )?;
+            require_camera_photo_predecessor(&histories, actual, main.facts())?;
+            let work_end = camera_photo_work_end(Instant::now(), case_end)?;
+            let fact = {
+                let mut baseline =
+                    droidloom_supervisor::native_leaf_baseline::NativeLeafBaselineObservation::capture_from_observed(
+                        &inspector, &main, &before, work_end,
+                    ).map_err(|e|e.to_string())?;
+                native_camera_photo::run(&mut inspector, &mut baseline, work_end)?
+            };
+            let completed = HistoricalCameraPhotoCase::from_observed(
+                fact, identity, before, &main, case_end,
+            )?;
+            completed.guard()?;
+            require_same_main(completed.binding(), main.facts())?;
+            inputs.guard()?;
+            materials.revalidate()?;
+            source_owner.guard()?;
+            deadline(case_end)?;
+            case_owner.finish_after_history(case_end).map_err(|e|e.to_string())?;
+            Ok(completed)
+        })();
+        match result {
+            Ok(history) => photo_history = Some(history),
+            Err(error) => {
+                errors.insert("com.android.camera2".into(), error.clone());
+                first_failure = Some(error);
+            }
+        }
+    }
+
     let final_main = match (|| -> Result<control::MainCustodyObservation, String> {
         inputs.guard()?;
         materials.revalidate()?;
@@ -1150,6 +1356,11 @@ pub fn run_physical_files(
         for history in &family_histories {
             history.guard()?;
             require_same_main(history.binding(), main.facts())?;
+        }
+        if let Some(photo) = &photo_history {
+            photo.guard()?;
+            photo.require_original_case(&histories)?;
+            require_same_main(photo.binding(), main.facts())?;
         }
         Ok(actual)
     })() {
@@ -1172,13 +1383,15 @@ pub fn run_physical_files(
         }
     };
     let native_facts = join_native_histories(&histories)?;
-    let applications = summarize_rows(&histories, &native_facts, &family_histories, &errors)?;
+    let applications = summarize_rows(&histories, &native_facts, &family_histories, photo_history.as_ref(), &errors)?;
     let accepted_gates = applications.iter().map(|row| row.accepted_gates).sum();
     let accepted_applications = applications
         .iter()
         .filter(|row| row.production_ready)
         .count();
+    let observed_cases = histories.len() + family_histories.len() + usize::from(photo_history.is_some());
     let qualified = first_failure.is_none()
+        && observed_cases == owned_channel::CASE_COUNT
         && final_main.is_some()
         && accepted_gates == roster::GATE_COUNT
         && accepted_applications == roster::PACKAGE_COUNT;
@@ -1193,7 +1406,7 @@ pub fn run_physical_files(
         original_window_seconds: seconds,
         selected_applications: roster::PACKAGE_COUNT,
         required_gates: roster::GATE_COUNT,
-        observed_cases: histories.len() + family_histories.len(),
+        observed_cases,
         accepted_gates,
         accepted_applications,
         runtime_qualified: qualified,
@@ -1220,6 +1433,12 @@ pub fn run_physical_files(
             row.cases.push(serde_json::to_value(&history.summary).map_err(|e|e.to_string())?);
         }
     }
+    if let Some(photo) = &photo_history {
+        let row = summary.applications.iter_mut()
+            .find(|row| row.package == "com.android.camera2")
+            .ok_or("photo history lost its fixed summary row")?;
+        row.cases.push(serde_json::to_value(&photo.summary).map_err(|e|e.to_string())?);
+    }
     let custody = RunCustody {
         inspector,
         original_main: main,
@@ -1229,6 +1448,7 @@ pub fn run_physical_files(
         source_owner,
         histories,
         family_histories,
+        photo_history,
         native_facts,
         channel,
         end,
@@ -1362,10 +1582,13 @@ mod tests {
     #[test]
     fn physical_channel_uses_exact_source_order_windows_and_no_legacy_single_case() {
         require_channel_roster().unwrap();
-        assert_eq!(physical_qualification_window_seconds(), 114_505);
+        assert_eq!(physical_qualification_window_seconds(), 118_795);
+        assert_eq!(camera_photo_window_seconds(), 4_290);
+        assert_eq!(QualificationCase::CameraPhotoCaptureReopen as usize, 45);
+        assert_eq!(case_window_seconds(Route::CameraPhoto), 1_260);
         assert_eq!(family_window_seconds(), 2_865);
         assert_eq!(roster::PACKAGES.iter().filter(|row| row.cases.is_empty()).count(), 31);
-        assert_eq!(owned_channel::CASE_COUNT, 45);
+        assert_eq!(owned_channel::CASE_COUNT, 46);
         for route in [
             Route::ClockTimer,
             Route::ClockTimerRemaining,
@@ -1389,8 +1612,22 @@ mod tests {
     }
 
     #[test]
+    fn physical_photo_work_window_cannot_reborrow_preinspection_or_extend_case() {
+        let now = Instant::now();
+        let whole_case = now + Duration::from_secs(camera_photo_window_seconds());
+        let first = camera_photo_work_end(now, whole_case).unwrap();
+        assert_eq!(first, now + Duration::from_secs(4_040));
+        assert_eq!(camera_photo_work_end(now + Duration::from_secs(100), whole_case).unwrap(),
+            now + Duration::from_secs(4_140));
+        let late = now + Duration::from_secs(300);
+        assert_eq!(camera_photo_work_end(late, whole_case).unwrap(), whole_case);
+        assert!(camera_photo_work_end(whole_case, whole_case).is_err());
+        assert!(camera_photo_work_end(whole_case + Duration::from_nanos(1), whole_case).is_err());
+    }
+
+    #[test]
     fn physical_family_rows_without_opaque_history_never_get_gate_credit() {
-        let rows = summarize_rows(&[], &[], &[], &BTreeMap::new()).unwrap();
+        let rows = summarize_rows(&[], &[], &[], None, &BTreeMap::new()).unwrap();
         assert_eq!(rows.len(), roster::PACKAGE_COUNT);
         assert_eq!(rows.iter().map(|row| row.gate_assertions.len()).sum::<usize>(), 377);
         for row in rows {
