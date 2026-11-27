@@ -71,3 +71,59 @@ controller enters `Quarantined` before another readiness poll and retains the
 original owner; the early controller leaves its original service loop through
 the existing quarantine path. An ordinary text rejection cannot manufacture a
 retirement failure, and successful readiness cannot erase one.
+
+## Complete physical case aggregation
+
+The separate normal entry is:
+
+```text
+droidloom-applications --physical-application-plan PLAN \
+  --expect-physical-plan-sha256 SHA256
+```
+
+It accepts `droidloom.physical-application-plan.v1`: a full normal
+`runtime_plan` FilePin and an `applications` array. Every selected package
+appears once, in the compiled roster order, with `package` and `cases`.
+Each case contains a normal `leaf` object and its `main_qualification`
+comparison FilePin. The exact route order is fixed by source. A caller cannot
+supply a smaller package count, a replacement gate map, an execution budget,
+or a passed result. Original entry request/preparation validation still runs.
+
+The initial native roster executes Contacts search; Calendar core and reminder;
+Camera photo; Clock timer15 plus expiry06 as one pair, then alarm; Documents SAF
+and search/sort; Gallery rotation, video, seek and album; Settings pages and the
+font-scale roundtrip; and the existing IHG London case. The other selected
+packages stay in the report with their real material preconditions and pending
+business assertions until a source-owned executor covers those assertions.
+A launcher response does not fill those missing gates.
+
+Only the normal authenticated inspector and the already adopted installed
+application executable can construct the live observations. This runner retains
+one actual Main epoch, selected runtime/source cohort, normal host release, and
+original-to-working data lineage across all cases. The current material roster
+and the complete 39-package, 377-gate registry have independent compiled
+commitments. A normal material update requires an explicit source review.
+
+Each case ends with its actual PM/Main bookend, original host retirement,
+original cleanup checks, held result and material/source checks. Consuming that
+successful object before its own deadline creates a historical case. The
+historical type has no launch or lease API. Its source and result descriptors
+remain held; it does not claim that a closed app is still running or that target
+data-directory descriptors remain open after the case. Live lease checks are
+unchanged. The suite uses one original absolute deadline computed from its
+source-owned case bounds and never renews the foreground owner.
+
+The common factories currently prove complete identity only from actual
+material/Main/running-engine facts; Settings lifecycle and UI from its verified
+two-launch restore and owned-window/input observations; and Clock lifecycle
+from the verified timer pair's close/reopen, preserved state and cleanup.
+Data/permissions/accounts, repeat/soak stability, complete release-scope review
+and every unobserved business assertion remain pending. Saved JSON and file
+hashes cannot supply those facts.
+
+The private constructor of `CompletePhysicalApplicationRun` requires the exact
+complete gate set for every package, all required case histories and a fresh
+same-Main final check. Its fields cannot be deserialized or cloned. A partial
+run prints its full report and exits unsuccessfully; only that actual complete
+factory permits successful completion. Latest-package checks, physical
+publication and permanent activation remain separate normal release gates.
