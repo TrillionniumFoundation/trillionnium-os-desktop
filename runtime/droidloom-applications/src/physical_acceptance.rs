@@ -534,6 +534,9 @@ impl HistoricalFamilyCase {
             actual == &self.summary.actual && roster::package(&actual.package)?.cases.is_empty(),
             "family history changed its actual package or complete installed identity",
         )?;
+        // The family's immutable custody also owns its real before/open/close/after
+        // PM samples and all four generated records. This remains a partial
+        // preservation fact; no whole data_permissions gate is manufactured.
         self.custody.require_subject(self.binding(), actual)?;
         self.material_identity.require_application(actual)?;
         require(
@@ -1582,11 +1585,11 @@ mod tests {
     #[test]
     fn physical_channel_uses_exact_source_order_windows_and_no_legacy_single_case() {
         require_channel_roster().unwrap();
-        assert_eq!(physical_qualification_window_seconds(), 118_795);
+        assert_eq!(physical_qualification_window_seconds(), 123_135);
         assert_eq!(camera_photo_window_seconds(), 4_290);
         assert_eq!(QualificationCase::CameraPhotoCaptureReopen as usize, 45);
         assert_eq!(case_window_seconds(Route::CameraPhoto), 1_260);
-        assert_eq!(family_window_seconds(), 2_865);
+        assert_eq!(family_window_seconds(), 3_005);
         assert_eq!(roster::PACKAGES.iter().filter(|row| row.cases.is_empty()).count(), 31);
         assert_eq!(owned_channel::CASE_COUNT, 46);
         for route in [

@@ -9,7 +9,11 @@ pub const CASE_COUNT: usize = NATIVE_CASE_COUNT + FAMILY_CASE_COUNT + PHOTO_CASE
 pub const SOURCE_AND_CAPTURE_SECONDS: u64 = 120;
 pub const MAIN_SECONDS: u64 = 70;
 pub const INSPECT_SECONDS: u64 = 250;
-pub const FAMILY_WORK_SECONDS: u64 = 2_615;
+pub const FAMILY_UI_WORK_SECONDS: u64 = 2_615;
+// Before/open/normal-close/after PM comparison is once per actual family case.
+// It is partial PM evidence, not full data/permission/account acceptance.
+pub const FAMILY_PM_PERMISSION_SECONDS: u64 = 2 * 70;
+pub const FAMILY_WORK_SECONDS: u64 = FAMILY_UI_WORK_SECONDS + FAMILY_PM_PERMISSION_SECONDS;
 pub const FAMILY_CASE_SECONDS: u64 = INSPECT_SECONDS + FAMILY_WORK_SECONDS;
 // The supplementary real single-shutter/reopen case retains the old Camera leaf.
 // Its normal pre-inspection is separate from the two-session factory's window.

@@ -30,6 +30,9 @@ mod tasks;
 #[path = "native_application_ui_common.rs"]
 mod common;
 pub use common::{RetainedNativeUiTranscript, NativeUiStabilityWindow, NativeUiStabilityEvidence, NativeUiStabilitySummary, stability_additional_window_seconds};
+#[path = "native_application_ui_permissions.rs"]
+mod permissions;
+pub use permissions::{NativeUiPermissionWindow, NativeUiPermissionPreservation, permission_preservation_additional_window_seconds};
 #[path = "native_application_ui_media.rs"]
 mod media;
 pub use media::{CameraPhotoObservation, CameraPhotoSceneObservation, CameraPhotoCaseObservation, camera_photo_case_window_seconds, run_camera_photo_case, RetainedScopedWindowPixels, ScopedWindowPixels};
@@ -747,6 +750,7 @@ pub struct NativeUiSession<'a, 'b> {
     helper_pm: ActualApplicationObservation,
     lock: ActionLock,
     journal: Journal,
+    opened_at: Instant,
     end: Instant,
     work_end: Instant,
     before_tasks: BTreeSet<u32>,
@@ -768,6 +772,8 @@ pub struct NativeUiTranscript {
     engine: crate::control::EngineMappingObservation,
     journal_custody: Journal,
     original_end: Instant,
+    opened_at: Instant,
+    finished_at: Instant,
 }
 impl NativeUiTranscript {
     pub fn journal(&self) -> &Path {
@@ -792,6 +798,7 @@ impl<'a, 'b> NativeUiSession<'a, 'b> {
         baseline: &'a mut NativeLeafBaselineObservation<'b>,
         end: Instant,
     ) -> Result<Self, String> {
+        let opened_at = Instant::now();
         need(
             unsafe { libc::geteuid() } == 0
                 && baseline.application().user == 0
@@ -856,6 +863,7 @@ impl<'a, 'b> NativeUiSession<'a, 'b> {
             helper_pm,
             lock,
             journal,
+            opened_at,
             end,
             work_end,
             before_tasks: BTreeSet::new(),
@@ -1365,6 +1373,8 @@ impl<'a, 'b> NativeUiSession<'a, 'b> {
             "task":task,"operations":self.sequence,"actions":self.android_actions,"owned_task_absent":true,
             "other_tasks_preserved":true,"actual_normal_PM_Main_bookends":true,"business_accepted":false,
             "production_ready":false,"automatic_retry":false}))?;
+        let finished_at = Instant::now();
+        before(self.end)?;
         Ok(NativeUiTranscript {
             path: self.journal.path.clone(),
             task,
@@ -1376,6 +1386,8 @@ impl<'a, 'b> NativeUiSession<'a, 'b> {
                 .ok_or("native UI original running Engine observation absent")?,
             journal_custody: self.journal,
             original_end: self.end,
+            opened_at: self.opened_at,
+            finished_at,
         })
     }
 }

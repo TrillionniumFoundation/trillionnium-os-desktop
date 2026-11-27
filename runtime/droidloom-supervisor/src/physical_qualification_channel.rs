@@ -697,7 +697,7 @@ mod tests {
         assert_eq!(total, budget::NATIVE_SECONDS);
         assert_eq!(total + FAMILY_CASE_COUNT as u64 * budget::FAMILY_CASE_SECONDS
             + budget::CAMERA_PHOTO_CASE_SECONDS + 140 + 120, SUITE_SECONDS);
-        assert_eq!(SUITE_SECONDS, 118_795);
+        assert_eq!(SUITE_SECONDS, 123_135);
         assert_eq!(CASE_COUNT, 46);
         assert_eq!(PHOTO_CASE_COUNT, 1);
         assert_eq!(QualificationCase::CameraPhoto.ordinal(), 2);
@@ -721,7 +721,7 @@ mod tests {
             assert_eq!(case.ordinal() as usize, ordinal);
             assert_eq!(QualificationCase::for_family(case.package()).unwrap(), case);
             assert!(case.native_route().is_none());
-            assert_eq!(case.window_seconds(), 2_865);
+            assert_eq!(case.window_seconds(), 3_005);
             assert_eq!(case.profile(), KernelProfile::Standard);
             assert!(selected.insert(case.package()));
         }
@@ -750,7 +750,7 @@ mod tests {
             assert!(lines.contains(line.as_str()), "{line}");
         }
         assert_eq!(NOFILE_LIMIT, 32_768);
-        assert_eq!(SERVICE_SECONDS, 118_975);
+        assert_eq!(SERVICE_SECONDS, 123_315);
         assert!(lines.contains("MemoryMax=2147483648"));
         assert!(lines.contains("MemorySwapMax=0"));
         assert!(lines.contains("CPUQuota=200%"));
