@@ -3,6 +3,8 @@
 //! convenient matching pathname. Only the once dispatcher supplies entries.
 #[path = "cold_original_once_package_parents.rs"]
 pub(super) mod package_parents;
+#[path = "cold_working_files.rs"]
+pub(super) mod working;
 use super::{OriginalQualificationAuthority, owner::SealedInput};
 use crate::{
     Result,

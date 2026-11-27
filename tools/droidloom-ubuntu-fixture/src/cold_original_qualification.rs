@@ -10,6 +10,9 @@ mod cell;
 mod commands;
 #[path = "cold_original_once_files.rs"]
 mod configurations;
+pub(crate) use configurations::working::{
+    PublishedWorkingRuntime, RestoredWorkingRuntime, WorkingPublicationFailure,
+};
 #[path = "cold_original_once_dispatch.rs"]
 mod dispatcher;
 #[path = "cold_original_once_labels.rs"]

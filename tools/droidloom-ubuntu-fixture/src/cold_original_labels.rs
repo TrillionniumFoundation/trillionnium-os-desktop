@@ -32,6 +32,71 @@ pub(crate) use plan::{
     inspect_files as inspect_original_labels_files,
 };
 
+/// Read-only normal-context lookup for source-owned staged runtime inodes.
+/// The caller retains mutation authority and its fixed target roster. Returned
+/// context bytes and log pins cannot construct a label or publication proof.
+pub(crate) fn lookup_held_runtime_contexts(
+    sources: &OriginalLabelSources,
+    entries: &[(&std::path::Path, &std::fs::File, bool)],
+    work: &std::path::Path,
+) -> crate::Result<(Vec<Vec<u8>>, crate::boot_files::FilePin)> {
+    crate::ensure(
+        (1..=16).contains(&entries.len()),
+        "bounded held runtime context lookup required",
+    )?;
+    sources.revalidate()?;
+    let mut names = std::collections::BTreeSet::new();
+    let mut nodes = std::collections::BTreeSet::new();
+    let mut actual = Vec::new();
+    for (path, file, directory) in entries {
+        crate::ensure(
+            path.is_absolute()
+                && path.components().all(|part| {
+                    matches!(
+                        part,
+                        std::path::Component::RootDir | std::path::Component::Normal(_)
+                    )
+                })
+                && names.insert(path.to_path_buf()),
+            "runtime context lookup requires unique canonical logical paths",
+        )?;
+        let held = snapshot(file)?;
+        let id = &held.identity;
+        let expected_kind = if *directory { 0o040000 } else { 0o100000 };
+        crate::ensure(
+            id.uid == 0
+                && id.gid == 0
+                && id.mode & 0o170000 == expected_kind
+                && id.mode & 0o7022 == 0
+                && (if *directory {
+                    id.nlink >= 2
+                } else {
+                    id.nlink == 1
+                })
+                && nodes.insert((id.dev, id.ino)),
+            "runtime context lookup requires distinct protected held inodes",
+        )?;
+        actual.push(scope::Entry {
+            path: path.to_path_buf(),
+            snapshot: held,
+            matcher_type: if *directory {
+                "dir".into()
+            } else {
+                "file".into()
+            },
+        });
+    }
+    let result = sources.lookup_entries(&actual, work)?;
+    for ((_, file, _), entry) in entries.iter().zip(&actual) {
+        crate::ensure(
+            snapshot(file)? == entry.snapshot,
+            "staged runtime inode changed during normal context lookup",
+        )?;
+    }
+    sources.revalidate()?;
+    Ok(result)
+}
+
 #[cfg(test)]
 #[path = "cold_original_label_snapshot_tests.rs"]
 mod snapshot_custody_tests;

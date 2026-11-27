@@ -1,0 +1,929 @@
+//! Held-inode transaction core used only by the fixed working runtime publisher.
+//! Durable records describe effects; only these live descriptors and finite
+//! transitions authorize an operation in this process.
+use super::super::{
+    DirectoryState, Intent, Node, Payload, SealedInput, advance_parent, at, attrs, observe_kind,
+    publish_one, restore_one_from, same_except_ctime, same_inode, write_json,
+};
+use crate::{
+    Result,
+    boot_files::{self as files, FilePin},
+    ensure, fs,
+};
+use droidloom_descriptor_custody::Ext4Handle;
+use rustix::fs::{FileType, Mode, OFlags, XattrFlags};
+use serde_json::{Value, json};
+use std::{
+    collections::BTreeMap,
+    fs::File,
+    io::Seek,
+    os::fd::AsFd,
+    path::{Path, PathBuf},
+};
+
+struct HeldNode {
+    file: File,
+    node: Node,
+}
+impl HeldNode {
+    fn open(path: &Path, directory: bool) -> Result<Option<Self>> {
+        let Some(node) = observe_kind(path, directory)? else {
+            return Ok(None);
+        };
+        let (parent, name) = at(path)?;
+        let kind = FileType::from_raw_mode(node.identity.mode);
+        let access = if kind == FileType::Symlink {
+            OFlags::PATH
+        } else {
+            OFlags::RDONLY
+        };
+        let file = File::from(rustix::fs::openat(
+            &parent,
+            name.as_str(),
+            access | OFlags::NOFOLLOW | OFlags::NONBLOCK | OFlags::CLOEXEC,
+            Mode::empty(),
+        )?);
+        let held = Self { file, node };
+        held.guard(path, directory)?;
+        Ok(Some(held))
+    }
+    fn read(&self) -> Result<Node> {
+        let identity = fs::stat(&self.file)?;
+        let (handle, _) = Ext4Handle::capture(self.file.as_fd())?;
+        ensure(
+            handle.inode_number() as u64 == identity.ino,
+            "held working inode generation differs",
+        )?;
+        let attributes = attrs(&self.file)?;
+        let (sha256, link) = match FileType::from_raw_mode(identity.mode) {
+            FileType::RegularFile => {
+                ensure(
+                    identity.size <= 512 * 1024 * 1024,
+                    "bounded held working content",
+                )?;
+                let mut f = &self.file;
+                f.rewind()?;
+                (Some(fs::hash(&self.file)?), None)
+            }
+            FileType::Symlink => {
+                let value = rustix::fs::readlinkat(&self.file, "", Vec::new())?;
+                let value = std::str::from_utf8(value.to_bytes())?.to_owned();
+                ensure(
+                    value.len() <= 4096 && !value.contains('\0'),
+                    "bounded held link",
+                )?;
+                (None, Some(value))
+            }
+            FileType::Directory => (None, None),
+            _ => return Err("working custody acquired a special inode".into()),
+        };
+        ensure(
+            fs::stat(&self.file)? == identity,
+            "held working inode changed during full readback",
+        )?;
+        Ok(Node {
+            identity,
+            handle_type: handle.handle_type(),
+            handle: hex::encode(handle.bytes()),
+            attributes,
+            sha256,
+            link,
+        })
+    }
+    fn guard(&self, path: &Path, directory: bool) -> Result<()> {
+        ensure(
+            self.read()? == self.node && observe_kind(path, directory)? == Some(self.node.clone()),
+            "held or named working inode changed",
+        )
+    }
+    fn renamed(&self, path: &Path, directory: bool) -> Result<Node> {
+        let actual = self.read()?;
+        ensure(
+            same_except_ctime(&self.node, &actual)
+                && observe_kind(path, directory)? == Some(actual.clone()),
+            "working rename changed more than this held inode's ctime",
+        )?;
+        Ok(actual)
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum Phase {
+    Staged,
+    Ready,
+    Publishing,
+    Published,
+    Restoring,
+    Restored,
+}
+
+struct Reverse {
+    public: DirectoryState,
+    private: DirectoryState,
+}
+struct Step {
+    target: PathBuf,
+    pending: PathBuf,
+    record: PathBuf,
+    payload: Payload,
+    directory: bool,
+    prepared: HeldNode,
+    original: Option<HeldNode>,
+    intent: Option<Intent>,
+    reverse: Option<Reverse>,
+    reverse_attempts: usize,
+    phase: Phase,
+}
+impl Step {
+    fn before_roles(&self, retired: &BTreeMap<PathBuf, PathBuf>) -> Result<()> {
+        self.prepared.guard(&self.pending, self.directory)?;
+        match &self.original {
+            Some(node) => node.guard(&self.target, self.directory),
+            None => absent(&self.target, self.directory, retired),
+        }
+    }
+    fn after_roles(&self) -> Result<()> {
+        self.prepared.guard(&self.target, self.directory)?;
+        match &self.original {
+            Some(node) => node.guard(&self.pending, self.directory),
+            None => ensure(
+                observe_kind(&self.pending, self.directory)?.is_none(),
+                "working private path gained a foreign inode",
+            ),
+        }
+    }
+    fn guard(&self, retired: &BTreeMap<PathBuf, PathBuf>) -> Result<()> {
+        match self.phase {
+            Phase::Staged => self.prepared.guard(&self.pending, self.directory),
+            Phase::Ready | Phase::Restored => self.before_roles(retired),
+            Phase::Published => self.after_roles(),
+            Phase::Publishing | Phase::Restoring => {
+                Err("working operation outcome needs exact read-only reconciliation".into())
+            }
+        }
+    }
+}
+fn absent(path: &Path, directory: bool, retired: &BTreeMap<PathBuf, PathBuf>) -> Result<()> {
+    if let Some(parent) = path.parent().filter(|p| retired.contains_key(*p)) {
+        ensure(
+            observe_kind(parent, true)?.is_none(),
+            "retired source-created parent was recreated",
+        )?;
+        return Ok(());
+    }
+    ensure(
+        observe_kind(path, directory)?.is_none(),
+        "absent working target gained a foreign inode",
+    )
+}
+
+#[derive(Default)]
+struct Parents {
+    files: BTreeMap<PathBuf, File>,
+    states: BTreeMap<PathBuf, DirectoryState>,
+}
+impl Parents {
+    fn hold(&mut self, path: &Path) -> Result<()> {
+        if let Some(file) = self.files.get(path) {
+            return ensure(
+                DirectoryState::held(path, file)? == self.states[path],
+                "working parent differs from its actual previous checkpoint",
+            );
+        }
+        let held = DirectoryState::capture(path)?;
+        self.states.insert(path.into(), held.state);
+        self.files.insert(path.into(), held.file);
+        Ok(())
+    }
+    fn guard(&self) -> Result<()> {
+        ensure(
+            self.files.len() == self.states.len(),
+            "working parent descriptor roster differs",
+        )?;
+        for (path, file) in &self.files {
+            ensure(
+                DirectoryState::held(path, file)? == self.states[path],
+                "working parent generation, attributes or complete members drifted",
+            )?;
+        }
+        Ok(())
+    }
+    fn actual(&self, path: &Path) -> Result<DirectoryState> {
+        DirectoryState::held(
+            path,
+            self.files
+                .get(path)
+                .ok_or("working parent descriptor absent")?,
+        )
+    }
+}
+
+/// A private live owner, not a deserializable reconstruction from a log.
+pub(super) struct Transaction {
+    work: PathBuf,
+    candidate: String,
+    steps: Vec<Step>,
+    parents: Parents,
+    seals: Vec<SealedInput>,
+    retired: BTreeMap<PathBuf, PathBuf>,
+}
+impl Transaction {
+    pub(super) fn new(work: PathBuf, candidate: String) -> Self {
+        Self {
+            work,
+            candidate,
+            steps: Vec::new(),
+            parents: Parents::default(),
+            seals: Vec::new(),
+            retired: BTreeMap::new(),
+        }
+    }
+    pub(super) fn initialize(&self) -> Result<()> {
+        files::private_dir(&self.work)?;
+        File::open(
+            self.work
+                .parent()
+                .ok_or("working publication work parent")?,
+        )?
+        .sync_all()?;
+        Ok(())
+    }
+    fn staging(&self) -> Result<(PathBuf, PathBuf)> {
+        ensure(
+            self.steps.len() < 16,
+            "working publication staging exceeds its finite roster",
+        )?;
+        let record = self.work.join(format!("item-{:03}", self.steps.len()));
+        files::private_dir(&record)?;
+        let payload = record.join("payload");
+        files::private_dir(&payload)?;
+        File::open(&record)?.sync_all()?;
+        File::open(&self.work)?.sync_all()?;
+        Ok((record, payload.join("value")))
+    }
+    pub(super) fn stage_file(&mut self, target: &Path, source: &FilePin, mode: u32) -> Result<()> {
+        let (record, pending) = self.staging()?;
+        files::copy_pin(source, &pending, mode)?;
+        File::open(pending.parent().ok_or("working private parent")?)?.sync_all()?;
+        let prepared = HeldNode::open(&pending, false)?.ok_or("new working payload absent")?;
+        ensure(
+            prepared.node.identity.mode & 0o7777 == mode
+                && prepared.node.identity.size == source.bytes
+                && prepared.node.sha256.as_ref() == Some(&source.sha256),
+            "staged working payload differs from its complete normal source",
+        )?;
+        self.steps.push(Step {
+            target: target.into(),
+            pending,
+            record,
+            payload: Payload::Regular {
+                source: source.clone(),
+                mode,
+            },
+            directory: false,
+            prepared,
+            original: None,
+            intent: None,
+            reverse: None,
+            reverse_attempts: 0,
+            phase: Phase::Staged,
+        });
+        Ok(())
+    }
+    pub(super) fn stage_directory(&mut self, target: &Path) -> Result<()> {
+        let (record, pending) = self.staging()?;
+        let (parent, name) = at(&pending)?;
+        rustix::fs::mkdirat(&parent, name.as_str(), Mode::from_raw_mode(0o755))?;
+        let file = File::open(&pending)?;
+        rustix::fs::fchmod(&file, Mode::from_raw_mode(0o755))?;
+        file.sync_all()?;
+        parent.sync_all()?;
+        let prepared = HeldNode::open(&pending, true)?.ok_or("new working directory absent")?;
+        ensure(
+            prepared.node.identity.mode & 0o7777 == 0o755,
+            "source-created working directory mode differs",
+        )?;
+        self.steps.push(Step {
+            target: target.into(),
+            pending,
+            record,
+            payload: Payload::Absent,
+            directory: true,
+            prepared,
+            original: None,
+            intent: None,
+            reverse: None,
+            reverse_attempts: 0,
+            phase: Phase::Staged,
+        });
+        Ok(())
+    }
+    pub(super) fn lookup_entries(&self) -> Vec<(&Path, &File, bool)> {
+        self.steps
+            .iter()
+            .map(|s| (s.target.as_path(), &s.prepared.file, s.directory))
+            .collect()
+    }
+    pub(super) fn apply_labels(&mut self, contexts: &[Vec<u8>]) -> Result<()> {
+        ensure(
+            contexts.len() == self.steps.len()
+                && self.steps.iter().all(|s| s.phase == Phase::Staged),
+            "normal contexts do not cover all private working inodes",
+        )?;
+        for (step, context) in self.steps.iter_mut().zip(contexts) {
+            ensure(
+                !context.is_empty()
+                    && context.len() <= 4096
+                    && context.last() == Some(&0)
+                    && !context[..context.len() - 1].contains(&0),
+                "one bounded normal SELinux context required",
+            )?;
+            step.prepared.guard(&step.pending, step.directory)?;
+            let before = step.prepared.node.clone();
+            rustix::fs::fsetxattr(
+                &step.prepared.file,
+                "security.selinux",
+                context,
+                XattrFlags::empty(),
+            )?;
+            step.prepared.file.sync_all()?;
+            let after = step.prepared.read()?;
+            let mut expected = before.clone();
+            expected
+                .attributes
+                .insert("security.selinux".into(), hex::encode(context));
+            ensure(
+                same_except_ctime(&expected, &after)
+                    && observe_kind(&step.pending, step.directory)? == Some(after.clone()),
+                "normal staged label changed an unrelated inode field",
+            )?;
+            step.prepared.node = after;
+        }
+        self.guard()
+    }
+    pub(super) fn retain_seal(&mut self, pin: &FilePin) -> Result<()> {
+        self.seals.push(SealedInput::open(pin)?);
+        Ok(())
+    }
+    fn seal(&mut self, path: &Path, value: &impl serde::Serialize) -> Result<FilePin> {
+        let pin = write_json(path, value)?;
+        self.retain_seal(&pin)?;
+        Ok(pin)
+    }
+    pub(super) fn guard(&self) -> Result<()> {
+        for seal in &self.seals {
+            seal.revalidate()?;
+        }
+        self.parents.guard()?;
+        for step in &self.steps {
+            step.guard(&self.retired)?;
+        }
+        self.parents.guard()
+    }
+    pub(super) fn len(&self) -> usize {
+        self.steps.len()
+    }
+    pub(super) fn target(&self, index: usize) -> &Path {
+        &self.steps[index].target
+    }
+    pub(super) fn all_published(&self) -> bool {
+        !self.steps.is_empty() && self.steps.iter().all(|s| s.phase == Phase::Published)
+    }
+    pub(super) fn all_restored(&self) -> bool {
+        self.steps
+            .iter()
+            .all(|s| matches!(s.phase, Phase::Staged | Phase::Ready | Phase::Restored))
+    }
+    fn prepare_intent(&mut self, index: usize) -> Result<()> {
+        self.guard()?;
+        let step = &self.steps[index];
+        ensure(step.phase == Phase::Staged, "working intent is create-only")?;
+        let parent = step
+            .target
+            .parent()
+            .ok_or("working target parent")?
+            .to_owned();
+        let private = step
+            .pending
+            .parent()
+            .ok_or("working private parent")?
+            .to_owned();
+        self.parents.hold(&parent)?;
+        self.parents.hold(&private)?;
+        let original = HeldNode::open(&step.target, step.directory)?;
+        ensure(
+            !step.directory || original.is_none(),
+            "working directory creation raced with another inode",
+        )?;
+        let step = &mut self.steps[index];
+        let intent = Intent {
+            schema: "droidloom.working-runtime-file-intent.v1".into(),
+            candidate_id: self.candidate.clone(),
+            group: "working-runtime".into(),
+            ordinal: index,
+            logical_path: step.target.clone(),
+            target: step.target.clone(),
+            pending: step.pending.clone(),
+            payload: step.payload.clone(),
+            original: original.as_ref().map(|n| n.node.clone()),
+            prepared: Some(step.prepared.node.clone()),
+            parent: self.parents.states[&parent].clone(),
+            private_parent: self.parents.states[&private].clone(),
+            purpose_target: step.directory.then(|| step.target.clone()),
+        };
+        let path = step.record.join("INTENT.json");
+        let value = serde_json::to_value(&intent)?;
+        step.original = original;
+        step.intent = Some(intent);
+        step.phase = Phase::Ready;
+        self.seal(&path, &value)?;
+        self.guard()
+    }
+    pub(super) fn require_original(
+        &self,
+        index: usize,
+        identity: &crate::model::Identity,
+        source: &FilePin,
+    ) -> Result<()> {
+        let step = &self.steps[index];
+        let actual = HeldNode::open(&step.target, false)?.ok_or("actual original cell absent")?;
+        ensure(
+            actual.node.identity == *identity
+                && actual.node.identity.size == source.bytes
+                && actual.node.sha256.as_ref() == Some(&source.sha256)
+                && step.target == source.path,
+            "working publisher lost its exact actual original cell preimage",
+        )?;
+        actual.guard(&step.target, false)
+    }
+    pub(super) fn publish(&mut self, index: usize) -> Result<()> {
+        self.prepare_intent(index)?;
+        self.guard()?;
+        self.steps[index].phase = Phase::Publishing;
+        // An error may be after rename or fsync. Leave the actual descriptors
+        // and intent in Publishing; never infer that an error means no effect.
+        publish_one(
+            self.steps[index]
+                .intent
+                .as_ref()
+                .ok_or("working intent absent")?,
+        )?;
+        self.reconcile(index)?;
+        ensure(
+            self.steps[index].phase == Phase::Published,
+            "working publication had no observed effect",
+        )?;
+        let path = self.steps[index].record.join("PUBLISHED.json");
+        self.seal(&path, &self.step_report(index)?)?;
+        self.guard()
+    }
+    fn advanced(
+        &self,
+        transitions: &[(&DirectoryState, &DirectoryState)],
+    ) -> Result<(BTreeMap<PathBuf, DirectoryState>, Vec<(usize, Node)>)> {
+        let mut states = self.parents.states.clone();
+        let mut changed = Vec::new();
+        for (before, after) in transitions {
+            advance_parent(&mut states, before, after)?;
+            for (index, step) in self.steps.iter().enumerate() {
+                if step.directory && step.phase == Phase::Published && step.target == before.path {
+                    let node = &step.prepared.node;
+                    ensure(
+                        node.identity == before.identity
+                            && node.handle_type == before.handle_type
+                            && node.handle == before.handle
+                            && node.attributes == before.attributes,
+                        "working created directory lost its exact child-operation checkpoint",
+                    )?;
+                    let mut node = node.clone();
+                    node.identity = after.identity.clone();
+                    ensure(
+                        step.prepared.read()? == node,
+                        "working created directory differs after its exact owned child operation",
+                    )?;
+                    changed.push((index, node));
+                }
+            }
+        }
+        Ok((states, changed))
+    }
+    fn reconcile(&mut self, index: usize) -> Result<()> {
+        let step = &self.steps[index];
+        let reverse = step.phase == Phase::Restoring;
+        ensure(
+            reverse || step.phase == Phase::Publishing,
+            "only one unknown actual operation may reconcile",
+        )?;
+        let intent = step
+            .intent
+            .as_ref()
+            .ok_or("working reconciliation has no intent")?;
+        let (public_before, private_before) = if reverse {
+            let r = step
+                .reverse
+                .as_ref()
+                .ok_or("working reverse has no held checkpoint")?;
+            (&r.public, &r.private)
+        } else {
+            (&intent.parent, &intent.private_parent)
+        };
+        let public_after = self.parents.actual(&public_before.path)?;
+        let private_after = self.parents.actual(&private_before.path)?;
+        let before_roles = if reverse {
+            step.after_roles()
+        } else {
+            step.before_roles(&self.retired)
+        };
+        if before_roles.is_ok()
+            && public_after == *public_before
+            && private_after == *private_before
+        {
+            self.steps[index].phase = if reverse {
+                Phase::Published
+            } else {
+                Phase::Ready
+            };
+            return self.guard();
+        }
+        let prepared_path = if reverse { &step.pending } else { &step.target };
+        let original_path = if reverse { &step.target } else { &step.pending };
+        let prepared = step.prepared.renamed(prepared_path, step.directory)?;
+        let original = match &step.original {
+            Some(node) => Some(node.renamed(original_path, step.directory)?),
+            None => {
+                ensure(
+                    observe_kind(original_path, step.directory)?.is_none(),
+                    "working rename acquired an unowned original",
+                )?;
+                None
+            }
+        };
+        let target = if reverse {
+            original.clone()
+        } else {
+            Some(prepared.clone())
+        };
+        let pending = if reverse {
+            Some(prepared.clone())
+        } else {
+            original.clone()
+        };
+        let target_name = step
+            .target
+            .file_name()
+            .and_then(|s| s.to_str())
+            .ok_or("working target name")?;
+        let pending_name = step
+            .pending
+            .file_name()
+            .and_then(|s| s.to_str())
+            .ok_or("working pending name")?;
+        public_before.after_replace(&public_after, target_name, &target)?;
+        private_before.after_replace(&private_after, pending_name, &pending)?;
+        let (states, changed) = self.advanced(&[
+            (public_before, &public_after),
+            (private_before, &private_after),
+        ])?;
+        self.parents.states = states;
+        for (number, node) in changed {
+            self.steps[number].prepared.node = node;
+        }
+        let step = &mut self.steps[index];
+        step.prepared.node = prepared;
+        if let (Some(held), Some(actual)) = (&mut step.original, original) {
+            held.node = actual;
+        }
+        step.phase = if reverse {
+            Phase::Restored
+        } else {
+            Phase::Published
+        };
+        if reverse && step.directory {
+            ensure(
+                self.parents
+                    .states
+                    .get(&step.target)
+                    .is_none_or(|p| p.members.is_empty()),
+                "retired working directory still has members",
+            )?;
+            self.parents.states.remove(&step.target);
+            self.parents.files.remove(&step.target);
+            self.retired
+                .insert(step.target.clone(), step.pending.clone());
+        }
+        self.guard()
+    }
+    /// Read-only: this never repeats a possibly completed filesystem mutation.
+    pub(super) fn reconcile_pending(&mut self) -> Result<()> {
+        let pending: Vec<_> = self
+            .steps
+            .iter()
+            .enumerate()
+            .filter_map(|(n, s)| {
+                matches!(s.phase, Phase::Publishing | Phase::Restoring).then_some(n)
+            })
+            .collect();
+        ensure(
+            pending.len() <= 1,
+            "working transaction has more than one unresolved effect",
+        )?;
+        for index in pending {
+            self.reconcile(index)?;
+        }
+        self.guard()
+    }
+    pub(super) fn restore(&mut self, index: usize) -> Result<()> {
+        self.guard()?;
+        if matches!(
+            self.steps[index].phase,
+            Phase::Staged | Phase::Ready | Phase::Restored
+        ) {
+            return Ok(());
+        }
+        let step = &self.steps[index];
+        ensure(
+            step.phase == Phase::Published && step.reverse_attempts < 4,
+            "working reverse lacks a known published effect or exceeded its bound",
+        )?;
+        if step.directory {
+            if let Some(state) = self.parents.states.get(&step.target) {
+                ensure(
+                    state.members.is_empty(),
+                    "working directory contains an unfinished or foreign child",
+                )?;
+            }
+        }
+        let old = step
+            .intent
+            .as_ref()
+            .ok_or("working reverse lacks original intent")?;
+        let public = self.parents.states[&old.parent.path].clone();
+        let private = self.parents.states[&old.private_parent.path].clone();
+        let operation = Intent {
+            schema: old.schema.clone(),
+            candidate_id: old.candidate_id.clone(),
+            group: old.group.clone(),
+            ordinal: old.ordinal,
+            logical_path: old.logical_path.clone(),
+            target: old.target.clone(),
+            pending: old.pending.clone(),
+            payload: old.payload.clone(),
+            original: step.original.as_ref().map(|n| n.node.clone()),
+            prepared: Some(step.prepared.node.clone()),
+            parent: public.clone(),
+            private_parent: private.clone(),
+            purpose_target: old.purpose_target.clone(),
+        };
+        let path = step
+            .record
+            .join(format!("RESTORE-INTENT-{:02}.json", step.reverse_attempts));
+        let value = json!({"schema":"droidloom.working-runtime-reverse-intent.v1",
+            "candidate_id":self.candidate,"ordinal":index,"operation":operation});
+        self.seal(&path, &value)?;
+        let step = &mut self.steps[index];
+        step.reverse = Some(Reverse {
+            public: public.clone(),
+            private: private.clone(),
+        });
+        step.reverse_attempts += 1;
+        step.phase = Phase::Restoring;
+        restore_one_from(&operation, &public, &private)?;
+        self.reconcile(index)?;
+        ensure(
+            self.steps[index].phase == Phase::Restored,
+            "working reverse had no observed effect",
+        )?;
+        let path = self.steps[index].record.join("RESTORED.json");
+        self.seal(&path, &self.step_report(index)?)?;
+        self.guard()
+    }
+    fn step_report(&self, index: usize) -> Result<Value> {
+        let step = &self.steps[index];
+        ensure(
+            matches!(step.phase, Phase::Published | Phase::Restored),
+            "only an observed working effect is reportable",
+        )?;
+        Ok(
+            json!({"schema":"droidloom.working-runtime-file-observed.v1",
+            "candidate_id":self.candidate,"ordinal":index,"target":step.target,"pending":step.pending,
+            "phase":format!("{:?}",step.phase),"original":step.original.as_ref().map(|n| &n.node),
+            "candidate":step.prepared.node,"directory":step.directory,"parents":self.parents.states}),
+        )
+    }
+    pub(super) fn seal_summary(&mut self, restored: bool) -> Result<FilePin> {
+        self.guard()?;
+        ensure(
+            if restored {
+                self.all_restored()
+            } else {
+                self.all_published()
+            },
+            "working publication summary cannot skip an actual operation",
+        )?;
+        let path = self.work.join(if restored {
+            "RESTORED.json"
+        } else {
+            "PUBLISHED.json"
+        });
+        let steps = self
+            .steps
+            .iter()
+            .map(|s| {
+                json!({"target":s.target,"pending":s.pending,
+            "phase":format!("{:?}",s.phase),"directory":s.directory,
+            "original":s.original.as_ref().map(|n| &n.node),"candidate":s.prepared.node})
+            })
+            .collect::<Vec<_>>();
+        self.seal(
+            &path,
+            &json!({"schema":"droidloom.working-runtime-observed.v1",
+            "candidate_id":self.candidate,"restored":restored,"steps":steps,
+            "parents":self.parents.states,"retired_created_directories":self.retired,
+            "application_business_accepted":false,"production_ready":false}),
+        )
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::os::unix::fs::MetadataExt;
+
+    struct Fixture {
+        root: PathBuf,
+    }
+    impl Fixture {
+        fn new(name: &str) -> Result<Self> {
+            ensure(
+                rustix::process::geteuid().is_root(),
+                "actual root inode test required",
+            )?;
+            let stamp = std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)?
+                .as_nanos();
+            let root = PathBuf::from(format!(
+                "/var/lib/droidloom-qualification/working-config-{name}-{}-{stamp}",
+                std::process::id()
+            ));
+            files::private_dir(&root)?;
+            files::private_dir(&root.join("public"))?;
+            files::write_new(
+                &root.join("source"),
+                b"actual source-owned candidate",
+                0o400,
+            )?;
+            Ok(Self { root })
+        }
+        fn transaction(&self) -> Result<Transaction> {
+            let value = Transaction::new(self.root.join("transaction"), "a".repeat(64));
+            value.initialize()?;
+            Ok(value)
+        }
+        fn source(&self) -> Result<FilePin> {
+            files::pin_file(&self.root.join("source"))
+        }
+    }
+    impl Drop for Fixture {
+        fn drop(&mut self) {
+            // Only this test's newly created root is removed.
+            let _ = std::fs::remove_dir_all(&self.root);
+        }
+    }
+
+    #[test]
+    #[ignore = "root/ext4 only; isolated held-inode exchange and exact reverse"]
+    fn actual_working_publication_retains_original_fds_and_restores_both_presence_states()
+    -> Result<()> {
+        let fixture = Fixture::new("roundtrip")?;
+        let target = fixture.root.join("public/existing");
+        let absent_target = fixture.root.join("public/absent");
+        files::write_new(&target, b"original content retained", 0o644)?;
+        let before = observe_kind(&target, false)?.unwrap();
+        let mut transaction = fixture.transaction()?;
+        transaction.stage_file(&target, &fixture.source()?, 0o644)?;
+        transaction.stage_file(&absent_target, &fixture.source()?, 0o400)?;
+        transaction.publish(0)?;
+        transaction.publish(1)?;
+        transaction.guard()?;
+        assert!(transaction.all_published());
+        assert!(same_inode(
+            &before,
+            &transaction.steps[0].original.as_ref().unwrap().read()?
+        ));
+        assert_eq!(
+            transaction.steps[0].original.as_ref().unwrap().node.sha256,
+            before.sha256
+        );
+        let candidate0 = transaction.steps[0].prepared.node.clone();
+        let candidate1 = transaction.steps[1].prepared.node.clone();
+        transaction.restore(1)?;
+        transaction.restore(0)?;
+        transaction.guard()?;
+        assert!(transaction.all_restored());
+        assert!(same_inode(&before, &observe_kind(&target, false)?.unwrap()));
+        assert!(observe_kind(&absent_target, false)?.is_none());
+        for (index, candidate) in [candidate0, candidate1].iter().enumerate() {
+            assert!(same_inode(
+                candidate,
+                &transaction.steps[index].prepared.read()?
+            ));
+            transaction.steps[index]
+                .prepared
+                .guard(&transaction.steps[index].pending, false)?;
+        }
+        transaction.seal_summary(true)?;
+        Ok(())
+    }
+
+    #[test]
+    #[ignore = "root/ext4 only; isolated created directory and exact child history"]
+    fn actual_working_parent_chain_composes_children_and_retires_only_empty_created_directory()
+    -> Result<()> {
+        let fixture = Fixture::new("parents")?;
+        let directory = fixture.root.join("public/created");
+        let mut transaction = fixture.transaction()?;
+        transaction.stage_directory(&directory)?;
+        transaction.stage_file(&directory.join("first"), &fixture.source()?, 0o644)?;
+        transaction.stage_file(&directory.join("second"), &fixture.source()?, 0o400)?;
+        for index in 0..3 {
+            transaction.publish(index)?;
+        }
+        transaction.guard()?;
+        let directory_inode = transaction.steps[0].prepared.node.clone();
+        assert_eq!(transaction.parents.states[&directory].members.len(), 2);
+        for index in (0..3).rev() {
+            transaction.restore(index)?;
+        }
+        transaction.guard()?;
+        assert!(transaction.all_restored());
+        assert!(!directory.exists());
+        assert!(same_inode(
+            &directory_inode,
+            &transaction.steps[0].prepared.read()?
+        ));
+        assert!(
+            DirectoryState::capture(&transaction.steps[0].pending)?
+                .state
+                .members
+                .is_empty()
+        );
+        transaction.seal_summary(true)?;
+        Ok(())
+    }
+
+    #[test]
+    #[ignore = "root/ext4 only; isolated lost-completion and foreign-inode controls"]
+    fn actual_working_unknown_outcome_reconciles_only_held_effect_and_rejects_equal_bytes_replacement()
+    -> Result<()> {
+        let fixture = Fixture::new("unknown")?;
+        let target = fixture.root.join("public/target");
+        files::write_new(&target, b"retained original", 0o644)?;
+        let mut transaction = fixture.transaction()?;
+        transaction.stage_file(&target, &fixture.source()?, 0o644)?;
+        transaction.prepare_intent(0)?;
+        transaction.steps[0].phase = Phase::Publishing;
+        // The real atomic exchange completes; deliberately discard completion.
+        publish_one(transaction.steps[0].intent.as_ref().unwrap())?;
+        assert!(transaction.guard().is_err());
+        transaction.reconcile_pending()?;
+        assert!(transaction.all_published());
+        transaction.guard()?;
+        let retained_candidate = fixture.root.join("same-candidate-preserved");
+        std::fs::rename(&target, &retained_candidate)?;
+        files::copy_pin(&fixture.source()?, &target, 0o644)?;
+        let foreign_inode = std::fs::metadata(&target)?.ino();
+        assert_ne!(
+            foreign_inode,
+            transaction.steps[0].prepared.node.identity.ino
+        );
+        assert!(transaction.guard().is_err());
+        assert!(transaction.restore(0).is_err());
+        assert_eq!(std::fs::metadata(&target)?.ino(), foreign_inode);
+        assert!(same_inode(
+            &transaction.steps[0].prepared.node,
+            &observe_kind(&retained_candidate, false)?.unwrap()
+        ));
+        Ok(())
+    }
+
+    #[test]
+    #[ignore = "root/ext4 only; isolated unrelated-parent-member negative control"]
+    fn actual_working_parent_drift_blocks_reverse_before_any_rename() -> Result<()> {
+        let fixture = Fixture::new("drift")?;
+        let target = fixture.root.join("public/target");
+        files::write_new(&target, b"retained original", 0o644)?;
+        let mut transaction = fixture.transaction()?;
+        transaction.stage_file(&target, &fixture.source()?, 0o644)?;
+        transaction.publish(0)?;
+        let candidate = observe_kind(&target, false)?;
+        let retained = observe_kind(&transaction.steps[0].pending, false)?;
+        files::write_new(&fixture.root.join("public/foreign"), b"unrelated", 0o644)?;
+        assert!(transaction.restore(0).is_err());
+        assert_eq!(observe_kind(&target, false)?, candidate);
+        assert_eq!(
+            observe_kind(&transaction.steps[0].pending, false)?,
+            retained
+        );
+        Ok(())
+    }
+}
