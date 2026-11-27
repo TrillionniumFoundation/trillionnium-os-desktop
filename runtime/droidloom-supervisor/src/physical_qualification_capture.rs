@@ -10,6 +10,8 @@ use std::os::unix::process::CommandExt;
 use std::process::{Child, Command, ExitStatus, Stdio};
 #[path = "physical_qualification_roster.rs"]
 mod roster;
+use super::source_custody::{CHILD_LOCK_FDS, ParentWorkingNativeSourceCustody};
+use super::working_config::RuntimeDirectory;
 
 struct Output {
     file: File,
@@ -227,27 +229,41 @@ fn validate_case_summaries(package: &str, row: &Value, epoch: &RuntimeEpoch) -> 
     let expected = (0..CASE_COUNT)
         .map(|ordinal| QualificationCase::from_ordinal(ordinal as u8))
         .collect::<io::Result<Vec<_>>>()?
-        .into_iter().filter(|case| case.package() == package).collect::<Vec<_>>();
-    let actual = row.get("cases").and_then(Value::as_array)
+        .into_iter()
+        .filter(|case| case.package() == package)
+        .collect::<Vec<_>>();
+    let actual = row
+        .get("cases")
+        .and_then(Value::as_array)
         .ok_or_else(|| error("complete row omitted its actual case histories"))?;
     if expected.is_empty() || actual.len() != expected.len() {
-        return Err(error("complete row does not have its exact source-owned case histories"));
+        return Err(error(
+            "complete row does not have its exact source-owned case histories",
+        ));
     }
     let epoch = serde_json::to_value(epoch)?;
     for (case, history) in expected.iter().zip(actual) {
         let kind_matches = match case.native_route() {
-            Some(route) => history.get("route") == Some(&json!(route)) && history.get("kind").is_none(),
-            None => history.get("kind") == Some(&json!("family_observation")) && history.get("route").is_none(),
+            Some(route) => {
+                history.get("route") == Some(&json!(route)) && history.get("kind").is_none()
+            }
+            None => {
+                history.get("kind") == Some(&json!("family_observation"))
+                    && history.get("route").is_none()
+            }
         };
         if !kind_matches
             || history.get("sealed_inside_original_case_window") != Some(&json!(true))
             || history.get("historical_observation") != Some(&json!(true))
-            || history.get("continuous_app_or_target_directory_custody_after_case_claimed") != Some(&json!(false))
+            || history.get("continuous_app_or_target_directory_custody_after_case_claimed")
+                != Some(&json!(false))
             || history.get("actual").and_then(|v| v.get("package")) != Some(&json!(package))
             || history.get("actual").and_then(|v| v.get("user")) != Some(&json!(0))
             || history.get("actual").and_then(|v| v.get("epoch")) != Some(&epoch)
         {
-            return Err(error("complete historical case order, subject or original window differs"));
+            return Err(error(
+                "complete historical case order, subject or original window differs",
+            ));
         }
     }
     Ok(actual.len())
@@ -350,11 +366,197 @@ fn validate_summary(raw: &[u8], plan: &Plan, epoch: &RuntimeEpoch) -> io::Result
     Ok(value)
 }
 
+/// The three source-owned preparation directories in this one working attempt.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum WorkingPreparationDirectory {
+    /// One actual native baseline for each distinct compiled native package.
+    NativeBaselines,
+    /// Immutable source requests for the compiled native cases.
+    NativeInputs,
+    /// Private outputs for those compiled native cases.
+    NativeCases,
+}
+impl WorkingPreparationDirectory {
+    fn name(self) -> &'static str {
+        match self {
+            Self::NativeBaselines => "native-baselines",
+            Self::NativeInputs => "native-inputs",
+            Self::NativeCases => "native-cases",
+        }
+    }
+}
+
+/// The actual fixed parent before source preparation. No deserialization or
+/// caller path, digest, process identifier, deadline or pass value constructs it.
+pub struct WorkingQualificationOwner {
+    probes: super::super::working_owned_probe::Scope,
+    owner: UnitOwner,
+    configuration: Arc<AdmittedWorkingConfiguration>,
+    directory: RuntimeDirectory,
+    owner_start_ns: u64,
+    end_ns: u64,
+    preparation_end_ns: u64,
+    end: Instant,
+    preparation_end: Instant,
+}
+impl WorkingQualificationOwner {
+    /// Bind the installed singleton, exact executable and original working boot.
+    pub fn acquire() -> Result<Self, String> {
+        let initial_end = Instant::now() + Duration::from_secs(SUITE_SECONDS);
+        let configuration =
+            Arc::new(AdmittedWorkingConfiguration::acquire().map_err(|e| e.to_string())?);
+        let mut owner = UnitOwner::capture(configuration.applications_pin(), initial_end)?;
+        let owner_start_ns = owner.manager_start_ns()?;
+        let end_ns = configuration
+            .schedule()
+            .authorization_end_ns(owner_start_ns)
+            .map_err(|e| e.to_string())?;
+        let end = instant_until(end_ns, initial_end).map_err(|e| e.to_string())?;
+        let preparation_end_ns = owner_start_ns
+            .checked_add(budget::SOURCE_AND_CAPTURE_SECONDS * 1_000_000_000)
+            .ok_or("working preparation end overflow")?;
+        let preparation_end = instant_until(preparation_end_ns, end).map_err(|e| e.to_string())?;
+        owner.restrict_end(end)?;
+        owner.boundary(None, preparation_end)?;
+        let directory = RuntimeDirectory::acquire(&configuration).map_err(|e| e.to_string())?;
+        let probes = super::super::working_owned_probe::Scope::parent(&owner, preparation_end)
+            .map_err(|e| e.to_string())?;
+        let value = Self {
+            probes,
+            owner,
+            configuration,
+            directory,
+            owner_start_ns,
+            end_ns,
+            preparation_end_ns,
+            end,
+            preparation_end,
+        };
+        value.guard()?;
+        Ok(value)
+    }
+    /// Recheck the live preparation owner without renewing either original end.
+    pub fn guard(&self) -> Result<(), String> {
+        if Instant::now() >= self.preparation_end {
+            return Err("original working preparation window exhausted".into());
+        }
+        self.configuration.guard().map_err(|e| e.to_string())?;
+        self.directory.guard().map_err(|e| e.to_string())?;
+        self.owner.preparation_boundary(self.preparation_end)
+    }
+    /// Immutable absolute suite end derived from the actual manager start.
+    pub fn deadline(&self) -> Instant {
+        self.end
+    }
+    /// Immutable preparation end shared by the source producer and private child.
+    pub fn preparation_deadline(&self) -> Instant {
+        self.preparation_end
+    }
+    /// The one retained runtime-only directory, never an original/returned path.
+    pub fn runtime_evidence_directory(&self) -> Result<&Path, String> {
+        self.guard()?;
+        Ok(self.directory.path())
+    }
+    /// Actual boot-admitted applications input comparison.
+    pub fn applications_pin(&self) -> Result<(u64, &str), String> {
+        self.guard()?;
+        let pin = self.configuration.applications_pin();
+        Ok((pin.bytes, &pin.sha256))
+    }
+    /// Source input comparisons after the actual owner has been rechecked.
+    pub fn source_pins(&self) -> Result<&WorkingSourcePins, String> {
+        self.guard()?;
+        Ok(self.configuration.source_pins())
+    }
+    /// The fixed installed input directory copied by the normal cold producer.
+    pub fn input_directory(&self) -> Result<&Path, String> {
+        self.guard()?;
+        Ok(self.configuration.input_directory())
+    }
+    /// Exact installed material manifest authenticated by the kernel boot pin.
+    pub fn admitted_materials_path(&self) -> Result<&Path, String> {
+        self.guard()?;
+        Ok(self.configuration.admitted_materials_path())
+    }
+    /// Full held material-manifest length and boot-admitted SHA-256.
+    pub fn admitted_materials_pin(&self) -> Result<(u64, &str), String> {
+        self.guard()?;
+        Ok(self.configuration.admitted_materials_pin())
+    }
+    /// Create one of the finite source preparation directories exactly once.
+    pub fn create_preparation_directory(
+        &self,
+        kind: WorkingPreparationDirectory,
+    ) -> Result<PathBuf, String> {
+        self.guard()?;
+        let path = self
+            .directory
+            .create_child(kind.name())
+            .map_err(|e| e.to_string())?;
+        self.guard()?;
+        Ok(path)
+    }
+    /// Consume this same owner after the ordinary source producer prepared PLAN.
+    pub fn capture(self) -> Result<CapturedCompleteApplicationRun, String> {
+        self.guard()?;
+        self.probes.idle().map_err(|e| e.to_string())?;
+        capture_owned_working_run(self)
+    }
+    pub(crate) fn begin_documents_build_resources(
+        &self,
+    ) -> Result<WorkingDocumentsBuildResources<'_>, String> {
+        self.guard()?;
+        self.probes.idle().map_err(|e| e.to_string())?;
+        self.owner
+            .preparation_profile(KernelProfile::DocumentsBuild, self.preparation_end)?;
+        if let Err(error) = self.probes.begin_documents() {
+            self.probes.poison();
+            return Err(error.to_string());
+        }
+        self.guard()?;
+        Ok(WorkingDocumentsBuildResources {
+            owner: self,
+            finished: false,
+        })
+    }
+}
+
+/// Internal finite preparation scope. Only the two compiled Documents build
+/// factories call its constructor; no budget or resource number is an input.
+pub(crate) struct WorkingDocumentsBuildResources<'a> {
+    owner: &'a WorkingQualificationOwner,
+    finished: bool,
+}
+impl WorkingDocumentsBuildResources<'_> {
+    pub(crate) fn finish(mut self) -> Result<(), String> {
+        self.owner.guard()?;
+        self.owner
+            .probes
+            .finish_documents()
+            .map_err(|e| e.to_string())?;
+        self.owner
+            .owner
+            .preparation_profile(KernelProfile::Standard, self.owner.preparation_end)?;
+        self.owner.guard()?;
+        self.finished = true;
+        Ok(())
+    }
+}
+impl Drop for WorkingDocumentsBuildResources<'_> {
+    fn drop(&mut self) {
+        if !self.finished {
+            self.owner.probes.poison();
+        }
+    }
+}
+
 /// Parent-side historical capture of this run, not a deserialized App Complete.
 /// The actual parent unit must still be externally retired after this process exits.
 pub struct CapturedCompleteApplicationRun {
     owner: UnitOwner,
     plan: Plan,
+    directory: RuntimeDirectory,
+    source: ParentWorkingNativeSourceCustody,
     summary: SealedOutput,
     stderr: SealedOutput,
     binding_output: SealedOutput,
@@ -371,21 +573,28 @@ impl CapturedCompleteApplicationRun {
     pub fn guard(&self) -> Result<(), String> {
         self.owner.boundary(None, self.end)?;
         self.plan.guard().map_err(|e| e.to_string())?;
+        self.directory.guard().map_err(|e| e.to_string())?;
+        self.source.guard().map_err(|e| e.to_string())?;
         for out in [&self.summary, &self.stderr, &self.binding_output] {
             out.guard().map_err(|e| e.to_string())?;
         }
         Ok(())
     }
-    pub fn observation(&self) -> Value {
-        json!({"schema":"droidloom.captured-physical-application-run.v1","plan":{"path":self.plan.path,
+    pub fn observation(&self) -> Result<Value, String> {
+        self.guard()?;
+        let source = self.source.comparison().map_err(|e| e.to_string())?;
+        Ok(
+            json!({"schema":"droidloom.captured-physical-application-run.v1","plan":{"path":self.plan.path,
             "bytes":self.plan.pin[6],"sha256":self.plan.digest,"f9":self.plan.pin},
             "actual_parent":self.owner.observation(),"actual_child":{"pid":self.child_pid,
                 "start_ticks":self.child_start,"exit_code":0,"direct_child_reaped":true,
                 "all_child_cgroups_absent":true,"every_frame_scm_credentials_checked":true},
             "summary":self.summary.observation(),"stderr":self.stderr.observation(),
             "main_binding":self.binding_output.observation(),
+            "working_source":source,
             "source_factory_complete_captured":true,"runtime_qualified":false,
-            "production_ready":false,"requires_independent_parent_retirement_and_private_copy_return":true})
+            "production_ready":false,"requires_independent_parent_retirement_and_private_copy_return":true}),
+        )
     }
     /// Source-owned one-shot receipt. It is evidence for a later normal owner,
     /// never an API to restore this process-local capture from JSON.
@@ -394,7 +603,7 @@ impl CapturedCompleteApplicationRun {
         let mut out =
             Output::create(&self.plan, "CAPTURE.json", 1024 * 1024).map_err(|e| e.to_string())?;
         let mut bytes =
-            serde_json::to_vec_pretty(&self.observation()).map_err(|e| e.to_string())?;
+            serde_json::to_vec_pretty(&self.observation()?).map_err(|e| e.to_string())?;
         bytes.push(b'\n');
         out.file.write_all(&bytes).map_err(|e| e.to_string())?;
         out.bytes = bytes.len() as u64;
@@ -412,15 +621,33 @@ impl CapturedCompleteApplicationRun {
 
 /// Called only by the normal installed applications parent CLI. No arbitrary
 /// command, PID, resource profile, report or externally asserted pass is accepted.
-pub fn capture_installed_physical_run(
-    plan_sha: &str,
+fn capture_owned_working_run(
+    value: WorkingQualificationOwner,
 ) -> Result<CapturedCompleteApplicationRun, String> {
-    let start = Instant::now();
-    let initial_end = start + Duration::from_secs(SUITE_SECONDS);
-    let plan = Plan::open(plan_sha).map_err(|e| e.to_string())?;
-    let mut owner = UnitOwner::capture(plan_sha, initial_end)?;
-    let parent_end_ns = owner.manager_deadline_ns()?;
-    let mut end = instant_until(parent_end_ns, initial_end).map_err(|e| e.to_string())?;
+    let WorkingQualificationOwner {
+        probes,
+        mut owner,
+        configuration,
+        directory,
+        owner_start_ns,
+        end_ns: parent_end_ns,
+        preparation_end_ns,
+        mut end,
+        preparation_end,
+    } = value;
+    probes.idle().map_err(|e| e.to_string())?;
+    drop(probes);
+    let plan = Plan::open_admitted(configuration).map_err(|e| e.to_string())?;
+    owner.bind_plan(&plan, preparation_end)?;
+    let source = ParentWorkingNativeSourceCustody::create(
+        &plan,
+        plan.working_applications_pin().map_err(|e| e.to_string())?,
+        plan.working_runtime_evidence_directory()
+            .map_err(|e| e.to_string())?,
+        end,
+    )
+    .map_err(|e| e.to_string())?;
+    let inherited_locks = source.duplicate_for_exec().map_err(|e| e.to_string())?;
     let mut stdout = Output::create(&plan, "applications.stdout", SUMMARY_LIMIT as u64)
         .map_err(|e| e.to_string())?;
     let mut stderr =
@@ -436,7 +663,7 @@ pub fn capture_installed_physical_run(
     let parent_pid = std::process::id();
     let mut command = Command::new(format!("/proc/self/fd/{}", owner.executable().as_raw_fd()));
     command.arg0(EXE).args(
-        child_argv(plan_sha)
+        child_argv(&plan.path, &plan.digest)
             .map_err(|e| e.to_string())?
             .into_iter()
             .skip(1),
@@ -450,6 +677,10 @@ pub fn capture_installed_physical_run(
         .env("LANG", "C.UTF-8")
         .current_dir("/");
     let channel_fd = inherited.as_raw_fd();
+    let lock_fds = [
+        inherited_locks[0].as_raw_fd(),
+        inherited_locks[1].as_raw_fd(),
+    ];
     // SAFETY: only async-signal-safe descriptor/prctl operations before exec.
     unsafe {
         command.pre_exec(move || {
@@ -462,13 +693,21 @@ pub fn capture_installed_physical_run(
             if libc::dup2(channel_fd, 3) < 0 || libc::fcntl(3, libc::F_SETFD, 0) < 0 {
                 return Err(io::Error::last_os_error());
             }
+            for (source, target) in lock_fds.into_iter().zip(CHILD_LOCK_FDS) {
+                if libc::dup2(source, target) < 0 || libc::fcntl(target, libc::F_SETFD, 0) < 0 {
+                    return Err(io::Error::last_os_error());
+                }
+            }
             Ok(())
         });
     }
     plan.guard().map_err(|e| e.to_string())?;
+    source.guard().map_err(|e| e.to_string())?;
+    directory.guard().map_err(|e| e.to_string())?;
     owner.boundary(None, end)?;
     let mut child = command.spawn().map_err(|e| e.to_string())?;
     drop(inherited);
+    drop(inherited_locks);
     drop(child_socket);
     let pid = child.id();
     let pidfd = match open_pidfd(pid) {
@@ -495,7 +734,7 @@ pub fn capture_installed_physical_run(
         pid,
         reaped: None,
     };
-    let cleanup_end = initial_end + Duration::from_secs(RETIREMENT_SECONDS);
+    let cleanup_end = end + Duration::from_secs(RETIREMENT_SECONDS);
     let execute = (|| -> Result<(RuntimeMainCustody, u64, SealedOutput), String> {
         let bound = BoundProcess::capture(pid).map_err(|e| e.to_string())?;
         let mut phase = Phase::Hello;
@@ -513,6 +752,8 @@ pub fn capture_installed_physical_run(
             if Instant::now() >= until {
                 return Err("physical producer exhausted its original case/suite end".into());
             }
+            source.guard().map_err(|e| e.to_string())?;
+            directory.guard().map_err(|e| e.to_string())?;
             stdout.drain(&mut output_pipe).map_err(|e| e.to_string())?;
             stderr.drain(&mut error_pipe).map_err(|e| e.to_string())?;
             if pending.is_none() && phase != Phase::Complete {
@@ -522,15 +763,20 @@ pub fn capture_installed_physical_run(
                     }
                     owner.child_guard(&bound)?;
                     let mut ack_end = packet.end_ns;
+                    let mut ack_payload = Vec::new();
                     match (&phase,packet.kind) {
                         (Phase::Hello,1) if packet.case==255=>{
                             let hello:Hello=serde_json::from_slice(&packet.payload).map_err(|e|e.to_string())?;
                             if hello.plan_sha256!=plan.digest || hello.plan_bytes!=plan.pin[6]
-                                || hello.suite_seconds!=SUITE_SECONDS || packet.end_ns==0 {
+                                || hello.suite_seconds!=SUITE_SECONDS || packet.end_ns==0
+                                || Instant::now()>=preparation_end {
                                 return Err("physical normal child's exact source plan/window differs".into());
                             }
                             ack_end=packet.end_ns.min(parent_end_ns);
                             end=instant_until(ack_end,end).map_err(|e|e.to_string())?;
+                            let acknowledgement=HelloAcknowledgement{owner_start_ns,preparation_end_ns};
+                            acknowledgement.validate(ack_end).map_err(|e|e.to_string())?;
+                            ack_payload=serde_json::to_vec(&acknowledgement).map_err(|e|e.to_string())?;
                             owner.boundary(Some(&bound),end)?;
                             epoch=Some(hello.epoch);phase=Phase::Between(0);
                         }
@@ -577,7 +823,7 @@ pub fn capture_installed_physical_run(
                                 kind: 5,
                                 case: packet.case,
                                 end_ns: ack_end,
-                                payload: Vec::new(),
+                                payload: ack_payload,
                             },
                             until.min(end),
                         )
@@ -602,6 +848,7 @@ pub fn capture_installed_physical_run(
                         .map_err(|e| e.to_string())?;
                     owner.boundary(Some(&bound), end)?;
                     plan.guard().map_err(|e| e.to_string())?;
+                    source.guard().map_err(|e| e.to_string())?;
                     socket
                         .send(
                             &socket::Packet {
@@ -616,6 +863,7 @@ pub fn capture_installed_physical_run(
                         .map_err(|e| e.to_string())?;
                     sequence += 1;
                     phase = Phase::Complete;
+                    source.guard().map_err(|e| e.to_string())?;
                     let value = pending.take().unwrap();
                     captured_binding = Some((value.binding, value.body, value.header));
                 }
@@ -643,6 +891,7 @@ pub fn capture_installed_physical_run(
                 }
                 owner.boundary(None, end)?;
                 plan.guard().map_err(|e| e.to_string())?;
+                source.guard().map_err(|e| e.to_string())?;
                 let mut binding_out =
                     Output::create(&plan, "MAIN-BINDING.json", BINDING_LIMIT as u64)
                         .map_err(|e| e.to_string())?;
@@ -699,12 +948,13 @@ pub fn capture_installed_physical_run(
         Ok(value) => value,
         Err(original) => {
             let retirement = child.stop(cleanup_end);
+            let source_retirement = source.guard_immutable();
             let _ = stdout.drain(&mut output_pipe);
             let _ = stderr.drain(&mut error_pipe);
             let _ = stdout.file.sync_all();
             let _ = stderr.file.sync_all();
             return Err(format!(
-                "{original}; direct-child-retirement={retirement:?}; retain private outputs; parent-unit external retirement remains required"
+                "{original}; direct-child-retirement={retirement:?}; source-retirement={source_retirement:?}; retain private outputs; parent-unit external retirement remains required"
             ));
         }
     };
@@ -713,6 +963,8 @@ pub fn capture_installed_physical_run(
     let value = CapturedCompleteApplicationRun {
         owner,
         plan,
+        directory,
+        source,
         summary: stdout,
         stderr,
         binding_output,
@@ -737,22 +989,26 @@ mod tests {
             framework_start_ticks: 43,
         };
         let make = |package: &str| -> Value {
-            let cases = (0..CASE_COUNT).filter_map(|ordinal| {
-                let case = QualificationCase::from_ordinal(ordinal as u8).unwrap();
-                if case.package() != package { return None; }
-                let mut history = json!({
-                    "actual":{"package":package,"user":0,"epoch":epoch},
-                    "sealed_inside_original_case_window":true,
-                    "historical_observation":true,
-                    "continuous_app_or_target_directory_custody_after_case_claimed":false,
-                });
-                if let Some(route) = case.native_route() {
-                    history["route"] = json!(route);
-                } else {
-                    history["kind"] = json!("family_observation");
-                }
-                Some(history)
-            }).collect::<Vec<_>>();
+            let cases = (0..CASE_COUNT)
+                .filter_map(|ordinal| {
+                    let case = QualificationCase::from_ordinal(ordinal as u8).unwrap();
+                    if case.package() != package {
+                        return None;
+                    }
+                    let mut history = json!({
+                        "actual":{"package":package,"user":0,"epoch":epoch},
+                        "sealed_inside_original_case_window":true,
+                        "historical_observation":true,
+                        "continuous_app_or_target_directory_custody_after_case_claimed":false,
+                    });
+                    if let Some(route) = case.native_route() {
+                        history["route"] = json!(route);
+                    } else {
+                        history["kind"] = json!("family_observation");
+                    }
+                    Some(history)
+                })
+                .collect::<Vec<_>>();
             json!({"cases":cases})
         };
         let mut total = 0;
@@ -771,7 +1027,7 @@ mod tests {
         wrong["cases"][0]["actual"]["epoch"]["framework_start_ticks"] = json!(44);
         assert!(validate_case_summaries("org.mozilla.firefox", &wrong, &epoch).is_err());
         let mut wrong = make("com.android.calendar");
-        wrong["cases"].as_array_mut().unwrap().swap(0,1);
+        wrong["cases"].as_array_mut().unwrap().swap(0, 1);
         assert!(validate_case_summaries("com.android.calendar", &wrong, &epoch).is_err());
         assert!(validate_case_summaries("caller.package", &json!({"cases":[]}), &epoch).is_err());
     }
