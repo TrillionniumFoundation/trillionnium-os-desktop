@@ -46,6 +46,7 @@ pub mod normal_host_release;
 mod package_cache;
 pub mod package_inventory_observation;
 pub mod native_ihg_preparation;
+pub mod native_working_preparation;
 #[cfg(target_os = "linux")]
 mod native_application_ui_protocol;
 #[cfg(target_os = "linux")]
