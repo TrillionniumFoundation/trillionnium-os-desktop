@@ -5,7 +5,23 @@
 pub const NATIVE_CASE_COUNT: usize = 14;
 pub const FAMILY_CASE_COUNT: usize = 31;
 pub const CASE_COUNT: usize = NATIVE_CASE_COUNT + FAMILY_CASE_COUNT;
-pub const SOURCE_AND_CAPTURE_SECONDS: u64 = 120;
+// Complete preparation work from the finite normal factories, charged once
+// to the actual PID1 parent start. NativeLeafRun reserves post work from each
+// call; only its caller executes that PM/Main bookend, so it is counted once.
+pub const PREPARATION_LOCAL_SECONDS: u64 = 120;
+pub const PREPARATION_IDENTITY_SECONDS: u64 = 38 * 250 + 330;
+pub const PREPARATION_MAIN_SECONDS: u64 = 70;
+pub const PREPARATION_BASELINE_SECONDS: u64 = 8 * 1_200;
+pub const PREPARATION_CHILD_SECONDS: u64 = 11_520;
+pub const PREPARATION_BOOKEND_SECONDS: u64 = 15_232;
+pub const PREPARATION_HELPER_POST_SECONDS: u64 = 250;
+pub const SOURCE_AND_CAPTURE_SECONDS: u64 = PREPARATION_LOCAL_SECONDS
+    + PREPARATION_IDENTITY_SECONDS
+    + PREPARATION_MAIN_SECONDS
+    + PREPARATION_BASELINE_SECONDS
+    + PREPARATION_CHILD_SECONDS
+    + PREPARATION_BOOKEND_SECONDS
+    + PREPARATION_HELPER_POST_SECONDS;
 pub const MAIN_SECONDS: u64 = 70;
 pub const INSPECT_SECONDS: u64 = 250;
 pub const FAMILY_WORK_SECONDS: u64 = 2_615;
