@@ -144,6 +144,10 @@ impl NativeBusinessFact {
     ) -> Result<()> {
         self.subject.require(package, main, actual)
     }
+    /// Exact typed case origins; this cannot construct a fact or accept result JSON.
+    pub(super) fn contributing_routes(&self) -> impl Iterator<Item = Route> + '_ {
+        self.basis.iter().map(|value| value.route)
+    }
     /// A small comparison summary; the typed fact, not this JSON, is authority.
     pub(super) fn comparison(&self) -> Result<Value> {
         Ok(serde_json::json!({

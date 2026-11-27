@@ -7,6 +7,7 @@ use super::clock_timer::{self, ClockResultCustody};
 use super::common_gate::CommonGateFact;
 use super::leaf_release::{self, NativeRelease};
 use super::leaf_routes::{self, LeafPlan, Route};
+use super::native_business::{self, NativeBusinessFact, NativeCaseEvidence};
 use super::physical_gate_roster as roster;
 use super::runtime_identity::VerifiedMaterialBatch;
 use super::*;
@@ -303,6 +304,7 @@ struct ApplicationSummary {
     profile: &'static str,
     cases: Vec<Value>,
     gate_assertions: Vec<PhysicalGateSummary>,
+    native_business_facts: Vec<Value>,
     blocked: Option<String>,
     accepted_gates: usize,
     runtime_qualified: bool,
@@ -337,9 +339,14 @@ enum HistoricalCaseCustody {
 struct HistoricalCompletedCase {
     summary: CaseSummary,
     custody: HistoricalCaseCustody,
+    // Minted from this live leaf's held result before its consuming history seal.
+    // It remains paired with the source/result/Main/PM/Engine custody below.
+    native: Option<NativeCaseEvidence>,
 }
 impl HistoricalCompletedCase {
     fn from_leaf(observation: leaf_routes::LeafObservation, end: Instant) -> Result<Self, String> {
+        deadline(end)?;
+        let native = native_business::from_leaf(&observation)?;
         let (custody, common, business, evidence, actual, source_release) =
             observation.seal_history_before(end)?;
         Ok(Self {
@@ -355,6 +362,7 @@ impl HistoricalCompletedCase {
                 continuous_app_or_target_directory_custody_after_case_claimed: false,
             },
             custody: HistoricalCaseCustody::Leaf(custody),
+            native: Some(native),
         })
     }
     fn from_clock(
@@ -376,6 +384,7 @@ impl HistoricalCompletedCase {
                 continuous_app_or_target_directory_custody_after_case_claimed: false,
             },
             custody: HistoricalCaseCustody::Clock(custody),
+            native: None,
         })
     }
     fn binding(&self) -> &RuntimeMainCustody {
@@ -395,6 +404,13 @@ impl HistoricalCompletedCase {
         )?;
         for fact in &self.summary.common {
             fact.require_subject(&self.summary.actual.package, &self.summary.actual.epoch)?;
+        }
+        if let Some(native) = &self.native {
+            native.require_subject(
+                &self.summary.actual.package,
+                self.binding(),
+                &self.summary.actual,
+            )?;
         }
         Ok(())
     }
@@ -426,6 +442,110 @@ fn require_same_main(left: &RuntimeMainCustody, right: &RuntimeMainCustody) -> R
     )
 }
 
+// This index relation only locates the histories already owned by this process.
+// It cannot create a business fact from route names, result JSON or a saved map.
+fn native_basis_indices(
+    package: &str,
+    routes: &[Route],
+    available: &[(usize, Route)],
+) -> Result<Vec<usize>, String> {
+    require(
+        !routes.is_empty() && routes.len() <= available.len(),
+        "native fact has an empty or oversized historical basis",
+    )?;
+    let mut indices = Vec::new();
+    let mut seen = BTreeSet::new();
+    for route in routes {
+        require(route.package() == package, "native fact basis crossed a package")?;
+        let matching = available
+            .iter()
+            .filter(|(_, present)| present == route)
+            .map(|(index, _)| *index)
+            .collect::<Vec<_>>();
+        require(
+            matching.len() == 1 && seen.insert(matching[0]),
+            "native fact basis is missing, ambiguous or repeats a historical case",
+        )?;
+        indices.push(matching[0]);
+    }
+    Ok(indices)
+}
+
+struct HistoricalNativeBusinessFact {
+    fact: NativeBusinessFact,
+    case_indices: Vec<usize>,
+}
+impl HistoricalNativeBusinessFact {
+    // All histories must have passed guard() before this immutable typed join.
+    fn require_retained_binding(&self, histories: &[HistoricalCompletedCase]) -> Result<(), String> {
+        let first = histories
+            .get(*self.case_indices.first().ok_or("native fact lost its case basis")?)
+            .ok_or("native fact basis is outside the retained histories")?;
+        let actual = &first.summary.actual;
+        let package = actual.package.as_str();
+        self.fact.require_subject(package, first.binding(), actual)?;
+        let available = histories
+            .iter()
+            .enumerate()
+            .filter(|(_, case)| case.summary.actual.package == package && case.native.is_some())
+            .map(|(index, case)| (index, case.summary.route))
+            .collect::<Vec<_>>();
+        let routes = self.fact.contributing_routes().collect::<Vec<_>>();
+        require(
+            native_basis_indices(package, &routes, &available)? == self.case_indices,
+            "native fact no longer names exactly its contributing retained histories",
+        )?;
+        for index in &self.case_indices {
+            let case = histories.get(*index).ok_or("native historical case disappeared")?;
+            require_same_main(first.binding(), case.binding())?;
+            require(case.summary.actual == *actual,
+                "native historical cases differ in actual package, UID or complete APK identity")?;
+            case.native.as_ref().ok_or("native historical case lost its typed evidence")?
+                .require_subject(package, first.binding(), actual)?;
+        }
+        Ok(())
+    }
+}
+
+fn join_native_histories(
+    histories: &[HistoricalCompletedCase],
+) -> Result<Vec<HistoricalNativeBusinessFact>, String> {
+    // The factories retain source/result descriptors through this join and the
+    // final Complete guard. No expired case lease is renewed or used for work.
+    for history in histories {
+        history.guard()?;
+    }
+    let mut joined = Vec::new();
+    for fixed in roster::PACKAGES {
+        let selected = histories
+            .iter()
+            .enumerate()
+            .filter(|(_, case)| case.summary.actual.package == fixed.package && case.native.is_some())
+            .collect::<Vec<_>>();
+        if selected.is_empty() {
+            continue;
+        }
+        let available = selected.iter()
+            .map(|(index, case)| (*index, case.summary.route)).collect::<Vec<_>>();
+        let cases = selected.iter()
+            .map(|(_, case)| case.native.as_ref().expect("selected typed native case"))
+            .collect::<Vec<_>>();
+        let mut gate_ids = BTreeSet::new();
+        for fact in native_business::join_cases(&cases)? {
+            require(
+                fixed.business.contains(&fact.gate()) && gate_ids.insert(fact.gate()),
+                "native factory returned an unregistered or repeated complete assertion",
+            )?;
+            let routes = fact.contributing_routes().collect::<Vec<_>>();
+            let case_indices = native_basis_indices(fixed.package, &routes, &available)?;
+            let held = HistoricalNativeBusinessFact { fact, case_indices };
+            held.require_retained_binding(histories)?;
+            joined.push(held);
+        }
+    }
+    Ok(joined)
+}
+
 struct RunCustody {
     inspector: control::NativeApplicationInspector,
     original_main: control::MainCustodyObservation,
@@ -434,6 +554,7 @@ struct RunCustody {
     inputs: PlanInputs,
     source_owner: NativeRelease,
     histories: Vec<HistoricalCompletedCase>,
+    native_facts: Vec<HistoricalNativeBusinessFact>,
     channel: ChildChannel,
     end: Instant,
 }
@@ -456,6 +577,9 @@ impl RunCustody {
         for history in &self.histories {
             history.guard()?;
             require_same_main(history.binding(), self.original_main.facts())?;
+        }
+        for fact in &self.native_facts {
+            fact.require_retained_binding(&self.histories)?;
         }
         deadline(self.end)
     }
@@ -552,6 +676,7 @@ impl PhysicalRunOutcome {
 
 fn summarize_rows(
     histories: &[HistoricalCompletedCase],
+    native_facts: &[HistoricalNativeBusinessFact],
     errors: &BTreeMap<String, String>,
 ) -> Result<Vec<ApplicationSummary>, String> {
     let mut rows = Vec::new();
@@ -565,7 +690,7 @@ fn summarize_rows(
         // the two consuming original-factory constructors above.
         let mut assertions = Vec::new();
         for id in roster::required(fixed) {
-            let indices = cases
+            let mut indices = cases
                 .iter()
                 .filter(|(_, case)| {
                     case.summary.common.iter().any(|fact| fact.id() == id)
@@ -573,6 +698,17 @@ fn summarize_rows(
                 })
                 .map(|(index, _)| *index)
                 .collect::<Vec<_>>();
+            for fact in native_facts.iter().filter(|fact| fact.fact.gate() == id) {
+                fact.require_retained_binding(histories)?;
+                if fact.case_indices.iter().all(|index| {
+                    histories.get(*index)
+                        .is_some_and(|case| case.summary.actual.package == fixed.package)
+                }) {
+                    indices.extend(fact.case_indices.iter().copied());
+                }
+            }
+            indices.sort_unstable();
+            indices.dedup();
             let passed = !indices.is_empty() && !errors.contains_key(fixed.package);
             assertions.push(PhysicalGateSummary {
                 id,
@@ -604,6 +740,13 @@ fn summarize_rows(
             // copied through serialization, never used to construct authority.
             cases: Vec::new(),
             gate_assertions: assertions,
+            native_business_facts: native_facts.iter()
+                .filter(|fact| fact.case_indices.first().is_some_and(|index| {
+                    histories.get(*index)
+                        .is_some_and(|case| case.summary.actual.package == fixed.package)
+                }))
+                .map(|fact| fact.fact.comparison())
+                .collect::<Result<Vec<_>, _>>()?,
             blocked: errors.get(fixed.package).cloned(),
             accepted_gates: 0,
             runtime_qualified: complete,
@@ -850,7 +993,8 @@ pub fn run_physical_files(
             None
         }
     };
-    let applications = summarize_rows(&histories, &errors)?;
+    let native_facts = join_native_histories(&histories)?;
+    let applications = summarize_rows(&histories, &native_facts, &errors)?;
     let accepted_gates = applications.iter().map(|row| row.accepted_gates).sum();
     let accepted_applications = applications
         .iter()
@@ -899,6 +1043,7 @@ pub fn run_physical_files(
         inputs,
         source_owner,
         histories,
+        native_facts,
         channel,
         end,
     };
@@ -993,6 +1138,41 @@ mod tests {
         };
         (plan, runtime, gates)
     }
+    #[test]
+    fn physical_native_basis_keeps_exact_distinct_history_indices() {
+        let available = [(4, Route::GalleryRotation), (7, Route::GalleryVideo),
+            (8, Route::GallerySeek), (9, Route::GalleryAlbum)];
+        assert_eq!(
+            native_basis_indices("com.android.gallery3d",
+                &[Route::GalleryRotation, Route::GalleryAlbum], &available).unwrap(),
+            vec![4, 9],
+        );
+        assert_eq!(
+            native_basis_indices("com.android.documentsui",
+                &[Route::DocumentsSaf, Route::DocumentsSearchSort],
+                &[(2, Route::DocumentsSaf), (3, Route::DocumentsSearchSort)]).unwrap(),
+            vec![2, 3],
+        );
+    }
+
+    #[test]
+    fn physical_native_basis_rejects_missing_duplicate_and_foreign_cases() {
+        let one = [(4, Route::GalleryRotation)];
+        assert!(native_basis_indices("com.android.gallery3d", &[], &one).is_err());
+        assert!(native_basis_indices("com.android.gallery3d",
+            &[Route::GalleryAlbum], &one).is_err());
+        assert!(native_basis_indices("com.android.gallery3d",
+            &[Route::ContactsSearch], &[(1, Route::ContactsSearch)]).is_err());
+        let ambiguous = [(4, Route::GalleryRotation), (5, Route::GalleryRotation)];
+        assert!(native_basis_indices("com.android.gallery3d",
+            &[Route::GalleryRotation], &ambiguous).is_err());
+        assert!(native_basis_indices("com.android.gallery3d",
+            &[Route::GalleryRotation, Route::GalleryRotation], &ambiguous).is_err());
+        let aliased = [(4, Route::GalleryRotation), (4, Route::GalleryAlbum)];
+        assert!(native_basis_indices("com.android.gallery3d",
+            &[Route::GalleryRotation, Route::GalleryAlbum], &aliased).is_err());
+    }
+
     #[test]
     fn physical_channel_uses_exact_source_order_windows_and_no_legacy_single_case() {
         require_channel_roster().unwrap();
