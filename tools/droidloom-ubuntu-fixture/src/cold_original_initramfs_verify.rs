@@ -368,7 +368,7 @@ pub(crate) fn verify_prepared_original_initramfs(receipt: &FilePin, work: &Path)
         .recovery_recipe
         .as_ref()
         .map(|pin| {
-            crate::cold_original_once_initramfs::admit_recovery_recipe(
+            crate::cold_recovery_recipe::admit_recovery_recipe(
                 pin,
                 &stage.producer,
                 &serde_json::to_value(&old_materials)?,
