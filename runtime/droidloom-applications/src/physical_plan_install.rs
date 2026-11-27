@@ -175,17 +175,20 @@ pub(super) fn prepare(
             continue;
         }
         if fixed.package == MEITUAN {
-            let why = "Meituan requires fixed-package normal reinstall on a proven working copy with the original data/metadata retained; no update, uninstall or migration credit was granted";
-            blockers.push(why.to_owned());
-            let row = json!({"package":fixed.package,"mode":"retained_data_migration_required",
-                "initial_uid":prior_uid,"actual_before":prior.as_ref().map(|a|a.facts()),
-                "installed_target_identity_verified":false,"pm_commands_executed":false,
-                "original_data_migration_accepted":false,"application_accepted":false});
-            emit(&row);
-            rows.push(row);
-            if let Some(actual) = prior {
-                observations.insert(fixed.package.to_owned(), actual);
+            let anchor=observations.get("com.android.calendar").ok_or("actual GSI inventory anchor absent")?;
+            let operation=droidloom_supervisor::control::reinstall_retained_meituan(
+                owner,inspector,main,anchor,prior.as_ref()).map_err(|e|e.to_string())?;
+            batch.revalidate()?;
+            let actual=observe(owner,inspector,main,fixed.package)?;
+            if !batch.is_current(fixed.package,&main.facts().epoch,actual.facts())?{
+                return Err("Meituan mechanical replacement did not yield the complete SDK-admitted current APK identity".into());
             }
+            let mut row=exact_row(&batch,&actual,"retained_original_standard_reinstall")?;
+            row["initial_uid"]=json!(prior_uid);
+            row["retained_mechanical_operation"]=operation;
+            row["original_data_migration_accepted"]=json!(false);
+            row["account_login_accepted"]=json!(false);
+            emit(&row);rows.push(row);observations.insert(fixed.package.to_owned(),actual);committed+=1;
             continue;
         }
         let source = batch.source(fixed.package)?;

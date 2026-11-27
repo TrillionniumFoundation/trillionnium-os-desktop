@@ -30,7 +30,7 @@ pub(crate) mod working_runtime;
 use super::application_leaf_unit::qualification::{ChildPeer, KernelProfile};
 pub(crate) use capture::WorkingDocumentsBuildResources;
 pub use capture::{
-    CapturedCompleteApplicationRun, WorkingPreparationDirectory, WorkingQualificationOwner,
+    CapturedCompleteApplicationRun, WorkingPreparationDirectory, WorkingQualificationOwner, WorkingRetainedOriginals,
 };
 pub use source_custody::WorkingNativeSourceCustody;
 /// Fixed independent return entry; actual role, unit and boot are verified before work.
@@ -875,9 +875,9 @@ mod tests {
         assert_eq!(total + budget::FAMILY_SECONDS + budget::CAMERA_PHOTO_CASE_SECONDS
             + budget::SETTINGS_PERMISSION_CASE_SECONDS + 2 * budget::MAIN_SECONDS
             + budget::SOURCE_AND_CAPTURE_SECONDS, SUITE_SECONDS);
-        assert_eq!(budget::SOURCE_AND_CAPTURE_SECONDS, 64_052);
-        assert_eq!(SUITE_SECONDS, 333_172);
-        assert_eq!(SERVICE_SECONDS, 333_352);
+        assert_eq!(budget::SOURCE_AND_CAPTURE_SECONDS, 68_132);
+        assert_eq!(SUITE_SECONDS, 337_252);
+        assert_eq!(SERVICE_SECONDS, 337_432);
         assert_eq!(budget::RETAIL_WORK_SECONDS, 9_110);
         assert_eq!(CASE_COUNT, 47);
         assert_eq!(SETTINGS_CASE_COUNT, 1);
@@ -954,7 +954,7 @@ mod tests {
             assert!(lines.contains(line.as_str()), "{line}");
         }
         assert_eq!(NOFILE_LIMIT, 32_768);
-        assert_eq!(SERVICE_SECONDS, 333_352);
+        assert_eq!(SERVICE_SECONDS, 337_432);
         assert!(lines.contains("MemoryMax=2147483648"));
         assert!(lines.contains("MemorySwapMax=0"));
         assert!(lines.contains("CPUQuota=200%"));

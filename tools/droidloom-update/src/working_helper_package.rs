@@ -1,4 +1,4 @@
-//! Package the two fixed working helpers from this checkout's declared Cargo
+//! Package the three fixed working helpers from this checkout's declared Cargo
 //! targets. Stale files left by an older target list cannot satisfy the build.
 use crate::util::*;
 use std::{
@@ -10,7 +10,7 @@ use std::{
 };
 
 const MAX_BYTES: u64 = 32 * 1024 * 1024;
-const MEMBERS: [(&str, &str); 2] = [
+const MEMBERS: [(&str, &str); 3] = [
     (
         "droidloom-working-namespace-entry",
         "usr/lib/droidloom/qualification/working-namespace-entry",
@@ -18,6 +18,10 @@ const MEMBERS: [(&str, &str); 2] = [
     (
         "droidloom-working-owned-files",
         "usr/lib/droidloom/qualification/working-owned-files",
+    ),
+    (
+        "droidloom-working-retained-data",
+        "usr/lib/droidloom/qualification/working-retained-data",
     ),
 ];
 
@@ -165,7 +169,7 @@ mod tests {
     }
 
     #[test]
-    fn normal_working_helpers_require_both_current_build_outputs() {
+    fn normal_working_helpers_require_all_three_current_build_outputs() {
         let root = tempfile::tempdir().unwrap();
         let host = root.path().join("release");
         let runtime = root.path().join("stage");
@@ -173,6 +177,9 @@ mod tests {
         assert!(stage(&host, &runtime).is_err());
         assert!(!runtime.exists());
         fixture(&host.join(MEMBERS[1].0), 2);
+        assert!(stage(&host, &runtime).is_err());
+        assert!(!runtime.exists());
+        fixture(&host.join(MEMBERS[2].0), 3);
         stage(&host, &runtime).unwrap();
         for (binary, relative) in MEMBERS {
             let source = host.join(binary);

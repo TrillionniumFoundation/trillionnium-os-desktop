@@ -97,6 +97,7 @@ impl EarlyApplicationControl {
                 &request,
                 ControlRequest::Install { .. } | ControlRequest::InstallMultiple { .. }
                     | ControlRequest::InstallCurrentMultiple { .. }
+                    | ControlRequest::InstallRetainedMeituan { .. } | ControlRequest::RemoveRetainedMeituan { .. }
             );
             if file.is_some() != installation {
                 return Err(ControlError::Invalid(
@@ -239,6 +240,26 @@ impl EarlyApplicationControl {
                         "Android confirmed current atomic install session {}; complete installed identity and application acceptance remain pending",
                         result.session,
                     );
+                }
+                ControlRequest::RemoveRetainedMeituan { expected_epoch } => {
+                    let pidfd=file.ok_or_else(|| ControlError::Invalid("retained helper PIDFD absent".into()))?;
+                    let parent=crate::control::working_install_peer::WorkingInstallPeer::capture(stream,launch_deadline)?;
+                    let helper=crate::control::working_retained_peer::RetainedHelperPeer::capture(&pidfd,parent.pid(),launch_deadline)?;
+                    let result=crate::production_application::remove_retained_meituan_early(
+                        authority,&expected_epoch,&parent,&helper,launch_deadline)
+                        .map_err(|e|early_application_error(e,&mut acquisition_quarantined))?;
+                    response.diagnostics=Some(serde_json::to_string(&result)?);
+                    response.message="Fixed standard Meituan removal confirmed on the held working generation; original preservation and migration are independently checked".into();
+                }
+                ControlRequest::InstallRetainedMeituan { expected_epoch } => {
+                    let file=file.ok_or_else(||ControlError::Invalid("fixed current Meituan APK absent".into()))?;
+                    crate::control::working_install_peer::validate_current_payload(&file,&[crate::working_meituan_contract::BYTES])?;
+                    let parent=crate::control::working_install_peer::WorkingInstallPeer::capture(stream,launch_deadline)?;
+                    let result=crate::production_application::install_retained_meituan_early(
+                        authority,file,launch_deadline,&expected_epoch,&parent)
+                        .map_err(|e|early_application_error(e,&mut acquisition_quarantined))?;
+                    response.diagnostics=Some(serde_json::to_string(&result)?);
+                    response.message="Fixed fresh Meituan session confirmed; full installed identity and account migration remain pending".into();
                 }
                 ControlRequest::ObserveRuntimeVintf { expected_epoch } => {
                     progress.report("Reading fixed public VINTF, APEX and properties in the current Ready generation...");

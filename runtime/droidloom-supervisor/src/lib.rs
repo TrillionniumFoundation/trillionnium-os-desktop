@@ -1102,3 +1102,12 @@ mod tests {
         assert_eq!(error.problems().len(), 3);
     }
 }
+
+mod working_retained_originals;
+mod working_retained_wire;
+/// Fixed normal read-only retained original entry.
+pub mod working_retained_data;
+
+mod working_meituan_contract;
+
+mod working_retained_read;

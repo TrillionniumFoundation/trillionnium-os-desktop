@@ -762,20 +762,31 @@ impl UnitOwner {
         if self.query(end)? != self.properties {
             return Err("working watchdog manager properties changed".into());
         }
-        self.kernel_guard_mode(child, preparation, child.is_some())?;
+        self.kernel_guard_mode(child, preparation, child.is_some(), None)?;
         if Instant::now() >= self.end.min(end) {
             return Err("working watchdog original owner end exhausted".into());
         }
         Ok(())
     }
+    pub(crate) fn retained_boundary(
+        &self, helper:&crate::control::working_retained_peer::RetainedHelperPeer, end:Instant,
+    )->Result<(),String> {
+        if self.query(end)? != self.properties {
+            return Err("retained helper parent manager properties changed".into());
+        }
+        self.kernel_guard_mode(None,true,false,Some(helper))?;
+        if Instant::now() >= self.end.min(end) { return Err("retained parent original end exhausted".into()); }
+        Ok(())
+    }
     fn kernel_guard(&self, child: Option<&BoundProcess>, preparation: bool) -> Result<(), String> {
-        self.kernel_guard_mode(child, preparation, false)
+        self.kernel_guard_mode(child, preparation, false, None)
     }
     fn kernel_guard_mode(
         &self,
         child: Option<&BoundProcess>,
         preparation: bool,
         live_suite: bool,
+        retained: Option<&crate::control::working_retained_peer::RetainedHelperPeer>,
     ) -> Result<(), String> {
         if current_cgroup_parent().map_err(|e| e.to_string())? != self.group_path {
             return Err("physical qualifier moved cgroup".into());
@@ -798,6 +809,14 @@ impl UnitOwner {
         if let Some(child) = child {
             self.child_guard(child)?;
             expected.push(child.identity.pid);
+        }
+        if let Some(helper) = retained {
+            if !preparation || child.is_some() || live_suite
+                || helper.parent_pid() != self.current.identity.pid {
+                return Err("retained helper cannot replace the original suite/member boundary".into());
+            }
+            helper.guard().map_err(|e|e.to_string())?;
+            expected.push(helper.pid());
         }
         expected.sort();
         let membership = super::super::open_at(

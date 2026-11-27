@@ -184,6 +184,7 @@ impl WorkingInstallPeer {
         }
         Ok(result)
     }
+    pub(crate) fn pid(&self) -> u32 { self.peer.pid }
     pub(crate) fn guard(&self) -> Result<()> {
         cv(self.peer.revalidate(&self.socket))?;
         let info = cv(peer::pid_info(&self.peer.pidfd))?;

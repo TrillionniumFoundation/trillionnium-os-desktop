@@ -1,6 +1,9 @@
 //! Actual parent-owned child execution and full private Complete capture.
 use super::super::application_leaf_unit::qualification::{KernelProfile, UnitOwner};
 use super::working_runtime::LivePulse;
+#[path = "working_retained_parent.rs"]
+mod retained_parent;
+pub use retained_parent::WorkingRetainedOriginals;
 use super::*;
 use crate::control::{MainCustodyObservation, NativeApplicationInspector};
 use crate::development::owned_process::open_pidfd;
@@ -489,6 +492,10 @@ impl WorkingQualificationOwner {
     pub fn compare_preparation_main(&self, main: &MainCustodyObservation) -> Result<(), String> {
         self.guard()?;
         self.pulse.require_preparation_binding(main.facts())
+    }
+    /// Start the fixed normal read-only original retention child.
+    pub fn retain_meituan_originals(&self, main:&MainCustodyObservation) -> Result<WorkingRetainedOriginals<'_>,String> {
+        WorkingRetainedOriginals::start(self,main)
     }
     /// Move the one real bootstrap pair to the normal preparation producer.
     /// No caller epoch, saved Main receipt or replacement token is accepted.

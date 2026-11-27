@@ -31,8 +31,14 @@ pub const APPLICATION_INSTALL_INSPECT_SECONDS: u64 = 250;
 pub const PREPARATION_INSTALL_SECONDS: u64 = 70 + 28 * (
     APPLICATION_INSTALL_PAYLOAD_SECONDS + APPLICATION_INSTALL_TRANSPORT_SECONDS
         + APPLICATION_INSTALL_INSPECT_SECONDS);
+// This pure budget file is also compiled by the independent cold tool.
+// native_working_contract has a const assertion against the shared helper
+// contract, so this explicit finite total cannot silently drift from execution.
+pub const PREPARATION_RETAINED_INSTALL_SECONDS:u64 =
+    2*1200 + 2*70 + 2*250 + 2*70 + 250 + 120 + 250 + 30 + 250;
 pub const SOURCE_AND_CAPTURE_SECONDS: u64 = PREPARATION_LOCAL_SECONDS
     + PREPARATION_INSTALL_SECONDS
+    + PREPARATION_RETAINED_INSTALL_SECONDS
     + PREPARATION_IDENTITY_SECONDS
     + PREPARATION_MAIN_SECONDS
     + PREPARATION_BASELINE_SECONDS

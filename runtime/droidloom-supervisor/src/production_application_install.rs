@@ -65,9 +65,21 @@ fn transact(
     call: &mut dyn FnMut(&InstallCommand, Option<SegmentInput>, Instant) -> Result<String>,
     progress: &mut dyn FnMut() -> Result<()>,
 ) -> Result<u32> {
-    let create = InstallCommand::Create {
-        user,
-        bytes: payload.total(),
+    transact_kind(payload,user,deadline,call,progress,false)
+}
+fn transact_kind(
+    payload:&Payload,user:u32,deadline:Instant,
+    call:&mut dyn FnMut(&InstallCommand,Option<SegmentInput>,Instant)->Result<String>,
+    progress:&mut dyn FnMut()->Result<()>,fresh_meituan:bool,
+)->Result<u32>{
+    if fresh_meituan {
+        let parts=payload.observations();
+        require(user==0 && parts.len()==1 && parts[0].bytes==crate::working_meituan_contract::BYTES
+            &&parts[0].sha256==crate::working_meituan_contract::SHA256,
+            "fixed fresh Meituan session rejects any other complete APK before first effect")?;
+    }
+    let create = if fresh_meituan { InstallCommand::CreateRetainedMeituan {} } else {
+        InstallCommand::Create { user, bytes:payload.total() }
     };
     create.validate()?;
     require(
@@ -143,6 +155,19 @@ pub(crate) fn install_early(
     expected_epoch: Option<&RuntimeEpoch>,
     working_peer: Option<&crate::control::working_install_peer::WorkingInstallPeer>,
 ) -> Result<InstallObservation> {
+    install_early_kind(authority,user,file,lengths,overall_deadline,expected_epoch,working_peer,false)
+}
+pub(crate) fn install_retained_meituan_early(
+    authority:&EarlyApplicationAuthority<'_>,file:File,end:Instant,
+    epoch:&RuntimeEpoch,parent:&crate::control::working_install_peer::WorkingInstallPeer,
+)->Result<InstallObservation>{
+    install_early_kind(authority,0,file,&[crate::working_meituan_contract::BYTES],end,Some(epoch),Some(parent),true)
+}
+fn install_early_kind(
+    authority:&EarlyApplicationAuthority<'_>,user:u32,file:File,lengths:&[u64],overall_deadline:Instant,
+    expected_epoch:Option<&RuntimeEpoch>,working_peer:Option<&crate::control::working_install_peer::WorkingInstallPeer>,
+    fresh_meituan:bool,
+)->Result<InstallObservation>{
     require(expected_epoch.is_some()==working_peer.is_some(),
         "current installation requires its actual held normal parent")?;
     let deadline = (Instant::now() + SESSION_LIMIT).min(overall_deadline);
@@ -159,6 +184,12 @@ pub(crate) fn install_early(
         None=>crate::control::apk_payload::validate_production_context(&file).map_err(external)?,
     }
     let payload = Payload::prepare(file, lengths, deadline, &mut progress)?;
+    if fresh_meituan {
+        let parts=payload.observations();
+        require(user==0 && parts.len()==1 && parts[0].bytes==crate::working_meituan_contract::BYTES
+            &&parts[0].sha256==crate::working_meituan_contract::SHA256,
+            "fixed fresh Meituan installation requires the complete original source-pinned APK")?;
+    }
     let mut records = Vec::new();
     let mut call = |command: &InstallCommand,
                     input: Option<SegmentInput>,
@@ -213,7 +244,7 @@ pub(crate) fn install_early(
         }
         Ok(stdout)
     };
-    let session = transact(&payload, user, deadline, &mut call, &mut progress)?;
+    let session = transact_kind(&payload,user,deadline,&mut call,&mut progress,fresh_meituan)?;
     if let Some(peer)=working_peer {peer.guard().map_err(external)?;}
     authority.ready().map_err(external)?;
     require(
@@ -234,6 +265,39 @@ pub(crate) fn install_early(
     );
     Ok(observed)
 }
+
+pub(crate) fn remove_retained_meituan_early(
+    authority:&EarlyApplicationAuthority<'_>,expected:&RuntimeEpoch,
+    parent:&crate::control::working_install_peer::WorkingInstallPeer,
+    helper:&crate::control::working_retained_peer::RetainedHelperPeer,overall:Instant,
+)->Result<serde_json::Value>{
+    let end=(Instant::now()+SESSION_LIMIT).min(overall);
+    parent.guard().map_err(external)?;helper.guard().map_err(external)?;
+    require(helper.parent_pid()==parent.pid(),"retained helper is not the actual installing parent child")?;
+    authority.ready().map_err(external)?;
+    let framework=authority.observe_framework().map_err(external)?;
+    let epoch=authority.epoch(&framework).map_err(external)?;
+    require_install_epoch(&epoch,Some(expected))?;
+    let operation=ApplicationOperation::Install{value:InstallCommand::RemoveRetainedMeituan {}};
+    let result=factory_query::run_with_input(authority,&operation,None,end);
+    let result=workflow::finish_effect(result,||{
+        parent.guard().map_err(external)?;helper.guard().map_err(external)?;
+        authority.ready().map_err(external)?;
+        require(authority.epoch(&framework).map_err(external)?==epoch,
+            "working framework changed during fixed Meituan removal")
+    },end)?;
+    require(result.output.status.success()&&result.receipt.successful_retirement(),
+        "fixed Meituan removal was not confirmed; observe actual PM state without retry")?;
+    let stdout=String::from_utf8(result.output.stdout).map_err(external)?;
+    confirm(&stdout,"Success")?;
+    parent.guard().map_err(external)?;helper.guard().map_err(external)?;
+    Ok(serde_json::json!({"schema":"droidloom.retained-meituan-standard-removal.v1",
+        "package":crate::working_meituan_contract::PACKAGE,"user":0,"epoch":epoch,
+        "actual_helper_pid":helper.pid(),"command":InstallCommand::RemoveRetainedMeituan {},
+        "receipt":result.receipt,"standard_removal_confirmed":true,
+        "original_data_migration_accepted":false,"application_accepted":false}))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -246,6 +310,13 @@ mod tests {
             &mut || Ok(()),
         )
         .unwrap()
+    }
+    #[test]
+    fn fixed_fresh_meituan_rejects_another_actual_payload_before_any_pm_call() {
+        let payload=payload();let mut effects=0usize;
+        let mut call=|_:&InstallCommand,_:Option<SegmentInput>,_:Instant|{effects+=1;Ok("unexpected".into())};
+        assert!(transact_kind(&payload,0,Instant::now()+Duration::from_secs(5),&mut call,&mut||Ok(()),true).is_err());
+        assert_eq!(effects,0);
     }
     #[test]
     fn installation_session_uses_atomic_create_all_writes_then_commit() {

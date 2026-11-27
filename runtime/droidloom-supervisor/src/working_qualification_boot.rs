@@ -26,18 +26,21 @@ use std::{
 enum EntryRole {
     Parent,
     Return,
+    RetainedData,
 }
 impl EntryRole {
     fn role(self) -> &'static [u8] {
         match self {
             Self::Parent => c::layout::WORKING_PARENT_ROLE,
             Self::Return => c::layout::WORKING_RETURN_ROLE,
+            Self::RetainedData => b"u:system_r:p4_linux_working_retained_data_t:s0",
         }
     }
     fn profile(self) -> &'static [u8] {
         match self {
             Self::Parent => c::layout::WORKING_PARENT_PROFILE,
             Self::Return => c::layout::WORKING_RETURN_PROFILE,
+            Self::RetainedData => b"droidloom-working-retained-data (enforce)",
         }
     }
 }
@@ -266,11 +269,17 @@ struct ReturnInputs {
     maintenance: Input,
     installation: Input,
 }
+struct RetainedInputs {
+    admitted: Input,
+    executable: Input,
+    spec: Input,
+}
 /// Opaque current-boot custody. Return construction is a separate actual MAC
 /// entry; it cannot be selected by a caller-supplied role or configuration.
 pub(crate) struct BootOwner {
     role: EntryRole,
     return_inputs: Option<ReturnInputs>,
+    retained_inputs: Option<RetainedInputs>,
     root: File,
     root_identity: [u64; 5],
     boot_id: String,
@@ -289,6 +298,9 @@ impl BootOwner {
     }
     pub(crate) fn for_return() -> io::Result<Self> {
         Self::open_role(EntryRole::Return)
+    }
+    pub(crate) fn for_retained_data() -> io::Result<Self> {
+        Self::open_role(EntryRole::RetainedData)
     }
     fn open_role(role: EntryRole) -> io::Result<Self> {
         if unsafe {
@@ -401,9 +413,29 @@ impl BootOwner {
         } else {
             None
         };
-        let executing = return_inputs
-            .as_ref()
-            .map_or(&applications, |v| &v.executable);
+        let retained_inputs = if role != EntryRole::Return {
+            let admitted_path = PathBuf::from(format!(
+                "/var/lib/droidloom/qualification/working-qualification-{}/inputs/ADMITTED-MATERIALS.json",
+                config.candidate_id));
+            let bytes = fs::symlink_metadata(&admitted_path)?.len();
+            if bytes == 0 || bytes > 16 * 1024 * 1024 {
+                return Err(reject("retained helper normal material input exceeds bound"));
+            }
+            let admitted = Input::open(&admitted_path, &c::PayloadPin {
+                bytes, sha256: config.admitted_materials_sha256.clone()
+            }, &[0o400], Some(c::layout::WORKING_INPUT_FILE_LABEL))?;
+            let helper = c::retained_data::WorkingRetainedDataEntryPin::from_admitted_materials(&admitted.bytes()?)
+                .map_err(io::Error::other)?;
+            let executable = Input::open(Path::new(c::retained_data::HELPER_PATH), &c::PayloadPin {
+                bytes: helper.bytes, sha256: helper.sha256
+            }, &[0o755], Some(b"u:object_r:p4_linux_working_retained_data_exec_t:s0"))?;
+            let spec = Input::open(Path::new(c::retained_data::INPUT_PATH), &config.retained_originals,
+                &[0o400], Some(CONFIG_LABEL))?;
+            Some(RetainedInputs { admitted, executable, spec })
+        } else { None };
+        let executing = if role == EntryRole::RetainedData {
+            &retained_inputs.as_ref().ok_or_else(|| reject("retained helper input absent"))?.executable
+        } else { return_inputs.as_ref().map_or(&applications, |v| &v.executable) };
         if Node::from(&fs::metadata("/proc/self/exe")?) != executing.node {
             return Err(reject(
                 "working entry is not its boot-admitted normal executable",
@@ -464,6 +496,7 @@ impl BootOwner {
         let value = Self {
             role,
             return_inputs,
+            retained_inputs,
             root,
             root_identity,
             boot_id,
@@ -511,10 +544,12 @@ impl BootOwner {
                 input.guard()?;
             }
         }
-        let executing = self
-            .return_inputs
-            .as_ref()
-            .map_or(&self.applications, |v| &v.executable);
+        if let Some(inputs) = &self.retained_inputs {
+            for input in [&inputs.admitted, &inputs.executable, &inputs.spec] { input.guard()?; }
+        }
+        let executing = if self.role == EntryRole::RetainedData {
+            &self.retained_inputs.as_ref().ok_or_else(|| reject("retained helper input lost"))?.executable
+        } else { self.return_inputs.as_ref().map_or(&self.applications, |v| &v.executable) };
         if Node::from(&fs::metadata("/proc/self/exe")?) != executing.node {
             return Err(reject("working normal executable changed"));
         }
@@ -547,7 +582,7 @@ impl BootOwner {
         }
         Ok(())
     }
-    pub(super) fn compare_main(&self, main: &MainCustodyObservation) -> io::Result<()> {
+    pub(crate) fn compare_main(&self, main: &MainCustodyObservation) -> io::Result<()> {
         self.guard()?;
         self.compare_facts(main.facts())?;
         self.guard()
@@ -612,6 +647,18 @@ impl BootOwner {
         // Origin identity is not account contents, successful business, or
         // permanent production qualification.
         Ok(())
+    }
+    pub(crate) fn retained_spec(&self) -> io::Result<c::retained_data::RetainedOriginalsSpec> {
+        self.guard()?;
+        let inputs=self.retained_inputs.as_ref().ok_or_else(|| reject("return has no original-read helper input"))?;
+        let spec:c::retained_data::RetainedOriginalsSpec=serde_json::from_slice(&inputs.spec.bytes()?).map_err(io::Error::other)?;
+        spec.validate().map_err(io::Error::other)?;
+        if spec.candidate_id != self.config.candidate_id { return Err(reject("retained originals belong to another candidate")); }
+        self.guard()?;Ok(spec)
+    }
+    pub(crate) fn retained_executable(&self) -> io::Result<&File> {
+        self.guard()?;
+        Ok(&self.retained_inputs.as_ref().ok_or_else(|| reject("retained helper input absent"))?.executable.file)
     }
     pub(crate) fn config(&self) -> &c::WorkingReturnConfiguration {
         &self.config

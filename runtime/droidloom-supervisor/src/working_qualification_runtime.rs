@@ -50,6 +50,7 @@ pub(super) struct LivePulse {
     programs: NormalHostPrograms,
     watchdog: RefCell<watchdog::SoftwareWatchdog>,
     child: RefCell<Option<Rc<BoundProcess>>>,
+    retained: RefCell<Option<Rc<crate::control::working_retained_peer::RetainedHelperPeer>>>,
     phase: Cell<Phase>,
     busy: Cell<bool>,
     poisoned: Cell<bool>,
@@ -120,6 +121,7 @@ impl LivePulse {
             programs,
             watchdog: RefCell::new(watchdog),
             child: RefCell::new(None),
+            retained: RefCell::new(None),
             phase: Cell::new(Phase::Preparation),
             busy: Cell::new(false),
             poisoned: Cell::new(false),
@@ -170,11 +172,19 @@ impl LivePulse {
                 .child
                 .try_borrow()
                 .map_err(|_| failed("working child pulse state reentered"))?;
+            let retained = self.retained.try_borrow().map_err(|_|failed("retained helper guard reentered"))?;
+            if let Some(helper) = retained.as_ref() {
+                if self.phase.get()!=Phase::Preparation || child.is_some() {
+                    return Err(failed("retained helper is outside actual preparation"));
+                }
+                io_result(self.owner.retained_boundary(helper,self.until()))?;
+            } else {
             io_result(self.owner.watchdog_boundary(
                 child.as_deref(),
                 self.phase.get() == Phase::Preparation,
                 self.until(),
             ))?;
+            }
             self.programs.verify(self.until())?;
             self.main.guard()?;
             self.configuration.guard()?;
@@ -215,6 +225,29 @@ impl LivePulse {
         }
         Ok(())
     }
+    pub(super) fn retained_boot(&self) -> &boot::BootOwner { &self.boot }
+    pub(super) fn bind_retained(&self, helper:Rc<crate::control::working_retained_peer::RetainedHelperPeer>) -> Result<(),String> {
+        self.cheap_guard().map_err(|e|e.to_string())?;
+        if self.phase.get()!=Phase::Preparation || self.child.borrow().is_some()
+            || self.retained.borrow().is_some() { return Err("retained helper already active or outside preparation".into()); }
+        helper.guard().map_err(|e|e.to_string())?;
+        *self.retained.borrow_mut()=Some(helper);
+        self.guard().map_err(|e|e.to_string())
+    }
+    pub(super) fn retired_retained(&self) -> Result<(),String> {
+        if self.phase.get()!=Phase::Preparation { return Err("retained helper retirement is outside preparation".into()); }
+        {
+            let slot=self.retained.borrow();
+            let helper=slot.as_ref().ok_or("retained helper owner absent")?;
+            let mut poll=libc::pollfd{fd:helper.pidfd().as_raw_fd(),events:libc::POLLIN,revents:0};
+            if unsafe{libc::poll(&mut poll,1,0)}!=1 || poll.revents&libc::POLLIN==0 {
+                return Err("retained helper original PIDFD has not exited".into());
+            }
+        }
+        self.retained.borrow_mut().take();
+        self.owner.preparation_boundary(self.until())?;
+        self.guard().map_err(|e|e.to_string())
+    }
     pub(super) fn begin_suite(
         &self,
         child: Rc<BoundProcess>,
@@ -223,6 +256,7 @@ impl LivePulse {
         self.cheap_guard().map_err(|e| e.to_string())?;
         if self.phase.get() != Phase::Preparation
             || self.child.borrow().is_some()
+            || self.retained.borrow().is_some()
             || &self.main.facts().epoch != actual_epoch
         {
             return Err("working child HELLO differs from this actual bootstrap Main".into());

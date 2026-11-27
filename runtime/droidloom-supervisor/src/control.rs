@@ -54,7 +54,9 @@ mod progress;
 mod working_install;
 #[path = "working_install_peer.rs"]
 pub(crate) mod working_install_peer;
-pub use working_install::{WorkingApkPin, install_working_public_apks, working_system_package};
+#[path = "working_retained_peer.rs"]
+pub(crate) mod working_retained_peer;
+pub use working_install::{WorkingApkPin, install_working_public_apks, reinstall_retained_meituan, working_system_package};
 
 #[path = "control_identity.rs"]
 mod identity;
@@ -255,6 +257,16 @@ pub enum ControlRequest {
         /// Complete original segment lengths in base/split order.
         lengths: Vec<u64>,
         /// Comparison against the live authority before the first PM effect.
+        expected_epoch: application_probe::RuntimeEpoch,
+    },
+    /// Fixed standard removal; the one descriptor must be the actual retained helper PIDFD.
+    RemoveRetainedMeituan {
+        /// Same actual working generation; no package, user, flags or paths.
+        expected_epoch: application_probe::RuntimeEpoch,
+    },
+    /// Fixed fresh target APK, without replacement or downgrade flags.
+    InstallRetainedMeituan {
+        /// Same actual working generation.
         expected_epoch: application_probe::RuntimeEpoch,
     },
     /// Start the cell if it is not already running.
@@ -555,7 +567,9 @@ impl Daemon {
             ControlRequest::InstallMultiple { user, lengths } => {
                 self.install_multiple(peer_uid, user, &lengths, file)
             }
-            ControlRequest::InstallCurrentMultiple { .. } => Err(ControlError::Invalid(
+            ControlRequest::InstallCurrentMultiple { .. }
+            | ControlRequest::RemoveRetainedMeituan { .. }
+            | ControlRequest::InstallRetainedMeituan { .. } => Err(ControlError::Invalid(
                 "current-epoch installation requires the selected early shared-kernel owner".into(),
             )),
             ControlRequest::Start { spec } => self.start(peer_uid, &spec),
@@ -1380,6 +1394,7 @@ fn receive_request(
             request,
             ControlRequest::Install { .. } | ControlRequest::InstallMultiple { .. }
                 | ControlRequest::InstallCurrentMultiple { .. }
+                | ControlRequest::RemoveRetainedMeituan { .. } | ControlRequest::InstallRetainedMeituan { .. }
         )
     {
         return Err(ControlError::Invalid(

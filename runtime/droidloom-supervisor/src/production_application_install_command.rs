@@ -4,6 +4,10 @@ use super::*;
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(tag = "install", deny_unknown_fields)]
 pub(crate) enum InstallCommand {
+    /// Fixed ordinary removal on an independently retained working copy.
+    RemoveRetainedMeituan {},
+    /// New installation, without replacement or downgrade flags.
+    CreateRetainedMeituan {},
     Create {
         user: u32,
         bytes: u64,
@@ -24,6 +28,7 @@ pub(crate) const MAX_INSTALL_BYTES: u64 = 2 * 1024 * 1024 * 1024;
 impl InstallCommand {
     pub(super) fn validate(&self) -> Result<()> {
         match *self {
+            Self::RemoveRetainedMeituan {} | Self::CreateRetainedMeituan {} => Ok(()),
             Self::Create { user, bytes } => require(
                 user <= 21_474 && (4..=MAX_INSTALL_BYTES).contains(&bytes),
                 "install user or total size is outside the fixed session",
@@ -52,6 +57,8 @@ impl InstallCommand {
         self.validate()?;
         let mut parts = vec!["/system/bin/cmd".to_string(), "package".to_string()];
         parts.extend(match *self {
+            Self::RemoveRetainedMeituan {} => vec!["uninstall".into(),"--user".into(),"0".into(),crate::working_meituan_contract::PACKAGE.into()],
+            Self::CreateRetainedMeituan {} => vec!["install-create".into(),"--user".into(),"0".into(),"-S".into(),crate::working_meituan_contract::BYTES.to_string()],
             Self::Create { user, bytes } => vec![
                 "install-create".into(),
                 "-r".into(),
@@ -86,6 +93,21 @@ fn valid_session(value: u32) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn fixed_retained_meituan_commands_cannot_choose_package_user_or_keep_old_data() {
+        let parts=|cmd:InstallCommand|cmd.arguments().unwrap().iter().map(|v|v.to_str().unwrap().to_owned()).collect::<Vec<_>>();
+        assert_eq!(parts(InstallCommand::RemoveRetainedMeituan {}),
+            ["/system/bin/cmd","package","uninstall","--user","0",crate::working_meituan_contract::PACKAGE]);
+        let fresh=parts(InstallCommand::CreateRetainedMeituan {});
+        assert_eq!(fresh,["/system/bin/cmd","package","install-create","--user","0","-S","64632545"]);
+        for flag in ["-r","-k","-d","--allow-downgrade"] {assert!(!fresh.iter().any(|s|s==flag));}
+        for raw in [
+            r#"{"install":"RemoveRetainedMeituan","package":"org.example.other"}"#,
+            r#"{"install":"RemoveRetainedMeituan","user":10}"#,
+            r#"{"install":"RemoveRetainedMeituan","keep_data":true}"#,
+            r#"{"install":"CreateRetainedMeituan","bytes":1}"#,
+        ] {assert!(serde_json::from_str::<InstallCommand>(raw).is_err(),"{raw}");}
+    }
     #[test]
     fn installation_commands_preserve_one_finite_atomic_session() {
         let write = InstallCommand::Write {

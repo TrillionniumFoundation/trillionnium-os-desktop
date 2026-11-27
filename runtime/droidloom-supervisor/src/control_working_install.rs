@@ -523,3 +523,122 @@ mod readback_tests {
         assert!(stage.guard().is_err());
     }
 }
+
+/// Replace only the compiled Meituan package on the independently proven working
+/// copy. The original data and metadata remain open, locked and fully hashed by
+/// the separate normal read-only helper through every PM effect and readback.
+pub fn reinstall_retained_meituan(
+    owner:&WorkingQualificationOwner,inspector:&mut NativeApplicationInspector,
+    main:&MainCustodyObservation,anchor:&super::ActualApplicationObservation,
+    prior:Option<&super::ActualApplicationObservation>,
+)->Result<Value,ControlError>{
+    use crate::{native_working_contract::retained_data as retention,working_meituan_contract as fixed};
+    owner.compare_preparation_main(main).map_err(reject)?;
+    if anchor.facts().package!="com.android.calendar"||anchor.facts().epoch!=main.facts().epoch{
+        return Err(reject("retained installation requires the actual GSI inventory anchor"));
+    }
+    if let Some(old)=prior{
+        let f=old.facts();
+        if f.package!=fixed::PACKAGE||f.user!=0||f.uid==0||f.uid/100_000!=0||f.epoch!=main.facts().epoch
+            ||f.apks.is_empty()||f.apks.iter().any(|a|!Path::new(&a.path).starts_with("/data/app")){
+            return Err(reject("fixed Meituan replacement requires an actual third-party working PM token"));
+        }
+    }
+    let lease=owner.retain_meituan_originals(main).map_err(reject)?;
+    let end=lease.deadline();
+    let inputs=[WorkingApkPin{bytes:fixed::BYTES,sha256:fixed::SHA256.into(),manifest_split:None}];
+    let outcome=(||{
+        lease.guard(main).map_err(reject)?;
+        let expected=pins(&inputs)?;
+        let stage=source_access(||HeldStage::capture(&inputs))?;
+        let files=stage.inputs.iter().map(|i|&i.file).collect::<Vec<_>>();
+        let (payload,lengths)=apk_payload::prepare_pinned_until(&files,&expected,end)?;
+        if lengths!=[fixed::BYTES]{return Err(reject("fixed retained APK segment differs"));}
+        source_access(||stage.guard())?;lease.guard(main).map_err(reject)?;
+        let inventory=inspector.observe_user_zero_package_inventory_until(main,anchor,end)?;
+        lease.guard(main).map_err(reject)?;
+        let old=inventory.facts().records.iter().find(|r|r.package==fixed::PACKAGE);
+        if old.map(|r|r.uid)!=prior.map(|p|p.facts().uid){
+            return Err(reject("fixed package membership/UID changed before retained first effect"));
+        }
+        let final_checks=retention::RETAINED_PAIR_HASH_SECONDS+70+retention::RETAINED_HELPER_RETIRE_SECONDS;
+        let required=retention::RETAINED_HELPER_UNINSTALL_SECONDS+retention::RETAINED_HELPER_INSTALL_SECONDS
+            +70+250+final_checks;
+        if end.saturating_duration_since(Instant::now())<Duration::from_secs(required){
+            return Err(reject("retained original window cannot fit removal, fresh installation and all final observations"));
+        }
+        let mut removal=None;
+        if old.is_some(){
+            lease.guard(main).map_err(reject)?;
+            inspector.require_main_local(main,end)?;
+            let response=inspector.request_fixed_file_until(
+                &ControlRequest::RemoveRetainedMeituan{expected_epoch:main.facts().epoch.clone()},
+                Some(lease.pidfd()),Some(end));
+            let bookend=(||{lease.guard(main).map_err(reject)?;inspector.require_main_local(main,end)})();
+            // Even an unknown reply permits observation only; no removal or
+            // fresh-install retry follows that uncertain effect.
+            let observed=inspector.observe_user_zero_package_inventory_until(main,anchor,end);
+            bookend?;
+            let observed=observed?;
+            eprintln!("droidloom-retained-meituan-removal-readback {}",
+                json!({"epoch":main.facts().epoch,"present":observed.facts().records.iter().any(|r|r.package==fixed::PACKAGE)}));
+            let response=response?;
+            let value:Value=serde_json::from_str(response.diagnostics.as_deref()
+                .ok_or_else(||reject("fixed removal has no actual command receipt; observe before retry"))?)?;
+            if !response.ok||response.state!=CellState::Running||response.host_pid!=Some(main.facts().epoch.cell_host_pid)
+                ||value["schema"]!="droidloom.retained-meituan-standard-removal.v1"
+                ||value["package"]!=fixed::PACKAGE||value["user"]!=0
+                ||value["epoch"]!=serde_json::to_value(&main.facts().epoch)?
+                ||response.launch.is_some()||response.applications.is_some()||response.application_icon.is_some()
+                ||response.inspection.is_some()||response.image_custody.is_some()||response.runtime_vintf.is_some()
+                ||value["actual_helper_pid"]!=lease.helper_pid()
+                ||value["standard_removal_confirmed"]!=true
+                ||observed.facts().records.iter().any(|r|r.package==fixed::PACKAGE){
+                return Err(reject("fixed removal is not confirmed absent on this working Main; no automatic retry"));
+            }
+            removal=Some(value);
+        }
+        lease.guard(main).map_err(reject)?;source_access(||stage.guard())?;
+        inspector.require_main_local(main,end)?;
+        if end.saturating_duration_since(Instant::now())<
+            Duration::from_secs(retention::RETAINED_HELPER_INSTALL_SECONDS+250+final_checks){
+            return Err(reject("retained window cannot fit a fresh session and final full original/Main readback"));
+        }
+        let response=inspector.request_fixed_file_until(
+            &ControlRequest::InstallRetainedMeituan{expected_epoch:main.facts().epoch.clone()},
+            Some(&payload),Some(end));
+        let bookend=(||{source_access(||stage.guard())?;lease.guard(main).map_err(reject)?;inspector.require_main_local(main,end)})();
+        bookend?;
+        // Obtain a real PM observation even if commit acknowledgement was lost.
+        // It records outcome only; the original request is never repeated here.
+        let actual=inspector.inspect_observed_until(fixed::PACKAGE,0,end);
+        match &actual {
+            Ok(value)=>eprintln!("droidloom-retained-meituan-commit-readback {}",json!({
+                "actual_package":value.facts(),"retry_performed":false})),
+            Err(error)=>eprintln!("droidloom-retained-meituan-commit-readback-unavailable {error}"),
+        }
+        lease.guard(main).map_err(reject)?;
+        let response=response?;
+        let session=confirmed(response,&main.facts().epoch,&inputs)?;
+        let actual=actual?;
+        let f=actual.facts();
+        if f.package!=fixed::PACKAGE||f.user!=0||f.epoch!=main.facts().epoch||f.uid==0||f.uid/100_000!=0
+            ||f.version_code!=fixed::VERSION_CODE||f.apks.len()!=1||f.apks[0].name!="base.apk"
+            ||f.apks[0].bytes!=fixed::BYTES||f.apks[0].sha256!=fixed::SHA256
+            ||!Path::new(&f.apks[0].path).starts_with("/data/app"){
+            return Err(reject("fresh Meituan actual installed package/version/full original APK differs"));
+        }
+        Ok(json!({"schema":"droidloom.retained-meituan-mechanical-replacement.v1",
+            "package":fixed::PACKAGE,"initial_uid":prior.map(|p|p.facts().uid),"actual_after":f,
+            "standard_removal":removal,"fresh_atomic_session":session,
+            "installed_target_identity_verified":true,"original_data_migration_accepted":false,
+            "account_login_accepted":false,"application_accepted":false,"production_ready":false}))
+    })();
+    // Keep the original OFDs through failure readbacks as well. Finishing never
+    // repeats a PM operation or promotes mechanical work to business acceptance.
+    let retained=lease.finish(main).map_err(reject)?;
+    let mut report=outcome?;
+    report["original_retention"]=retained;
+    owner.compare_preparation_main(main).map_err(reject)?;
+    Ok(report)
+}

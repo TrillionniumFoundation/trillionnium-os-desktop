@@ -758,6 +758,7 @@ mod tests {
             maintenance: pin.clone(),
             installation: pin.clone(),
             cell: pin.clone(),
+            retained_originals: pin.clone(),
             selection: pin,
         }
     }

@@ -43,7 +43,7 @@ use install_command::InstallCommand;
 mod install;
 #[path = "production_application_install_input.rs"]
 mod install_input;
-pub(crate) use install::install_early;
+pub(crate) use install::{install_early,install_retained_meituan_early,remove_retained_meituan_early};
 
 #[path = "production_application_catalog.rs"]
 mod catalog;
