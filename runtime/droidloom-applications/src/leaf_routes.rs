@@ -25,7 +25,7 @@ use super::runtime_identity::{IdentityObservation, VerifiedMaterialBatch};
 const QUALIFICATION: &str = "/var/lib/droidloom/qualification/pocket4";
 const SELECTION_PATH: &str = "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2/selection/selection-14.json";
 const SELECTION_BYTES: u64 = 4769;
-const SELECTION_SHA: &str = "b84572b1ee5929b615b95c613aae3f0529702d411e5b9d04fa4620d239fad35a";
+const SELECTION_SHA: &str = "38489a64787e94373d4c9d8f64aa58385f3d67a91e44bb956f4344161fea5bf6";
 const SOURCE_CATALOG: &str = include_str!("leaf_sources.json");
 
 pub(super) fn compiled_release_sources() -> (FilePin, &'static str) {
@@ -760,45 +760,153 @@ fn case_document(plan: &LeafPlan, request: &Value) -> Result<(Option<FilePin>, V
     Ok((Some(pin), case))
 }
 
-// Original leaf protocol comparisons only; no JSON field grants Main authority.
-fn legacy_main_documents(
+// These documents compare the current normal factory's opaque facts. They
+// cannot construct Main, a package observation, a data handle, or a business gate.
+const NATIVE_BASELINE_SCHEMA: &str = "droidloom.native-leaf-business-baseline.v1";
+const NATIVE_QUALIFICATION_SCHEMA: &str = "droidloom.native-leaf-business-qualification.v1";
+const NORMAL_SOURCE_RECIPE_BYTES: u64 = 805315;
+const NORMAL_SOURCE_RECIPE_SHA: &str =
+    "d8ab352dbe373117316bb29ee53756e8161229310a38f08b7085d054578c196c";
+
+fn canonical_value(value: &Value) -> Value {
+    match value {
+        Value::Object(map) => {
+            let ordered: std::collections::BTreeMap<_, _> =
+                map.iter().map(|(key, value)| (key, canonical_value(value))).collect();
+            serde_json::to_value(ordered).expect("JSON values are serializable")
+        }
+        Value::Array(values) => Value::Array(values.iter().map(canonical_value).collect()),
+        _ => value.clone(),
+    }
+}
+
+fn canonical_sha(value: &Value) -> Result<String, String> {
+    serde_json::to_vec(&canonical_value(value))
+        .map(|raw| hex::encode(Sha256::digest(raw)))
+        .map_err(|error| error.to_string())
+}
+
+// This is deliberately a private comparison helper, including in its tests.
+// Only main_binding below supplies core from a live, held normal factory.
+fn compare_native_main_documents(
     case: &Value,
     actual: &ApplicationInspection,
-) -> Result<(FilePin, FilePin), String> {
-    let baseline_ref = ref_field(case, "baseline")?;
-    let qualification_ref = ref_field(case, "qualification")?;
-    let baseline = value(&baseline_ref)?;
-    let qualification = value(&qualification_ref)?;
+    core: &Value,
+    baseline_ref: &FilePin,
+    baseline: &Value,
+    qualification: &Value,
+) -> Result<(), String> {
+    exact_keys(baseline, &[
+        "schema", "native_owner", "runtime_observation", "framework_epoch",
+        "observation", "classpath", "artifacts", "data_continuity", "sampling",
+        "observation_fds", "captured_unix_ns", "comparison_only",
+        "account_contents_read", "whole_app_business_accepted", "production_ready",
+    ])?;
+    require(
+        baseline["schema"] == NATIVE_BASELINE_SCHEMA
+            && core["schema"] == "droidloom.native-leaf-baseline.v1"
+            && core["application"] == serde_json::to_value(actual).map_err(|e| e.to_string())?
+            && core["main"]["epoch"] == serde_json::to_value(&actual.epoch).map_err(|e| e.to_string())?
+            && baseline["native_owner"] == *core
+            && core["comparison_only"] == true
+            && core["account_contents_read"] == false
+            && core["business_acceptance_evaluated"] == false
+            && baseline["comparison_only"] == true
+            && baseline["account_contents_read"] == false
+            && baseline["whole_app_business_accepted"] == false
+            && baseline["production_ready"] == false,
+        "native leaf baseline differs from the actual Main/package/target-only comparison",
+    )?;
+    let runtime = &baseline["runtime_observation"];
     let epoch = &baseline["framework_epoch"];
     let binding = &epoch["binding"];
     require(
-        baseline["schema"] == "pocket4-final-business-baseline-v2"
+        runtime["schema"] == "droidloom.native-leaf-runtime-comparison.v1"
+            && runtime["native_owner"] == *core
+            && runtime["normal_host_release"] == core["main"]["normal_host_release"]
+            && runtime["main_epoch"] == *epoch
+            && runtime["saved_document_can_create_authority"] == false
+            && runtime["business_acceptance_evaluated"] == false
+            && ["observation", "classpath", "artifacts", "data_continuity"]
+                .iter().all(|key| runtime[key] == baseline[key])
             && epoch["schema"] == "pocket4-framework-epoch-v1"
-            && binding["boot_id"].as_str() == Some(actual.epoch.boot_id.as_str())
-            && binding["processes"]["init"]["host_pid"].as_u64()
-                == Some(u64::from(actual.epoch.cell_host_pid))
-            && binding["processes"]["system_server"]["host_pid"].as_u64()
-                == Some(u64::from(actual.epoch.framework_host_pid))
-            && binding["processes"]["system_server"]["start_ticks"].as_u64()
-                == Some(actual.epoch.framework_start_ticks),
-        "leaf baseline and current daemon observation do not identify the same physical Main",
+            && binding["boot_id"] == core["main"]["epoch"]["boot_id"]
+            && epoch["sha256"].as_str() == Some(canonical_sha(binding)?.as_str()),
+        "native leaf runtime components or complete framework epoch binding differ",
     )?;
+    for (role, field) in [("init", "init"), ("zygote64", "zygote"), ("system_server", "framework")] {
+        require(
+            binding["processes"][role]["host_pid"] == core["main"][field]["host_pid"]
+                && binding["processes"][role]["start_ticks"] == core["main"][field]["start_ticks"],
+            "native leaf framework process differs from the actual held Main",
+        )?;
+    }
+    let rows = core["data"]["directories"].as_array()
+        .ok_or("native leaf actual target directory array absent")?;
+    require(rows.len() == 4, "native leaf actual target directory set differs")?;
+    let mut directories = serde_json::Map::new();
+    for (row, prefix) in rows[2..].iter().zip(["user/0", "user_de/0"]) {
+        let name = format!("{prefix}/{}", actual.package);
+        require(row["path"].as_str() == Some(format!("/data/{name}").as_str()),
+            "native leaf target directory does not belong to this package")?;
+        directories.insert(name, json!({
+            "device":row["device"], "inode":row["inode"], "mount_id":row["mount_id"],
+            "mode":row["mode"], "uid":row["host_uid"], "gid":row["host_gid"],
+        }));
+    }
+    let mut package_uids = serde_json::Map::new();
+    package_uids.insert(actual.package.clone(), json!(actual.uid));
     require(
-        qualification["schema"] == "pocket4-final-business-qualification-v2"
-            && ref_field(&qualification, "baseline")? == baseline_ref
-            && qualification["main_identity_qualified"] == true
-            && qualification["predeployment_data_directory_identity_preserved"] == true
+        baseline["data_continuity"] == json!({
+            "schema":"droidloom.native-leaf-target-working-data.v1",
+            "scope":"actual_inspected_user_0_package_only",
+            "package_uids":package_uids, "directories":directories,
+            "working_data_root":core["data"]["data_root"],
+            "original_copy_origin":core["main"]["persistent_data"]["original_copy_origin"],
+            "original_directory_identity_compared":false, "account_contents_read":false,
+        }),
+        "native leaf document broadened or changed actual target data metadata",
+    )?;
+    let sampling = &baseline["sampling"];
+    let span = sampling["finished_monotonic_ns"].as_u64().and_then(|end| {
+        sampling["started_monotonic_ns"].as_u64().and_then(|start| end.checked_sub(start))
+    });
+    let closed = &baseline["observation_fds"];
+    require(
+        sampling["double_observation_pairs"] == 3 && sampling["pairs_equal"] == true
+            && span.is_some_and(|n| (10_000_000_000..=120_000_000_000).contains(&n))
+            && closed["acquired"].as_u64().is_some_and(|n| n > 0)
+            && closed["acquired"] == closed["closed"]
+            && closed["acquired"] == closed["close_attempts"]
+            && closed["remaining"] == 0 && closed["errors"] == json!([]),
+        "native leaf comparison lacks complete sampling or descriptor retirement",
+    )?;
+    exact_keys(qualification, &[
+        "schema", "baseline", "normal_source_recipe", "core_sha256", "main_epoch_sha256",
+        "actual_main_and_target_metadata_observed", "working_copy_lineage_bound",
+        "working_target_directory_identity_preserved", "fixed_main_readonly_entry_observed",
+        "comparison_only", "account_contents_read", "business_actions_admitted",
+        "whole_app_business_accepted", "production_ready", "observation_fds",
+    ])?;
+    require(
+        qualification["schema"] == NATIVE_QUALIFICATION_SCHEMA
+            && ref_field(qualification, "baseline")? == *baseline_ref
+            && qualification["normal_source_recipe"] == json!({
+                "bytes":NORMAL_SOURCE_RECIPE_BYTES, "sha256":NORMAL_SOURCE_RECIPE_SHA,
+            })
+            && qualification["core_sha256"].as_str() == Some(canonical_sha(core)?.as_str())
+            && qualification["main_epoch_sha256"] == epoch["sha256"]
+            && qualification["observation_fds"] == *closed
+            && qualification["actual_main_and_target_metadata_observed"] == true
+            && qualification["working_copy_lineage_bound"] == true
+            && qualification["working_target_directory_identity_preserved"] == true
+            && qualification["fixed_main_readonly_entry_observed"] == true
+            && qualification["comparison_only"] == true
+            && qualification["account_contents_read"] == false
             && qualification["business_actions_admitted"] == false
             && qualification["whole_app_business_accepted"] == false
-            && qualification["main_epoch_sha256"] == epoch["sha256"]
-            && qualification["observation_fds"] == baseline["observation_fds"],
-        "leaf needs its actual identity/data-preservation qualification for the same baseline",
-    )?;
-    require(
-        epoch["sha256"]
-            .as_str()
-            .is_some_and(crate::release::valid_sha),
-        "leaf baseline has no valid complete framework epoch digest",
+            && qualification["production_ready"] == false,
+        "native leaf qualification differs in source, actual comparison, or scope",
     )?;
     if let Some(profile) = case.get("target_profile") {
         require(
@@ -807,32 +915,36 @@ fn legacy_main_documents(
                 && profile["version_code"].as_u64() == Some(actual.version_code),
             "leaf target profile differs from current PM identity",
         )?;
-        let declared: BTreeSet<_> = profile["apks"]
-            .as_array()
-            .ok_or("leaf target APK set missing")?
-            .iter()
-            .map(|x| (x["bytes"].as_u64(), x["sha256"].as_str()))
-            .collect();
-        let installed: BTreeSet<_> = actual
-            .apks
-            .iter()
-            .map(|x| (Some(x.bytes), Some(x.sha256.as_str())))
-            .collect();
-        require(
-            declared == installed && declared.len() == actual.apks.len(),
-            "leaf target APK bytes differ from the current complete selected official set",
-        )?;
+        let declared: BTreeSet<_> = profile["apks"].as_array()
+            .ok_or("leaf target APK set missing")?.iter()
+            .map(|row| (row["bytes"].as_u64(), row["sha256"].as_str())).collect();
+        let installed: BTreeSet<_> = actual.apks.iter()
+            .map(|row| (Some(row.bytes), Some(row.sha256.as_str()))).collect();
+        require(declared == installed && declared.len() == actual.apks.len(),
+            "leaf target APK bytes differ from the current complete selected official set")?;
     }
-    Ok((baseline_ref, qualification_ref))
+    Ok(())
 }
 
 fn main_binding(
     case: &Value,
     actual: &ApplicationInspection,
     main: &HeldMainCustody,
+    held: &NativeLeafBaselineObservation<'_>,
 ) -> Result<(FilePin, FilePin), String> {
     main.require_application(actual)?;
-    legacy_main_documents(case, actual)
+    require(held.application() == actual, "native leaf context belongs to another package")?;
+    let baseline_ref = ref_field(case, "baseline")?;
+    let qualification_ref = ref_field(case, "qualification")?;
+    require((1..=16 * 1024 * 1024).contains(&baseline_ref.bytes)
+        && (1..=262144).contains(&qualification_ref.bytes),
+        "native leaf baseline or qualification exceeds the normal producer's bound")?;
+    let baseline = value(&baseline_ref)?;
+    let qualification = value(&qualification_ref)?;
+    held.compare(&baseline["native_owner"]).map_err(|error| error.to_string())?;
+    let core = serde_json::to_value(held.facts()).map_err(|error| error.to_string())?;
+    compare_native_main_documents(case, actual, &core, &baseline_ref, &baseline, &qualification)?;
+    Ok((baseline_ref, qualification_ref))
 }
 
 fn output_path(plan: &LeafPlan, request: &Value, case: &Value) -> Result<PathBuf, String> {
@@ -1497,7 +1609,7 @@ fn execute_observed(
     require(baseline.deadline() == end && baseline.application() == actual,
         "leaf execution context differs from the original identity or deadline")?;
     baseline.verify_local(inspector, end).map_err(|error| error.to_string())?;
-    let (baseline_ref, qualification) = main_binding(&case, actual, main)?;
+    let (baseline_ref, qualification) = main_binding(&case, actual, main, baseline)?;
     let expected_result = output_path(plan, &request, &case)?;
     let cmd = command(plan, source)?;
     // The trusted selected entry still validates the complete transitive source
@@ -2229,60 +2341,150 @@ mod tests {
         }
     }
 
-    #[test]
-    fn legacy_main_documents_only_compare_epoch_and_current_apk_without_minting_authority() {
+    fn native_document_model() -> (ApplicationInspection, Value, Value, FilePin, Value, Value) {
         use droidloom_supervisor::control::application_probe::{InstalledApk, RuntimeEpoch};
-        let dir = tempfile::tempdir().unwrap();
-        let mut observed = ApplicationInspection {
-            package: "com.android.contacts".into(),
-            user: 0,
-            uid: 10055,
-            version_code: 2,
-            epoch: RuntimeEpoch {
-                boot_id: "97d9600f-e081-465c-9e6e-62651e09806b".into(),
-                cell_host_pid: 10,
-                framework_host_pid: 20,
-                framework_start_ticks: 30,
-            },
-            apks: vec![InstalledApk {
-                name: "base.apk".into(),
-                path: "/system/app/Contacts.apk".into(),
-                bytes: 12,
-                sha256: "a".repeat(64),
-            }],
+        // Parser/comparison fixtures only: no opaque Main/PM/data token is minted.
+        let actual = ApplicationInspection {
+            package:"com.android.contacts".into(), user:0, uid:10055, version_code:2,
+            epoch:RuntimeEpoch { boot_id:"97d9600f-e081-465c-9e6e-62651e09806b".into(),
+                cell_host_pid:10, framework_host_pid:20, framework_start_ticks:30 },
+            apks:vec![InstalledApk { name:"base.apk".into(), path:"/system/app/Contacts.apk".into(),
+                bytes:12, sha256:"a".repeat(64) }],
         };
-        let baseline = saved(
-            dir.path(),
-            "baseline.json",
-            &json!({
-                "schema":"pocket4-final-business-baseline-v2", "observation_fds":{"closed":true},
-                "framework_epoch":{"schema":"pocket4-framework-epoch-v1","sha256":"b".repeat(64),
-                    "binding":{"boot_id":observed.epoch.boot_id,"processes":{
-                        "init":{"host_pid":10},"system_server":{"host_pid":20,"start_ticks":30}}}}
-            }),
-        );
-        let qualification = saved(
-            dir.path(),
-            "qualification.json",
-            &json!({
-                "schema":"pocket4-final-business-qualification-v2","baseline":baseline,
-                "main_identity_qualified":true,"predeployment_data_directory_identity_preserved":true,
-                "business_actions_admitted":false,"whole_app_business_accepted":false,
-                "main_epoch_sha256":"b".repeat(64),"observation_fds":{"closed":true}
-            }),
-        );
-        let case = json!({"baseline":baseline,"qualification":qualification,
-            "target_profile":{"package":observed.package,"uid":observed.uid,"version_code":2,
+        let process = |pid:u32, start:u64| json!({"host_pid":pid,"start_ticks":start});
+        let init = process(10,11); let zygote = process(15,16); let framework = process(20,30);
+        let main = json!({
+            "epoch":actual.epoch, "init":init, "zygote":zygote, "framework":framework,
+            "persistent_data":{"original_copy_origin":{"comparison_fixture_only":true}},
+            "normal_host_release":{"comparison_fixture_only":true},
+        });
+        let directory = |path:&str, inode:u64| json!({
+            "path":path,"device":9,"inode":inode,"mount_id":71,"mode":16832,
+            "host_uid":110055,"host_gid":110055,
+        });
+        let data = json!({"data_root":{"device":9,"inode":2},
+            "directories":[directory("/data/user/0",90),directory("/data/user_de/0",91),
+                directory("/data/user/0/com.android.contacts",100),
+                directory("/data/user_de/0/com.android.contacts",101)]});
+        let mut core = json!({"schema":"droidloom.native-leaf-baseline.v1",
+            "application":actual,"main":main,"data":data,"peer":{"comparison_fixture_only":true}});
+        core["comparison_only"] = json!(true);
+        core["account_contents_read"] = json!(false);
+        core["business_acceptance_evaluated"] = json!(false);
+        let binding = json!({"boot_id":actual.epoch.boot_id,
+            "processes":{"init":init,"zygote64":zygote,"system_server":framework}});
+        let epoch = json!({"schema":"pocket4-framework-epoch-v1",
+            "sha256":canonical_sha(&binding).unwrap(),"binding":binding});
+        let mut directories = serde_json::Map::new();
+        for (name,inode) in [("user/0/com.android.contacts",100),("user_de/0/com.android.contacts",101)] {
+            directories.insert(name.into(), json!({
+                "device":9,"inode":inode,"mount_id":71,"mode":16832,"uid":110055,"gid":110055}));
+        }
+        let continuity = json!({"schema":"droidloom.native-leaf-target-working-data.v1",
+            "scope":"actual_inspected_user_0_package_only",
+            "package_uids":{"com.android.contacts":10055},"directories":directories,
+            "working_data_root":core["data"]["data_root"],
+            "original_copy_origin":core["main"]["persistent_data"]["original_copy_origin"],
+            "original_directory_identity_compared":false,"account_contents_read":false});
+        let observation = json!({"fixture":1});
+        let classpath = json!({"fixture":2});
+        let artifacts = json!({"fixture":3});
+        let mut runtime = json!({"schema":"droidloom.native-leaf-runtime-comparison.v1",
+            "native_owner":core,"normal_host_release":core["main"]["normal_host_release"],
+            "main_epoch":epoch,"observation":observation,"classpath":classpath,"artifacts":artifacts});
+        runtime["data_continuity"] = continuity.clone();
+        runtime["saved_document_can_create_authority"] = json!(false);
+        runtime["business_acceptance_evaluated"] = json!(false);
+        let mut baseline = json!({"schema":NATIVE_BASELINE_SCHEMA,"native_owner":core,
+            "runtime_observation":runtime,"framework_epoch":epoch,"observation":observation,
+            "classpath":classpath,"artifacts":artifacts,"data_continuity":continuity});
+        baseline["sampling"] = json!({"double_observation_pairs":3,"pairs_equal":true,
+            "started_monotonic_ns":10,"finished_monotonic_ns":10_000_000_010_u64});
+        baseline["observation_fds"] = json!({"acquired":12,"closed":12,"close_attempts":12,
+            "remaining":0,"errors":[]});
+        baseline["captured_unix_ns"] = json!(42);
+        baseline["comparison_only"] = json!(true);
+        for key in ["account_contents_read","whole_app_business_accepted","production_ready"] {
+            baseline[key] = json!(false);
+        }
+        let baseline_ref = pin("normal-baseline");
+        let mut qualification = json!({"schema":NATIVE_QUALIFICATION_SCHEMA,"baseline":baseline_ref,
+            "normal_source_recipe":{"bytes":NORMAL_SOURCE_RECIPE_BYTES,"sha256":NORMAL_SOURCE_RECIPE_SHA},
+            "core_sha256":canonical_sha(&core).unwrap(),"main_epoch_sha256":epoch["sha256"],
+            "observation_fds":baseline["observation_fds"]});
+        for key in ["actual_main_and_target_metadata_observed","working_copy_lineage_bound",
+            "working_target_directory_identity_preserved","fixed_main_readonly_entry_observed",
+            "comparison_only"] { qualification[key] = json!(true); }
+        for key in ["account_contents_read","business_actions_admitted","whole_app_business_accepted",
+            "production_ready"] { qualification[key] = json!(false); }
+        let case = json!({"baseline":baseline_ref,"qualification":pin("normal-qualification"),
+            "target_profile":{"package":actual.package,"uid":actual.uid,"version_code":2,
                 "apks":[{"bytes":12,"sha256":"a".repeat(64)}]}});
-        assert!(legacy_main_documents(&case, &observed).is_ok());
-        observed.epoch.framework_start_ticks = 31;
-        assert!(legacy_main_documents(&case, &observed).is_err());
-        observed.epoch.framework_start_ticks = 30;
-        observed.apks[0].sha256 = "c".repeat(64);
-        assert!(legacy_main_documents(&case, &observed).is_err());
-        observed.apks[0].sha256 = "a".repeat(64);
-        fs::write(&qualification.path, b"{}").unwrap();
-        assert!(legacy_main_documents(&case, &observed).is_err());
+        (actual,core,case,baseline_ref,baseline,qualification)
+    }
+
+    #[test]
+    fn native_main_documents_bind_complete_actual_identity_epoch_and_source() {
+        let (actual,core,case,reference,baseline,qualification) = native_document_model();
+        let check = |a:&ApplicationInspection,c:&Value,b:&Value,q:&Value|
+            compare_native_main_documents(&case,a,c,&reference,b,q);
+        check(&actual,&core,&baseline,&qualification).unwrap();
+        let mut wrong = actual.clone(); wrong.uid += 1;
+        assert!(check(&wrong,&core,&baseline,&qualification).is_err());
+        let mut wrong = actual.clone(); wrong.apks[0].sha256 = "b".repeat(64);
+        assert!(check(&wrong,&core,&baseline,&qualification).is_err());
+        let mut wrong = core.clone(); wrong["main"]["init"]["start_ticks"] = json!(12);
+        assert!(check(&actual,&wrong,&baseline,&qualification).is_err());
+        let mut wrong = qualification.clone(); wrong["normal_source_recipe"]["sha256"] = json!("b".repeat(64));
+        assert!(check(&actual,&core,&baseline,&wrong).is_err());
+        let mut wrong = qualification.clone(); wrong["core_sha256"] = json!("b".repeat(64));
+        assert!(check(&actual,&core,&baseline,&wrong).is_err());
+        let mut wrong = baseline.clone(); wrong["framework_epoch"]["sha256"] = json!("b".repeat(64));
+        assert!(check(&actual,&core,&wrong,&qualification).is_err());
+        let mut wrong = qualification.clone(); wrong["baseline"] = json!(pin("another-baseline"));
+        assert!(check(&actual,&core,&baseline,&wrong).is_err());
+    }
+
+    #[test]
+    fn native_main_documents_reject_legacy_credit_and_broadened_data() {
+        let (actual,core,case,reference,baseline,qualification) = native_document_model();
+        let check = |b:&Value,q:&Value|
+            compare_native_main_documents(&case,&actual,&core,&reference,b,q);
+        let mut wrong = baseline.clone(); wrong["schema"] = json!("pocket4-final-business-baseline-v2");
+        assert!(check(&wrong,&qualification).is_err());
+        let mut wrong = qualification.clone(); wrong["main_identity_qualified"] = json!(true);
+        assert!(check(&baseline,&wrong).is_err());
+        for key in ["account_contents_read","whole_app_business_accepted","production_ready"] {
+            let mut wrong = baseline.clone(); wrong[key] = json!(true);
+            assert!(check(&wrong,&qualification).is_err());
+        }
+        let mut wrong = qualification.clone(); wrong["business_actions_admitted"] = json!(true);
+        assert!(check(&baseline,&wrong).is_err());
+        let mut wrong = baseline.clone();
+        wrong["data_continuity"]["package_uids"]["com.unobserved.app"] = json!(10056);
+        wrong["runtime_observation"]["data_continuity"] = wrong["data_continuity"].clone();
+        assert!(check(&wrong,&qualification).is_err());
+        let mut wrong = baseline.clone();
+        wrong["data_continuity"]["original_directory_identity_compared"] = json!(true);
+        wrong["runtime_observation"]["data_continuity"] = wrong["data_continuity"].clone();
+        assert!(check(&wrong,&qualification).is_err());
+    }
+
+    #[test]
+    fn native_main_documents_require_sample_and_descriptor_retirement() {
+        let (actual,core,case,reference,baseline,qualification) = native_document_model();
+        let check = |b:&Value,q:&Value|
+            compare_native_main_documents(&case,&actual,&core,&reference,b,q);
+        for key in ["acquired","closed","close_attempts"] {
+            let mut wrong = baseline.clone(); wrong["observation_fds"][key] = json!(11);
+            let mut q = qualification.clone(); q["observation_fds"] = wrong["observation_fds"].clone();
+            assert!(check(&wrong,&q).is_err());
+        }
+        let mut wrong = baseline.clone(); wrong["observation_fds"]["remaining"] = json!(1);
+        let mut q = qualification.clone(); q["observation_fds"] = wrong["observation_fds"].clone();
+        assert!(check(&wrong,&q).is_err());
+        let mut wrong = baseline.clone(); wrong["sampling"]["finished_monotonic_ns"] = json!(11);
+        assert!(check(&wrong,&qualification).is_err());
     }
 
     #[test]

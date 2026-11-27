@@ -33,7 +33,7 @@ const UNUSED: i64 = i64::MIN;
 // This covers 2100 seconds of factory work/retirement on one original lease;
 // it never extends the lease or claims the outer dispatch/transport budget.
 const PAIR_WINDOW_SECONDS: u64 = 2 * 510 + 3 * 250 + 120 + 3 * 70;
-const SOURCE_NAMES: [&str; 27] = [
+const SOURCE_NAMES: [&str; 29] = [
     "app_common.py", "app_runtime.py", "clock_alarm_flow.py", "clock_alarm_reader.py",
     "clock_api.py", "clock_audio_observe.py", "clock_case.py", "clock_continuation.py",
     "clock_delivery.py", "clock_delivery_trial.py", "clock_entry.py", "clock_expiry_flow.py",
@@ -41,6 +41,7 @@ const SOURCE_NAMES: [&str; 27] = [
     "clock_notify_supervisor.py", "clock_plan.py", "clock_policy.py", "clock_preservation.py",
     "clock_profiles.py", "clock_protection.py", "clock_selectors.py", "clock_session.py",
     "clock_timer_core.py", "clock_transport_base.py", "runtime_dependencies.json",
+    "native_leaf_channel.py", "kernel_native_observation.py",
 ];
 
 
@@ -468,25 +469,52 @@ fn same_pair_inputs(timer: &CaseInput, expiry: &CaseInput) -> Result<(), String>
         "Clock pair must contain two distinct fixed cases under the same held Main baseline")
 }
 
-fn hold_sources(held: &mut Inputs, preparation: &FilePin) -> Result<(), String> {
-    let value = leaf_release::json(&held.read(&preparation.path, Some(preparation), 131_072, true, false)?)?;
+fn clock_source_rows(value: &Value) -> Result<Vec<FilePin>, String> {
     require(value["schema"] == "pocket4-final-clock-original-case-preparation-v1"
         && value["code_entrypoints_complete"] == true
         && value["Android_execution_authorized_by_publication"] == false,
-        "Clock source preparation is not the original non-authorizing source packet")?;
+        "Clock source preparation is not the non-authorizing normal source packet")?;
     let rows = array(&value["files"], "Clock full source list absent")?;
+    require(rows.len() == SOURCE_NAMES.len(),
+        "Clock source closure is not the fixed 29-member graph")?;
     let mut names = BTreeSet::new();
-    require(rows.len() == SOURCE_NAMES.len(), "Clock source closure is not the fixed 27-member graph")?;
+    let mut references = Vec::new();
     for row in rows {
         let reference = pin(row)?;
         let name = reference.path.file_name().and_then(|v| v.to_str())
             .ok_or("Clock source basename absent")?.to_owned();
         require(names.insert(name), "Clock source graph repeats a member")?;
-        held.read(&reference.path, Some(&reference), 1024 * 1024, true, false)?;
+        references.push(reference);
     }
     require(names.iter().map(String::as_str).collect::<BTreeSet<_>>()
         == SOURCE_NAMES.into_iter().collect(),
-        "Clock source graph differs from the fixed original dependency roster")
+        "Clock source graph differs from the fixed normal dependency roster")?;
+    let added: Vec<_> = ["native_leaf_channel.py", "kernel_native_observation.py"].iter()
+        .map(|name| references.iter().find(|row|
+            row.path.file_name().and_then(|v| v.to_str()) == Some(*name))
+            .ok_or("Clock normal comparison source absent"))
+        .collect::<Result<_,_>>()?;
+    for (row, name) in added.iter().zip(["native_leaf_channel.py","kernel_native_observation.py"]) {
+        require(row.path == Path::new(
+            "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2/source/main").join(name),
+            "Clock comparison module is outside its fixed normal source path")?;
+    }
+    require(value["native_kernel_baseline"] == serde_json::json!({
+        "schema":"droidloom.native-leaf-business-baseline.v1",
+        "qualification_schema":"droidloom.native-leaf-business-qualification.v1",
+        "source_members":added,"normal_rust_owner_required":true,
+        "saved_documents_are_comparisons_only":true,"target_only_working_directory_metadata":true,
+        "runtime_qualified":false,"whole_app_business_accepted":false,
+    }), "Clock preparation changed its comparison-only normal Main source contract")?;
+    Ok(references)
+}
+
+fn hold_sources(held: &mut Inputs, preparation: &FilePin) -> Result<(), String> {
+    let value = leaf_release::json(&held.read(&preparation.path, Some(preparation), 131_072, true, false)?)?;
+    for reference in clock_source_rows(&value)? {
+        held.read(&reference.path, Some(&reference), 1024 * 1024, true, false)?;
+    }
+    Ok(())
 }
 
 // These facts have no Clone/Deserialize and cannot be built by a receipt reader.
@@ -736,6 +764,41 @@ pub(super) fn observe_pair(
 mod tests {
     use super::*;
     use serde_json::json;
+
+    #[test]
+    fn fixed_clock_graph_requires_the_two_normal_comparison_modules() {
+        // Source grammar fixtures do not execute Python or create a Main fact.
+        let prefix = Path::new("/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2/source");
+        let files: Vec<_> = SOURCE_NAMES.iter().map(|name| FilePin {
+            path:prefix.join(if ["native_leaf_channel.py","kernel_native_observation.py"].contains(name) {"main"} else {"clock"}).join(name),
+            bytes:1, sha256:"a".repeat(64),
+        }).collect();
+        let added:Vec<_> = ["native_leaf_channel.py","kernel_native_observation.py"].iter()
+            .map(|name| files.iter().find(|row| row.path.file_name().and_then(|v| v.to_str())==Some(*name)).unwrap()).collect();
+        let mut value = json!({"schema":"pocket4-final-clock-original-case-preparation-v1",
+            "code_entrypoints_complete":true,"Android_execution_authorized_by_publication":false,
+            "files":files});
+        value["native_kernel_baseline"] = json!({
+            "schema":"droidloom.native-leaf-business-baseline.v1",
+            "qualification_schema":"droidloom.native-leaf-business-qualification.v1",
+            "source_members":added,"normal_rust_owner_required":true,
+            "saved_documents_are_comparisons_only":true,"target_only_working_directory_metadata":true,
+            "runtime_qualified":false,"whole_app_business_accepted":false,
+        });
+        assert_eq!(clock_source_rows(&value).unwrap().len(),29);
+        let mut old = value.clone(); old["files"].as_array_mut().unwrap().truncate(27);
+        assert!(clock_source_rows(&old).is_err());
+        let mut wrong = value.clone(); wrong["native_kernel_baseline"]["runtime_qualified"] = json!(true);
+        assert!(clock_source_rows(&wrong).is_err());
+        let mut wrong = value.clone();
+        let index = wrong["files"].as_array().unwrap().iter().position(|row|
+            row["path"].as_str().unwrap().ends_with("/native_leaf_channel.py")).unwrap();
+        wrong["files"][index]["path"] = json!(prefix.join("clock/native_leaf_channel.py"));
+        wrong["native_kernel_baseline"]["source_members"][0] = wrong["files"][index].clone();
+        assert!(clock_source_rows(&wrong).is_err());
+        let mut wrong = value.clone(); wrong["files"][0] = wrong["files"][1].clone();
+        assert!(clock_source_rows(&wrong).is_err());
+    }
 
     // Synthetic parser models only. These helpers cannot create an
     // ExecutedClockCase, NativeRelease, normal peer or ClockTimerEvidence.
