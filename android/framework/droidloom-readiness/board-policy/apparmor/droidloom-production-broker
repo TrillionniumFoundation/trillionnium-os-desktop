@@ -28,6 +28,11 @@ profile droidloom-production-broker flags=(attach_disconnected.path=/.droidloom-
   /sys/fs/selinux/{,class/,class/**,policy,enforce,policyvers,status,mls,policy_capabilities/*} r,
   /sys/fs/selinux/{access,context,create} rw,
   @{PROC}/[0-9]*/{,status,stat,cgroup,mountinfo,uid_map,gid_map,setgroups,exe,cmdline,root/,attr/current,attr/apparmor/current,attr/selinux/current} r,
+  # The independent engine observer reads only its actual held App's maps.
+  # SELinux keeps the broker and the existing metadata observer at zero here.
+  @{PROC}/[0-9]*/maps r,
+  # Fixed readonly selected engine: normal, early-slot and disconnected views.
+  /{system,run/droidloom-early-slot/rootfs/system,.droidloom-kernel-apparmorfs/system}/system_ext/lib64/libberberis_arm64.so r,
   owner @{PROC}/[0-9]*/task/[0-9]*/{,status,stat,attr/,attr/{current,apparmor/,selinux/,apparmor/current,selinux/current},ns/,ns/{user,pid,net},fdinfo/,fdinfo/[0-9]*} r,
   # Only a held internal numeric FD is used for the fixed APK memfd name check.
   # The target 6.18 AA dentry lookup collapses anonymous IS_ROOT files to the
@@ -47,7 +52,8 @@ profile droidloom-production-broker flags=(attach_disconnected.path=/.droidloom-
   capability setuid,
   capability sys_admin,
   capability sys_chroot,
-  # Only the fixed metadata observer SELinux role can use this in a target
+  # Only the fixed metadata and engine observer SELinux roles can use this
+  # in a target user namespace; neither grants this to the broker.
   # user namespace. SELinux forbids it for the broker in both capability classes.
   capability sys_ptrace,
   capability mknod,
