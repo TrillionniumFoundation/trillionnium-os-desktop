@@ -14,6 +14,7 @@ use crate::{
 };
 use serde_json::{Value, json};
 use std::{
+    cell::RefCell,
     fs::File,
     path::{Path, PathBuf},
 };
@@ -38,8 +39,8 @@ fn save(path: &Path, value: &Value) -> Result<FilePin> {
 /// This owns actual read-only preimages. It is not a grub-arm or publication
 /// permit, and it never accepts externally supplied boot selection fields.
 pub(super) struct WorkingGrubPreimage {
-    current: Vec<Guard>,
-    preserved: Vec<Guard>,
+    current: RefCell<Vec<Guard>>,
+    preserved: RefCell<Vec<Guard>>,
     report: SealedInput,
 }
 impl WorkingGrubPreimage {
@@ -198,28 +199,87 @@ impl WorkingGrubPreimage {
         )?;
         preserved.push(python);
         let observation = Self {
-            current,
-            preserved,
+            current: RefCell::new(current),
+            preserved: RefCell::new(preserved),
             report: SealedInput::open(&report)?,
         };
         observation.revalidate()?;
         Ok(observation)
     }
     pub(super) fn revalidate(&self) -> Result<()> {
-        for guard in self.current.iter().chain(&self.preserved) {
+        let current = self
+            .current
+            .try_borrow()
+            .map_err(|_| "working GRUB update in progress")?;
+        let preserved = self
+            .preserved
+            .try_borrow()
+            .map_err(|_| "working Python update in progress")?;
+        for guard in current.iter().chain(preserved.iter()) {
             guard.revalidate()?;
         }
         self.report.revalidate()
     }
     pub(super) fn current_inputs(&self) -> Result<(FilePin, FilePin)> {
         self.revalidate()?;
+        let current = self
+            .current
+            .try_borrow()
+            .map_err(|_| "working GRUB update in progress")?;
         ensure(
-            self.current.len() == 4
-                && self.current[0].pin().path == Path::new("/boot/grub/grub.cfg")
-                && self.current[1].pin().path == Path::new("/boot/grub/grubenv"),
+            current.len() == 4
+                && current[0].pin().path == Path::new("/boot/grub/grub.cfg")
+                && current[1].pin().path == Path::new("/boot/grub/grubenv"),
             "actual current GRUB preimage roles differ",
         )?;
-        Ok((self.current[0].pin().clone(), self.current[1].pin().clone()))
+        Ok((current[0].pin().clone(), current[1].pin().clone()))
+    }
+    pub(super) fn accept_working_label_batch(
+        &self,
+        batch: &crate::cold_original_data::labels::WorkingLabelBatch,
+    ) -> Result<()> {
+        batch.revalidate()?;
+        self.report.revalidate()?;
+        let mut current = self
+            .current
+            .try_borrow_mut()
+            .map_err(|_| "working GRUB update in progress")?;
+        let mut preserved = self
+            .preserved
+            .try_borrow_mut()
+            .map_err(|_| "working Python update in progress")?;
+        ensure(
+            current.iter().map(|guard| guard.pin().path.as_path()).eq([
+                Path::new("/boot/grub/grub.cfg"),
+                Path::new("/boot/grub/grubenv"),
+                Path::new("/boot/vmlinuz-7.0.14-p4cred1"),
+                Path::new("/boot/initrd.img-7.0.14-p4cred1"),
+            ]) && preserved.last().is_some_and(|guard| {
+                guard.pin().path == Path::new("/usr/bin/python3.14")
+                    && guard.pin().bytes == PYTHON_BYTES
+                    && guard.pin().sha256 == PYTHON_SHA
+            }),
+            "working GRUB label adoption left its fixed five source roles",
+        )?;
+        let updates = current
+            .iter()
+            .map(|guard| guard.prepare_working_label_update(batch))
+            .collect::<Result<Vec<_>>>()?;
+        let python = preserved.last().ok_or("working Python source absent")?;
+        let python_update = python.prepare_working_label_update(batch)?;
+        for guard in &preserved[..preserved.len() - 1] {
+            guard.revalidate()?;
+        }
+        // Validate all five updates before advancing this component. None of
+        // the fixed private preserved inputs may use a label exception.
+        for (guard, update) in current.iter_mut().zip(updates) {
+            guard.accept_working_label_update(update)?;
+        }
+        preserved
+            .last_mut()
+            .unwrap()
+            .accept_working_label_update(python_update)?;
+        Ok(())
     }
     pub(super) fn pin(&self) -> &FilePin {
         self.report.pin()

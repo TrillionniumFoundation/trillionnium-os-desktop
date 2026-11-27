@@ -58,6 +58,25 @@ fn require_member_checkpoint(snapshot: &Snapshot, value: (&Identity, i32, &str))
     )
 }
 
+fn require_held_checkpoint(
+    proof: &LabelDerivation,
+    file: &std::fs::File,
+    before: &Identity,
+) -> Result<Identity> {
+    ensure(
+        before == &proof.before.identity || before == &proof.after.identity,
+        "held working source is not this operation's full before/after checkpoint",
+    )?;
+    let actual = super::snapshot(file)?;
+    ensure(
+        proof.before.handle == proof.after.handle
+            && only_ctime_changed(&proof.before.identity, &proof.after.identity)
+            && actual == proof.after,
+        "held working source changed generation, full F9, or complete xattrs",
+    )?;
+    Ok(actual.identity)
+}
+
 fn require_checkpoint(snapshot: &Snapshot, value: WorkingLabelCheckpoint<'_>) -> Result<()> {
     let (identity, handle_type, handle, attributes) = value;
     let actual_attributes = snapshot
@@ -121,6 +140,25 @@ impl WorkingLabelDerivation {
         require_member_checkpoint(&self.core.before, before)?;
         require_member_checkpoint(&self.core.after, after)?;
         self.revalidate()
+    }
+    /// Match the caller's continuously held inode, rather than a newly opened
+    /// replacement. The proof owns its real preimage/generation/all xattrs; the
+    /// caller's old full F9 must be precisely that preimage (or the same already
+    /// adopted operation), and its original FD must still be the proof's after.
+    pub(crate) fn require_held_transition(
+        &self,
+        path: &Path,
+        file: &std::fs::File,
+        before: &Identity,
+    ) -> Result<Identity> {
+        self.revalidate()?;
+        ensure(
+            self.paths.iter().any(|known| known == path),
+            "held working label source is outside this actual operation",
+        )?;
+        let after = require_held_checkpoint(&self.core, file, before)?;
+        self.revalidate()?;
+        Ok(after)
     }
     pub(crate) fn revalidate(&self) -> Result<()> {
         self.origin.revalidate()?;
@@ -266,6 +304,33 @@ mod tests {
         let observed = super::super::snapshot(&file).unwrap();
         (directory, file, observed)
     }
+    #[test]
+    fn working_label_held_checkpoint_keeps_the_original_descriptor_and_all_fields() {
+        let (_directory, file, before) = actual_file();
+        let proof = LabelDerivation {
+            file: file.try_clone().unwrap(),
+            before: before.clone(),
+            after: before.clone(),
+        };
+        assert_eq!(
+            require_held_checkpoint(&proof, &file, &before.identity).unwrap(),
+            before.identity,
+        );
+        let (_other_directory, other, _) = actual_file();
+        assert!(require_held_checkpoint(&proof, &other, &before.identity).is_err());
+        let mut wrong = before.identity.clone();
+        wrong.ctime_nsec += 1;
+        assert!(require_held_checkpoint(&proof, &file, &wrong).is_err());
+        rustix::fs::fsetxattr(
+            &file,
+            "user.p4-held-custody-negative",
+            b"unrelated",
+            rustix::fs::XattrFlags::empty(),
+        )
+        .unwrap();
+        assert!(require_held_checkpoint(&proof, &file, &before.identity).is_err());
+    }
+
     #[test]
     fn working_label_checkpoint_binds_actual_inode_generation_and_all_f9() {
         let (_directory, _file, observed) = actual_file();

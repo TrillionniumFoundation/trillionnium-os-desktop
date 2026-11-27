@@ -653,6 +653,18 @@ impl WorkingOriginalCellPreimage {
     }
 }
 impl WorkingGrubSource {
+    pub(super) fn accept_working_label_batch(
+        &self,
+        source: &WorkingRuntimeSources,
+        batch: &crate::cold_original_data::labels::WorkingLabelBatch,
+    ) -> Result<()> {
+        ensure(
+            std::rc::Rc::ptr_eq(&self.custody, &source.custody),
+            "working GRUB label batch belongs to a different actual source owner",
+        )?;
+        batch.require_source(source)?;
+        self.original.accept_working_label_batch(batch)
+    }
     pub(super) fn revalidate(&self) -> Result<()> {
         self.custody.revalidate()?;
         self.original.revalidate()?;
