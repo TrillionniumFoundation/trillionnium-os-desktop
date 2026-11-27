@@ -15,8 +15,8 @@ import xml.etree.ElementTree as ET
 import zipfile
 
 PACKAGE = 'org.droidloom.qa.ihg.finalmain.r1'
-JDK = '/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86'
-SDK_BASE = '/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts'
+JDK = '/usr/lib/droidloom-native-leaf-toolchain/aosp-21.0.4-r1/jdk/jdk21/linux-x86'
+SDK_BASE = '/usr/lib/droidloom-native-leaf-toolchain/aosp-21.0.4-r1'
 TOOLS = {
     'java': (JDK + '/bin/java', 'cfa21aeadd00925925c9e1287f5c08f3e04ee7f26a9e23d9dbfb16149153d842'),
     'javac': (JDK + '/bin/javac', '18351d7a271f6b8bd17f9e8fef6bb04baa7cf008cbc8a3a782a93a2f5c48ecfa'),

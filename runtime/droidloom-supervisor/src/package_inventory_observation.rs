@@ -148,6 +148,12 @@ impl UserZeroPackageInventoryFacts {
         value.validate(expected)?;
         Ok(value)
     }
+    /// Validate a saved comparison document against an already observed epoch.
+    /// This never creates an actual inventory token, peer/PIDFD custody, or an
+    /// observation time, and does not issue a query or grant application credit.
+    pub fn validate_comparison(&self, expected: &RuntimeEpoch) -> Result<(), String> {
+        self.validate(expected)
+    }
     pub(crate) fn validate(&self, expected: &RuntimeEpoch) -> Result<(), String> {
         if self.schema != SCHEMA
             || &self.epoch != expected

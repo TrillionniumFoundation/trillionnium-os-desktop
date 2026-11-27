@@ -88,6 +88,7 @@ mod application_command;
 #[path = "application_leaf_locks.rs"]
 mod application_leaf_locks;
 pub use application_command::{NativeOwnedLeafUnit, OwnedLeafProfile};
+pub use crate::native_leaf_engine::{NativeLeafEngineEvidence, NativeLeafExecution};
 pub use application_leaf_locks::NativeApplicationSourceLocks;
 
 /// Run a finite prepared application leaf from the native applications CLI.
@@ -161,6 +162,21 @@ pub fn run_prepared_native_leaf_until(
         inspector,
         observation,
         until,
+    )
+}
+
+/// Execute a business leaf with fixed post-claim E checkpoints. The original
+/// capture/preparation entry point cannot mint running-engine evidence.
+pub fn run_prepared_native_leaf_observed_until(
+    command: std::process::Command,
+    epoch: &application_probe::RuntimeEpoch,
+    kind: NativeLeafCommandKind,
+    inspector: &mut NativeApplicationInspector,
+    observation: &mut crate::native_leaf_baseline::NativeLeafBaselineObservation<'_>,
+    until: Instant,
+) -> Result<NativeLeafExecution, String> {
+    application_command::run_prepared_native_leaf_observed_until(
+        command, epoch, kind, inspector, observation, until,
     )
 }
 

@@ -31,6 +31,8 @@ mod native_leaf_baseline_data;
 #[cfg(target_os = "linux")]
 mod native_leaf_baseline_programs;
 #[cfg(target_os = "linux")]
+mod native_leaf_engine;
+#[cfg(target_os = "linux")]
 mod native_once_capabilities;
 #[cfg(target_os = "linux")]
 mod native_once_contract;

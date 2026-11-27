@@ -101,7 +101,10 @@ fn monotonic_end(end: Instant) -> io::Result<u64> {
 pub(crate) const FACTS_ENV: &str = "DROIDLOOM_NATIVE_LEAF_FACTS_FD";
 pub(crate) const GUARD_ENV: &str = "DROIDLOOM_NATIVE_LEAF_GUARD_FD";
 const MAX_FACTS: usize = 262144;
-const MAX_CHECKS: usize = 4096;
+const MAX_CHECKS: usize = crate::native_leaf_engine::MAX_CHECKS;
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum LeafCheck { Local, Engine }
 
 pub(crate) struct NativeLeafChannel {
     facts: File,
@@ -109,6 +112,7 @@ pub(crate) struct NativeLeafChannel {
     child: UnixDatagram,
     deadline: Instant,
     checks: usize,
+    engine_failure: Option<String>,
 }
 fn invalid(why: &'static str) -> io::Error {
     io::Error::other(why)
@@ -179,6 +183,7 @@ impl NativeLeafChannel {
             child,
             deadline,
             checks: 0,
+            engine_failure: None,
         })
     }
     pub(crate) fn prepare(&self, command: &mut Command) -> [RawFd; 2] {
@@ -189,14 +194,18 @@ impl NativeLeafChannel {
             .env(GUARD_ENV, g.to_string());
         [f, g]
     }
-    fn serve_with(&mut self, mut check: impl FnMut() -> Result<(), String>) -> Result<(), String> {
+    fn serve_with(
+        &mut self,
+        engine_enabled: bool,
+        mut check: impl FnMut(LeafCheck) -> Result<(), String>,
+    ) -> Result<(), String> {
         let mut request = [0u8; 2];
-        match self.server.recv(&mut request) {
+        let check_kind = match self.server.recv(&mut request) {
             Err(e) if e.kind() == io::ErrorKind::WouldBlock => return Ok(()),
             Err(e) => return Err(format!("native leaf guard channel failed: {e}")),
             Ok(n) => {
                 if n != 1
-                    || request[0] != b'G'
+                    || !(request[0] == b'G' || (request[0] == b'E' && engine_enabled))
                     || self.checks >= MAX_CHECKS
                     || Instant::now() >= self.deadline
                 {
@@ -205,9 +214,29 @@ impl NativeLeafChannel {
                         "native leaf guard accepts only bounded current-custody checks".into(),
                     );
                 }
+                if request[0] == b'G' { LeafCheck::Local } else { LeafCheck::Engine }
+            }
+        };
+        // An E failure must not kill the fixed Python flow before its existing
+        // finally path can close the already-recorded owned task. Keep G local
+        // and available for that cleanup, but remember the failure permanently
+        // and never perform another E in this invocation.
+        if check_kind == LeafCheck::Engine && self.engine_failure.is_some() {
+            self.server.send(b"1").map_err(|e| format!("engine failure reply failed: {e}"))?;
+            self.checks += 1;
+            return Ok(());
+        }
+        let result = check(check_kind);
+        if check_kind == LeafCheck::Engine {
+            if let Err(error) = &result {
+                self.engine_failure = Some(error.clone());
+                if Instant::now() < self.deadline {
+                    self.server.send(b"1").map_err(|e| format!("engine failure reply failed: {e}"))?;
+                    self.checks += 1;
+                    return Ok(());
+                }
             }
         }
-        let result = check();
         if result.is_err() || Instant::now() >= self.deadline {
             let _ = self.server.send(b"1");
             return result.and(Err(
@@ -215,7 +244,7 @@ impl NativeLeafChannel {
             ));
         }
         self.server
-            .send(b"0")
+            .send(if check_kind == LeafCheck::Local { b"0" } else { b"E" })
             .map_err(|e| format!("native leaf guard reply failed: {e}"))?;
         self.checks += 1;
         Ok(())
@@ -223,16 +252,23 @@ impl NativeLeafChannel {
     pub(crate) fn serve(
         &mut self,
         observation: &NativeLeafBaselineObservation<'_>,
-        inspector: &crate::control::NativeApplicationInspector,
+        inspector: &mut crate::control::NativeApplicationInspector,
+        mut engines: Option<&mut crate::native_leaf_engine::PendingLeafEngines>,
     ) -> Result<(), String> {
         let deadline = self.deadline;
-        self.serve_with(|| {
-            observation
-                .verify_local(inspector, deadline)
-                .map_err(|e| e.to_string())
+        let engine_enabled = engines.is_some();
+        self.serve_with(engine_enabled, |kind| match kind {
+            LeafCheck::Local => observation.verify_local(inspector, deadline)
+                .map_err(|e| e.to_string()),
+            LeafCheck::Engine => engines.as_deref_mut()
+                .ok_or_else(|| "capture/preparation does not support engine observation".to_owned())?
+                .capture(observation, inspector, deadline),
         })
     }
     pub(crate) fn finish(&self) -> Result<(), String> {
+        if let Some(error) = &self.engine_failure {
+            return Err(format!("running-engine checkpoint failed; no engine/identity credit: {error}"));
+        }
         if self.checks == 0 {
             return Err("native leaf never checked the actual retained owner".into());
         }
@@ -280,7 +316,7 @@ mod tests {
         assert!(ch.server.local_addr().unwrap().is_unnamed());
         ch.child.send(b"G").unwrap();
         let mut called = 0;
-        ch.serve_with(|| {
+        ch.serve_with(false, |_| {
             called += 1;
             Ok(())
         })
@@ -299,7 +335,7 @@ mod tests {
                     .unwrap();
             ch.child.send(request).unwrap();
             assert!(
-                ch.serve_with(|| panic!("unvalidated request must not query owner"))
+                ch.serve_with(false, |_| panic!("unvalidated request must not query owner"))
                     .is_err()
             );
             assert!(ch.finish().is_err());
@@ -308,7 +344,7 @@ mod tests {
             NativeLeafChannel::from_bytes(b"{}", Instant::now() + Duration::from_secs(3)).unwrap();
         ch.child.send(b"G").unwrap();
         assert!(
-            ch.serve_with(|| Err("actual original owner changed".into()))
+            ch.serve_with(false, |_| Err("actual original owner changed".into()))
                 .unwrap_err()
                 .contains("owner changed")
         );
@@ -322,8 +358,71 @@ mod tests {
         expired.child.send(b"G").unwrap();
         assert!(
             expired
-                .serve_with(|| panic!("expired channel must not query owner"))
+                .serve_with(false, |_| panic!("expired channel must not query owner"))
                 .is_err()
         );
     }
+    #[test]
+    fn native_leaf_engine_checkpoint_is_distinct_and_disabled_for_old_runner() {
+        let mut disabled = NativeLeafChannel::from_bytes(
+            b"{}", Instant::now() + Duration::from_secs(3),
+        ).unwrap();
+        disabled.child.send(b"E").unwrap();
+        assert!(disabled.serve_with(false, |_| panic!("preparation cannot invoke E")).is_err());
+        assert!(disabled.finish().is_err());
+
+        let mut active = NativeLeafChannel::from_bytes(
+            b"{}", Instant::now() + Duration::from_secs(3),
+        ).unwrap();
+        active.child.send(b"E").unwrap();
+        let mut requested = Vec::new();
+        active.serve_with(true, |kind| { requested.push(kind); Ok(()) }).unwrap();
+        let mut reply = [0u8; 2];
+        assert_eq!(active.child.recv(&mut reply).unwrap(), 1);
+        assert_eq!(reply[0], b'E');
+        active.child.send(b"G").unwrap();
+        active.serve_with(true, |kind| { requested.push(kind); Ok(()) }).unwrap();
+        assert_eq!(active.child.recv(&mut reply).unwrap(), 1);
+        assert_eq!(reply[0], b'0');
+        assert_eq!(requested, [LeafCheck::Engine, LeafCheck::Local]);
+        active.finish().unwrap();
+        // This is a protocol model, not an EngineMappingObservation constructor.
+    }
+
+    #[test]
+    fn native_leaf_engine_checkpoint_rejects_payload_failure_and_late_reply() {
+        for request in [b"EE".as_slice(), b"E package", b"P"] {
+            let mut channel = NativeLeafChannel::from_bytes(
+                b"{}", Instant::now() + Duration::from_secs(3),
+            ).unwrap();
+            channel.child.send(request).unwrap();
+            assert!(channel.serve_with(true, |_| panic!("payload cannot select an engine")).is_err());
+        }
+        let mut failed = NativeLeafChannel::from_bytes(
+            b"{}", Instant::now() + Duration::from_secs(3),
+        ).unwrap();
+        failed.child.send(b"E").unwrap();
+        assert!(failed.serve_with(true, |_| Err("actual observer retirement failed".into())).is_ok());
+        let mut reply = [0u8; 2];
+        assert_eq!(failed.child.recv(&mut reply).unwrap(), 1);
+        assert_eq!(reply[0], b'1');
+        failed.child.send(b"G").unwrap();
+        assert!(failed.serve_with(true, |kind| {
+            assert_eq!(kind, LeafCheck::Local); Ok(())
+        }).is_ok());
+        assert_eq!(failed.child.recv(&mut reply).unwrap(), 1);
+        assert_eq!(reply[0], b'0');
+        failed.child.send(b"E").unwrap();
+        assert!(failed.serve_with(true, |_| panic!("failed E cannot be retried")).is_ok());
+        assert_eq!(failed.child.recv(&mut reply).unwrap(), 1);
+        assert_eq!(reply[0], b'1');
+        assert!(failed.finish().unwrap_err().contains("actual observer retirement failed"));
+        let mut expired = NativeLeafChannel::from_bytes(
+            b"{}", Instant::now() + Duration::from_secs(3),
+        ).unwrap();
+        expired.deadline = Instant::now() - Duration::from_millis(1);
+        expired.child.send(b"E").unwrap();
+        assert!(expired.serve_with(true, |_| panic!("expired E cannot start")).is_err());
+    }
+
 }

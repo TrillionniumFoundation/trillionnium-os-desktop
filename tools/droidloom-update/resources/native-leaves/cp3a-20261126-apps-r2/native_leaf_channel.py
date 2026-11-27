@@ -244,6 +244,64 @@ class ComparisonChannel:
             'core_sha256':sha(canonical(self.core)),
             'local_held_peer_proc_namespace_data_checked':True,
             'fresh_full_main_rpc':False,'business_acceptance_evaluated':False}
+    def observe_running_engine(self):
+        """Synchronize one parent-owned live observation after cleanup ownership.
+        Only the sealed original work deadline bounds this wait. The parent
+        keeps its fixed <=70-second request inside that same deadline.
+        """
+        end_ns=self.deadline_ns
+        def left():
+            self.remaining(7200)
+            value=(end_ns-time.monotonic_ns())/10**9
+            need(value>0,'ORIGINAL_RUNNING_ENGINE_WINDOW_EXPIRED')
+            return value
+        def held():
+            need(metadata(self.facts_fd)==self.before and
+                 metadata(self.guard_fd)==self.guard_identity and
+                 fcntl.fcntl(self.facts_fd,fcntl.F_GET_SEALS)==SEALS and
+                 os.pread(self.facts_fd,MAX_FACTS+1,0)==self.raw,
+                 'HELD_NORMAL_COMPARISON_DESCRIPTOR_CHANGED')
+        held()
+        interrupted=None;reply=None;pending=False
+        try:
+            with socket.socket(fileno=os.dup(self.guard_fd)) as sock:
+                try:
+                    sock.settimeout(left())
+                    # Mark before send: an interrupted send has unknown delivery.
+                    # It is never resent, and an unsynchronized endpoint is retired.
+                    pending=True
+                    need(sock.send(b'E')==1,'FIXED_RUNNING_ENGINE_CHECK_NOT_SENT')
+                    while reply is None:
+                        sock.settimeout(left())
+                        try:
+                            reply=sock.recvmsg(2,0)
+                        except OSError:
+                            raise
+                        except BaseException as error:
+                            # Preserve a signal exception, but consume the one
+                            # outstanding reply before the original finally sends G.
+                            if interrupted is None:interrupted=error
+                finally:
+                    if pending and reply is None:
+                        try:sock.shutdown(socket.SHUT_RDWR)
+                        except OSError:pass
+                        os.environ.pop(GUARD_ENV,None)
+                        try:os.close(self.guard_fd)
+                        except OSError:pass
+        except BaseException as error:
+            if interrupted is not None and error is not interrupted:
+                interrupted.add_note('RUNNING_ENGINE_REPLY_NOT_SYNCHRONIZED_ENDPOINT_RETIRED')
+                raise interrupted from error
+            raise
+        if interrupted is not None:raise interrupted
+        raw,ancillary,flags,_=reply
+        need(raw==b'E' and not ancillary and flags==0,
+             'ACTUAL_RUNNING_ENGINE_OBSERVATION_FAILED')
+        left();held()
+        # Consume the E reply before a subsequent local G. No new JSON/PID/UID/
+        # ABI/path authority is returned; the real opaque fact stays in Rust.
+        return None
+
     def inherit_for_host(self,argv,environment,pass_fds=()):
         self.guard()
         return inherit_for_host(argv,environment,pass_fds)

@@ -266,6 +266,8 @@ def execute(common, base_ref):
         result['Main_before'] = guard()
         result['launch_worker_requested'] = True; launch = run_phase('launch', 190)
         result['owned_task'] = launch['owned_task']
+        # Actual launch worker retirement and its durable cleanup claim precede E.
+        modules['business_commands.py'].native_channel_module().ComparisonChannel().observe_running_engine()
         result['inspect_worker_requested'] = True; inspection = run_phase('inspect', 190)
         for key in ('search_assessments', 'public_search_entry', 'assessments', 'post_assessments',
                     'public_destination_observation', 'input_assessments', 'public_destination_input_observation'):

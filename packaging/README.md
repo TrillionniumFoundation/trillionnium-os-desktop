@@ -230,10 +230,21 @@ output, and creates new baseline and qualification documents in its own private
 qualification directory. There is no caller-provided result, command or hash map.
 
 The compiled recipe includes the kernel-first comparisons and the fixed IHG
-preparation inputs, binding 22 embedded source assets to 23 members. Its comparison channel is inherited only
+preparation inputs, binding 35 embedded source assets to 36 members. Its comparison channel is inherited only
 by the five reviewed host entrypoints and their exact argument shapes. Android
 commands, the namespace helper and independent monitor/display observers do not
 receive it. Saved comparison documents cannot construct opaque Main authority.
+
+Business checkpoints send a single E only after the target is actually running
+and the original cleanup owner is registered. The parent uses its opaque Main
+and package observations to obtain the normal native-x86_64 or Berberis mapping
+fact within the same original deadline. The child receives only an acknowledgement;
+the opaque facts remain in Rust. Failed observations cannot be retried or confer
+identity credit; local G checks remain available for original cleanup only while
+custody and the original deadline still hold. Documents picker/provider pending
+state is preserved on failure. Read-only Gallery identity and preparation/capture
+operations do not produce running-engine credit. These checkpoints do not claim
+continuous process custody after sampling or whole-application business acceptance.
 
 The baseline distinguishes original-to-working image lineage from the current
 target package's working CE/DE directory identities. For IHG only, the normal

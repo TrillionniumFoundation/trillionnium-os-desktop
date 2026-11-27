@@ -135,11 +135,38 @@ fn embedded(name: &str) -> Result<&'static [u8]> {
         "app_common.py" => {
             include_bytes!("../../resources/native-leaves/cp3a-20261126-apps-r2/app_common.py")
         }
+        "reminder_calendar_base.py" => include_bytes!("../../resources/native-leaves/cp3a-20261126-apps-r2/reminder_calendar_base.py"),
+        "camera_photo_trial.py" => include_bytes!("../../resources/native-leaves/cp3a-20261126-apps-r2/camera_photo_trial.py"),
+        "clock_alarm_flow.py" => include_bytes!("../../resources/native-leaves/cp3a-20261126-apps-r2/clock_alarm_flow.py"),
+        "clock_timer_core.py" => include_bytes!("../../resources/native-leaves/cp3a-20261126-apps-r2/clock_timer_core.py"),
+        "documents_saf_core.py" => include_bytes!("../../resources/native-leaves/cp3a-20261126-apps-r2/documents_saf_core.py"),
+        "documents_features_core.py" => include_bytes!("../../resources/native-leaves/cp3a-20261126-apps-r2/documents_features_core.py"),
+        "gallery_album_flow.py" => include_bytes!("../../resources/native-leaves/cp3a-20261126-apps-r2/gallery_album_flow.py"),
+        "gallery_rotation_flow.py" => include_bytes!("../../resources/native-leaves/cp3a-20261126-apps-r2/gallery_rotation_flow.py"),
+        "gallery_seek_flow.py" => include_bytes!("../../resources/native-leaves/cp3a-20261126-apps-r2/gallery_seek_flow.py"),
+        "gallery_video_flow.py" => include_bytes!("../../resources/native-leaves/cp3a-20261126-apps-r2/gallery_video_flow.py"),
+        "ihg_timer_flow.py" => include_bytes!("../../resources/native-leaves/cp3a-20261126-apps-r2/ihg_timer_flow.py"),
+        "system_calendar_base.py" => include_bytes!("../../resources/native-leaves/cp3a-20261126-apps-r2/system_calendar_base.py"),
+        "system_contacts_search.py" => include_bytes!("../../resources/native-leaves/cp3a-20261126-apps-r2/system_contacts_search.py"),
         _ => return fail("unlisted embedded leaf source"),
     })
 }
 
-const EMBEDDED_MEMBERS: [(&str, &str); 23] = [
+const EMBEDDED_MEMBERS: [(&str, &str); 36] = [
+    ("source/calendar-reminder/calendar_base.py", "reminder_calendar_base.py"),
+    ("source/camera-photo/camera_photo_trial.py", "camera_photo_trial.py"),
+    ("source/clock/clock_alarm_flow.py", "clock_alarm_flow.py"),
+    ("source/clock/clock_timer_core.py", "clock_timer_core.py"),
+    ("source/documents-saf/documents_saf_core.py", "documents_saf_core.py"),
+    ("source/documents-search/documents_features_core.py", "documents_features_core.py"),
+    ("source/gallery/generated/album/video_flow.py", "gallery_album_flow.py"),
+    ("source/gallery/generated/rotation/gallery_rotation_flow.py", "gallery_rotation_flow.py"),
+    ("source/gallery/generated/seek/video_flow.py", "gallery_seek_flow.py"),
+    ("source/gallery/generated/video/video_flow.py", "gallery_video_flow.py"),
+    ("source/ihg/timer_flow.py", "ihg_timer_flow.py"),
+    ("source/system/calendar_base.py", "system_calendar_base.py"),
+    ("source/system/contacts_search.py", "system_contacts_search.py"),
+
     (
         "source/clock/clock_notify_supervisor.py",
         "clock_notify_supervisor.py",
@@ -345,8 +372,8 @@ fn fixed_recipe() -> Result<CohortRecipe> {
     if origins.len() != 474
         || new_sources != 3
         || binaries != 1
-        || embedded_names.len() != 22
-        || embedded_members.len() != 23
+        || embedded_names.len() != 35
+        || embedded_members.len() != 36
         || total != r.output_bytes
     {
         return fail("fixed successor source closure differs");
@@ -759,7 +786,7 @@ mod tests {
                 .iter()
                 .filter(|m| m.embedded_source.is_some())
                 .count(),
-            23
+            36
         );
         assert_eq!(
             r.members

@@ -596,7 +596,7 @@ pub(super) struct ClockTimerEvidence {
     same_normal_peer_source_owner_and_epoch: bool,
     original_host_process_trees_retired: bool,
     original_source_and_owner_bookends_verified: bool,
-    remaining_common_requirements: [&'static str; 2],
+    remaining_common_requirements: [&'static str; 1],
     clock_timer_gate_passed: bool,
     application_accepted: bool,
     runtime_qualified: bool,
@@ -611,6 +611,12 @@ impl ClockTimerEvidence {
     }
     pub(super) fn retained_bookends(&self) -> Result<(), String> {
         self.main_custody.guard_projection()?;
+        for leaf in [&self.timer15, &self.expiry06] {
+            let history = leaf.engine_observations.as_ref()
+                .ok_or("Clock case has no retained running-engine observations")?;
+            require(history.observation_count() == 2, "Clock case requires its two actual E checkpoints")?;
+            self.main_custody.require_engine(history)?;
+        }
         self.custody.guard()
     }
     pub(super) fn verified_business_gates(&self) -> &'static [&'static str] {
@@ -712,7 +718,7 @@ pub(super) fn observe_pair(
     window(end, 250 + 70 + 30)?;
     let after_token = inspect(inspector, &before, end)?;
     let after = after_token.facts().clone();
-    let identity = materials.observe(requested, 0, &runtime.expected_epoch, &before, &after)?;
+    let mut identity = materials.observe(requested, 0, &runtime.expected_epoch, &before, &after)?;
     window(end, 70 + 30)?;
     let after_main = main.refresh(inspector, &after_token, end)?;
     baseline.finish_from_observed(inspector, &after_main, &after_token, end)
@@ -731,6 +737,12 @@ pub(super) fn observe_pair(
         && timer_fact.observation.entry_source == expiry_fact.observation.entry_source
         && timer_fact.observation.result.path != expiry_fact.observation.result.path,
         "Clock observations cannot be joined across source, owner, identity or epoch")?;
+    identity.bind_native_execution(&after, &after_main, &[
+        timer_fact.observation.engine_observations.as_ref()
+            .ok_or("timer15 lacks actual running-engine history")?,
+        expiry_fact.observation.engine_observations.as_ref()
+            .ok_or("expiry06 lacks actual running-engine history")?,
+    ])?;
     let timer15_result_f9 = timer_fact.result_custody.identity()?;
     let expiry06_result_f9 = expiry_fact.result_custody.identity()?;
     let CaseFact { result_custody:timer_result, observation:timer15,
@@ -751,7 +763,7 @@ pub(super) fn observe_pair(
         timer15_result_f9, expiry06_result_f9,
         same_normal_peer_source_owner_and_epoch:true, original_host_process_trees_retired:true,
         original_source_and_owner_bookends_verified:true,
-        remaining_common_requirements:["actual_per_application_engine_mapping", "other_registry_gates"],
+        remaining_common_requirements:["other_registry_gates"],
         clock_timer_gate_passed:true, application_accepted:false,
         runtime_qualified:false, production_ready:false, automatic_retry:false,
     };
