@@ -24,7 +24,7 @@ META = ('st_dev', 'st_ino', 'st_mode', 'st_uid', 'st_gid', 'st_nlink',
 CLI_PATH = '/usr/bin/droidloom-applications'
 SOCKET = '/run/droidloom/control.sock'
 CUSTODY_PROTOCOL = 'droidloom-image-application-custody-v1'
-COMMON={'path': '/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2/source/shared/app_common.py', 'bytes': 47688, 'sha256': 'a5e5cf3402fa86aa5662d3fb68f5c6464c75b0579f6a6be076ec3288c9c579bb'}
+COMMON={'path': '/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2/source/shared/app_common.py', 'bytes': 47688, 'sha256': 'd7ecbe8bdff6804f2c26ab7d2edd5ce5e4851aba788174f09c6ec6a746b440d4'}
 HELD={'path': '/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2/source/main/held_runtime.py', 'bytes': 27507, 'sha256': '3d2860cde4ec7c7cbe67ed4756d9f599646ee39dc36f2f80b3ef008fba6b80cb'}
 
 

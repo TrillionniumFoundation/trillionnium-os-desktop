@@ -28,7 +28,7 @@ use super::runtime_identity::{IdentityObservation, VerifiedMaterialBatch};
 const QUALIFICATION: &str = "/var/lib/droidloom/qualification/pocket4";
 const SELECTION_PATH: &str = "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2/selection/selection-14.json";
 const SELECTION_BYTES: u64 = 4769;
-const SELECTION_SHA: &str = "2527bcba4db05bfd1eb999abe23298c6358097f9d74e586534a0c73610336a42";
+const SELECTION_SHA: &str = "3f03f4d5652fd7a1d1f3039bae2127fb2116148168b94f777f58320ee9b7ed95";
 const SOURCE_CATALOG: &str = include_str!("leaf_sources.json");
 
 pub(super) fn compiled_release_sources() -> (FilePin, &'static str) {
@@ -1240,13 +1240,9 @@ fn claim(
 ) -> Result<(), String> {
     let working = release.working_root()?.map(Path::to_owned);
     let claim_parent = if let Some(root) = &working {
-        let parent = root.join("native-claims");
-        match fs::DirBuilder::new().mode(0o700).create(&parent) {
-            Ok(()) => (),
-            Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists => (),
-            Err(e) => return Err(e.to_string()),
-        }
-        parent
+        // The actual parent owner created this private directory before the
+        // suite started. The suite may claim only a fixed child below it.
+        root.join("native-claims")
     } else { PathBuf::from(QUALIFICATION) };
     let held_parent = if working.is_some() { Some(private_runtime_directory(&claim_parent)?) } else { None };
     let name = if working.is_some() {

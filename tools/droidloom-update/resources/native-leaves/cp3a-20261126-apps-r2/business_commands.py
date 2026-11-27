@@ -165,6 +165,118 @@ def working_build_resources():
     live.guard()
     return values
 
+
+# These are the same original formal JDK and Debian signer inputs already
+# admitted by the native helper builders. Keep the actual working command
+# separate from its unchanged source-level logical_argv.
+WORKING_JDK='/usr/lib/droidloom-native-leaf-toolchain/aosp-21.0.4-r1/jdk/jdk21/linux-x86'
+WORKING_SDK='/usr/lib/droidloom-native-leaf-toolchain/aosp-21.0.4-r1'
+WORKING_SIGNER='/usr/share/java/apksigner-35.0.2.jar'
+WORKING_APKSIG='/usr/share/java/apksig-0.9.jar'
+WORKING_BUILD_TOOLS={
+    'java':(WORKING_JDK+'/bin/java',8528,'cfa21aeadd00925925c9e1287f5c08f3e04ee7f26a9e23d9dbfb16149153d842'),
+    'javac':(WORKING_JDK+'/bin/javac',8824,'18351d7a271f6b8bd17f9e8fef6bb04baa7cf008cbc8a3a782a93a2f5c48ecfa'),
+    'apksigner_jar':(WORKING_SIGNER,521108,'98346a3200d6030e247ccba0e47b354b6113ec2068dcea6c43558b01fe5885c2'),
+    'apksig_jar':(WORKING_APKSIG,489902,'61186f715a98cf2473544a4bbb1fae06ab84600cf2cd6adfa7ad50f4b0e2375e'),
+}
+
+def working_build_argv(logical,root,case):
+    need(case in WORKING_BUILD_CASES,'FIXED_WORKING_BUILD_CASE_REQUIRED')
+    argv=relative_build_argv(logical,root)
+    need(all('/proc/' not in value and 'user.dir' not in value for value in argv),
+         'NO_CALLER_PROC_OR_JVM_DIRECTORY_OVERRIDE')
+    program=argv[0]
+    java=[WORKING_JDK+'/bin/java','-Duser.dir=/proc/self/cwd',
+          '-XX:ActiveProcessorCount=1','-XX:+UseSerialGC','-Xmx256m']
+    if program==WORKING_JDK+'/bin/java':
+        need(argv[1:4]==java[2:],'ORIGINAL_FIXED_JVM_RESOURCES_REQUIRED')
+        tail=argv[4:]
+        need((tail[:3]==['-cp',WORKING_SDK+'/cmdline-tools/tools/lib/r8.jar','com.android.tools.r8.D8']) or
+             (tail[:2]==['-m','java.base/sun.security.tools.keytool.Main']) or
+             (case!='ihg-london' and tail[:2]==['-jar',WORKING_SIGNER] and
+              len(tail)>2 and tail[2] in ('sign','verify')),
+             'ONLY_ORIGINAL_D8_KEYTOOL_OR_DOCS_SIGNER')
+        return java+tail
+    if program==WORKING_JDK+'/bin/javac':
+        heap='256m' if case=='ihg-london' else '192m'
+        need(argv[1:4]==['-J-XX:ActiveProcessorCount=1','-J-XX:+UseSerialGC','-J-Xmx'+heap],
+             'ORIGINAL_FIXED_JAVAC_RESOURCES_REQUIRED')
+        return [program,'-J-Duser.dir=/proc/self/cwd',*argv[1:]]
+    if program=='/usr/lib/android-sdk/build-tools/debian/apksigner':
+        need(case=='ihg-london','WRAPPER_MAPPING_ONLY_FOR_ORIGINAL_IHG_SIGNER')
+        sign=['sign','--ks','./private-signing/owned.p12','--ks-pass',
+              'file:./private-signing/password.txt','--ks-key-alias','owned-ihg-final-main',
+              '--min-sdk-version','31','--v1-signing-enabled','false',
+              '--v2-signing-enabled','true','--v3-signing-enabled','true',
+              '--out','./owned-ihg-qa.apk','./aligned.apk']
+        verify=['verify','--verbose','--print-certs','--min-sdk-version','31','./owned-ihg-qa.apk']
+        need(argv[1:] in (sign,verify),'EXACT_ORIGINAL_IHG_SIGN_OR_VERIFY_REQUIRED')
+        return java+['-jar',WORKING_SIGNER,*argv[1:]]
+    need(program in ('/usr/lib/android-sdk/build-tools/debian/aapt',
+                     WORKING_SDK+'/build-tools/linux-x86/bin/zipalign'),
+         'EXACT_FORMAL_WORKING_BUILD_PROGRAM_REQUIRED')
+    return argv
+
+class WorkingBuildTools:
+    """Retain only fixed original tool inputs, never a Main/source authority."""
+    def __init__(self):
+        self.fds={};self.refs={};self.closed=False;self.alias=None
+        try:
+            for name,(path,size,expected) in WORKING_BUILD_TOOLS.items():
+                p=Path(path)
+                need(p.resolve(strict=True)==p,'NO_WORKING_TOOL_PATH_ALIAS')
+                for parent in p.parents:
+                    st=parent.lstat()
+                    need(stat.S_ISDIR(st.st_mode) and st.st_uid==st.st_gid==0 and
+                         not st.st_mode&0o022,'ROOT_PROTECTED_FORMAL_TOOL_ANCESTOR')
+                fd=os.open(p,os.O_RDONLY|os.O_CLOEXEC|os.O_NOFOLLOW);self.fds[name]=fd
+                st=os.fstat(fd);identity=tuple(getattr(st,k) for k in META)
+                need(stat.S_ISREG(st.st_mode) and st.st_uid==st.st_gid==0 and
+                     st.st_nlink==1 and not st.st_mode&0o022 and st.st_size==size,
+                     'EXACT_ROOT_OWNED_WORKING_TOOL_INPUT')
+                raw=os.pread(fd,size+1,0)
+                need(len(raw)==size and digest(raw)==expected and
+                     identity==tuple(getattr(os.fstat(fd),k) for k in META)==
+                     tuple(getattr(p.lstat(),k) for k in META),'WORKING_TOOL_BYTES_CHANGED')
+                self.refs[name]={'path':path,'bytes':size,'sha256':expected,'f9':list(identity)}
+            alias=Path('/usr/share/java/apksig.jar');st=alias.lstat()
+            need(stat.S_ISLNK(st.st_mode) and st.st_uid==st.st_gid==0 and
+                 alias.resolve(strict=True)==Path(WORKING_APKSIG),'EXACT_SIGNER_MANIFEST_CLASSPATH')
+            self.alias={'path':str(alias),'link':os.readlink(alias),
+                        'f9':[getattr(st,k) for k in META],'resolved':WORKING_APKSIG}
+            self.guard()
+        except BaseException:
+            self.close()
+            raise
+    def guard(self):
+        need(not self.closed and set(self.fds)==set(WORKING_BUILD_TOOLS),
+             'WORKING_TOOLS_MUST_REMAIN_HELD')
+        for name,fd in self.fds.items():
+            row=self.refs[name];p=Path(row['path'])
+            need([getattr(os.fstat(fd),k) for k in META]==row['f9']==
+                 [getattr(p.lstat(),k) for k in META],'HELD_WORKING_TOOL_CHANGED')
+        p=Path(self.alias['path'])
+        need([getattr(p.lstat(),k) for k in META]==self.alias['f9'] and
+             os.readlink(p)==self.alias['link'] and
+             p.resolve(strict=True)==Path(self.alias['resolved']),
+             'SIGNER_MANIFEST_CLASSPATH_CHANGED')
+    def comparison(self):
+        self.guard()
+        for name,fd in self.fds.items():
+            row=self.refs[name];raw=os.pread(fd,row['bytes']+1,0)
+            need(len(raw)==row['bytes'] and digest(raw)==row['sha256'],
+                 'WORKING_TOOL_COMPLETE_BYTE_BOOKEND_CHANGED')
+        self.guard()
+        return {'schema':'droidloom.working-build-toolchain.v1','files':self.refs,
+                'signer_classpath':self.alias}
+    def close(self):
+        errors=[]
+        for fd in self.fds.values():
+            try:os.close(fd)
+            except OSError as error:errors.append(error)
+        self.fds.clear();self.closed=True
+        if errors:raise errors[0]
+
 def _enter_working_build_directory(directory_fd,expected,proof_write):
     resource.setrlimit(resource.RLIMIT_CORE,(0,0))
     os.fchdir(directory_fd);os.close(directory_fd)
@@ -187,7 +299,7 @@ class WorkingBuildDirectory:
         admitted=_working_build_location(live,path,preparation=True)
         need(admitted is not None,'ACTUAL_WORKING_BUILD_OWNER_REQUIRED')
         self.live=live;self.root=Path(path);self.runtime,self.case=admitted
-        self.pid=os.getpid();self.fd=None;self.closed=False
+        self.pid=os.getpid();self.fd=None;self.closed=False;self.tools=None
         self.last_proof=None;self.last_error=None
         need(self.root.resolve()==self.root,'NO_WORKING_BUILD_ALIAS')
         for parent in self.root.parents:
@@ -200,12 +312,15 @@ class WorkingBuildDirectory:
         self.fd=os.open(self.root,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW|os.O_CLOEXEC)
         try:
             self.identity=tuple(getattr(os.fstat(self.fd),k) for k in META)
+            self.tools=WorkingBuildTools()
             self.guard()
         except BaseException:self.close();raise
     def guard(self):
         need(not self.closed and self.pid==os.getpid() and self.fd is not None,
              'SAME_HELD_BUILD_CONTROLLER_REQUIRED')
         self.live.guard()
+        need(self.tools is not None,'ACTUAL_WORKING_TOOL_INPUTS_REQUIRED')
+        self.tools.guard()
         held=tuple(getattr(os.fstat(self.fd),k) for k in META)
         named=tuple(getattr(self.root.lstat(),k) for k in META)
         need(held==named and held[:5]==self.identity[:5] and
@@ -213,8 +328,11 @@ class WorkingBuildDirectory:
              'SAME_PRIVATE_UID1000_BUILD_DIRECTORY_REQUIRED')
         return held
     def close(self):
-        if self.fd is not None:os.close(self.fd);self.fd=None
-        self.closed=True
+        try:
+            if self.tools is not None:self.tools.close();self.tools=None
+        finally:
+            if self.fd is not None:os.close(self.fd);self.fd=None
+            self.closed=True
     def spawn(self,argv,env,input_fd,output_fd,error_fd):
         before=self.guard();proof_read,proof_write=os.pipe2(os.O_CLOEXEC|os.O_NONBLOCK)
         process=None;self.last_proof=None;self.last_error=None
@@ -278,10 +396,15 @@ def verify_working_build_record(record,logical,root,environment):
     now=Path(root).lstat()
     need(proof['cwd_f9'][:5]==[getattr(now,k) for k in META[:5]] and
          now.st_mode==stat.S_IFDIR|0o700 and now.st_uid==now.st_gid==1000 and
-         record['argv']==relative_build_argv(logical,root) and
+         record['argv']==working_build_argv(logical,root,case) and
          record['working_build_environment']==environment and
          record['authority_fds_passed']==[] and record['comparison_fds_passed']==[],
          'SAME_BUILD_DIRECTORY_ARGV_ENVIRONMENT_AND_NO_AUTHORITY_FDS')
+    tools=WorkingBuildTools()
+    try:
+        need(record.get('working_build_toolchain')==tools.comparison(),
+             'ACTUAL_FIXED_WORKING_TOOLCHAIN_BOOKEND_REQUIRED')
+    finally:tools.close()
     live.guard()
     return True
 
@@ -366,7 +489,7 @@ def run_recorded(name,argv,timeout,evidence,guard,*,protected_pids,mutation=Fals
         need(admitted==(working_build.runtime,working_build.case) and working_build.live.raw==live.raw,
              'BUILD_CONTEXT_MUST_BORROW_THIS_ACTUAL_SEALED_PREPARATION')
         working_build.guard()
-        argv=relative_build_argv(argv,working_build.root)
+        argv=working_build_argv(argv,working_build.root,working_build.case)
     env,comparison_inherit=comparison.inherit_for_host(argv,env,pass_fds)
     # The original transport contract is still exactly zero or seven authority
     # descriptors. The separate two comparison descriptors are host-only.
@@ -425,6 +548,7 @@ def run_recorded(name,argv,timeout,evidence,guard,*,protected_pids,mutation=Fals
         if working_build.last_error is not None:value['errors'].append(working_build.last_error)
         try:
             working_build.guard()
+            value['working_build_toolchain']=working_build.tools.comparison()
             need(value['working_build_preexec'] is not None and
                  value['working_build_preexec']['pid']==record.get('pid'),
                  'ACTUAL_BUILD_CHILD_MUST_MATCH_RETIRED_PIDFD_OWNER')
