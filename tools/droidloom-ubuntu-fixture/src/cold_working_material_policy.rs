@@ -235,6 +235,33 @@ mod tests {
         }]})
     }
     #[test]
+    fn compiled_working_material_policy_has_current_r7_and_distinct_first_once_history() {
+        // Synthetic tables cannot catch an omitted source integration. Exercise
+        // the exact table embedded in the normal fixture executable.
+        let current = current_admission(ADMISSIONS).unwrap();
+        assert_eq!(current.package_count, 39);
+        assert_eq!(current.apk_file_count, 65);
+        assert_eq!(current.apk_total_bytes, 4_591_853_985);
+        let compiled: Admissions = serde_json::from_str(ADMISSIONS).unwrap();
+        let first_once = compiled
+            .batches
+            .iter()
+            .find(|row| row.id == "p4-public-apk-candidate-4b91-r6")
+            .unwrap();
+        for (working, historical) in [
+            (&current.selection, &first_once.selection),
+            (&current.signature_receipt, &first_once.signature_receipt),
+            (&current.normal_import, &first_once.normal_import),
+            (
+                &current.normal_input_verification,
+                &first_once.normal_input_verification,
+            ),
+        ] {
+            assert_ne!(working.sha256, historical.sha256);
+        }
+    }
+
+    #[test]
     fn working_material_policy_has_no_legacy_or_caller_batch_fallback() {
         let admitted = table(CURRENT_BATCH);
         let parsed = current_admission(&admitted.to_string()).unwrap();
