@@ -170,12 +170,58 @@ pub struct MainCustodyObservation {
     facts: crate::main_custody::RuntimeMainCustody,
     peer: NativeInspectionPeer,
     pidfd: fs::File,
+    observed_at: Instant,
 }
 impl MainCustodyObservation {
     /// Read-only comparison projection, not a capability or acceptance receipt.
     pub fn facts(&self) -> &crate::main_custody::RuntimeMainCustody { &self.facts }
     /// Actual fixed normal peer, rechecked at construction and by revalidate_main.
     pub fn peer(&self) -> &NativeInspectionPeer { &self.peer }
+    pub(crate) fn observed_at(&self) -> Instant { self.observed_at }
+}
+
+/// Actual PM output minted only after a successful fixed request to the held
+/// normal peer. Saved ApplicationInspection values cannot construct this token.
+pub struct ActualApplicationObservation {
+    facts: application_probe::ApplicationInspection,
+    peer: NativeInspectionPeer,
+    pidfd: fs::File,
+    observed_at: Instant,
+}
+impl ActualApplicationObservation {
+    /// Comparison data only; copying it cannot recreate an actual observation.
+    pub fn facts(&self) -> &application_probe::ApplicationInspection { &self.facts }
+    pub fn peer(&self) -> &NativeInspectionPeer { &self.peer }
+    pub(crate) fn observed_at(&self) -> Instant { self.observed_at }
+}
+fn application_response(
+    response:ControlResponse, package:&str,user:u32,
+) -> Result<application_probe::ApplicationInspection,ControlError> {
+    if !response.ok || response.state!=CellState::Running || response.launch.is_some()
+        || response.applications.is_some() || response.application_icon.is_some()
+        || response.image_custody.is_some() || response.runtime_vintf.is_some() {
+        return Err(ControlError::Invalid("actual normal application observation did not complete".into()));
+    }
+    let facts=response.inspection.ok_or_else(||ControlError::Invalid(
+        "actual normal application response omitted the package".into()))?;
+    if facts.package!=package || facts.user!=user || facts.uid==0 || facts.uid/100_000!=user
+        || facts.version_code==0 || facts.apks.is_empty()
+        || response.host_pid!=Some(facts.epoch.cell_host_pid)
+        || facts.epoch.cell_host_pid<=1 || facts.epoch.framework_host_pid<=1
+        || facts.epoch.framework_start_ticks==0 {
+        return Err(ControlError::Invalid("actual normal application identity differs".into()));
+    }
+    let mut names=std::collections::BTreeSet::new();
+    let mut paths=std::collections::BTreeSet::new();
+    if facts.apks.len()>64 || facts.apks.iter().filter(|a|a.name=="base.apk").count()!=1
+        || facts.apks.iter().any(|apk| {
+            !names.insert(&apk.name) || !paths.insert(&apk.path) || apk.bytes<4
+            || !Path::new(&apk.path).is_absolute() || apk.sha256.len()!=64
+            || !apk.sha256.bytes().all(|b|b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
+        }) {
+        return Err(ControlError::Invalid("actual installed APK base/split identity is incomplete".into()));
+    }
+    Ok(facts)
 }
 
 fn main_response(
@@ -216,7 +262,21 @@ pub struct NativeApplicationInspector {
     socket_identity: Node,
     first: Option<UnixStream>,
 }
+fn check_deadline(value: Option<Instant>)->Result<(),ControlError> {
+    if value.is_some_and(|end|Instant::now()>=end) {
+        Err(ControlError::Invalid("original native leaf deadline expired".into()))
+    } else { Ok(()) }
+}
+
 impl NativeApplicationInspector {
+    /// Acquire the same fixed listener within one already-started caller budget.
+    pub fn acquire_until(socket:&Path,deadline:Instant)->Result<Self,ControlError> {
+        check_deadline(Some(deadline))?;
+        let result=Self::acquire(socket)?;
+        check_deadline(Some(deadline))?;
+        Ok(result)
+    }
+
     /// Acquire the fixed early production listener. Absence or a different
     /// layout is unsupported; it never falls back to an ordinary user socket.
     pub fn acquire(socket: &Path) -> Result<Self, ControlError> {
@@ -399,7 +459,12 @@ impl NativeApplicationInspector {
         live(&self.pidfd).map_err(io)
     }
     fn request_fixed(&mut self, request: &ControlRequest) -> Result<ControlResponse, ControlError> {
+        self.request_fixed_until(request,None)
+    }
+    fn request_fixed_until(&mut self, request: &ControlRequest, deadline:Option<Instant>) -> Result<ControlResponse, ControlError> {
+        check_deadline(deadline)?;
         self.revalidate()?;
+        check_deadline(deadline)?;
         let stream = match self.first.take() {
             Some(stream) => stream,
             None => progress::connect(Path::new(DEFAULT_CONTROL_SOCKET))
@@ -413,9 +478,13 @@ impl NativeApplicationInspector {
                 "fixed socket was replaced by another daemon".into(),
             ));
         }
-        let result = progress::request_on(stream, Instant::now(), request, None, None);
+        check_deadline(deadline)?;
+        let result = if let Some(end)=deadline {
+            progress::request_on_until(stream,request,end)
+        } else { progress::request_on(stream,Instant::now(),request,None,None) };
         live(&current_pidfd).map_err(|e| io_error("recheck current control peer", e))?;
         self.revalidate()?;
+        check_deadline(deadline)?;
         result
     }
 
@@ -432,31 +501,103 @@ impl NativeApplicationInspector {
         Ok(result)
     }
 
+
+    /// The same fixed actual inspection, consuming the original caller budget.
+    pub fn inspect_until(&mut self,package:&str,user:u32,deadline:Instant)->Result<ControlResponse,ControlError> {
+        validate_android_user(user)?;
+        let result=self.request_fixed_until(&ControlRequest::InspectApplication {
+            package:package.into(),user,
+        },Some(deadline))?;
+        if result.inspection.as_ref().is_some_and(|value|value.epoch.boot_id!=self.boot_id) {
+            return Err(ControlError::Invalid("inspection belongs to a different host boot".into()));
+        }
+        Ok(result)
+    }
+
+
+    /// One actual PM request within the caller's original deadline, retaining
+    /// its normal peer. This is the only production constructor for the token.
+    pub fn inspect_observed_until(&mut self,package:&str,user:u32,deadline:Instant)
+        ->Result<ActualApplicationObservation,ControlError> {
+        let facts=application_response(self.inspect_until(package,user,deadline)?,package,user)?;
+        let peer=self.observation()?;
+        let pidfd=self.pidfd.try_clone().map_err(|e|io_error("retain actual PM peer",e))?;
+        live(&pidfd).map_err(|e|io_error("check actual PM peer",e))?;
+        check_deadline(Some(deadline))?;
+        Ok(ActualApplicationObservation { facts,peer,pidfd,observed_at:Instant::now() })
+    }
+
+    /// Local custody only: held peer/process/source and both original opaque
+    /// observations. This deliberately performs no PM or full Main RPC.
+    pub(crate) fn require_observations_local(&self,main:&MainCustodyObservation,
+        application:&ActualApplicationObservation,deadline:Instant)->Result<(),ControlError> {
+        check_deadline(Some(deadline))?;
+        let actual=self.observation()?;
+        let current=self.pidfd.metadata().map_err(|e|io_error("stat live normal peer",e))?;
+        for (fd,peer) in [(&main.pidfd,&main.peer),(&application.pidfd,&application.peer)] {
+            live(fd).map_err(|e|io_error("check original observed peer",e))?;
+            let held=fd.metadata().map_err(|e|io_error("stat original observed peer",e))?;
+            if (held.dev(),held.ino())!=(current.dev(),current.ino()) || peer!=&actual {
+                return Err(ControlError::Invalid("native observations belong to another actual peer".into()));
+            }
+        }
+        if main.facts.epoch!=application.facts.epoch {
+            return Err(ControlError::Invalid("actual PM and Main epochs differ".into()));
+        }
+        check_deadline(Some(deadline))
+    }
+
     /// Observe only the original normal owner's current process, namespace,
     /// writable backing and retained mount resources. Expected PIDs compare a
     /// live epoch; they never select a process or authorize a saved receipt.
     pub fn observe_main(
         &mut self, expected: &application_probe::RuntimeEpoch,
     ) -> Result<MainCustodyObservation, ControlError> {
+        self.observe_main_deadline(expected,None)
+    }
+    /// The normal Main observation within the original caller's absolute budget.
+    pub fn observe_main_until(&mut self,expected:&application_probe::RuntimeEpoch,deadline:Instant)->Result<MainCustodyObservation,ControlError> {
+        self.observe_main_deadline(expected,Some(deadline))
+    }
+    fn observe_main_deadline(&mut self,expected:&application_probe::RuntimeEpoch,deadline:Option<Instant>)->Result<MainCustodyObservation,ControlError> {
+        check_deadline(deadline)?;
         self.revalidate()?;
         if expected.boot_id != self.boot_id {
             return Err(ControlError::Invalid("Main epoch belongs to another host boot".into()));
         }
-        let response = self.request_fixed(&ControlRequest::ObserveRuntimeMain {
+        let response = self.request_fixed_until(&ControlRequest::ObserveRuntimeMain {
             expected_epoch: expected.clone(),
-        })?;
+        },deadline)?;
         let facts = main_response(response, expected)?;
         let peer = self.observation()?;
         let pidfd = self.pidfd.try_clone()
             .map_err(|e| io_error("retain actual Main control peer", e))?;
         live(&pidfd).map_err(|e| io_error("check actual Main control peer", e))?;
         self.revalidate()?;
-        Ok(MainCustodyObservation { facts, peer, pidfd })
+        check_deadline(deadline)?;
+        Ok(MainCustodyObservation { facts, peer, pidfd, observed_at:Instant::now() })
     }
 
     /// Re-observe the same fixed resources through the same actual source-bound
     /// peer. This method consumes no external FilePin, pathname or success bit.
     pub fn revalidate_main(&mut self, prior: &MainCustodyObservation) -> Result<(), ControlError> {
+        self.revalidate_main_deadline(prior,None)
+    }
+    /// Revalidate the same actual owner without renewing an outer lease.
+    pub fn revalidate_main_until(&mut self,prior:&MainCustodyObservation,deadline:Instant)->Result<(),ControlError> {
+        self.revalidate_main_deadline(prior,Some(deadline))
+    }
+    /// Reuses the one normal revalidation RPC and returns the new actual token,
+    /// so downstream bookends need not repeat that operation.
+    pub fn refresh_main_until(&mut self,prior:&MainCustodyObservation,deadline:Instant)
+        ->Result<MainCustodyObservation,ControlError> {
+        self.refresh_main_deadline(prior,Some(deadline))
+    }
+    fn revalidate_main_deadline(&mut self,prior:&MainCustodyObservation,deadline:Option<Instant>)->Result<(),ControlError> {
+        self.refresh_main_deadline(prior,deadline).map(|_|())
+    }
+    fn refresh_main_deadline(&mut self,prior:&MainCustodyObservation,deadline:Option<Instant>)->Result<MainCustodyObservation,ControlError> {
+        check_deadline(deadline)?;
         live(&prior.pidfd).map_err(|e| io_error("recheck retained Main peer", e))?;
         let old = prior.pidfd.metadata().map_err(|e| io_error("stat retained Main peer", e))?;
         let current = self.pidfd.metadata().map_err(|e| io_error("stat current Main peer", e))?;
@@ -465,12 +606,14 @@ impl NativeApplicationInspector {
         {
             return Err(ControlError::Invalid("Main observation belongs to another actual control peer".into()));
         }
-        let after = self.observe_main(&prior.facts.epoch)?;
+        let after = self.observe_main_deadline(&prior.facts.epoch,deadline)?;
         if after.peer != prior.peer || after.facts != prior.facts {
             return Err(ControlError::Invalid("Main process, selection, namespace or persistent resource changed".into()));
         }
         live(&prior.pidfd).map_err(|e| io_error("finish retained Main peer check", e))?;
-        self.revalidate()
+        self.revalidate()?;
+        check_deadline(deadline)?;
+        Ok(after)
     }
     /// Return factual provenance only; the struct is not an authority input.
     pub fn observation(&self) -> Result<NativeInspectionPeer, ControlError> {
@@ -491,6 +634,40 @@ impl NativeApplicationInspector {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+
+    #[test]
+    fn native_leaf_pm_token_parser_rejects_foreign_or_incomplete_actual_response() {
+        let epoch=crate::main_custody::tests::sample().epoch;
+        let app:application_probe::ApplicationInspection=serde_json::from_value(serde_json::json!({
+            "package":"com.example.fixture","user":0,"uid":10123,"version_code":1,"epoch":epoch,
+            "apks":[{"name":"base.apk","path":"/data/app/fixture/base.apk","bytes":4,"sha256":"a".repeat(64)}]
+        })).unwrap();
+        let response=ControlResponse {
+            ok:true,state:CellState::Running,message:String::new(),
+            host_pid:Some(app.epoch.cell_host_pid), launch:None,applications:None,
+            application_icon:None,diagnostics:None,inspection:Some(app.clone()),
+            image_custody:None,runtime_vintf:None,
+        };
+        assert_eq!(application_response(response.clone(),&app.package,0).unwrap(),app);
+        for case in 0..10 {
+            let mut changed=response.clone();
+            match case {
+                0=>changed.ok=false,
+                1=>changed.state=CellState::Quarantined,
+                2=>changed.host_pid=Some(999),
+                3=>changed.inspection=None,
+                4=>changed.inspection.as_mut().unwrap().package="com.other".into(),
+                5=>changed.inspection.as_mut().unwrap().uid=100123,
+                6=>changed.inspection.as_mut().unwrap().apks.clear(),
+                7=>changed.inspection.as_mut().unwrap().apks.push(app.apks[0].clone()),
+                8=>changed.inspection.as_mut().unwrap().apks[0].name="split.apk".into(),
+                _=>changed.inspection.as_mut().unwrap().apks[0].sha256="caller".into(),
+            }
+            assert!(application_response(changed,&app.package,0).is_err());
+        }
+        // Parsed JSON never creates ActualApplicationObservation here.
+    }
 
     #[test]
     fn main_observation_requires_the_fixed_successful_response_and_exact_body() {

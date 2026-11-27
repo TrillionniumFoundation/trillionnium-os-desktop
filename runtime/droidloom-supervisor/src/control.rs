@@ -52,7 +52,7 @@ mod progress;
 
 #[path = "control_identity.rs"]
 mod identity;
-pub use identity::{MainCustodyObservation, NativeApplicationInspector, NativeInspectionPeer};
+pub use identity::{ActualApplicationObservation, MainCustodyObservation, NativeApplicationInspector, NativeInspectionPeer};
 
 #[cfg(target_os = "linux")]
 #[path = "production_package.rs"]
@@ -123,6 +123,28 @@ pub fn run_prepared_settings_pages_leaf(
     epoch: &application_probe::RuntimeEpoch,
 ) -> Result<std::process::Output, String> {
     application_command::run_prepared_settings_pages_leaf(command, epoch)
+}
+
+/// Existing source-owned leaf profiles; no serialized command authority.
+pub enum NativeLeafCommandKind {
+    Standard { budget: std::time::Duration },
+    GalleryImage,
+    CalendarReminder,
+    SettingsPages,
+}
+
+/// Execute the same frozen host leaf with a live normal Main/data factory.
+/// The fixed child receives only sealed comparison facts and a check-only
+/// private endpoint; saved JSON and caller environment cannot replace it.
+pub fn run_prepared_native_leaf_until(
+    command: std::process::Command,
+    epoch: &application_probe::RuntimeEpoch,
+    kind: NativeLeafCommandKind,
+    inspector:&mut NativeApplicationInspector,
+    observation: &mut crate::native_leaf_baseline::NativeLeafBaselineObservation<'_>,
+    until:Instant,
+) -> Result<std::process::Output,String> {
+    application_command::run_prepared_native_leaf_until(command,epoch,kind,inspector,observation,until)
 }
 
 /// Default root-owned lifecycle socket.

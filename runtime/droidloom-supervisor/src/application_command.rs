@@ -488,12 +488,53 @@ fn run_owned(
 }
 
 fn run_owned_with_resources(
-    mut command: Command,
+    command: Command,
     inherit: &[RawFd],
     alive_pidfds: &[RawFd],
     deadline: Instant,
     profile: Option<gallery_resources::Profile>,
 ) -> Result<Output, String> {
+    run_owned_observed(command, inherit, alive_pidfds, deadline, profile, None)
+}
+
+struct NativeLeafRun<'a,'b> {
+    observation:&'a mut crate::native_leaf_baseline::NativeLeafBaselineObservation<'b>,
+    inspector:&'a mut super::NativeApplicationInspector,
+    until:Instant,
+}
+impl NativeLeafRun<'_,'_> {
+    fn work_deadline(&self,budget:Duration)->Result<Instant,String> {
+        let app=self.observation.application();
+        let after=super::progress::response_timeout(&super::ControlRequest::InspectApplication {
+            package:app.package.clone(),user:app.user,
+        })+super::progress::response_timeout(&super::ControlRequest::ObserveRuntimeMain {
+            expected_epoch:app.epoch.clone(),
+        })+RETIRE_TIMEOUT;
+        native_leaf_work_deadline(Instant::now(),
+            self.until.min(self.observation.deadline()),budget,after)
+    }
+}
+fn native_leaf_work_deadline(now:Instant,original:Instant,route:Duration,after:Duration)
+    ->Result<Instant,String> {
+    let work=original.checked_sub(after).filter(|end|*end>now)
+        .ok_or("native leaf original lease cannot cover its normal postcheck and retirement caps")?;
+    Ok((now+route).min(work))
+}
+
+fn run_owned_observed(
+    mut command: Command,
+    inherit: &[RawFd],
+    alive_pidfds: &[RawFd],
+    deadline: Instant,
+    profile: Option<gallery_resources::Profile>,
+    mut observation: Option<NativeLeafRun<'_, '_>>,
+) -> Result<Output, String> {
+    let mut channel=observation.as_mut()
+        .map(|value| crate::native_leaf_baseline_channel::NativeLeafChannel::new(value.observation,value.inspector,deadline))
+        .transpose()?;
+    let mut inherited=inherit.to_vec();
+    if let Some(value)=&channel { inherited.extend(value.prepare(&mut command)); }
+    let inherit=inherited.as_slice();
     let gallery = profile.is_some();
     let mut retained = loop {
         match RETAINED.try_lock() {
@@ -606,6 +647,9 @@ fn run_owned_with_resources(
                     if Instant::now() >= deadline {
                         return Err("application command deadline exceeded".into());
                     }
+                    if let (Some(channel),Some(observation))=(channel.as_mut(),observation.as_mut()) {
+                        channel.serve(observation.observation,observation.inspector)?;
+                    }
                     drain(&mut stdout, &mut out)
                         .and_then(|_| drain(&mut stderr, &mut err))
                         .map_err(|e| e.to_string())?;
@@ -651,6 +695,13 @@ fn run_owned_with_resources(
     let resources = invocation.group.validate_resources().map_err(|e| e.to_string());
     result
         .and_then(|output| resources.map(|()| output))
+        .and_then(|output| {
+            if let Some(channel)=&channel { channel.finish()?; }
+            if let Some(observation)=observation.as_mut() {
+                observation.observation.verify_local(observation.inspector,deadline).map_err(|e|e.to_string())?;
+            }
+            Ok(output)
+        })
         .and_then(|output| success_before_deadline(output, deadline))
         .map_err(|error| format!("{error}; invocation cgroup empty and direct child reaped"))
 }
@@ -664,13 +715,23 @@ pub(super) fn run_prepared_host_leaf(
     epoch: &super::application_probe::RuntimeEpoch,
     budget: Duration,
 ) -> Result<Output, String> {
+    run_prepared_host_leaf_observed(command, epoch, budget, None)
+}
+
+fn run_prepared_host_leaf_observed(
+    command: Command,
+    epoch: &super::application_probe::RuntimeEpoch,
+    budget: Duration,
+    observation: Option<NativeLeafRun<'_, '_>>,
+) -> Result<Output, String> {
+    if let Some(value)=&observation { value.observation.require_epoch(epoch)?; }
     if budget.is_zero()
         || budget > Duration::from_secs(1200)
         || command.get_program() != "/usr/bin/python3"
     {
         return Err("invalid bounded prepared host-leaf command".into());
     }
-    let deadline = Instant::now() + budget;
+    let deadline = if let Some(value)=&observation { value.work_deadline(budget)? } else { Instant::now() + budget };
     let check_boot = || -> Result<(), String> {
         if fs::read_to_string("/proc/sys/kernel/random/boot_id")
             .map_err(|e| e.to_string())?
@@ -688,7 +749,7 @@ pub(super) fn run_prepared_host_leaf(
         epoch.framework_start_ticks,
     )
     .map_err(|e| e.to_string())?;
-    let output = run_owned(
+    let output = run_owned_observed(
         command,
         &[],
         &[
@@ -696,6 +757,8 @@ pub(super) fn run_prepared_host_leaf(
             target.framework.pidfd.as_raw_fd(),
         ],
         deadline,
+        None,
+        observation,
     )?;
     target.validate().map_err(|e| e.to_string())?;
     check_boot()?;
@@ -786,7 +849,18 @@ fn run_prepared_resource_leaf(
     budget: Duration,
     profile: gallery_resources::Profile,
 ) -> Result<Output,String> {
-    let deadline = Instant::now() + budget;
+    run_prepared_resource_leaf_observed(command,epoch,budget,profile,None)
+}
+
+fn run_prepared_resource_leaf_observed(
+    command: Command,
+    epoch: &super::application_probe::RuntimeEpoch,
+    budget: Duration,
+    profile: gallery_resources::Profile,
+    observation: Option<NativeLeafRun<'_, '_>>,
+) -> Result<Output,String> {
+    if let Some(value)=&observation { value.observation.require_epoch(epoch)?; }
+    let deadline = if let Some(value)=&observation { value.work_deadline(budget)? } else { Instant::now() + budget };
     let check_boot = || -> Result<(), String> {
         if fs::read_to_string("/proc/sys/kernel/random/boot_id").map_err(|e| e.to_string())?.trim() != epoch.boot_id {
             return Err("host boot differs from the admitted Gallery Main".into());
@@ -796,11 +870,44 @@ fn run_prepared_resource_leaf(
     check_boot()?;
     let target = NamespaceTarget::capture(epoch.cell_host_pid, epoch.framework_host_pid, epoch.framework_start_ticks)
         .map_err(|e| e.to_string())?;
-    let output = run_owned_with_resources(command, &[],
-        &[target.cell.pidfd.as_raw_fd(), target.framework.pidfd.as_raw_fd()], deadline, Some(profile))?;
+    let output = run_owned_observed(command, &[],
+        &[target.cell.pidfd.as_raw_fd(), target.framework.pidfd.as_raw_fd()], deadline, Some(profile), observation)?;
     target.validate().map_err(|e| e.to_string())?;
     check_boot()?;
     success_before_deadline(output, deadline)
+}
+
+
+/// Exact existing profiles plus one real retained baseline; this does not
+/// authorize a new command or widen any resource or namespace-entry boundary.
+pub(super) fn run_prepared_native_leaf_until(
+    command: Command,
+    epoch: &super::application_probe::RuntimeEpoch,
+    kind: super::NativeLeafCommandKind,
+    inspector:&mut super::NativeApplicationInspector,
+    baseline: &mut crate::native_leaf_baseline::NativeLeafBaselineObservation<'_>,
+    until:Instant,
+) -> Result<Output,String> {
+    let observation=NativeLeafRun { observation:baseline,inspector,until };
+    match kind {
+        super::NativeLeafCommandKind::Standard { budget } =>
+            run_prepared_host_leaf_observed(command,epoch,budget,Some(observation)),
+        super::NativeLeafCommandKind::GalleryImage => {
+            gallery_command(&command)?;
+            run_prepared_resource_leaf_observed(command,epoch,Duration::from_secs(1530),
+                gallery_resources::Profile::Gallery,Some(observation))
+        }
+        super::NativeLeafCommandKind::CalendarReminder => {
+            calendar_command(&command)?;
+            run_prepared_resource_leaf_observed(command,epoch,Duration::from_secs(690),
+                gallery_resources::Profile::CalendarReminder,Some(observation))
+        }
+        super::NativeLeafCommandKind::SettingsPages => {
+            settings_command(&command)?;
+            run_prepared_resource_leaf_observed(command,epoch,Duration::from_secs(900),
+                gallery_resources::Profile::SettingsPages,Some(observation))
+        }
+    }
 }
 
 #[cfg(test)]
@@ -815,6 +922,16 @@ mod gallery_tests {
             .arg("--expect-preparation-sha256").arg("a".repeat(64)).arg("execute")
             .arg("--request").arg("/fixture/request.json").arg("--expect-request-sha256").arg("b".repeat(64));
         command
+    }
+
+    #[test]
+    fn native_leaf_stage_keeps_route_cap_and_reserves_original_postchecks() {
+        let now=Instant::now();
+        let route=Duration::from_secs(900);
+        let after=Duration::from_secs(322);
+        assert_eq!(native_leaf_work_deadline(now,now+Duration::from_secs(1300),route,after).unwrap(),now+route);
+        assert_eq!(native_leaf_work_deadline(now,now+Duration::from_secs(1000),route,after).unwrap(),now+Duration::from_secs(678));
+        assert!(native_leaf_work_deadline(now,now+after,route,after).is_err());
     }
 
     #[test]

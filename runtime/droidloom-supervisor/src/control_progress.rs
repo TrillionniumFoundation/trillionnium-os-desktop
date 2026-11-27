@@ -20,7 +20,7 @@ const REQUEST_TIMEOUT: Duration = Duration::from_secs(250);
 const GALLERY_CUSTODY_RESPONSE_TIMEOUT: Duration = Duration::from_secs(330);
 const UPDATE_INTERVAL: Duration = Duration::from_secs(10);
 
-fn response_timeout(request: &ControlRequest) -> Duration {
+pub(super) fn response_timeout(request: &ControlRequest) -> Duration {
     match request {
         ControlRequest::InspectApplication { package, user: 0 }
             if package == super::application_custody::GALLERY_PACKAGE =>
@@ -135,6 +135,42 @@ pub(super) fn request_on(
         UPDATE_INTERVAL,
         progress,
     )
+}
+
+
+/// Bound the existing transport by the original caller's absolute deadline.
+/// This is an in-process bound; it grants no operation or wire authority.
+pub(super) fn request_on_until(
+    mut stream: UnixStream,
+    request: &ControlRequest,
+    deadline: Instant,
+) -> Result<ControlResponse, ControlError> {
+    let started=Instant::now();
+    let end=deadline.min(started+response_timeout(request));
+    let remaining=|| end.checked_duration_since(Instant::now())
+        .filter(|v|!v.is_zero()).ok_or_else(||ControlError::Invalid(
+            "original native leaf deadline expired".into()));
+    let encoded=serde_json::to_vec(request)?;
+    if encoded.len() as u64>MAX_MESSAGE_BYTES {
+        return Err(ControlError::Invalid("lifecycle request is too large".into()));
+    }
+    let mut pending=encoded.as_slice();
+    while !pending.is_empty() {
+        stream.set_write_timeout(Some(remaining()?.min(Duration::from_secs(2))))
+            .map_err(|e|io_error("bound original request write",e))?;
+        match stream.write(pending) {
+            Ok(0)=>return Err(ControlError::Invalid("fixed lifecycle request write returned zero".into())),
+            Ok(n)=>pending=&pending[n..],
+            Err(e) if e.kind()==io::ErrorKind::Interrupted=>continue,
+            Err(e)=>return Err(io_error("write bounded fixed lifecycle request",e)),
+        }
+    }
+    remaining()?;
+    stream.shutdown(std::net::Shutdown::Write).map_err(|e|io_error("finish bounded request write",e))?;
+    let result=read_response(&mut stream,started,end.saturating_duration_since(started),
+        UPDATE_INTERVAL,None)?;
+    remaining()?;
+    Ok(result)
 }
 
 pub(super) fn connect(path: &Path) -> io::Result<UnixStream> {
@@ -293,6 +329,38 @@ fn read_response(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn native_leaf_absolute_budget_never_restarts_the_regular_response_timeout() {
+        let (client,mut server)=UnixStream::pair().unwrap();
+        let worker=thread::spawn(move|| {
+            let mut request=Vec::new();server.read_to_end(&mut request).unwrap();
+            let v:serde_json::Value=serde_json::from_slice(&request).unwrap();
+            assert_eq!(v["command"],"status");
+            thread::sleep(Duration::from_millis(200));
+        });
+        let started=Instant::now();
+        assert!(request_on_until(client,&ControlRequest::Status,
+            started+Duration::from_millis(40)).is_err());
+        assert!(started.elapsed()<Duration::from_secs(1));
+        worker.join().unwrap();
+    }
+    #[test]
+    fn native_leaf_expired_budget_sends_nothing_and_live_budget_reads_real_response() {
+        let (client,mut server)=UnixStream::pair().unwrap();
+        assert!(request_on_until(client,&ControlRequest::Status,
+            Instant::now()-Duration::from_millis(1)).is_err());
+        let mut raw=Vec::new();server.read_to_end(&mut raw).unwrap();assert!(raw.is_empty());
+        let (client,mut server)=UnixStream::pair().unwrap();
+        let worker=thread::spawn(move|| {
+            let mut request=Vec::new();server.read_to_end(&mut request).unwrap();
+            assert!(!request.is_empty());server.write_all(SUCCESS).unwrap();
+            server.write_all(b"\n").unwrap();
+        });
+        let value=request_on_until(client,&ControlRequest::Status,Instant::now()+Duration::from_secs(2)).unwrap();
+        assert!(value.ok);worker.join().unwrap();
+    }
+
 
     #[test]
     fn only_exact_user_zero_gallery_inspection_gets_the_longer_response_wait() {

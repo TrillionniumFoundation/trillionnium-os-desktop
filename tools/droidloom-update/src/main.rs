@@ -8,6 +8,7 @@ mod host_archive;
 mod image_policy;
 mod kernel_first_mac;
 mod native_leaf_sources;
+mod native_leaf_baseline;
 mod install;
 mod licenses;
 mod native_bridge;
@@ -48,6 +49,17 @@ struct Args {
 }
 #[derive(Subcommand)]
 enum Action {
+    /// Observe actual Main/working target metadata; no leaf execution or acceptance.
+    ObserveNativeLeafBaseline {
+        #[arg(long)] package: String,
+        #[arg(long)] output: PathBuf,
+    },
+    /// Compare a saved document to a freshly observed normal owner; no authority from JSON.
+    CompareNativeLeafBaseline {
+        #[arg(long)] package: String,
+        #[arg(long)] reference: PathBuf,
+        #[arg(long)] reference_sha256: String,
+    },
     /// Reproduce the fixed recovered leaf sources in fresh staging; never install or execute them.
     MaterializeNativeLeafSources {
         /// Exact recovered packet directory containing its original source manifest and bundle.
@@ -526,6 +538,20 @@ fn execute(args: Args) -> Result<()> {
         return android::official_vendor::resume::run(&repo, work, built_out, out, system_image, references, native_inputs_sha256, vendor_result_sha256, jobs, native_projection_sha256, native_source_sha256, native_producer_commit, *verify_native_only, previous_attempt.as_deref(), previous_attempt_sha256.as_deref());
     }
     match &args.command {
+        Some(Action::ObserveNativeLeafBaseline { package, output }) => {
+            if args.clean || args.build_only || args.bootstrapped || args.jobs.is_some() || args.source.is_some() {
+                return fail("native leaf baseline observation accepts no build, cleanup or activation options");
+            }
+            println!("{}",serde_json::to_string_pretty(&native_leaf_baseline::capture(package,output)?)?);
+            return Ok(());
+        }
+        Some(Action::CompareNativeLeafBaseline { package, reference, reference_sha256 }) => {
+            if args.clean || args.build_only || args.bootstrapped || args.jobs.is_some() || args.source.is_some() {
+                return fail("native leaf baseline comparison accepts no build, cleanup or activation options");
+            }
+            println!("{}",serde_json::to_string_pretty(&native_leaf_baseline::compare(package,reference,reference_sha256)?)?);
+            return Ok(());
+        }
         Some(Action::MaterializeNativeLeafSources { input, output }) => {
             if args.clean || args.build_only || args.bootstrapped || args.jobs.is_some() || args.source.is_some() {
                 return fail("leaf source staging accepts no build, cleanup, repository or activation options");
