@@ -33,6 +33,7 @@ pub(super) fn response_timeout(request: &ControlRequest) -> Duration {
         // absolute 60-second work-and-retirement budget.
         ControlRequest::ObserveRuntimeVintf { .. }
         | ControlRequest::ObserveRuntimeMain { .. }
+        | ControlRequest::ObserveCurrentRuntimeMain {}
         | ControlRequest::ObserveApplicationEngine { .. }
         | ControlRequest::ObserveUserZeroPackageInventory { .. }
         | ControlRequest::ObserveApplicationExitState { .. } => Duration::from_secs(70),
@@ -256,6 +257,8 @@ fn read_response(
     let mut total_bytes = 0_u64;
     let mut buffer = [0; 8192];
     loop {
+        super::physical_qualification_channel::working_runtime::progress()
+            .map_err(ControlError::Invalid)?;
         let now = Instant::now();
         if now >= deadline {
             return Err(ControlError::Invalid(format!(
