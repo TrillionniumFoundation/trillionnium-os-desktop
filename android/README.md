@@ -113,9 +113,11 @@ Use a fresh output for this route. The existing failed-build resume interface
 does not restore the held WebView input and explicitly rejects prior receipts
 that selected one. Successful releases remain ineligible for that interface.
 
-The current profile pins the verified x86/x86_64 Google WebView
-158.0.8127.92, version code 812709208. It is an integration input; a newer
-compatible 158.0.8127.93 is known, so the profile does not claim latest-version
+The current profile pins the SDK-verified x86/x86_64 Google WebView
+158.0.8127.93, version code 812709308. Its actual manifest specifies minimum
+API 29, target API 36 and compile API 37. The unchanged Google-signed APK
+passed the normal presigned-import preflight. Newer 159.0.8154.33 material
+remains unqualified, so this integration input does not claim latest-version
 acceptance. Input verification and image readback also leave default-provider,
 rendering, runtime and production qualification false. Those checks require a
 normally completed build and acceptance on the resulting Android system.
