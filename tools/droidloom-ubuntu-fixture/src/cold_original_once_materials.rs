@@ -144,6 +144,41 @@ impl Guard {
             "normal once material changed its complete bytes or inode",
         )
     }
+    pub(super) fn prepare_working_label_custody_update(
+        &self,
+        batch: &crate::cold_original_data::labels::WorkingLabelBatch,
+    ) -> Result<WorkingGuardLabelUpdate> {
+        let record = batch
+            .records()
+            .iter()
+            .find(|record| record.paths().iter().any(|path| path == &self.pin.path));
+        let after = match record {
+            Some(record) => {
+                record.require_held_transition(&self.pin.path, &self.file, &self.identity)?
+            }
+            None => {
+                self.revalidate_custody()?;
+                self.identity.clone()
+            }
+        };
+        let named = fs::Tree::open("/", 0)?.file(&fs::absolute_string(&self.pin.path)?)?;
+        ensure(
+            fs::stat(&self.file)? == after
+                && fs::stat(&named)? == after
+                && fs::xattrs(&self.file)?.is_empty()
+                && fs::xattrs(&named)?.is_empty()
+                && fs::stat(&self.file)? == after
+                && fs::stat(&named)? == after,
+            "working label custody update changed the complete held/named inode",
+        )?;
+        Ok(WorkingGuardLabelUpdate {
+            held: self.file.try_clone()?,
+            pin: self.pin.clone(),
+            before: self.identity.clone(),
+            after,
+        })
+    }
+
     pub(super) fn prepare_working_label_update(
         &self,
         batch: &crate::cold_original_data::labels::WorkingLabelBatch,
@@ -179,6 +214,25 @@ impl Guard {
             before: self.identity.clone(),
             after,
         })
+    }
+
+    pub(super) fn accept_working_label_custody_update(
+        &mut self,
+        update: WorkingGuardLabelUpdate,
+    ) -> Result<()> {
+        ensure(
+            self.pin.path == update.pin.path
+                && self.pin.bytes == update.pin.bytes
+                && self.pin.sha256 == update.pin.sha256
+                && self.identity == update.before
+                && fs::stat(&self.file)? == update.after
+                && fs::stat(&update.held)? == update.after,
+            "working source update belongs to another continuously held guard",
+        )?;
+        self.identity = update.after;
+        // Only this source inode is checked here. The caller advances every
+        // owner of the batch before invoking any full source/publication guard.
+        self.revalidate_custody()
     }
 
     pub(super) fn accept_working_label_update(

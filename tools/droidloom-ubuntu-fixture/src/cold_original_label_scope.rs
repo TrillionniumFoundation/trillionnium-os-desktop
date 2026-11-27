@@ -549,6 +549,17 @@ impl RootScope {
         self.revalidate()?;
         expected.reopen(&self.root)
     }
+    pub(super) fn accept_working_batch(
+        &mut self,
+        batch: &super::WorkingLabelBatch,
+    ) -> Result<()> {
+        if let Some(step) = batch.records().iter().find(|step| step.paths().iter().any(|p| p == Path::new("/"))) {
+            self.root_identity = step.require_held_transition(
+                Path::new("/"), &self.root, &self.root_identity,
+            )?;
+        }
+        self.revalidate()
+    }
     pub(super) fn accept_root_label(
         &mut self,
         step: &super::OriginalLabelDerivation,

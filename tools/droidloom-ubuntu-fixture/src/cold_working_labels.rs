@@ -22,9 +22,14 @@ use std::{
 pub(crate) type WorkingLabelCheckpoint<'a> =
     (&'a Identity, i32, &'a str, &'a BTreeMap<String, String>);
 
-struct Origin {
-    source: WorkingLabelSourceIdentity,
-    plan: Arc<PlanSeal>,
+pub(super) struct Origin {
+    pub(super) source: WorkingLabelSourceIdentity,
+    pub(super) plan: Arc<PlanSeal>,
+}
+pub(super) struct Restoration {
+    pub(super) original: Snapshot,
+    pub(super) intent: FilePin,
+    pub(super) restored: FilePin,
 }
 impl Origin {
     fn revalidate(&self) -> Result<()> {
@@ -41,12 +46,13 @@ impl Origin {
 /// One completed normal lookup -> PREIMAGE -> held syscall -> syncfs -> APPLIED
 /// transition. There is no public constructor, Clone, or Deserialize.
 pub(crate) struct WorkingLabelDerivation {
-    origin: Rc<Origin>,
-    ordinal: u32,
-    paths: Vec<PathBuf>,
-    preimage: FilePin,
-    applied: FilePin,
-    core: LabelDerivation,
+    pub(super) origin: Rc<Origin>,
+    pub(super) ordinal: u32,
+    pub(super) paths: Vec<PathBuf>,
+    pub(super) preimage: FilePin,
+    pub(super) applied: Option<FilePin>,
+    pub(super) restoration: Option<Restoration>,
+    pub(super) core: LabelDerivation,
 }
 
 fn require_member_checkpoint(snapshot: &Snapshot, value: (&Identity, i32, &str)) -> Result<()> {
@@ -177,6 +183,10 @@ impl WorkingLabelDerivation {
     }
     pub(crate) fn revalidate(&self) -> Result<()> {
         self.origin.revalidate()?;
+        self.revalidate_inode()?;
+        self.origin.revalidate()
+    }
+    fn revalidate_inode(&self) -> Result<()> {
         self.core.revalidate()?;
         ensure(
             !self.paths.is_empty(),
@@ -184,14 +194,15 @@ impl WorkingLabelDerivation {
         )?;
         let preimage: serde_json::Value =
             serde_json::from_slice(&super::super::root_pin(&self.preimage, 32 * 1024 * 1024)?)?;
-        let label = self
-            .core
-            .after
-            .attributes
-            .get(LABEL)
-            .ok_or("actual working normal label missing")?;
-        // The unchanged private per-inode journal is the physical write core.
-        // Its schema never grants the old once qualification owner or phase.
+        let original = self
+            .restoration
+            .as_ref()
+            .map_or(&self.core.before, |r| &r.original);
+        let desired: Vec<u8> = serde_json::from_value(preimage["desired"].clone())?;
+        ensure(
+            !desired.is_empty() && desired.len() <= 4096,
+            "working desired normal context bound",
+        )?;
         ensure(
             preimage["schema"] == "droidloom.original-label-preimage.v1"
                 && preimage["candidate_id"] == self.candidate_id()
@@ -199,32 +210,92 @@ impl WorkingLabelDerivation {
                 && preimage["logical_path"] == self.paths[0].to_string_lossy().as_ref()
                 && preimage["source_plan"] == serde_json::to_value(self.source_plan())?
                 && preimage["attribute"] == LABEL
-                && preimage["desired"] == serde_json::to_value(label)?
-                && preimage["before"] == serde_json::to_value(&self.core.before)?,
+                && preimage["before"] == serde_json::to_value(original)?,
             "working label preimage is outside this actual source-bound transition",
         )?;
-        let mut wanted = self.core.before.attributes.clone();
-        wanted.insert(LABEL.into(), label.clone());
+        let mut wanted = original.attributes.clone();
+        wanted.insert(LABEL.into(), desired);
         ensure(
-            only_ctime_changed(&self.core.before.identity, &self.core.after.identity)
+            original.handle == self.core.before.handle
                 && self.core.before.handle == self.core.after.handle
-                && wanted == self.core.after.attributes,
-            "working label operation changed an unrelated inode field or xattr",
+                && only_ctime_changed(&original.identity, &self.core.before.identity)
+                && only_ctime_changed(&self.core.before.identity, &self.core.after.identity),
+            "working label transition changed a non-ctime field or inode generation",
         )?;
-        let applied: serde_json::Value =
-            serde_json::from_slice(&super::super::root_pin(&self.applied, 32 * 1024 * 1024)?)?;
-        ensure(
-            applied["schema"] == "droidloom.original-label-applied.v1"
-                && applied["preimage"] == serde_json::to_value(&self.preimage)?
-                && applied["before"] == serde_json::to_value(&self.core.before)?
-                && applied["after"] == serde_json::to_value(&self.core.after)?
-                && applied["target_metadata_durability"]["operation"] == "syncfs"
-                && applied["target_metadata_durability"]["filesystem_dev"]
-                    == self.core.after.identity.dev,
-            "working label completion lacks this durable held-inode operation",
-        )?;
-        self.core.revalidate()?;
-        self.origin.revalidate()
+        if let Some(restoration) = &self.restoration {
+            ensure(
+                self.core.after.attributes == original.attributes,
+                "working restore did not reach every original xattr exactly",
+            )?;
+            let intent: serde_json::Value = serde_json::from_slice(&super::super::root_pin(
+                &restoration.intent,
+                32 * 1024 * 1024,
+            )?)?;
+            ensure(
+                intent["schema"] == "droidloom.original-label-restore-intent.v1"
+                    && intent["preimage"] == serde_json::to_value(&self.preimage)?,
+                "working restoration lacks its durable source-owned intent",
+            )?;
+            let restored: serde_json::Value = serde_json::from_slice(&super::super::root_pin(
+                &restoration.restored,
+                32 * 1024 * 1024,
+            )?)?;
+            ensure(
+                restored["schema"] == "droidloom.original-label-restored.v1"
+                    && restored["preimage"] == serde_json::to_value(&self.preimage)?
+                    && (restored["observed_before_restore"]
+                        == serde_json::to_value(&self.core.before)?
+                        || restored["observed_before_restore"]
+                            == serde_json::to_value(&self.core.after)?)
+                    && restored["after"] == serde_json::to_value(&self.core.after)?
+                    && restored["target_metadata_durability"]["operation"] == "syncfs"
+                    && restored["target_metadata_durability"]["filesystem_dev"]
+                        == self.core.after.identity.dev,
+                "working restoration is not its actual synchronized held-inode transition",
+            )?;
+            if let Some(applied) = &self.applied {
+                let value: serde_json::Value =
+                    serde_json::from_slice(&super::super::root_pin(applied, 32 * 1024 * 1024)?)?;
+                ensure(
+                    value["schema"] == "droidloom.original-label-applied.v1"
+                        && value["preimage"] == serde_json::to_value(&self.preimage)?
+                        && value["before"] == serde_json::to_value(original)?
+                        && value["after"] == serde_json::to_value(&self.core.before)?
+                        && self.core.before.attributes == wanted
+                        && value["target_metadata_durability"]["operation"] == "syncfs"
+                        && value["target_metadata_durability"]["filesystem_dev"]
+                            == self.core.before.identity.dev,
+                    "working restore does not undo its exact durable application",
+                )?;
+            } else {
+                ensure(
+                    &self.core.before == original,
+                    "an uncompleted working application cannot invent an inode evolution",
+                )?;
+            }
+        } else {
+            ensure(
+                self.core.after.attributes == wanted,
+                "working label operation changed an unrelated xattr",
+            )?;
+            let applied = self
+                .applied
+                .as_ref()
+                .ok_or("working application lacks durable completion")?;
+            let applied: serde_json::Value =
+                serde_json::from_slice(&super::super::root_pin(applied, 32 * 1024 * 1024)?)?;
+            ensure(
+                applied["schema"] == "droidloom.original-label-applied.v1"
+                    && applied["preimage"] == serde_json::to_value(&self.preimage)?
+                    && applied["before"] == serde_json::to_value(&self.core.before)?
+                    && applied["after"] == serde_json::to_value(&self.core.after)?
+                    && applied["target_metadata_durability"]["operation"] == "syncfs"
+                    && applied["target_metadata_durability"]["filesystem_dev"]
+                        == self.core.after.identity.dev,
+                "working label completion lacks this durable held-inode operation",
+            )?;
+        }
+        self.core.revalidate()
     }
 }
 
@@ -232,8 +303,8 @@ impl WorkingLabelDerivation {
 /// parent/child difference against these records before advancing any full
 /// source or publication guard. Applying a record one at a time is insufficient.
 pub(crate) struct WorkingLabelBatch {
-    origin: Rc<Origin>,
-    records: Vec<WorkingLabelDerivation>,
+    pub(super) origin: Rc<Origin>,
+    pub(super) records: Vec<WorkingLabelDerivation>,
 }
 impl WorkingLabelBatch {
     pub(crate) fn candidate_id(&self) -> &str {
@@ -285,7 +356,7 @@ impl WorkingLabelBatch {
                     "working label batch aliases are ambiguous or noncanonical",
                 )?;
             }
-            record.revalidate()?;
+            record.revalidate_inode()?;
         }
         self.origin.revalidate()
     }

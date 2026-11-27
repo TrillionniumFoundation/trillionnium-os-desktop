@@ -164,6 +164,13 @@ impl PreparedWorkingCopyObservation {
     ) -> Result<()> {
         pair.accept_working_label_batch(&self.data, &self.history, batch)
     }
+    pub(super) fn guard_pair_label_custody(
+        &self,
+        pair: &crate::cold_original_data::WorkingPairTransaction,
+    ) -> Result<()> {
+        pair.guard_label_custody(&self.data, &self.history)
+    }
+
     pub(super) fn guard_pair(
         &self,
         pair: &crate::cold_original_data::WorkingPairTransaction,

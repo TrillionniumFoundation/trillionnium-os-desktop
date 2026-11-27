@@ -36,6 +36,21 @@ impl WorkingColdCustody {
         value.revalidate()?;
         Ok(value)
     }
+    fn guard_pair_label_custody(&self) -> Result<()> {
+        let returned = self
+            .returned
+            .try_borrow()
+            .map_err(|_| "working Returned observation is already borrowed")?;
+        let pair = self
+            .pair
+            .try_borrow()
+            .map_err(|_| "working pair mutation is already in progress")?;
+        match pair.as_ref() {
+            Some(pair) => returned.guard_pair_label_custody(pair),
+            None => Err("working label window lacks the actual exchanged pair".into()),
+        }
+    }
+
     fn guard_pair(&self) -> Result<()> {
         let returned = self
             .returned
@@ -50,6 +65,13 @@ impl WorkingColdCustody {
             None => returned.guard(),
         }
     }
+    pub(super) fn revalidate_label_custody(&self) -> Result<()> {
+        self.guard_pair_label_custody()?;
+        self.materials.revalidate_label_custody()?;
+        self.boot.revalidate_label_custody()?;
+        self.guard_pair_label_custody()
+    }
+
     pub(super) fn revalidate(&self) -> Result<()> {
         self.guard_pair()?;
         self.materials.revalidate()?;
@@ -180,6 +202,22 @@ impl WorkingColdCustody {
         Ok(())
     }
 
+    pub(super) fn current_owner_evidence(&self) -> Result<serde_json::Value> {
+        self.revalidate()?;
+        let evidence = self.returned.try_borrow()
+            .map_err(|_| "working returned owner is already borrowed")?
+            .history().current_owner_evidence();
+        self.revalidate()?;
+        Ok(evidence)
+    }
+    pub(super) fn retained_cold_clone(&self) -> Result<crate::boot_files::FilePin> {
+        self.revalidate()?;
+        let pin = self.returned.try_borrow()
+            .map_err(|_| "working returned source is already borrowed")?
+            .history().retained_cold_clone()?;
+        self.revalidate()?;
+        Ok(pin)
+    }
     pub(super) fn materials(&self) -> &WorkingMaterialSources {
         &self.materials
     }

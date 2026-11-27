@@ -288,6 +288,16 @@ impl PublishedWorkingBootFiles {
     pub(crate) fn entry_id(&self) -> Result<String> {
         entry_id(&self.publication.candidate)
     }
+    pub(crate) fn guard_label_custody(&self) -> Result<()> {
+        self.publication.runtime.guard_label_custody()?;
+        self.publication.grub.revalidate_label_custody()?;
+        for source in &self.publication.sources {
+            source.revalidate_custody()?;
+        }
+        ensure(self.publication.transaction.all_published(), "working label window lost boot publication")?;
+        self.publication.transaction.guard_label_custody()?;
+        self.publication.runtime.guard_label_custody()
+    }
     pub(crate) fn guard(&self) -> Result<()> {
         self.publication.guard_source()?;
         ensure(
@@ -317,8 +327,8 @@ impl PublishedWorkingBootFiles {
                 && self.publication.sources[1].pin().path == private_custom,
             "working boot label consumer lost its fixed kernel and private source roles",
         )?;
-        let kernel_update = self.publication.sources[0].prepare_working_label_update(batch)?;
-        self.publication.sources[1].revalidate()?;
+        let kernel_update = self.publication.sources[0].prepare_working_label_custody_update(batch)?;
+        self.publication.sources[1].revalidate_custody()?;
         self.publication
             .grub
             .accept_working_label_batch(self.publication.runtime.source(), batch)?;
@@ -326,13 +336,13 @@ impl PublishedWorkingBootFiles {
         self.publication
             .transaction
             .accept_working_label_batch(batch)?;
-        self.publication.sources[0].accept_working_label_update(kernel_update)?;
-        self.publication.sources[1].revalidate()?;
+        self.publication.sources[0].accept_working_label_custody_update(kernel_update)?;
+        self.publication.sources[1].revalidate_custody()?;
         self.runtime().source().accept_working_label_custody(batch)?;
         // Pair/history guards before this point would compare some old F9
         // checkpoints to the kernel's already completed batch. The complete
         // fence belongs after every exact same-batch consumer has advanced.
-        self.guard()?;
+        self.guard_label_custody()?;
         batch.revalidate()
     }
     pub(crate) fn restore(

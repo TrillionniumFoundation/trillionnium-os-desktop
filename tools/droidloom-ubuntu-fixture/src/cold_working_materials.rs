@@ -534,6 +534,32 @@ pub(super) struct WorkingMaterialSources {
     records: Vec<SealedInput>,
 }
 impl WorkingMaterialSources {
+    pub(super) fn revalidate_label_custody(&self) -> Result<()> {
+        let named = fs::Tree::open(&fs::absolute_string(&self.work)?, 0)?;
+        let actual = fs::stat(&self.work_fd)?;
+        ensure(
+            actual == fs::stat(&named.root)?
+                && same_work(&self.work_identity, &actual)
+                && self.work
+                    == Path::new(BASE).join(format!("working-qualification-{}", self.candidate)),
+            "working qualification lost its actual private work inode",
+        )?;
+        self.input.revalidate_custody()?;
+        self.sources.revalidate_custody()?;
+        self.fresh_owned.revalidate()?;
+        self.public_materials.revalidate()?;
+        self.runtime_inputs.revalidate_label_custody()?;
+        for guard in &self.guards {
+            guard.revalidate_custody()?;
+        }
+        for record in self.mac_files.iter().chain(&self.records) {
+            record.revalidate_custody()?;
+        }
+        self.report.revalidate_custody()?;
+        self.intent.revalidate_custody()?;
+        Ok(())
+    }
+
     pub(super) fn revalidate(&self) -> Result<()> {
         let named = fs::Tree::open(&fs::absolute_string(&self.work)?, 0)?;
         let actual = fs::stat(&self.work_fd)?;

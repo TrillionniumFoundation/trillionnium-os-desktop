@@ -13,6 +13,10 @@ use std::{
     path::{Path, PathBuf},
 };
 
+#[path = "cold_working_label_writer.rs"]
+mod working_writer;
+pub(crate) use working_writer::{WorkingLabelTransaction, WorkingLabelsApplied, WorkingLabelsRestored};
+
 #[path = "cold_original_label_runtime.rs"]
 mod runtime;
 pub(super) use runtime::RuntimeRestoreAttempt;

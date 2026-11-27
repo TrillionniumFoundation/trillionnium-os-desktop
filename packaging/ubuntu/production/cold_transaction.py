@@ -26,6 +26,7 @@ from cold_publish import (
     COHORT, RUNTIME, BOARD, KERNEL_MODULES_SHA, ANDROID_HANDOFF_SHA,
     ANDROID_MATERIALS_SHA, ANDROID_NORMAL_SHA, ANDROID_TERMINAL_SHA,
     ANDROID_SOURCE, ANDROID_TREE,
+    QUERY_SOURCE, QUERY_TREE, QUERY, admit_query_materials, query_evidence_member,
 )
 
 ROOT_UUID="01c27223-3933-481e-9836-7bd0ef1be8c9"
@@ -171,7 +172,8 @@ def package_control(pin,expected_name):
 
 def component(role,pin):
     result=json_bytes(read_pin(pin,2*1024*1024))
-    need(result.get("schema")=="droidloom-normal-"+role+"-deb-result-v1" and
+    expected_schema="droidloom-normal-"+role+"-deb-result-"+("v2" if role=="android" else "v1")
+    need(result.get("schema")==expected_schema and
          result.get("normal_build_exit_code")==0 and result.get("physical_install") is False and
          result.get("runtime_qualified") is False,"completed ordinary Debian component required")
     package=pin_shape(result["package"])
@@ -209,9 +211,19 @@ def component(role,pin):
             need((source["bytes"],source["sha256"])==(size,sha),"fixed actual Android source evidence")
             read_pin(source,1024*1024)
             inputs["android-source-"+name+".json"]=source
+        need((result.get("query_source_commit"),result.get("query_source_tree"))==(QUERY_SOURCE,QUERY_TREE) and
+             result.get("query_input_count")==len(QUERY) and result.get("historical_camera_build_reexecuted") is False and
+             result.get("actual_new_query_publication_verified") is True,"actual five-query normal provenance required")
+        query,query_evidence=admit_query_materials(pin_shape(result["query_materials"]),result["query_evidence"])
+        need(query["runtime_manifest"]["sha256"]==result["runtime_sha256"] and
+             query["board_device_manifest"]["sha256"]==result["board_device_manifest_sha256"],
+             "normal package must use the actual new five-query runtime and board")
+        for name,source in query_evidence.items():inputs[query_evidence_member(name)]=source
         inputs["android-inventory.json"]=result["inventory"]
         info={"cohort_sha256":COHORT,"runtime_sha256":RUNTIME,
               "android_source_commit":ANDROID_SOURCE,"android_source_tree":ANDROID_TREE,
+               "query_source_commit":QUERY_SOURCE,"query_source_tree":QUERY_TREE,
+               "query_input_count":len(QUERY),"query_materials_sha256":result["query_materials"]["sha256"],
               "query_labels_require_actual_cold_install_readback":True}
     return inputs,info,control
 

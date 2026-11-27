@@ -172,6 +172,14 @@ fn original_observation() -> Result<OriginalObservation> {
 }
 
 fn original_observation_for(thaw_guard: bool) -> Result<OriginalObservation> {
+    original_observation_for_thaw_prefix(
+        thaw_guard.then_some("/system.slice/droidloom-original-thaw@"),
+    )
+}
+
+// Plain host observation shared by the two distinct thaw-only units. Neither
+// path creates qualification authority or opens a mutation owner's locks.
+fn original_observation_for_thaw_prefix(thaw_prefix: Option<&str>) -> Result<OriginalObservation> {
     ensure(
         rustix::process::getuid().as_raw() == 0
             && rustix::process::geteuid().as_raw() == 0
@@ -182,9 +190,9 @@ fn original_observation_for(thaw_guard: bool) -> Result<OriginalObservation> {
     let capabilities = owner_capabilities(&bounded(Path::new("/proc/self/status"), 64 * 1024)?)?;
     let invocation_id = std::env::var("INVOCATION_ID")?;
     let observed_cgroup = bounded(Path::new("/proc/self/cgroup"), 4096)?;
-    let control_group = if thaw_guard {
+    let control_group = if let Some(thaw_prefix) = thaw_prefix {
         let translated = observed_cgroup.replacen(
-            "/system.slice/droidloom-original-thaw@",
+            thaw_prefix,
             "/system.slice/droidloom-original-qualification@",
             1,
         );
@@ -351,6 +359,19 @@ pub(super) fn verify_thaw_owner(candidate: &str, boot: &str) -> Result<serde_jso
             && actual.control_group
                 == format!("/system.slice/droidloom-original-thaw@{candidate}.service"),
         "thaw owner boot/unit differs",
+    )?;
+    Ok(serde_json::to_value(actual)?)
+}
+
+pub(super) fn verify_working_thaw_owner(candidate: &str, boot: &str) -> Result<serde_json::Value> {
+    ensure(fs::valid_digest(candidate) && uuid(boot), "working thaw identity fields")?;
+    let actual = original_observation_for_thaw_prefix(
+        Some("/system.slice/droidloom-working-thaw@"),
+    )?;
+    ensure(
+        actual.boot_id == boot
+            && actual.control_group == format!("/system.slice/droidloom-working-thaw@{candidate}.service"),
+        "working thaw owner boot/unit differs",
     )?;
     Ok(serde_json::to_value(actual)?)
 }

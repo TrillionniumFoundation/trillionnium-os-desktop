@@ -28,6 +28,7 @@ pub(crate) use working::{WorkingLabelBatch, WorkingLabelCheckpoint, WorkingLabel
 pub(crate) use journal::{
     OriginalLabelRestorationTransaction, OriginalLabelTransaction, OriginalLabelsApplied,
     OriginalLabelsRestored, OriginalPairRestored,
+    WorkingLabelTransaction, WorkingLabelsApplied, WorkingLabelsRestored,
 };
 pub(super) use journal::{restore_retired_pair, withdraw_labeled_selection};
 pub(crate) use plan::{

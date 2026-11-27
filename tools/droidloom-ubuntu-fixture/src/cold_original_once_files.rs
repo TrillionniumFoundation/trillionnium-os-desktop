@@ -7,6 +7,8 @@ pub(super) mod package_parents;
 pub(super) mod working;
 #[path = "cold_working_grub_transaction.rs"]
 pub(super) mod working_grub;
+#[path = "cold_working_package_masks.rs"]
+pub(super) mod working_package_masks;
 use super::{OriginalQualificationAuthority, owner::SealedInput};
 use crate::{
     Result,

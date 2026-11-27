@@ -97,6 +97,50 @@ impl HeldNode {
             "held or named working inode changed",
         )
     }
+    fn guard_custody(&self, path: &Path, directory: bool) -> Result<()> {
+        let verify = |file: &File| -> Result<()> {
+            let identity = fs::stat(file)?;
+            let (handle, _) = Ext4Handle::capture(file.as_fd())?;
+            ensure(
+                identity == self.node.identity
+                    && handle.handle_type() == self.node.handle_type
+                    && hex::encode(handle.bytes()) == self.node.handle
+                    && attrs(file)? == self.node.attributes,
+                "working bounded-window held inode custody changed",
+            )?;
+            if FileType::from_raw_mode(identity.mode) == FileType::Symlink {
+                let target = rustix::fs::readlinkat(file, "", Vec::new())?;
+                ensure(
+                    self.node.link.as_deref() == Some(std::str::from_utf8(target.to_bytes())?),
+                    "working bounded-window link target changed",
+                )?;
+            }
+            ensure(
+                fs::stat(file)? == identity,
+                "working inode changed during custody readback",
+            )
+        };
+        verify(&self.file)?;
+        let (parent, name) = at(path)?;
+        let kind = FileType::from_raw_mode(self.node.identity.mode);
+        ensure(
+            directory == (kind == FileType::Directory),
+            "working window inode role changed",
+        )?;
+        let flags = if kind == FileType::Symlink {
+            OFlags::PATH
+        } else {
+            OFlags::RDONLY
+        };
+        let named = File::from(rustix::fs::openat(
+            &parent,
+            name.as_str(),
+            flags | OFlags::NOFOLLOW | OFlags::NONBLOCK | OFlags::CLOEXEC,
+            Mode::empty(),
+        )?);
+        verify(&named)?;
+        verify(&self.file)
+    }
     fn renamed(&self, path: &Path, directory: bool) -> Result<Node> {
         let actual = self.read()?;
         ensure(
@@ -150,6 +194,20 @@ impl Step {
             None => ensure(
                 observe_kind(&self.pending, self.directory)?.is_none(),
                 "working private path gained a foreign inode",
+            ),
+        }
+    }
+    fn guard_label_custody(&self) -> Result<()> {
+        ensure(
+            self.phase == Phase::Published,
+            "working label window needs complete publication",
+        )?;
+        self.prepared.guard_custody(&self.target, self.directory)?;
+        match &self.original {
+            Some(node) => node.guard_custody(&self.pending, self.directory),
+            None => ensure(
+                observe_kind(&self.pending, self.directory)?.is_none(),
+                "working private target gained a foreign inode",
             ),
         }
     }
@@ -439,6 +497,23 @@ impl Transaction {
         self.parents.guard()
     }
 
+    /// Held metadata only within the separately guarded finite label window.
+    /// Complete file bodies are verified by guard at both window boundaries.
+    pub(super) fn guard_label_custody(&self) -> Result<()> {
+        ensure(
+            self.all_published(),
+            "working label window requires complete publication",
+        )?;
+        for seal in &self.seals {
+            seal.revalidate_custody()?;
+        }
+        self.parents.guard()?;
+        for step in &self.steps {
+            step.guard_label_custody()?;
+        }
+        self.parents.guard()
+    }
+
     /// Advance all held parent checkpoints together after this batch's actual
     /// normal label writes. Prepared and original payloads keep strict custody.
     /// No source-wide guard runs while other batch consumers remain pending.
@@ -449,10 +524,10 @@ impl Transaction {
         )?;
         batch.revalidate()?;
         for seal in &self.seals {
-            seal.revalidate()?;
+            seal.revalidate_custody()?;
         }
         for step in &self.steps {
-            step.guard(&self.retired)?;
+            step.guard_label_custody()?;
         }
         ensure(
             self.parents.files.keys().eq(self.parents.states.keys()),
@@ -480,10 +555,10 @@ impl Transaction {
             )?;
         }
         for step in &self.steps {
-            step.guard(&self.retired)?;
+            step.guard_label_custody()?;
         }
         let old = std::mem::replace(&mut self.parents.states, after);
-        if let Err(error) = self.guard().and_then(|_| batch.revalidate()) {
+        if let Err(error) = self.guard_label_custody().and_then(|_| batch.revalidate()) {
             // Keep the previous exact state and every live FD. The caller still
             // owns the actual batch and may reconcile this unresolved boundary.
             self.parents.states = old;
@@ -921,6 +996,40 @@ mod tests {
             // Only this test's newly created root is removed.
             let _ = std::fs::remove_dir_all(&self.root);
         }
+    }
+
+    #[test]
+    #[ignore = "root/ext4 only; actual bounded-window inode and descriptor-offset controls"]
+    fn actual_working_label_custody_preserves_offset_and_rejects_unowned_inode_changes()
+    -> Result<()> {
+        use std::io::{Seek, SeekFrom};
+        for mutation in ["bytes", "replacement", "attributes"] {
+            let fixture = Fixture::new(mutation)?;
+            let target = fixture.root.join("public/target");
+            files::write_new(&target, b"actual bounded-window original", 0o644)?;
+            let held = HeldNode::open(&target, false)?.ok_or("test held target absent")?;
+            let mut reader = &held.file;
+            reader.seek(SeekFrom::Start(7))?;
+            held.guard_custody(&target, false)?;
+            assert_eq!(reader.stream_position()?, 7);
+            match mutation {
+                "bytes" => std::fs::write(&target, b"changed bounded-window source")?,
+                "replacement" => {
+                    std::fs::rename(&target, fixture.root.join("retained"))?;
+                    files::write_new(&target, b"actual bounded-window original", 0o644)?;
+                }
+                "attributes" => rustix::fs::fsetxattr(
+                    &held.file,
+                    "user.working-window-unowned",
+                    b"foreign",
+                    XattrFlags::empty(),
+                )?,
+                _ => unreachable!(),
+            }
+            assert!(held.guard_custody(&target, false).is_err());
+            assert_eq!(reader.stream_position()?, 7);
+        }
+        Ok(())
     }
 
     #[test]

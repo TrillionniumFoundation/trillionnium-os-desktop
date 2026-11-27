@@ -69,6 +69,14 @@ enum ReturnedObserver {
     Working(WorkingColdOwner),
 }
 impl ReturnedObserver {
+    fn revalidate_working_label_custody(&self) -> Result<()> {
+        match self {
+            Self::Working(owner) => owner.revalidate_label_custody(),
+            Self::Original(_) => {
+                Err("working label custody cannot use the original once owner".into())
+            }
+        }
+    }
     fn revalidate(&self) -> Result<()> {
         match self {
             Self::Original(v) => v.revalidate(),
@@ -518,6 +526,28 @@ impl ReturnedOnceHistory {
         Ok(result)
     }
 
+    pub(crate) fn guard_working_label_custody(&self) -> Result<()> {
+        self.owner.revalidate_working_label_custody()?;
+        self.journal.revalidate_custody()?;
+        ensure(
+            self.journal.phase() == Some(Phase::Returned),
+            "returned history phase changed",
+        )?;
+        for d in &self.directories {
+            d.guard()?;
+        }
+        self.records.guard()?;
+        self.sources.revalidate_custody()?;
+        self.runtime.guard()?;
+        self.verifier.guard_custody()?;
+        let running = std::fs::File::open("/proc/self/exe")?;
+        ensure(
+            fs::stat(&running)? == *self.verifier.identity(),
+            "historical observer executable changed",
+        )?;
+        self.owner.revalidate_working_label_custody()
+    }
+
     pub(crate) fn guard(&self) -> Result<()> {
         self.owner.revalidate()?;
         self.journal.revalidate()?;
@@ -551,7 +581,7 @@ impl ReturnedOnceHistory {
         }
         // All retained history, normal archive sources, and the entry verifier
         // stay strict. This is not a reconstruction of the old live retirement.
-        self.guard()
+        self.guard_working_label_custody()
     }
 
     /// These are comparisons from the still-held returned source, not a new

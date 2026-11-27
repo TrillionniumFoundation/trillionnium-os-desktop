@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 """Normal public Debian components; never a fresh-root or runtime qualification."""
 import argparse
+import base64
 import hashlib
 import json
 import os
@@ -24,9 +25,14 @@ ANDROID_TERMINAL_SHA="716b3b9a148f2cb304dcd02a39300163a2021702439b866e73c7ccc47a
 ANDROID_SOURCE="11bf0fa339d9c52fbf1093d95e1218f1ada40574"
 ANDROID_TREE="266e49032d5a68e843dabb49db33595e652e5466"
 COHORT="5cffd431a41a450440fe9bac7b5a5f93927471b331acde5662df4e8379b1fa87"
-RUNTIME="ed9781109ae5bd0124b12badac21127636a742d0dbc406b3cee0f3900d257db8"
-BOARD="0c839371072c7c8bc2513909c92b7623853e3c1a6538f92e1d60248cb0739520"
+RUNTIME="ca2ebe17cd18df298b57f621892b186f183d915790d3ad44d8f9b6d78d965556"
+BOARD="cd0ca973b22ce2a05a55dd43ac9c42ecbe86eb2fadb1e855bc89b912dcd478c1"
 BANK="b5b7ee1522f87c6fafb668d671ff028685db9e8e346564b1edda1f7ef867d5f7"
+# Actual new normal publication; historical camera source records above remain unchanged.
+QUERY_SOURCE="21ff8712523b944a360f814eb5f86bd1aadc70cc"
+QUERY_TREE="bed5b422add907aba7e0f518b8fecb1fe18efcd2"
+QUERY_MATERIALS_BYTES=14840
+QUERY_MATERIALS_SHA="a40ba48c6479c51870e5cf002433821ed71b738ad3ddb70f798bcc7be8e412b9"
 QUERY={
  "cmd-original":(52160,"237410b6f4bfb9586a9a1135feaa4e75c189288483575890447aa5d492c56984",0o555,"u:object_r:system_file:s0"),
  "toybox-original":(611248,"5c2b46686560564967fb5c1cb4ec633c42f658c347831c1d8c788ecf66e1774b",0o555,"u:object_r:toolbox_exec:s0"),
@@ -285,58 +291,315 @@ def admit_camera_materials(original):
     # replace either the normal build or its complete independent readback.
     return m,h,n,{"materials":original,"handoff":hp,"normal_result":np,"normal_terminal":tp}
 
+def query_evidence_member(name):
+    """A portable byte copy never replaces the original producer's source facts."""
+    suffix={"normal_producer":".elf","normal_producer_depfile":".d",
+            "device_bank":".img"}.get(name,".bin" if name in QUERY else ".json")
+    need(name in set(QUERY)|{"materials","normal_producer","normal_producer_record",
+         "normal_producer_depfile","normal_build","independent_image_copy","execution",
+         "publication","stderr","base_manifest","runtime_manifest","board_device_manifest",
+         "device_bank","query_install_requirements","archive_readback","retained_normal_result",
+         "retained_inventory","archive_execution","archive_stdout","archive_stderr"},
+         "closed portable five-query evidence role")
+    return "android-query-"+name+suffix
+
+def admit_query_materials(original,portable=None,*,whole_images=False):
+    """Verify new normal publication separately from the historical image build.
+
+    Original JSON is retained verbatim. A portable map only moves byte-identical
+    evidence; it cannot change the original source, command, image or query facts.
+    Full images are re-opened by the normal Debian builder. Public preparation
+    verifies the resulting complete archive and these original producer records;
+    the physical importer separately hashes every actual Debian payload member.
+    """
+    original=project_pin(original)
+    need((original["bytes"],original["sha256"])==(QUERY_MATERIALS_BYTES,QUERY_MATERIALS_SHA),
+         "exact actual five-query material publication")
+    evidence={}
+    def selected(name,reference):
+        reference=project_pin(reference)
+        local=reference if portable is None else project_pin(portable[name])
+        need((local["bytes"],local["sha256"])==(reference["bytes"],reference["sha256"]),
+             "portable query evidence changed original bytes")
+        need(name not in evidence or evidence[name]==local,"duplicate query evidence binding")
+        evidence[name]=local
+        return local
+    def body(name,reference,maximum=2*1024*1024):
+        return read_pin(selected(name,reference),maximum)
+    def value(name,reference,maximum=2*1024*1024):
+        return json_bytes(body(name,reference,maximum))
+    def log(name,reference):
+        # Existing payload FilePin deliberately excludes empty files. Preserve
+        # actual command logs, including zero bytes, in a positive-size envelope
+        # without changing that global contract or replacing the original log.
+        need(name in {"stderr","archive_stdout","archive_stderr"},"fixed command log role")
+        reference={k:reference[k] for k in ("path","bytes","sha256")}
+        safe_absolute(reference["path"]);integer(reference["bytes"],0,8*1024*1024,"actual command log bytes")
+        digest(reference["sha256"])
+        if portable is None:
+            with held(reference["path"],maximum=8*1024*1024) as (fd,st):
+                need(st.st_size==reference["bytes"] and hash_fd(fd)==reference["sha256"],"actual original command log differs")
+                data=os.read(fd,8*1024*1024+1)
+                need(len(data)==st.st_size,"short original command log")
+            envelope={"schema":"droidloom-original-query-command-log-v1","original":reference,
+                      "body_base64":base64.b64encode(data).decode("ascii")}
+            evidence[name]={"log_envelope":canonical(envelope)}
+        else:
+            local=project_pin(portable[name]);envelope=json_bytes(read_pin(local,12*1024*1024))
+            exact(envelope,("schema","original","body_base64"),"original query command log envelope")
+            need(envelope["schema"]=="droidloom-original-query-command-log-v1" and
+                 envelope["original"]==reference,"original command log provenance changed")
+            data=base64.b64decode(envelope["body_base64"],validate=True)
+            need(len(data)==reference["bytes"] and hashlib.sha256(data).hexdigest()==reference["sha256"],
+                 "portable command log did not preserve every original byte")
+            evidence[name]=local
+    q=value("materials",original)
+    need(q["schema"]=="p4-normal-five-query-materials-v1" and
+         (q["source_commit"],q["source_tree"])==(QUERY_SOURCE,QUERY_TREE) and
+         q["base_cohort_sha256"]==COHORT and q["query_input_count"]==len(QUERY),
+         "normal five-query producer source and selected base")
+    need(q["historical_images_preserved"] is True and q["original_inputs_modified"] is False and
+         q["runtime_qualified"] is q["production_ready"] is False,
+         "input publication cannot assert execution, activation or altered images")
+    need((q["historical_camera_materials"]["bytes"],q["historical_camera_materials"]["sha256"])==
+         (12961,ANDROID_MATERIALS_SHA),"new query publication must retain actual camera history")
+    package_root=safe_absolute(q["package_root"])
+    producer=body("normal_producer",q["normal_producer"],32*1024*1024)
+    need(len(producer)==18264184 and hashlib.sha256(producer).hexdigest()==
+         "03d273cd8484023a1b46ebdd5073ff822137c2066035f1b4106b137e3e3c2818" and
+         producer[:7]==b"\x7fELF\x02\x01\x01" and producer[18:20]==b"\x3e\0",
+         "actual normally built x86_64 kernel-first publisher")
+    built=value("normal_producer_record",q["normal_producer_record"])
+    need(built["source_commit"]==QUERY_SOURCE and
+         project_pin(built["producer"])==project_pin(q["normal_producer"]),
+         "normal producer ELF/source record binding")
+    dependency=body("normal_producer_depfile",q["normal_producer_depfile"])
+    need(project_pin(built["producer"]["dependency_file"])==project_pin(q["normal_producer_depfile"]),
+         "actual normal producer dependency file")
+    required={"tools/droidloom-update/src/coherent_kernel_first.rs",
+              "tools/droidloom-update/src/coherent_kernel_query.rs",
+              "tools/droidloom-update/src/query_input_metadata.rs",
+              "runtime/droidloom-supervisor/src/production_query_input_profile.rs"}
+    dependencies=built["producer"]["project_dependencies"]
+    need(len({r["path"] for r in dependencies})==len(dependencies) and
+         required<={r["path"] for r in dependencies} and
+         all(path.encode() in dependency for path in required),"complete actual kernel-first implementation")
+    normal=value("normal_build",q["normal_build"])
+    need((q["normal_build"]["bytes"],q["normal_build"]["sha256"])==
+         (4603,"a2e82620526195a4980a0e2856ca17ced905b3f599e16f6454dc56da2e46b956") and
+         normal["exit_code"]==0 and normal["error"] is None and normal["retirement"]["verified"] is True and
+         normal["retirement"]["actual"]["ActiveState"]=="inactive" and
+         normal["retirement"]["actual"]["MainPID"]=="0","actual R6 normal build terminal")
+    execution=value("execution",q["execution"])
+    need(execution["schema"]=="p4.normal-five-query-actual-command.v1" and
+         execution["exit_code"]==0 and execution["error"] is None and
+         (execution["source_commit"],execution["source_tree"])==(QUERY_SOURCE,QUERY_TREE) and
+         project_pin(execution["normal_producer"])==project_pin(q["normal_producer"]) and
+         project_pin(execution["normal_build"])==project_pin(q["normal_build"]),
+         "actual normal five-query command must have succeeded")
+    argv=execution["argv"]
+    need(len(argv)==10 and argv[0]==q["normal_producer"]["path"] and
+         argv[1:2]==["--source"] and argv[3:6]==["--jobs","2","bind-kernel-first-runtime"] and
+         argv[6:]==["--package",str(package_root),"--base-sha256",COHORT],
+         "exact ordinary kernel-first publication command")
+    safe_absolute(argv[2])
+    need(project_pin(execution["stdout"])==project_pin(q["publication"]),"actual publication stdout binding")
+    publication=value("publication",q["publication"])
+    log("stderr",execution["stderr"])
+    recovered=value("archive_readback",q["retained_normal_archive_readback"])
+    need(recovered["schema"]=="p4-retained-normal-android-archive-readback-v1" and
+         recovered["all_member_bytes_verified"] is True and
+         recovered["historical_inputs_modified"] is recovered["historical_normal_build_repeated"] is
+         recovered["runtime_qualified"] is recovered["production_ready"] is False,
+         "actual retained archive readback must preserve all historical facts")
+    need(project_pin(recovered["historical_camera_materials"])==project_pin(q["historical_camera_materials"]) and
+         (recovered["archive"]["bytes"],recovered["archive"]["sha256"])==
+             (1252956170,"7b785edba710a74272605c68340bfbcd463e2f3e2f9a3d85032825a149d62baa"),
+         "exact retained original normal Android archive")
+    previous=value("retained_normal_result",recovered["historical_normal_result"])
+    need((recovered["historical_normal_result"]["bytes"],recovered["historical_normal_result"]["sha256"])
+         ==(1973,"19d9111e5837aa852a7e569474acf6b13046cfe9a03bb231e8b11043e8c64847") and
+         previous["schema"]=="droidloom-normal-android-deb-result-v1" and previous["normal_build_exit_code"]==0 and
+         (previous["android_source_commit"],previous["android_source_tree"])==(ANDROID_SOURCE,ANDROID_TREE),
+         "retained original camera package normal producer")
+    inventory=value("retained_inventory",recovered["inventory"])
+    need((recovered["inventory"]["bytes"],recovered["inventory"]["sha256"])
+         ==(3034,"fca630cea75316667b77a1f80bf23031735e8c423e0f72ef9c361f93f7359fbd") and
+         project_pin(previous["package"])==project_pin(recovered["archive"]) and
+         project_pin(previous["inventory"])==project_pin(recovered["inventory"]),"complete retained archive inventory")
+    need(len(inventory)==13 and len(recovered["verified_members"])==13 and
+         {r["path"] for r in inventory}==set(recovered["verified_members"]),"complete actual retained payload set")
+    for row in inventory:
+        restored=recovered["verified_members"][row["path"]]
+        need((row["bytes"],row["sha256"],row["mode"])==
+             (restored["bytes"],restored["sha256"],stat.S_IMODE(restored["f9"][2])),
+             "all actual restored archive bytes and modes")
+    extraction=value("archive_execution",recovered["execution"])
+    need(extraction["schema"]=="p4.retained-android-archive-extract-execution.v1" and
+         extraction["exit_code"]==0 and extraction["error"] is None and
+         extraction["argv"]==["/usr/bin/dpkg-deb","--extract",recovered["archive"]["path"],recovered["destination"]],
+         "actual normal archive extraction terminal")
+    log("archive_stdout",extraction["stdout"]);log("archive_stderr",extraction["stderr"])
+    copied=value("independent_image_copy",q["independent_image_copy"])
+    need(project_pin(copied["base_manifest"])==project_pin(q["base_manifest"]) and
+         set(copied["images"])==set(q["images"])==set(IMAGES),"independent whole-image publication inputs")
+    basepin=project_pin(q["base_manifest"])
+    base=value("base_manifest",basepin)
+    need(basepin["path"]==str(package_root/"etc/droidloom/cohorts"/(COHORT+".json")) and
+         basepin["sha256"]==COHORT and base["schema"]==3 and
+         base["scope"]=="android_base_images_v3" and base["layout"]=="gsi_system_as_root",
+         "actual selected four-image base")
+    for role,(size,sha) in IMAGES.items():
+        pin=project_pin(q["images"][role]);entry=base[role]
+        need(project_pin(copied["images"][role])==pin and
+             (recovered["images"][role]["bytes"],recovered["images"][role]["sha256"])==(size,sha) and
+             (pin["bytes"],pin["sha256"])==(size,sha) and
+             (entry["bytes"],entry["sha256"],entry["file"])==(size,sha,role+".img") and
+             pin["path"]==str(package_root/"var/lib/droidloom/cohorts"/COHORT/"images"/(role+".img")),
+             "byte-identical normal image restoration and source namespace")
+        if whole_images:
+            with held(pin["path"]) as (fd,st):
+                need(st.st_size==size and hash_fd(fd)==sha,"complete actual source image differs")
+    runtimepin=project_pin(q["runtime_manifest"]);runtime=value("runtime_manifest",runtimepin)
+    need(runtimepin["sha256"]==RUNTIME and
+         runtimepin["path"]==str(package_root/"etc/droidloom/runtime-cohorts"/(RUNTIME+".json")) and
+         publication["runtime_manifest_sha256"]==RUNTIME and publication["runtime"]==runtime and
+         publication["manifest"]=="etc/droidloom/runtime-cohorts/"+RUNTIME+".json",
+         "actual kernel-first runtime bytes and original stdout")
+    exact(runtime,("schema","scope","base_cohort_sha256","source_system_sha256","init_path",
+          "init_bytes","init_sha256","argv","query_inputs"),"five-query runtime")
+    need(runtime["schema"]==2 and runtime["scope"]=="android_kernel_first_stage_v2" and
+         runtime["base_cohort_sha256"]==COHORT and runtime["source_system_sha256"]==SYSTEM and
+         runtime["init_path"]=="/system/bin/init" and runtime["init_bytes"]==2934488 and
+         runtime["init_sha256"]=="9f69cc83a88db5f8533014cfea5ad9ea8e0454120335329aec27f8d65b2a9537" and
+         runtime["argv"]==["/system/bin/init","second_stage"],"unchanged complete original init declaration")
+    declaration=runtime["query_inputs"]
+    exact(declaration,("scope","source_system_sha256","cmd","toybox","toolbox","contacts"),"five-query declaration")
+    exact(declaration["contacts"],("scope","app_process64","content_jar"),"original contacts query declaration")
+    need(declaration["scope"]=="fixed_application_query_v2" and declaration["source_system_sha256"]==SYSTEM and
+         declaration["contacts"]["scope"]=="fixed_contacts_content_query_v1","actual fixed query scope")
+    selected_roles={"cmd-original":(declaration["cmd"],"/system/bin/cmd"),
+       "toybox-original":(declaration["toybox"],"/system/bin/toybox"),
+       "contacts-app-process64-original":(declaration["contacts"]["app_process64"],"/system/bin/app_process64"),
+       "contacts-content-jar-original":(declaration["contacts"]["content_jar"],"/system/framework/content.jar"),
+       "toolbox-original":(declaration["toolbox"],"/system/bin/toolbox")}
+    requirementspin=project_pin(q["query_install_requirements"])
+    requirements=value("query_install_requirements",requirementspin)
+    relative="var/lib/droidloom/runtime-cohorts/"+RUNTIME
+    need(requirementspin["path"]==str(package_root/relative/"QUERY-INSTALL-REQUIREMENTS.json") and
+         requirements["schema"]=="droidloom-fixed-cp3a-query-inputs-v2" and
+         requirements["input_scope"]=="cp3a_fixed_application_query_inputs_v2" and
+         requirements["source_system_sha256"]==SYSTEM and requirements["source_system_bytes"]==IMAGES["system"][0] and
+         requirements["input_count"]==len(QUERY),"complete original query installation contract")
+    query_publication=publication["query_inputs"]
+    need(query_publication=={"images_directory":relative,
+         "installation_requirements":relative+"/QUERY-INSTALL-REQUIREMENTS.json",
+         "installation_requirements_sha256":requirementspin["sha256"],"input_count":len(QUERY),
+         "installed_original_labels_observed":False,"application_admission":False},
+         "actual five-query publication cannot assert installed-label or application acceptance")
+    need(requirements["private_query_projection_observed"] is requirements["application_admission"] is
+         requirements["runtime_qualified"] is False and requirements["original_query_executions"]==0,
+         "source extraction is not query execution")
+    originals={r["file"]:r for r in requirements["sources"]}
+    query={r["name"]:r for r in q["query_inputs"]}
+    need(len(originals)==len(requirements["sources"])==len(query)==len(q["query_inputs"])==len(QUERY) and
+         set(originals)==set(query)==set(QUERY),"exact five actual original query roles")
+    for name,(size,sha,mode,label) in QUERY.items():
+        source,path=selected_roles[name];observed=originals[name];pin=project_pin(query[name])
+        interpreter=None if name=="contacts-content-jar-original" else "/system/bin/linker64"
+        exact(source,("original","source_path","interpreter"),"original query member declaration")
+        need(source=={"original":{"file":name,"bytes":size,"sha256":sha},"source_path":path,
+              "interpreter":interpreter},"exact original query path, interpreter and whole body")
+        need((pin["bytes"],pin["sha256"])==(size,sha) and
+             pin["path"]==str(package_root/relative/"images"/name) and
+             query[name]["original_observation"]==observed,"new publication source/observed role binding")
+        need((observed["source_path"],observed["source_mode"],observed["source_uid"],observed["source_gid"])
+             ==(path,0o100644 if interpreter is None else 0o100755,0,0 if interpreter is None else 2000) and
+             type(observed["source_inode"]) is int and observed["source_inode"]>0,
+             "original image inode, full mode and root:shell identity")
+        need((observed["bytes"],observed["sha256"],observed["required_installed_mode"],
+              observed["required_installed_uid"],observed["required_installed_gid"],observed["required_original_label"])
+             ==(size,sha,mode,0,0,label+"\0") and
+             observed["required_original_label_preserved"] is observed["required_security_capability_absent"] is True and
+             observed["installed_label_observed"] is False,"exact original label and privilege-free sealed role")
+        data=body(name,pin)
+        need((data[:7]==b"\x7fELF\x02\x01\x01" and data[18:20]==b"\x3e\0") if interpreter is not None
+             else data[:4]==b"PK\x03\x04","original query ELF/JAR format")
+        if whole_images:
+            with held(pin["path"],modes={mode}) as (fd,st):
+                need(st.st_size==size and hash_fd(fd)==sha,"actual sealed normal query source")
+    boardpin=project_pin(q["board_device_manifest"]);board=value("board_device_manifest",boardpin)
+    need(boardpin["sha256"]==BOARD and
+         boardpin["path"]==str(package_root/"etc/droidloom/board-devices"/(BOARD+".json")) and
+         publication["board_device_source"]=={"manifest":"etc/droidloom/board-devices/"+BOARD+".json",
+             "sha256":BOARD,"source":board},"actual five-query board publication")
+    need(board["schema"]==1 and board["scope"]=="android_private_device_source_v1" and
+         board["base_cohort_sha256"]==COHORT and board["runtime_manifest_sha256"]==RUNTIME and
+         board["source_system_sha256"]==SYSTEM and (board["bytes"],board["sha256"],board["file"])
+             ==(8388608,BANK,BANK+".img"),"unchanged actual device bank, new runtime binding")
+    bankpin=project_pin(q["device_bank"])
+    need(bankpin["path"]==str(package_root/"var/lib/droidloom/cohorts"/COHORT/"board"/(BANK+".img")) and
+         (bankpin["bytes"],bankpin["sha256"])==(8388608,BANK),"actual device bank original bytes")
+    body("device_bank",bankpin,16*1024*1024)
+    if portable is not None:need(set(portable)==set(evidence),"portable five-query evidence has missing or extra members")
+    return q,evidence
+
 def pack_android(plan_path,output):
-    original,plan=read_plan(plan_path,"droidloom-normal-android-deb-plan-v2","materials")
-    h,readback,normal,evidence=admit_camera_materials(original)
-    package_root=safe_absolute(readback["package_root"])
-    basepin=project_pin(h["base_manifest"]);runtimepin=project_pin(h["runtime_manifest"]);boardpin=project_pin(h["board_device_manifest"])
-    need(basepin["sha256"]==COHORT and runtimepin["sha256"]==RUNTIME and boardpin["sha256"]==BOARD,"normal manifest byte identities")
-    base=json_bytes(read_pin(basepin));runtime=json_bytes(read_pin(runtimepin));board=json_bytes(read_pin(boardpin))
-    need(base["schema"]==3 and base["scope"]=="android_base_images_v3" and base["layout"]=="gsi_system_as_root","normal v3 base")
-    need(runtime["schema"]==2 and runtime["scope"]=="android_kernel_first_stage_v2" and runtime["base_cohort_sha256"]==COHORT and runtime["source_system_sha256"]==SYSTEM,"normal v2 runtime")
-    need(runtime["argv"]==["/system/bin/init","second_stage"] and runtime["init_path"]=="/system/bin/init" and runtime["init_bytes"]==2934488 and runtime["init_sha256"]=="9f69cc83a88db5f8533014cfea5ad9ea8e0454120335329aec27f8d65b2a9537","stock init")
-    need(board["schema"]==1 and board["scope"]=="android_private_device_source_v1" and board["base_cohort_sha256"]==COHORT and board["runtime_manifest_sha256"]==RUNTIME and board["source_system_sha256"]==SYSTEM,"normal board device binding")
-    need(board["bytes"]==8388608 and board["sha256"]==BANK and board["file"]==BANK+".img","normal device bank")
-    query=h["query_inputs"]
-    need(h["query_input_count"]==readback["query_input_count"]==len(query)==len(QUERY),
-         "five actual original query inputs")
-    query={Path(r["path"]).name:project_pin(r) for r in query}
-    need(set(h["images"])==set(IMAGES) and set(query)==set(QUERY),"closed normal image/query roles")
-    need(runtime==readback["runtime"] and board==readback["board_device_source"],
-         "normal runtime and device bank independent readback")
+    plan_value,plan=read_json_file(plan_path,1024*1024)
+    exact(plan_value,("schema","materials","query_materials"),"normal five-query Android plan")
+    need(plan_value["schema"]=="droidloom-normal-android-deb-plan-v3","normal five-query Android plan schema")
+    original=pin_shape(plan_value["materials"])
+    historical,readback,normal,evidence=admit_camera_materials(original)
+    current,query_evidence=admit_query_materials(pin_shape(plan_value["query_materials"]),whole_images=True)
+    package_root=safe_absolute(current["package_root"])
+    need((current["base_manifest"]["bytes"],current["base_manifest"]["sha256"])==
+         (historical["base_manifest"]["bytes"],historical["base_manifest"]["sha256"]),
+         "new query publication retains the actual historical camera base")
+    for role in IMAGES:
+        need((current["images"][role]["bytes"],current["images"][role]["sha256"])==
+             (historical["images"][role]["bytes"],historical["images"][role]["sha256"]),
+             "new normal query package cannot alter an original camera image")
+    basepin=project_pin(current["base_manifest"])
+    runtimepin=project_pin(current["runtime_manifest"])
+    boardpin=project_pin(current["board_device_manifest"])
     output,root=new_stage(output);inventory={}
     def source(relative,pin,mode):
-        need(pin["path"]==str(package_root/relative),"normal publisher relative input changed")
+        pin=project_pin(pin)
+        need(pin["path"]==str(package_root/relative),"actual five-query normal input namespace")
         put(root,inventory,relative,pin,mode)
     source("etc/droidloom/cohorts/"+COHORT+".json",basepin,0o444)
     source("etc/droidloom/runtime-cohorts/"+RUNTIME+".json",runtimepin,0o444)
     source("etc/droidloom/board-devices/"+BOARD+".json",boardpin,0o444)
-    for role,(size,sha) in IMAGES.items():
-        pin=project_pin(h["images"][role]);entry=base[role]
-        need((pin["bytes"],pin["sha256"])==(size,sha) and (entry["bytes"],entry["sha256"],entry["file"])==(size,sha,role+".img"),"normal four-image pin")
-        source("var/lib/droidloom/cohorts/"+COHORT+"/images/"+role+".img",pin,0o444)
-    bank=project_pin(h["device_bank"]);need((bank["bytes"],bank["sha256"])==(8388608,BANK),"normal device bank bytes")
-    source("var/lib/droidloom/cohorts/"+COHORT+"/board/"+BANK+".img",bank,0o444)
-    requirements=project_pin(h["query_install_requirements"]);q=json_bytes(read_pin(requirements))
-    need(q["schema"]=="droidloom-fixed-cp3a-query-inputs-v2" and q["input_count"]==len(QUERY) and q["source_system_sha256"]==SYSTEM,"normal query install contract")
-    requirements_by_name={row["file"]:row for row in q["sources"]}
-    need(len(q["sources"])==len(QUERY) and set(requirements_by_name)==set(QUERY),"closed query install labels")
-    for name,(size,sha,mode,label) in QUERY.items():
-        pin=query[name];row=requirements_by_name[name]
-        need((pin["bytes"],pin["sha256"])==(size,sha),"fixed original query bytes")
-        need((row["bytes"],row["sha256"],row["required_installed_uid"],row["required_installed_gid"],row["required_installed_mode"],row["required_original_label"])==(size,sha,0,0,mode,label+"\0"),"fixed original query metadata")
-        need(row["required_security_capability_absent"] is True,"original query has no capability")
-        source("var/lib/droidloom/runtime-cohorts/"+RUNTIME+"/images/"+name,pin,mode)
-    source("var/lib/droidloom/runtime-cohorts/"+RUNTIME+"/QUERY-INSTALL-REQUIREMENTS.json",requirements,0o444)
-    result=build_deb(root,inventory,output,"droidloom-android-cohort","0.1+"+COHORT)
+    for role in IMAGES:
+        source("var/lib/droidloom/cohorts/"+COHORT+"/images/"+role+".img",current["images"][role],0o444)
+    source("var/lib/droidloom/cohorts/"+COHORT+"/board/"+BANK+".img",current["device_bank"],0o444)
+    query={r["name"]:project_pin(r) for r in current["query_inputs"]}
+    for name,(_,_,mode,_) in QUERY.items():
+        source("var/lib/droidloom/runtime-cohorts/"+RUNTIME+"/images/"+name,query[name],mode)
+    source("var/lib/droidloom/runtime-cohorts/"+RUNTIME+"/QUERY-INSTALL-REQUIREMENTS.json",
+           current["query_install_requirements"],0o444)
+    result=build_deb(root,inventory,output,"droidloom-android-cohort","0.1+"+COHORT+".query."+RUNTIME)
     for role,pin in evidence.items():copy_pin(pin,output/("source-"+role+".json"),0o444)
     evidence={role:file_pin(output/("source-"+role+".json")) for role in evidence}
-    receipt={"schema":"droidloom-normal-android-deb-result-v1","plan":plan,**evidence,
+    for name,pin in query_evidence.items():
+        if "log_envelope" in pin:
+            need(name in {"stderr","archive_stdout","archive_stderr"},"only actual command logs use envelopes")
+            new_file(output/query_evidence_member(name),pin["log_envelope"],0o444)
+        else:copy_pin(pin,output/query_evidence_member(name),0o444)
+    query_evidence={name:file_pin(output/query_evidence_member(name)) for name in query_evidence}
+    # Verify the transported copies through the same admission used by public prepare.
+    admitted,_=admit_query_materials(query_evidence["materials"],query_evidence)
+    need(admitted==current,"copied actual query publication changed")
+    receipt={"schema":"droidloom-normal-android-deb-result-v2","plan":plan,**evidence,
              "android_source_commit":ANDROID_SOURCE,"android_source_tree":ANDROID_TREE,
-             "cohort_sha256":COHORT,"runtime_sha256":RUNTIME,"board_device_manifest_sha256":BOARD,
-             "package":result,"inventory":file_pin(output/"INVENTORY.json"),"normal_build_exit_code":0,
-             "original_userdata_accessed":False,"query_original_labels_required_at_cold_install":True,
-             "query_installed_labels_observed":False,"physical_install":False,"runtime_qualified":False}
+             "query_source_commit":QUERY_SOURCE,"query_source_tree":QUERY_TREE,
+             "query_materials":query_evidence["materials"],"query_evidence":query_evidence,
+             "query_input_count":len(QUERY),"cohort_sha256":COHORT,"runtime_sha256":RUNTIME,
+             "board_device_manifest_sha256":BOARD,"package":result,"inventory":file_pin(output/"INVENTORY.json"),
+             "normal_build_exit_code":0,"original_userdata_accessed":False,
+             "query_original_labels_required_at_cold_install":True,"query_installed_labels_observed":False,
+             "historical_camera_build_reexecuted":False,"actual_new_query_publication_verified":True,
+             "physical_install":False,"runtime_qualified":False}
     new_file(output/"RESULT.json",canonical(receipt));return receipt
 
 def main():

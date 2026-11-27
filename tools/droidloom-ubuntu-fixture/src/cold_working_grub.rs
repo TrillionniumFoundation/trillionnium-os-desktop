@@ -206,6 +206,21 @@ impl WorkingGrubPreimage {
         observation.revalidate()?;
         Ok(observation)
     }
+    pub(super) fn revalidate_label_custody(&self) -> Result<()> {
+        let current = self
+            .current
+            .try_borrow()
+            .map_err(|_| "working GRUB update in progress")?;
+        let preserved = self
+            .preserved
+            .try_borrow()
+            .map_err(|_| "working Python update in progress")?;
+        for guard in current.iter().chain(preserved.iter()) {
+            guard.revalidate_custody()?;
+        }
+        self.report.revalidate_custody()
+    }
+
     pub(super) fn revalidate(&self) -> Result<()> {
         let current = self
             .current
@@ -239,7 +254,7 @@ impl WorkingGrubPreimage {
         batch: &crate::cold_original_data::labels::WorkingLabelBatch,
     ) -> Result<()> {
         batch.revalidate()?;
-        self.report.revalidate()?;
+        self.report.revalidate_custody()?;
         let mut current = self
             .current
             .try_borrow_mut()
@@ -263,22 +278,22 @@ impl WorkingGrubPreimage {
         )?;
         let updates = current
             .iter()
-            .map(|guard| guard.prepare_working_label_update(batch))
+            .map(|guard| guard.prepare_working_label_custody_update(batch))
             .collect::<Result<Vec<_>>>()?;
         let python = preserved.last().ok_or("working Python source absent")?;
-        let python_update = python.prepare_working_label_update(batch)?;
+        let python_update = python.prepare_working_label_custody_update(batch)?;
         for guard in &preserved[..preserved.len() - 1] {
-            guard.revalidate()?;
+            guard.revalidate_custody()?;
         }
         // Validate all five updates before advancing this component. None of
         // the fixed private preserved inputs may use a label exception.
         for (guard, update) in current.iter_mut().zip(updates) {
-            guard.accept_working_label_update(update)?;
+            guard.accept_working_label_custody_update(update)?;
         }
         preserved
             .last_mut()
             .unwrap()
-            .accept_working_label_update(python_update)?;
+            .accept_working_label_custody_update(python_update)?;
         Ok(())
     }
     pub(super) fn pin(&self) -> &FilePin {

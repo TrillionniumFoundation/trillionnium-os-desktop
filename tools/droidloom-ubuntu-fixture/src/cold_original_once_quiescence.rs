@@ -25,6 +25,9 @@ use std::{
     time::{Duration, Instant},
 };
 
+#[path = "cold_working_quiescence.rs"]
+pub(super) mod working;
+
 const MAGIC: u64 = 0x63677270;
 const MAX_SECONDS: u64 = 600;
 const BASE: &str = "/sys/fs/cgroup";
@@ -276,8 +279,21 @@ fn inventory_groups(
     value: &Value,
     candidate: &str,
 ) -> Result<(Vec<(String, String)>, Vec<String>)> {
-    let owner = format!("/system.slice/droidloom-original-qualification@{candidate}.service");
-    let thaw = format!("/system.slice/droidloom-original-thaw@{candidate}.service");
+    inventory_groups_for_units(
+        value,
+        &format!("droidloom-original-qualification@{candidate}.service"),
+        &format!("droidloom-original-thaw@{candidate}.service"),
+        "on-failure",
+    )
+}
+fn inventory_groups_for_units(
+    value: &Value,
+    owner_unit: &str,
+    thaw_unit: &str,
+    owner_restart: &str,
+) -> Result<(Vec<(String, String)>, Vec<String>)> {
+    let owner = format!("/system.slice/{owner_unit}");
+    let thaw = format!("/system.slice/{thaw_unit}");
     let sessions = value["sessions"]
         .as_array()
         .ok_or("actual login session inventory absent")?;
@@ -309,11 +325,11 @@ fn inventory_groups(
         let requested = row["RequestedId"]
             .as_str()
             .ok_or("requested unit identity absent")?;
-        if requested == format!("droidloom-original-qualification@{candidate}.service") {
+        if requested == owner_unit {
             ensure(
                 row["ControlGroup"] == owner
                     && row["ActiveState"] == "active"
-                    && row["Restart"] == "on-failure",
+                    && row["Restart"] == owner_restart,
                 "once owner must have an observed normal failure restart",
             )?;
             observed_owner = true;
@@ -792,6 +808,7 @@ struct ThawCleanup {
     identity: Identity,
     pin: FilePin,
     completed: bool,
+    schema: &'static str,
 }
 impl ThawCleanup {
     fn new(groups: Vec<Group>, directory: &Path, pin: &FilePin) -> Result<Self> {
@@ -807,6 +824,7 @@ impl ThawCleanup {
             identity,
             pin: pin.clone(),
             completed: false,
+            schema: "droidloom.original-once-thaw-result.v1",
         })
     }
     fn finish(&mut self, reason: &str, cause: Option<&str>) -> Result<()> {
@@ -818,7 +836,7 @@ impl ThawCleanup {
                 Err(e) => failures.push(format!("{}: {e}", group.record.path)),
             }
         }
-        let result = json!({"schema":"droidloom.original-once-thaw-result.v1","freeze_intent":self.pin,
+        let result = json!({"schema":self.schema,"freeze_intent":self.pin,
             "reason":reason,"observed_error":cause,"actual_thawed":thawed,"failures":failures,
             "boot_ms":clock_ms().ok(),"qualification_pass":false});
         let write = (|| -> Result<()> {
@@ -884,6 +902,32 @@ mod tests {
         v["units"][1]["ControlGroup"] = json!("/user.slice/user-1000.slice/session-4.scope");
         assert!(inventory_groups(&v, &id).is_err());
     }
+    #[test]
+    fn working_freezer_inventory_requires_its_actual_owner_and_never_freezes_remote_or_thaw() {
+        let id = "a".repeat(64);
+        let owner = format!("droidloom-working-cold@{id}.service");
+        let thaw = format!("droidloom-working-thaw@{id}.service");
+        let mut v = json!({"sessions":[{"Scope":"session-4.scope","Remote":"yes","User":"1000","Type":"tty","Class":"user"}],
+            "units":[{"RequestedId":owner,"ControlGroup":format!("/system.slice/{owner}"),"ActiveState":"active","Restart":"no"},
+                {"RequestedId":"gdm.service","LoadState":"loaded","ActiveState":"active","ControlGroup":"/system.slice/gdm.service"}]});
+        assert_eq!(
+            inventory_groups_for_units(&v, &owner, &thaw, "no")
+                .unwrap()
+                .0
+                .len(),
+            1
+        );
+        v["units"][0]["Restart"] = json!("on-failure");
+        assert!(inventory_groups_for_units(&v, &owner, &thaw, "no").is_err());
+        v["units"][0]["Restart"] = json!("no");
+        v["units"][1]["RequestedId"] = json!(thaw);
+        v["units"][1]["ControlGroup"] = json!(format!("/system.slice/{thaw}"));
+        assert!(inventory_groups_for_units(&v, &owner, &thaw, "no").is_err());
+        v["units"][1]["RequestedId"] = json!("session-4.scope");
+        v["units"][1]["ControlGroup"] = json!("/user.slice/user-1000.slice/session-4.scope");
+        assert!(inventory_groups_for_units(&v, &owner, &thaw, "no").is_err());
+    }
+
     #[test]
     fn actual_freezer_completion_not_requested_flag_is_required() {
         assert!(!events_frozen("populated 1\nfrozen 0\n").unwrap());

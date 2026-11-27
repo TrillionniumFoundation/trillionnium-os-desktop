@@ -570,6 +570,42 @@ impl PreparedWorkingRuntime {
     }
 }
 impl WorkingRuntimeSources {
+    pub(crate) fn revalidate_label_custody(&self) -> Result<()> {
+        self.custody.revalidate_label_custody()?;
+        self.configuration.validate()?;
+        no_unit_overrides()?;
+        for source in [
+            &self.returned,
+            &self.installation,
+            &self.launcher,
+            &self.report,
+        ] {
+            source.revalidate_custody()?;
+        }
+        for source in &self.sources {
+            source.revalidate_custody()?;
+        }
+        let readback: WorkingReturnConfiguration = serde_json::from_slice(&self.returned.read()?)?;
+        ensure(
+            serde_json::to_value(readback)? == serde_json::to_value(&self.configuration)?,
+            "held working return configuration differs from its actual factory",
+        )?;
+        ensure(
+            self.arguments
+                == working_arguments(
+                    &self.configuration.intent_sha256,
+                    &self.configuration.early_config_sha256,
+                    &self.returned.pin().sha256,
+                )?,
+            "working command line left its actual held configuration",
+        )?;
+        ensure(
+            self.entries.len() == 14,
+            "fixed working runtime source roster changed",
+        )?;
+        self.custody.revalidate_label_custody()
+    }
+
     pub(crate) fn revalidate(&self) -> Result<()> {
         self.custody.revalidate()?;
         self.configuration.validate()?;
@@ -604,6 +640,18 @@ impl WorkingRuntimeSources {
             "fixed working runtime source roster changed",
         )?;
         self.custody.revalidate()
+    }
+    pub(super) fn current_owner_evidence(&self) -> Result<Value> {
+        self.revalidate()?;
+        self.custody.current_owner_evidence()
+    }
+    pub(crate) fn retained_cold_clone(&self) -> Result<FilePin> {
+        self.revalidate()?;
+        self.custody.retained_cold_clone()
+    }
+    pub(super) fn package_custody(&self) -> Result<std::rc::Rc<super::working_custody::WorkingColdCustody>> {
+        self.revalidate()?;
+        Ok(std::rc::Rc::clone(&self.custody))
     }
     pub(crate) fn candidate(&self) -> &str {
         self.custody.materials().candidate()
@@ -698,6 +746,12 @@ impl WorkingGrubSource {
         batch.require_source(source)?;
         self.original.accept_working_label_batch(batch)
     }
+    pub(crate) fn revalidate_label_custody(&self) -> Result<()> {
+        self.custody.revalidate_label_custody()?;
+        self.original.revalidate_label_custody()?;
+        self.custody.revalidate_label_custody()
+    }
+
     pub(super) fn revalidate(&self) -> Result<()> {
         self.custody.revalidate()?;
         self.original.revalidate()?;

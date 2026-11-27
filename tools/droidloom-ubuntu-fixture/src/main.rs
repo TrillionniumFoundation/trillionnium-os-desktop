@@ -82,6 +82,13 @@ enum Command {
         #[arg(long)]
         config_sha256: String,
     },
+    #[command(name = "__working-cold-thaw", hide = true)]
+    WorkingColdThawGuard {
+        #[arg(long)]
+        config: PathBuf,
+        #[arg(long)]
+        config_sha256: String,
+    },
     #[command(hide = true)]
     OriginalOnceEarlyRecovery,
     #[command(hide = true)]
@@ -294,6 +301,10 @@ fn run() -> Result<()> {
             config,
             config_sha256,
         } => cold_original_qualification::run_thaw_guard(&config, &config_sha256)?,
+        Command::WorkingColdThawGuard {
+            config,
+            config_sha256,
+        } => cold_original_qualification::run_working_thaw_guard(&config, &config_sha256)?,
         Command::OriginalOnceEarlyRecovery => cold_original_once_recovery::early()?,
         Command::WorkingQualificationEarlyRecovery => cold_working_recovery::early()?,
         Command::VerifyNetplanProfiles { root } => boot_netplan_profiles::run(&root)?,

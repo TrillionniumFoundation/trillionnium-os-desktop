@@ -284,6 +284,25 @@ pub(super) struct WorkingBootSources {
     report: SealedInput,
 }
 impl WorkingBootSources {
+    pub(super) fn revalidate_label_custody(&self) -> Result<()> {
+        self.contract.validate()?;
+        for value in [
+            &self.intent,
+            &self.early,
+            &self.recipe,
+            &self.producer_plan,
+            &self.normal_prepared,
+            &self.report,
+        ] {
+            value.revalidate_custody()?;
+        }
+        self.initrd.revalidate_custody()?;
+        for guard in &self.retained_sources {
+            guard.revalidate_custody()?;
+        }
+        Ok(())
+    }
+
     pub(super) fn revalidate(&self) -> Result<()> {
         self.contract.validate()?;
         for value in [

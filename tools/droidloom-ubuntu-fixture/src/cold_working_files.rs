@@ -5,11 +5,10 @@
 mod custody;
 use super::super::working_runtime::{WorkingOriginalCellPreimage, WorkingRuntimeSources};
 use crate::{
-    Result,
     boot_files::{self as files, FilePin},
     cold_original_data::labels::WorkingLabelBatch,
     cold_working_recovery::contract as c,
-    ensure, fs,
+    ensure, fs, Result,
 };
 use std::{
     collections::BTreeMap,
@@ -129,8 +128,15 @@ impl Publication {
         self.source.revalidate()?;
         self.transaction.seal_summary(false)
     }
-    fn restore(&mut self) -> Result<FilePin> {
+    fn restore(&mut self) -> Result<Option<FilePin>> {
         self.source.revalidate()?;
+        if self.transaction.never_published() {
+            // Staging is private. A failed admission cannot require a summary
+            // directory which was never created or keep installed packages
+            // stranded behind a nonexistent runtime reverse record.
+            self.cell.require_sources(&self.source)?;
+            return Ok(None);
+        }
         self.transaction.reconcile_pending()?;
         for index in (0..self.transaction.len()).rev() {
             self.source.revalidate()?;
@@ -142,7 +148,7 @@ impl Publication {
             "working runtime reverse is incomplete",
         )?;
         self.transaction.guard()?;
-        self.transaction.seal_summary(true)
+        self.transaction.seal_summary(true).map(Some)
     }
 }
 
@@ -160,7 +166,7 @@ pub(crate) struct WorkingPublicationFailure {
 }
 pub(crate) struct RestoredWorkingRuntime {
     publication: Publication,
-    summary: FilePin,
+    summary: Option<FilePin>,
 }
 impl PublishedWorkingRuntime {
     pub(crate) fn publish(
@@ -192,6 +198,12 @@ impl PublishedWorkingRuntime {
     }
     pub(crate) fn summary(&self) -> &FilePin {
         &self.summary
+    }
+    pub(crate) fn guard_label_custody(&self) -> Result<()> {
+        self.publication.source.revalidate_label_custody()?;
+        ensure(self.publication.transaction.all_published(), "working label window lost runtime publication")?;
+        self.publication.transaction.guard_label_custody()?;
+        self.publication.source.revalidate_label_custody()
     }
     pub(crate) fn guard(&self) -> Result<()> {
         self.publication.source.revalidate()?;
@@ -234,17 +246,34 @@ impl RestoredWorkingRuntime {
     pub(crate) fn source(&self) -> &WorkingRuntimeSources {
         &self.publication.source
     }
-    pub(crate) fn summary(&self) -> &FilePin {
-        &self.summary
+    pub(crate) fn summary(&self) -> Option<&FilePin> {
+        self.summary.as_ref()
     }
     pub(crate) fn guard(&self) -> Result<()> {
         self.publication.source.revalidate()?;
+        if self.summary.is_none() {
+            ensure(
+                self.publication.transaction.never_published(),
+                "missing runtime reverse record after an actual public attempt",
+            )?;
+            return self
+                .publication
+                .cell
+                .require_sources(&self.publication.source);
+        }
         ensure(
             self.publication.transaction.all_restored(),
             "working runtime original restoration incomplete",
         )?;
         self.publication.transaction.guard()?;
         self.publication.source.revalidate()
+    }
+    /// The caller completes guard() before transferring this same source into
+    /// normal package reverse. Package scripts subsequently change their own
+    /// directory entries, so the retired runtime parent checkpoint is not
+    /// falsely refreshed or reused as a post-package snapshot.
+    pub(crate) fn into_source(self) -> (WorkingRuntimeSources, Option<FilePin>) {
+        (self.publication.source, self.summary)
     }
 }
 fn restore(
@@ -299,7 +328,10 @@ mod tests {
     fn fixed_working_roster_rejects_missing_duplicate_foreign_and_wrong_mode() {
         let expected = roster();
         assert_eq!(expected.len(), 14);
-        assert_eq!(expected.get(Path::new(c::retained_data::INPUT_PATH)), Some(&0o400));
+        assert_eq!(
+            expected.get(Path::new(c::retained_data::INPUT_PATH)),
+            Some(&0o400)
+        );
         verify_roster(expected.iter().map(|(p, m)| (p.as_path(), *m))).unwrap();
         let mut missing = expected.clone();
         missing.remove(Path::new(c::EARLY_CONFIG));
@@ -327,10 +359,8 @@ mod tests {
                 .count()
                 == 3
         );
-        assert!(
-            !expected
-                .keys()
-                .any(|p| p.starts_with("/etc/systemd/system"))
-        );
+        assert!(!expected
+            .keys()
+            .any(|p| p.starts_with("/etc/systemd/system")));
     }
 }

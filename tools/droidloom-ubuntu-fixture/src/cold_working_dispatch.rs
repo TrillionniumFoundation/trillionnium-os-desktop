@@ -1,18 +1,25 @@
 //! Consume the actual cold owner in a reversible working-publication transaction.
 //!
-//! This executes the real fixed runtime publisher and both data-directory
-//! exchanges, then publishes the fixed working initrd and menuentry. It always
-//! reverses boot files before the original pair and runtime before reporting
-//! success. It cannot label a backing, publish selected.json, arm grubenv or reboot.
+//! This installs the actual normal public/native packages, executes the fixed
+//! runtime publisher and both data-directory exchanges, then publishes the
+//! working initrd and menuentry. Reverse restores boot files, pair, runtime,
+//! native/public packages and runtime masks before reporting success. The full
+//! normal label writer runs under an independent finite freezer and restores
+//! every actual xattr before file/data/package reverse. It cannot yet publish
+//! selected.json, arm grubenv or reboot.
 //! An unresolved reverse retains the same live owner and descriptors in process.
 use super::{
     PublishedWorkingBootFiles, PublishedWorkingRuntime, RestoredWorkingRuntime,
-    WorkingPublicationFailure,
+    WorkingPublicationFailure, WorkingQuiescence,
     configurations::working_grub::WorkingBootPublicationFailure,
+    working_packages::WorkingPackages,
     working_runtime::{
         PreparedWorkingRuntime, WorkingGrubSource, WorkingOriginalCellPreimage,
         WorkingRuntimeSources,
     },
+};
+use crate::cold_original_data::labels::{
+    WorkingLabelTransaction, WorkingLabelsApplied, WorkingLabelsRestored,
 };
 use crate::{Result, boot_files as files, ensure};
 use serde_json::{Value, json};
@@ -21,34 +28,44 @@ use std::{fs::File, path::PathBuf, thread, time::Duration};
 /// The real implementation owns resources across every error. The test backend
 /// exercises the same ordering with actual filesystem exchanges and fault points.
 trait Actions {
+    fn install_packages(&mut self) -> Result<()>;
     fn publish_runtime(&mut self) -> Result<()>;
     fn advance_pair(&mut self) -> Result<()>;
     fn verify_exchanged(&mut self) -> Result<()>;
     fn publish_boot_files(&mut self) -> Result<()>;
+    fn apply_labels(&mut self) -> Result<()>;
+    fn restore_labels(&mut self) -> Result<()>;
     fn restore_boot_files(&mut self) -> Result<()>;
     fn restore_pair(&mut self) -> Result<()>;
     fn restore_runtime(&mut self) -> Result<()>;
     fn verify_restored(&mut self) -> Result<()>;
+    fn restore_packages(&mut self) -> Result<()>;
+    fn verify_complete(&mut self) -> Result<()>;
 }
 
 fn forward(actions: &mut impl Actions) -> Result<()> {
+    actions.install_packages()?;
     actions.publish_runtime()?;
     // The existing pair owner exposes two exact operations, Stage and Exchange.
     // Never restart forward after an error or infer a failed rename had no effect.
     actions.advance_pair()?;
     actions.advance_pair()?;
     actions.verify_exchanged()?;
-    actions.publish_boot_files()
+    actions.publish_boot_files()?;
+    actions.apply_labels()
 }
 
 fn reverse(actions: &mut impl Actions) -> Result<()> {
+    actions.restore_labels()?;
     // Boot entries must be removed before their referenced data generation.
     actions.restore_boot_files()?;
     // Restoring the original cell while the working pair is still selected by
     // pathname would create a mixed generation. Data must be restored first.
     actions.restore_pair()?;
     actions.restore_runtime()?;
-    actions.verify_restored()
+    actions.verify_restored()?;
+    actions.restore_packages()?;
+    actions.verify_complete()
 }
 
 enum Runtime {
@@ -61,10 +78,19 @@ enum Runtime {
     BootFailed(WorkingBootPublicationFailure),
     Failed(WorkingPublicationFailure),
     Restored(RestoredWorkingRuntime),
+    PackageRestoring {
+        source: WorkingRuntimeSources,
+        runtime_restoration: Option<files::FilePin>,
+    },
 }
 
 struct LiveDispatch {
     runtime: Option<Runtime>,
+    packages: WorkingPackages,
+    labels: Option<WorkingLabelTransaction>,
+    frozen: Option<WorkingQuiescence>,
+    labels_applied: Option<WorkingLabelsApplied>,
+    labels_restored: Option<WorkingLabelsRestored>,
     grub: Option<WorkingGrubSource>,
     work: PathBuf,
     candidate: String,
@@ -81,8 +107,14 @@ impl LiveDispatch {
         grub.require_sources(&source)?;
         let work = source.work().to_owned();
         let candidate = source.candidate().to_owned();
+        let packages = WorkingPackages::prepare(&source)?;
         Ok(Self {
             runtime: Some(Runtime::Prepared { source, cell }),
+            packages,
+            labels: None,
+            frozen: None,
+            labels_applied: None,
+            labels_restored: None,
             grub: Some(grub),
             work,
             candidate,
@@ -105,6 +137,7 @@ impl LiveDispatch {
             Runtime::BootFailed(value) => Ok(value.runtime().source()),
             Runtime::Failed(value) => Ok(value.source()),
             Runtime::Restored(value) => Ok(value.source()),
+            Runtime::PackageRestoring { source, .. } => Ok(source),
         }
     }
 
@@ -115,13 +148,21 @@ impl LiveDispatch {
     }
 
     fn report(&self, forward_error: Option<&str>, recovered_errors: &[String]) -> Result<Value> {
-        let restored = match self.runtime.as_ref() {
-            Some(Runtime::Restored(value)) => {
-                value.guard()?;
-                value.summary().clone()
-            }
-            _ => return Err("working dispatch cannot report without complete reverse".into()),
-        };
+        let restored =
+            match self.runtime.as_ref() {
+                Some(Runtime::PackageRestoring {
+                    source,
+                    runtime_restoration,
+                }) => {
+                    source.revalidate()?;
+                    self.packages.guard_restored()?;
+                    runtime_restoration.clone()
+                }
+                _ => return Err(
+                    "working dispatch cannot report without complete package and runtime reverse"
+                        .into(),
+                ),
+            };
         self.grub()?.require_sources(self.source()?)?;
         let value = json!({
             "schema":"droidloom.working-publication-roundtrip.v1",
@@ -133,13 +174,16 @@ impl LiveDispatch {
             "working_boot_files_restoration":self.boot_restored,
             "pair_restored":true,
             "runtime_restoration":restored,
+            "normal_package_restoration":self.packages.evidence()?,
             "grub_preimage_unchanged":true,
             "forward_succeeded":forward_error.is_none(),
             "forward_error":forward_error,
             "recovered_errors":recovered_errors,
             "same_cold_owner_and_four_backing_ofds_retained":true,
             "selected_json_published":false,
-            "backing_labels_changed":false,
+            "normal_label_transaction_prepared":self.labels.is_some(),
+            "normal_labels_applied":self.labels_applied.as_ref().map(|v|v.report()),
+            "normal_labels_restored":self.labels_restored.as_ref().map(|v|v.report()),
             "boot_armed":false,
             "host_reboots":0,
             "application_business_accepted":false,
@@ -160,7 +204,12 @@ impl LiveDispatch {
 }
 
 impl Actions for LiveDispatch {
+    fn install_packages(&mut self) -> Result<()> {
+        self.grub()?.require_sources(self.source()?)?;
+        self.packages.install()
+    }
     fn publish_runtime(&mut self) -> Result<()> {
+        self.packages.verify_installed()?;
         self.grub()?.require_sources(self.source()?)?;
         // No fallible operation is allowed while the state is moved out. Both
         // publisher outcomes return the same actual ownership to this enum.
@@ -248,6 +297,47 @@ impl Actions for LiveDispatch {
         }
     }
 
+    fn apply_labels(&mut self) -> Result<()> {
+        let Some(Runtime::BootPublished(boot)) = self.runtime.as_mut() else {
+            return Err("working labels require the actual retained boot publication".into());
+        };
+        ensure(
+            self.labels.is_none() && self.frozen.is_none(),
+            "working label forward is create-only",
+        )?;
+        self.frozen = Some(WorkingQuiescence::begin(boot, &mut self.packages)?);
+        let frozen = self.frozen.as_ref().unwrap();
+        self.labels = Some(WorkingLabelTransaction::prepare(boot, frozen)?);
+        self.labels_applied = Some(self.labels.as_mut().unwrap().apply(
+            boot,
+            &mut self.packages,
+            frozen,
+        )?);
+        Ok(())
+    }
+
+    fn restore_labels(&mut self) -> Result<()> {
+        if self.labels_restored.is_none() {
+            if let Some(labels) = &mut self.labels {
+                let Some(Runtime::BootPublished(boot)) = self.runtime.as_mut() else {
+                    return Err("working label recovery lost its same boot/runtime owner".into());
+                };
+                let frozen = self
+                    .frozen
+                    .as_ref()
+                    .ok_or("working label recovery lost its independent freezer")?;
+                let restored = labels.restore(boot, &mut self.packages, frozen)?;
+                self.packages.bind_label_restoration(&restored)?;
+                self.labels_restored = Some(restored);
+            }
+        }
+        if let Some(frozen) = &mut self.frozen {
+            frozen.finish()?;
+        }
+        self.frozen = None;
+        Ok(())
+    }
+
     fn restore_boot_files(&mut self) -> Result<()> {
         let state = self
             .runtime
@@ -296,6 +386,7 @@ impl Actions for LiveDispatch {
             // A failed reverse of the runtime is reached only after pair restore.
             Runtime::Failed(value) => value.source().revalidate(),
             Runtime::Restored(value) => value.guard(),
+            Runtime::PackageRestoring { source, .. } => source.revalidate(),
         }
     }
 
@@ -330,11 +421,68 @@ impl Actions for LiveDispatch {
     }
 
     fn verify_restored(&mut self) -> Result<()> {
-        let Some(Runtime::Restored(value)) = self.runtime.as_ref() else {
-            return Err("working dispatch has not completed runtime restoration".into());
+        match self
+            .runtime
+            .as_ref()
+            .ok_or("working dispatcher state absent")?
+        {
+            Runtime::Restored(value) => value.guard()?,
+            Runtime::Prepared { source, cell } => cell.require_sources(source)?,
+            Runtime::PackageRestoring { source, .. } => source.revalidate()?,
+            _ => return Err("working runtime restoration remains incomplete".into()),
+        }
+        self.grub()?.require_sources(self.source()?)
+    }
+
+    fn restore_packages(&mut self) -> Result<()> {
+        // The normal package engine changes its own installed parent members.
+        // Finish the runtime reverse against its exact post-install checkpoint
+        // first, then transfer the same cold owner without a fallible gap.
+        self.verify_restored()?;
+        let state = self
+            .runtime
+            .take()
+            .ok_or("working dispatcher state absent")?;
+        self.runtime = Some(match state {
+            Runtime::Restored(value) => {
+                let (source, summary) = value.into_source();
+                Runtime::PackageRestoring {
+                    source,
+                    runtime_restoration: summary,
+                }
+            }
+            Runtime::Prepared { source, .. } => Runtime::PackageRestoring {
+                source,
+                runtime_restoration: None,
+            },
+            Runtime::PackageRestoring {
+                source,
+                runtime_restoration,
+            } => Runtime::PackageRestoring {
+                source,
+                runtime_restoration,
+            },
+            other => {
+                self.runtime = Some(other);
+                return Err("normal package reverse requires completed runtime reverse".into());
+            }
+        });
+        self.packages.restore()
+    }
+
+    fn verify_complete(&mut self) -> Result<()> {
+        self.packages.guard_restored()?;
+        let Some(Runtime::PackageRestoring {
+            source,
+            runtime_restoration,
+        }) = self.runtime.as_ref()
+        else {
+            return Err("working package reverse has not retained the final cold owner".into());
         };
-        value.guard()?;
-        self.grub()?.require_sources(value.source())
+        if let Some(pin) = runtime_restoration {
+            files::read_pin(pin, 64 * 1024 * 1024)?;
+        }
+        self.grub()?.require_sources(source)
     }
 }
 
@@ -343,15 +491,6 @@ impl Actions for LiveDispatch {
 pub(super) fn run(prepared: PreparedWorkingRuntime) -> Result<Value> {
     let mut dispatch = LiveDispatch::new(prepared)?;
     let forward_error = forward(&mut dispatch).err().map(|e| e.to_string());
-    if matches!(dispatch.runtime.as_ref(), Some(Runtime::Prepared { .. })) {
-        return Err(format!(
-            "working publication did not begin: {}",
-            forward_error
-                .as_deref()
-                .unwrap_or("actual publication state absent")
-        )
-        .into());
-    }
     let mut recovered_errors = Vec::new();
     let mut last_recovery_error = None;
     loop {
@@ -397,13 +536,18 @@ mod tests {
     #[derive(Clone, Copy, Debug, PartialEq, Eq)]
     enum Fault {
         None,
+        PackageInstallAfterEffect,
         PublishAfterEffect,
         StageAfterEffect,
         ExchangeAfterEffect,
         BootPublishAfterEffect,
+        LabelsAfterEffect,
+        RestoreLabelsOnce,
+        RuntimeAdmissionBeforeEffect,
         RestoreBootOnce,
         RestorePairOnce,
         RestoreRuntimeOnce,
+        RestorePackagesOnce,
     }
 
     /// Real files, not a success-returning mock: each failure can happen after
@@ -413,7 +557,13 @@ mod tests {
         fault: Fault,
         pair_phase: usize,
         runtime_published: bool,
+        packages_installed: bool,
+        installs: usize,
+        restore_packages_failed: bool,
         boot_published: bool,
+        labels_applied: bool,
+        label_applications: usize,
+        restore_labels_failed: bool,
         boot_publishes: usize,
         restore_boot_failed: bool,
         publishes: usize,
@@ -425,6 +575,7 @@ mod tests {
         fn new(fault: Fault) -> Result<Self> {
             let root = tempfile::tempdir()?;
             fs::write(root.path().join("runtime"), b"original runtime")?;
+            fs::write(root.path().join("packages"), b"original packages")?;
             fs::write(root.path().join("boot"), b"original boot")?;
             fs::write(root.path().join("original-data"), b"original data")?;
             fs::write(root.path().join("working-data"), b"working data")?;
@@ -433,7 +584,13 @@ mod tests {
                 fault,
                 pair_phase: 0,
                 runtime_published: false,
+                packages_installed: false,
+                installs: 0,
+                restore_packages_failed: false,
                 boot_published: false,
+                labels_applied: false,
+                label_applications: 0,
+                restore_labels_failed: false,
                 boot_publishes: 0,
                 restore_boot_failed: false,
                 publishes: 0,
@@ -446,6 +603,18 @@ mod tests {
             self.root.path().join(name)
         }
         fn original(&self) -> Result<()> {
+            let working = File::open(self.path("working-data"))?;
+            ensure(
+                matches!(
+                    rustix::fs::fgetxattr(
+                        &working,
+                        "user.droidloom.working-dispatch-test",
+                        &mut [0u8; 128]
+                    ),
+                    Err(rustix::io::Errno::NODATA)
+                ),
+                "working labels not restored",
+            )?;
             ensure(
                 fs::read(self.path("boot"))? == b"original boot",
                 "boot files not restored",
@@ -476,8 +645,26 @@ mod tests {
         }
     }
     impl Actions for Files {
+        fn install_packages(&mut self) -> Result<()> {
+            self.installs += 1;
+            self.move_file("packages", "old-packages")?;
+            fs::write(self.path("packages"), b"new normal packages")?;
+            self.packages_installed = true;
+            ensure(
+                self.fault != Fault::PackageInstallAfterEffect,
+                "injected partial normal package install",
+            )
+        }
         fn publish_runtime(&mut self) -> Result<()> {
+            ensure(
+                self.packages_installed,
+                "runtime published before normal packages",
+            )?;
             self.publishes += 1;
+            ensure(
+                self.fault != Fault::RuntimeAdmissionBeforeEffect,
+                "injected runtime admission before any rename",
+            )?;
             self.move_file("runtime", "old-runtime")?;
             fs::write(self.path("runtime"), b"candidate runtime")?;
             self.runtime_published = true;
@@ -531,7 +718,56 @@ mod tests {
                 "injected error after boot effect",
             )
         }
+        fn apply_labels(&mut self) -> Result<()> {
+            ensure(
+                self.boot_published && self.pair_phase == 2,
+                "labels preceded actual boot/data publication",
+            )?;
+            let file = File::open(self.path("original-data"))?;
+            rustix::fs::fsetxattr(
+                &file,
+                "user.droidloom.working-dispatch-test",
+                b"actual-normal-context",
+                rustix::fs::XattrFlags::empty(),
+            )?;
+            self.labels_applied = true;
+            self.label_applications += 1;
+            ensure(
+                self.fault != Fault::LabelsAfterEffect,
+                "injected actual label effect failure",
+            )
+        }
+        fn restore_labels(&mut self) -> Result<()> {
+            if self.labels_applied {
+                ensure(
+                    self.boot_published && self.pair_phase == 2,
+                    "labels restored after moving their original target",
+                )?;
+                if self.fault == Fault::RestoreLabelsOnce && !self.restore_labels_failed {
+                    self.restore_labels_failed = true;
+                    return Err("injected label reverse failure".into());
+                }
+                let file = File::open(self.path("original-data"))?;
+                let mut actual = [0u8; 128];
+                let n = rustix::fs::fgetxattr(
+                    &file,
+                    "user.droidloom.working-dispatch-test",
+                    &mut actual,
+                )?;
+                ensure(
+                    &actual[..n] == b"actual-normal-context",
+                    "unknown test label outcome",
+                )?;
+                rustix::fs::fremovexattr(&file, "user.droidloom.working-dispatch-test")?;
+                self.labels_applied = false;
+            }
+            Ok(())
+        }
         fn restore_boot_files(&mut self) -> Result<()> {
+            ensure(
+                !self.labels_applied,
+                "boot files reversed while source labels remain",
+            )?;
             if self.fault == Fault::RestoreBootOnce && !self.restore_boot_failed {
                 self.restore_boot_failed = true;
                 return Err("injected boot restore failure".into());
@@ -579,16 +815,40 @@ mod tests {
         fn verify_restored(&mut self) -> Result<()> {
             self.original()
         }
+        fn restore_packages(&mut self) -> Result<()> {
+            self.original()?;
+            if self.fault == Fault::RestorePackagesOnce && !self.restore_packages_failed {
+                self.restore_packages_failed = true;
+                return Err("injected normal package rollback failure".into());
+            }
+            if self.packages_installed {
+                fs::remove_file(self.path("packages"))?;
+                self.move_file("old-packages", "packages")?;
+                self.packages_installed = false;
+            }
+            Ok(())
+        }
+        fn verify_complete(&mut self) -> Result<()> {
+            self.original()?;
+            ensure(
+                fs::read(self.path("packages"))? == b"original packages"
+                    && !self.path("old-packages").exists(),
+                "normal packages not restored",
+            )
+        }
     }
 
     #[test]
     fn working_dispatch_reverses_real_partial_effects_without_forward_replay() -> Result<()> {
         for fault in [
             Fault::None,
+            Fault::PackageInstallAfterEffect,
             Fault::PublishAfterEffect,
             Fault::StageAfterEffect,
             Fault::ExchangeAfterEffect,
             Fault::BootPublishAfterEffect,
+            Fault::LabelsAfterEffect,
+            Fault::RuntimeAdmissionBeforeEffect,
         ] {
             let mut files = Files::new(fault)?;
             let outcome = forward(&mut files);
@@ -600,7 +860,11 @@ mod tests {
                 (files.publishes, files.advances, files.boot_publishes),
                 counts
             );
-            assert_eq!(files.publishes, 1);
+            assert_eq!(
+                files.publishes,
+                usize::from(fault != Fault::PackageInstallAfterEffect)
+            );
+            assert_eq!(files.installs, 1);
         }
         Ok(())
     }
@@ -653,6 +917,53 @@ mod tests {
             (files.publishes, files.advances, files.boot_publishes),
             counts
         );
+        Ok(())
+    }
+    #[test]
+    fn working_dispatch_holds_actual_package_state_until_runtime_reverse_and_retries_only_reverse()
+    -> Result<()> {
+        let mut files = Files::new(Fault::RestorePackagesOnce)?;
+        forward(&mut files)?;
+        assert!(reverse(&mut files).is_err());
+        files.original()?;
+        assert!(files.packages_installed);
+        assert_eq!(fs::read(files.path("packages"))?, b"new normal packages");
+        let counts = (
+            files.installs,
+            files.publishes,
+            files.advances,
+            files.boot_publishes,
+        );
+        reverse(&mut files)?;
+        files.verify_complete()?;
+        assert_eq!(
+            (
+                files.installs,
+                files.publishes,
+                files.advances,
+                files.boot_publishes
+            ),
+            counts
+        );
+        Ok(())
+    }
+    #[test]
+    fn working_dispatch_keeps_boot_pair_runtime_and_packages_until_actual_labels_restore()
+    -> Result<()> {
+        let mut files = Files::new(Fault::RestoreLabelsOnce)?;
+        forward(&mut files)?;
+        assert!(reverse(&mut files).is_err());
+        assert!(
+            files.labels_applied
+                && files.boot_published
+                && files.runtime_published
+                && files.packages_installed
+        );
+        assert_eq!(files.pair_phase, 2);
+        assert_eq!(files.label_applications, 1);
+        reverse(&mut files)?;
+        files.verify_complete()?;
+        assert_eq!(files.label_applications, 1);
         Ok(())
     }
 }

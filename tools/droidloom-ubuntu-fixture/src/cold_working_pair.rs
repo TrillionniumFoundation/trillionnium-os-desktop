@@ -519,7 +519,7 @@ impl WorkingPairTransaction {
         )?;
         // Source locks were advanced by the same actual batch before this call.
         // Private history/intent/working-source records never receive exceptions.
-        history.guard()?;
+        history.guard_working_label_custody()?;
         prepared.work.guard()?;
         prepared.source_work.guard()?;
         if let Some((directory, _)) = &prepared.recovery {
@@ -561,7 +561,7 @@ impl WorkingPairTransaction {
         let old_parents = self.parents.clone();
         state.adopt(update);
         self.parents = parents;
-        let result = self.guard(prepared, history);
+        let result = self.guard_label_custody(prepared, history);
         if result.is_err() {
             let state = self.labelled.as_mut().unwrap();
             state.working = old_working;
@@ -570,6 +570,90 @@ impl WorkingPairTransaction {
             self.parents = old_parents;
         }
         result
+    }
+
+    pub(crate) fn guard_label_custody(
+        &self,
+        prepared: &PreparedReturnedPair,
+        history: &ReturnedOnceHistory,
+    ) -> Result<()> {
+        history.guard_working_label_custody()?;
+        ensure(
+            self.first_once == history.candidate()
+                && same_pin(&self.prior_intent, history.pair_pin())
+                && prepared.work.path == self.tx.locations.work_path
+                && same_directory_inode(&self.work_identity, &fs::stat(&prepared.work.file)?)
+                && prepared.pair.pid == std::process::id(),
+            "working transaction left its actual historical observer and private workspace",
+        )?;
+        prepared.work.guard()?;
+        prepared.source_work.guard()?;
+        if let Some((directory, _)) = &prepared.recovery {
+            directory.guard()?;
+        }
+        guard_file(&prepared.pair.pending_file)?;
+        if let Some(selection) = &prepared.pair.selection_file {
+            guard_file(selection)?;
+        }
+        ensure(
+            prepared.pair.backings.len() == 4 && self.tx.images.len() == 4,
+            "held working backing roster differs",
+        )?;
+        for (index, (old, (held, initial, working))) in prepared
+            .pair
+            .backings
+            .iter()
+            .zip(&self.tx.images)
+            .enumerate()
+        {
+            let labelled = self
+                .labelled
+                .as_ref()
+                .filter(|_| *working)
+                .map(|state| &state.working.members[IMAGES[index % 2]]);
+            let expected = labelled.map_or(initial, |member| &member.identity);
+            let snapshot = labelled.map_or(&old.snapshot, |member| &member.label_identity);
+            ensure(
+                old.identity == *initial
+                    && fs::stat(&old.file)? == *expected
+                    && fs::stat(held)? == *expected
+                    && labels::data_snapshot(&old.file, expected)? == *snapshot,
+                "cold working exchange changed an actual backing or its complete source attributes",
+            )?;
+        }
+        self.tx.require_writer_locks()?;
+        let (layout, selection) = self.observe()?;
+        ensure(
+            selection == SelectionState::Original,
+            "pair exchange cannot publish a candidate selection",
+        )?;
+        ensure(
+            fs::stat(&self.pending_file)?
+                == self
+                    .labelled
+                    .as_ref()
+                    .map_or(&self.tx.intent.new_selection.identity, |state| {
+                        &state.pending.identity
+                    })
+                    .clone()
+                && fs::digest(&read_small(&self.pending_file, 16384)?)
+                    == self.tx.intent.selection.sha256,
+            "pending selection left its held complete prelabel source",
+        )?;
+        if let Some(pending) = &self.in_flight {
+            pending.verify(prepared, &self.tx, layout)?;
+        } else {
+            for ((path, file, _), expected) in prepared.pair.parents.iter().zip(&self.parents) {
+                let named = fs::Tree::open("/", 0)?.dir(&fs::absolute_string(path)?)?;
+                ensure(
+                    labels::snapshot(file)? == *expected && labels::snapshot(&named)? == *expected,
+                    "working parent changed outside its exact exchange",
+                )?;
+            }
+        }
+        // Complete reference inventory remains an entry/exit bookend.
+
+        history.guard_working_label_custody()
     }
 
     pub(crate) fn guard(

@@ -7,9 +7,11 @@ use super::*;
 use crate::cold_working_recovery::contract::retained_data as contract;
 use sha2::{Digest, Sha256};
 use std::{
-    os::unix::fs::FileExt,
+    io,
     time::{Duration, Instant},
 };
+#[path = "../../../runtime/droidloom-supervisor/src/working_retained_read.rs"]
+mod retained_read;
 
 fn before_deadline(until: Instant) -> Result<()> {
     ensure(
@@ -34,26 +36,29 @@ fn hash_retained_image(
     rustix::fs::flock(held, FlockOperation::NonBlockingLockExclusive)?;
     let size = labels::snapshot_identity(expected).size;
     let mut hash = Sha256::new();
-    let mut buffer = vec![0; 1024 * 1024];
+    let mut buffer = vec![0; retained_read::MAX_READ];
     let mut offset = 0u64;
+    let mut guard = || -> io::Result<()> {
+        let check = || -> Result<()> {
+            before_deadline(until)?;
+            ensure(
+                labels::snapshot(held)? == *expected,
+                "retained original changed across an actual no-cache read",
+            )
+        };
+        check().map_err(|error| io::Error::other(error.to_string()))
+    };
     while offset < size {
-        before_deadline(until)?;
         let wanted = usize::try_from((size - offset).min(buffer.len() as u64))?;
-        let count = held.read_at(&mut buffer[..wanted], offset)?;
-        before_deadline(until)?;
-        ensure(
-            count != 0,
-            "retained original ended before its complete source size",
-        )?;
-        hash.update(&buffer[..count]);
+        retained_read::read_exact_at(held, &mut buffer[..wanted], offset, until, &mut guard)?;
+        hash.update(&buffer[..wanted]);
         before_deadline(until)?;
         offset = offset
-            .checked_add(count as u64)
+            .checked_add(wanted as u64)
             .ok_or("retained image offset overflow")?;
     }
-    let mut extra = [0u8; 1];
     ensure(
-        held.read_at(&mut extra, size)? == 0 && labels::snapshot(held)? == *expected,
+        labels::snapshot(held)? == *expected,
         "retained original changed while its complete contents were read",
     )?;
     rustix::fs::flock(held, FlockOperation::NonBlockingLockExclusive)?;

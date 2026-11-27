@@ -24,6 +24,7 @@ mod materials;
 mod owner;
 #[path = "cold_original_once_quiescence.rs"]
 mod quiescence;
+pub(crate) use quiescence::working::WorkingQuiescence;
 #[path = "cold_original_once_retirement.rs"]
 mod retirement;
 #[path = "cold_original_once_window.rs"]
@@ -42,6 +43,9 @@ mod working_boot;
 mod working_custody;
 #[path = "cold_working_dispatch.rs"]
 mod working_dispatch;
+#[path = "cold_working_packages.rs"]
+mod working_packages;
+pub(crate) use working_packages::WorkingPackages;
 #[path = "cold_working_grub.rs"]
 mod working_grub;
 #[path = "cold_working_material_policy.rs"]
@@ -544,4 +548,8 @@ pub(super) fn verify_working_publication(
     let boot = working_boot::PreparedWorkingBoot::prepare(materials)?;
     let prepared = working_runtime::PreparedWorkingRuntime::prepare(boot)?;
     working_dispatch::run(prepared)
+}
+
+pub(crate) fn run_working_thaw_guard(config: &Path, expected: &str) -> Result<()> {
+    quiescence::working::run_thaw_guard(config, expected)
 }

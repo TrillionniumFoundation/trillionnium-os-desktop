@@ -487,14 +487,30 @@ production services.
 ### Cold working publication and restoration
 
 `verify-working-publication --config <absolute-plan> --config-sha256 <full-sha256>`
-executes the fixed working runtime publication, both data-directory exchanges,
-and the working initrd/custom GRUB publication. It reverses boot files first,
-then the original data pair, then the runtime files. It
-uses the same normal material plan as `prepare-working-qualification` and must
+installs the actual normal public/native packages, executes the fixed working
+runtime publication and both data-directory exchanges, and publishes the
+working initrd/custom GRUB files. It then applies the complete normal host and
+working-data label plan under an independently guarded finite freezer window.
+Reverse first restores every changed label and binds the actual restored
+metadata to the normal package snapshots, then thaws the original writers,
+restores boot files, the original data pair and runtime files, and finally
+reverses the normal native/public package changes and original writer requests. It uses the same normal material plan as
+`prepare-working-qualification` and must
 run as the sole process in its new
 `droidloom-working-cold@<candidate-sha256>.service` unit on the original shared
 kernel. Existing normal-source, initial-namespace, root-account, four-image OFD,
 lock, and original-state checks apply to both modes.
+
+Normal package mutation uses the existing source-bound public/native engines,
+their actual immutable snapshots, and the exact old/new native tool members.
+The working Rust owner admits a fixed operation set and marks an effect attempt
+before invoking either package mutator. Runtime masks retain actual symlink
+inodes; PID 1 must resolve every fixed unit to `/dev/null` before installation
+and again before runtime publication. A higher-priority unit override rejects
+the operation. The original writer inventory is durable before the first stop
+request. Failure retains all snapshots, masks, and ownership until reverse
+succeeds, including a failure before the first runtime-file rename. Installed
+ELFs and units are checked by the actual normal package engines.
 
 This operation changes the fourteen fixed runtime targets and the existing
 working data-directory names temporarily, plus the fixed working initrd and
@@ -528,14 +544,37 @@ before a later GRUB environment transition. Its label consumer accepts only a
 completed batch from the same live source owner, advances the held GRUB/kernel
 and runtime/boot parent checkpoints, and retains all custody if a component
 fails. The full source guard runs after the data-pair and cold-lock consumers
-have accepted the same batch. The publication-check command does not create
-label batches or publish a selection.
+have accepted the same batch. The publication-check command now executes the
+full label writer and its reverse; it still does not publish a selection.
+
+The label plan comes from the normal matcher over the complete original host
+inventory and eleven actual separately held working targets. Original image
+contents and labels are excluded. Each cohort contains at most 64 distinct
+inodes: all source-bound preimages precede the first xattr syscall, a real
+filesystem barrier precedes completed applications, and opaque same-owner
+proofs advance every affected source, pair, GRUB and publication checkpoint.
+Reverse writes all restore intents before any target effect and uses bounded
+batched filesystem barriers. A lost restoration completion is read back from
+the same recovery FD and durable intent without writing the target again.
+An unchanged byte copy, foreign inode, extra xattr, or missing complete source
+checkpoint cannot substitute for the held original.
+
+The separate `__working-cold-thaw` mode belongs only to the fixed working
+thaw unit and validates its actual PIDFD, executable, invocation, initial
+namespaces and fixed cgroup inventory. It never freezes the cold owner, PID 1,
+remote sessions, or its own thaw group. One absolute 600-second deadline is
+retained; it is not extended by label batches or retries. This guard thaws the
+original writers if the observing process exits. It does not provide complete
+package/data/GRUB transaction recovery after a killed cold owner.
 
 The working material producer reads both retained original images through their
 already held read-only descriptions before any directory exchange. One absolute
 1200-second window covers the complete 32 GiB data image and 128 MiB metadata
-image, with a deadline check at every 1 MiB read; it does not restart for the
-second image. Full content hashes must match the original cold-clone lineage,
+image, with a deadline check around every 1 MiB read; it does not restart for the
+second image. Cold and runtime include the same safe Rust positional reader:
+actual read-only descriptors use fixed `preadv2(RWF_DONTCACHE)`, every syscall
+is fenced by the original custody guard, and an unsupported kernel/filesystem
+fails without a buffered fallback. Full content hashes must match the original cold-clone lineage,
 and complete file identities, ext4 handles and attributes must remain equal.
 The comparison names the fixed future `data-pair.rollback` directory and records
 its stable identity without claiming that its pre-rename times are post-rename
