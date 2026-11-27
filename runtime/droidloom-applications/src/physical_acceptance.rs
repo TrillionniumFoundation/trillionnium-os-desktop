@@ -19,6 +19,9 @@ use droidloom_supervisor::control::physical_qualification_channel::{
 };
 use droidloom_supervisor::main_custody::RuntimeMainCustody;
 use serde_json::Value;
+#[path = "physical_release_scope.rs"]
+mod release_scope;
+use release_scope::{ReleaseScopeFact, ReleaseScopeReview, ScopeEvidence};
 
 const SCHEMA: &str = "droidloom.physical-application-plan.v1";
 const REPORT_SCHEMA: &str = "droidloom.physical-application-run.v1";
@@ -367,6 +370,7 @@ struct ApplicationSummary {
     cases: Vec<Value>,
     gate_assertions: Vec<PhysicalGateSummary>,
     native_business_facts: Vec<Value>,
+    release_scope_fact: Option<Value>,
     blocked_gates: Vec<Value>,
     blocked: Option<String>,
     accepted_gates: usize,
@@ -911,10 +915,23 @@ struct RunCustody {
     photo_history: Option<HistoricalCameraPhotoCase>,
     settings_history: Option<HistoricalSettingsPermissionCase>,
     native_facts: Vec<HistoricalNativeBusinessFact>,
+    release_review: ReleaseScopeReview,
+    release_scopes: Vec<ReleaseScopeFact>,
+    retained_errors: BTreeMap<String, String>,
+    retained_failure: Option<String>,
     channel: ChildChannel,
     end: Instant,
 }
 impl RunCustody {
+    fn scope_evidence(&self) -> ScopeEvidence<'_> {
+        ScopeEvidence {
+            original_main:&self.original_main, final_main:self.final_main.as_ref(),
+            histories:&self.histories, native_facts:&self.native_facts,
+            families:&self.family_histories, photo:self.photo_history.as_ref(),
+            settings:self.settings_history.as_ref(), errors:&self.retained_errors,
+            retained_failure:self.retained_failure.as_deref(),
+        }
+    }
     fn guard_immutable(&self) -> Result<(), String> {
         deadline(self.end)?;
         self.inspector
@@ -951,6 +968,14 @@ impl RunCustody {
         for fact in &self.native_facts {
             fact.require_retained_binding(&self.histories)?;
         }
+        self.release_review.guard(&self.inputs)?;
+        require(self.release_scopes.len() == roster::PACKAGE_COUNT
+            && self.release_scopes.iter().zip(roster::PACKAGES)
+                .all(|(fact, fixed)| fact.package() == fixed.package)
+            && self.retained_errors.is_empty() && self.retained_failure.is_none(),
+            "complete run lost a source-owned whole-App release review or retained a failure")?;
+        let evidence = self.scope_evidence();
+        for fact in &self.release_scopes { fact.guard(&self.release_review, &evidence)?; }
         deadline(self.end)
     }
     fn refresh(&mut self) -> Result<(), String> {
@@ -1050,6 +1075,7 @@ fn summarize_rows(
     family_histories: &[HistoricalFamilyCase],
     photo_history: Option<&HistoricalCameraPhotoCase>,
     settings_history: Option<&HistoricalSettingsPermissionCase>,
+    release_scopes: &[ReleaseScopeFact],
     errors: &BTreeMap<String, String>,
 ) -> Result<Vec<ApplicationSummary>, String> {
     if let Some(photo) = photo_history {
@@ -1126,6 +1152,16 @@ fn summarize_rows(
                 settings.guard()?;
                 indices.push(QualificationCase::SettingsPermissionInterfaces as usize);
             }
+            if id == "release_scope" {
+                require(indices.is_empty(),
+                    "release_scope may only come from the retained whole-App release factory")?;
+                let scopes = release_scopes.iter().filter(|fact| fact.package() == fixed.package)
+                    .collect::<Vec<_>>();
+                require(scopes.len() <= 1, "whole-App release scope is duplicated")?;
+                if let Some(scope) = scopes.first() {
+                    indices.extend(scope.completed_cases().iter().copied());
+                }
+            }
             indices.sort_unstable();
             indices.dedup();
             let passed = !indices.is_empty() && !errors.contains_key(fixed.package);
@@ -1173,6 +1209,8 @@ fn summarize_rows(
                 .chain(settings_history.filter(|settings| settings.summary.actual.package == fixed.package)
                     .map(|settings| settings.fact.comparison()))
                 .collect::<Result<Vec<_>, _>>()?,
+            release_scope_fact: release_scopes.iter()
+                .find(|fact| fact.package() == fixed.package).map(|fact| fact.comparison()).transpose()?,
             blocked_gates: families.iter().flat_map(|(_, history)| history.custody.blocked())
                 .map(|blocked| serde_json::to_value(blocked).map_err(|e|e.to_string()))
                 .collect::<Result<Vec<_>,_>>()?,
@@ -1214,6 +1252,7 @@ pub fn run_physical_files(
     validate(&runtime, &gates, roster::PACKAGE_COUNT)?;
     require_compiled_roster(&plan, &runtime, &gates)?;
     require_channel_roster()?;
+    let release_review = ReleaseScopeReview::capture(&gates, &runtime.gate_registry, &inputs)?;
     // Acquire the fixed parent's actual private channel before any PM/Main or leaf action.
     let mut channel = ChildChannel::acquire(
         &plan_pin.path,
@@ -1594,7 +1633,13 @@ pub fn run_physical_files(
         }
     };
     let native_facts = join_native_histories(&histories)?;
-    let applications = summarize_rows(&histories, &native_facts, &family_histories, photo_history.as_ref(), settings_history.as_ref(), &errors)?;
+    let release_scopes = release_review.reconcile(&inputs, &ScopeEvidence {
+        original_main:&main, final_main:final_main.as_ref(), histories:&histories,
+        native_facts:&native_facts, families:&family_histories, photo:photo_history.as_ref(),
+        settings:settings_history.as_ref(), errors:&errors, retained_failure:first_failure.as_deref(),
+    })?;
+    let applications = summarize_rows(&histories, &native_facts, &family_histories,
+        photo_history.as_ref(), settings_history.as_ref(), &release_scopes, &errors)?;
     let accepted_gates = applications.iter().map(|row| row.accepted_gates).sum();
     let accepted_applications = applications
         .iter()
@@ -1624,7 +1669,7 @@ pub fn run_physical_files(
         runtime_qualified: qualified,
         production_ready: qualified,
         automatic_retry: false,
-        retained_failure: first_failure,
+        retained_failure: first_failure.clone(),
         applications,
     };
     // Keep detailed executed comparisons in output separately from the retained
@@ -1669,6 +1714,10 @@ pub fn run_physical_files(
         photo_history,
         settings_history,
         native_facts,
+        release_review,
+        release_scopes,
+        retained_errors:errors,
+        retained_failure:first_failure,
         channel,
         end,
     };
@@ -1827,7 +1876,7 @@ mod tests {
         assert_eq!(settings_permission_work_end(now, whole).unwrap(), now + Duration::from_secs(6_050));
         assert_eq!(settings_permission_work_end(now + Duration::from_secs(300), whole).unwrap(), whole);
         assert!(settings_permission_work_end(whole, whole).is_err());
-        let rows = summarize_rows(&[], &[], &[], None, None, &BTreeMap::new()).unwrap();
+        let rows = summarize_rows(&[], &[], &[], None, None, &[], &BTreeMap::new()).unwrap();
         let settings = rows.iter().find(|row| row.package == "com.android.settings").unwrap();
         assert!(!settings.runtime_qualified && !settings.production_ready);
         let gate = settings.gate_assertions.iter().find(|gate| gate.id == "settings.permissions").unwrap();
@@ -1864,13 +1913,14 @@ mod tests {
 
     #[test]
     fn physical_family_rows_without_opaque_history_never_get_gate_credit() {
-        let rows = summarize_rows(&[], &[], &[], None, None, &BTreeMap::new()).unwrap();
+        let rows = summarize_rows(&[], &[], &[], None, None, &[], &BTreeMap::new()).unwrap();
         assert_eq!(rows.len(), roster::PACKAGE_COUNT);
         assert_eq!(rows.iter().map(|row| row.gate_assertions.len()).sum::<usize>(), 377);
         for row in rows {
             assert_eq!(row.accepted_gates, 0);
             assert!(!row.runtime_qualified && !row.production_ready);
             assert!(row.cases.is_empty() && row.blocked_gates.is_empty());
+            assert!(row.release_scope_fact.is_none());
             assert!(row.gate_assertions.iter().all(|gate|
                 gate.status == "pending" && gate.completed_cases.is_empty()));
         }
