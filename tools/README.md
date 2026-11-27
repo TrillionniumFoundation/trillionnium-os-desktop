@@ -496,7 +496,7 @@ run as the sole process in its new
 kernel. Existing normal-source, initial-namespace, root-account, four-image OFD,
 lock, and original-state checks apply to both modes.
 
-This operation changes the thirteen fixed runtime targets and the existing
+This operation changes the fourteen fixed runtime targets and the existing
 working data-directory names temporarily, plus the fixed working initrd and
 custom GRUB targets. The successful result includes the actual boot-file and
 runtime restoration records and verifies the held GRUB preimage. A rejected
@@ -530,6 +530,20 @@ and runtime/boot parent checkpoints, and retains all custody if a component
 fails. The full source guard runs after the data-pair and cold-lock consumers
 have accepted the same batch. The publication-check command does not create
 label batches or publish a selection.
+
+The working material producer reads both retained original images through their
+already held read-only descriptions before any directory exchange. One absolute
+1200-second window covers the complete 32 GiB data image and 128 MiB metadata
+image, with a deadline check at every 1 MiB read; it does not restart for the
+second image. Full content hashes must match the original cold-clone lineage,
+and complete file identities, ext4 handles and attributes must remain equal.
+The comparison names the fixed future `data-pair.rollback` directory and records
+its stable identity without claiming that its pre-rename times are post-rename
+times. The return configuration pins this comparison, and the runtime publisher
+installs it as a root-only fixed maintenance input. Its parsed contents do not
+grant access to an image. The separately admitted normal retention helper must
+open and verify the actual originals again and retain its runtime lease. This
+cold hash window is not a whole-command or cross-process recovery deadline.
 
 ### Selected public APK material in a fresh normal guest
 

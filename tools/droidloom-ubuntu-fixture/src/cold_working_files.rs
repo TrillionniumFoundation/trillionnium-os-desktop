@@ -33,6 +33,7 @@ fn roster() -> BTreeMap<PathBuf, u32> {
         (PathBuf::from(c::INSTALLATION), 0o400),
         (PathBuf::from(c::EARLY_CONFIG), 0o400),
         (PathBuf::from(c::RETURN_CONFIG), 0o400),
+        (PathBuf::from(c::retained_data::INPUT_PATH), 0o400),
     ]);
     for name in [
         "contract.json",
@@ -57,8 +58,8 @@ fn verify_roster<'a>(entries: impl IntoIterator<Item = (&'a Path, u32)>) -> Resu
         )?;
     }
     ensure(
-        actual.len() == 13 && actual == roster(),
-        "working runtime differs from the fixed thirteen normal target/mode pairs",
+        actual.len() == 14 && actual == roster(),
+        "working runtime differs from the fixed fourteen normal target/mode pairs",
     )
 }
 
@@ -297,7 +298,8 @@ mod tests {
     #[test]
     fn fixed_working_roster_rejects_missing_duplicate_foreign_and_wrong_mode() {
         let expected = roster();
-        assert_eq!(expected.len(), 13);
+        assert_eq!(expected.len(), 14);
+        assert_eq!(expected.get(Path::new(c::retained_data::INPUT_PATH)), Some(&0o400));
         verify_roster(expected.iter().map(|(p, m)| (p.as_path(), *m))).unwrap();
         let mut missing = expected.clone();
         missing.remove(Path::new(c::EARLY_CONFIG));

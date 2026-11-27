@@ -5,6 +5,8 @@
 use super::*;
 #[path = "cold_working_pair.rs"]
 mod working;
+#[path = "cold_working_retention.rs"]
+mod retention;
 use crate::boot_runtime::LabelTools;
 use crate::cold_original_data::labels::OriginalLabelSources;
 pub(crate) use working::WorkingPairTransaction;

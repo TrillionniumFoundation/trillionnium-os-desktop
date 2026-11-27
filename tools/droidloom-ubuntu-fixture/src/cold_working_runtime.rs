@@ -209,6 +209,17 @@ impl PreparedWorkingRuntime {
         }
         let cell = materials.candidate_cell()?;
         let selection = materials.selection()?;
+        let retained_pin: FilePin = serde_json::from_value(admitted["retained_originals"].clone())?;
+        ensure(retained_pin.path == materials.work().join("WORKING-RETAINED-ORIGINALS.json"),
+            "retained original comparison left this actual private producer")?;
+        let retained_guard = Guard::open(&retained_pin)?;
+        let retained_spec: c::retained_data::RetainedOriginalsSpec = serde_json::from_slice(
+            &files::read_pin(&retained_pin, c::retained_data::MAX_INPUT_BYTES as u64)?,
+        )?;
+        retained_spec.validate()?;
+        ensure(retained_spec.candidate_id == materials.candidate(),
+            "retained originals belong to another normal working candidate")?;
+        retained_guard.revalidate()?;
         let mac_files = materials.mac_files()?;
         ensure(
             mac_files.len() == 5,
@@ -243,6 +254,7 @@ impl PreparedWorkingRuntime {
             installation: payload(installation.pin()),
             cell: payload(&cell),
             selection: payload(&selection),
+            retained_originals: payload(&retained_pin),
         };
         configuration.validate()?;
         let returned = source(
@@ -286,6 +298,11 @@ impl PreparedWorkingRuntime {
                 source: returned.pin().clone(),
                 mode: 0o400,
             },
+            WorkingRuntimeFile {
+                destination: PathBuf::from(c::retained_data::INPUT_PATH),
+                source: retained_pin,
+                mode: 0o400,
+            },
         ];
         for pin in mac_files {
             entries.push(WorkingRuntimeFile {
@@ -295,7 +312,7 @@ impl PreparedWorkingRuntime {
                 mode: 0o400,
             });
         }
-        let mut sources = vec![executable, applications, maintenance, manager];
+        let mut sources = vec![executable, applications, maintenance, manager, retained_guard];
         for (name, _) in UNIT_SOURCES {
             let (relative, destination) = unit_paths(name)?;
             let pin = materials.normal_host_file(&relative)?;
@@ -315,7 +332,7 @@ impl PreparedWorkingRuntime {
         }
         let mut destinations = BTreeSet::new();
         ensure(
-            entries.len() == 13
+            entries.len() == 14
                 && entries
                     .iter()
                     .all(|e| destinations.insert(e.destination.clone())),
@@ -383,7 +400,7 @@ impl PreparedWorkingRuntime {
             "working command line left its actual held configuration",
         )?;
         ensure(
-            self.entries.len() == 13,
+            self.entries.len() == 14,
             "fixed working runtime source roster changed",
         )?;
         self.boot.revalidate()
@@ -583,7 +600,7 @@ impl WorkingRuntimeSources {
             "working command line left its actual held configuration",
         )?;
         ensure(
-            self.entries.len() == 13,
+            self.entries.len() == 14,
             "fixed working runtime source roster changed",
         )?;
         self.custody.revalidate()

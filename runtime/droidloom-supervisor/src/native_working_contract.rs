@@ -7,6 +7,8 @@ use serde::{Deserialize, Serialize};
 use std::{collections::BTreeMap, ffi::CString, io, path::PathBuf};
 #[path = "physical_qualification_budget.rs"]
 pub(crate) mod budget;
+#[path = "working_retained_data_contract.rs"]
+pub(crate) mod retained_data;
 #[path = "native_working_layout.rs"]
 pub(crate) mod layout;
 #[path = "native_once_contract.rs"]
@@ -325,6 +327,7 @@ pub(crate) struct WorkingReturnConfiguration {
     pub(crate) installation: PayloadPin,
     pub(crate) cell: PayloadPin,
     pub(crate) selection: PayloadPin,
+    pub(crate) retained_originals: PayloadPin,
 }
 impl WorkingReturnConfiguration {
     pub(crate) fn validate(&self) -> io::Result<()> {
@@ -352,7 +355,8 @@ impl WorkingReturnConfiguration {
         self.maintenance.validate(1024 * 1024)?;
         self.installation.validate(1024 * 1024)?;
         self.cell.validate(1024 * 1024)?;
-        self.selection.validate(1024 * 1024)
+        self.selection.validate(1024 * 1024)?;
+        self.retained_originals.validate(retained_data::MAX_INPUT_BYTES as u64)
     }
     pub(crate) fn runtime_evidence_directory(&self) -> PathBuf {
         // The running candidate never reads the original/rollback/private

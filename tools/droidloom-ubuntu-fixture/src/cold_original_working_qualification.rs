@@ -113,6 +113,14 @@ impl PreparedWorkingCopyObservation {
     pub(super) fn work_file(&self) -> &File {
         self.data.work_file()
     }
+    pub(super) fn retained_originals(
+        &self,
+    ) -> Result<crate::cold_working_recovery::contract::retained_data::RetainedOriginalsSpec> {
+        self.guard()?;
+        let result = self.data.retained_originals(&self.history)?;
+        self.guard()?;
+        Ok(result)
+    }
     pub(super) fn summary(&self) -> Result<Value> {
         self.guard()?;
         Ok(
