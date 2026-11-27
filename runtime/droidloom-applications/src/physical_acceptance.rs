@@ -937,6 +937,11 @@ pub fn run_physical_files(
     )
     .map_err(|e| e.to_string())?;
     let end = channel.deadline();
+    // The parent charged plan production and child setup to this same source
+    // window. The child never starts another 120-second preparation allowance.
+    let preparation_end = channel.preparation_deadline();
+    require(preparation_end <= end, "parent preparation end exceeds the original suite")?;
+    deadline(preparation_end)?;
     let working_sources = Arc::new(channel.working_source_custody()
         .map_err(|error| error.to_string())?);
     let selection = runtime
@@ -951,6 +956,7 @@ pub fn run_physical_files(
         .ok_or("current material selection absent")?;
     inputs.read(&source_selection)?;
     for requested in &runtime.applications {
+        deadline(preparation_end)?;
         inputs.read(
             &requested
                 .expected_input
@@ -963,18 +969,23 @@ pub fn run_physical_files(
     // original factories still validate every transitive source and input.
     for row in &plan.applications {
         for case in &row.cases {
+            deadline(preparation_end)?;
             inputs.read(&case.leaf.request)?;
             inputs.read(&case.main_qualification)?;
         }
     }
+    deadline(preparation_end)?;
     let materials = runtime_identity::admit_plan(&runtime)?.ok_or(
         "complete physical qualification requires the source-admitted current normal batch",
     )?;
+    deadline(preparation_end)?;
     let source_owner = leaf_routes::qualification_release(&selection, &working_sources)?;
     source_owner.cover_until(end)?;
+    deadline(preparation_end)?;
     let mut inspector =
         control::NativeApplicationInspector::acquire(Path::new(control::DEFAULT_CONTROL_SOCKET))
             .map_err(|error| error.to_string())?;
+    deadline(preparation_end)?;
     let main = inspector
         .observe_main_until(&runtime.expected_epoch, end)
         .map_err(|error| error.to_string())?;
