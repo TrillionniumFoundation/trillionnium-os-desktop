@@ -53,7 +53,7 @@ mod progress;
 #[path = "control_identity.rs"]
 mod identity;
 pub use identity::{
-    ActualApplicationObservation, ActualUserZeroPackageInventoryObservation,
+    ActualApplicationObservation, ActualApplicationExitObservation, ActualUserZeroPackageInventoryObservation,
     EngineMappingObservation, MainCustodyObservation, NativeApplicationInspector,
     NativeInspectionPeer,
 };
@@ -297,6 +297,12 @@ pub enum ControlRequest {
         user: u32,
         expected_epoch: application_probe::RuntimeEpoch,
     },
+    /// Read complete exit history for one source-selected user-zero application.
+    /// Expected epoch compares the actual owner; no PID, UID, path or command is accepted.
+    ObserveApplicationExitState {
+        package: String,
+        expected_epoch: application_probe::RuntimeEpoch,
+    },
     /// Read the complete fixed user-0 package/UID table from the actual owner.
     /// No caller can select a package, user, command, UID, PID or query role.
     ObserveUserZeroPackageInventory {
@@ -530,6 +536,9 @@ impl Daemon {
             }
             ControlRequest::ObserveApplicationEngine { .. } => Err(ControlError::Invalid(
                 "running engine observation requires the original kernel-first Ready owner".into(),
+            )),
+            ControlRequest::ObserveApplicationExitState { .. } => Err(ControlError::Invalid(
+                "exit-state observation requires the original kernel-first Ready owner".into(),
             )),
             ControlRequest::ObserveUserZeroPackageInventory { .. } => Err(ControlError::Invalid(
                 "complete user-0 inventory requires the original kernel-first Ready owner".into(),

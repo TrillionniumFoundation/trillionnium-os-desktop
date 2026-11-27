@@ -62,6 +62,10 @@ pub(crate) use runtime_abi_query::{RuntimeAbiObservation, read_runtime_abi};
 
 #[path = "user_zero_package_inventory.rs"]
 mod package_inventory;
+#[path = "production_application_exit_state.rs"]
+mod application_exit_state_query;
+pub(crate) use application_exit_state_query::{ApplicationExitStateObservation, read_application_exit_state};
+
 #[path = "production_application_package_inventory.rs"]
 mod package_inventory_query;
 pub(crate) use package_inventory_query::{

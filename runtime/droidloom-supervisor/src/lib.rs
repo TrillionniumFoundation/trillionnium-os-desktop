@@ -11,6 +11,7 @@ fn main() {
     production_mac::run_actual_board_epoch_fixture();
 }
 
+pub mod application_exit_state;
 pub mod control;
 pub mod engine_custody;
 mod cpu_placement;
