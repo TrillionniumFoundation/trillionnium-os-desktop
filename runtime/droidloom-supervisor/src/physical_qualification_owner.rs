@@ -30,6 +30,32 @@ impl KernelProfile {
 }
 const CONTROL_NAMES: [&CStr; 4] = [c"cpu.max", c"memory.max", c"memory.swap.max", c"pids.max"];
 
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum ControlAccess {
+    MutableProfile,
+    ReadOnly,
+}
+impl ControlAccess {
+    fn for_name(name: &CStr) -> io::Result<Self> {
+        match name.to_bytes() {
+            b"cpu.max" | b"memory.max" => Ok(Self::MutableProfile),
+            b"memory.swap.max"
+            | b"pids.max"
+            | b"memory.events"
+            | b"memory.swap.current"
+            | b"pids.events"
+            | b"memory.current" => Ok(Self::ReadOnly),
+            _ => Err(invalid("physical owner does not admit this cgroup control")),
+        }
+    }
+    fn flags(self) -> libc::c_int {
+        match self {
+            Self::MutableProfile => libc::O_RDWR,
+            Self::ReadOnly => libc::O_RDONLY,
+        }
+    }
+}
+
 fn root() -> io::Result<()> {
     // SAFETY: identity queries do not mutate state.
     if unsafe {
@@ -194,23 +220,26 @@ struct Control {
     name: &'static CStr,
     file: File,
     pin: [u64; 9],
+    access: ControlAccess,
 }
 impl Control {
-    fn open(group: &File, name: &'static CStr, write: bool) -> io::Result<Self> {
-        let file = super::super::open_at(
-            group.as_raw_fd(),
-            name,
-            if write {
-                libc::O_RDWR | libc::O_NOFOLLOW
-            } else {
-                libc::O_RDONLY | libc::O_NOFOLLOW
-            },
-        )?;
+    fn open(group: &File, name: &'static CStr) -> io::Result<Self> {
+        let access = ControlAccess::for_name(name)?;
+        let file =
+            super::super::open_at(group.as_raw_fd(), name, access.flags() | libc::O_NOFOLLOW)?;
         let pin = identity(&file)?;
-        if pin[3..5] != [0, 0] || pin[2] & 0o022 != 0 {
+        if pin[2] & libc::S_IFMT as u64 != libc::S_IFREG as u64
+            || pin[3..5] != [0, 0]
+            || pin[2] & 0o022 != 0
+        {
             return Err(invalid("root owned cgroup control required"));
         }
-        Ok(Self { name, file, pin })
+        Ok(Self {
+            name,
+            file,
+            pin,
+            access,
+        })
     }
     fn text(&self, group: &File) -> io::Result<String> {
         let named = super::super::open_at(
@@ -232,6 +261,11 @@ impl Control {
             .map_err(|_| invalid("physical resource metadata is not UTF-8"))
     }
     fn write(&mut self, group: &File, value: &str) -> io::Result<()> {
+        if self.access != ControlAccess::MutableProfile {
+            return Err(invalid(
+                "physical owner may only change its CPU and memory profile",
+            ));
+        }
         self.text(group)?;
         // cgroup pseudo-files are single-command controls, not appendable data.
         let n = self.file.write_at(value.as_bytes(), 0)?;
@@ -239,6 +273,97 @@ impl Control {
             return Err(invalid("physical resource write/readback differs"));
         }
         Ok(())
+    }
+}
+
+/// The ordinary installed source unit and each of its named ancestors remain
+/// held for the whole invocation. A same-byte alias or a replaced parent is not
+/// the source object authenticated at entry.
+struct SourceUnit {
+    path: PathBuf,
+    file: File,
+    pin: [u64; 9],
+    parents: Vec<(PathBuf, File, [u64; 9])>,
+}
+impl SourceUnit {
+    fn open() -> io::Result<Self> {
+        let path = Path::new("/usr/lib/systemd/system").join(protocol::TEMPLATE_NAME);
+        if path.canonicalize()? != path {
+            return Err(invalid("physical source unit alias"));
+        }
+        let mut parents = Vec::new();
+        for parent in path
+            .parent()
+            .ok_or_else(|| invalid("unit parent absent"))?
+            .ancestors()
+        {
+            let file = OpenOptions::new()
+                .read(true)
+                .custom_flags(libc::O_DIRECTORY | libc::O_NOFOLLOW | libc::O_CLOEXEC)
+                .open(parent)?;
+            let pin = identity(&file)?;
+            if pin[2] & libc::S_IFMT as u64 != libc::S_IFDIR as u64
+                || pin[3..5] != [0, 0]
+                || pin[2] & 0o022 != 0
+            {
+                return Err(invalid("physical source unit root parent required"));
+            }
+            parents.push((parent.into(), file, pin));
+        }
+        let file = OpenOptions::new()
+            .read(true)
+            .custom_flags(libc::O_NOFOLLOW | libc::O_CLOEXEC)
+            .open(&path)?;
+        let pin = identity(&file)?;
+        if pin[2] & libc::S_IFMT as u64 != libc::S_IFREG as u64
+            || pin[2] & 0o6022 != 0
+            || pin[3..6] != [0, 0, 1]
+            || pin[6] != protocol::TEMPLATE.len() as u64
+        {
+            return Err(invalid("normal physical source unit metadata differs"));
+        }
+        let result = Self {
+            path,
+            file,
+            pin,
+            parents,
+        };
+        result.guard()?;
+        Ok(result)
+    }
+    fn guard_parents(&self) -> io::Result<()> {
+        for (path, file, pin) in &self.parents {
+            let named = OpenOptions::new()
+                .read(true)
+                .custom_flags(libc::O_DIRECTORY | libc::O_NOFOLLOW | libc::O_CLOEXEC)
+                .open(path)?;
+            // Directory timestamps and link counts may reflect unrelated unit
+            // installs. Identity, kind, mode and ownership may not change.
+            if identity(file)?[..5] != pin[..5] || identity(&named)?[..5] != pin[..5] {
+                return Err(invalid("held physical source unit parent changed"));
+            }
+        }
+        Ok(())
+    }
+    fn guard(&self) -> io::Result<()> {
+        self.guard_parents()?;
+        let named = OpenOptions::new()
+            .read(true)
+            .custom_flags(libc::O_NOFOLLOW | libc::O_CLOEXEC)
+            .open(&self.path)?;
+        if identity(&self.file)? != self.pin || identity(&named)? != self.pin {
+            return Err(invalid("held physical source unit changed"));
+        }
+        let mut bytes = vec![0; protocol::TEMPLATE.len()];
+        self.file.read_exact_at(&mut bytes, 0)?;
+        if bytes != protocol::TEMPLATE.as_bytes()
+            || self.file.read_at(&mut [0; 1], self.pin[6])? != 0
+            || identity(&self.file)? != self.pin
+            || identity(&named)? != self.pin
+        {
+            return Err(invalid("physical source unit changed during whole read"));
+        }
+        self.guard_parents()
     }
 }
 
@@ -260,8 +385,7 @@ pub(crate) struct UnitOwner {
     pids_events: Control,
     memory_current: Control,
     profile: KernelProfile,
-    template: File,
-    template_pin: [u64; 9],
+    source_unit: SourceUnit,
     digest: String,
     end: Instant,
 }
@@ -314,44 +438,16 @@ impl UnitOwner {
         {
             return Err("root-owned cgroup v2 qualification unit required".into());
         }
-        let template_path = format!("/usr/lib/systemd/system/{}", protocol::TEMPLATE_NAME);
-        // Parent paths are canonical and root-owned; retain their normal source
-        // unit via a held regular FD as well as the manager's FragmentPath.
-        let path = Path::new(&template_path);
-        if path.canonicalize().map_err(|e| e.to_string())? != path {
-            return Err("physical unit template alias".into());
-        }
-        for parent in path.parent().ok_or("unit parent absent")?.ancestors() {
-            let m = fs::symlink_metadata(parent).map_err(|e| e.to_string())?;
-            if !m.is_dir() || m.uid() != 0 || m.gid() != 0 || m.mode() & 0o022 != 0 {
-                return Err("physical unit template root parent required".into());
-            }
-        }
-        let template = OpenOptions::new()
-            .read(true)
-            .custom_flags(libc::O_NOFOLLOW | libc::O_CLOEXEC)
-            .open(path)
-            .map_err(|e| e.to_string())?;
-        let template_pin = identity(&template).map_err(|e| e.to_string())?;
-        if template_pin[2] & 0o170000 != 0o100000
-            || template_pin[2] & 0o6022 != 0
-            || template_pin[3..6] != [0, 0, 1]
-            || template_pin[6] != protocol::TEMPLATE.len() as u64
-        {
-            return Err("normal physical unit template metadata differs".into());
-        }
+        let source_unit = SourceUnit::open().map_err(|e| e.to_string())?;
         let controls = CONTROL_NAMES
             .iter()
-            .map(|n| Control::open(&group, n, true))
+            .map(|n| Control::open(&group, n))
             .collect::<io::Result<Vec<_>>>()
             .map_err(|e| e.to_string())?;
-        let events = Control::open(&group, c"memory.events", false).map_err(|e| e.to_string())?;
-        let swap =
-            Control::open(&group, c"memory.swap.current", false).map_err(|e| e.to_string())?;
-        let pids_events =
-            Control::open(&group, c"pids.events", false).map_err(|e| e.to_string())?;
-        let memory_current =
-            Control::open(&group, c"memory.current", false).map_err(|e| e.to_string())?;
+        let events = Control::open(&group, c"memory.events").map_err(|e| e.to_string())?;
+        let swap = Control::open(&group, c"memory.swap.current").map_err(|e| e.to_string())?;
+        let pids_events = Control::open(&group, c"pids.events").map_err(|e| e.to_string())?;
+        let memory_current = Control::open(&group, c"memory.current").map_err(|e| e.to_string())?;
         let query_end = end.min(Instant::now() + Duration::from_secs(15));
         let connection = Connection::open(query_end)?;
         let invocation = connection
@@ -376,8 +472,7 @@ impl UnitOwner {
             pids_events,
             memory_current,
             profile: KernelProfile::Standard,
-            template,
-            template_pin,
+            source_unit,
             digest: digest.into(),
             end,
         };
@@ -420,24 +515,7 @@ impl UnitOwner {
                 return Err("physical qualifier host namespaces changed".into());
             }
         }
-        let mut bytes = vec![0; protocol::TEMPLATE.len()];
-        self.template
-            .read_exact_at(&mut bytes, 0)
-            .map_err(|e| e.to_string())?;
-        let named = OpenOptions::new()
-            .read(true)
-            .custom_flags(libc::O_NOFOLLOW | libc::O_CLOEXEC)
-            .open(format!(
-                "/usr/lib/systemd/system/{}",
-                protocol::TEMPLATE_NAME
-            ))
-            .map_err(|e| e.to_string())?;
-        if bytes != protocol::TEMPLATE.as_bytes()
-            || identity(&self.template).map_err(|e| e.to_string())? != self.template_pin
-            || identity(&named).map_err(|e| e.to_string())? != self.template_pin
-        {
-            return Err("physical qualifier normal unit template changed".into());
-        }
+        self.source_unit.guard().map_err(|e| e.to_string())?;
         actual_affinity(OwnedLeafProfile::Gallery)?;
         self.connection.guard()?;
         if Instant::now() >= self.end {
@@ -723,10 +801,7 @@ fn qualification_properties(
         ("LimitCORE", 0),
         ("CPUQuotaPerSecUSec", 2_000_000),
         ("CPUQuotaPeriodUSec", 100_000),
-        (
-            "RuntimeMaxUSec",
-            protocol::SERVICE_SECONDS * 1_000_000,
-        ),
+        ("RuntimeMaxUSec", protocol::SERVICE_SECONDS * 1_000_000),
         ("TimeoutStopUSec", protocol::RETIREMENT_SECONDS * 1_000_000),
     ] {
         if service.get(key) != Some(&V::U64(want)) {
@@ -788,6 +863,110 @@ fn qualification_properties(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    struct TestDirectory(PathBuf);
+    impl TestDirectory {
+        fn new() -> Self {
+            let nonce = std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos();
+            let path = std::env::temp_dir().join(format!(
+                "droidloom-physical-owner-{}-{nonce}",
+                std::process::id()
+            ));
+            fs::create_dir(&path).unwrap();
+            Self(path)
+        }
+    }
+    impl Drop for TestDirectory {
+        fn drop(&mut self) {
+            let _ = fs::remove_dir_all(&self.0);
+        }
+    }
+    fn source_fixture(root: &TestDirectory) -> SourceUnit {
+        // Exercise retained-object readback without impersonating the root-only
+        // installed constructor or writing any installed source path.
+        let parent = root.0.join("unit-parent");
+        fs::create_dir(&parent).unwrap();
+        let path = parent.join("unit.service");
+        fs::write(&path, protocol::TEMPLATE).unwrap();
+        let file = File::open(&path).unwrap();
+        let pin = identity(&file).unwrap();
+        let directory = File::open(&parent).unwrap();
+        let directory_pin = identity(&directory).unwrap();
+        SourceUnit {
+            path,
+            file,
+            pin,
+            parents: vec![(parent, directory, directory_pin)],
+        }
+    }
+    #[test]
+    fn physical_qualification_source_unit_rejects_same_bytes_on_a_replacement_inode() {
+        let root = TestDirectory::new();
+        let unit = source_fixture(&root);
+        unit.guard().unwrap();
+        fs::rename(&unit.path, root.0.join("retained.service")).unwrap();
+        fs::write(&unit.path, protocol::TEMPLATE).unwrap();
+        assert!(unit.guard().is_err());
+    }
+    #[test]
+    fn physical_qualification_source_unit_retains_named_parent_identity() {
+        let root = TestDirectory::new();
+        let unit = source_fixture(&root);
+        unit.guard_parents().unwrap();
+        let parent = &unit.parents[0].0;
+        fs::rename(parent, root.0.join("retained-parent")).unwrap();
+        fs::create_dir(parent).unwrap();
+        assert!(unit.guard_parents().is_err());
+    }
+    #[test]
+    fn physical_qualification_read_only_controls_reject_writes_before_effects() {
+        let root = TestDirectory::new();
+        let group = File::open(&root.0).unwrap();
+        for name in [
+            c"memory.swap.max",
+            c"pids.max",
+            c"memory.events",
+            c"memory.swap.current",
+            c"pids.events",
+            c"memory.current",
+        ] {
+            let path = root.0.join(name.to_str().unwrap());
+            fs::write(&path, "64").unwrap();
+            // Even an accidentally writable retained FD must not turn a
+            // read-only observation into an admitted control write.
+            let file = OpenOptions::new()
+                .read(true)
+                .write(true)
+                .open(&path)
+                .unwrap();
+            let pin = identity(&file).unwrap();
+            let access = ControlAccess::for_name(name).unwrap();
+            assert_eq!(access.flags() & libc::O_ACCMODE, libc::O_RDONLY);
+            let mut control = Control {
+                name,
+                file,
+                pin,
+                access,
+            };
+            assert!(control.write(&group, "65").is_err());
+            assert_eq!(fs::read_to_string(&path).unwrap(), "64");
+        }
+        for name in [
+            c"cgroup.procs",
+            c"cgroup.threads",
+            c"cgroup.kill",
+            c"cgroup.subtree_control",
+            c"../cpu.max",
+            c"cpu.max.burst",
+            c"memory.high",
+        ] {
+            assert!(ControlAccess::for_name(name).is_err(), "{name:?}");
+        }
+    }
+
     fn fixture() -> (bus::Properties, bus::Properties, bus::Invocation, String) {
         use bus::Value as V;
         let digest = "a".repeat(64);
@@ -844,10 +1023,7 @@ mod tests {
             ("LimitCORE", 0),
             ("CPUQuotaPerSecUSec", 2_000_000),
             ("CPUQuotaPeriodUSec", 100_000),
-            (
-                "RuntimeMaxUSec",
-                protocol::SERVICE_SECONDS * 1_000_000,
-            ),
+            ("RuntimeMaxUSec", protocol::SERVICE_SECONDS * 1_000_000),
             ("TimeoutStopUSec", protocol::RETIREMENT_SECONDS * 1_000_000),
             ("ExecMainStartTimestampMonotonic", 100),
         ] {
