@@ -19,10 +19,10 @@ use std::time::{Duration, Instant};
 
 use crate::development::owned_process::{open_pidfd, pidfd_exited};
 
-#[path = "physical_qualification_channel.rs"]
-pub mod physical_qualification_channel;
 #[path = "native_leaf_business_capture.rs"]
 pub mod native_leaf_business_capture;
+#[path = "physical_qualification_channel.rs"]
+pub mod physical_qualification_channel;
 
 #[path = "application_leaf_unit.rs"]
 mod application_leaf_unit;
@@ -1288,7 +1288,11 @@ fn run_prepared_native_leaf_inner(
             )
         }
         super::NativeLeafCommandKind::IhgPreparation { mode } => {
-            crate::native_ihg_preparation::check_command(&command, mode)?;
+            if let Some(owner) = observation.observation.preparation_owner() {
+                crate::native_ihg_preparation::check_working_command(&command, mode, owner)?;
+            } else {
+                crate::native_ihg_preparation::check_command(&command, mode)?;
+            }
             run_prepared_host_leaf_observed(command, epoch, mode.budget(), Some(observation))
         }
         super::NativeLeafCommandKind::Standard { budget } => {

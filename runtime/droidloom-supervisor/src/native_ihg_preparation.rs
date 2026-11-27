@@ -4,6 +4,8 @@ use crate::control::{
     NativeApplicationInspector, NativeLeafCommandKind, run_prepared_native_leaf_until,
 };
 use crate::native_leaf_baseline::NativeLeafBaselineObservation;
+#[path = "native_ihg_working_preparation.rs"]
+mod working;
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use std::{
@@ -14,6 +16,9 @@ use std::{
     process::Command,
     time::{Duration, Instant},
 };
+pub(crate) use working::check_working_command;
+pub use working::run_working;
+use working::{ArtifactScope, WorkingDirectories};
 
 pub const TARGET: &str = "com.ihg.apps.android";
 pub const HELPER: &str = "org.droidloom.qa.ihg.finalmain.r1";
@@ -228,6 +233,15 @@ struct Held {
 }
 impl Held {
     fn open(path: &Path, end: Instant, source: bool) -> Result<Self> {
+        Self::open_scoped(path, end, source, ArtifactScope::Public)
+    }
+    fn open_scoped(
+        path: &Path,
+        end: Instant,
+        source: bool,
+        scope: ArtifactScope<'_>,
+    ) -> Result<Self> {
+        scope.guard(end)?;
         use std::{ffi::CString, os::fd::FromRawFd};
         before(end)?;
         require(
@@ -278,7 +292,7 @@ impl Held {
         } else {
             require(
                 (m.uid() == 0 && m.gid() == 0)
-                    || (m.uid() == 1000 && m.gid() == 1000 && path.starts_with("/home/alex/work")),
+                    || (m.uid() == 1000 && m.gid() == 1000 && scope.uid1000_artifact(path)),
                 "IHG public artifact owner differs",
             )?
         }
@@ -362,19 +376,29 @@ fn public_artifact(path: &Path) -> Result<()> {
     )
 }
 
-fn held_pin(pin: &Value, end: Instant, held: &mut Vec<Held>) -> Result<Value> {
+fn held_pin(
+    pin: &Value,
+    end: Instant,
+    held: &mut Vec<Held>,
+    scope: ArtifactScope<'_>,
+) -> Result<Value> {
     let p = pin_path(pin)?;
-    public_artifact(p)?;
-    let f = Held::open(p, end, false)?;
+    scope.artifact(p)?;
+    let f = Held::open_scoped(p, end, false, scope)?;
     require(f.pin() == *pin, "IHG actual referenced file pin differs")?;
     let v = f.json()?;
     held.push(f);
     Ok(v)
 }
-fn held_bytes(pin: &Value, end: Instant, held: &mut Vec<Held>) -> Result<Vec<u8>> {
+fn held_bytes(
+    pin: &Value,
+    end: Instant,
+    held: &mut Vec<Held>,
+    scope: ArtifactScope<'_>,
+) -> Result<Vec<u8>> {
     let p = pin_path(pin)?;
-    public_artifact(p)?;
-    let f = Held::open(p, end, false)?;
+    scope.artifact(p)?;
+    let f = Held::open_scoped(p, end, false, scope)?;
     require(f.pin() == *pin, "IHG command body pin differs")?;
     let b = f.raw.clone();
     held.push(f);
@@ -680,6 +704,7 @@ fn completed_install(
     before_inventory: &Value,
     end: Instant,
     held: &mut Vec<Held>,
+    scope: ArtifactScope<'_>,
 ) -> Result<(u32, u64, String)> {
     require(
         value["schema"] == "pocket4-final-ihg-helper-install-v1"
@@ -728,7 +753,7 @@ fn completed_install(
         original.same_table(&current),
         "complete captured/current preinstall table differs",
     )?;
-    let build = held_pin(&request["build"], end, held)?;
+    let build = held_pin(&request["build"], end, held, scope)?;
     require(
         build["state"] == "BUILT_STATIC_VERIFIED_ANDROID_UNRUN"
             && build["package"] == HELPER
@@ -736,7 +761,7 @@ fn completed_install(
             && value["source"] == build["source"],
         "actual installed helper differs from its normal build",
     )?;
-    let source = held_pin(&build["source"], end, held)?;
+    let source = held_pin(&build["source"], end, held, scope)?;
     require(
         value["baseline"] == source["baseline"]
             && value["qualification"] == source["qualification"],
@@ -763,8 +788,8 @@ fn completed_install(
                     == root.join("commands").join(format!("{name}.transport.json")),
             "actual installation command order or member path differs",
         )?;
-        let result = held_pin(&entry["result"], end, held)?;
-        let transport = held_pin(&entry["transport"], end, held)?;
+        let result = held_pin(&entry["result"], end, held, scope)?;
+        let transport = held_pin(&entry["transport"], end, held, scope)?;
         let physical = result["argv"].as_array().ok_or("command argv absent")?;
         let logical = argv.as_array().unwrap();
         require(
@@ -791,8 +816,8 @@ fn completed_install(
                 "installation stream member path differs",
             )?;
         }
-        let stdout = held_bytes(&result["stdout"], end, held)?;
-        let stderr = held_bytes(&result["stderr"], end, held)?;
+        let stdout = held_bytes(&result["stdout"], end, held, scope)?;
+        let stderr = held_bytes(&result["stderr"], end, held, scope)?;
         require(
             stderr.is_empty(),
             "installation command stderr was not empty",
@@ -834,7 +859,7 @@ fn completed_install(
                 == build["signer_certificate_sha256"],
         "actual helper APK differs from the signed build",
     )?;
-    let artifact = held_bytes(&build["APK"], end, held)?;
+    let artifact = held_bytes(&build["APK"], end, held, scope)?;
     require(
         artifact.len() as u64 == bytes && hash(&artifact) == digest,
         "normal helper APK changed",
@@ -843,7 +868,7 @@ fn completed_install(
         pin_path(&value["state_observation"])? == root.join("state-observation.json"),
         "state-only observation member differs",
     )?;
-    let state = held_pin(&value["state_observation"], end, held)?;
+    let state = held_pin(&value["state_observation"], end, held, scope)?;
     require(
         state["helper"]["ui_automation_connected"] == false && state["helper"]["op"] == "state",
         "helper observation requested UI automation",
@@ -879,6 +904,7 @@ pub struct IhgPreparationExecution {
     report: Value,
     held: Vec<Held>,
     until: Instant,
+    working_directories: Option<WorkingDirectories>,
 }
 impl IhgPreparationExecution {
     pub fn result_pin(&self) -> &Value {
@@ -888,6 +914,10 @@ impl IhgPreparationExecution {
         &self.report
     }
     pub fn recheck(&mut self) -> Result<()> {
+        before(self.until)?;
+        if let Some(directories) = &self.working_directories {
+            directories.guard(self.until)?;
+        }
         for f in &mut self.held {
             f.recheck(self.until)?
         }
@@ -907,6 +937,29 @@ pub fn run(
     baseline: &mut NativeLeafBaselineObservation<'_>,
     until: Instant,
 ) -> Result<IhgPreparationExecution> {
+    run_scoped(
+        mode,
+        request_path,
+        request_sha,
+        output,
+        evidence,
+        inspector,
+        baseline,
+        until,
+        ArtifactScope::Public,
+    )
+}
+fn run_scoped(
+    mode: IhgPreparationMode,
+    request_path: &Path,
+    request_sha: &str,
+    output: &Path,
+    evidence: &Path,
+    inspector: &mut NativeApplicationInspector,
+    baseline: &mut NativeLeafBaselineObservation<'_>,
+    until: Instant,
+    scope: ArtifactScope<'_>,
+) -> Result<IhgPreparationExecution> {
     let end = until.min(baseline.deadline());
     before(end)?;
     require(
@@ -919,29 +972,15 @@ pub fn run(
     require(
         baseline.application().package == TARGET
             && baseline.application().user == 0
-            && baseline.inventory_facts().is_some(),
+            && baseline.preparation_inventory_facts().is_some(),
         "IHG actual target and complete user-0 preimage required",
     )?;
     baseline
         .verify_local(inspector, end)
         .map_err(|e| e.to_string())?;
-    output_path(mode, output)?;
-    let em = fs::symlink_metadata(evidence).map_err(|e| e.to_string())?;
-    require(
-        evidence.parent() == Some(Path::new(QUAL))
-            && evidence
-                .file_name()
-                .and_then(|s| s.to_str())
-                .is_some_and(|n| n.starts_with("native-leaf-"))
-            && em.is_dir()
-            && em.uid() == 0
-            && em.gid() == 0
-            && em.mode() & 0o7777 == 0o700
-            && fs::canonicalize(evidence).map_err(|e| e.to_string())? == evidence,
-        "IHG evidence requires the fresh normal private capture directory",
-    )?;
-    let pre =
-        serde_json::to_value(baseline.inventory_facts().unwrap()).map_err(|e| e.to_string())?;
+    scope.check_paths(mode, request_path, output, evidence, end)?;
+    let pre = serde_json::to_value(baseline.preparation_inventory_facts().unwrap())
+        .map_err(|e| e.to_string())?;
     if matches!(
         mode,
         IhgPreparationMode::HelperSource
@@ -950,7 +989,7 @@ pub fn run(
     ) {
         require(
             !baseline
-                .inventory_facts()
+                .preparation_inventory_facts()
                 .unwrap()
                 .records()
                 .contains_key(HELPER),
@@ -967,7 +1006,7 @@ pub fn run(
         "actual root-owned IHG request pin differs",
     )?;
     let request_value = request.json()?;
-    request_shape(mode, &request_value)?;
+    scope.request_shape(mode, &request_value)?;
     let request_pin = request.pin();
     held.push(request);
     let command = command(mode, request_path, request_sha, output, &prep)?;
@@ -1013,7 +1052,7 @@ pub fn run(
             && pin_path(&printed["result"])? == output.join(mode.output_name()),
         "actual fixed IHG entry did not name its fresh mode output",
     )?;
-    let value = held_pin(&printed["result"], end, &mut held)?;
+    let value = held_pin(&printed["result"], end, &mut held, scope)?;
     let install = if mode == IhgPreparationMode::HelperInstall {
         Some(completed_install(
             &value,
@@ -1022,6 +1061,7 @@ pub fn run(
             &pre,
             end,
             &mut held,
+            scope,
         )?)
     } else {
         None
@@ -1039,7 +1079,7 @@ pub fn run(
         .observe_user_zero_package_inventory_until(&post_main, &post_application, end)
         .map_err(|e| e.to_string())?;
     let after = serde_json::to_value(post_inventory.facts()).map_err(|e| e.to_string())?;
-    if let Some((uid, bytes, sha256)) = install {
+    let continuation = if let Some((uid, bytes, sha256)) = install {
         let helper = inspector
             .inspect_observed_until(HELPER, 0, end)
             .map_err(|e| e.to_string())?;
@@ -1061,21 +1101,32 @@ pub fn run(
             "actual post-install PM body differs from this fixed installation",
         )?;
         same_or_one_helper(
-            baseline.inventory_facts().unwrap(),
+            baseline.preparation_inventory_facts().unwrap(),
             post_inventory.facts(),
             uid,
         )?;
-        baseline
-            .record_fixed_ihg_install_bookend(inspector, post_inventory, end)
-            .map_err(|e| e.to_string())?;
+        Some(
+            baseline
+                .record_fixed_ihg_install_bookend(inspector, post_inventory, end)
+                .map_err(|e| e.to_string())?,
+        )
     } else {
         baseline
             .record_inventory_bookend(inspector, post_inventory, end)
-            .map_err(|e| e.to_string())?
-    }
+            .map_err(|e| e.to_string())?;
+        None
+    };
     baseline
         .finish_from_observed(inspector, &post_main, &post_application, end)
         .map_err(|e| e.to_string())?;
+    if scope.is_working() {
+        if let Some(continuation) = continuation {
+            baseline
+                .continue_working_ihg_install(inspector, continuation, end)
+                .map_err(|e| e.to_string())?;
+        }
+    }
+    scope.guard(end)?;
     for f in &mut held {
         f.recheck(end)?
     }
@@ -1095,6 +1146,7 @@ pub fn run(
         report,
         held,
         until: end,
+        working_directories: None,
     })
 }
 #[cfg(test)]
