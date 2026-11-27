@@ -128,6 +128,58 @@ impl WorkingColdCustody {
         result?;
         self.revalidate()
     }
+    pub(super) fn prepare_working_label_custody(&self) -> Result<()> {
+        self.revalidate()?;
+        {
+            let returned = self
+                .returned
+                .try_borrow()
+                .map_err(|_| "working returned source is already borrowed")?;
+            let mut pair = self
+                .pair
+                .try_borrow_mut()
+                .map_err(|_| "working pair is already being changed")?;
+            returned.begin_pair_label_custody(
+                pair.as_mut().ok_or("working pair has not been exchanged")?,
+            )?;
+        }
+        self.revalidate()
+    }
+    pub(super) fn working_label_targets(&self) -> Result<Vec<(std::path::PathBuf, std::fs::File)>> {
+        self.revalidate()?;
+        let returned = self
+            .returned
+            .try_borrow()
+            .map_err(|_| "working returned source is already borrowed")?;
+        let pair = self
+            .pair
+            .try_borrow()
+            .map_err(|_| "working pair is already being changed")?;
+        returned.pair_label_targets(pair.as_ref().ok_or("working pair has not been exchanged")?)
+    }
+    pub(super) fn accept_working_label_custody(
+        &self,
+        batch: &crate::cold_original_data::labels::WorkingLabelBatch,
+    ) -> Result<()> {
+        let mut returned = self
+            .returned
+            .try_borrow_mut()
+            .map_err(|_| "working returned source is already borrowed")?;
+        let mut pair = self
+            .pair
+            .try_borrow_mut()
+            .map_err(|_| "working pair is already being changed")?;
+        returned.accept_working_owner_labels(batch)?;
+        returned.accept_pair_label_batch(
+            pair.as_mut()
+                .ok_or("working label batch has no exchanged pair")?,
+            batch,
+        )?;
+        // GRUB and publication checkpoints are advanced by this same batch
+        // before the dispatcher invokes the full source guard.
+        Ok(())
+    }
+
     pub(super) fn materials(&self) -> &WorkingMaterialSources {
         &self.materials
     }
