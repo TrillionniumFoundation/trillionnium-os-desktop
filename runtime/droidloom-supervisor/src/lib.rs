@@ -46,6 +46,8 @@ mod package_cache;
 pub mod package_inventory_observation;
 pub mod native_ihg_preparation;
 #[cfg(target_os = "linux")]
+mod native_application_ui_protocol;
+#[cfg(target_os = "linux")]
 mod production_activation_command;
 #[cfg(target_os = "linux")]
 mod production_activation_protocol;

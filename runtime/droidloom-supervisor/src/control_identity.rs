@@ -596,7 +596,7 @@ impl NativeApplicationInspector {
     fn request_fixed(&mut self, request: &ControlRequest) -> Result<ControlResponse, ControlError> {
         self.request_fixed_until(request, None)
     }
-    fn request_fixed_until(
+    pub(crate) fn request_fixed_until(
         &mut self,
         request: &ControlRequest,
         deadline: Option<Instant>,

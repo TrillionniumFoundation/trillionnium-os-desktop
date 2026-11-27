@@ -20,17 +20,17 @@ const GALLERY_LIMITS: [(&std::ffi::CStr, &str); 4] = [
 ];
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub(super) enum Profile { Gallery, CalendarReminder, SettingsPages }
+pub(super) enum Profile { Gallery, CalendarReminder, SettingsPages, ApplicationUi }
 impl Profile {
     fn limits(self) -> [(&'static std::ffi::CStr, &'static str); 4] {
         match self {
-            Self::Gallery | Self::SettingsPages => GALLERY_LIMITS,
+            Self::Gallery | Self::SettingsPages | Self::ApplicationUi => GALLERY_LIMITS,
             Self::CalendarReminder => [(c"cpu.max", "50000 100000"),
                 (c"memory.max", "536870912"), (c"memory.swap.max", "0"), (c"pids.max", "64")],
         }
     }
     pub(super) fn prefix(self) -> &'static str {
-        match self { Self::Gallery => "droidloom-app-gallery-leaf", Self::CalendarReminder => "droidloom-app-calendar-reminder-leaf", Self::SettingsPages => "droidloom-app-settings-pages-leaf" }
+        match self { Self::Gallery => "droidloom-app-gallery-leaf", Self::CalendarReminder => "droidloom-app-calendar-reminder-leaf", Self::SettingsPages => "droidloom-app-settings-pages-leaf", Self::ApplicationUi => "droidloom-app-ui-operation" }
     }
 }
 
@@ -56,7 +56,7 @@ fn valid_limits(values: &[String], profile: Profile) -> io::Result<()> {
     let period = cpu.get(1).and_then(|x| x.parse::<u64>().ok());
     let expected=profile.limits();
     let cpu_ok=matches!((quota,period),(Some(q),Some(p)) if q>0 && p>0 && match profile {
-        Profile::Gallery | Profile::SettingsPages => u128::from(q)<=2*u128::from(p),
+        Profile::Gallery | Profile::SettingsPages | Profile::ApplicationUi => u128::from(q)<=2*u128::from(p),
         Profile::CalendarReminder => 2*u128::from(q)<=u128::from(p),
     });
     if cpu.len() != 2 || !cpu_ok
