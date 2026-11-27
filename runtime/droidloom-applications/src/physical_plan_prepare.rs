@@ -7,7 +7,6 @@ use super::{
     validate,
 };
 use droidloom_supervisor::{
-    control::{DEFAULT_CONTROL_SOCKET, NativeApplicationInspector},
     native_ihg_preparation::{self, IhgPreparationExecution, IhgPreparationMode},
     native_leaf_business_capture::{
         WorkingBusinessBaseline, capture_working_business_from_observed,
@@ -631,9 +630,10 @@ pub fn prepare_owned_physical_plan(owner: &WorkingQualificationOwner) -> Result<
     }
 
     let end = owner.preparation_deadline();
-    let mut inspector =
-        NativeApplicationInspector::acquire_until(Path::new(DEFAULT_CONTROL_SOCKET), end)
-            .map_err(|e| e.to_string())?;
+    // Consume the actual Main/inspector pair captured by this same owner at
+    // startup. Its original 70-second observation is not issued a second time.
+    let (mut inspector, main) = owner.take_preparation_bootstrap()?;
+    let epoch = main.facts().epoch.clone();
     let mut observations = Vec::with_capacity(roster::PACKAGE_COUNT);
     for fixed in roster::PACKAGES {
         owner.guard()?;
@@ -643,19 +643,11 @@ pub fn prepare_owned_physical_plan(owner: &WorkingQualificationOwner) -> Result<
                 .map_err(|e| e.to_string())?,
         );
     }
-    let epoch = observations
-        .first()
-        .ok_or("compiled physical package roster empty")?
-        .facts()
-        .epoch
-        .clone();
     require(
-        observations.iter().all(|row| row.facts().epoch == epoch),
-        "initial complete application PM observations crossed Main epochs",
+        observations.len() == roster::PACKAGE_COUNT
+            && observations.iter().all(|row| row.facts().epoch == epoch),
+        "initial complete application PM observations differ from the actual bootstrap Main epoch",
     )?;
-    let main = inspector
-        .observe_main_until(&epoch, end)
-        .map_err(|e| e.to_string())?;
     let facts = observations
         .iter()
         .map(|row| row.facts())
