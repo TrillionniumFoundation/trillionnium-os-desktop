@@ -157,6 +157,9 @@ fn opened(parent: &File, name: &CStr, flags: i32) -> Result<File, String> {
     }
     Ok(unsafe { File::from_raw_fd(fd) })
 }
+fn normal_control_metadata(mode: u32, uid: u32, gid: u32, links: u64) -> bool {
+    mode & libc::S_IFMT == libc::S_IFREG && mode & 0o022 == 0 && uid == 0 && gid == 0 && links == 1
+}
 struct ControlFile {
     name: &'static CStr,
     file: File,
@@ -168,8 +171,8 @@ impl ControlFile {
         let file = opened(parent, name, libc::O_RDONLY)?;
         let md = file.metadata().map_err(|e| e.to_string())?;
         need(
-            md.is_file() && md.uid() == 0 && md.gid() == 0 && md.nlink() == 1,
-            "resource control is not a normal root-owned cgroup file",
+            normal_control_metadata(md.mode(), md.uid(), md.gid(), md.nlink()),
+            "resource control is not a root-owned single-link regular file protected from group/world writes",
         )?;
         let identity = MainNodeIdentity::of(&md);
         let owner_mode = [
@@ -387,6 +390,23 @@ mod tests {
             pids_events: counters("max 0", &["max"]).unwrap(),
             cpu_stat: counters("usage_usec 1\nuser_usec 1\nsystem_usec 0", &["usage_usec"])
                 .unwrap(),
+        }
+    }
+    #[test]
+    fn common_retention_control_metadata_rejects_foreign_writes_and_nonregular_aliases() {
+        for mode in [libc::S_IFREG | 0o444, libc::S_IFREG | 0o644] {
+            assert!(normal_control_metadata(mode, 0, 0, 1));
+        }
+        for (mode, uid, gid, links) in [
+            (libc::S_IFREG | 0o664, 0, 0, 1),
+            (libc::S_IFREG | 0o646, 0, 0, 1),
+            (libc::S_IFREG | 0o644, 1000, 0, 1),
+            (libc::S_IFREG | 0o644, 0, 1000, 1),
+            (libc::S_IFREG | 0o644, 0, 0, 2),
+            (libc::S_IFLNK | 0o644, 0, 0, 1),
+            (libc::S_IFDIR | 0o644, 0, 0, 1),
+        ] {
+            assert!(!normal_control_metadata(mode, uid, gid, links));
         }
     }
     #[test]

@@ -18,6 +18,20 @@ const ENGINE_CAP: Duration = Duration::from_secs(70);
 const STACK_CAP: Duration = Duration::from_secs(15);
 const MAX_JOURNAL_BYTES: u64 = 128 * 1024 * 1024;
 const MAX_JOURNAL_FILES: usize = 4096;
+// These three binary name forms are emitted only by the fixed source-owned
+// image producers. Retention does not decode pixels or mint media authority.
+const MAX_FIXED_IMAGE_BYTES: u64 = 32 * 1024 * 1024;
+fn retained_member_limit(name: &str) -> u64 {
+    let numbered_image = name.as_bytes().get(..4).is_some_and(|prefix| {
+        prefix.iter().all(u8::is_ascii_digit)
+            && matches!(name.get(4..), Some("-stdout.bin" | "-scoped-source.png"))
+    });
+    if name == "CAMERA-OWNED-PHOTO.jpg" || numbered_image {
+        MAX_FIXED_IMAGE_BYTES
+    } else {
+        wire::WIRE_REPLY_BYTES as u64
+    }
+}
 
 /// Additional source-owned allowance when a caller budgets a shared session.
 /// It never creates a deadline or extends an existing case/lease. The two exit
@@ -167,7 +181,7 @@ impl RetainedJournal {
                     && identity.uid == 0
                     && identity.gid == 0
                     && identity.links == 1
-                    && identity.bytes <= wire::WIRE_REPLY_BYTES as u64,
+                    && identity.bytes <= retained_member_limit(name),
                 "native common journal has a link, wrong owner/mode or oversized member",
             )?;
             total = total
@@ -615,6 +629,39 @@ mod tests {
             "record_sha256":digest.repeat(64)
         }))
         .unwrap()
+    }
+    #[test]
+    fn common_retention_fixed_image_names_do_not_expand_other_members_or_total_bounds() {
+        for name in [
+            "0000-stdout.bin",
+            "0512-stdout.bin",
+            "0007-scoped-source.png",
+            "CAMERA-OWNED-PHOTO.jpg",
+        ] {
+            assert_eq!(retained_member_limit(name), 32 * 1024 * 1024);
+        }
+        for name in [
+            "BASELINE.json",
+            "FINISHED.json",
+            "STABILITY-BEGIN.json",
+            "0001-stderr.bin",
+            "1-stdout.bin",
+            "00000-stdout.bin",
+            "0001-source.png",
+            "0001-scoped-source.png.extra",
+            "camera-owned-photo.jpg",
+            "CAMERA-OWNED-PHOTO.jpg/child",
+            "０００１-stdout.bin",
+            "image.png",
+        ] {
+            assert_eq!(
+                retained_member_limit(name),
+                wire::WIRE_REPLY_BYTES as u64,
+                "{name}"
+            );
+        }
+        assert_eq!(MAX_JOURNAL_BYTES, 128 * 1024 * 1024);
+        assert_eq!(MAX_JOURNAL_FILES, 4096);
     }
     #[test]
     fn common_stability_journal_full_read_rejects_truncation_and_growth_on_the_held_fd() {

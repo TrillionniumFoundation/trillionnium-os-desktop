@@ -30,6 +30,9 @@ mod tasks;
 #[path = "native_application_ui_common.rs"]
 mod common;
 pub use common::{NativeUiStabilityWindow, NativeUiStabilityEvidence, NativeUiStabilitySummary, stability_additional_window_seconds};
+#[path = "native_application_ui_media.rs"]
+mod media;
+pub use media::{CameraPhotoObservation, RetainedScopedWindowPixels, ScopedWindowPixels};
 
 const COHORT: &str =
     "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2";
@@ -659,7 +662,7 @@ impl Journal {
                 && name
                     .bytes()
                     .all(|b| b.is_ascii_alphanumeric() || b"-_.".contains(&b))
-                && bytes.len() <= wire::WIRE_REPLY_BYTES,
+                && bytes.len() <= wire::WIRE_REPLY_BYTES.max(32 * 1024 * 1024),
             "native UI private record name or bound differs",
         )?;
         let name = CString::new(name).map_err(|_| "native UI record name invalid")?;

@@ -25,7 +25,7 @@ mod application_leaf_unit;
 mod gallery_resources;
 #[path = "native_application_ui_entry.rs"]
 mod native_application_ui_entry;
-pub use native_application_ui_entry::{NativeUiSession, NativeUiTranscript, NativeUiStabilityWindow, NativeUiStabilityEvidence, NativeUiStabilitySummary, stability_additional_window_seconds};
+pub use native_application_ui_entry::{CameraPhotoObservation, RetainedScopedWindowPixels, ScopedWindowPixels, NativeUiSession, NativeUiTranscript, NativeUiStabilityWindow, NativeUiStabilityEvidence, NativeUiStabilitySummary, stability_additional_window_seconds};
 pub use application_leaf_unit::{NativeOwnedLeafUnit, OwnedLeafProfile};
 
 const OUTPUT_LIMIT: usize = 64 * 1024;
@@ -562,7 +562,7 @@ fn run_owned_observed(
 }
 
 #[derive(Clone, Copy)]
-enum NativeUiOutput { Small, Helper }
+enum NativeUiOutput { Small, Helper, Image }
 fn run_owned_native_ui(
     command: Command,
     inherit: &[RawFd],
@@ -574,6 +574,7 @@ fn run_owned_native_ui(
     let limit = match output {
         NativeUiOutput::Small => OUTPUT_LIMIT,
         NativeUiOutput::Helper => crate::native_application_ui_protocol::WIRE_REPLY_BYTES,
+        NativeUiOutput::Image => 32 * 1024 * 1024,
     };
     run_owned_bounded(command, inherit, alive_pidfds, deadline,
         Some(gallery_resources::Profile::ApplicationUi), None, limit, Some(guard))

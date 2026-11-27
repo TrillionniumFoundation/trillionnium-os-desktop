@@ -44,6 +44,8 @@ mod runtime_identity;
 mod physical_gate_roster;
 #[path = "common_gate.rs"]
 mod common_gate;
+#[path = "family_observation.rs"]
+mod family_observation;
 #[path = "physical_acceptance.rs"]
 mod physical_acceptance;
 pub use physical_acceptance::{
