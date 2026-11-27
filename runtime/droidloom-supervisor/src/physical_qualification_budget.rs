@@ -11,12 +11,13 @@ pub const SOURCE_AND_CAPTURE_SECONDS: u64 = 120;
 pub const MAIN_SECONDS: u64 = 70;
 pub const INSPECT_SECONDS: u64 = 250;
 pub const FAMILY_UI_WORK_SECONDS: u64 = 2_615;
-// PM and AppOps samples enclose each actual family UI case and normal close.
-// They are partial preservation evidence, not full data/account acceptance.
+// PM, AppOps and registered-account samples enclose each actual family UI case.
+// They are partial preservation evidence, not full data or credential acceptance.
 pub const FAMILY_PM_PERMISSION_SECONDS: u64 = 2 * 70;
 pub const FAMILY_APPOPS_SECONDS: u64 = 2 * 70;
+pub const FAMILY_ACCOUNT_SECONDS: u64 = 2 * 70;
 pub const FAMILY_WORK_SECONDS: u64 = FAMILY_UI_WORK_SECONDS
-    + FAMILY_PM_PERMISSION_SECONDS + FAMILY_APPOPS_SECONDS;
+    + FAMILY_PM_PERMISSION_SECONDS + FAMILY_APPOPS_SECONDS + FAMILY_ACCOUNT_SECONDS;
 pub const FAMILY_CASE_SECONDS: u64 = INSPECT_SECONDS + FAMILY_WORK_SECONDS;
 // The supplementary real single-shutter/reopen case retains the old Camera leaf.
 // Its normal pre-inspection is separate from the two-session factory's window.
