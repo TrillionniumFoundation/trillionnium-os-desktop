@@ -33,7 +33,8 @@ from verify_native_login_audit import verify_login_audit
 from verify_native_journal_storage import verify_journal_storage
 from verify_greeter_home import verify_greeter_home
 from verify_native_maintenance import verify_native_maintenance
-from verify_original_once import verify_original_once, source_inputs as original_once_source_inputs
+from verify_original_once import (verify_original_once, source_inputs as original_once_source_inputs,
+    verify_sources as validate_original_once_sources)
 from verify_native_camera import verify_camera
 from verify_fixed_display import verify_fixed_display
 from verify_native_stdio import verify_native_stdio, source_inputs as native_stdio_source_inputs
@@ -1791,6 +1792,7 @@ def main():
     if any(output.resolve() == path.resolve() for path in sources):
         raise ValueError("The output path is a policy input or build tool")
     output.parent.mkdir(parents=True, exist_ok=True)
+    validate_original_once_sources(here)
     validate_engine_sources(here)
     with policy_work_directory(output.parent) as work:
         original = work / "original.policy"
