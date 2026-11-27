@@ -4,6 +4,7 @@
 //! progress; unsupported profiles and pending gates never become acceptance.
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
+use std::time::{Duration, Instant};
 
 use droidloom_supervisor::control::application_probe::{
     ApplicationInspection, RuntimeEpoch, validate_https_url,
@@ -322,6 +323,9 @@ struct MaterialClient<'a> {
     inspector: control::NativeApplicationInspector,
     materials: &'a runtime_identity::VerifiedMaterialBatch,
     runtime: &'a RuntimePlan,
+    // Only the same normal inspector can mint this move-only pre-leaf token.
+    // A copied ApplicationInspection is comparison data, never a constructor.
+    actual_application: Option<control::ActualApplicationObservation>,
 }
 impl RuntimeClient for MaterialClient<'_> {
     fn clock_timer_pair(&mut self, expected: &ApplicationInspection, plan: &LeafPlan,
@@ -329,12 +333,20 @@ impl RuntimeClient for MaterialClient<'_> {
         let requested = self.runtime.applications.iter()
             .find(|app| app.package == expected.package)
             .ok_or("Clock pair has no application in this admitted runtime plan")?;
+        // The pair retains its existing three in-window PM observations.
+        // Do not reuse or add a fourth observation to satisfy the new context.
+        self.actual_application.take();
         clock_timer::observe_pair(&mut self.inspector, self.materials, self.runtime,
             requested, expected, plan, selection)
     }
     fn inspect(&mut self, package: &str, user: u32) -> Result<ApplicationInspection, String> {
-        let reply = self.inspector.inspect(package, user).map_err(|error| error.to_string())?;
-        consume_inspection(reply, package, user).map(|(application, _)| application)
+        self.actual_application = None;
+        let end = Instant::now() + Duration::from_secs(250);
+        let observed = self.inspector.inspect_observed_until(package, user, end)
+            .map_err(|error| error.to_string())?;
+        let application = observed.facts().clone();
+        self.actual_application = Some(observed);
+        Ok(application)
     }
     fn launch(&mut self, expected: &ApplicationInspection, plan: &LaunchPlan,
         source: &FilePin) -> Result<(ApplicationInspection, LaunchObservation), String> {
@@ -349,8 +361,13 @@ impl RuntimeClient for MaterialClient<'_> {
         let requested = self.runtime.applications.iter()
             .find(|app| app.package == expected.package)
             .ok_or("leaf has no application in this admitted runtime plan")?;
+        let observed = self.actual_application.take()
+            .ok_or("normal leaf has no retained actual pre-invocation PM token")?;
+        if observed.facts() != expected {
+            return Err("retained normal PM token differs from this selected row".into());
+        }
         leaf_routes::execute_admitted(&mut self.inspector, self.materials,
-            self.runtime, requested, plan, selection, expected)
+            self.runtime, requested, plan, selection, observed)
     }
 }
 
@@ -963,6 +980,7 @@ fn run_files_mode(
                 .map_err(|error| error.to_string())?,
             materials,
             runtime: &plan,
+            actual_application: None,
         };
         let mut report = dispatch_with_materials(
             &plan, &gates, &mut client, Some(materials), identity_only,

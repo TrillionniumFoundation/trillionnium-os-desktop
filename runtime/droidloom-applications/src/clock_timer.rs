@@ -21,7 +21,7 @@ use sha2::{Digest, Sha256};
 use super::leaf_release::{self, Inputs, NativeRelease};
 use super::leaf_routes::{self, ExecutedClockCase, HeldMainCustody, LeafObservation, LeafPlan, Route};
 use super::runtime_identity::{IdentityObservation, VerifiedMaterialBatch};
-use super::{ApplicationPlan, FilePin, RuntimePlan, consume_inspection};
+use super::{ApplicationPlan, FilePin, RuntimePlan};
 
 const PACKAGE: &str = "com.android.deskclock";
 const REQUEST_SCHEMA: &str = "droidloom.clock-timer-pair-request.v1";
@@ -595,12 +595,13 @@ impl ClockTimerEvidence {
 }
 
 fn inspect(inspector: &mut control::NativeApplicationInspector,
-    expected: &ApplicationInspection) -> Result<ApplicationInspection, String> {
-    let reply = inspector.inspect(PACKAGE, 0).map_err(|e| e.to_string())?;
-    let (actual, _) = consume_inspection(reply, PACKAGE, 0)?;
-    require(&actual == expected,
+    expected: &ApplicationInspection, end:Instant,
+) -> Result<control::ActualApplicationObservation, String> {
+    let observed = inspector.inspect_observed_until(PACKAGE, 0, end)
+        .map_err(|error| error.to_string())?;
+    require(observed.facts() == expected,
         "Clock normal peer observed a different package, UID, version, complete APK set or Main epoch")?;
-    Ok(actual)
+    Ok(observed)
 }
 
 fn window(end: Instant, seconds: u64) -> Result<(), String> {
@@ -647,35 +648,47 @@ pub(super) fn observe_pair(
     held.guard()?;
     lease.guard()?;
     window(end, 3 * 250 + 2 * 510 + 3 * 70 + 30)?;
-    let before = inspect(inspector, expected)?;
+    let before_token = inspect(inspector, expected, end)?;
+    let before = before_token.facts().clone();
     materials.observe(requested, 0, &runtime.expected_epoch, &before, &before)?;
 
     window(end, 2 * 250 + 2 * 510 + 3 * 70 + 30)?;
-    let main = HeldMainCustody::observe(inspector, &before)?;
+    let mut main = HeldMainCustody::observe(inspector, before_token, end)?;
+    let mut baseline = main.baseline(inspector, end)?;
     lease.guard()?;
 
     let timer_plan = LeafPlan { route:Kind::Timer15.route(), request:timer.request.clone(), output:None };
     window(end, 2 * 510 + 2 * 250 + 2 * 70 + 30)?;
-    let timer_executed = leaf_routes::execute_clock_case(&timer_plan, selection, &before, &main, &lease)?;
+    let timer_executed = leaf_routes::execute_clock_case(
+        &timer_plan, selection, &before, &main, &lease, inspector, &mut baseline, end,
+    )?;
     let timer_fact = case_fact(timer_executed, &lease, &main, &timer, &before)?;
     held.guard()?; materials.revalidate()?; lease.guard()?;
     window(end, 2 * 250 + 510 + 2 * 70 + 30)?;
-    let between = inspect(inspector, &before)?;
+    let between_token = inspect(inspector, &before, end)?;
+    let between = between_token.facts().clone();
     materials.observe(requested, 0, &runtime.expected_epoch, &before, &between)?;
     window(end, 250 + 510 + 2 * 70 + 30)?;
-    main.revalidate(inspector, &between)?;
+    let between_main = main.refresh(inspector, &between_token, end)?;
+    baseline.finish_from_observed(inspector, &between_main, &between_token, end)
+        .map_err(|error| error.to_string())?;
 
     let expiry_plan = LeafPlan { route:Kind::Expiry06.route(), request:expiry.request.clone(), output:None };
     window(end, 510 + 250 + 70 + 30)?;
     timer_fact.result_custody.guard()?;
-    let expiry_executed = leaf_routes::execute_clock_case(&expiry_plan, selection, &between, &main, &lease)?;
+    let expiry_executed = leaf_routes::execute_clock_case(
+        &expiry_plan, selection, &between, &main, &lease, inspector, &mut baseline, end,
+    )?;
     let expiry_fact = case_fact(expiry_executed, &lease, &main, &expiry, &between)?;
     held.guard()?; materials.revalidate()?; lease.guard()?;
     window(end, 250 + 70 + 30)?;
-    let after = inspect(inspector, &before)?;
+    let after_token = inspect(inspector, &before, end)?;
+    let after = after_token.facts().clone();
     let identity = materials.observe(requested, 0, &runtime.expected_epoch, &before, &after)?;
     window(end, 70 + 30)?;
-    main.revalidate(inspector, &after)?;
+    let after_main = main.refresh(inspector, &after_token, end)?;
+    baseline.finish_from_observed(inspector, &after_main, &after_token, end)
+        .map_err(|error| error.to_string())?;
     held.guard()?; materials.revalidate()?; lease.guard()?;
     window(end, 0)?;
     timer_fact.result_custody.guard()?;
@@ -696,6 +709,11 @@ pub(super) fn observe_pair(
         details:timer15_details, .. } = timer_fact;
     let CaseFact { result_custody:expiry_result, observation:expiry06,
         details:expiry06_details, .. } = expiry_fact;
+    baseline.verify_local(inspector, end).map_err(|error| error.to_string())?;
+    // Retire target data handles only after both real cases and the final
+    // complete bookend; the PM/Main tokens, original results and lease remain.
+    drop(baseline);
+    main.retain_completed(after_main, after_token)?;
     let evidence = ClockTimerEvidence {
         schema:"droidloom.clock-timer-pair-observation.v2", pair_request:leaf.request.clone(),
         native_release, original_owner_current:current, original_owner_current_f9:current_f9,

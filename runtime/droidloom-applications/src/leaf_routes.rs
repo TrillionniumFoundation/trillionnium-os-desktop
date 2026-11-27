@@ -13,6 +13,7 @@ use std::process::Command;
 use std::time::{Duration, Instant};
 
 use droidloom_supervisor::control::{self, application_probe::ApplicationInspection};
+use droidloom_supervisor::native_leaf_baseline::NativeLeafBaselineObservation;
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
@@ -81,13 +82,14 @@ pub(super) fn owned_route_release(
 /// constructor asks the authenticated normal inspector for its opaque fact.
 pub(super) struct HeldMainCustody {
     observation: control::MainCustodyObservation,
-    application: ApplicationInspection,
+    application: control::ActualApplicationObservation,
+    completed: Option<(control::MainCustodyObservation, control::ActualApplicationObservation)>,
 }
 
 impl fmt::Debug for HeldMainCustody {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("HeldMainCustody")
-            .field("application", &self.application)
+            .field("application", self.application.facts())
             .field("facts", self.observation.facts())
             .field("peer", self.observation.peer()).finish()
     }
@@ -96,11 +98,14 @@ impl fmt::Debug for HeldMainCustody {
 impl Serialize for HeldMainCustody {
     fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         use serde::ser::SerializeStruct;
-        let mut out = serializer.serialize_struct("HeldMainCustody", 4)?;
-        out.serialize_field("schema", "droidloom.application-main-custody.v1")?;
-        out.serialize_field("application", &self.application)?;
+        let mut out = serializer.serialize_struct("HeldMainCustody", 5)?;
+        out.serialize_field("schema", "droidloom.application-main-custody.v2")?;
+        out.serialize_field("application", self.application.facts())?;
         out.serialize_field("facts", self.observation.facts())?;
         out.serialize_field("peer", self.observation.peer())?;
+        out.serialize_field("final_observations", &self.completed.as_ref().map(|(main, application)| {
+            json!({"main":main.facts(), "application":application.facts(), "peer":main.peer()})
+        }))?;
         out.end()
     }
 }
@@ -120,12 +125,15 @@ fn require_working_origin(
 impl HeldMainCustody {
     pub(super) fn observe(
         inspector: &mut control::NativeApplicationInspector,
-        application: &ApplicationInspection,
+        application: control::ActualApplicationObservation,
+        end: Instant,
     ) -> Result<Self, String> {
-        let observation = inspector.observe_main(&application.epoch)
+        let observation = inspector.observe_main_until(&application.facts().epoch, end)
             .map_err(|error| error.to_string())?;
-        let held = Self { observation, application: application.clone() };
-        held.require_application(application)?;
+        require(observation.peer() == application.peer(),
+            "normal PM and Main observations belong to different authenticated peers")?;
+        let held = Self { observation, application, completed:None };
+        held.guard_projection()?;
         Ok(held)
     }
 
@@ -133,7 +141,8 @@ impl HeldMainCustody {
         use droidloom_supervisor::main_custody::MainDataRole;
         let facts = self.observation.facts();
         let data = &facts.persistent_data;
-        require(&self.application == actual && facts.epoch == actual.epoch
+        require(self.application.facts() == actual && facts.epoch == actual.epoch
+            && self.application.peer() == self.observation.peer()
             && actual.user == 0
             && data.backings[0].role == MainDataRole::Data
             && data.backings[1].role == MainDataRole::Metadata,
@@ -142,22 +151,60 @@ impl HeldMainCustody {
             [data.backings[0].backing.stable7(), data.backings[1].backing.stable7()])
     }
 
-    pub(super) fn revalidate(
+    /// Replace the old revalidation call with its same one normal RPC, retaining
+    /// the returned actual token so the baseline can check its private timestamp.
+    pub(super) fn refresh(
         &self,
         inspector: &mut control::NativeApplicationInspector,
-        actual: &ApplicationInspection,
+        actual: &control::ActualApplicationObservation,
+        end: Instant,
+    ) -> Result<control::MainCustodyObservation, String> {
+        self.require_application(actual.facts())?;
+        require(actual.peer() == self.observation.peer(),
+            "normal leaf final PM observation changed peer")?;
+        let after = inspector.refresh_main_until(&self.observation, end)
+            .map_err(|error| error.to_string())?;
+        self.require_application(actual.facts())?;
+        Ok(after)
+    }
+
+    pub(super) fn baseline<'a>(
+        &'a self, inspector: &control::NativeApplicationInspector, end: Instant,
+    ) -> Result<NativeLeafBaselineObservation<'a>, String> {
+        NativeLeafBaselineObservation::capture_from_observed(
+            inspector, &self.observation, &self.application, end,
+        ).map_err(|error| error.to_string())
+    }
+
+    /// Called only after the actual shared context's final finish/local checks.
+    /// These real peer-held observations survive until the row is submitted.
+    pub(super) fn retain_completed(
+        &mut self,
+        main: control::MainCustodyObservation,
+        application: control::ActualApplicationObservation,
     ) -> Result<(), String> {
-        self.require_application(actual)?;
-        inspector.revalidate_main(&self.observation).map_err(|error| error.to_string())?;
-        self.require_application(actual)
+        require(self.completed.is_none() && main.facts() == self.observation.facts()
+            && main.peer() == self.observation.peer()
+            && application.facts() == self.application.facts()
+            && application.peer() == self.application.peer(),
+            "normal leaf final tokens differ or were already consumed")?;
+        self.completed = Some((main, application));
+        self.guard_projection()
     }
 
     pub(super) fn guard_projection(&self) -> Result<(), String> {
-        self.require_application(&self.application)
+        self.require_application(self.application.facts())?;
+        if let Some((main, application)) = &self.completed {
+            require(main.facts() == self.observation.facts()
+                && main.peer() == self.observation.peer()
+                && application.facts() == self.application.facts()
+                && application.peer() == self.application.peer(),
+                "retained completed normal observations differ")?;
+        }
+        Ok(())
     }
 
-    /// Borrow the actual opaque fact for a future normal engine observation.
-    /// Serializing facts()/peer() does not recreate this object.
+    /// Borrow the actual opaque fact; serialized facts do not recreate it.
     pub(super) fn normal_observation(&self) -> &control::MainCustodyObservation {
         &self.observation
     }
@@ -194,7 +241,7 @@ impl Serialize for HeldLeafCustody {
 
 impl HeldLeafCustody {
     fn guard(&self) -> Result<(), String> {
-        self.main.require_application(&self.main.application)?;
+        self.main.guard_projection()?;
         self.release.guard()?;
         self.result.guard()
     }
@@ -1330,11 +1377,14 @@ pub(super) fn execute_clock_case(
     actual: &ApplicationInspection,
     main: &HeldMainCustody,
     release: &NativeRelease,
+    inspector: &mut control::NativeApplicationInspector,
+    baseline: &mut NativeLeafBaselineObservation<'_>,
+    end: Instant,
 ) -> Result<ExecutedClockCase, String> {
     require(matches!(plan.route, Route::ClockTimerRemaining | Route::ClockExpiry),
         "Clock fact production only accepts original timer15 and expiry06")?;
     let (observation, _, result_custody) =
-        execute_observed(plan, selection, actual, main, release)?;
+        execute_observed(plan, selection, actual, main, release, inspector, baseline, end)?;
     Ok(ExecutedClockCase { observation, result_custody })
 }
 
@@ -1367,38 +1417,52 @@ pub(super) fn execute_admitted(
     requested: &ApplicationPlan,
     plan: &LeafPlan,
     selection: &FilePin,
-    actual: &ApplicationInspection,
+    actual_token: control::ActualApplicationObservation,
 ) -> Result<(ApplicationInspection, LeafObservation), String> {
     require(plan.route != Route::ClockTimerPair,
         "Clock pair requires its one shared two-case Main and owner factory")?;
+    let actual = actual_token.facts().clone();
     let seconds = plan.route.definition().seconds;
     // One unchanged leaf limit, two fixed Main transport allowances, one
     // normal package inspection, and finite source/retirement bookends.
+    // The original pre-leaf PM token comes from MaterialClient, with no RPC
+    // added by baseline capture, each G, or finish_from_observed.
     let window = seconds + 2 * 70 + 250 + 120;
     let release = normal_route_release(plan, selection)?;
     release.cover_window(window)?;
     let end = Instant::now() + Duration::from_secs(window);
     leaf_window(end, seconds + 2 * 70 + 250 + 30)?;
     materials.revalidate()?;
-    materials.observe(requested, runtime.android_user, &runtime.expected_epoch, actual, actual)?;
-    let main = HeldMainCustody::observe(inspector, actual)?;
+    materials.observe(requested, runtime.android_user, &runtime.expected_epoch, &actual, &actual)?;
+    let mut main = HeldMainCustody::observe(inspector, actual_token, end)?;
+    let mut baseline = main.baseline(inspector, end)?;
     release.guard()?;
     leaf_window(end, seconds + 70 + 250 + 30)?;
-    let (mut observation, _, result) = execute_observed(plan, selection, actual, &main, &release)?;
+    let (mut observation, _, result) = execute_observed(
+        plan, selection, &actual, &main, &release, inspector, &mut baseline, end,
+    )?;
     result.guard()?;
     release.guard()?;
     leaf_window(end, 250 + 70 + 30)?;
-    let reply = inspector.inspect(&actual.package, actual.user).map_err(|error| error.to_string())?;
-    let (after, _) = super::consume_inspection(reply, &actual.package, actual.user)?;
+    let after_token = inspector.inspect_observed_until(&actual.package, actual.user, end)
+        .map_err(|error| error.to_string())?;
+    let after = after_token.facts().clone();
     main.require_application(&after)?;
     leaf_window(end, 70 + 30)?;
-    main.revalidate(inspector, &after)?;
+    let after_main = main.refresh(inspector, &after_token, end)?;
+    baseline.finish_from_observed(inspector, &after_main, &after_token, end)
+        .map_err(|error| error.to_string())?;
     materials.revalidate()?;
     let final_identity = materials.observe(requested, runtime.android_user,
-        &runtime.expected_epoch, actual, &after)?;
+        &runtime.expected_epoch, &actual, &after)?;
     release.guard()?;
     result.guard()?;
+    baseline.verify_local(inspector, end).map_err(|error| error.to_string())?;
     leaf_window(end, 0)?;
+    // The actual data handles span the execution and final bookends. Retiring
+    // them here does not claim continuous data custody after this window.
+    drop(baseline);
+    main.retain_completed(after_main, after_token)?;
     observation.custody = Some(HeldLeafCustody {
         main, release, result, final_identity: Some(final_identity),
     });
@@ -1412,6 +1476,9 @@ fn execute_observed(
     actual: &ApplicationInspection,
     main: &HeldMainCustody,
     release: &NativeRelease,
+    inspector: &mut control::NativeApplicationInspector,
+    baseline: &mut NativeLeafBaselineObservation<'_>,
+    end: Instant,
 ) -> Result<(LeafObservation, Value, super::clock_timer::ClockResultCustody), String> {
     require(
         plan.route.package() == actual.package,
@@ -1427,21 +1494,27 @@ fn execute_observed(
     let (case_ref, case) = case_document(plan, &request)?;
     validate_case(plan, &request, &case, source, &sources)?;
     release.guard()?;
-    let (baseline, qualification) = main_binding(&case, actual, main)?;
+    require(baseline.deadline() == end && baseline.application() == actual,
+        "leaf execution context differs from the original identity or deadline")?;
+    baseline.verify_local(inspector, end).map_err(|error| error.to_string())?;
+    let (baseline_ref, qualification) = main_binding(&case, actual, main)?;
     let expected_result = output_path(plan, &request, &case)?;
     let cmd = command(plan, source)?;
     // The trusted selected entry still validates the complete transitive source
     // graph and every original business/support/provider gate before its actions.
     claim(plan, actual, source)?;
-    let output = if plan.route.current_gallery() {
-        control::run_prepared_gallery_image_leaf(cmd, &actual.epoch)?
+    let kind = if plan.route.current_gallery() {
+        control::NativeLeafCommandKind::GalleryImage
     } else if plan.route == Route::CalendarReminder {
-        control::run_prepared_calendar_reminder_leaf(cmd, &actual.epoch)?
+        control::NativeLeafCommandKind::CalendarReminder
     } else if plan.route == Route::SettingsSupportedPages {
-        control::run_prepared_settings_pages_leaf(cmd, &actual.epoch)?
+        control::NativeLeafCommandKind::SettingsPages
     } else {
-        control::run_prepared_application_leaf(cmd, &actual.epoch, Duration::from_secs(d.seconds))?
+        control::NativeLeafCommandKind::Standard { budget:Duration::from_secs(d.seconds) }
     };
+    let output = control::run_prepared_native_leaf_until(
+        cmd, &actual.epoch, kind, inspector, baseline, end,
+    )?;
     require(
         output.status.success(),
         "actual leaf process failed; preserve its claim and original logs without replay",
@@ -1466,7 +1539,7 @@ fn execute_observed(
         &printed,
         &result,
         case_ref.as_ref(),
-        &baseline,
+        &baseline_ref,
         &qualification,
         source,
     )?;
@@ -1476,7 +1549,7 @@ fn execute_observed(
         &source.preparation,
         &source.entry,
         &plan.request,
-        &baseline,
+        &baseline_ref,
         &qualification,
     ] {
         pinned(pin)?;
@@ -1516,6 +1589,7 @@ fn execute_observed(
         },
     };
     result_custody.guard()?;
+    baseline.verify_local(inspector, end).map_err(|error| error.to_string())?;
     Ok((observation, result, result_custody))
 }
 
