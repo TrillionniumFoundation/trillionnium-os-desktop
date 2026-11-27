@@ -66,6 +66,10 @@ mod package_inventory;
 mod application_exit_state_query;
 pub(crate) use application_exit_state_query::{ApplicationExitStateObservation, read_application_exit_state};
 
+#[path = "production_application_permission_state.rs"]
+mod application_permission_state_query;
+pub(crate) use application_permission_state_query::{ApplicationPermissionStateObservation, read_application_permission_state};
+
 #[path = "production_application_package_inventory.rs"]
 mod package_inventory_query;
 pub(crate) use package_inventory_query::{

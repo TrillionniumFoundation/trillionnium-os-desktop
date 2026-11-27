@@ -96,7 +96,7 @@ struct JournalFile {
     identity: Identity,
     sha256: String,
 }
-struct RetainedJournal {
+pub(super) struct RetainedJournal {
     files: Vec<JournalFile>,
     directory_identity: [u64; 5],
     names: BTreeSet<String>,
@@ -146,10 +146,10 @@ fn names(journal: &Journal) -> Result<BTreeSet<String>, String> {
     Ok(result)
 }
 
-// Only these two source-owned constructors select the required member set.
+// Only the source-owned constructors select the required member set.
 // No caller can supply a schema, list of names, passed map or copied transcript.
-#[derive(Clone, Copy)]
-enum JournalKind { Finished, Stability }
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub(super) enum JournalKind { Finished, Stability, Permissions }
 fn required_members(kind: JournalKind) -> &'static [&'static str] {
     match kind {
         JournalKind::Finished => &[
@@ -161,11 +161,16 @@ fn required_members(kind: JournalKind) -> &'static [&'static str] {
             "STABILITY-SAMPLE-1.json","STABILITY-SAMPLE-2.json","STABILITY-SAMPLE-3.json",
             "STABILITY-AFTER-CLOSE.json",
         ],
+        JournalKind::Permissions => &[
+            "PERMISSION-BEGIN.json", "PERMISSION-BEFORE.json",
+            "PERMISSION-AFTER.json", "PERMISSION-COMPLETE.json",
+        ],
     }
 }
 fn require_members(kind: JournalKind, names: &BTreeSet<String>) -> Result<(), String> {
-    need(required_members(kind).iter().all(|name| names.contains(*name)),
-        "actual native finished/stability journal is incomplete")
+    need(required_members(kind).iter().all(|name| names.contains(*name))
+        && (kind != JournalKind::Permissions || names.len() == required_members(kind).len()),
+        "actual native finished/stability/permission journal is incomplete or differs")
 }
 
 /// Historical close/retirement custody. It is deliberately separate from
@@ -218,8 +223,29 @@ impl RetainedNativeUiTranscript {
     }
 }
 
+fn require_generated_permission_records(
+    generated: &BTreeMap<String, (u64, String)>,
+    actual: &BTreeMap<String, (u64, String)>,
+) -> Result<(), String> {
+    let names = generated.keys().cloned().collect();
+    require_members(JournalKind::Permissions, &names)?;
+    need(generated.values().all(|(bytes, sha)| *bytes > 0
+        && *bytes <= crate::application_permission_state::MAX_WIRE_BYTES as u64
+        && sha.len() == 64
+        && sha.bytes().all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b)))
+        && generated == actual,
+        "PM permission retained records differ from the actual factory's generated full bytes")
+}
+
 impl RetainedJournal {
-    fn capture(journal: &Journal, end: Instant, kind: JournalKind) -> Result<Self, String> {
+    pub(super) fn require_generated_permission_records(
+        &self, generated: &BTreeMap<String, (u64, String)>,
+    ) -> Result<(), String> {
+        let actual = self.files.iter().map(|held|
+            (held.name.clone(), (held.identity.bytes, held.sha256.clone()))).collect();
+        require_generated_permission_records(generated, &actual)
+    }
+    pub(super) fn capture(journal: &Journal, end: Instant, kind: JournalKind) -> Result<Self, String> {
         before(end)?;
         let wanted = names(journal)?;
         require_members(kind, &wanted)?;
@@ -271,7 +297,7 @@ impl RetainedJournal {
         before(end)?;
         Ok(retained)
     }
-    fn guard(&self, journal: &Journal) -> Result<(), String> {
+    pub(super) fn guard(&self, journal: &Journal) -> Result<(), String> {
         journal.verify()?;
         need(
             journal.identity == self.directory_identity && names(journal)? == self.names,
@@ -795,6 +821,36 @@ mod tests {
         assert!(require_members(JournalKind::Stability,&stability).is_ok());
         assert!(require_members(JournalKind::Finished,&stability).is_err());
         assert!(require_members(JournalKind::Stability,&full).is_err());
+    }
+
+    #[test]
+    fn pm_permission_window_retention_rejects_missing_extra_failed_or_substituted_records() {
+        let expected: BTreeMap<String, (u64, String)> = required_members(JournalKind::Permissions)
+            .iter().map(|name| (name.to_string(), (17, "ab".repeat(32)))).collect();
+        require_generated_permission_records(&expected, &expected).unwrap();
+        let mut missing = expected.clone();
+        missing.remove("PERMISSION-AFTER.json");
+        assert!(require_generated_permission_records(&expected, &missing).is_err());
+        let mut extra = expected.clone();
+        extra.insert("PERMISSION-FAILED.json".into(), (17, "ab".repeat(32)));
+        assert!(require_generated_permission_records(&expected, &extra).is_err());
+        assert!(require_generated_permission_records(&extra, &extra).is_err());
+        let mut changed = expected.clone();
+        changed.get_mut("PERMISSION-BEFORE.json").unwrap().1 = "cd".repeat(32);
+        assert!(require_generated_permission_records(&expected, &changed).is_err());
+        changed = expected.clone();
+        changed.get_mut("PERMISSION-AFTER.json").unwrap().0 += 1;
+        assert!(require_generated_permission_records(&expected, &changed).is_err());
+        let mut malformed = expected.clone();
+        malformed.get_mut("PERMISSION-COMPLETE.json").unwrap().0 = 0;
+        assert!(require_generated_permission_records(&malformed, &malformed).is_err());
+        for kind in [JournalKind::Finished, JournalKind::Stability] {
+            let mut names: BTreeSet<String> = required_members(kind).iter().map(|n| n.to_string()).collect();
+            require_members(kind, &names).unwrap();
+            assert!(require_members(JournalKind::Permissions, &names).is_err());
+            names.remove(required_members(kind)[0]);
+            assert!(require_members(kind, &names).is_err());
+        }
     }
 
 }

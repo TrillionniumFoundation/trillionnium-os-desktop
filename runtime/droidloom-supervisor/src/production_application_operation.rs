@@ -158,6 +158,7 @@ pub(super) enum ApplicationOperation {
     Vintf { value: super::vintf::VintfRead },
     RuntimeAbi { value: super::runtime_abi_query::RuntimeAbiRead },
     ApplicationExitState { value: super::application_exit_state_query::ApplicationExitStateRead },
+    ApplicationPermissionState { value: super::application_permission_state_query::ApplicationPermissionStateRead },
     UserZeroPackageInventory { value: super::package_inventory_query::UserZeroPackageInventoryRead },
     Browser { value: BrowserCommand },
     ContactsRead { value: ContactsQuery },
@@ -174,6 +175,7 @@ impl ApplicationOperation {
             Self::Vintf { value } => value.validate(),
             Self::RuntimeAbi { value } => value.validate(),
             Self::ApplicationExitState { value } => value.validate(),
+            Self::ApplicationPermissionState { value } => value.validate(),
             Self::UserZeroPackageInventory { value } => value.validate(),
             Self::Browser { value } => value.validate(),
             Self::ContactsRead { value } => value.validate(),
@@ -199,6 +201,7 @@ impl ApplicationOperation {
             Self::Vintf { value } => value.output_limit(),
             Self::RuntimeAbi { .. } => super::runtime_abi::OUTPUT_BYTES,
             Self::ApplicationExitState { .. } => crate::application_exit_state::OUTPUT_BYTES,
+            Self::ApplicationPermissionState { .. } => crate::application_permission_state::OUTPUT_BYTES,
             Self::UserZeroPackageInventory { .. } => super::package_inventory::OUTPUT_BYTES,
             _ => OUTPUT_LIMIT,
         }
@@ -244,7 +247,7 @@ impl ApplicationOperation {
         match self {
             Self::Read { value } => value.binary(),
             Self::Vintf { value } => value.binary(),
-            Self::Browser { .. } | Self::RuntimeAbi { .. } | Self::ApplicationExitState { .. } | Self::UserZeroPackageInventory { .. } => c"cmd",
+            Self::Browser { .. } | Self::RuntimeAbi { .. } | Self::ApplicationExitState { .. } | Self::ApplicationPermissionState { .. } | Self::UserZeroPackageInventory { .. } => c"cmd",
             Self::ContactsRead { .. } | Self::Catalog { .. } => c"app_process64",
             Self::Launch { .. } | Self::Install { .. } | Self::Display { .. } => c"cmd",
         }
@@ -256,6 +259,7 @@ impl ApplicationOperation {
             Self::Vintf { value } => value.arguments(),
             Self::RuntimeAbi { value } => value.arguments(),
             Self::ApplicationExitState { value } => value.arguments(),
+            Self::ApplicationPermissionState { value } => value.arguments(),
             Self::UserZeroPackageInventory { value } => value.arguments(),
             Self::Browser { value } => value.arguments(),
             Self::ContactsRead { value } => value.arguments(),
@@ -268,7 +272,7 @@ impl ApplicationOperation {
 
     pub(super) fn domain(&self) -> OperationDomain {
         match self {
-            Self::Read { .. } | Self::Vintf { .. } | Self::UserZeroPackageInventory { .. } => OperationDomain::Query,
+            Self::Read { .. } | Self::Vintf { .. } | Self::UserZeroPackageInventory { .. } | Self::ApplicationPermissionState { .. } => OperationDomain::Query,
             Self::RuntimeAbi { .. } | Self::ApplicationExitState { .. } => OperationDomain::LaunchRead,
             Self::Browser { value } => value.domain(),
             Self::ContactsRead { .. } => OperationDomain::ContactsRead,

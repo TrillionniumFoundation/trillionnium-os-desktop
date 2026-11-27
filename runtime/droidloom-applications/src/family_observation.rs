@@ -7,6 +7,8 @@ use droidloom_supervisor::control::application_probe::ApplicationInspection;
 use droidloom_supervisor::control::{
     NativeApplicationInspector, NativeUiSession, NativeUiStabilityEvidence,
     RetainedScopedWindowPixels, stability_additional_window_seconds,
+    NativeUiPermissionWindow, NativeUiPermissionPreservation,
+    permission_preservation_additional_window_seconds,
 };
 use droidloom_supervisor::main_custody::RuntimeMainCustody;
 use droidloom_supervisor::native_leaf_baseline::NativeLeafBaselineObservation;
@@ -31,19 +33,22 @@ const FAMILY_BUSINESS_GATE_COUNT: usize = 114;
 // read, one removal and 1..=32 bounded asynchronous confirmation reads.
 const MAX_UI_COMMANDS: u32 = 5 + 3 * 3 + 2 * 7 + 2 + 32;
 pub(super) fn retained_journal_members_bound() -> usize {
-    4 * MAX_UI_COMMANDS as usize + 16
+    4 * MAX_UI_COMMANDS as usize + 16 + 4 // Separate fixed PM-permission journal.
 }
 fn fixed_history_shape(operations: u32, actions: u32) -> bool {
     (operations == 29 && actions == 0)
         || ((31..=MAX_UI_COMMANDS).contains(&operations) && actions == 1)
 }
 
-pub(super) fn window_seconds() -> u64 {
+fn ui_window_seconds() -> u64 {
     OPEN_SECONDS
         + ORIGINAL_FINISH_SECONDS
         + stability_additional_window_seconds()
         + PIXEL_COMMAND_SECONDS
         + LOCAL_CAPTURE_SECONDS
+}
+pub(super) fn window_seconds() -> u64 {
+    ui_window_seconds() + permission_preservation_additional_window_seconds()
 }
 
 fn require(value: bool, reason: &str) -> Result<(), String> {
@@ -149,6 +154,7 @@ impl FamilyBusinessFact {
 /// immutable checks and the original source lease have both been validated.
 pub(super) struct FamilyObservation {
     stability: NativeUiStabilityEvidence,
+    permissions: NativeUiPermissionPreservation,
     pixels: [RetainedScopedWindowPixels; 2],
     business_facts: Vec<FamilyBusinessFact>,
     blocked: Vec<FamilyBlockedGate>,
@@ -178,6 +184,9 @@ impl FamilyObservation {
         self.stability.guard_immutable()?;
         let transcript = self.stability.transcript();
         let engine = transcript.engine();
+        // A mandatory partial PM fact, bound to this exact normal-close
+        // transcript. It never supplies common.data_permissions or accounts.
+        self.permissions.require_transcript(transcript)?;
         require(
             fixed_history_shape(transcript.operations(), transcript.actions()),
             "family history is outside its fixed read sequence and single owned close",
@@ -207,12 +216,13 @@ impl FamilyObservation {
         let row = family(&engine.application().package)?;
         let pixel_comparison = [self.pixels[0].comparison()?, self.pixels[1].comparison()?];
         Ok(json!({
-            "schema":"droidloom.physical-family-observation.v1",
+            "schema":"droidloom.physical-family-observation.v2",
             "package":row.package,
             "profile":row.profile,
             "application":engine.application(),
             "main":engine.facts().main,
             "stability":self.stability.summary(),
+            "pm_permission_preservation":self.permissions.comparison()?,
             "scoped_pixels":pixel_comparison,
             "business_facts":self.business_facts,
             "blocked":self.blocked,
@@ -247,22 +257,36 @@ pub(super) fn run_family_case(
     baseline
         .verify_local(inspector, original_end)
         .map_err(|error| error.to_string())?;
-    let mut session = NativeUiSession::open(inspector, baseline, original_end)?;
-    let mut window = session.begin_stability(inspector)?;
-    window.sample(&mut session, inspector)?;
-    let first_pixels = session.scoped_window_pixels(inspector)?.into_retained()?;
-    window.sample(&mut session, inspector)?;
-    let second_pixels = session.scoped_window_pixels(inspector)?.into_retained()?;
-    window.sample(&mut session, inspector)?;
-    // No business input, form submission, outbound communication, permission
-    // change, owned document, or account mutation occurs in this constructor.
-    // finish proves the actual single owned close and full normal bookends.
-    let stability = window.finish(session, inspector)?;
-    stability.require_subject(&main, &application)?;
-    first_pixels.require_transcript(stability.transcript())?;
-    second_pixels.require_transcript(stability.transcript())?;
+    let permission_window = NativeUiPermissionWindow::begin(inspector, baseline, original_end)?;
+    // Keep the original 2615-second UI maximum and reserve the actual after
+    // query under the same case end. Fast pre-query completion cannot renew it.
+    let ui_end = (Instant::now() + Duration::from_secs(ui_window_seconds()))
+        .min(permission_window.ui_deadline());
+    let ui = (|| {
+        let mut session = NativeUiSession::open(inspector, baseline, ui_end)?;
+        let mut window = session.begin_stability(inspector)?;
+        window.sample(&mut session, inspector)?;
+        let first_pixels = session.scoped_window_pixels(inspector)?.into_retained()?;
+        window.sample(&mut session, inspector)?;
+        let second_pixels = session.scoped_window_pixels(inspector)?.into_retained()?;
+        window.sample(&mut session, inspector)?;
+        // No business input, form submission, outbound communication, permission
+        // change, owned document, or account mutation occurs in this constructor.
+        // finish proves the actual single owned close and full normal bookends.
+        let stability = window.finish(session, inspector)?;
+        stability.require_subject(&main, &application)?;
+        first_pixels.require_transcript(stability.transcript())?;
+        second_pixels.require_transcript(stability.transcript())?;
+        Ok::<_, String>((stability, first_pixels, second_pixels))
+    })();
+    let (stability, first_pixels, second_pixels) = match ui {
+        Ok(value) => value,
+        Err(error) => return Err(permission_window.fail(error)),
+    };
+    let permissions = permission_window.finish(inspector, baseline, stability.transcript())?;
     let observation = FamilyObservation {
         stability,
+        permissions,
         pixels: [first_pixels, second_pixels],
         business_facts: Vec::new(),
         blocked: blocked(row),
@@ -323,7 +347,9 @@ mod tests {
     #[test]
     fn family_observation_budget_rejects_renewal_and_outliving_original_baseline() {
         assert_eq!(stability_additional_window_seconds(), 680);
-        assert_eq!(window_seconds(), 2615);
+        assert_eq!(ui_window_seconds(), 2615);
+        assert_eq!(permission_preservation_additional_window_seconds(), 140);
+        assert_eq!(window_seconds(), 2755);
         let now = Instant::now();
         let end = now + Duration::from_secs(window_seconds());
         require_window(now, end, end).unwrap();
@@ -345,7 +371,7 @@ mod tests {
     #[test]
     fn family_observation_history_bounds_allow_only_fixed_reads_and_one_owned_close() {
         assert_eq!(MAX_UI_COMMANDS, 62);
-        assert_eq!(retained_journal_members_bound(), 264);
+        assert_eq!(retained_journal_members_bound(), 268);
         assert!(fixed_history_shape(29, 0));
         for operations in 31..=62 {
             assert!(fixed_history_shape(operations, 1));

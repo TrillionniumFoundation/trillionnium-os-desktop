@@ -53,7 +53,7 @@ mod progress;
 #[path = "control_identity.rs"]
 mod identity;
 pub use identity::{
-    ActualApplicationObservation, ActualApplicationExitObservation, ActualUserZeroPackageInventoryObservation,
+    ActualApplicationObservation, ActualApplicationExitObservation, ActualApplicationPermissionObservation, ActualUserZeroPackageInventoryObservation,
     EngineMappingObservation, MainCustodyObservation, NativeApplicationInspector,
     NativeInspectionPeer,
 };
@@ -87,7 +87,7 @@ mod application_command;
 
 #[path = "application_leaf_locks.rs"]
 mod application_leaf_locks;
-pub use application_command::{NativeOwnedLeafUnit, OwnedLeafProfile, CameraPhotoObservation, CameraPhotoSceneObservation, CameraPhotoCaseObservation, camera_photo_case_window_seconds, run_camera_photo_case, RetainedScopedWindowPixels, RetainedNativeUiTranscript, ScopedWindowPixels, NativeUiSession, NativeUiTranscript, NativeUiStabilityWindow, NativeUiStabilityEvidence, NativeUiStabilitySummary, stability_additional_window_seconds};
+pub use application_command::{SettingsPermissionCaseObservation, run_settings_permission_case, settings_permission_case_window_seconds, NativeOwnedLeafUnit, OwnedLeafProfile, CameraPhotoObservation, CameraPhotoSceneObservation, CameraPhotoCaseObservation, camera_photo_case_window_seconds, run_camera_photo_case, RetainedScopedWindowPixels, RetainedNativeUiTranscript, ScopedWindowPixels, NativeUiSession, NativeUiTranscript, NativeUiStabilityWindow, NativeUiStabilityEvidence, NativeUiStabilitySummary, stability_additional_window_seconds, NativeUiPermissionWindow, NativeUiPermissionPreservation, permission_preservation_additional_window_seconds};
 pub use crate::native_application_ui_protocol::{Selector as NativeUiSelector, Reply as NativeUiReply, ProtocolError as NativeUiError};
 pub use application_command::physical_qualification_channel;
 pub use crate::native_leaf_engine::{NativeLeafEngineEvidence, NativeLeafExecution};
@@ -306,6 +306,12 @@ pub enum ControlRequest {
     /// Read complete exit history for one source-selected user-zero application.
     /// Expected epoch compares the actual owner; no PID, UID, path or command is accepted.
     ObserveApplicationExitState {
+        package: String,
+        expected_epoch: application_probe::RuntimeEpoch,
+    },
+    /// Observe complete PackageManager grants for one source-selected user-zero
+    /// application, including its actual shared UID. No permission mutation.
+    ObserveApplicationPermissionState {
         package: String,
         expected_epoch: application_probe::RuntimeEpoch,
     },
@@ -545,6 +551,9 @@ impl Daemon {
             )),
             ControlRequest::ObserveApplicationExitState { .. } => Err(ControlError::Invalid(
                 "exit-state observation requires the original kernel-first Ready owner".into(),
+            )),
+            ControlRequest::ObserveApplicationPermissionState { .. } => Err(ControlError::Invalid(
+                "PM permission observation requires the original kernel-first Ready owner".into(),
             )),
             ControlRequest::ObserveUserZeroPackageInventory { .. } => Err(ControlError::Invalid(
                 "complete user-0 inventory requires the original kernel-first Ready owner".into(),
