@@ -21,6 +21,8 @@ use crate::development::owned_process::{open_pidfd, pidfd_exited};
 
 #[path = "physical_qualification_channel.rs"]
 pub mod physical_qualification_channel;
+#[path = "native_leaf_business_capture.rs"]
+pub mod native_leaf_business_capture;
 
 #[path = "application_leaf_unit.rs"]
 mod application_leaf_unit;
