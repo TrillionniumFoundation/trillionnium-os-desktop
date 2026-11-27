@@ -7,6 +7,8 @@ use serde::{Deserialize, Serialize};
 use std::{collections::BTreeMap, ffi::CString, io, path::PathBuf};
 #[path = "physical_qualification_budget.rs"]
 pub(crate) mod budget;
+#[path = "native_working_layout.rs"]
+pub(crate) mod layout;
 #[path = "native_once_contract.rs"]
 mod original;
 pub(crate) use original::{
@@ -278,9 +280,13 @@ impl WorkingReturnConfiguration {
     pub(crate) fn runtime_evidence_directory(&self) -> PathBuf {
         // The running candidate never reads the original/rollback/private
         // Returned tree under /var/lib/droidloom-qualification.
-        std::path::Path::new("/var/lib/droidloom/qualification")
-            .join(format!("working-qualification-{}", self.candidate_id))
-            .join("runtime-evidence")
+        std::path::Path::new(layout::WORKING_QUALIFICATION_BASE)
+            .join(format!(
+                "{}{}",
+                layout::WORKING_CANDIDATE_PREFIX,
+                self.candidate_id
+            ))
+            .join(layout::WORKING_EVIDENCE_DIRECTORY)
     }
 }
 

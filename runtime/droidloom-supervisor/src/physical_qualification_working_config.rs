@@ -1,10 +1,11 @@
 //! Held admission of the fixed second-stage configuration from this actual
 //! working boot. Parsed JSON describes inputs; the live owner, boot arguments,
 //! kernel, labels and original early publisher provide their custody.
-use super::{error, f9, sha};
+use super::{error, f9, layout, sha};
 use crate::{native_hardware_label as held, native_working_contract as contract};
 use contract::{PayloadPin, WorkingEarlyConfiguration, WorkingReturnConfiguration};
 use serde::Deserialize;
+use std::cell::RefCell;
 use std::collections::BTreeMap;
 use std::ffi::{CStr, CString};
 use std::fs::{self, File, OpenOptions};
@@ -13,11 +14,38 @@ use std::os::fd::AsRawFd;
 use std::os::unix::fs::{FileExt, MetadataExt, OpenOptionsExt};
 use std::path::{Path, PathBuf};
 
-pub(super) const ROLE: &[u8] = b"u:system_r:p4_linux_working_qualification_t:s0";
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub(super) enum WorkingActor {
+    Parent,
+    Suite,
+}
+impl WorkingActor {
+    pub(super) fn from_role(role: &[u8]) -> Option<Self> {
+        if role == layout::WORKING_PARENT_ROLE {
+            Some(Self::Parent)
+        } else if role == layout::WORKING_SUITE_ROLE {
+            Some(Self::Suite)
+        } else {
+            None
+        }
+    }
+    pub(super) fn role(self) -> &'static [u8] {
+        match self {
+            Self::Parent => layout::WORKING_PARENT_ROLE,
+            Self::Suite => layout::WORKING_SUITE_ROLE,
+        }
+    }
+    fn profile(self) -> &'static [u8] {
+        match self {
+            Self::Parent => layout::WORKING_PARENT_PROFILE,
+            Self::Suite => layout::WORKING_SUITE_PROFILE,
+        }
+    }
+}
 pub(super) const CONFIG_LABEL: &[u8] = b"u:object_r:p4_linux_working_config_t:s0";
-pub(super) const PLAN_LABEL: &[u8] = b"u:object_r:p4_linux_working_plan_t:s0";
-pub(super) const EVIDENCE_DIRECTORY_LABEL: &[u8] = b"u:object_r:p4_linux_working_evidence_dir_t:s0";
-pub(super) const MATERIAL_LABEL: &[u8] = b"u:object_r:p4_linux_working_input_t:s0";
+pub(super) const PLAN_LABEL: &[u8] = layout::WORKING_PLAN_FILE_LABEL;
+pub(super) const EVIDENCE_DIRECTORY_LABEL: &[u8] = layout::WORKING_EVIDENCE_DIRECTORY_LABEL;
+pub(super) const MATERIAL_LABEL: &[u8] = layout::WORKING_INPUT_FILE_LABEL;
 const WITNESS_PATH: &str = "/run/droidloom-early/host-mount-identity.json";
 const WITNESS_LABEL: &[u8] = b"u:object_r:p4_linux_host_mount_identity_t:s0";
 
@@ -120,13 +148,20 @@ fn kernel_release() -> io::Result<String> {
         .map(str::to_owned)
         .map_err(|_| error("working uname release is not UTF-8"))
 }
-pub(super) fn require_actor() -> io::Result<()> {
-    if held::current(101)? != ROLE
+pub(super) fn current_actor() -> io::Result<WorkingActor> {
+    let actor = WorkingActor::from_role(&held::current(101)?)
+        .ok_or_else(|| error("working qualification has neither fixed parent nor suite actor"))?;
+    require_actor(actor)?;
+    Ok(actor)
+}
+pub(super) fn require_actor(actor: WorkingActor) -> io::Result<()> {
+    if held::current(101)? != actor.role()
+        || held::current(104)? != actor.profile()
         || kernel_release()? != contract::KERNEL
         || kernel_text("/sys/fs/selinux/enforce", 0xf97cff8c, 8)? != "1"
     {
         return Err(error(
-            "working qualification requires its actual enforcing candidate actor",
+            "working actor lost its separate enforcing SELinux and AppArmor entry",
         ));
     }
     Ok(())
@@ -280,7 +315,68 @@ struct MountWitness {
     inode: u64,
 }
 
+/// Retain an exact root-private directory and its finite normal MAC type.
+/// Child entries may be created; those writes never change the retained inode,
+/// owner, mode or label and do not excuse replacement of the named directory.
+struct TypedDirectory {
+    path: PathBuf,
+    file: File,
+    stable: [u64; 5],
+    label: &'static [u8],
+}
+impl TypedDirectory {
+    fn open(path: &Path, label: &'static [u8]) -> io::Result<Self> {
+        if !path.is_absolute() || path.canonicalize()? != path {
+            return Err(error("working directory alias"));
+        }
+        let file = OpenOptions::new()
+            .read(true)
+            .custom_flags(libc::O_DIRECTORY | libc::O_CLOEXEC | libc::O_NOFOLLOW)
+            .open(path)?;
+        let pin = f9(&file)?;
+        if pin[2] != u64::from(libc::S_IFDIR | 0o700)
+            || pin[3..5] != [0, 0]
+            || held::label(&file)? != label
+        {
+            return Err(error(
+                "working directory owner, mode or finite label differs",
+            ));
+        }
+        let result = Self {
+            path: path.into(),
+            file,
+            stable: pin[..5]
+                .try_into()
+                .map_err(|_| error("directory identity"))?,
+            label,
+        };
+        result.guard()?;
+        Ok(result)
+    }
+    fn guard(&self) -> io::Result<()> {
+        if self.path.canonicalize()? != self.path {
+            return Err(error("working directory alias appeared"));
+        }
+        let named = OpenOptions::new()
+            .read(true)
+            .custom_flags(libc::O_DIRECTORY | libc::O_CLOEXEC | libc::O_NOFOLLOW)
+            .open(&self.path)?;
+        if f9(&self.file)?[..5] != self.stable
+            || f9(&named)?[..5] != self.stable
+            || held::label(&self.file)? != self.label
+            || held::label(&named)? != self.label
+        {
+            return Err(error(
+                "held working directory inode or finite label changed",
+            ));
+        }
+        Ok(())
+    }
+}
+
 pub(super) struct AdmittedWorkingConfiguration {
+    actor: WorkingActor,
+    installed_directories: [TypedDirectory; 2],
     config: WorkingReturnConfiguration,
     comparisons: WorkingSourcePins,
     runtime_directory: PathBuf,
@@ -294,7 +390,7 @@ pub(super) struct AdmittedWorkingConfiguration {
 }
 impl AdmittedWorkingConfiguration {
     pub(super) fn acquire() -> io::Result<Self> {
-        require_actor()?;
+        let actor = current_actor()?;
         let command_line = kernel_text("/proc/cmdline", libc::PROC_SUPER_MAGIC, 32768)?;
         let args = contract::boot_arguments(&command_line)?;
         let input = SourceInput::open(
@@ -349,14 +445,28 @@ impl AdmittedWorkingConfiguration {
         let input_directory = runtime_directory
             .parent()
             .ok_or_else(|| error("working candidate root absent"))?
-            .join("inputs");
+            .join(layout::WORKING_INPUT_DIRECTORY);
+        let candidate = runtime_directory
+            .parent()
+            .ok_or_else(|| error("working candidate absent"))?;
+        if layout::working_candidate_directory(&config.candidate_id).as_deref() != Some(candidate) {
+            return Err(error(
+                "working candidate differs from its fixed source layout",
+            ));
+        }
+        let installed_directories = [
+            TypedDirectory::open(candidate, layout::WORKING_CANDIDATE_DIRECTORY_LABEL)?,
+            TypedDirectory::open(&input_directory, layout::WORKING_INPUT_DIRECTORY_LABEL)?,
+        ];
         let materials = SourceInput::open(
-            &input_directory.join("ADMITTED-MATERIALS.json"),
+            &input_directory.join(layout::WORKING_ADMITTED_MATERIALS_FILE),
             Some(&config.admitted_materials_sha256),
             16 * 1024 * 1024,
             MATERIAL_LABEL,
         )?;
         let result = Self {
+            actor,
+            installed_directories,
             config,
             comparisons,
             runtime_directory,
@@ -372,7 +482,10 @@ impl AdmittedWorkingConfiguration {
         Ok(result)
     }
     pub(super) fn guard(&self) -> io::Result<()> {
-        require_actor()?;
+        require_actor(self.actor)?;
+        for directory in &self.installed_directories {
+            directory.guard()?;
+        }
         if std::process::id() != self.process
             || kernel_text("/proc/cmdline", libc::PROC_SUPER_MAGIC, 32768)? != self.command_line
             || kernel_text(
@@ -430,6 +543,7 @@ pub(super) struct RuntimeDirectory {
     file: File,
     pin: [u64; 9],
     parents: Vec<(PathBuf, File, [u64; 9])>,
+    children: RefCell<BTreeMap<&'static str, TypedDirectory>>,
 }
 impl RuntimeDirectory {
     pub(super) fn acquire(config: &AdmittedWorkingConfiguration) -> io::Result<Self> {
@@ -441,7 +555,7 @@ impl RuntimeDirectory {
         let base = candidate
             .parent()
             .ok_or_else(|| error("working evidence root absent"))?;
-        if base != Path::new("/var/lib/droidloom/qualification") || base.canonicalize()? != base {
+        if base != Path::new(layout::WORKING_QUALIFICATION_BASE) || base.canonicalize()? != base {
             return Err(error(
                 "working evidence is not in the fixed runtime-only root",
             ));
@@ -472,7 +586,7 @@ impl RuntimeDirectory {
             .first()
             .ok_or_else(|| error("working candidate parent absent"))?
             .1;
-        let name = CString::new("runtime-evidence").map_err(io::Error::other)?;
+        let name = CString::new(layout::WORKING_EVIDENCE_DIRECTORY).map_err(io::Error::other)?;
         // SAFETY: the held normal candidate and constant source leaf stay live.
         if unsafe { libc::mkdirat(parent.as_raw_fd(), name.as_ptr(), 0o700) } != 0 {
             let e = io::Error::last_os_error();
@@ -500,6 +614,7 @@ impl RuntimeDirectory {
             file,
             pin,
             parents,
+            children: RefCell::new(BTreeMap::new()),
         };
         result.guard()?;
         config.guard()?;
@@ -526,6 +641,9 @@ impl RuntimeDirectory {
         {
             return Err(error("working runtime evidence directory changed"));
         }
+        for child in self.children.borrow().values() {
+            child.guard()?;
+        }
         Ok(())
     }
     pub(super) fn path(&self) -> &Path {
@@ -533,8 +651,10 @@ impl RuntimeDirectory {
     }
     pub(super) fn create_child(&self, name: &'static str) -> io::Result<PathBuf> {
         self.guard()?;
-        if !["native-baselines", "native-inputs", "native-cases"].contains(&name) {
-            return Err(error("working preparation has no such source directory"));
+        let label = layout::preparation_directory_label(name)
+            .ok_or_else(|| error("working preparation has no such source directory"))?;
+        if self.children.borrow().contains_key(name) {
+            return Err(error("working preparation directory was already created"));
         }
         let name_c = CString::new(name).map_err(io::Error::other)?;
         // SAFETY: the held directory and fixed NUL-terminated source leaf are live.
@@ -542,17 +662,8 @@ impl RuntimeDirectory {
             return Err(io::Error::last_os_error());
         }
         let path = self.path.join(name);
-        let named = OpenOptions::new()
-            .read(true)
-            .custom_flags(libc::O_DIRECTORY | libc::O_CLOEXEC | libc::O_NOFOLLOW)
-            .open(&path)?;
-        let pin = f9(&named)?;
-        if pin[2] != u64::from(libc::S_IFDIR | 0o700)
-            || pin[3..5] != [0, 0]
-            || held::label(&named)? != EVIDENCE_DIRECTORY_LABEL
-        {
-            return Err(error("new working preparation directory differs"));
-        }
+        let child = TypedDirectory::open(&path, label)?;
+        self.children.borrow_mut().insert(name, child);
         self.file.sync_all()?;
         self.guard()?;
         Ok(path)

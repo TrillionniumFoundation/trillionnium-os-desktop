@@ -20,9 +20,12 @@ struct Output {
     hash: Sha256,
     limit: u64,
     eof: bool,
+    label: &'static [u8],
 }
 impl Output {
     fn create(plan: &Plan, name: &str, limit: u64) -> io::Result<Self> {
+        let label = layout::parent_output_label(name)
+            .ok_or_else(|| error("parent capture output is outside its fixed finite names"))?;
         let path = plan
             .path
             .parent()
@@ -36,7 +39,10 @@ impl Output {
             .custom_flags(libc::O_CLOEXEC | libc::O_NOFOLLOW)
             .open(&path)?;
         let pin = f9(&file)?;
-        if pin[2] != u64::from(libc::S_IFREG | 0o600) || pin[3..6] != [0, 0, 1] {
+        if pin[2] != u64::from(libc::S_IFREG | 0o600)
+            || pin[3..6] != [0, 0, 1]
+            || crate::native_hardware_label::label(&file)? != label
+        {
             return Err(error("physical output must be a new root private inode"));
         }
         Ok(Self {
@@ -46,6 +52,7 @@ impl Output {
             hash: Sha256::new(),
             limit,
             eof: false,
+            label,
         })
     }
     fn drain(&mut self, pipe: &mut impl Read) -> io::Result<()> {
@@ -88,6 +95,7 @@ impl Output {
             file: self.file,
             pin,
             sha: digest,
+            label: self.label,
         };
         result.guard()?;
         Ok(result)
@@ -98,6 +106,7 @@ struct SealedOutput {
     file: File,
     pin: [u64; 9],
     sha: String,
+    label: &'static [u8],
 }
 impl SealedOutput {
     fn guard(&self) -> io::Result<()> {
@@ -105,7 +114,11 @@ impl SealedOutput {
             .read(true)
             .custom_flags(libc::O_CLOEXEC | libc::O_NOFOLLOW)
             .open(&self.path)?;
-        if f9(&named)? != self.pin || f9(&self.file)? != self.pin {
+        if f9(&named)? != self.pin
+            || f9(&self.file)? != self.pin
+            || crate::native_hardware_label::label(&self.file)? != self.label
+            || crate::native_hardware_label::label(&named)? != self.label
+        {
             return Err(error("physical captured output changed"));
         }
         let mut h = Sha256::new();
@@ -379,9 +392,9 @@ pub enum WorkingPreparationDirectory {
 impl WorkingPreparationDirectory {
     fn name(self) -> &'static str {
         match self {
-            Self::NativeBaselines => "native-baselines",
-            Self::NativeInputs => "native-inputs",
-            Self::NativeCases => "native-cases",
+            Self::NativeBaselines => layout::WORKING_NATIVE_BASELINES_DIRECTORY,
+            Self::NativeInputs => layout::WORKING_NATIVE_INPUTS_DIRECTORY,
+            Self::NativeCases => layout::WORKING_NATIVE_CASES_DIRECTORY,
         }
     }
 }
@@ -402,6 +415,7 @@ pub struct WorkingQualificationOwner {
 impl WorkingQualificationOwner {
     /// Bind the installed singleton, exact executable and original working boot.
     pub fn acquire() -> Result<Self, String> {
+        require_parent_actor().map_err(|e| e.to_string())?;
         let initial_end = Instant::now() + Duration::from_secs(SUITE_SECONDS);
         let configuration =
             Arc::new(AdmittedWorkingConfiguration::acquire().map_err(|e| e.to_string())?);
@@ -600,8 +614,8 @@ impl CapturedCompleteApplicationRun {
     /// never an API to restore this process-local capture from JSON.
     pub fn write_receipt(&self) -> Result<PathBuf, String> {
         self.guard()?;
-        let mut out =
-            Output::create(&self.plan, "CAPTURE.json", 1024 * 1024).map_err(|e| e.to_string())?;
+        let mut out = Output::create(&self.plan, layout::WORKING_CAPTURE_FILE, 1024 * 1024)
+            .map_err(|e| e.to_string())?;
         let mut bytes =
             serde_json::to_vec_pretty(&self.observation()?).map_err(|e| e.to_string())?;
         bytes.push(b'\n');
@@ -892,9 +906,12 @@ fn capture_owned_working_run(
                 owner.boundary(None, end)?;
                 plan.guard().map_err(|e| e.to_string())?;
                 source.guard().map_err(|e| e.to_string())?;
-                let mut binding_out =
-                    Output::create(&plan, "MAIN-BINDING.json", BINDING_LIMIT as u64)
-                        .map_err(|e| e.to_string())?;
+                let mut binding_out = Output::create(
+                    &plan,
+                    layout::WORKING_MAIN_BINDING_FILE,
+                    BINDING_LIMIT as u64,
+                )
+                .map_err(|e| e.to_string())?;
                 binding_out
                     .file
                     .write_all(&body)
