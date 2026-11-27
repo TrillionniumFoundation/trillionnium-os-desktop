@@ -87,7 +87,7 @@ mod application_command;
 
 #[path = "application_leaf_locks.rs"]
 mod application_leaf_locks;
-pub use application_command::{NativeOwnedLeafUnit, OwnedLeafProfile, NativeUiSession, NativeUiTranscript};
+pub use application_command::{NativeOwnedLeafUnit, OwnedLeafProfile, NativeUiSession, NativeUiTranscript, NativeUiStabilityWindow, NativeUiStabilityEvidence, NativeUiStabilitySummary, stability_additional_window_seconds};
 pub use crate::native_application_ui_protocol::{Selector as NativeUiSelector, Reply as NativeUiReply, ProtocolError as NativeUiError};
 pub use crate::native_leaf_engine::{NativeLeafEngineEvidence, NativeLeafExecution};
 pub use application_leaf_locks::NativeApplicationSourceLocks;

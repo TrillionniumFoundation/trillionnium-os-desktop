@@ -27,6 +27,9 @@ use std::time::{Duration, Instant};
 
 #[path = "native_application_ui_tasks.rs"]
 mod tasks;
+#[path = "native_application_ui_common.rs"]
+mod common;
+pub use common::{NativeUiStabilityWindow, NativeUiStabilityEvidence, NativeUiStabilitySummary, stability_additional_window_seconds};
 
 const COHORT: &str =
     "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2";
@@ -750,6 +753,7 @@ pub struct NativeUiSession<'a, 'b> {
     android_actions: u32,
     engine: Option<crate::control::EngineMappingObservation>,
     cleanup_started: bool,
+    stability_started: bool,
 }
 /// Finished actual UI/task transcript. It intentionally supplies no passed gate,
 /// rendering assertion, account assertion, or full application qualification.
@@ -759,6 +763,7 @@ pub struct NativeUiTranscript {
     operations: u32,
     actions: u32,
     engine: crate::control::EngineMappingObservation,
+    journal_custody: Journal,
 }
 impl NativeUiTranscript {
     pub fn journal(&self) -> &Path {
@@ -856,6 +861,7 @@ impl<'a, 'b> NativeUiSession<'a, 'b> {
             android_actions: 0,
             engine: None,
             cleanup_started: false,
+            stability_started: false,
         };
         session.qualify_entry(inspector)?;
         session.launch(inspector)?;
@@ -1295,15 +1301,20 @@ impl<'a, 'b> NativeUiSession<'a, 'b> {
         )
     }
     pub fn finish(
-        mut self,
+        self,
         inspector: &mut NativeApplicationInspector,
     ) -> Result<NativeUiTranscript, String> {
+        self.close_before_bookends(inspector)?.finish_bookends(inspector)
+    }
+    fn close_before_bookends(
+        mut self,
+        inspector: &mut NativeApplicationInspector,
+    ) -> Result<Self, String> {
         need(
             !self.poisoned,
             "native UI uncertain action forbids automatic follow-up cleanup",
         )?;
-        let task = self.task.ok_or("native UI original owned task absent")?;
-        let package = self.baseline.application().package.clone();
+        self.task.ok_or("native UI original owned task absent")?;
         if let Err(error) = inspector.revalidate_engine_until(
             self.baseline.main(),
             self.baseline.actual_application(),
@@ -1315,6 +1326,16 @@ impl<'a, 'b> NativeUiSession<'a, 'b> {
             return Err(self.observation_failure(inspector, error.to_string()));
         }
         self.close_known_task(inspector)?;
+        Ok(self)
+    }
+    fn finish_bookends(
+        mut self,
+        inspector: &mut NativeApplicationInspector,
+    ) -> Result<NativeUiTranscript, String> {
+        need(self.cleanup_started && !self.poisoned,
+            "native UI final bookends require the successful original owned close")?;
+        let task = self.task.ok_or("native UI original owned task absent")?;
+        let package = self.baseline.application().package.clone();
         let after_helper = inspector
             .inspect_observed_until(wire::HELPER_PACKAGE, 0, self.end)
             .map_err(|e| e.to_string())?;
@@ -1349,6 +1370,7 @@ impl<'a, 'b> NativeUiSession<'a, 'b> {
                 .engine
                 .take()
                 .ok_or("native UI original running Engine observation absent")?,
+            journal_custody: self.journal,
         })
     }
 }

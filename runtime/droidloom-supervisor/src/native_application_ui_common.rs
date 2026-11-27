@@ -1,0 +1,676 @@
+//! Source-owned repeat/soak observations inside one actual native UI session.
+//!
+//! Three fresh normal Engine checks and complete native dumps, at least fifteen
+//! seconds apart, share the original Main, PM token, App PIDFD and deadline.
+//! Closing the owned task and the original final bookends are prerequisites;
+//! saved JSON, a duration, or a caller-selected sample can never mint this type.
+use super::*;
+use crate::application_exit_state::ApplicationExitRecord;
+use crate::control::{ActualApplicationExitObservation, application_probe::ApplicationInspection};
+#[path = "native_application_ui_common_resources.rs"]
+mod resources;
+use resources::{ResourceFence, ResourceSample};
+
+const SAMPLES: usize = 3;
+const GAP: Duration = Duration::from_secs(15);
+const EXIT_CAP: Duration = Duration::from_secs(70);
+const ENGINE_CAP: Duration = Duration::from_secs(70);
+const STACK_CAP: Duration = Duration::from_secs(15);
+const MAX_JOURNAL_BYTES: u64 = 128 * 1024 * 1024;
+const MAX_JOURNAL_FILES: usize = 4096;
+
+/// Additional source-owned allowance when a caller budgets a shared session.
+/// It never creates a deadline or extends an existing case/lease. The two exit
+/// queries, three Engine+dump+task checks and two minimum gaps are explicit.
+pub fn stability_additional_window_seconds() -> u64 {
+    2 * EXIT_CAP.as_secs()
+        + SAMPLES as u64 * (ENGINE_CAP + COMMAND_CAP + 2 * STACK_CAP).as_secs()
+        + (SAMPLES as u64 - 1) * GAP.as_secs()
+}
+#[derive(Debug, Serialize)]
+pub struct NativeUiStabilitySummary {
+    schema: &'static str,
+    package: String,
+    actual_uid: u32,
+    task: u32,
+    application_host_pid: u32,
+    application_start_ticks: u64,
+    sample_count: usize,
+    minimum_gap_milliseconds: u64,
+    actual_elapsed_milliseconds: u64,
+    sample_offsets_milliseconds: Vec<u64>,
+    native_dump_sha256: Vec<String>,
+    before_exit_records_sha256: String,
+    after_exit_records_sha256: String,
+    before_resource: ResourceSample,
+    samples_resource: Vec<ResourceSample>,
+    after_resource: ResourceSample,
+    complete_exact_uid_exit_records_unchanged: bool,
+    original_process_pidfd_held_through_reviewed_window: bool,
+    normal_owned_task_close_and_final_bookends: bool,
+    other_tasks_preserved: bool,
+    all_actual_queries_retired: bool,
+    original_deadline_extended: bool,
+    independent_reopen_inferred: bool,
+    data_permissions_or_accounts_inferred: bool,
+    whole_application_accepted: bool,
+}
+struct Sample {
+    at: Instant,
+    dump_sha256: String,
+    resources: ResourceSample,
+}
+/// Live single-session recorder. Construction and each sample require the real
+/// session; neither public fields nor a deserializer expose its state.
+pub struct NativeUiStabilityWindow {
+    main: RuntimeMainCustody,
+    application: ApplicationInspection,
+    journal: PathBuf,
+    journal_identity: [u64; 5],
+    task: u32,
+    end: Instant,
+    work_end: Instant,
+    before: ActualApplicationExitObservation,
+    resources: ResourceFence,
+    initial_resources: ResourceSample,
+    samples: Vec<Sample>,
+    failed: bool,
+}
+struct JournalFile {
+    name: String,
+    file: File,
+    identity: Identity,
+    sha256: String,
+}
+struct RetainedJournal {
+    files: Vec<JournalFile>,
+    directory_identity: [u64; 5],
+    names: BTreeSet<String>,
+}
+fn full_hash(file: &File, count: u64) -> Result<String, String> {
+    let mut hash = Sha256::new();
+    let mut offset = 0;
+    while offset < count {
+        let mut buffer = [0_u8; 65536];
+        let wanted = usize::try_from((count - offset).min(buffer.len() as u64))
+            .map_err(|_| "native common journal length overflow")?;
+        let n = file
+            .read_at(&mut buffer[..wanted], offset)
+            .map_err(|e| e.to_string())?;
+        need(n > 0, "native common retained journal was truncated")?;
+        hash.update(&buffer[..n]);
+        offset += n as u64;
+    }
+    let mut extra = [0_u8; 1];
+    need(
+        file.read_at(&mut extra, count).map_err(|e| e.to_string())? == 0,
+        "native common retained journal grew",
+    )?;
+    Ok(format!("{:x}", hash.finalize()))
+}
+fn names(journal: &Journal) -> Result<BTreeSet<String>, String> {
+    journal.verify()?;
+    let mut result = BTreeSet::new();
+    for row in fs::read_dir(&journal.path).map_err(|e| e.to_string())? {
+        let row = row.map_err(|e| e.to_string())?;
+        let name = row
+            .file_name()
+            .into_string()
+            .map_err(|_| "native journal name is not UTF-8")?;
+        need(
+            !name.is_empty()
+                && name.len() <= 128
+                && name
+                    .bytes()
+                    .all(|b| b.is_ascii_alphanumeric() || b"-_.".contains(&b))
+                && result.len() < MAX_JOURNAL_FILES
+                && result.insert(name),
+            "native common journal has a duplicate, malformed or excessive member",
+        )?;
+    }
+    journal.verify()?;
+    Ok(result)
+}
+impl RetainedJournal {
+    fn capture(journal: &Journal, end: Instant) -> Result<Self, String> {
+        before(end)?;
+        let wanted = names(journal)?;
+        need(
+            [
+                "BASELINE.json",
+                "OWNED-TASK.json",
+                "FINISHED.json",
+                "STABILITY-BEGIN.json",
+                "STABILITY-SAMPLE-1.json",
+                "STABILITY-SAMPLE-2.json",
+                "STABILITY-SAMPLE-3.json",
+                "STABILITY-AFTER-CLOSE.json",
+            ]
+            .into_iter()
+            .all(|name| wanted.contains(name)),
+            "actual native common journal is incomplete",
+        )?;
+        let mut files = Vec::new();
+        let mut total = 0_u64;
+        for name in &wanted {
+            before(end)?;
+            let c = CString::new(name.as_str()).map_err(|_| "invalid native journal name")?;
+            let file = open_at(
+                journal.directory.as_raw_fd(),
+                &c,
+                libc::O_RDONLY | libc::O_NOFOLLOW,
+            )
+            .map_err(|e| e.to_string())?;
+            let identity = Identity::of(&file.metadata().map_err(|e| e.to_string())?);
+            need(
+                identity.mode == libc::S_IFREG | 0o600
+                    && identity.uid == 0
+                    && identity.gid == 0
+                    && identity.links == 1
+                    && identity.bytes <= wire::WIRE_REPLY_BYTES as u64,
+                "native common journal has a link, wrong owner/mode or oversized member",
+            )?;
+            total = total
+                .checked_add(identity.bytes)
+                .ok_or("native journal total overflow")?;
+            need(
+                total <= MAX_JOURNAL_BYTES,
+                "native common journal exceeds its whole retained bound",
+            )?;
+            let sha256 = full_hash(&file, identity.bytes)?;
+            need(
+                Identity::of(&file.metadata().map_err(|e| e.to_string())?) == identity,
+                "native common journal changed during the complete read",
+            )?;
+            files.push(JournalFile {
+                name: name.clone(),
+                file,
+                identity,
+                sha256,
+            });
+        }
+        let retained = Self {
+            files,
+            directory_identity: journal.identity,
+            names: wanted,
+        };
+        retained.guard(journal)?;
+        before(end)?;
+        Ok(retained)
+    }
+    fn guard(&self, journal: &Journal) -> Result<(), String> {
+        journal.verify()?;
+        need(
+            journal.identity == self.directory_identity && names(journal)? == self.names,
+            "native common retained journal directory or member set changed",
+        )?;
+        for held in &self.files {
+            let c =
+                CString::new(held.name.as_str()).map_err(|_| "invalid retained journal name")?;
+            let named = open_at(
+                journal.directory.as_raw_fd(),
+                &c,
+                libc::O_RDONLY | libc::O_NOFOLLOW,
+            )
+            .map_err(|e| e.to_string())?;
+            need(
+                Identity::of(&named.metadata().map_err(|e| e.to_string())?) == held.identity
+                    && Identity::of(&held.file.metadata().map_err(|e| e.to_string())?)
+                        == held.identity
+                    && full_hash(&held.file, held.identity.bytes)? == held.sha256,
+                "native common journal full bytes or held/named identity changed",
+            )?;
+        }
+        journal.verify()
+    }
+}
+/// Historical successful source-owned observation. The actual kernel, query
+/// and task factories created it while the original session deadline held.
+/// Immutable guarding later grants no fresh App liveness or execution lease.
+pub struct NativeUiStabilityEvidence {
+    main: RuntimeMainCustody,
+    application: ApplicationInspection,
+    transcript: NativeUiTranscript,
+    journal: RetainedJournal,
+    before: ActualApplicationExitObservation,
+    after: ActualApplicationExitObservation,
+    _resources: ResourceFence,
+    summary: NativeUiStabilitySummary,
+}
+impl NativeUiStabilityEvidence {
+    pub fn transcript(&self) -> &NativeUiTranscript {
+        &self.transcript
+    }
+    pub fn summary(&self) -> &NativeUiStabilitySummary {
+        &self.summary
+    }
+    pub fn require_subject(
+        &self,
+        main: &RuntimeMainCustody,
+        application: &ApplicationInspection,
+    ) -> Result<(), String> {
+        need(
+            &self.main == main
+                && &self.application == application
+                && self.transcript.engine().facts().main == *main
+                && self.transcript.engine().application() == application,
+            "common stability belongs to another Main, package, UID or complete APK identity",
+        )?;
+        self.guard_immutable()
+    }
+    pub fn guard_immutable(&self) -> Result<(), String> {
+        self.before.facts().require_application(&self.application)?;
+        self.after.facts().require_application(&self.application)?;
+        unchanged_exit_records(
+            self.before.facts().records(),
+            self.after.facts().records(),
+            self.application.uid,
+        )?;
+        self.journal.guard(&self.transcript.journal_custody)
+    }
+}
+fn unchanged_exit_records(
+    before: &[ApplicationExitRecord],
+    after: &[ApplicationExitRecord],
+    uid: u32,
+) -> Result<(), String> {
+    let collect = |records: &[ApplicationExitRecord]| {
+        records
+            .iter()
+            .filter(|record| record.real_uid() == uid || record.package_uid() == uid)
+            .map(|record| record.record_sha256().to_string())
+            .collect::<BTreeSet<_>>()
+    };
+    need(
+        collect(before) == collect(after),
+        "fresh exact-UID exit evidence changed: crash, ANR, self-exit or lost history is not a pass",
+    )
+}
+fn require_cadence(times: &[Instant]) -> Result<(), String> {
+    need(
+        times.len() == SAMPLES
+            && times.windows(2).all(|pair| {
+                pair[1]
+                    .checked_duration_since(pair[0])
+                    .is_some_and(|elapsed| elapsed >= GAP)
+            })
+            && times[SAMPLES - 1].duration_since(times[0]) >= 2 * GAP,
+        "reviewed stability needs exactly three distinct samples at least fifteen seconds apart",
+    )
+}
+impl<'a, 'b> NativeUiSession<'a, 'b> {
+    pub fn begin_stability(
+        &mut self,
+        inspector: &mut NativeApplicationInspector,
+    ) -> Result<NativeUiStabilityWindow, String> {
+        self.guard(inspector, self.work_end)?;
+        need(
+            !self.poisoned && !self.cleanup_started && !self.stability_started,
+            "common stability requires one unused, certain running UI session",
+        )?;
+        self.stability_started = true;
+        // The after-close query consumes this original time; it never gets a
+        // new lease or steals the original finish's PM/Main/retirement reserve.
+        self.work_end = self
+            .work_end
+            .checked_sub(EXIT_CAP)
+            .filter(|cutoff| *cutoff > Instant::now())
+            .ok_or("original UI window cannot reserve the after-close exit query")?;
+        let result = (|| -> Result<NativeUiStabilityWindow, String> {
+            let task = self
+                .task
+                .ok_or("common stability lacks the actual owned task")?;
+            let engine = self
+                .engine
+                .as_ref()
+                .ok_or("common stability lacks actual running Engine")?;
+            let resources = ResourceFence::capture(&engine.facts().process)?;
+            let initial_resources = resources.sample(true)?;
+            let observed = inspector
+                .observe_application_exit_state_until(
+                    self.baseline.main(),
+                    self.baseline.actual_application(),
+                    self.work_end,
+                )
+                .map_err(|e| e.to_string())?;
+            inspector
+                .require_exit_state_local(
+                    self.baseline.main(),
+                    self.baseline.actual_application(),
+                    &observed,
+                    self.work_end,
+                )
+                .map_err(|e| e.to_string())?;
+            resources.live()?;
+            self.guard(inspector, self.work_end)?;
+            self.journal.json(
+                "STABILITY-BEGIN.json",
+                &serde_json::json!({
+                    "schema":"droidloom.native-ui-stability-begin.v1",
+                    "actual_main":self.baseline.main().facts(),
+                    "actual_application":self.baseline.application(),"task":task,
+                    "before_exit_state":observed.facts(),"initial_resources":initial_resources,
+                    "samples":SAMPLES,"minimum_gap_seconds":GAP.as_secs(),
+                    "additional_source_allowance_seconds":stability_additional_window_seconds(),
+                    "original_deadline_extended":false,"comparison_only":true
+                }),
+            )?;
+            Ok(NativeUiStabilityWindow {
+                main: self.baseline.main().facts().clone(),
+                application: self.baseline.application().clone(),
+                journal: self.journal.path.clone(),
+                journal_identity: self.journal.identity,
+                task,
+                end: self.end,
+                work_end: self.work_end,
+                before: observed,
+                resources,
+                initial_resources,
+                samples: Vec::new(),
+                failed: false,
+            })
+        })();
+        match result {
+            Ok(window) => Ok(window),
+            Err(error) => Err(self.observation_failure(inspector, error)),
+        }
+    }
+}
+impl NativeUiStabilityWindow {
+    fn same_session(&self, session: &NativeUiSession<'_, '_>) -> Result<(), String> {
+        need(
+            !self.failed
+                && session.stability_started
+                && !session.poisoned
+                && session.end == self.end
+                && session.work_end == self.work_end
+                && session.journal.path == self.journal
+                && session.journal.identity == self.journal_identity
+                && session.task == Some(self.task)
+                && session.baseline.application() == &self.application
+                && session.baseline.main().facts() == &self.main,
+            "common stability changed session, owner, task, source application or original deadline",
+        )
+    }
+    pub fn sample(
+        &mut self,
+        session: &mut NativeUiSession<'_, '_>,
+        inspector: &mut NativeApplicationInspector,
+    ) -> Result<(), String> {
+        let result = (|| -> Result<(), String> {
+            self.same_session(session)?;
+            need(
+                !session.cleanup_started && self.samples.len() < SAMPLES,
+                "common stability cannot repeat a sample after completion or cleanup",
+            )?;
+            if let Some(last) = self.samples.last() {
+                let target = last
+                    .at
+                    .checked_add(GAP)
+                    .ok_or("stability sample clock overflow")?;
+                need(
+                    target < self.work_end,
+                    "original work window cannot fit the next stability sample",
+                )?;
+                while Instant::now() < target {
+                    session.guard(inspector, self.work_end)?;
+                    self.resources.live()?;
+                    std::thread::sleep(
+                        Duration::from_millis(50)
+                            .min(target.saturating_duration_since(Instant::now())),
+                    );
+                }
+            }
+            session.guard(inspector, self.work_end)?;
+            self.resources.live()?;
+            inspector
+                .revalidate_engine_until(
+                    session.baseline.main(),
+                    session.baseline.actual_application(),
+                    session
+                        .engine
+                        .as_ref()
+                        .ok_or("common stability original Engine missing")?,
+                    self.work_end,
+                )
+                .map_err(|e| e.to_string())?;
+            let dump = session.dump(inspector)?;
+            self.resources.live()?;
+            let snapshot = self.resources.sample(true)?;
+            resources::same_window(&self.initial_resources, &snapshot)?;
+            let at = Instant::now();
+            before(self.work_end)?;
+            let digest = format!(
+                "{:x}",
+                Sha256::digest(serde_json::to_vec(dump.body()).map_err(|e| e.to_string())?)
+            );
+            let first = self.samples.first().map_or(at, |sample| sample.at);
+            let ordinal = self.samples.len() + 1;
+            session.journal.json(
+                &format!("STABILITY-SAMPLE-{ordinal}.json"),
+                &serde_json::json!({"schema":"droidloom.native-ui-stability-sample.v1",
+                    "ordinal":ordinal,"task":self.task,
+                    "elapsed_from_first_ms":at.saturating_duration_since(first).as_millis(),
+                    "native_dump_sha256":digest,"resources":snapshot,
+                    "same_original_app_pidfd":true,"fresh_normal_engine_revalidated":true,
+                    "comparison_only":true,"automatic_retry":false}),
+            )?;
+            self.samples.push(Sample {
+                at,
+                dump_sha256: digest,
+                resources: snapshot,
+            });
+            Ok(())
+        })();
+        if let Err(error) = result {
+            self.failed = true;
+            return Err(session.observation_failure(inspector, error));
+        }
+        Ok(())
+    }
+    pub fn finish(
+        mut self,
+        session: NativeUiSession<'_, '_>,
+        inspector: &mut NativeApplicationInspector,
+    ) -> Result<NativeUiStabilityEvidence, String> {
+        let mut session = session;
+        let prepared = (|| -> Result<(), String> {
+            self.same_session(&session)?;
+            require_cadence(
+                &self
+                    .samples
+                    .iter()
+                    .map(|sample| sample.at)
+                    .collect::<Vec<_>>(),
+            )?;
+            session.guard(inspector, self.work_end)?;
+            self.resources.live()?;
+            inspector
+                .require_exit_state_local(
+                    session.baseline.main(),
+                    session.baseline.actual_application(),
+                    &self.before,
+                    self.work_end,
+                )
+                .map_err(|e| e.to_string())?;
+            Ok(())
+        })();
+        if let Err(error) = prepared {
+            self.failed = true;
+            return Err(session.observation_failure(inspector, error));
+        }
+        // Same existing close path, including its actual final running Engine
+        // check and a single removal of only the retained new task.
+        session = session.close_before_bookends(inspector)?;
+        let completed =
+            (|| -> Result<(ActualApplicationExitObservation, ResourceSample), String> {
+                let after = inspector
+                    .observe_application_exit_state_until(
+                        session.baseline.main(),
+                        session.baseline.actual_application(),
+                        self.end,
+                    )
+                    .map_err(|e| e.to_string())?;
+                inspector
+                    .require_exit_state_local(
+                        session.baseline.main(),
+                        session.baseline.actual_application(),
+                        &after,
+                        self.end,
+                    )
+                    .map_err(|e| e.to_string())?;
+                need(
+                    after.observed_at() > self.samples.last().expect("three checked").at
+                        && self.before.observed_at() < self.samples[0].at,
+                    "fresh exit queries do not bracket the actual stability samples",
+                )?;
+                unchanged_exit_records(
+                    self.before.facts().records(),
+                    after.facts().records(),
+                    self.application.uid,
+                )?;
+                let resource_after = self.resources.sample(false)?;
+                resources::same_window(&self.initial_resources, &resource_after)?;
+                session.journal.json(
+                    "STABILITY-AFTER-CLOSE.json",
+                    &serde_json::json!({
+                        "schema":"droidloom.native-ui-stability-after-close.v1",
+                        "actual_exit_state":after.facts(),"resources":resource_after,
+                        "exact_uid_records_unchanged":true,"original_owned_close_completed":true,
+                        "comparison_only":true,"automatic_retry":false
+                    }),
+                )?;
+                Ok((after, resource_after))
+            })();
+        let (after, after_resource) = match completed {
+            Ok(value) => value,
+            Err(error) => return Err(session.observation_failure(inspector, error)),
+        };
+        let transcript = session.finish_bookends(inspector)?;
+        let journal = RetainedJournal::capture(&transcript.journal_custody, self.end)?;
+        let first = self.samples[0].at;
+        let last = self.samples[SAMPLES - 1].at;
+        let summary = NativeUiStabilitySummary {
+            schema: "droidloom.native-ui-stability.v1",
+            package: self.application.package.clone(),
+            actual_uid: self.application.uid,
+            task: self.task,
+            application_host_pid: transcript.engine().facts().process.host_pid,
+            application_start_ticks: transcript.engine().facts().process.start_ticks,
+            sample_count: SAMPLES,
+            minimum_gap_milliseconds: GAP.as_millis() as u64,
+            actual_elapsed_milliseconds: last.duration_since(first).as_millis() as u64,
+            sample_offsets_milliseconds: self
+                .samples
+                .iter()
+                .map(|sample| sample.at.duration_since(first).as_millis() as u64)
+                .collect(),
+            native_dump_sha256: self
+                .samples
+                .iter()
+                .map(|sample| sample.dump_sha256.clone())
+                .collect(),
+            before_exit_records_sha256: self.before.facts().records_sha256().into(),
+            after_exit_records_sha256: after.facts().records_sha256().into(),
+            before_resource: self.initial_resources,
+            samples_resource: self
+                .samples
+                .into_iter()
+                .map(|sample| sample.resources)
+                .collect(),
+            after_resource,
+            complete_exact_uid_exit_records_unchanged: true,
+            original_process_pidfd_held_through_reviewed_window: true,
+            normal_owned_task_close_and_final_bookends: true,
+            other_tasks_preserved: true,
+            all_actual_queries_retired: true,
+            original_deadline_extended: false,
+            independent_reopen_inferred: false,
+            data_permissions_or_accounts_inferred: false,
+            whole_application_accepted: false,
+        };
+        let evidence = NativeUiStabilityEvidence {
+            main: self.main,
+            application: self.application,
+            transcript,
+            journal,
+            before: self.before,
+            after,
+            _resources: self.resources,
+            summary,
+        };
+        evidence.guard_immutable()?;
+        before(self.end)?;
+        Ok(evidence)
+    }
+}
+#[cfg(test)]
+mod tests {
+    use super::*;
+    fn record(uid: u32, digest: &str) -> ApplicationExitRecord {
+        serde_json::from_value(serde_json::json!({
+            "container_uid":uid,"timestamp":"2026-11-27 01:02:03.004","pid":23,
+            "real_uid":uid,"package_uid":uid,"defining_uid":-1,"user":0,
+            "process":"com.android.settings","reason":4,"subreason":0,"status":0,
+            "record_sha256":digest.repeat(64)
+        }))
+        .unwrap()
+    }
+    #[test]
+    fn common_stability_journal_full_read_rejects_truncation_and_growth_on_the_held_fd() {
+        let path = std::env::temp_dir().join(format!(
+            "droidloom-common-held-{}-{}",
+            std::process::id(),
+            NEXT_JOURNAL.fetch_add(1, Ordering::Relaxed)
+        ));
+        let mut file = OpenOptions::new()
+            .read(true)
+            .write(true)
+            .create_new(true)
+            .mode(0o600)
+            .open(&path)
+            .unwrap();
+        file.write_all(b"abc").unwrap();
+        file.sync_all().unwrap();
+        assert_eq!(
+            full_hash(&file, 3).unwrap(),
+            "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"
+        );
+        assert!(full_hash(&file, 2).is_err());
+        file.set_len(2).unwrap();
+        assert!(full_hash(&file, 3).is_err());
+        drop(file);
+        std::fs::remove_file(path).unwrap();
+    }
+    #[test]
+    fn common_stability_exact_uid_rejects_new_crash_self_exit_and_lost_history() {
+        let a = record(10123, "a");
+        let b = record(10123, "b");
+        let other = record(110123, "c");
+        unchanged_exit_records(&[a.clone()], &[other.clone(), a.clone()], 10123).unwrap();
+        assert!(unchanged_exit_records(&[a.clone()], &[a.clone(), b], 10123).is_err());
+        assert!(unchanged_exit_records(&[a.clone()], &[], 10123).is_err());
+        unchanged_exit_records(&[], &[other], 10123).unwrap();
+    }
+    #[test]
+    fn common_stability_cadence_requires_actual_three_samples_and_the_complete_interval() {
+        let start = Instant::now();
+        require_cadence(&[start, start + GAP, start + 2 * GAP]).unwrap();
+        for times in [
+            vec![],
+            vec![start, start + GAP],
+            vec![start, start, start + 2 * GAP],
+            vec![
+                start,
+                start + GAP - Duration::from_millis(1),
+                start + 2 * GAP,
+            ],
+            vec![start, start + GAP, start + GAP + Duration::from_secs(14)],
+            vec![start, start + GAP, start + 2 * GAP, start + 3 * GAP],
+            vec![start + GAP, start, start + 2 * GAP],
+        ] {
+            assert!(require_cadence(&times).is_err());
+        }
+        assert_eq!(stability_additional_window_seconds(), 680);
+    }
+}

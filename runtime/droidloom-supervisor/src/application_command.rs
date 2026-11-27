@@ -25,7 +25,7 @@ mod application_leaf_unit;
 mod gallery_resources;
 #[path = "native_application_ui_entry.rs"]
 mod native_application_ui_entry;
-pub use native_application_ui_entry::{NativeUiSession, NativeUiTranscript};
+pub use native_application_ui_entry::{NativeUiSession, NativeUiTranscript, NativeUiStabilityWindow, NativeUiStabilityEvidence, NativeUiStabilitySummary, stability_additional_window_seconds};
 pub use application_leaf_unit::{NativeOwnedLeafUnit, OwnedLeafProfile};
 
 const OUTPUT_LIMIT: usize = 64 * 1024;
