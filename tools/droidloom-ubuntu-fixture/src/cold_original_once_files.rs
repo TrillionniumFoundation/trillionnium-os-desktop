@@ -5,6 +5,8 @@
 pub(super) mod package_parents;
 #[path = "cold_working_files.rs"]
 pub(super) mod working;
+#[path = "cold_working_grub_transaction.rs"]
+pub(super) mod working_grub;
 use super::{OriginalQualificationAuthority, owner::SealedInput};
 use crate::{
     Result,

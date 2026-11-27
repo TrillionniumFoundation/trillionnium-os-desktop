@@ -502,12 +502,25 @@ unchanged. A forward failure is returned as a failed command after restoration.
 If reverse cannot establish the exact retained state, the process keeps its
 same live owner and descriptors, reports `DROIDLOOM_WORKING_REVERSE_PENDING`,
 and retries only reconciliation and reverse. It never replays the forward
-transaction or replaces a foreign inode.
+transaction or replaces a foreign inode. This reverse keeps custody only while
+that process is alive. The cold owner currently does not validate systemd stop
+or runtime deadlines; this command has no recovery owner after a forced kill,
+unit timeout, OOM termination, or power loss.
 
 The existing preparation command retains its private-file behavior. The
 publication check returns `boot_armed=false` and `production_ready=false`;
 working boot, application acceptance, and production service activation remain
 separate execution stages.
+
+The fixed working boot-file transaction consumes the published runtime and its
+original GRUB source together. It retains custody while publishing the derived
+initrd under `/boot/droidloom/working-qualification/<candidate>/` and an exact
+`droidloom-working-qualification-<candidate>` menuentry in `custom.cfg`. Its
+publication intent compares the complete retained preimage, including original
+absence, before any rename. Reverse returns the same live runtime owner after
+restoring those boot files. This file transaction provides no one-shot arm
+permit; the label and selected-data stages must supply their actual owned state
+before a later GRUB environment transition.
 
 ### Selected public APK material in a fresh normal guest
 

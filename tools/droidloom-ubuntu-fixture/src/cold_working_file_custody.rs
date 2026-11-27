@@ -458,6 +458,19 @@ impl Transaction {
     }
     pub(super) fn publish(&mut self, index: usize) -> Result<()> {
         self.prepare_intent(index)?;
+        self.publish_prepared(index)
+    }
+    /// Bind a caller's previously held full preimage to this exact intent.
+    /// A changed inode or a formerly absent target is rejected before rename.
+    pub(super) fn publish_captured(&mut self, index: usize, expected: Option<&Node>) -> Result<()> {
+        self.prepare_intent(index)?;
+        ensure(
+            self.steps[index].original.as_ref().map(|held| &held.node) == expected,
+            "working publication original differs from the retained full preimage",
+        )?;
+        self.publish_prepared(index)
+    }
+    fn publish_prepared(&mut self, index: usize) -> Result<()> {
         self.guard()?;
         self.steps[index].phase = Phase::Publishing;
         // An error may be after rename or fsync. Leave the actual descriptors
@@ -788,6 +801,44 @@ mod tests {
             // Only this test's newly created root is removed.
             let _ = std::fs::remove_dir_all(&self.root);
         }
+    }
+
+    #[test]
+    #[ignore = "root/ext4 only; exact retained preimage and absent-target drift"]
+    fn actual_working_captured_preimage_rejects_foreign_changes_before_rename() -> Result<()> {
+        for case in ["absent-became-present", "same-bytes-new-inode", "unchanged"] {
+            let fixture = Fixture::new(case)?;
+            let target = fixture.root.join("public/target");
+            if case != "absent-became-present" {
+                files::write_new(&target, b"retained original", 0o644)?;
+            }
+            let expected = observe_kind(&target, false)?;
+            let mut transaction = fixture.transaction()?;
+            transaction.stage_file(&target, &fixture.source()?, 0o644)?;
+            if case == "absent-became-present" {
+                files::write_new(&target, b"unowned new file", 0o644)?;
+            } else if case == "same-bytes-new-inode" {
+                std::fs::rename(&target, fixture.root.join("retained-original"))?;
+                files::write_new(&target, b"retained original", 0o644)?;
+            }
+            let before = observe_kind(&target, false)?;
+            let result = transaction.publish_captured(0, expected.as_ref());
+            if case == "unchanged" {
+                result?;
+                transaction.restore(0)?;
+                let restored = observe_kind(&target, false)?.unwrap();
+                assert!(same_inode(expected.as_ref().unwrap(), &restored));
+                assert_eq!(restored.sha256, expected.as_ref().unwrap().sha256);
+            } else {
+                assert!(result.is_err());
+                assert_eq!(observe_kind(&target, false)?, before);
+                transaction.restore(0)?;
+                assert_eq!(observe_kind(&target, false)?, before);
+            }
+            transaction.guard()?;
+            assert!(transaction.all_restored());
+        }
+        Ok(())
     }
 
     #[test]
