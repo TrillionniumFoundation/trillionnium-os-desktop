@@ -514,8 +514,8 @@ impl HistoricalFamilyCase {
         let actual = before.facts();
         observation.require_subject(main.facts(), actual)?;
         identity.bind_stability_execution(actual, main, observation.stability())?;
-        let common = common_gate::from_stability(
-            observation.stability(), &identity, main.facts(), actual,
+        let common = common_gate::from_family(
+            &observation, &identity, main.facts(), actual,
         )?;
         let fixed = roster::package(&actual.package)?;
         require(fixed.cases.is_empty(), "native package cannot acquire family history")?;
@@ -1799,11 +1799,11 @@ mod tests {
     #[test]
     fn physical_channel_uses_exact_source_order_windows_and_no_legacy_single_case() {
         require_channel_roster().unwrap();
-        assert_eq!(physical_qualification_window_seconds(), 138_115);
+        assert_eq!(physical_qualification_window_seconds(), 258_240);
         assert_eq!(camera_photo_window_seconds(), 4_290);
         assert_eq!(QualificationCase::CameraPhotoCaptureReopen as usize, 45);
         assert_eq!(case_window_seconds(Route::CameraPhoto), 1_260);
-        assert_eq!(family_window_seconds(), 3_285);
+        assert_eq!(family_window_seconds(), 7_160);
         assert_eq!(roster::PACKAGES.iter().filter(|row| row.cases.is_empty()).count(), 31);
         assert_eq!(owned_channel::CASE_COUNT, 47);
         assert_eq!(settings_permission_window_seconds(), 6_300);

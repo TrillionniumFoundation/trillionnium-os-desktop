@@ -100,6 +100,30 @@ pub(super) fn from_stability(
     ])
 }
 
+/// The two new complete common facts require the actual retained pair, exact
+/// reversible source input (or fixed self-check navigation), native readback,
+/// decoded owned-window pixels, and both normal closes. Business and complete
+/// data/account/release scope are deliberately separate requirements.
+pub(super) fn from_family(
+    observed: &super::family_observation::FamilyObservation,
+    identity: &IdentityObservation,
+    main: &RuntimeMainCustody,
+    actual: &ApplicationInspection,
+) -> Result<Vec<CommonGateFact>, String> {
+    observed.require_subject(main, actual)?;
+    let mut facts = from_stability(observed.stability(), identity, main, actual)?;
+    let basis = observed.ui().comparison()?;
+    for gate in ["lifecycle", "ui_observation"] {
+        facts.push(fact(gate, &actual.package, main, json!({
+            "factory":"normal_source_fixed_family_ui_and_separate_reopen",
+            "actual_pair":basis,
+            "business_or_account_scope_inferred":false,
+            "whole_application_accepted":false
+        })));
+    }
+    Ok(facts)
+}
+
 fn distinct_pair(value: &Value) -> bool {
     value
         .as_array()

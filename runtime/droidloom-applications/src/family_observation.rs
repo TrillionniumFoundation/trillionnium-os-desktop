@@ -5,8 +5,8 @@
 use super::physical_gate_roster as roster;
 use droidloom_supervisor::control::application_probe::ApplicationInspection;
 use droidloom_supervisor::control::{
-    NativeApplicationInspector, NativeUiSession, NativeUiStabilityEvidence,
-    RetainedScopedWindowPixels, stability_additional_window_seconds,
+    NativeApplicationInspector, NativeFamilyUiEvidence, NativeUiStabilityEvidence,
+    observe_native_family_ui, family_ui_window_seconds, family_ui_retained_members_bound,
     NativeUiPermissionWindow, NativeUiPermissionPreservation,
     permission_preservation_additional_window_seconds,
 };
@@ -16,37 +16,14 @@ use serde::Serialize;
 use serde_json::{Value, json};
 use std::time::{Duration, Instant};
 
-// Normal UI opening: helper PM, three entry checks, catalog, launch, the two
-// task lists, and running Engine. These are existing source command maxima.
-const OPEN_SECONDS: u64 = 250 + 3 * 15 + 250 + 250 + 2 * 15 + 70;
-// The existing session reserves target PM, Main, helper PM, running Engine,
-// and one bounded owned-task close. None is borrowed by the business phase.
-const ORIGINAL_FINISH_SECONDS: u64 = 250 + 70 + 250 + 70 + 60;
-// Each scoped capture has two task lists, two Meta calls, two WM calls, and
-// one screencap. Full decode, crop, retained hashes and local guards share a
-// separate finite allowance within the same original window.
-const PIXEL_COMMAND_SECONDS: u64 = 2 * (2 * 15 + 2 * 15 + 2 * 15 + 20);
-const LOCAL_CAPTURE_SECONDS: u64 = 120;
 const FAMILY_COUNT: usize = 31;
 const FAMILY_BUSINESS_GATE_COUNT: usize = 114;
-// A successful close issues one task-list read when already absent, or one
-// read, one removal and 1..=32 bounded asynchronous confirmation reads.
-const MAX_UI_COMMANDS: u32 = 5 + 3 * 3 + 2 * 7 + 2 + 32;
 pub(super) fn retained_journal_members_bound() -> usize {
-    4 * MAX_UI_COMMANDS as usize + 16 + 8 // Separate fixed PM/AppOps/account journal.
+    // Root's normal preservation factory owns its separate fixed journal.
+    // Eight records cover the same PM/AppOps/account interval around both sessions.
+    family_ui_retained_members_bound() + 8
 }
-fn fixed_history_shape(operations: u32, actions: u32) -> bool {
-    (operations == 29 && actions == 0)
-        || ((31..=MAX_UI_COMMANDS).contains(&operations) && actions == 1)
-}
-
-fn ui_window_seconds() -> u64 {
-    OPEN_SECONDS
-        + ORIGINAL_FINISH_SECONDS
-        + stability_additional_window_seconds()
-        + PIXEL_COMMAND_SECONDS
-        + LOCAL_CAPTURE_SECONDS
-}
+fn ui_window_seconds() -> u64 { family_ui_window_seconds() }
 pub(super) fn window_seconds() -> u64 {
     ui_window_seconds() + permission_preservation_additional_window_seconds()
 }
@@ -153,98 +130,65 @@ impl FamilyBusinessFact {
 /// A caller may continue another independent case only after this object's
 /// immutable checks and the original source lease have both been validated.
 pub(super) struct FamilyObservation {
-    stability: NativeUiStabilityEvidence,
+    ui: NativeFamilyUiEvidence,
     permissions: NativeUiPermissionPreservation,
-    pixels: [RetainedScopedWindowPixels; 2],
     business_facts: Vec<FamilyBusinessFact>,
     blocked: Vec<FamilyBlockedGate>,
 }
 impl FamilyObservation {
-    pub(super) fn stability(&self) -> &NativeUiStabilityEvidence {
-        &self.stability
-    }
-    pub(super) fn pixels(&self) -> &[RetainedScopedWindowPixels; 2] {
-        &self.pixels
-    }
-    pub(super) fn business_facts(&self) -> &[FamilyBusinessFact] {
-        &self.business_facts
-    }
-    pub(super) fn blocked(&self) -> &[FamilyBlockedGate] {
-        &self.blocked
-    }
+    pub(super) fn stability(&self) -> &NativeUiStabilityEvidence { self.ui.stability() }
+    pub(super) fn ui(&self) -> &NativeFamilyUiEvidence { &self.ui }
+    pub(super) fn business_facts(&self) -> &[FamilyBusinessFact] { &self.business_facts }
+    pub(super) fn blocked(&self) -> &[FamilyBlockedGate] { &self.blocked }
     pub(super) fn require_subject(
-        &self,
-        main: &RuntimeMainCustody,
-        application: &ApplicationInspection,
+        &self, main: &RuntimeMainCustody, application: &ApplicationInspection,
     ) -> Result<(), String> {
-        self.stability.require_subject(main, application)?;
+        self.ui.require_subject(main, application)?;
         self.guard_immutable()
     }
     pub(super) fn guard_immutable(&self) -> Result<(), String> {
-        self.stability.guard_immutable()?;
-        let transcript = self.stability.transcript();
-        let engine = transcript.engine();
-        // Mandatory partial PM/AppOps/account facts, bound to this exact normal-close
-        // transcript. It never supplies common.data_permissions or accounts.
-        self.permissions.require_transcript(transcript)?;
-        require(
-            fixed_history_shape(transcript.operations(), transcript.actions()),
-            "family history is outside its fixed read sequence and single owned close",
-        )?;
-        let row = family(&engine.application().package)?;
+        self.ui.guard_immutable()?;
+        let first = self.ui.stability().transcript();
+        let reopened = self.ui.reopened().transcript();
+        // A single-session preservation receipt cannot cover this pair.
+        // The normal window's actual before/after observations enclose both
+        // closes and the strict first.finished < reopened.opened boundary.
+        self.permissions.require_pair(first, reopened)?;
+        let row = family(&first.engine().application().package)?;
         require(
             self.business_facts.is_empty()
                 && self.blocked.len() == row.business.len()
-                && self
-                    .blocked
-                    .iter()
-                    .zip(row.business)
+                && self.blocked.iter().zip(row.business)
                     .all(|(blocked, required)| blocked.id == *required),
-            "read-only family evidence cannot mint business success or drop a required gate",
+            "Family common evidence cannot create business success or drop a required gate",
         )?;
-        for pixels in &self.pixels {
-            // This joins the actual complete Main/PM, task and journal of the
-            // consumed session. Two observations from different tasks cannot
-            // be spliced merely because their package and epoch match.
-            pixels.require_transcript(transcript)?;
-        }
         Ok(())
     }
     pub(super) fn comparison(&self) -> Result<Value, String> {
         self.guard_immutable()?;
-        let engine = self.stability.transcript().engine();
+        let engine = self.ui.stability().transcript().engine();
         let row = family(&engine.application().package)?;
-        let pixel_comparison = [self.pixels[0].comparison()?, self.pixels[1].comparison()?];
         Ok(json!({
-            "schema":"droidloom.physical-family-observation.v2",
-            "package":row.package,
-            "profile":row.profile,
-            "application":engine.application(),
-            "main":engine.facts().main,
-            "stability":self.stability.summary(),
+            "schema":"droidloom.physical-family-observation.v3",
+            "package":row.package,"profile":row.profile,
+            "application":engine.application(),"main":engine.facts().main,
+            "stability":self.ui.stability().summary(),
+            "actual_ui_lifecycle":self.ui.comparison()?,
             "pm_permission_preservation":self.permissions.comparison()?,
-            "scoped_pixels":pixel_comparison,
-            "business_facts":self.business_facts,
-            "blocked":self.blocked,
+            "business_facts":self.business_facts,"blocked":self.blocked,
             "decoded_pixels_retained_in_history":false,
-            "business_input_actions_attempted":false,
             "business_fixture_state_created":false,
-            "input_readback_inferred":false,
-            "independent_reopen_inferred":false,
             "complete_data_permissions_or_account_acceptance_inferred":false,
             "source_window_seconds":window_seconds(),
             "source_maximum_retained_journal_members":retained_journal_members_bound(),
-            "runtime_qualified":false,
-            "production_ready":false,
-            "comparison_only":true
+            "runtime_qualified":false,"production_ready":false,"comparison_only":true
         }))
     }
 }
 
-/// The only family observation constructor. Every command uses the original
-/// session, actual installed material identity and caller's already-started
-/// absolute deadline. Unknown command outcome, cleanup failure, changed epoch,
-/// failed resource fence, or any lost custody remains an ordinary Err.
+/// Both UI sessions use the one normal context and original absolute end.
+/// A failure remains a failure after any certain, source-owned cleanup. Saved
+/// comparison JSON and a partial visual result cannot enter this constructor.
 pub(super) fn run_family_case(
     inspector: &mut NativeApplicationInspector,
     baseline: &mut NativeLeafBaselineObservation<'_>,
@@ -254,48 +198,24 @@ pub(super) fn run_family_case(
     let application = baseline.application().clone();
     let main = baseline.main().facts().clone();
     let row = family(&application.package)?;
-    baseline
-        .verify_local(inspector, original_end)
-        .map_err(|error| error.to_string())?;
+    baseline.verify_local(inspector, original_end).map_err(|e|e.to_string())?;
     let permission_window = NativeUiPermissionWindow::begin(inspector, baseline, original_end)?;
-    // Keep the original 2615-second UI maximum and reserve all three actual after
-    // queries under the same case end. Fast pre-queries cannot renew it.
     let ui_end = (Instant::now() + Duration::from_secs(ui_window_seconds()))
         .min(permission_window.ui_deadline());
-    let ui = (|| {
-        let mut session = NativeUiSession::open(inspector, baseline, ui_end)?;
-        let mut window = session.begin_stability(inspector)?;
-        window.sample(&mut session, inspector)?;
-        let first_pixels = session.scoped_window_pixels(inspector)?.into_retained()?;
-        window.sample(&mut session, inspector)?;
-        let second_pixels = session.scoped_window_pixels(inspector)?.into_retained()?;
-        window.sample(&mut session, inspector)?;
-        // No business input, form submission, outbound communication, permission
-        // change, owned document, or account mutation occurs in this constructor.
-        // finish proves the actual single owned close and full normal bookends.
-        let stability = window.finish(session, inspector)?;
-        stability.require_subject(&main, &application)?;
-        first_pixels.require_transcript(stability.transcript())?;
-        second_pixels.require_transcript(stability.transcript())?;
-        Ok::<_, String>((stability, first_pixels, second_pixels))
-    })();
-    let (stability, first_pixels, second_pixels) = match ui {
+    let ui = match observe_native_family_ui(inspector, baseline, ui_end) {
         Ok(value) => value,
         Err(error) => return Err(permission_window.fail(error)),
     };
-    let permissions = permission_window.finish(inspector, baseline, stability.transcript())?;
+    ui.require_subject(&main, &application)?;
+    let permissions = permission_window.finish_pair(
+        inspector, baseline, ui.stability().transcript(), ui.reopened().transcript(),
+    )?;
     let observation = FamilyObservation {
-        stability,
-        permissions,
-        pixels: [first_pixels, second_pixels],
-        business_facts: Vec::new(),
-        blocked: blocked(row),
+        ui, permissions, business_facts: Vec::new(), blocked: blocked(row),
     };
     observation.guard_immutable()?;
-    require(
-        Instant::now() < original_end,
-        "family custody sealing exceeded the original case deadline",
-    )?;
+    require(Instant::now() < original_end,
+        "Family custody sealing exceeded the original case deadline")?;
     Ok(observation)
 }
 
@@ -346,10 +266,9 @@ mod tests {
 
     #[test]
     fn family_observation_budget_rejects_renewal_and_outliving_original_baseline() {
-        assert_eq!(stability_additional_window_seconds(), 680);
-        assert_eq!(ui_window_seconds(), 2615);
+        assert_eq!(ui_window_seconds(), 6490);
         assert_eq!(permission_preservation_additional_window_seconds(), 420);
-        assert_eq!(window_seconds(), 3035);
+        assert_eq!(window_seconds(), 6910);
         let now = Instant::now();
         let end = now + Duration::from_secs(window_seconds());
         require_window(now, end, end).unwrap();
@@ -369,16 +288,9 @@ mod tests {
     }
 
     #[test]
-    fn family_observation_history_bounds_allow_only_fixed_reads_and_one_owned_close() {
-        assert_eq!(MAX_UI_COMMANDS, 62);
-        assert_eq!(retained_journal_members_bound(), 272);
-        assert!(fixed_history_shape(29, 0));
-        for operations in 31..=62 {
-            assert!(fixed_history_shape(operations, 1));
-        }
-        for (operations, actions) in [(0, 0), (28, 0), (29, 1), (30, 1), (31, 0), (62, 2), (63, 1)]
-        {
-            assert!(!fixed_history_shape(operations, actions));
-        }
+    fn family_observation_pair_has_finite_retained_inputs_without_rgb_history() {
+        assert_eq!(family_ui_retained_members_bound(), 768);
+        assert_eq!(retained_journal_members_bound(), 776);
+        assert!(31 * retained_journal_members_bound() < 32_768);
     }
 }

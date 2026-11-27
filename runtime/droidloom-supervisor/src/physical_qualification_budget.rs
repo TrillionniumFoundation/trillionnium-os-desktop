@@ -10,7 +10,7 @@ pub const CASE_COUNT: usize = NATIVE_CASE_COUNT + FAMILY_CASE_COUNT + PHOTO_CASE
 pub const SOURCE_AND_CAPTURE_SECONDS: u64 = 120;
 pub const MAIN_SECONDS: u64 = 70;
 pub const INSPECT_SECONDS: u64 = 250;
-pub const FAMILY_UI_WORK_SECONDS: u64 = 2_615;
+pub const FAMILY_UI_WORK_SECONDS: u64 = 6_490;
 // PM, AppOps and registered-account samples enclose each actual family UI case.
 // They are partial preservation evidence, not full data or credential acceptance.
 pub const FAMILY_PM_PERMISSION_SECONDS: u64 = 2 * 70;
