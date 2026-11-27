@@ -25,7 +25,7 @@ use super::runtime_identity::{IdentityObservation, VerifiedMaterialBatch};
 const QUALIFICATION: &str = "/var/lib/droidloom/qualification/pocket4";
 const SELECTION_PATH: &str = "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2/selection/selection-14.json";
 const SELECTION_BYTES: u64 = 4769;
-const SELECTION_SHA: &str = "f979bda38d95c6ad0bf25a52e2fc85b92e24f84672c5bbd6db62065f6ed558a4";
+const SELECTION_SHA: &str = "e46570ce965d4cb1abd9a9b2433fa71293525ccad8b4ed6ed65e19c4dfc85c73";
 const SOURCE_CATALOG: &str = include_str!("leaf_sources.json");
 
 pub(super) fn compiled_release_sources() -> (FilePin, &'static str) {
