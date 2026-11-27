@@ -19,6 +19,9 @@ use std::time::{Duration, Instant};
 
 use crate::development::owned_process::{open_pidfd, pidfd_exited};
 
+#[path = "physical_qualification_channel.rs"]
+pub mod physical_qualification_channel;
+
 #[path = "application_leaf_unit.rs"]
 mod application_leaf_unit;
 #[path = "application_leaf_resources.rs"]

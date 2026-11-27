@@ -17,6 +17,9 @@ use std::path::{Path, PathBuf};
 use std::rc::Rc;
 use std::time::{Duration, Instant};
 
+#[path = "physical_qualification_owner.rs"]
+pub(crate) mod qualification;
+
 #[path = "application_leaf_unit_bus.rs"]
 mod bus;
 type Result<T, E = io::Error> = std::result::Result<T, E>;

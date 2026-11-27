@@ -88,6 +88,7 @@ mod application_command;
 #[path = "application_leaf_locks.rs"]
 mod application_leaf_locks;
 pub use application_command::{NativeOwnedLeafUnit, OwnedLeafProfile};
+pub use application_command::physical_qualification_channel;
 pub use crate::native_leaf_engine::{NativeLeafEngineEvidence, NativeLeafExecution};
 pub use application_leaf_locks::NativeApplicationSourceLocks;
 

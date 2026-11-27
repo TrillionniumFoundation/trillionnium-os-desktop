@@ -12,6 +12,7 @@ fn main() {
 }
 
 pub mod control;
+pub use control::physical_qualification_channel;
 pub mod engine_custody;
 mod cpu_placement;
 pub mod development;
