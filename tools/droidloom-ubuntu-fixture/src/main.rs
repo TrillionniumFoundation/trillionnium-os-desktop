@@ -96,6 +96,13 @@ enum Command {
         #[arg(long)]
         config_sha256: String,
     },
+    /// Admit the returned pair and build its new source-bound working initramfs.
+    PrepareWorkingQualification {
+        #[arg(long)]
+        config: PathBuf,
+        #[arg(long)]
+        config_sha256: String,
+    },
     /// Observe the exact returned first-once history and retired working pair.
     InspectReturnedWorkingCopy {
         #[arg(long)]
@@ -287,6 +294,13 @@ fn run() -> Result<()> {
             config,
             config_sha256,
         } => boot_public_apks::verify_inputs(&config, &config_sha256)?,
+        Command::PrepareWorkingQualification {
+            config,
+            config_sha256,
+        } => {
+            let actual = cold_original_qualification::prepare_working(&config, &config_sha256)?;
+            println!("{}", serde_json::to_string_pretty(&actual)?);
+        }
         Command::InspectReturnedWorkingCopy { candidate } => {
             let observation =
                 cold_original_qualification::inspect_returned_working_copy(&candidate)?;
