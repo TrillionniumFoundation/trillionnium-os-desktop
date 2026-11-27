@@ -54,6 +54,12 @@ pub(crate) use catalog::{CatalogCommand, catalog_early};
 mod vintf;
 pub(crate) use vintf::{RuntimeVintfBudget, observe_runtime_vintf};
 
+#[path = "runtime_abi.rs"]
+pub(crate) mod runtime_abi;
+#[path = "production_application_runtime_abi.rs"]
+mod runtime_abi_query;
+pub(crate) use runtime_abi_query::{RuntimeAbiObservation, read_runtime_abi};
+
 #[path = "production_application_display.rs"]
 mod display;
 use display::DisplayCommand;

@@ -156,6 +156,7 @@ impl BrowserCommand {
 pub(super) enum ApplicationOperation {
     Read { value: ApplicationRead },
     Vintf { value: super::vintf::VintfRead },
+    RuntimeAbi { value: super::runtime_abi_query::RuntimeAbiRead },
     Browser { value: BrowserCommand },
     ContactsRead { value: ContactsQuery },
     Launch { value: LaunchCommand },
@@ -169,6 +170,7 @@ impl ApplicationOperation {
         match self {
             Self::Read { value } => value.validate(),
             Self::Vintf { value } => value.validate(),
+            Self::RuntimeAbi { value } => value.validate(),
             Self::Browser { value } => value.validate(),
             Self::ContactsRead { value } => value.validate(),
             Self::Launch { value } => value.validate(),
@@ -191,6 +193,7 @@ impl ApplicationOperation {
         match self {
             Self::Catalog { .. } => super::catalog::OUTPUT_BYTES,
             Self::Vintf { value } => value.output_limit(),
+            Self::RuntimeAbi { .. } => super::runtime_abi::OUTPUT_BYTES,
             _ => OUTPUT_LIMIT,
         }
     }
@@ -235,7 +238,7 @@ impl ApplicationOperation {
         match self {
             Self::Read { value } => value.binary(),
             Self::Vintf { value } => value.binary(),
-            Self::Browser { .. } => c"cmd",
+            Self::Browser { .. } | Self::RuntimeAbi { .. } => c"cmd",
             Self::ContactsRead { .. } | Self::Catalog { .. } => c"app_process64",
             Self::Launch { .. } | Self::Install { .. } | Self::Display { .. } => c"cmd",
         }
@@ -245,6 +248,7 @@ impl ApplicationOperation {
         match self {
             Self::Read { value } => value.arguments(),
             Self::Vintf { value } => value.arguments(),
+            Self::RuntimeAbi { value } => value.arguments(),
             Self::Browser { value } => value.arguments(),
             Self::ContactsRead { value } => value.arguments(),
             Self::Launch { value } => value.arguments(),
@@ -257,6 +261,7 @@ impl ApplicationOperation {
     pub(super) fn domain(&self) -> OperationDomain {
         match self {
             Self::Read { .. } | Self::Vintf { .. } => OperationDomain::Query,
+            Self::RuntimeAbi { .. } => OperationDomain::LaunchRead,
             Self::Browser { value } => value.domain(),
             Self::ContactsRead { .. } => OperationDomain::ContactsRead,
             Self::Launch { value } => value.domain(),
