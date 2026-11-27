@@ -20,6 +20,8 @@ mod plan;
 mod scope;
 #[path = "cold_original_label_service_state.rs"]
 mod service_state;
+#[path = "cold_working_input_labels.rs"]
+pub(crate) mod working_inputs;
 pub(crate) use journal::{
     OriginalLabelRestorationTransaction, OriginalLabelTransaction, OriginalLabelsApplied,
     OriginalLabelsRestored, OriginalPairRestored,
