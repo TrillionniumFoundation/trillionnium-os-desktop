@@ -7,6 +7,7 @@ from pathlib import Path
 from derive_preserved_alias_policy import (
     _validate_inputs, _mcs_transform_guards, _preserved_xperm_rules)
 from derive_shared_payload_cgroup_policy import original_xperms
+from derive_native_uevent_policy import Membership
 
 
 class PreservedAliasInputs(unittest.TestCase):
@@ -161,6 +162,75 @@ class PreservedIoctlFilters(unittest.TestCase):
                                  class_names=("lnk_file",))["lnk_file"]
         self.assertEqual(actual, {"actor_a": 1 << 0x77, "actor_b": 0})
         self.assertEqual(actual, self.expected["actor_a"]["lnk_file"])
+
+
+class ConcreteAttributeMembership(unittest.TestCase):
+    def policy(self, declarations, extra_types=()):
+        return Membership("\n".join(
+            ["(type " + name + ")" for name in ("a", "b", "c", *extra_types)]
+            + declarations))
+
+    def test_flat_definitions_preserve_union_and_empty_membership(self):
+        policy = self.policy([
+            "(typeattribute selected)", "(typeattributeset selected (a a))",
+            "(typeattributeset selected (b))", "(typeattribute empty)",
+            "(typeattributeset empty ())"])
+        self.assertEqual([policy.member("selected", x) for x in ("a", "b", "c", "absent")],
+                         [True, True, False, False])
+        self.assertTrue(all(not policy.member("empty", x) for x in ("a", "b", "c")))
+
+    def test_nested_boolean_definitions_keep_existing_semantics(self):
+        policy = self.policy([
+            "(typeattribute direct)", "(typeattributeset direct (a b))",
+            "(typeattribute selected)",
+            "(typeattributeset selected (and direct (not (b))))",
+            "(typeattribute xor_types)", "(typeattributeset xor_types (xor (a b) (b c)))"])
+        self.assertEqual([policy.member("selected", x) for x in ("a", "b", "c")],
+                         [True, False, False])
+        self.assertEqual([policy.member("xor_types", x) for x in ("a", "b", "c")],
+                         [True, False, True])
+
+    def test_operator_spelling_is_not_treated_as_a_concrete_union(self):
+        policy = self.policy(["(typeattribute selected)",
+                              "(typeattributeset selected (all))"], ("all",))
+        self.assertTrue(policy.member("selected", "c"))
+
+    def test_unknown_and_cyclic_definitions_keep_failures(self):
+        for expression in ("(unknown)", "(selected)"):
+            policy = self.policy(["(typeattribute selected)",
+                                  "(typeattributeset selected " + expression + ")"])
+            with self.subTest(expression=expression), self.assertRaisesRegex(
+                    ValueError, "Unresolved/cyclic"):
+                policy.member("selected", "c")
+
+    def test_unknown_short_circuit_and_malformed_operators_are_preserved(self):
+        policy = self.policy(["(typeattribute selected)",
+                              "(typeattributeset selected (a unknown))"])
+        self.assertTrue(policy.member("selected", "a"))
+        with self.assertRaisesRegex(ValueError, "Unresolved/cyclic"):
+            policy.member("selected", "b")
+        for expression, message in (("(all a)", "Invalid all"),
+                                    ("(not a b)", "Invalid not"),
+                                    ("(xor a)", "Invalid xor")):
+            policy = self.policy(["(typeattribute selected)",
+                                  "(typeattributeset selected " + expression + ")"])
+            with self.subTest(expression=expression), self.assertRaisesRegex(ValueError, message):
+                policy.member("selected", "c")
+
+    def test_active_cycle_and_undeclared_attribute_checks_precede_index(self):
+        policy = self.policy(["(typeattribute selected)",
+                              "(typeattributeset selected (a))",
+                              "(typeattributeset undeclared (a))"])
+        with self.assertRaisesRegex(ValueError, "Unresolved/cyclic"):
+            policy.member("selected", "a", ("selected",))
+        with self.assertRaisesRegex(ValueError, "Unresolved/cyclic"):
+            policy.member("undeclared", "a")
+
+    def test_new_policy_instance_has_independent_membership(self):
+        first = self.policy(["(typeattribute selected)", "(typeattributeset selected (a))"])
+        second = self.policy(["(typeattribute selected)", "(typeattributeset selected (b))"])
+        self.assertEqual([first.member("selected", "a"), second.member("selected", "a")],
+                         [True, False])
 
 
 if __name__ == "__main__":
