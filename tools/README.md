@@ -484,6 +484,31 @@ independently. Failed private attempts and their original diagnostics remain
 available for diagnosis; the commands do not clean up the host or activate its
 production services.
 
+### Cold working publication and restoration
+
+`verify-working-publication --config <absolute-plan> --config-sha256 <full-sha256>`
+executes the fixed working runtime publication and both data-directory exchanges,
+then restores the original data pair before restoring the runtime files. It
+uses the same normal material plan as `prepare-working-qualification` and must
+run as the sole process in its new
+`droidloom-working-cold@<candidate-sha256>.service` unit on the original shared
+kernel. Existing normal-source, initial-namespace, root-account, four-image OFD,
+lock, and original-state checks apply to both modes.
+
+This operation changes the thirteen fixed runtime targets and the existing
+working data-directory names temporarily. The successful result includes the
+actual runtime restoration record and verifies that the held GRUB preimage is
+unchanged. A forward failure is returned as a failed command after restoration.
+If reverse cannot establish the exact retained state, the process keeps its
+same live owner and descriptors, reports `DROIDLOOM_WORKING_REVERSE_PENDING`,
+and retries only reconciliation and reverse. It never replays the forward
+transaction or replaces a foreign inode.
+
+The existing preparation command retains its private-file behavior. The
+publication check returns `boot_armed=false` and `production_ready=false`;
+working boot, application acceptance, and production service activation remain
+separate execution stages.
+
 ### Selected public APK material in a fresh normal guest
 
 The optional `prepare-boot` field `public_apks: FilePin` selects a

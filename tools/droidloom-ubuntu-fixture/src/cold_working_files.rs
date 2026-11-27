@@ -246,7 +246,16 @@ fn restore(
             summary,
         }),
         Err(error) => {
-            errors.push(error.to_string());
+            let message = error.to_string();
+            if errors.last() != Some(&message) {
+                // A retained owner can keep reconciling after a long external
+                // failure. Preserve the initial cause and bounded recent
+                // diagnostics without allowing that custody to grow forever.
+                if errors.len() >= 32 {
+                    errors.remove(1);
+                }
+                errors.push(message);
+            }
             Err(WorkingPublicationFailure {
                 publication,
                 errors,

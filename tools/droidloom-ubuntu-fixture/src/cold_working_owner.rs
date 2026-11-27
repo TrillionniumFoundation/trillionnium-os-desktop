@@ -4,6 +4,7 @@ use super::*;
 use crate::cold_original_qualification::materials::Guard;
 
 const MODE: &str = "prepare-working-qualification";
+const PUBLICATION_MODE: &str = "verify-working-publication";
 const UNIT_PREFIX: &str = "/system.slice/droidloom-working-cold@";
 
 fn working_unit(cgroup: &str, invocation: &str, candidate: &str) -> Result<String> {
@@ -23,6 +24,13 @@ fn working_unit(cgroup: &str, invocation: &str, candidate: &str) -> Result<Strin
     Ok(expected)
 }
 fn exact_arguments(executable: &Path, input: &FilePin) -> Result<String> {
+    exact_arguments_for(executable, input, MODE)
+}
+fn exact_arguments_for(executable: &Path, input: &FilePin, mode: &str) -> Result<String> {
+    ensure(
+        matches!(mode, MODE | PUBLICATION_MODE),
+        "working cold command is not a fixed source-owned operation",
+    )?;
     ensure(
         input.bytes > 0 && input.bytes <= 16 * 1024 * 1024 && fs::valid_digest(&input.sha256),
         "working cold input has no complete bounded commitment",
@@ -40,7 +48,7 @@ fn exact_arguments(executable: &Path, input: &FilePin) -> Result<String> {
     )?;
     let mut value = [
         executable.as_str(),
-        MODE,
+        mode,
         "--config",
         config.as_str(),
         "--config-sha256",
@@ -268,9 +276,11 @@ impl WorkingColdOwner {
             fs::stat(&actual)? == *executable.identity(),
             "working cold producer is not its held named executable",
         )?;
-        let arguments = exact_arguments(&executable_path, input.pin())?;
+        let arguments = bounded(Path::new("/proc/self/cmdline"), 32768)?;
         ensure(
-            bounded(Path::new("/proc/self/cmdline"), 32768)? == arguments,
+            arguments == exact_arguments(&executable_path, input.pin())?
+                || arguments
+                    == exact_arguments_for(&executable_path, input.pin(), PUBLICATION_MODE)?,
             "working cold actual argv differs from its exact source input",
         )?;
         let locks = LOCK_PATHS
@@ -328,6 +338,36 @@ impl WorkingColdOwner {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn working_cold_publication_has_a_distinct_exact_command_without_freeform_mode() -> Result<()> {
+        let executable = Path::new("/usr/lib/droidloom/fixture");
+        let input = FilePin {
+            path: "/var/lib/droidloom-qualification/working-plan.json".into(),
+            bytes: 23,
+            sha256: "a".repeat(64),
+        };
+        let preparation = exact_arguments(executable, &input)?;
+        let publication = exact_arguments_for(executable, &input, PUBLICATION_MODE)?;
+        let before: Vec<_> = preparation.split('\0').collect();
+        let after: Vec<_> = publication.split('\0').collect();
+        assert_eq!(before.len(), after.len());
+        assert_eq!(before[1], MODE);
+        assert_eq!(after[1], PUBLICATION_MODE);
+        for index in [0, 2, 3, 4, 5, 6] {
+            assert_eq!(before[index], after[index]);
+        }
+        for invalid in [
+            "",
+            "original-once",
+            "reboot",
+            "verify-working-publication --force",
+        ] {
+            assert!(exact_arguments_for(executable, &input, invalid).is_err());
+        }
+        Ok(())
+    }
+
     #[test]
     fn working_cold_owner_rejects_old_runtime_units_candidates_and_extra_members() -> Result<()> {
         let candidate = "a".repeat(64);

@@ -103,6 +103,13 @@ enum Command {
         #[arg(long)]
         config_sha256: String,
     },
+    /// Execute and reverse actual cold runtime/data publication without arming boot.
+    VerifyWorkingPublication {
+        #[arg(long)]
+        config: PathBuf,
+        #[arg(long)]
+        config_sha256: String,
+    },
     /// Observe the exact returned first-once history and retired working pair.
     InspectReturnedWorkingCopy {
         #[arg(long)]
@@ -299,6 +306,14 @@ fn run() -> Result<()> {
             config_sha256,
         } => {
             let actual = cold_original_qualification::prepare_working(&config, &config_sha256)?;
+            println!("{}", serde_json::to_string_pretty(&actual)?);
+        }
+        Command::VerifyWorkingPublication {
+            config,
+            config_sha256,
+        } => {
+            let actual =
+                cold_original_qualification::verify_working_publication(&config, &config_sha256)?;
             println!("{}", serde_json::to_string_pretty(&actual)?);
         }
         Command::InspectReturnedWorkingCopy { candidate } => {
