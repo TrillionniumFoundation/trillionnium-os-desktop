@@ -36,6 +36,8 @@ pub use working_config::{WorkingPayloadPin, WorkingSourcePins};
 
 #[path = "physical_qualification_budget.rs"]
 pub mod budget;
+#[path = "native_working_layout.rs"]
+pub mod layout;
 pub use budget::{
     CASE_COUNT, FAMILY_CASE_COUNT, NATIVE_CASE_COUNT, NOFILE_LIMIT, RETIREMENT_SECONDS,
     SERVICE_SECONDS, SUITE_SECONDS,
@@ -49,7 +51,13 @@ pub(super) const UNIT_FRAGMENT: &str =
 pub(super) const UNIT_SOURCE: &str =
     include_str!("../../../packaging/systemd/system/droidloom-working-qualification.service");
 pub(super) fn require_working_actor() -> io::Result<()> {
-    working_config::require_actor()
+    working_config::current_actor().map(|_| ())
+}
+pub(super) fn require_parent_actor() -> io::Result<()> {
+    working_config::require_actor(working_config::WorkingActor::Parent)
+}
+pub(super) fn require_suite_actor() -> io::Result<()> {
+    working_config::require_actor(working_config::WorkingActor::Suite)
 }
 
 fn error(why: &str) -> io::Error {
@@ -380,6 +388,7 @@ impl Plan {
         if !digest_ok(digest) {
             return Err(error("exact working plan digest required"));
         }
+        require_suite_actor()?;
         let configuration = Arc::new(AdmittedWorkingConfiguration::acquire()?);
         let plan = Self::open_admitted(configuration)?;
         if plan.digest != digest {
@@ -391,7 +400,9 @@ impl Plan {
     }
     fn open_admitted(configuration: Arc<AdmittedWorkingConfiguration>) -> io::Result<Self> {
         configuration.guard()?;
-        let path = configuration.runtime_evidence_directory().join("PLAN.json");
+        let path = configuration
+            .runtime_evidence_directory()
+            .join(layout::WORKING_PLAN_FILE);
         if path.canonicalize()? != path {
             return Err(error("physical plan path has an alias"));
         }
@@ -867,34 +878,88 @@ mod tests {
     }
 }
 
-/// Fence the privileged installed ELF before Clap handles help or any public
-/// session action. Only the source-owned parent and authenticated child modes
-/// exist in this role; ordinary clients retain their existing public commands.
+/// Fence each privileged installed ELF before Clap handles help or public actions.
+/// The actual SELinux and independent AppArmor entry must agree. The fixed
+/// parent and suite use different domains; this parser grants no write authority.
 pub fn admit_working_entry(arguments: &[std::ffi::OsString]) -> io::Result<()> {
     let requested = arguments.first().is_some_and(|v| {
         v == crate::native_working_contract::PARENT_MODE || v == "--physical-application-plan"
     });
     let role = crate::native_hardware_label::current(101);
-    let owner = role.as_ref().is_ok_and(|v| v == working_config::ROLE);
-    if !requested && !owner {
+    let actor = role
+        .as_ref()
+        .ok()
+        .and_then(|v| working_config::WorkingActor::from_role(v));
+    let privileged_leaf = role.as_ref().is_ok_and(|v| v == layout::WORKING_LEAF_ROLE);
+    if !requested && actor.is_none() && !privileged_leaf {
         return Ok(());
     }
-    if !owner || !working_entry_arguments(arguments) {
+    let actor =
+        actor.ok_or_else(|| error("working mode requires its actual parent or suite domain"))?;
+    if !working_entry_arguments(actor, arguments) {
         return Err(error(
-            "working actor accepts only its source-owned parent or private child entry",
+            "working entry mode differs from its actual parent or suite domain",
         ));
     }
-    require_working_actor()
+    working_config::require_actor(actor)
 }
-fn working_entry_arguments(arguments: &[std::ffi::OsString]) -> bool {
-    match arguments {
-        [mode] => mode == crate::native_working_contract::PARENT_MODE,
-        [mode, path, expected, digest] => {
+fn working_entry_arguments(
+    actor: working_config::WorkingActor,
+    arguments: &[std::ffi::OsString],
+) -> bool {
+    use working_config::WorkingActor;
+    match (actor, arguments) {
+        (WorkingActor::Parent, [mode]) => mode == crate::native_working_contract::PARENT_MODE,
+        (WorkingActor::Suite, [mode, path, expected, digest]) => {
             mode == "--physical-application-plan"
                 && expected == "--expect-physical-plan-sha256"
-                && Path::new(path).file_name() == Some(std::ffi::OsStr::new("PLAN.json"))
+                && layout::fixed_plan_path(Path::new(path))
                 && digest.to_str().is_some_and(digest_ok)
         }
         _ => false,
+    }
+}
+#[cfg(test)]
+mod working_entry_tests {
+    use super::*;
+    #[test]
+    fn physical_working_entry_binds_real_child_shape_to_suite_domain_only() {
+        use working_config::WorkingActor;
+        let parent = vec![std::ffi::OsString::from(
+            crate::native_working_contract::PARENT_MODE,
+        )];
+        let plan = layout::working_candidate_directory(&"a".repeat(64))
+            .unwrap()
+            .join(layout::WORKING_EVIDENCE_DIRECTORY)
+            .join(layout::WORKING_PLAN_FILE);
+        let child = child_argv(&plan, &"b".repeat(64))
+            .unwrap()
+            .into_iter()
+            .skip(1)
+            .map(std::ffi::OsString::from)
+            .collect::<Vec<_>>();
+        assert!(working_entry_arguments(WorkingActor::Parent, &parent));
+        assert!(working_entry_arguments(WorkingActor::Suite, &child));
+        assert!(!working_entry_arguments(WorkingActor::Parent, &child));
+        assert!(!working_entry_arguments(WorkingActor::Suite, &parent));
+        for actor in [WorkingActor::Parent, WorkingActor::Suite] {
+            for args in [
+                vec![],
+                vec!["--help".into()],
+                vec!["list".into()],
+                vec![
+                    "--owned-physical-application-plan".into(),
+                    "b".repeat(64).into(),
+                ],
+            ] {
+                assert!(!working_entry_arguments(actor, &args));
+            }
+        }
+        let mut wrong = child.clone();
+        wrong[1] = "/PLAN.json".into();
+        assert!(!working_entry_arguments(WorkingActor::Suite, &wrong));
+        let mut wrong = child.clone();
+        wrong.push("--json".into());
+        assert!(!working_entry_arguments(WorkingActor::Suite, &wrong));
     }
 }

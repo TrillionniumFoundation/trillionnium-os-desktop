@@ -6,6 +6,7 @@ After=droidloom-container-entry.service
 Type=exec
 User=root
 Group=root
+AppArmorProfile=droidloom-working-qualification
 ExecStart=/usr/bin/droidloom-applications --owned-working-qualification
 Restart=no
 KillMode=control-group

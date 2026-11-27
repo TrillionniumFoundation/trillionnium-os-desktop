@@ -128,6 +128,31 @@ fn cmdline(process: &BoundProcess) -> io::Result<Vec<String>> {
         })
         .collect()
 }
+fn process_mac(process: &BoundProcess, role: &[u8], profile: &[u8]) -> io::Result<()> {
+    process.validate()?;
+    for (name, wanted) in [
+        ("attr/selinux/current", role),
+        ("attr/apparmor/current", profile),
+    ] {
+        let mut raw = Vec::new();
+        process.open(name, false)?.take(513).read_to_end(&mut raw)?;
+        if raw.is_empty() || raw.len() > 512 {
+            return Err(invalid("working peer MAC observation exceeds bound"));
+        }
+        if raw.last() == Some(&b'\n') {
+            raw.pop();
+        }
+        if raw.last() == Some(&0) {
+            raw.pop();
+        }
+        if raw.contains(&0) || raw != wanted {
+            return Err(invalid(
+                "working peer has a different SELinux domain or AppArmor profile",
+            ));
+        }
+    }
+    process.validate()
+}
 fn process_group(process: &BoundProcess, group: &Path) -> io::Result<()> {
     let actual = super::super::bounded_text(process.open("cgroup", false)?, 8192)?;
     let relative = group
@@ -150,6 +175,7 @@ pub(crate) struct ChildPeer {
 impl ChildPeer {
     pub(crate) fn capture(plan: &protocol::Plan) -> io::Result<Self> {
         plan.guard()?;
+        protocol::require_suite_actor()?;
         root()?;
         // SAFETY: getppid returns the current actual parent, never a caller PID.
         let parent_pid = unsafe { libc::getppid() };
@@ -200,6 +226,7 @@ impl ChildPeer {
         self.parent.identity.pid
     }
     pub(crate) fn guard(&self) -> io::Result<()> {
+        protocol::require_suite_actor()?;
         root()?;
         self.current.validate()?;
         self.parent.validate()?;
@@ -213,6 +240,16 @@ impl ChildPeer {
             ));
         }
         self.executable.guard()?;
+        process_mac(
+            &self.current,
+            protocol::layout::WORKING_SUITE_ROLE,
+            protocol::layout::WORKING_SUITE_PROFILE,
+        )?;
+        process_mac(
+            &self.parent,
+            protocol::layout::WORKING_PARENT_ROLE,
+            protocol::layout::WORKING_PARENT_PROFILE,
+        )?;
         for p in [&self.current, &self.parent] {
             process_root(p)?;
             process_group(p, &self.group)?;
@@ -417,6 +454,7 @@ impl UnitOwner {
         applications: &crate::native_working_contract::PayloadPin,
         end: Instant,
     ) -> Result<Self, String> {
+        protocol::require_parent_actor().map_err(|e| e.to_string())?;
         root().map_err(|e| e.to_string())?;
         let group_path = current_cgroup_parent().map_err(|e| e.to_string())?;
         if group_path
@@ -517,6 +555,7 @@ impl UnitOwner {
         Ok(value)
     }
     fn source_guard(&self) -> Result<(), String> {
+        protocol::require_parent_actor().map_err(|e| e.to_string())?;
         root().map_err(|e| e.to_string())?;
         self.current.validate().map_err(|e| e.to_string())?;
         self.manager.validate().map_err(|e| e.to_string())?;
@@ -648,6 +687,12 @@ impl UnitOwner {
     pub(crate) fn child_guard(&self, child: &BoundProcess) -> Result<(), String> {
         child.validate().map_err(|e| e.to_string())?;
         process_root(child).map_err(|e| e.to_string())?;
+        process_mac(
+            child,
+            protocol::layout::WORKING_SUITE_ROLE,
+            protocol::layout::WORKING_SUITE_PROFILE,
+        )
+        .map_err(|e| e.to_string())?;
         process_group(child, &self.group_path).map_err(|e| e.to_string())?;
         if cmdline(child).map_err(|e| e.to_string())?
             != *self
