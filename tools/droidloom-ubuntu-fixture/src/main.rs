@@ -103,7 +103,7 @@ enum Command {
         #[arg(long)]
         config_sha256: String,
     },
-    /// Execute and reverse actual cold runtime/data publication without arming boot.
+    /// Publish and reverse actual cold runtime, data and working boot files.
     VerifyWorkingPublication {
         #[arg(long)]
         config: PathBuf,

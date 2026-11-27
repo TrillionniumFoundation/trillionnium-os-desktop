@@ -487,8 +487,9 @@ production services.
 ### Cold working publication and restoration
 
 `verify-working-publication --config <absolute-plan> --config-sha256 <full-sha256>`
-executes the fixed working runtime publication and both data-directory exchanges,
-then restores the original data pair before restoring the runtime files. It
+executes the fixed working runtime publication, both data-directory exchanges,
+and the working initrd/custom GRUB publication. It reverses boot files first,
+then the original data pair, then the runtime files. It
 uses the same normal material plan as `prepare-working-qualification` and must
 run as the sole process in its new
 `droidloom-working-cold@<candidate-sha256>.service` unit on the original shared
@@ -496,9 +497,12 @@ kernel. Existing normal-source, initial-namespace, root-account, four-image OFD,
 lock, and original-state checks apply to both modes.
 
 This operation changes the thirteen fixed runtime targets and the existing
-working data-directory names temporarily. The successful result includes the
-actual runtime restoration record and verifies that the held GRUB preimage is
-unchanged. A forward failure is returned as a failed command after restoration.
+working data-directory names temporarily, plus the fixed working initrd and
+custom GRUB targets. The successful result includes the actual boot-file and
+runtime restoration records and verifies the held GRUB preimage. A rejected
+boot-file admission before any public rename returns the same runtime owner
+without requiring a nonexistent private restoration record. A forward failure
+is returned as a failed command after restoration.
 If reverse cannot establish the exact retained state, the process keeps its
 same live owner and descriptors, reports `DROIDLOOM_WORKING_REVERSE_PENDING`,
 and retries only reconciliation and reverse. It never replays the forward

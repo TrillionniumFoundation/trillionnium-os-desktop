@@ -207,7 +207,16 @@ impl Publication {
         self.guard_source()?;
         self.transaction.seal_summary(false)
     }
-    fn restore(&mut self) -> Result<FilePin> {
+    fn restore(&mut self) -> Result<Option<FilePin>> {
+        // Admission and staging failures cannot strand the already published
+        // runtime behind an absent private summary directory. This fact comes
+        // from the transaction states before any rename syscall, not a caller
+        // assertion or a report. Transfer the same runtime owner back without
+        // touching private or public paths. Any attempted effect uses the full
+        // reconciliation and reverse path below.
+        if self.transaction.never_published() {
+            return Ok(None);
+        }
         self.guard_source()?;
         self.transaction.reconcile_pending()?;
         for index in (0..self.transaction.len()).rev() {
@@ -220,7 +229,7 @@ impl Publication {
         )?;
         self.transaction.guard()?;
         self.guard_source()?;
-        self.transaction.seal_summary(true)
+        self.transaction.seal_summary(true).map(Some)
     }
 }
 
@@ -236,7 +245,7 @@ pub(crate) struct WorkingBootPublicationFailure {
 }
 pub(crate) struct RestoredWorkingBootFiles {
     publication: Publication,
-    summary: FilePin,
+    summary: Option<FilePin>,
 }
 impl PublishedWorkingBootFiles {
     pub(crate) fn publish(
@@ -312,8 +321,8 @@ impl RestoredWorkingBootFiles {
         )?;
         self.publication.transaction.guard()
     }
-    pub(crate) fn summary(&self) -> &FilePin {
-        &self.summary
+    pub(crate) fn summary(&self) -> Option<&FilePin> {
+        self.summary.as_ref()
     }
     /// Transfer the same owner without a fallible gap. A later source drift
     /// must be handled by the receiver while it still owns the runtime pair.

@@ -389,6 +389,14 @@ impl Transaction {
     pub(super) fn all_published(&self) -> bool {
         !self.steps.is_empty() && self.steps.iter().all(|s| s.phase == Phase::Published)
     }
+    /// True only before any public rename syscall has been attempted. Even a
+    /// completed reverse keeps a Restored phase, so it cannot masquerade as an
+    /// admission failure with no effects.
+    pub(super) fn never_published(&self) -> bool {
+        self.steps
+            .iter()
+            .all(|s| matches!(s.phase, Phase::Staged | Phase::Ready))
+    }
     pub(super) fn all_restored(&self) -> bool {
         self.steps
             .iter()
@@ -825,12 +833,15 @@ mod tests {
             let result = transaction.publish_captured(0, expected.as_ref());
             if case == "unchanged" {
                 result?;
+                assert!(!transaction.never_published());
                 transaction.restore(0)?;
+                assert!(!transaction.never_published());
                 let restored = observe_kind(&target, false)?.unwrap();
                 assert!(same_inode(expected.as_ref().unwrap(), &restored));
                 assert_eq!(restored.sha256, expected.as_ref().unwrap().sha256);
             } else {
                 assert!(result.is_err());
+                assert!(transaction.never_published());
                 assert_eq!(observe_kind(&target, false)?, before);
                 transaction.restore(0)?;
                 assert_eq!(observe_kind(&target, false)?, before);
