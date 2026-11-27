@@ -31,7 +31,6 @@ use std::{
     rc::Rc,
 };
 
-
 /// Reuse the exact normal host Debian payload, manifest and source identity
 /// from the already observed normal initramfs and owned-guest factories.
 fn selected_host_release(
@@ -39,7 +38,8 @@ fn selected_host_release(
     normal: &Value,
     owned: &Value,
 ) -> Result<crate::normal_host_release::NormalHostRelease> {
-    let host_pin: FilePin = serde_json::from_value(owned["actual"]["normal_host_manifest"].clone())?;
+    let host_pin: FilePin =
+        serde_json::from_value(owned["actual"]["normal_host_manifest"].clone())?;
     let host: crate::boot_host::HostManifest =
         serde_json::from_slice(&files::read_pin(&host_pin, 1024 * 1024)?)?;
     ensure(
@@ -47,7 +47,11 @@ fn selected_host_release(
             && host.tree == text(normal, "host_source_tree")?,
         "selected host programs differ from the same admitted normal source",
     )?;
-    let root = source.path.parent().ok_or("normal source parent")?.join("normal-host-payload");
+    let root = source
+        .path
+        .parent()
+        .ok_or("normal source parent")?
+        .join("normal-host-payload");
     crate::boot_host::normal_host_release(&root, &host)
 }
 
@@ -322,7 +326,7 @@ fn save(path: &Path, value: &impl Serialize) -> Result<FilePin> {
     Ok(p)
 }
 
-fn compare_candidates(
+pub(super) fn compare_candidates(
     candidate: &str,
     normal: &Value,
     owned: &Value,
@@ -1408,7 +1412,8 @@ pub(super) fn resume(intent_pin: &FilePin) -> Result<Rc<OriginalQualificationAut
     let normal = sources.historical_initramfs_readback();
     let m = &normal["normal_materials"];
     sources.revalidate_custody()?;
-    let normal_host_release = selected_host_release(sources.source_pin(), normal, &report["fresh_owned"])?;
+    let normal_host_release =
+        selected_host_release(sources.source_pin(), normal, &report["fresh_owned"])?;
     sources.revalidate_custody()?;
     let derived = cell::derive_original(
         &original_cell.read()?,

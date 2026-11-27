@@ -20,6 +20,9 @@ use std::{
 pub(super) mod labels;
 #[path = "cold_original_data_scan.rs"]
 mod reference_scan;
+#[path = "cold_original_returned_data.rs"]
+mod returned_data;
+pub(crate) use returned_data::ReturnedWorkingPair;
 
 const IMAGES: [&str; 2] = ["data.img", "metadata.img"];
 const ORIGINAL: &str = "/var/lib/droidloom/users/1000/data";
@@ -262,12 +265,22 @@ fn lineage(copy: &Value, clone: &Value, original: &PairRecord, working: &PairRec
 /// The structural checker is also used by private mechanism tests. Only the
 /// two normal admission paths below may add the fixed real-source comparison.
 fn admitted_lineage(
-    copy: &Value, clone: &Value, original: &PairRecord, working: &PairRecord,
+    copy: &Value,
+    clone: &Value,
+    original: &PairRecord,
+    working: &PairRecord,
 ) -> Result<()> {
     lineage(copy, clone, original, working)?;
     let stable_identity = |node: &Identity| -> [u64; 7] {
-        [node.dev, node.ino, u64::from(node.mode), u64::from(node.uid),
-         u64::from(node.gid), node.nlink, node.size]
+        [
+            node.dev,
+            node.ino,
+            u64::from(node.mode),
+            u64::from(node.uid),
+            u64::from(node.gid),
+            node.nlink,
+            node.size,
+        ]
     };
     crate::cold_original_once_recovery::contract::OriginalCopyPolicy::bind_cold_pairs(
         IMAGES.map(|name| stable_identity(&original.members[name].identity)),

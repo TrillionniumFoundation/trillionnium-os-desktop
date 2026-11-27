@@ -303,6 +303,26 @@ impl Journal {
     }
 
     pub(super) fn reopen(path: &Path, candidate_id: &str, intent_sha256: &str) -> Result<Self> {
+        Self::read_existing(path, candidate_id, intent_sha256, true)
+    }
+
+    /// Observe existing history without performing the recovery rename of a
+    /// pending event. An interrupted writer must be retired by the original
+    /// recovery owner before this read-only successor can observe completion.
+    pub(super) fn reopen_read_only(
+        path: &Path,
+        candidate_id: &str,
+        intent_sha256: &str,
+    ) -> Result<Self> {
+        Self::read_existing(path, candidate_id, intent_sha256, false)
+    }
+
+    fn read_existing(
+        path: &Path,
+        candidate_id: &str,
+        intent_sha256: &str,
+        preserve_pending: bool,
+    ) -> Result<Self> {
         ensure(
             fs::valid_digest(candidate_id) && fs::valid_digest(intent_sha256),
             "invalid once journal binding",
@@ -395,6 +415,10 @@ impl Journal {
             ensure(
                 name == expected,
                 "unlisted or out-of-order once journal entry",
+            )?;
+            ensure(
+                preserve_pending,
+                "read-only history cannot retire an interrupted journal writer",
             )?;
             result
                 .directory
@@ -535,6 +559,44 @@ mod tests {
     const BOOT: &str = "7b39f717-0e21-4bbe-8365-b0d4f6fe04d3";
     fn identifiers() -> (String, String) {
         ("a".repeat(64), "b".repeat(64))
+    }
+
+    #[test]
+    fn read_only_history_keeps_pending_evidence_unchanged() -> Result<()> {
+        let tmp = tempfile::tempdir()?;
+        let path = tmp.path().join("journal");
+        let (candidate, intent) = identifiers();
+        let mut journal = Journal::create(&path, &candidate, &intent)?;
+        journal.append(Phase::Admitted, BOOT, json!({"observed":"original"}))?;
+        let pending = path.join("pending-0001.json");
+        files::write_new(&pending, b"{incomplete", 0o600)?;
+        let pin = files::pin_file(&pending)?;
+        let (held, before) = files::open_pin(&pin)?;
+        let directory_before = fs::stat(&File::open(&path)?)?;
+        assert!(Journal::reopen_read_only(&path, &candidate, &intent).is_err());
+        assert_eq!(files::read_pin(&pin, 1024)?, b"{incomplete");
+        assert_eq!(fs::stat(&held)?, before);
+        assert_eq!(files::open_pin(&pin)?.1, before);
+        assert_eq!(fs::stat(&File::open(&path)?)?, directory_before);
+        assert_eq!(std::fs::read_dir(&path)?.count(), 2);
+        Ok(())
+    }
+
+    #[test]
+    fn read_only_history_retains_exact_normal_event_chain() -> Result<()> {
+        let tmp = tempfile::tempdir()?;
+        let path = tmp.path().join("journal");
+        let (candidate, intent) = identifiers();
+        let mut journal = Journal::create(&path, &candidate, &intent)?;
+        journal.append(Phase::Admitted, BOOT, json!({"observed":"original"}))?;
+        let observed = Journal::reopen_read_only(&path, &candidate, &intent)?;
+        assert_eq!(observed.phase(), Some(Phase::Admitted));
+        assert_eq!(
+            observed.observation(Phase::Admitted)?,
+            Some(json!({"observed":"original"}))
+        );
+        assert!(Journal::reopen_read_only(&path, &candidate, &"c".repeat(64)).is_err());
+        observed.revalidate()
     }
 
     #[test]

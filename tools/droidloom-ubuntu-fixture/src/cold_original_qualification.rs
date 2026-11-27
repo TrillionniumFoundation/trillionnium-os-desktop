@@ -25,9 +25,17 @@ mod retirement;
 #[path = "cold_original_once_window.rs"]
 mod window;
 pub(super) use window::{OriginalLabelWindow, OriginalRestoreLabelWindow};
+#[path = "cold_original_returned_custody.rs"]
+mod returned_custody;
+#[path = "cold_original_returned_history.rs"]
+mod returned_history;
 #[path = "cold_original_once_state.rs"]
 mod state;
+pub(crate) use returned_history::ReturnedOnceHistory;
+#[path = "cold_original_working_qualification.rs"]
+mod working_qualification;
 pub(super) use retirement::OriginalRetirement;
+pub(super) use working_qualification::inspect as inspect_returned_working_copy;
 
 use crate::{Result, boot_files as files, cold_original_data, ensure, fs, model::Identity};
 use files::FilePin;
