@@ -61,6 +61,18 @@ class Membership:
                 if len(form) != 3:
                     raise ValueError("Unsupported type membership in uevent inputs")
                 self.definitions[form[1]].append(form[2])
+        # Binary exports encode many attributes as flat concrete type lists.
+        # Index only those exact unions; Boolean/nested/unknown expressions keep
+        # the original evaluator and its short-circuit and error behavior.
+        operators = {"all", "not", "and", "or", "xor"}
+        self.concrete = {}
+        for name, expressions in self.definitions.items():
+            if all(isinstance(expr, list)
+                   and all(isinstance(atom, str) and atom in self.types for atom in expr)
+                   and (not expr or expr[0] not in operators)
+                   for expr in expressions):
+                self.concrete[name] = frozenset(
+                    atom for expr in expressions for atom in expr)
 
     def member(self, name, selected, active=()):
         if isinstance(name, list):
@@ -74,8 +86,11 @@ class Membership:
             return self.cache[key]
         if name in active or name not in self.attributes:
             raise ValueError("Unresolved/cyclic uevent type membership: " + name)
-        value = any(self.evaluate(x, selected, (*active, name))
-                    for x in self.definitions[name])
+        if name in self.concrete:
+            value = selected in self.concrete[name]
+        else:
+            value = any(self.evaluate(x, selected, (*active, name))
+                        for x in self.definitions[name])
         self.cache[key] = value
         return value
 
