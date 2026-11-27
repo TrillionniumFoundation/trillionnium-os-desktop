@@ -11,7 +11,9 @@ fn main() {
     production_mac::run_actual_board_epoch_fixture();
 }
 
+pub mod application_exit_state;
 pub mod control;
+pub use control::physical_qualification_channel;
 pub mod engine_custody;
 mod cpu_placement;
 pub mod development;
@@ -44,6 +46,8 @@ pub mod normal_host_release;
 mod package_cache;
 pub mod package_inventory_observation;
 pub mod native_ihg_preparation;
+#[cfg(target_os = "linux")]
+mod native_application_ui_protocol;
 #[cfg(target_os = "linux")]
 mod production_activation_command;
 #[cfg(target_os = "linux")]

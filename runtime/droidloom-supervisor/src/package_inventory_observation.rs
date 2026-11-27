@@ -59,7 +59,7 @@ fn pid(v: &Value) -> bool {
     v.as_u64()
         .is_some_and(|n| (2..=u32::MAX as u64).contains(&n))
 }
-fn receipt_valid(receipt: &Value, bytes: usize, sha256: &str) -> bool {
+pub(crate) fn receipt_valid(receipt: &Value, bytes: usize, sha256: &str) -> bool {
     let lifecycle = &receipt["lifecycle"];
     let stdio = &lifecycle["stdio_creator"];
     // This repeats the actual source-owned ReadReceipt retirement contract for

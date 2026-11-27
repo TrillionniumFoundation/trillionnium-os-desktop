@@ -285,6 +285,10 @@ pub(super) fn stage_native_configuration(destination: &Path) -> Result<()> {
             "usr/lib/systemd/system/kmod-static-nodes.service.d/50-droidloom-runtime-directory.conf",
             include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-kmod-static-nodes-runtime.conf").as_slice(),
         ),
+        (
+            "usr/lib/systemd/system/droidloom-physical-qualification@.service",
+            include_bytes!("../../../packaging/systemd/system/droidloom-physical-qualification@.service").as_slice(),
+        ),
     ] {
         let path = destination.join(relative);
         write(&path, body)?;

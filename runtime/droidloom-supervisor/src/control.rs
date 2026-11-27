@@ -53,7 +53,7 @@ mod progress;
 #[path = "control_identity.rs"]
 mod identity;
 pub use identity::{
-    ActualApplicationObservation, ActualUserZeroPackageInventoryObservation,
+    ActualApplicationObservation, ActualApplicationExitObservation, ActualUserZeroPackageInventoryObservation,
     EngineMappingObservation, MainCustodyObservation, NativeApplicationInspector,
     NativeInspectionPeer,
 };
@@ -87,7 +87,9 @@ mod application_command;
 
 #[path = "application_leaf_locks.rs"]
 mod application_leaf_locks;
-pub use application_command::{NativeOwnedLeafUnit, OwnedLeafProfile};
+pub use application_command::{NativeOwnedLeafUnit, OwnedLeafProfile, CameraPhotoObservation, RetainedScopedWindowPixels, ScopedWindowPixels, NativeUiSession, NativeUiTranscript, NativeUiStabilityWindow, NativeUiStabilityEvidence, NativeUiStabilitySummary, stability_additional_window_seconds};
+pub use crate::native_application_ui_protocol::{Selector as NativeUiSelector, Reply as NativeUiReply, ProtocolError as NativeUiError};
+pub use application_command::physical_qualification_channel;
 pub use crate::native_leaf_engine::{NativeLeafEngineEvidence, NativeLeafExecution};
 pub use application_leaf_locks::NativeApplicationSourceLocks;
 
@@ -295,6 +297,12 @@ pub enum ControlRequest {
     ObserveApplicationEngine {
         package: String,
         user: u32,
+        expected_epoch: application_probe::RuntimeEpoch,
+    },
+    /// Read complete exit history for one source-selected user-zero application.
+    /// Expected epoch compares the actual owner; no PID, UID, path or command is accepted.
+    ObserveApplicationExitState {
+        package: String,
         expected_epoch: application_probe::RuntimeEpoch,
     },
     /// Read the complete fixed user-0 package/UID table from the actual owner.
@@ -530,6 +538,9 @@ impl Daemon {
             }
             ControlRequest::ObserveApplicationEngine { .. } => Err(ControlError::Invalid(
                 "running engine observation requires the original kernel-first Ready owner".into(),
+            )),
+            ControlRequest::ObserveApplicationExitState { .. } => Err(ControlError::Invalid(
+                "exit-state observation requires the original kernel-first Ready owner".into(),
             )),
             ControlRequest::ObserveUserZeroPackageInventory { .. } => Err(ControlError::Invalid(
                 "complete user-0 inventory requires the original kernel-first Ready owner".into(),
