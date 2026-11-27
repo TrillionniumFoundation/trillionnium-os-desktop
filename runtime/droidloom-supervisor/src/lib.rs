@@ -12,6 +12,7 @@ fn main() {
 }
 
 pub mod application_exit_state;
+pub mod application_permission_state;
 pub mod control;
 pub use control::physical_qualification_channel;
 pub mod engine_custody;
