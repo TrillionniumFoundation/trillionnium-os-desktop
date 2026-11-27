@@ -20,6 +20,20 @@ DEPENDENCIES_SHA='35d868142deecbcc8ac603db3ff7f4bc454f8c6b44155ec11da38cbd738392
 COMMAND_NAMES=['aapt-package','javac','d8','align','create-owned-key','sign','signature','alignment','badging','permissions','manifest']
 LIMITS={'cpu.max':'100000 100000','memory.max':'536870912','memory.swap.max':'0','pids.max':'128'}
 
+# Only the exact compiled original dependency declaration can be relocated.
+ORIGINAL_DEPENDENCY_PATHS = {'aapt': '/usr/lib/android-sdk/build-tools/debian/aapt', 'android_jar': '/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/sdk/31/public/android.jar', 'apksigner_jar': '/usr/share/java/apksigner.jar', 'java': '/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/java', 'java_security': '/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/conf/security/java.security', 'javac': '/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/javac', 'jdk_modules': '/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/lib/modules', 'jdk_release': '/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/release', 'jvm_cfg': '/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/lib/jvm.cfg', 'libjava': '/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/lib/libjava.so', 'libjimage': '/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/lib/libjimage.so', 'libjli': '/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/lib/libjli.so', 'libjvm': '/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/lib/server/libjvm.so', 'r8': '/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/cmdline-tools/tools/lib/r8.jar', 'zipalign': '/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/build-tools/linux-x86/bin/zipalign'}
+INSTALLED_DEPENDENCY_PATHS = {'aapt': '/usr/lib/android-sdk/build-tools/debian/aapt', 'android_jar': '/usr/lib/droidloom-native-leaf-toolchain/aosp-21.0.4-r1/sdk/31/public/android.jar', 'apksigner_jar': '/usr/share/java/apksigner.jar', 'java': '/usr/lib/droidloom-native-leaf-toolchain/aosp-21.0.4-r1/jdk/jdk21/linux-x86/bin/java', 'java_security': '/usr/lib/droidloom-native-leaf-toolchain/aosp-21.0.4-r1/jdk/jdk21/linux-x86/conf/security/java.security', 'javac': '/usr/lib/droidloom-native-leaf-toolchain/aosp-21.0.4-r1/jdk/jdk21/linux-x86/bin/javac', 'jdk_modules': '/usr/lib/droidloom-native-leaf-toolchain/aosp-21.0.4-r1/jdk/jdk21/linux-x86/lib/modules', 'jdk_release': '/usr/lib/droidloom-native-leaf-toolchain/aosp-21.0.4-r1/jdk/jdk21/linux-x86/release', 'jvm_cfg': '/usr/lib/droidloom-native-leaf-toolchain/aosp-21.0.4-r1/jdk/jdk21/linux-x86/lib/jvm.cfg', 'libjava': '/usr/lib/droidloom-native-leaf-toolchain/aosp-21.0.4-r1/jdk/jdk21/linux-x86/lib/libjava.so', 'libjimage': '/usr/lib/droidloom-native-leaf-toolchain/aosp-21.0.4-r1/jdk/jdk21/linux-x86/lib/libjimage.so', 'libjli': '/usr/lib/droidloom-native-leaf-toolchain/aosp-21.0.4-r1/jdk/jdk21/linux-x86/lib/libjli.so', 'libjvm': '/usr/lib/droidloom-native-leaf-toolchain/aosp-21.0.4-r1/jdk/jdk21/linux-x86/lib/server/libjvm.so', 'r8': '/usr/lib/droidloom-native-leaf-toolchain/aosp-21.0.4-r1/cmdline-tools/tools/lib/r8.jar', 'zipalign': '/usr/lib/droidloom-native-leaf-toolchain/aosp-21.0.4-r1/build-tools/linux-x86/bin/zipalign'}
+
+def _installed_dependency_paths(expected):
+    if type(expected) is not dict or set(expected) != set(ORIGINAL_DEPENDENCY_PATHS):
+        raise RuntimeError('EXACT_COMPILED_DEPENDENCY_ROSTER_REQUIRED')
+    if any(type(expected[name]) is not dict or
+           expected[name].get('declared_path') != path
+           for name, path in ORIGINAL_DEPENDENCY_PATHS.items()):
+        raise RuntimeError('EXACT_ORIGINAL_DEPENDENCY_PATH_REQUIRED')
+    return dict(INSTALLED_DEPENDENCY_PATHS)
+
+
 
 def planner(c,prep_ref):
     packet=c.parse(c.read_ref(prep_ref,131072));rows=[r for r in packet['files'] if Path(r['path']).name=='documents_plan.py']
@@ -47,7 +61,15 @@ def pin(c,declared,maximum=268435456):
 def dependencies(c,packet):
     rows=[r for r in packet['files'] if Path(r['path']).name=='original_dependencies.json']
     c.need(len(rows)==1 and rows[0]['sha256']==DEPENDENCIES_SHA,'EXACT_ORIGINAL_BUILD_DEPENDENCY_CONTRACT')
-    expected=c.parse(c.read_ref(rows[0],16384));actual={n:pin(c,row['declared_path']) for n,row in expected.items()}
+    expected=c.parse(c.read_ref(rows[0],16384))
+    working=c.working_runtime_root() is not None
+    locations=(_installed_dependency_paths(expected) if working else
+               {name:row['declared_path'] for name,row in expected.items()})
+    actual={name:pin(c,path) for name,path in locations.items()}
+    if working:
+        c.need(all(actual[name]['resolved_path']==path for name,path in locations.items()
+                   if path.startswith('/usr/lib/droidloom-native-leaf-toolchain/')),
+               'INSTALLED_TOOLCHAIN_CANNOT_RESOLVE_BACK_TO_WORKSPACE')
     c.need(all(actual[n]['sha256']==row['sha256'] for n,row in expected.items()),'ORIGINAL_BUILD_DEPENDENCY_CHANGED')
     pending=[Path(actual['apksigner_jar']['resolved_path'])];seen=set()
     while pending:

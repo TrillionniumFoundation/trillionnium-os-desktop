@@ -31,6 +31,9 @@ mod cold_original_initramfs;
 mod cold_original_once_initramfs;
 mod cold_original_once_recovery;
 mod cold_original_qualification;
+mod cold_recovery_recipe;
+mod cold_working_initramfs;
+mod cold_working_recovery;
 mod complete_native;
 mod complete_snapshot;
 mod fs;
@@ -81,6 +84,8 @@ enum Command {
     },
     #[command(hide = true)]
     OriginalOnceEarlyRecovery,
+    #[command(hide = true)]
+    WorkingQualificationEarlyRecovery,
     VerifyNetplanProfiles {
         #[arg(long)]
         root: PathBuf,
@@ -276,6 +281,7 @@ fn run() -> Result<()> {
             config_sha256,
         } => cold_original_qualification::run_thaw_guard(&config, &config_sha256)?,
         Command::OriginalOnceEarlyRecovery => cold_original_once_recovery::early()?,
+        Command::WorkingQualificationEarlyRecovery => cold_working_recovery::early()?,
         Command::VerifyNetplanProfiles { root } => boot_netplan_profiles::run(&root)?,
         Command::VerifyPublicApkInputs {
             config,

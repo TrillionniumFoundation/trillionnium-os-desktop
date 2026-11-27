@@ -675,7 +675,7 @@ impl VerifiedSourceDocument {
     pub(crate) fn revalidate(&self) -> Result<()> {
         recheck_held_source(&self.pin, false, &self.file, &self.identity)
     }
-    pub(crate) fn json(&self, limit: u64) -> Result<Value> {
+    pub(crate) fn bytes(&self, limit: u64) -> Result<Vec<u8>> {
         use std::os::unix::fs::FileExt;
         ensure(
             self.pin.bytes <= limit,
@@ -689,7 +689,10 @@ impl VerifiedSourceDocument {
             "held public document bytes changed",
         )?;
         self.revalidate()?;
-        Ok(serde_json::from_slice(&raw)?)
+        Ok(raw)
+    }
+    pub(crate) fn json(&self, limit: u64) -> Result<Value> {
+        Ok(serde_json::from_slice(&self.bytes(limit)?)?)
     }
 }
 

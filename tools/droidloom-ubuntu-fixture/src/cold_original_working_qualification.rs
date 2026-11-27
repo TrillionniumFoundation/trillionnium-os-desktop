@@ -72,6 +72,18 @@ pub(super) struct PreparedWorkingCopyObservation {
     data: PreparedReturnedPair,
 }
 impl PreparedWorkingCopyObservation {
+    pub(super) fn recovery_directory(&self, candidate: &str) -> Result<std::path::PathBuf> {
+        self.guard()?;
+        self.data.recovery_directory(candidate)
+    }
+    pub(super) fn prepare_recovery(&mut self, candidate: &str, input: &FilePin) -> Result<FilePin> {
+        self.guard()?;
+        let receipt = self
+            .data
+            .prepare_recovery(&self.history, candidate, input)?;
+        self.guard()?;
+        Ok(receipt)
+    }
     pub(super) fn guard(&self) -> Result<()> {
         self.data.guard(&self.history)
     }

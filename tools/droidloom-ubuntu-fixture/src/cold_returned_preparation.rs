@@ -196,6 +196,7 @@ pub(crate) struct PreparedReturnedPair {
     work: NewDirectory,
     source_work: NewDirectory,
     births: Value,
+    recovery: Option<(NewDirectory, Value)>,
 }
 impl ReturnedWorkingPair {
     pub(crate) fn prepare_normal_sources(
@@ -277,6 +278,7 @@ impl ReturnedWorkingPair {
             work,
             source_work,
             births,
+            recovery: None,
         };
         value.guard(history)?;
         Ok((value, sources))
@@ -287,6 +289,9 @@ impl PreparedReturnedPair {
         self.pair.guard(history)?;
         self.work.guard()?;
         self.source_work.guard()?;
+        if let Some((directory, _)) = &self.recovery {
+            directory.guard()?;
+        }
         self.pair.guard(history)
     }
     pub(crate) fn work(&self) -> &Path {
@@ -298,7 +303,152 @@ impl PreparedReturnedPair {
     pub(crate) fn summary(&self) -> Value {
         json!({"schema":"droidloom.prepared-returned-working-pair.v1",
             "returned_pair":self.pair.summary(),"normal_workspaces":self.births,
+            "normal_recovery_workspace":self.recovery.as_ref().map(|(_, proof)|proof),
             "qualification_boot_authorized":false,"runtime_parent_freeze":false})
+    }
+}
+
+fn recovery_name(candidate: &str, work_inode: u64) -> Result<String> {
+    ensure(
+        fs::valid_digest(candidate) && work_inode != 0,
+        "actual new working candidate and held workspace inode required",
+    )?;
+    let name = format!(
+        "original-initramfs-working-{}-{work_inode}",
+        &candidate[..24]
+    );
+    ensure(
+        name.len() <= 80,
+        "normal recovery workspace exceeds original producer name bound",
+    )?;
+    Ok(name)
+}
+
+fn recovery_directory_for_work(candidate: &str, work: &Path, work_inode: u64) -> Result<PathBuf> {
+    ensure(
+        work == Path::new(QUALIFICATION).join(work_name(candidate)?),
+        "normal recovery candidate differs from its actual private work",
+    )?;
+    Ok(Path::new(QUALIFICATION).join(recovery_name(candidate, work_inode)?))
+}
+
+impl PreparedReturnedPair {
+    pub(crate) fn recovery_directory(&self, candidate: &str) -> Result<PathBuf> {
+        let id = fs::stat(&self.work.file)?;
+        recovery_directory_for_work(candidate, &self.work.path, id.ino)
+    }
+
+    /// A second cold-only operation, after the first two births. The actual
+    /// normal producer is invoked here while every pre-existing BASE member and
+    /// the same four original/working image OFDs remain held. The source-derived
+    /// single new directory is the only permitted namespace change.
+    pub(crate) fn prepare_recovery(
+        &mut self,
+        history: &ReturnedOnceHistory,
+        candidate: &str,
+        normal_plan: &FilePin,
+    ) -> Result<FilePin> {
+        self.guard(history)?;
+        ensure(
+            self.recovery.is_none(),
+            "normal working recovery was already prepared",
+        )?;
+        let directory = self.recovery_directory(candidate)?;
+        ensure(
+            normal_plan.path == self.work.path.join("RECOVERY-PRODUCER.json"),
+            "normal working recovery input is not its own fixed private source",
+        )?;
+        let (input, input_identity) = crate::boot_files::open_pin(normal_plan)?;
+        let raw: Value =
+            serde_json::from_slice(&crate::boot_files::read_pin(normal_plan, 16 * 1024 * 1024)?)?;
+        ensure(
+            raw["schema"] == "droidloom.original-host-initramfs-plan.v1"
+                && raw["work_directory"] == serde_json::to_value(&directory)?
+                && raw["recovery_recipe"].is_object(),
+            "normal working recovery plan changes its actual derived destination",
+        )?;
+        let parent_index = self
+            .pair
+            .parents
+            .iter()
+            .position(|(p, _, _)| p == Path::new(QUALIFICATION))
+            .ok_or("held qualification parent absent")?;
+        let parent = self.pair.parents[parent_index].1.try_clone()?;
+        let before = self.pair.parents[parent_index].2.clone();
+        let inventory = DirectoryInventory::capture(&parent)?;
+        let name = directory
+            .file_name()
+            .and_then(|s| s.to_str())
+            .ok_or("normal recovery basename absent")?
+            .to_owned();
+        ensure(
+            named(&parent, &name)?.is_none(),
+            "normal working recovery workspace already exists",
+        )?;
+        // The unchanged normal CLI implementation owns its real private build,
+        // source admission, namespace, output readback, and full tool custody.
+        // No success callback or prepared receipt supplied by a caller is used.
+        crate::cold_original_initramfs::prepare(&normal_plan.path, &normal_plan.sha256)?;
+        ensure(
+            fs::stat(&input)? == input_identity
+                && fs::hash(&input)? == normal_plan.sha256
+                && fs::stat(&input)? == input_identity
+                && fs::Tree::open("/", 0)?.identity(&fs::absolute_string(&normal_plan.path)?)?
+                    == input_identity,
+            "normal recovery input changed across its actual producer",
+        )?;
+        let recovery = NewDirectory::hold(directory, &parent)?;
+        recovery.guard()?;
+        inventory.verify(&parent, std::slice::from_ref(&name))?;
+        let receipt =
+            crate::boot_files::pin_file(&recovery.path.join("ORIGINAL-INITRAMFS-PREPARED.json"))?;
+        let result: Value =
+            serde_json::from_slice(&crate::boot_files::read_pin(&receipt, 16 * 1024 * 1024)?)?;
+        ensure(
+            result["schema"] == "droidloom.original-host-initramfs-prepared.v1"
+                && result["input"] == serde_json::to_value(normal_plan)?
+                && result["recovery_recipe_input"] == raw["recovery_recipe"]
+                && result["recovery_image_readback"]["schema"]
+                    == "droidloom.working-qualification-recovery-image-readback.v1",
+            "actual normal producer did not retain this working recovery recipe",
+        )?;
+        self.work.guard()?;
+        self.source_work.guard()?;
+        parent.sync_all()?;
+        let after = labels::snapshot(&parent)?;
+        let old = labels::snapshot_identity(&before);
+        let new = labels::snapshot_identity(&after);
+        ensure(
+            same_directory_inode(old, new)
+                && old.uid == 0
+                && old.gid == 0
+                && old.mode & 0o022 == 0
+                && old.nlink.checked_add(1) == Some(new.nlink),
+            "normal recovery birth changed parent ownership or an additional child",
+        )?;
+        labels::verify_data_snapshot(&before, &after, false)?;
+        let named_parent = fs::Tree::open("/", 0)?.dir(QUALIFICATION)?;
+        ensure(
+            labels::snapshot(&named_parent)? == after,
+            "normal recovery parent name was replaced",
+        )?;
+        inventory.verify(&parent, std::slice::from_ref(&name))?;
+        self.pair.parents[parent_index].2 = after.clone();
+        self.pair.guard(history)?;
+        let proof = json!({
+            "schema":"droidloom.working-qualification-cold-recovery-workspace.v1",
+            "candidate_id":candidate,"parent":QUALIFICATION,"before":before,"after":after,
+            "retained_members":inventory.report(),
+            "added_directory":{"name":name,"path":recovery.path,"birth":recovery.birth},
+            "normal_input":normal_plan,"normal_prepared":receipt,
+            "same_four_backing_ofds_retained":true,
+            "parent_snapshot_rebound_only_after_exact_one_normal_birth":true,
+            "scope":"cold_normal_initramfs_preparation_only",
+            "runtime_journal_births_admitted":false
+        });
+        self.recovery = Some((recovery, proof));
+        self.guard(history)?;
+        Ok(receipt)
     }
 }
 
@@ -368,5 +518,44 @@ mod tests {
         assert!(source_name(&candidate, 0).is_err());
         assert!(work_name("../candidate").is_err());
         assert!(source_name(&"A".repeat(64), 41).is_err());
+    }
+    #[test]
+    fn working_recovery_workspace_joins_full_candidate_and_actual_inode() {
+        let candidate = "a".repeat(64);
+        let work = Path::new(QUALIFICATION).join(work_name(&candidate).unwrap());
+        let first = recovery_directory_for_work(&candidate, &work, 11).unwrap();
+        let second = recovery_directory_for_work(&candidate, &work, 12).unwrap();
+        assert_ne!(first, second);
+        assert_eq!(first.parent(), Some(Path::new(QUALIFICATION)));
+        assert!(first.file_name().unwrap().len() <= 80);
+        let collision = format!("{}{}", "a".repeat(24), "b".repeat(40));
+        assert!(recovery_directory_for_work(&collision, &work, 11).is_err());
+        assert!(recovery_directory_for_work(&candidate, &work, 0).is_err());
+        assert!(recovery_directory_for_work(&candidate, &work.join("alias"), 11).is_err());
+        assert!(recovery_directory_for_work("../other", &work, 11).is_err());
+    }
+    #[test]
+    fn working_recovery_birth_keeps_all_preexisting_member_inodes() {
+        let root = Temporary::new();
+        std::fs::write(root.0.join("old"), b"retained cold source").unwrap();
+        let directory = File::open(&root.0).unwrap();
+        let held = DirectoryInventory::capture(&directory).unwrap();
+        std::fs::create_dir(root.0.join("normal-recovery")).unwrap();
+        held.verify(&directory, &["normal-recovery".into()])
+            .unwrap();
+        std::fs::create_dir(root.0.join("extra")).unwrap();
+        assert!(
+            held.verify(&directory, &["normal-recovery".into()])
+                .is_err()
+        );
+        std::fs::remove_dir(root.0.join("extra")).unwrap();
+        held.verify(&directory, &["normal-recovery".into()])
+            .unwrap();
+        std::fs::write(root.0.join("replacement"), b"retained cold source").unwrap();
+        std::fs::rename(root.0.join("replacement"), root.0.join("old")).unwrap();
+        assert!(
+            held.verify(&directory, &["normal-recovery".into()])
+                .is_err()
+        );
     }
 }
