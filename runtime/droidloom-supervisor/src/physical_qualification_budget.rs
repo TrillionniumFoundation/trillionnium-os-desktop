@@ -4,6 +4,7 @@
 //! remain required for every case and for the final 39/377 Complete.
 pub const NATIVE_CASE_COUNT: usize = 14;
 pub const FAMILY_CASE_COUNT: usize = 31;
+pub const RETAIL_CASE_COUNT: usize = 5;
 pub const PHOTO_CASE_COUNT: usize = 1;
 pub const CASE_COUNT: usize = NATIVE_CASE_COUNT + FAMILY_CASE_COUNT + PHOTO_CASE_COUNT;
 // Complete preparation work from the finite normal factories, charged once
@@ -30,6 +31,19 @@ pub const MAIN_SECONDS: u64 = 70;
 pub const INSPECT_SECONDS: u64 = 250;
 pub const FAMILY_WORK_SECONDS: u64 = 2_615;
 pub const FAMILY_CASE_SECONDS: u64 = INSPECT_SECONDS + FAMILY_WORK_SECONDS;
+// Only the five compiled retail cases execute the finite business sequence:
+// 26 first + 12 second UI requests, four scoped captures and their local
+// processing, then one separate normal opening/finish. No other family borrows it.
+pub const RETAIL_BUSINESS_SECONDS: u64 =
+    (26 + 12) * (15 + 70 + 15) + 4 * (2 * 15 + 2 * 15 + 2 * 15 + 20) + 4 * 60;
+pub const RETAIL_REOPEN_SECONDS: u64 =
+    (250 + 3 * 15 + 250 + 250 + 2 * 15 + 70) + (250 + 70 + 250 + 70 + 60);
+pub const RETAIL_WORK_SECONDS: u64 =
+    FAMILY_WORK_SECONDS + RETAIL_BUSINESS_SECONDS + RETAIL_REOPEN_SECONDS;
+pub const RETAIL_CASE_SECONDS: u64 = INSPECT_SECONDS + RETAIL_WORK_SECONDS;
+pub const FAMILY_SECONDS: u64 = (FAMILY_CASE_COUNT - RETAIL_CASE_COUNT) as u64
+    * FAMILY_CASE_SECONDS
+    + RETAIL_CASE_COUNT as u64 * RETAIL_CASE_SECONDS;
 // The supplementary real single-shutter/reopen case retains the old Camera leaf.
 // Its normal pre-inspection is separate from the two-session factory's window.
 pub const CAMERA_PHOTO_WORK_SECONDS: u64 = 4_040;
@@ -53,7 +67,7 @@ pub const NATIVE_SECONDS: u64 = native_seconds();
 pub const SUITE_SECONDS: u64 = SOURCE_AND_CAPTURE_SECONDS
     + 2 * MAIN_SECONDS
     + NATIVE_SECONDS
-    + FAMILY_CASE_COUNT as u64 * FAMILY_CASE_SECONDS
+    + FAMILY_SECONDS
     + PHOTO_CASE_COUNT as u64 * CAMERA_PHOTO_CASE_SECONDS;
 pub const RETIREMENT_SECONDS: u64 = 180;
 pub const SERVICE_SECONDS: u64 = SUITE_SECONDS + RETIREMENT_SECONDS;

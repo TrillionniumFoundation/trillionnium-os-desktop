@@ -46,6 +46,8 @@ pub use runtime_prepare::{PreparationReport, prepare_files};
 mod common_gate;
 #[path = "family_observation.rs"]
 mod family_observation;
+#[path = "family_retail.rs"]
+mod family_retail;
 #[path = "physical_acceptance.rs"]
 mod physical_acceptance;
 #[path = "physical_plan_prepare.rs"]

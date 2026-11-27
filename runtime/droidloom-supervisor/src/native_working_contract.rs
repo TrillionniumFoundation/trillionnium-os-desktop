@@ -408,11 +408,12 @@ mod tests {
             (14, 31, 46)
         );
         assert_eq!(budget::SOURCE_AND_CAPTURE_SECONDS, 46622);
-        assert_eq!(s.whole_suite_seconds, 165297);
+        assert_eq!(s.whole_suite_seconds, 195672);
         assert_eq!(
             s.whole_suite_seconds,
             budget::NATIVE_CASE_WINDOWS.iter().sum::<u64>()
-                + 31 * (250 + 2615)
+                + 26 * (250 + 2615)
+                + 5 * (250 + 8690)
                 + budget::CAMERA_PHOTO_CASE_SECONDS
                 + 140
                 + budget::SOURCE_AND_CAPTURE_SECONDS

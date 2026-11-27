@@ -2,6 +2,7 @@
 //! Parsing a saved result is insufficient: the callers below require the
 //! non-deserializable normal execution object and its original held result FD.
 use super::clock_timer::ClockTimerEvidence;
+use super::family_observation::FamilyObservation;
 use super::leaf_routes::{LeafObservation, Route};
 use super::runtime_identity::IdentityObservation;
 use super::*;
@@ -66,7 +67,6 @@ fn identity_fact(
     })
 }
 
-
 /// These two complete common assertions consume an actual finished stability
 /// object and a material identity joined to its opaque running Engine. Pixels,
 /// account state, independent reopen and business success are separate facts.
@@ -98,6 +98,56 @@ pub(super) fn from_stability(
             }),
         ),
     ])
+}
+
+/// Family common facts consume the retained executor and both completed
+/// histories. Guest search does not imply account/data or release acceptance.
+pub(super) fn from_family(
+    observation: &FamilyObservation,
+    identity: &IdentityObservation,
+    main: &RuntimeMainCustody,
+    actual: &ApplicationInspection,
+) -> Result<Vec<CommonGateFact>, String> {
+    observation.require_subject(main, actual)?;
+    let mut result = from_stability(observation.stability(), identity, main, actual)?;
+    let first = observation.stability().transcript();
+    if observation.complete_ui_input()? {
+        result.push(fact(
+            "ui_observation",
+            &actual.package,
+            main,
+            json!({
+                "factory":"retained_retail_query_exact_readback_and_populated_results",
+                "first_finished_journal":first.journal(),"first_owned_task":first.task(),
+                "actual_source_replies_and_scoped_pixels_retained":true,
+                "input_readback_inferred":false,"whole_application_accepted":false
+            }),
+        ));
+    }
+    if observation.complete_lifecycle()? {
+        let next = observation
+            .reopened()
+            .ok_or("complete family lifecycle requires the actual retained second history")?;
+        next.require_subject(main, actual)?;
+        result.push(fact(
+            "lifecycle",
+            &actual.package,
+            main,
+            json!({
+                "factory":"retained_retail_distinct_owned_close_reopen",
+                "first_finished_journal":first.journal(),"first_owned_task":first.task(),
+                "second_finished_journal":next.transcript().journal(),
+                "second_owned_task":next.transcript().task(),
+                "query_state_observed_before_any_second_business_mutation":true,
+                "selected_product_and_restored_filter_state_observed":true,
+                "pre_existing_tasks_preserved":true,
+                "data_permissions_or_account_acceptance_inferred":false,
+                "whole_application_accepted":false
+            }),
+        ));
+    }
+    observation.guard_immutable()?;
+    Ok(result)
 }
 
 fn distinct_pair(value: &Value) -> bool {
