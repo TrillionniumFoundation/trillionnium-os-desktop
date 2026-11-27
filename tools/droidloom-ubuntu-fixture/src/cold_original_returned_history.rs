@@ -539,6 +539,21 @@ impl ReturnedOnceHistory {
         )?;
         self.owner.revalidate()
     }
+    pub(super) fn accept_working_owner_labels(
+        &mut self,
+        batch: &crate::cold_original_data::labels::WorkingLabelBatch,
+    ) -> Result<()> {
+        match &mut self.owner {
+            ReturnedObserver::Working(owner) => owner.accept_working_label_batch(batch)?,
+            ReturnedObserver::Original(_) => {
+                return Err("working labels cannot rebind the historical original owner".into());
+            }
+        }
+        // All retained history, normal archive sources, and the entry verifier
+        // stay strict. This is not a reconstruction of the old live retirement.
+        self.guard()
+    }
+
     /// These are comparisons from the still-held returned source, not a new
     /// mutable owner or a reconstruction of its historical live retirement.
     pub(crate) fn current_boot_id(&self) -> &str {

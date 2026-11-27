@@ -13,6 +13,7 @@ mod configurations;
 pub(crate) use configurations::working::{
     PublishedWorkingRuntime, RestoredWorkingRuntime, WorkingPublicationFailure,
 };
+pub(crate) use configurations::working_grub::PublishedWorkingBootFiles;
 #[path = "cold_original_once_dispatch.rs"]
 mod dispatcher;
 #[path = "cold_original_once_labels.rs"]
@@ -51,6 +52,7 @@ mod working_materials;
 mod working_qualification;
 #[path = "cold_working_runtime.rs"]
 mod working_runtime;
+pub(crate) use working_runtime::{WorkingLabelSourceIdentity, WorkingRuntimeSources};
 pub(super) use retirement::OriginalRetirement;
 pub(super) use working_qualification::inspect as inspect_returned_working_copy;
 

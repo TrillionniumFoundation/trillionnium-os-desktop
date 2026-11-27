@@ -317,6 +317,54 @@ impl WorkingColdOwner {
         )?;
         Ok(())
     }
+    pub(crate) fn accept_working_label_batch(
+        &mut self,
+        batch: &crate::cold_original_data::labels::WorkingLabelBatch,
+    ) -> Result<()> {
+        ensure(
+            batch.candidate_id() == self.candidate
+                && self
+                    .locks
+                    .iter()
+                    .map(|lock| lock.path.as_path())
+                    .eq(LOCK_PATHS.iter().map(Path::new)),
+            "working lock label batch belongs to another live owner or roster",
+        )?;
+        batch.revalidate()?;
+        // The caller's entry source and immutable plan remain under the fixed
+        // private RootScope exclusions (or already have their final labels).
+        // They are never rebound through a JSON comparison or a fresh open.
+        self.input.revalidate()?;
+        self.executable.revalidate()?;
+        let updates = self
+            .locks
+            .iter()
+            .enumerate()
+            .map(|(index, lock)| {
+                if let Some(record) = batch
+                    .records()
+                    .iter()
+                    .find(|record| record.paths().iter().any(|path| path == &lock.path))
+                {
+                    ensure(
+                        index != 0,
+                        "private VM controller lock is outside host label scope",
+                    )?;
+                    let after =
+                        record.require_held_transition(&lock.path, &lock.held, &lock.identity)?;
+                    Ok((lock.identity.clone(), after))
+                } else {
+                    lock.revalidate()?;
+                    Ok((lock.identity.clone(), lock.identity.clone()))
+                }
+            })
+            .collect::<Result<Vec<_>>>()?;
+        for (lock, (before, after)) in self.locks.iter_mut().zip(updates) {
+            lock.accept_label_identity(&before, &after)?;
+        }
+        self.revalidate()
+    }
+
     pub(crate) fn boot_id(&self) -> &str {
         &self.observation.boot_id
     }

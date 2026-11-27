@@ -6,8 +6,9 @@
 //! success. It cannot label a backing, publish selected.json, arm grubenv or reboot.
 //! An unresolved reverse retains the same live owner and descriptors in process.
 use super::{
-    PublishedWorkingRuntime, RestoredWorkingRuntime, WorkingPublicationFailure,
-    configurations::working_grub::{PublishedWorkingBootFiles, WorkingBootPublicationFailure},
+    PublishedWorkingBootFiles, PublishedWorkingRuntime, RestoredWorkingRuntime,
+    WorkingPublicationFailure,
+    configurations::working_grub::WorkingBootPublicationFailure,
     working_runtime::{
         PreparedWorkingRuntime, WorkingGrubSource, WorkingOriginalCellPreimage,
         WorkingRuntimeSources,

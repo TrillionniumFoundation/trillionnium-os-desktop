@@ -8,6 +8,7 @@ use super::super::{
 use crate::{
     Result,
     boot_files::{self as files, FilePin},
+    cold_original_data::labels::{WorkingLabelBatch, WorkingLabelDerivation},
     ensure, fs,
 };
 use droidloom_descriptor_custody::Ext4Handle;
@@ -218,6 +219,63 @@ impl Parents {
     }
 }
 
+fn label_record<'a>(
+    batch: &'a WorkingLabelBatch,
+    path: &Path,
+) -> Result<&'a WorkingLabelDerivation> {
+    batch
+        .records()
+        .iter()
+        .find(|record| record.paths().iter().any(|known| known == path))
+        .ok_or_else(|| "working parent change lacks this actual normal label transition".into())
+}
+
+/// Compare complete parent inventories before accepting any new checkpoint.
+/// Every difference must be one actual source-owned normal label write.
+fn require_labelled_parent(
+    before: &DirectoryState,
+    after: &DirectoryState,
+    batch: &WorkingLabelBatch,
+) -> Result<()> {
+    ensure(
+        before.path == after.path && before.members.keys().eq(after.members.keys()),
+        "working label batch changed a parent path or complete member-name roster",
+    )?;
+    if before.identity != after.identity
+        || before.handle_type != after.handle_type
+        || before.handle != after.handle
+        || before.attributes != after.attributes
+    {
+        label_record(batch, &before.path)?.require_transition(
+            &before.path,
+            (
+                &before.identity,
+                before.handle_type,
+                &before.handle,
+                &before.attributes,
+            ),
+            (
+                &after.identity,
+                after.handle_type,
+                &after.handle,
+                &after.attributes,
+            ),
+        )?;
+    }
+    for (name, old) in &before.members {
+        let new = &after.members[name];
+        if old != new {
+            let path = before.path.join(name);
+            label_record(batch, &path)?.require_member_transition(
+                &path,
+                (&old.identity, old.handle_type, &old.handle),
+                (&new.identity, new.handle_type, &new.handle),
+            )?;
+        }
+    }
+    Ok(())
+}
+
 /// A private live owner, not a deserializable reconstruction from a log.
 pub(super) struct Transaction {
     work: PathBuf,
@@ -380,6 +438,60 @@ impl Transaction {
         }
         self.parents.guard()
     }
+
+    /// Advance all held parent checkpoints together after this batch's actual
+    /// normal label writes. Prepared and original payloads keep strict custody.
+    /// No source-wide guard runs while other batch consumers remain pending.
+    pub(super) fn accept_working_label_batch(&mut self, batch: &WorkingLabelBatch) -> Result<()> {
+        ensure(
+            self.all_published() && batch.candidate_id() == self.candidate,
+            "working label acceptance needs this completely published candidate",
+        )?;
+        batch.revalidate()?;
+        for seal in &self.seals {
+            seal.revalidate()?;
+        }
+        for step in &self.steps {
+            step.guard(&self.retired)?;
+        }
+        ensure(
+            self.parents.files.keys().eq(self.parents.states.keys()),
+            "working label acceptance lost a parent descriptor",
+        )?;
+        let mut after = BTreeMap::new();
+        for (path, file) in &self.parents.files {
+            let actual = DirectoryState::held(path, file)?;
+            let before = &self.parents.states[path];
+            if path.starts_with(&self.work) {
+                ensure(
+                    &actual == before,
+                    "working private payload parent changed during the full-root label batch",
+                )?;
+            } else {
+                require_labelled_parent(before, &actual, batch)?;
+            }
+            after.insert(path.clone(), actual);
+        }
+        batch.revalidate()?;
+        for (path, file) in &self.parents.files {
+            ensure(
+                DirectoryState::held(path, file)? == after[path],
+                "working labelled parent changed before the complete batch checkpoint",
+            )?;
+        }
+        for step in &self.steps {
+            step.guard(&self.retired)?;
+        }
+        let old = std::mem::replace(&mut self.parents.states, after);
+        if let Err(error) = self.guard().and_then(|_| batch.revalidate()) {
+            // Keep the previous exact state and every live FD. The caller still
+            // owns the actual batch and may reconcile this unresolved boundary.
+            self.parents.states = old;
+            return Err(error);
+        }
+        Ok(())
+    }
+
     pub(super) fn len(&self) -> usize {
         self.steps.len()
     }

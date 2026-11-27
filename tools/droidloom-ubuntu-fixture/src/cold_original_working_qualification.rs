@@ -101,6 +101,12 @@ impl PreparedWorkingCopyObservation {
     pub(super) fn history(&self) -> &ReturnedOnceHistory {
         &self.history
     }
+    pub(super) fn accept_working_owner_labels(
+        &mut self,
+        batch: &crate::cold_original_data::labels::WorkingLabelBatch,
+    ) -> Result<()> {
+        self.history.accept_working_owner_labels(batch)
+    }
     pub(super) fn work(&self) -> &Path {
         self.data.work()
     }

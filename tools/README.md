@@ -524,7 +524,12 @@ publication intent compares the complete retained preimage, including original
 absence, before any rename. Reverse returns the same live runtime owner after
 restoring those boot files. This file transaction provides no one-shot arm
 permit; the label and selected-data stages must supply their actual owned state
-before a later GRUB environment transition.
+before a later GRUB environment transition. Its label consumer accepts only a
+completed batch from the same live source owner, advances the held GRUB/kernel
+and runtime/boot parent checkpoints, and retains all custody if a component
+fails. The full source guard runs after the data-pair and cold-lock consumers
+have accepted the same batch. The publication-check command does not create
+label batches or publish a selection.
 
 ### Selected public APK material in a fresh normal guest
 

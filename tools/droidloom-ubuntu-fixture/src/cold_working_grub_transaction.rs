@@ -13,6 +13,7 @@ use super::{Node, observe_kind, working::PublishedWorkingRuntime};
 use crate::{
     Result,
     boot_files::{self as files, FilePin},
+    cold_original_data::labels::WorkingLabelBatch,
     cold_working_recovery::contract as c,
     ensure, fs,
 };
@@ -294,6 +295,40 @@ impl PublishedWorkingBootFiles {
             "working boot files unpublished",
         )?;
         self.publication.transaction.guard()
+    }
+    /// Accept the actual same-owner batch across every boot-file consumer.
+    /// Full source guarding is deliberately left to the window driver after
+    /// its data-pair and cold-lock consumers have accepted this same batch.
+    /// Each component retains its live descriptors on failure; replay accepts
+    /// only the exact already-observed transition, never a refreshed source.
+    pub(crate) fn accept_working_label_batch(&mut self, batch: &WorkingLabelBatch) -> Result<()> {
+        batch.require_source(self.runtime().source())?;
+        let kernel = Path::new("/boot/droidloom/kernels")
+            .join(c::KERNEL_SHA)
+            .join("vmlinuz");
+        let private_custom = self
+            .runtime()
+            .source()
+            .work()
+            .join("WORKING-CUSTOM-GRUB.cfg");
+        ensure(
+            self.publication.sources.len() == 2
+                && self.publication.sources[0].pin().path == kernel
+                && self.publication.sources[1].pin().path == private_custom,
+            "working boot label consumer lost its fixed kernel and private source roles",
+        )?;
+        let kernel_update = self.publication.sources[0].prepare_working_label_update(batch)?;
+        self.publication.sources[1].revalidate()?;
+        self.publication
+            .grub
+            .accept_working_label_batch(self.publication.runtime.source(), batch)?;
+        self.publication.runtime.accept_working_label_batch(batch)?;
+        self.publication
+            .transaction
+            .accept_working_label_batch(batch)?;
+        self.publication.sources[0].accept_working_label_update(kernel_update)?;
+        self.publication.sources[1].revalidate()?;
+        batch.revalidate()
     }
     pub(crate) fn restore(
         self,

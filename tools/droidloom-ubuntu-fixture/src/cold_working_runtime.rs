@@ -653,6 +653,18 @@ impl WorkingOriginalCellPreimage {
     }
 }
 impl WorkingGrubSource {
+    pub(super) fn accept_working_label_batch(
+        &self,
+        source: &WorkingRuntimeSources,
+        batch: &crate::cold_original_data::labels::WorkingLabelBatch,
+    ) -> Result<()> {
+        ensure(
+            std::rc::Rc::ptr_eq(&self.custody, &source.custody),
+            "working GRUB label batch belongs to a different actual source owner",
+        )?;
+        batch.require_source(source)?;
+        self.original.accept_working_label_batch(batch)
+    }
     pub(super) fn revalidate(&self) -> Result<()> {
         self.custody.revalidate()?;
         self.original.revalidate()?;
@@ -697,5 +709,45 @@ impl WorkingRuntimeSources {
         self.require_published_owner(published)?;
         self.custody.restore_pair_cold()?;
         published.guard()
+    }
+}
+
+/// Identity of one actual still-owned cold source. This is not a label proof:
+/// only the full normal label transaction can create a batch of inode changes.
+pub(crate) struct WorkingLabelSourceIdentity {
+    custody: std::rc::Rc<super::working_custody::WorkingColdCustody>,
+}
+impl WorkingRuntimeSources {
+    pub(crate) fn label_source_identity(&self) -> Result<WorkingLabelSourceIdentity> {
+        self.revalidate()?;
+        Ok(WorkingLabelSourceIdentity {
+            custody: std::rc::Rc::clone(&self.custody),
+        })
+    }
+}
+impl WorkingLabelSourceIdentity {
+    /// Comparison only. A label batch temporarily precedes adoption of the
+    /// owner's exact changed checkpoints, so full source guarding belongs after
+    /// all batch checkpoints have been verified and advanced together.
+    pub(crate) fn require_source(&self, source: &WorkingRuntimeSources) -> Result<()> {
+        ensure(
+            std::rc::Rc::ptr_eq(&self.custody, &source.custody),
+            "working label batch belongs to another actual live source owner",
+        )
+    }
+    pub(crate) fn candidate(&self) -> &str {
+        self.custody.materials().candidate()
+    }
+    pub(crate) fn work(&self) -> &Path {
+        self.custody.materials().work()
+    }
+    pub(crate) fn source_pin(&self) -> &FilePin {
+        self.custody.materials().label_sources().source_pin()
+    }
+    pub(crate) fn revalidate_normal_source(&self) -> Result<()> {
+        self.custody
+            .materials()
+            .label_sources()
+            .revalidate_custody()
     }
 }

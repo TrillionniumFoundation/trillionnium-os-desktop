@@ -85,6 +85,15 @@ pub(super) struct Plan {
     watchdog_seconds: u32,
 }
 
+/// A comparison produced only from this Guard's actual held FD and a completed
+/// working label batch. It is not serializable and has no external constructor.
+pub(super) struct WorkingGuardLabelUpdate {
+    held: File,
+    pin: FilePin,
+    before: Identity,
+    after: Identity,
+}
+
 pub(super) struct Guard {
     pin: FilePin,
     file: File,
@@ -135,6 +144,62 @@ impl Guard {
             "normal once material changed its complete bytes or inode",
         )
     }
+    pub(super) fn prepare_working_label_update(
+        &self,
+        batch: &crate::cold_original_data::labels::WorkingLabelBatch,
+    ) -> Result<WorkingGuardLabelUpdate> {
+        let record = batch
+            .records()
+            .iter()
+            .find(|record| record.paths().iter().any(|path| path == &self.pin.path));
+        let after = match record {
+            Some(record) => {
+                record.require_held_transition(&self.pin.path, &self.file, &self.identity)?
+            }
+            None => {
+                self.revalidate()?;
+                self.identity.clone()
+            }
+        };
+        let named = fs::Tree::open("/", 0)?.file(&fs::absolute_string(&self.pin.path)?)?;
+        (&self.file).rewind()?;
+        ensure(
+            fs::stat(&self.file)? == after
+                && fs::stat(&named)? == after
+                && fs::xattrs(&self.file)?.is_empty()
+                && fs::xattrs(&named)?.is_empty()
+                && fs::hash(&self.file)? == self.pin.sha256
+                && fs::stat(&self.file)? == after
+                && fs::stat(&named)? == after,
+            "working label update changed held normal source bytes or custody",
+        )?;
+        Ok(WorkingGuardLabelUpdate {
+            held: self.file.try_clone()?,
+            pin: self.pin.clone(),
+            before: self.identity.clone(),
+            after,
+        })
+    }
+
+    pub(super) fn accept_working_label_update(
+        &mut self,
+        update: WorkingGuardLabelUpdate,
+    ) -> Result<()> {
+        ensure(
+            self.pin.path == update.pin.path
+                && self.pin.bytes == update.pin.bytes
+                && self.pin.sha256 == update.pin.sha256
+                && self.identity == update.before
+                && fs::stat(&self.file)? == update.after
+                && fs::stat(&update.held)? == update.after,
+            "working source update belongs to another continuously held guard",
+        )?;
+        self.identity = update.after;
+        // Only this source inode is checked here. The caller advances every
+        // owner of the batch before invoking any full source/publication guard.
+        self.revalidate()
+    }
+
     pub(super) fn command_path(&self) -> Result<String> {
         self.revalidate()?;
         Ok(format!(
