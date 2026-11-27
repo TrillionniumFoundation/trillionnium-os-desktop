@@ -419,7 +419,13 @@ def verify(library, binary, exported, here, expected, export, *, successors=()):
 
 
 def verify_file_contexts(here, work):
+    # The composed matcher also contains update-done's independently fixed /var
+    # directory alias. Preserve that source contract without deriving an expected
+    # label from the final matcher or weakening logind's exact path boundary.
+    from derive_native_update_done_policy import VAR as UPDATE_DONE_VAR, contract as update_done_contract
+
     value = contract(here)
+    update_done_contract(here)
     path = work / "logind-state-file-contexts"
     path.write_bytes(b"".join((here / name).read_bytes() for name in (
         "ubuntu-native-file_contexts", "ubuntu-real-root-file_contexts",
@@ -457,7 +463,8 @@ def verify_file_contexts(here, work):
                          "/var/lib/other/systemd", "/var/lib/systemd/unselected",
                          "/var/lib/systemd/linger-extra", "/var/lib/systemd/lingers"):
             actual = lookup(filename, stat.S_IFDIR)
-            if actual != ALIASES[0]["source"]:
+            wanted = UPDATE_DONE_VAR if filename == "/var" else ALIASES[0]["source"]
+            if actual != wanted:
                 raise ValueError("Logind parent alias changed another directory: " + filename)
             checks.append([filename, stat.S_IFDIR, actual])
         for filename, mode in (("/var/lib/systemd/linger", stat.S_IFDIR),

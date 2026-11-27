@@ -19,22 +19,22 @@ use std::time::{Duration, Instant};
 type Result<T> = std::result::Result<T, PrepareError>;
 const PROFILE_BODY: &[u8] = include_bytes!("../../../android/manifest/webview-provider.json");
 /// SHA256 of the complete compiled review profile, including the SDK result pin.
-pub const PROFILE_SHA256: &str = "3aa15b10d91819ce249707cc9521706195723bb3384a7d9eaea983143ba1bebb";
+pub const PROFILE_SHA256: &str = "ef85f7ad62b69286228e282288895207e88f488929d564e1f67fdf7b2194fd71";
 /// Exact size of the single, complete reviewed APK.
-pub const APK_BYTES: u64 = 365_700_497;
+pub const APK_BYTES: u64 = 365_720_977;
 /// SHA256 of the unchanged upstream signed APK.
-pub const APK_SHA256: &str = "66b5e41ab63a92aad6426c6c85037534e153370d373fa2a9cccfc4d16147892e";
+pub const APK_SHA256: &str = "1e1c118d4cd47d19315dd8688fd70f0a24e0804549b963a7373ac6d1c55bb7b4";
 /// Only provider package accepted by this profile.
 pub const PACKAGE_NAME: &str = "com.google.android.webview";
-/// Reviewed version; a newer .93 release is known.
-pub const VERSION_NAME: &str = "158.0.8127.92";
+/// Reviewed x86/x86_64 version; newer 159 material remains unqualified.
+pub const VERSION_NAME: &str = "158.0.8127.93";
 /// Version code observed by the normal SDK 37 tools.
-pub const VERSION_CODE: u64 = 812_709_208;
+pub const VERSION_CODE: u64 = 812_709_308;
 /// SHA256 of the APK application's DER signing certificate, not its source stamp.
 pub const SIGNER_CERTIFICATE_SHA256: &str =
     "6faf3c4140407473400934d117815a21af1cfefc5c0bee61c858bc3d72ba6fe5";
 
-const SDK_RESULT_SHA256: &str = "da7b5ef803409ca2aecd15088fbe5bbedb864a083379230abb23682e0009434f";
+const SDK_RESULT_SHA256: &str = "3664eb2f00ef036a500e75ea00202e0b72809fe5e6637dd9f56d35d208289ae7";
 const LIMIT: Duration = Duration::from_secs(180);
 const READ_BUFFER: usize = 64 * 1024;
 
@@ -59,17 +59,17 @@ fn reviewed_profile() -> Result<Value> {
             != json!({"encoding":"DER","bytes":959,"sha256":SIGNER_CERTIFICATE_SHA256})
         || profile["android_manifest"]
             != json!({
-                "min_sdk":32, "target_sdk":36, "compile_sdk":37,
+                "min_sdk":29, "target_sdk":36, "compile_sdk":37,
                 "abis":["x86","x86_64"], "base_apk_count":1,
                 "split_names":[], "uses_split":[], "uses_static_library":[],
                 "optional_uses_libraries":[
                     "android.test.base", "androidx.window.extensions", "android.ext.adservices"
                 ]
             })
-        || profile["sdk37_preflight"]["schema"] != "p4.public-webview-sdk37-preflight.v1"
-        || profile["sdk37_preflight"]["bytes"] != 19_133
+        || profile["sdk37_preflight"]["schema"] != "p4.public-webview-aptoide93-sdk37-preflight.v1"
+        || profile["sdk37_preflight"]["bytes"] != 18_920
         || profile["sdk37_preflight"]["sha256"] != SDK_RESULT_SHA256
-        || profile["known_newer_version"] != "158.0.8127.93"
+        || profile["known_newer_version"] != "159.0.8154.33"
         || profile["provenance"]["upstream_apk_modified"] != false
         || profile["provenance"]["official_vendor_reference_member"] != false
         || profile["provenance"]["source_revision_equivalence_claimed"] != false
@@ -254,7 +254,7 @@ impl VerifiedWebView {
             "sdk37_preflight":self.profile["sdk37_preflight"],
             "upstream_apk_modified":false,
             "official_vendor_reference_member":false,
-            "known_newer_version":"158.0.8127.93",
+            "known_newer_version":"159.0.8154.33",
             "latest_qualified":false,
             "normal_preload_qualified":false,
             "runtime_qualified":false,
@@ -286,7 +286,7 @@ mod tests {
     fn reviewed_profile_binds_sdk_evidence_without_latest_or_runtime_claims() {
         let profile = reviewed_profile().expect("reviewed compiled profile");
         assert_eq!(profile["sdk37_preflight"]["sha256"], SDK_RESULT_SHA256);
-        assert_eq!(profile["android_manifest"]["min_sdk"], 32);
+        assert_eq!(profile["android_manifest"]["min_sdk"], 29);
         assert_eq!(profile["latest_qualified"], false);
         assert_eq!(profile["runtime_qualified"], false);
         assert_eq!(profile["production_ready"], false);
