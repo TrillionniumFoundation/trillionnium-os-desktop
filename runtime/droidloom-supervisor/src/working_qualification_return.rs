@@ -4,12 +4,11 @@ use super::{
     boot::BootOwner,
     watchdog::{ArmedWatchdog, monotonic_ns},
 };
+use crate::control::application_command::application_leaf_unit::qualification::retirement::capabilities as caps;
 use crate::control::application_command::application_leaf_unit::qualification::retirement::{
     MaintenanceOperation, RetiredWorkingParent,
 };
-use crate::{
-    native_hardware_label as held, native_once_capabilities as caps, native_working_contract as c,
-};
+use crate::{native_hardware_label as held, native_working_contract as c};
 use c::layout;
 use serde_json::{Value, json};
 use std::{

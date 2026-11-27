@@ -5,6 +5,48 @@ use super::*;
 use crate::control::application_command::physical_qualification_channel::working_runtime::boot::BootOwner;
 use crate::native_working_contract as contract;
 
+#[path = "working_qualification_return_capabilities.rs"]
+pub(crate) mod capabilities;
+
+const PID1_NAMESPACES: [&str; 7] = [
+    "ns/mnt",
+    "ns/user",
+    "ns/pid",
+    "ns/cgroup",
+    "ns/net",
+    "ns/ipc",
+    "ns/uts",
+];
+
+struct Pid1Metadata {
+    executable: File,
+    namespaces: Vec<File>,
+}
+fn pid1_metadata(manager: &BoundProcess, original_end: Instant) -> Result<Pid1Metadata, String> {
+    need(
+        manager.identity.pid == 1 && manager.identity.comm == "systemd",
+        "working return metadata target is not its actual held original PID1",
+    )?;
+    manager.validate().map_err(|e| e.to_string())?;
+    let scope = capabilities::Pid1ReadScope::enter(original_end).map_err(|e| e.to_string())?;
+    let executable = manager.open("exe", false).map_err(|e| e.to_string())?;
+    let mut namespaces = Vec::with_capacity(PID1_NAMESPACES.len());
+    for name in PID1_NAMESPACES {
+        scope.guard().map_err(|e| e.to_string())?;
+        namespaces.push(manager.open(name, false).map_err(|e| e.to_string())?);
+    }
+    scope.finish().map_err(|e| e.to_string())?;
+    // No variable command, bus call, file-body hash or publication runs while
+    // the metadata bit is effective. Each guard observes fresh PID1 handles:
+    // the normal manager may legitimately have SYS_ADMIN; a live PIDFD alone
+    // does not prove its namespace set immutable.
+    manager.validate().map_err(|e| e.to_string())?;
+    Ok(Pid1Metadata {
+        executable,
+        namespaces,
+    })
+}
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 struct Snapshot {
     unit: bus::Properties,
@@ -477,25 +519,14 @@ impl RetiredWorkingParent {
         let current = BoundProcess::capture(std::process::id()).map_err(|e| e.to_string())?;
         let manager = BoundProcess::capture(1).map_err(|e| e.to_string())?;
         let manager_program = Tool::open("/usr/lib/systemd/systemd").map_err(|e| e.to_string())?;
+        let metadata = pid1_metadata(&manager, until)?;
         need(
-            manager.identity.comm == "systemd"
-                && identity(&manager.open("exe", false).map_err(|e| e.to_string())?)
-                    .map_err(|e| e.to_string())?
-                    == manager_program.identity,
+            identity(&metadata.executable).map_err(|e| e.to_string())? == manager_program.identity,
             "working return PID1 is not the selected normal manager inode",
         )?;
         let mut namespaces = Vec::new();
-        for name in [
-            "ns/mnt",
-            "ns/user",
-            "ns/pid",
-            "ns/cgroup",
-            "ns/net",
-            "ns/ipc",
-            "ns/uts",
-        ] {
+        for (name, manager_ns) in PID1_NAMESPACES.into_iter().zip(metadata.namespaces) {
             let own = current.open(name, false).map_err(|e| e.to_string())?;
-            let manager_ns = manager.open(name, false).map_err(|e| e.to_string())?;
             need(
                 super::super::super::same_file(&own, &manager_ns).map_err(|e| e.to_string())?,
                 "working return left the actual original manager namespace",
@@ -605,17 +636,14 @@ impl RetiredWorkingParent {
         self.manager_program.guard().map_err(|e| e.to_string())?;
         self.source.guard().map_err(|e| e.to_string())?;
         self.return_source.guard().map_err(|e| e.to_string())?;
-        for (index, name) in [
-            "ns/mnt",
-            "ns/user",
-            "ns/pid",
-            "ns/cgroup",
-            "ns/net",
-            "ns/ipc",
-            "ns/uts",
-        ]
-        .iter()
-        .enumerate()
+        let fresh = pid1_metadata(&self.manager, self.original_end)?;
+        need(
+            identity(&fresh.executable).map_err(|e| e.to_string())?
+                == self.manager_program.identity,
+            "working return live PID1 executable changed",
+        )?;
+        for (index, (name, manager_now)) in
+            PID1_NAMESPACES.iter().zip(&fresh.namespaces).enumerate()
         {
             let (own, manager) = &self.namespaces[index];
             need(
@@ -625,12 +653,9 @@ impl RetiredWorkingParent {
                         &self.current.open(name, false).map_err(|e| e.to_string())?,
                     )
                     .map_err(|e| e.to_string())?
-                    && super::super::super::same_file(
-                        manager,
-                        &self.manager.open(name, false).map_err(|e| e.to_string())?,
-                    )
-                    .map_err(|e| e.to_string())?,
-                "working return retained namespace identity changed",
+                    && super::super::super::same_file(manager, manager_now)
+                        .map_err(|e| e.to_string())?,
+                "working return retained and freshly observed PID1 namespace identity changed",
             )?;
         }
         self.group.guard(&self.terminal)?;
@@ -838,10 +863,7 @@ fn validate_return(
         ("RuntimeMaxUSec", contract::RETURN_SECONDS * 1_000_000),
         ("TimeoutStopUSec", 10_000_000),
         ("AmbientCapabilities", 0),
-        (
-            "CapabilityBoundingSet",
-            crate::native_once_capabilities::MAINTENANCE,
-        ),
+        ("CapabilityBoundingSet", capabilities::BOOTSTRAP),
         ("ExecMainExitTimestampMonotonic", 0),
     ] {
         exact(service, key, V::U64(value))?;
@@ -1120,6 +1142,7 @@ impl RetiredWorkingParent {
                 if libc::getppid() as u32 != parent {
                     return Err(invalid("independent return died before normal exec"));
                 }
+                capabilities::seal_maintenance_child()?;
                 let args = [argv[0].as_ptr(), argv[1].as_ptr(), std::ptr::null()];
                 let env = [
                     environment[0].as_ptr(),
@@ -1137,6 +1160,7 @@ impl RetiredWorkingParent {
                 Err(io::Error::last_os_error())
             });
         }
+        capabilities::revalidate().map_err(|e| e.to_string())?;
         let mut child = command.spawn().map_err(|e| e.to_string())?;
         self.command_active.set(true);
         let raw = unsafe { libc::syscall(libc::SYS_pidfd_open, child.id(), 0) } as libc::c_int;

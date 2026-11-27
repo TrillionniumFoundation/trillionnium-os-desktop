@@ -3,6 +3,7 @@
 //! retains the actual installed applications ELF, original host namespace,
 //! enforcing selected kernel and this fresh boot's command-line commitments.
 use crate::control::MainCustodyObservation;
+use crate::control::application_command::application_leaf_unit::qualification::retirement::capabilities as return_caps;
 use crate::main_custody::RuntimeMainCustody;
 use crate::{native_hardware_label as held, native_working_contract as c};
 use serde::Deserialize;
@@ -362,7 +363,7 @@ impl BootOwner {
             None,
         )?;
         let return_inputs = if role == EntryRole::Return {
-            crate::native_once_capabilities::revalidate()?;
+            return_caps::revalidate()?;
             let executable = Input::open(
                 Path::new(c::RETURN_EXECUTABLE),
                 &config.executable,
@@ -501,7 +502,7 @@ impl BootOwner {
             input.guard()?;
         }
         if let Some(inputs) = &self.return_inputs {
-            crate::native_once_capabilities::revalidate()?;
+            return_caps::revalidate()?;
             for input in [
                 &inputs.executable,
                 &inputs.maintenance,
