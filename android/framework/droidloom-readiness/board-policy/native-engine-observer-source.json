@@ -1,0 +1,376 @@
+{
+  "apparmor_normal_admission_required": {
+    "engine_rule": "/{system,run/droidloom-early-slot/rootfs/system,.droidloom-kernel-apparmorfs/system}/system_ext/lib64/libberberis_arm64.so r,",
+    "maps_rule": "@{PROC}/[0-9]*/maps r,",
+    "normal_175_rebuild_required": true,
+    "profile": "board-policy/apparmor/droidloom-production-broker",
+    "separate_old_archive_reuse_allowed": false
+  },
+  "boundary": {
+    "actor": "droidloom_engine_observer",
+    "app_types": [
+      "gmscore_app",
+      "platform_app",
+      "platform_app_36",
+      "priv_app",
+      "priv_app_36",
+      "system_app",
+      "untrusted_app",
+      "untrusted_app_25",
+      "untrusted_app_27",
+      "untrusted_app_29",
+      "untrusted_app_30",
+      "untrusted_app_32",
+      "untrusted_app_34"
+    ],
+    "app_types_are_conditional_candidates_only": true,
+    "borrowed_user_namespace_capabilities": [
+      "sys_admin",
+      "sys_ptrace"
+    ],
+    "caller_absolute_deadline_preserved": true,
+    "caller_selected_pid_path_label_engine_digest": false,
+    "child_survival_permitted": false,
+    "client_cap_seconds": 70,
+    "client_full_apk_binding": "borrowed ActualApplicationObservation from the normal inspector",
+    "context": "u:r:droidloom_engine_observer:s0",
+    "engine_request_full_apk_reads": 0,
+    "engine_request_pm_metadata_commands": 4,
+    "executable_witness": "O_PATH/fstat, no readable executable descriptor",
+    "fixed_engine_path": "/system/system_ext/lib64/libberberis_arm64.so",
+    "initial_namespace_capabilities": [],
+    "namespace_ioctl_commands": [
+      46849,
+      46851
+    ],
+    "native_engine_inferred_from_missing_mapping": false,
+    "normal_broker_engine_body_access": false,
+    "operation_work_seconds": 48,
+    "parent": "droidloom_broker",
+    "post_setns_capabilities": [
+      "sys_ptrace"
+    ],
+    "retirement_reserve_seconds": 12,
+    "returned_descriptors": 0,
+    "roletype": "r",
+    "runtime_qualified": false,
+    "translation_business_qualified": false,
+    "unchanged_original_mls_constraints": true,
+    "wire_caller_uid_or_apk_authority": false
+  },
+  "component": {
+    "bytes": 8101,
+    "sha256": "757a047d488205f0c43e83b7955f26e8ab112bf42b65a9fd1696ea2a6f9e316f"
+  },
+  "constraints": {
+    "baseline_binary": {
+      "bytes": 1468180,
+      "sha256": "fdb26ceb9f8cb7f235f9d7a5ed7d063632fcb4e6d31af32abc842e17d0a4d0e8"
+    },
+    "baseline_export": {
+      "bytes": 13329512,
+      "sha256": "bde03fda4d120725bead55ed6d7627ae160b5c2ade445edf320bf90b435a1c4e"
+    },
+    "commitment": {
+      "forms": 95,
+      "sha256": "4fc553f9fc7bcf206adbcc7d2b92f9ef2697797a7db54e02306e5fd102f6050f"
+    }
+  },
+  "git_sources": {
+    "runtime/droidloom-supervisor/src/application_probe.rs": {
+      "bytes": 22628,
+      "sha256": "fe45e97245f74b9b02d8c9cc1e2e9237c44aecb84efa4aa62ee6ad6aa49a2ddd"
+    },
+    "runtime/droidloom-supervisor/src/bin/droidloomd.rs": {
+      "bytes": 12824,
+      "sha256": "3628f076325748670c0ad179fcb613f140118ef898d9372832f0518e7a029a3b"
+    },
+    "runtime/droidloom-supervisor/src/control.rs": {
+      "bytes": 89072,
+      "sha256": "bcee262d8f4c899f6ceb33513eef79ba18611d1ca58c6150c7fe062eff667659"
+    },
+    "runtime/droidloom-supervisor/src/control_identity.rs": {
+      "bytes": 41212,
+      "sha256": "080c166a799c706401162fc7f2e24f4bb417705fca6d94cf627627716d1a957a"
+    },
+    "runtime/droidloom-supervisor/src/control_progress.rs": {
+      "bytes": 22555,
+      "sha256": "c6d13947adde8ad6949eb983e9c1d22ead54e8d5ee17c22b657ce1059296bf9c"
+    },
+    "runtime/droidloom-supervisor/src/engine_custody.rs": {
+      "bytes": 21621,
+      "sha256": "a0508dc089cc40454b1ecf1ea9890ae9b5c44dd3aa28f1b087717b42483ace2c"
+    },
+    "runtime/droidloom-supervisor/src/lib.rs": {
+      "bytes": 39459,
+      "sha256": "7461f8896e282b8dc0cc5b613be0f25f70cac7b7b4fe6304a16024a555ed53ff"
+    },
+    "runtime/droidloom-supervisor/src/main.rs": {
+      "bytes": 12885,
+      "sha256": "f7fbf01986a7bad40fec8b808ae5c065ea337a750836226d435cb0005281ccfe"
+    },
+    "runtime/droidloom-supervisor/src/production_application.rs": {
+      "bytes": 30856,
+      "sha256": "90f2a5ee81e688cb8fd141ed2f5fa08be711b7307a2ba57bb311b93ab14a3049"
+    },
+    "runtime/droidloom-supervisor/src/production_application_engine.rs": {
+      "bytes": 5959,
+      "sha256": "b9e2ad7af39f80be8496ddca4d2686e99d08085ee7aeb9bc864b24e47db7215a"
+    },
+    "runtime/droidloom-supervisor/src/production_application_protocol.rs": {
+      "bytes": 16718,
+      "sha256": "d98470501f43d0e1d57f58c24a4f80dbb564af5be29b69419f104e8b5b38f190"
+    },
+    "runtime/droidloom-supervisor/src/production_application_query_io.rs": {
+      "bytes": 67039,
+      "sha256": "ffe64f575a2c09bd1e0dff118291fd226512d0363d6aa4849aaf5678bcd19d2f"
+    },
+    "runtime/droidloom-supervisor/src/production_application_vintf.rs": {
+      "bytes": 29242,
+      "sha256": "a42c7cd545689ed8953dd3aab54b2682e08b5018a4f67a7e9f45950f967166cb"
+    },
+    "runtime/droidloom-supervisor/src/production_early_application.rs": {
+      "bytes": 43604,
+      "sha256": "647a818fcce1bf41aaf52c903ef0b4ea59ae95e0f9332946ef1faab439798fc6"
+    },
+    "runtime/droidloom-supervisor/src/production_early_application_control.rs": {
+      "bytes": 35634,
+      "sha256": "3b33a1f9332233db4d7baf46986e7d6c574b3bc32fb3c11ec815fe5311a3e17f"
+    },
+    "runtime/droidloom-supervisor/src/production_early_engine_custody.rs": {
+      "bytes": 7967,
+      "sha256": "358bb4dbeba5318a8a23549cc2c24b91b958e348a3ebecbdd34f457895864ca9"
+    },
+    "runtime/droidloom-supervisor/src/production_engine_observer.rs": {
+      "bytes": 40903,
+      "sha256": "b47a894ebdf07a152dfda0be4bb8ea5e055b6bd58da2eb68ec2819e684c510d6"
+    },
+    "runtime/droidloom-supervisor/src/production_host_admission.rs": {
+      "bytes": 191923,
+      "sha256": "238897166d3506d16c967824c868d7fc64a0d85c9fe182c241413dcca6c28df5"
+    },
+    "runtime/droidloom-supervisor/src/production_mounts.rs": {
+      "bytes": 75512,
+      "sha256": "5dd3df307a23214f15e58f6685155af335a309422607094d3373814e0239a71b"
+    },
+    "runtime/droidloom-supervisor/src/production_mounts_custody.rs": {
+      "bytes": 21039,
+      "sha256": "d986c33b8bad384eac6293a5b0f48c9bd61fadec7c3f2dac1801f8f6e5966fd6"
+    },
+    "runtime/droidloom-supervisor/src/production_mounts_engine_custody.rs": {
+      "bytes": 4734,
+      "sha256": "7da207ccf632150ea327a27040b1cc3f7e774981e041eca0477ed661d2ac443f"
+    },
+    "runtime/droidloom-supervisor/src/production_mounts_persistent_fixture.rs": {
+      "bytes": 7532,
+      "sha256": "5f58aef6c875c298ac0d1b107ae06a6e4efb820363a556ad1987112bcf1ff288"
+    },
+    "runtime/droidloom-supervisor/src/production_mounts_system_ext.rs": {
+      "bytes": 24196,
+      "sha256": "2cd2d2e04de189898aad881e4ea215a7dca25fbdf32607cd9c6436ae4c090546"
+    }
+  },
+  "schema": "droidloom.native-engine-observer-source.v1",
+  "selected_public_inputs": {
+    "conditional_rule_proof": {
+      "bytes": 31143,
+      "sha256": "d8d4503d1fa009c5af953ab2f289ca8cc943603f3f70ee0f11eecdeabe25a104"
+    },
+    "metadata_contents": "{\n  \"schema\": \"p4.fixed39-seapp-declared-metadata-readback.v1\",\n  \"source\": {\n    \"path\": \"/home/qq/work/p4-public-apk-candidate-4b91-r6-metadata-r1/candidate/SELECTED39.json\",\n    \"bytes\": 423460,\n    \"sha256\": \"6964ddaba93445caf98ccfab4787254c8e2886fc9e3869ef20da7f615e81266c\"\n  },\n  \"source_before\": [\n    66306,\n    61110745,\n    33024,\n    1000,\n    1000,\n    1,\n    423460,\n    1795728576434499000,\n    1795728576434499000\n  ],\n  \"source_after\": [\n    66306,\n    61110745,\n    33024,\n    1000,\n    1000,\n    1,\n    423460,\n    1795728576434499000,\n    1795728576434499000\n  ],\n  \"rows\": [\n    {\n      \"index\": 0,\n      \"package\": \"com.Hyatt.hyt\",\n      \"role\": \"third_party\",\n      \"min_sdk\": 35,\n      \"target_sdk\": 36,\n      \"signer_certificates_sha256\": [\n        \"e41d0b302b56ee0a44ab0fd9da6fa712b0d2a60344ef2e85459fd75396e34971\"\n      ],\n      \"version_code\": 26111078,\n      \"material_count\": 3,\n      \"actual_package_inspection\": null,\n      \"runtime_accepted\": false\n    },\n    {\n      \"index\": 1,\n      \"package\": \"com.MobileTicket\",\n      \"role\": \"third_party\",\n      \"min_sdk\": 23,\n      \"target_sdk\": 35,\n      \"signer_certificates_sha256\": [\n        \"53a2508d2efcef95deadf8ff74ef41eadcd1e96fbcc49b53d741787806c01904\"\n      ],\n      \"version_code\": 280,\n      \"material_count\": 1,\n      \"actual_package_inspection\": null,\n      \"runtime_accepted\": false\n    },\n    {\n      \"index\": 2,\n      \"package\": \"com.amazon.mShop.android.shopping\",\n      \"role\": \"third_party\",\n      \"min_sdk\": 31,\n      \"target_sdk\": 36,\n      \"signer_certificates_sha256\": [\n        \"2f19adeb284eb36f7f07786152b9a1d14b21653203ad0b04ebbf9c73ab6d7625\"\n      ],\n      \"version_code\": 1243262206,\n      \"material_count\": 3,\n      \"actual_package_inspection\": null,\n      \"runtime_accepted\": false\n    },\n    {\n      \"index\": 3,\n      \"package\": \"com.android.calendar\",\n      \"role\": \"system\",\n      \"min_sdk\": 37,\n      \"target_sdk\": 34,\n      \"signer_certificates_sha256\": [\n        \"a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc\"\n      ],\n      \"version_code\": 37,\n      \"material_count\": 1,\n      \"actual_package_inspection\": null,\n      \"runtime_accepted\": false\n    },\n    {\n      \"index\": 4,\n      \"package\": \"com.android.camera2\",\n      \"role\": \"system\",\n      \"min_sdk\": 37,\n      \"target_sdk\": 1000,\n      \"signer_certificates_sha256\": [\n        \"a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc\"\n      ],\n      \"version_code\": 20002000,\n      \"material_count\": 1,\n      \"actual_package_inspection\": null,\n      \"runtime_accepted\": false\n    },\n    {\n      \"index\": 5,\n      \"package\": \"com.android.contacts\",\n      \"role\": \"system\",\n      \"min_sdk\": 37,\n      \"target_sdk\": 37,\n      \"signer_certificates_sha256\": [\n        \"28bbfe4a7b97e74681dc55c2fbb6ccb8d6c74963733f6af6ae74d8c3a6e879fd\"\n      ],\n      \"version_code\": 10734,\n      \"material_count\": 1,\n      \"actual_package_inspection\": null,\n      \"runtime_accepted\": false\n    },\n    {\n      \"index\": 6,\n      \"package\": \"com.android.deskclock\",\n      \"role\": \"system\",\n      \"min_sdk\": 37,\n      \"target_sdk\": 30,\n      \"signer_certificates_sha256\": [\n        \"a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc\"\n      ],\n      \"version_code\": 37,\n      \"material_count\": 1,\n      \"actual_package_inspection\": null,\n      \"runtime_accepted\": false\n    },\n    {\n      \"index\": 7,\n      \"package\": \"com.android.dialer\",\n      \"role\": \"system\",\n      \"min_sdk\": 37,\n      \"target_sdk\": 30,\n      \"signer_certificates_sha256\": [\n        \"28bbfe4a7b97e74681dc55c2fbb6ccb8d6c74963733f6af6ae74d8c3a6e879fd\"\n      ],\n      \"version_code\": 2900000,\n      \"material_count\": 1,\n      \"actual_package_inspection\": null,\n      \"runtime_accepted\": false\n    },\n    {\n      \"index\": 8,\n      \"package\": \"com.android.documentsui\",\n      \"role\": \"system\",\n      \"min_sdk\": 31,\n      \"target_sdk\": 37,\n      \"signer_certificates_sha256\": [\n        \"c8a2e9bccf597c2fb6dc66bee293fc13f2fc47ec77bc6b2b0d52c11f51192ab8\"\n      ],\n      \"version_code\": 37,\n      \"material_count\": 1,\n      \"actual_package_inspection\": null,\n      \"runtime_accepted\": false\n    },\n    {\n      \"index\": 9,\n      \"package\": \"com.android.gallery3d\",\n      \"role\": \"system\",\n      \"min_sdk\": 37,\n      \"target_sdk\": 28,\n      \"signer_certificates_sha256\": [\n        \"a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc\"\n      ],\n      \"version_code\": 40030,\n      \"material_count\": 1,\n      \"actual_package_inspection\": null,\n      \"runtime_accepted\": false\n    },\n    {\n      \"index\": 10,\n      \"package\": \"com.android.messaging\",\n      \"role\": \"system\",\n      \"min_sdk\": 37,\n      \"target_sdk\": 24,\n      \"signer_certificates_sha256\": [\n        \"c8a2e9bccf597c2fb6dc66bee293fc13f2fc47ec77bc6b2b0d52c11f51192ab8\"\n      ],\n      \"version_code\": 10001040,\n      \"material_count\": 1,\n      \"actual_package_inspection\": null,\n      \"runtime_accepted\": false\n    },\n    {\n      \"index\": 11,\n      \"package\": \"com.android.quicksearchbox\",\n      \"role\": \"system\",\n      \"min_sdk\": 37,\n      \"target_sdk\": 30,\n      \"signer_certificates_sha256\": [\n        \"28bbfe4a7b97e74681dc55c2fbb6ccb8d6c74963733f6af6ae74d8c3a6e879fd\"\n      ],\n      \"version_code\": 37,\n      \"material_count\": 1,\n      \"actual_package_inspection\": null,\n      \"runtime_accepted\": false\n    },\n    {\n      \"index\": 12,\n      \"package\": \"com.android.settings\",\n      \"role\": \"system\",\n      \"min_sdk\": 37,\n      \"target_sdk\": 37,\n      \"signer_certificates_sha256\": [\n        \"c8a2e9bccf597c2fb6dc66bee293fc13f2fc47ec77bc6b2b0d52c11f51192ab8\"\n      ],\n      \"version_code\": 37,\n      \"material_count\": 1,\n      \"actual_package_inspection\": null,\n      \"runtime_accepted\": false\n    },\n    {\n      \"index\": 13,\n      \"package\": \"com.bestbuy.android\",\n      \"role\": \"third_party\",\n      \"min_sdk\": 28,\n      \"target_sdk\": 36,\n      \"signer_certificates_sha256\": [\n        \"83e0e906d7f06f4e2ed11f7fcf51962a72543d1af41899fead87f546afccce9b\"\n      ],\n      \"version_code\": 2012312346,\n      \"material_count\": 3,\n      \"actual_package_inspection\": null,\n      \"runtime_accepted\": false\n    },\n    {\n      \"index\": 14,\n      \"package\": \"com.ehi.national.mobile\",\n      \"role\": \"third_party\",\n      \"min_sdk\": 26,\n      \"target_sdk\": 36,\n      \"signer_certificates_sha256\": [\n        \"bef72da965ea0b91d0d69aae9aae41bcc232fad8643adefcc85e5870db405cfa\"\n      ],\n      \"version_code\": 9403,\n      \"material_count\": 4,\n      \"actual_package_inspection\": null,\n      \"runtime_accepted\": false\n    },\n    {\n      \"index\": 15,\n      \"package\": \"com.google.android.gms\",\n      \"role\": \"third_party\",\n      \"min_sdk\": 19,\n      \"target_sdk\": 29,\n      \"signer_certificates_sha256\": [\n        \"9bd06727e62796c0130eb6dab39b73157451582cbd138e86c468acc395d14165\"\n      ],\n      \"version_code\": 252432036,\n      \"material_count\": 1,\n      \"actual_package_inspection\": null,\n      \"runtime_accepted\": false\n    },\n    {\n      \"index\": 16,\n      \"package\": \"com.hertz.android.digital\",\n      \"role\": \"third_party\",\n      \"min_sdk\": 26,\n      \"target_sdk\": 36,\n      \"signer_certificates_sha256\": [\n        \"e9d15336458a6e042394a586276be5a1c1ddc77c2d70378662fd5e2c62910700\"\n      ],\n      \"version_code\": 1393,\n      \"material_count\": 4,\n      \"actual_package_inspection\": null,\n      \"runtime_accepted\": false\n    },\n    {\n      \"index\": 17,\n      \"package\": \"com.hilton.android.hhonors\",\n      \"role\": \"third_party\",\n      \"min_sdk\": 30,\n      \"target_sdk\": 36,\n      \"signer_certificates_sha256\": [\n        \"889135370ff205e8640a08c98c5b19c8a6855b1728f3b245459191db521374d7\"\n      ],\n      \"version_code\": 1040,\n      \"material_count\": 4,\n      \"actual_package_inspection\": null,\n      \"runtime_accepted\": false\n    },\n    {\n      \"index\": 18,\n      \"package\": \"com.ihg.apps.android\",\n      \"role\": \"third_party\",\n      \"min_sdk\": 26,\n      \"target_sdk\": 36,\n      \"signer_certificates_sha256\": [\n        \"1448dc9480a27e52b06c886b3f6386f2b122b115b1df1f156b81b9aebcc73163\"\n      ],\n      \"version_code\": 50023856,\n      \"material_count\": 1,\n      \"actual_package_inspection\": null,\n      \"runtime_accepted\": false\n    },\n    {\n      \"index\": 19,\n      \"package\": \"com.jingdong.app.mall\",\n      \"role\": \"third_party\",\n      \"min_sdk\": 21,\n      \"target_sdk\": 36,\n      \"signer_certificates_sha256\": [\n        \"a5fdbfa8a769a9f2041c7f6706a52b8d981c0f12a6f10e989a9f583a43ed217d\"\n      ],\n      \"version_code\": 103046,\n      \"material_count\": 1,\n      \"actual_package_inspection\": null,\n      \"runtime_accepted\": false\n    },\n    {\n      \"index\": 20,\n      \"package\": \"com.lianjia.beike\",\n      \"role\": \"third_party\",\n      \"min_sdk\": 23,\n      \"target_sdk\": 31,\n      \"signer_certificates_sha256\": [\n        \"0b66624117621bb9bc3e7d12a1fe5436794cf8999b0253d9ff9bec71e0932178\"\n      ],\n      \"version_code\": 3068010,\n      \"material_count\": 1,\n      \"actual_package_inspection\": null,\n      \"runtime_accepted\": false\n    },\n    {\n      \"index\": 21,\n      \"package\": \"com.marriott.mrt\",\n      \"role\": \"third_party\",\n      \"min_sdk\": 31,\n      \"target_sdk\": 36,\n      \"signer_certificates_sha256\": [\n        \"fdfc71760356174de3c1405a54b772efd2564a4dde91eae7eff3a02de0ffd059\"\n      ],\n      \"version_code\": 681,\n      \"material_count\": 3,\n      \"actual_package_inspection\": null,\n      \"runtime_accepted\": false\n    },\n    {\n      \"index\": 22,\n      \"package\": \"com.rytong.airchina\",\n      \"role\": \"third_party\",\n      \"min_sdk\": 24,\n      \"target_sdk\": 36,\n      \"signer_certificates_sha256\": [\n        \"b48f75514e956be6bd7d56f1701136c8d76f19459bd724ac52390a572bc0ecbf\"\n      ],\n      \"version_code\": 75304,\n      \"material_count\": 1,\n      \"actual_package_inspection\": null,\n      \"runtime_accepted\": false\n    },\n    {\n      \"index\": 23,\n      \"package\": \"com.rytong.ceair\",\n      \"role\": \"third_party\",\n      \"min_sdk\": 24,\n      \"target_sdk\": 33,\n      \"signer_certificates_sha256\": [\n        \"b48f75514e956be6bd7d56f1701136c8d76f19459bd724ac52390a572bc0ecbf\"\n      ],\n      \"version_code\": 239,\n      \"material_count\": 1,\n      \"actual_package_inspection\": null,\n      \"runtime_accepted\": false\n    },\n    {\n      \"index\": 24,\n      \"package\": \"com.sankuai.meituan.takeoutnew\",\n      \"role\": \"third_party\",\n      \"min_sdk\": 21,\n      \"target_sdk\": 30,\n      \"signer_certificates_sha256\": [\n        \"73a611c3a01dc6e11388873daeee1e556ad9e5768e5c222055f508a24c3a8215\"\n      ],\n      \"version_code\": 800860004,\n      \"material_count\": 1,\n      \"actual_package_inspection\": null,\n      \"runtime_accepted\": false\n    },\n    {\n      \"index\": 25,\n      \"package\": \"com.sdu.didi.psnger\",\n      \"role\": \"third_party\",\n      \"min_sdk\": 24,\n      \"target_sdk\": 36,\n      \"signer_certificates_sha256\": [\n        \"613cc829902938fe4074bbc839f1fcdd332640df9217b95c602bd590e82a7551\"\n      ],\n      \"version_code\": 1208002005,\n      \"material_count\": 1,\n      \"actual_package_inspection\": null,\n      \"runtime_accepted\": false\n    },\n    {\n      \"index\": 26,\n      \"package\": \"com.ss.android.ugc.aweme\",\n      \"role\": \"third_party\",\n      \"min_sdk\": 23,\n      \"target_sdk\": 34,\n      \"signer_certificates_sha256\": [\n        \"5182ae3b1b85337bb182cf24882449f84447ded18e296a747a9f6a0a2622512e\"\n      ],\n      \"version_code\": 410301,\n      \"material_count\": 1,\n      \"actual_package_inspection\": null,\n      \"runtime_accepted\": false\n    },\n    {\n      \"index\": 27,\n      \"package\": \"com.szzc\",\n      \"role\": \"third_party\",\n      \"min_sdk\": 23,\n      \"target_sdk\": 33,\n      \"signer_certificates_sha256\": [\n        \"d85bed4d2a7c08e1b6b5f0097d6c66a79a5b12b58d97e794d3b5c5bff2aeaf44\"\n      ],\n      \"version_code\": 330,\n      \"material_count\": 1,\n      \"actual_package_inspection\": null,\n      \"runtime_accepted\": false\n    },\n    {\n      \"index\": 28,\n      \"package\": \"com.taobao.taobao\",\n      \"role\": \"third_party\",\n      \"min_sdk\": 21,\n      \"target_sdk\": 33,\n      \"signer_certificates_sha256\": [\n        \"c5e9bc4c5cc7a34482c627cb9a76b88e30b509d0da3ba54a66274200e19c2743\"\n      ],\n      \"version_code\": 867,\n      \"material_count\": 1,\n      \"actual_package_inspection\": null,\n      \"runtime_accepted\": false\n    },\n    {\n      \"index\": 29,\n      \"package\": \"com.tencent.mm\",\n      \"role\": \"third_party\",\n      \"min_sdk\": 24,\n      \"target_sdk\": 34,\n      \"signer_certificates_sha256\": [\n        \"0fe4ff85c215918396dadc7cd8ce6963339af33d37751a56e54c7206b63a3c7c\"\n      ],\n      \"version_code\": 3220,\n      \"material_count\": 1,\n      \"actual_package_inspection\": null,\n      \"runtime_accepted\": false\n    },\n    {\n      \"index\": 30,\n      \"package\": \"com.united.mobile.android\",\n      \"role\": \"third_party\",\n      \"min_sdk\": 29,\n      \"target_sdk\": 36,\n      \"signer_certificates_sha256\": [\n        \"e833171fd602255f030ed251c64a9989c7eabc4ebe1c3d7b097ae0f9aea8f946\"\n      ],\n      \"version_code\": 3622,\n      \"material_count\": 4,\n      \"actual_package_inspection\": null,\n      \"runtime_accepted\": false\n    },\n    {\n      \"index\": 31,\n      \"package\": \"com.xunmeng.pinduoduo\",\n      \"role\": \"third_party\",\n      \"min_sdk\": 21,\n      \"target_sdk\": 36,\n      \"signer_certificates_sha256\": [\n        \"dd3923e78df33f08b0fb4a533ab1e860425ca7f6777fbe14f85a6cf5687143d6\"\n      ],\n      \"version_code\": 83301,\n      \"material_count\": 1,\n      \"actual_package_inspection\": null,\n      \"runtime_accepted\": false\n    },\n    {\n      \"index\": 32,\n      \"package\": \"com.zhubajie.client\",\n      \"role\": \"third_party\",\n      \"min_sdk\": 26,\n      \"target_sdk\": 30,\n      \"signer_certificates_sha256\": [\n        \"556246aaaf05f61c8bbb9587dfc0660e01f6c3c6813ec038d18684d3ab378bbe\"\n      ],\n      \"version_code\": 370,\n      \"material_count\": 1,\n      \"actual_package_inspection\": null,\n      \"runtime_accepted\": false\n    },\n    {\n      \"index\": 33,\n      \"package\": \"com.zillow.android.streeteasy\",\n      \"role\": \"third_party\",\n      \"min_sdk\": 32,\n      \"target_sdk\": 37,\n      \"signer_certificates_sha256\": [\n        \"4013b8087b27ab0d941658f0f8ac37a5efda05689dbc65cab91460889a0d9bed\"\n      ],\n      \"version_code\": 23117,\n      \"material_count\": 4,\n      \"actual_package_inspection\": null,\n      \"runtime_accepted\": false\n    },\n    {\n      \"index\": 34,\n      \"package\": \"ctrip.android.view\",\n      \"role\": \"third_party\",\n      \"min_sdk\": 24,\n      \"target_sdk\": 30,\n      \"signer_certificates_sha256\": [\n        \"8155dc0644fed517e8ef6bef9718c363d0eb3eb2c22c06455044d88268bdcf0a\"\n      ],\n      \"version_code\": 2140,\n      \"material_count\": 1,\n      \"actual_package_inspection\": null,\n      \"runtime_accepted\": false\n    },\n    {\n      \"index\": 35,\n      \"package\": \"jp.co.ana.android.tabidachi\",\n      \"role\": \"third_party\",\n      \"min_sdk\": 29,\n      \"target_sdk\": 36,\n      \"signer_certificates_sha256\": [\n        \"d8be425771a11f7a2b121cdb21a14710420f1caa1665eb554e9ff5ad337c91fd\"\n      ],\n      \"version_code\": 344,\n      \"material_count\": 4,\n      \"actual_package_inspection\": null,\n      \"runtime_accepted\": false\n    },\n    {\n      \"index\": 36,\n      \"package\": \"org.fcitx.fcitx5.android\",\n      \"role\": \"third_party\",\n      \"min_sdk\": 23,\n      \"target_sdk\": 36,\n      \"signer_certificates_sha256\": [\n        \"e4db1e9edff13629d07de4bbf8165fe9bd8557ab55092672da8e40dbe484ecd7\"\n      ],\n      \"version_code\": 114,\n      \"material_count\": 1,\n      \"actual_package_inspection\": null,\n      \"runtime_accepted\": false\n    },\n    {\n      \"index\": 37,\n      \"package\": \"org.mozilla.firefox\",\n      \"role\": \"third_party\",\n      \"min_sdk\": 26,\n      \"target_sdk\": 37,\n      \"signer_certificates_sha256\": [\n        \"a78b62a5165b4494b2fead9e76a280d22d937fee6251aece599446b2ea319b04\"\n      ],\n      \"version_code\": 2016197110,\n      \"material_count\": 1,\n      \"actual_package_inspection\": null,\n      \"runtime_accepted\": false\n    },\n    {\n      \"index\": 38,\n      \"package\": \"tv.danmaku.bili\",\n      \"role\": \"third_party\",\n      \"min_sdk\": 24,\n      \"target_sdk\": 35,\n      \"signer_certificates_sha256\": [\n        \"93ba270f5521139ecafe4bb638ac5b1198bc548f62d9fd8f8580a079faf5910e\"\n      ],\n      \"version_code\": 9210300,\n      \"material_count\": 1,\n      \"actual_package_inspection\": null,\n      \"runtime_accepted\": false\n    }\n  ],\n  \"selection_role_counts\": {\n    \"third_party\": 29,\n    \"system\": 10\n  },\n  \"target_sdk_counts\": {\n    \"36\": 15,\n    \"35\": 2,\n    \"34\": 3,\n    \"1000\": 1,\n    \"37\": 5,\n    \"30\": 6,\n    \"28\": 1,\n    \"24\": 1,\n    \"29\": 1,\n    \"31\": 1,\n    \"33\": 3\n  },\n  \"absent_application_top_level_fields\": {\n    \"isSystem\": true,\n    \"isPrivApp\": true,\n    \"seinfo\": true,\n    \"primaryCpuAbi\": true,\n    \"nativeLibraryDir\": true,\n    \"uid\": true,\n    \"android_user\": true\n  },\n  \"role_is_selection_classification_not_live_packagemanager_flag\": true,\n  \"sdk_values_are_static_manifest_declarations\": true,\n  \"actual_seapp_label_observed\": false,\n  \"actual_engine_mapping_observed\": false,\n  \"runtime_qualified\": false,\n  \"selected_seapp_rules_review_pending\": true,\n  \"exit_code\": 0\n}\n",
+    "metadata_proof": {
+      "bytes": 16866,
+      "sha256": "603e95a0510ba70fbf7e8fc68f9e1e6d04db83ac7ae0d7499a0589e44662466d"
+    },
+    "packages": [
+      "com.Hyatt.hyt",
+      "com.MobileTicket",
+      "com.amazon.mShop.android.shopping",
+      "com.android.calendar",
+      "com.android.camera2",
+      "com.android.contacts",
+      "com.android.deskclock",
+      "com.android.dialer",
+      "com.android.documentsui",
+      "com.android.gallery3d",
+      "com.android.messaging",
+      "com.android.quicksearchbox",
+      "com.android.settings",
+      "com.bestbuy.android",
+      "com.ehi.national.mobile",
+      "com.google.android.gms",
+      "com.hertz.android.digital",
+      "com.hilton.android.hhonors",
+      "com.ihg.apps.android",
+      "com.jingdong.app.mall",
+      "com.lianjia.beike",
+      "com.marriott.mrt",
+      "com.rytong.airchina",
+      "com.rytong.ceair",
+      "com.sankuai.meituan.takeoutnew",
+      "com.sdu.didi.psnger",
+      "com.ss.android.ugc.aweme",
+      "com.szzc",
+      "com.taobao.taobao",
+      "com.tencent.mm",
+      "com.united.mobile.android",
+      "com.xunmeng.pinduoduo",
+      "com.zhubajie.client",
+      "com.zillow.android.streeteasy",
+      "ctrip.android.view",
+      "jp.co.ana.android.tabidachi",
+      "org.fcitx.fcitx5.android",
+      "org.mozilla.firefox",
+      "tv.danmaku.bili"
+    ],
+    "selection": {
+      "bytes": 423460,
+      "sha256": "6964ddaba93445caf98ccfab4787254c8e2886fc9e3869ef20da7f615e81266c"
+    }
+  },
+  "selected_seapp": {
+    "conditional_candidates": [
+      "gmscore_app",
+      "platform_app",
+      "platform_app_36",
+      "priv_app",
+      "priv_app_36",
+      "system_app",
+      "untrusted_app",
+      "untrusted_app_25",
+      "untrusted_app_27",
+      "untrusted_app_29",
+      "untrusted_app_30",
+      "untrusted_app_32",
+      "untrusted_app_34"
+    ],
+    "platform": {
+      "bytes": 5030,
+      "sha256": "eb24be4624f15413dc51b49635087feff8c49aa7a1870d67488da36bd2364641"
+    },
+    "platform_contents": "isSystemServer=true domain=system_server_startup\nuser=_app seinfo=platform name=com.android.traceur domain=traceur_app type=app_data_file levelFrom=all\nuser=system seinfo=platform domain=system_app type=system_app_data_file\nuser=system seinfo=platform isPrivApp=true name=com.android.DeviceAsWebcam domain=device_as_webcam type=system_app_data_file levelFrom=all\nuser=bluetooth seinfo=bluetooth domain=bluetooth type=bluetooth_data_file\nuser=network_stack seinfo=network_stack domain=network_stack type=radio_data_file\nuser=nfc seinfo=platform domain=nfc type=nfc_data_file\nuser=nfc seinfo=nfc domain=nfc type=nfc_data_file\nuser=secure_element seinfo=platform domain=secure_element levelFrom=all\nuser=radio seinfo=platform domain=radio type=radio_data_file\nuser=shared_relro domain=shared_relro levelFrom=all\nuser=shell seinfo=platform domain=shell name=com.android.shell type=shell_data_file\nuser=webview_zygote seinfo=webview_zygote domain=webview_zygote\nuser=webview_zygote seinfo=native_webview_zygote domain=native_webview_zygote\nuser=_isolated domain=isolated_app levelFrom=user\nuser=_isolated isIsolatedComputeApp=true domain=isolated_compute_app levelFrom=user\nuser=_sdksandbox domain=sdk_sandbox_34 type=sdk_sandbox_data_file levelFrom=all\nuser=_sdksandbox isSdkSandboxNext=true domain=sdk_sandbox_next type=sdk_sandbox_data_file levelFrom=all\nuser=_sdksandbox isSdkSandboxAudit=true domain=sdk_sandbox_audit type=sdk_sandbox_data_file levelFrom=all\nuser=_app seinfo=app_zygote domain=app_zygote levelFrom=user\nuser=_app seinfo=media domain=mediaprovider type=app_data_file levelFrom=user\nuser=_app seinfo=native_app_zygote domain=native_app_zygote levelFrom=user\nuser=_app minTargetSdkVersion=37 seinfo=platform domain=platform_app type=app_data_file levelFrom=user\nuser=_app seinfo=platform domain=platform_app_36 type=app_data_file levelFrom=user\nuser=_app isEphemeralApp=true domain=ephemeral_app type=app_data_file levelFrom=all\nuser=_app minTargetSdkVersion=37 isPrivApp=true domain=priv_app type=privapp_data_file levelFrom=user\nuser=_app isPrivApp=true domain=priv_app_36 type=privapp_data_file levelFrom=user\nuser=_app isPrivApp=true name=com.google.android.permissioncontroller domain=permissioncontroller_app type=privapp_data_file levelFrom=all\nuser=_app seinfo=media isPrivApp=true name=com.android.providers.media.module domain=mediaprovider_app type=privapp_data_file levelFrom=all\nuser=_app seinfo=media isPrivApp=true name=com.android.providers.media.module:* domain=mediaprovider_app type=privapp_data_file levelFrom=all\nuser=_app isPrivApp=true name=com.google.android.providers.media.module domain=mediaprovider_app type=privapp_data_file levelFrom=all\nuser=_app isPrivApp=true name=com.google.android.providers.media.module:* domain=mediaprovider_app type=privapp_data_file levelFrom=all\nuser=_app seinfo=platform isPrivApp=true name=com.android.permissioncontroller domain=permissioncontroller_app type=privapp_data_file levelFrom=all\nuser=_app isPrivApp=true name=com.android.vzwomatrigger domain=vzwomatrigger_app type=privapp_data_file levelFrom=all\nuser=_app isPrivApp=true name=com.android.rkpdapp domain=rkpdapp type=privapp_data_file levelFrom=all\nuser=_app isPrivApp=true name=com.google.android.rkpdapp domain=rkpdapp type=privapp_data_file levelFrom=all\nuser=_app isPrivApp=true name=com.google.android.gms domain=gmscore_app type=privapp_data_file levelFrom=user\nuser=_app isPrivApp=true name=com.google.android.gms.* domain=gmscore_app type=privapp_data_file levelFrom=user\nuser=_app isPrivApp=true name=com.google.android.gms:* domain=gmscore_app type=privapp_data_file levelFrom=user\nuser=_app isPrivApp=true name=com.google.android.gsf domain=gmscore_app type=privapp_data_file levelFrom=user\nuser=_app minTargetSdkVersion=37 domain=untrusted_app type=app_data_file levelFrom=all\nuser=_app minTargetSdkVersion=34 domain=untrusted_app_34 type=app_data_file levelFrom=all\nuser=_app minTargetSdkVersion=32 domain=untrusted_app_32 type=app_data_file levelFrom=all\nuser=_app minTargetSdkVersion=30 domain=untrusted_app_30 type=app_data_file levelFrom=all\nuser=_app minTargetSdkVersion=29 domain=untrusted_app_29 type=app_data_file levelFrom=all\nuser=_app minTargetSdkVersion=28 domain=untrusted_app_27 type=app_data_file levelFrom=all\nuser=_app minTargetSdkVersion=26 domain=untrusted_app_27 type=app_data_file levelFrom=user\nuser=_app domain=untrusted_app_25 type=app_data_file levelFrom=user\nuser=_app minTargetSdkVersion=28 fromRunAs=true domain=runas_app levelFrom=all\nuser=_app fromRunAs=true domain=runas_app levelFrom=user\nuser=_app isPrivApp=true name=com.android.virtualization.terminal domain=vmlauncher_app type=vmlauncher_app_data_file levelFrom=all\nuser=_app isPrivApp=true name=com.android.virtualization.terminal:* domain=vmlauncher_app type=vmlauncher_app_data_file levelFrom=all\nuser=_app isPrivApp=true name=com.google.android.adservices.api domain=adservices type=privapp_data_file levelFrom=all\nuser=_pcc_component domain=pcc_component type=pcc_data_file levelFrom=all\n",
+    "product": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "runtime_label_observed": false,
+    "selected_system": {
+      "bytes": 2294853632,
+      "sha256": "dc781249bb4724b7a0777e5077321b84576db46f61abb4b9086b81077bfd0ab4"
+    },
+    "system_ext": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "vendor_rule_inference": false
+  },
+  "source_documents": [
+    {
+      "admission": "selected-kernel-source",
+      "bytes": 212133,
+      "kind": "kernel",
+      "package": "linux",
+      "path": "security/selinux/hooks.c",
+      "sha256": "4fa2a20bff2788fffc1f6bc95d49af3e1145e6a679f69ff5aa2d5a1bd85272a0",
+      "version": "6.18.64-p4ctx6181-fusectl-aafs-peer-r1"
+    },
+    {
+      "admission": "selected-kernel-source",
+      "bytes": 44689,
+      "kind": "kernel",
+      "package": "linux",
+      "path": "security/commoncap.c",
+      "sha256": "29b61388bc205bdf27d83d323fb770be514c5e6743bebe4ce6ab0d9fc8549788",
+      "version": "6.18.64-p4ctx6181-fusectl-aafs-peer-r1"
+    },
+    {
+      "admission": "selected-kernel-source",
+      "bytes": 41482,
+      "kind": "kernel",
+      "package": "linux",
+      "path": "kernel/ptrace.c",
+      "sha256": "312d2cb4946694b907e7ee7cdd4020be3ff16ab3db9d64235d843fbce5dd12be",
+      "version": "6.18.64-p4ctx6181-fusectl-aafs-peer-r1"
+    },
+    {
+      "admission": "selected-kernel-source",
+      "bytes": 98852,
+      "kind": "kernel",
+      "package": "linux",
+      "path": "fs/proc/base.c",
+      "sha256": "df7f8ac0998775fe6a3c6062ac8eaf666b0a17a1a17b3cc5bc8c49f1eb06b631",
+      "version": "6.18.64-p4ctx6181-fusectl-aafs-peer-r1"
+    },
+    {
+      "admission": "selected-kernel-source",
+      "bytes": 86881,
+      "kind": "kernel",
+      "package": "linux",
+      "path": "fs/proc/task_mmu.c",
+      "sha256": "a2be94149acaacfc85bbdae0a5ed6d8d3de57044bd5881435a5b1d1ce14b5532",
+      "version": "6.18.64-p4ctx6181-fusectl-aafs-peer-r1"
+    },
+    {
+      "admission": "selected-kernel-source",
+      "bytes": 14991,
+      "kind": "kernel",
+      "package": "linux",
+      "path": "fs/nsfs.c",
+      "sha256": "fb1366d38c672d0fdfa0925fb6f89a5f25c31e3bc3b84e5b558643c46174829f",
+      "version": "6.18.64-p4ctx6181-fusectl-aafs-peer-r1"
+    },
+    {
+      "admission": "selected-kernel-source",
+      "bytes": 29306,
+      "kind": "kernel",
+      "package": "linux",
+      "path": "fs/pidfs.c",
+      "sha256": "e94f42e40118fb76c6e1f318bc51c988b84e1ba2fbabca96fd39a21bca387a09",
+      "version": "6.18.64-p4ctx6181-fusectl-aafs-peer-r1"
+    },
+    {
+      "admission": "selected-kernel-source",
+      "bytes": 36834,
+      "kind": "kernel",
+      "package": "linux",
+      "path": "kernel/user_namespace.c",
+      "sha256": "921c4be164146fce51cce1382b18ba84a9d38c765679e4ca0d00e25df865bdf1",
+      "version": "6.18.64-p4ctx6181-fusectl-aafs-peer-r1"
+    },
+    {
+      "admission": "selected-kernel-source",
+      "bytes": 41015,
+      "kind": "kernel",
+      "package": "linux",
+      "path": "fs/open.c",
+      "sha256": "a56d47d20ade4758344f21458c2e7bc5ff4fc3b0dccd064f3a96b070c2d8a6f6",
+      "version": "6.18.64-p4ctx6181-fusectl-aafs-peer-r1"
+    },
+    {
+      "admission": "selected-kernel-source",
+      "bytes": 26177,
+      "kind": "kernel",
+      "package": "linux",
+      "path": "fs/seq_file.c",
+      "sha256": "5f72519c4a5e36d869c554b685bbdbb575da36e191bba09eade2a330c8a0e51e",
+      "version": "6.18.64-p4ctx6181-fusectl-aafs-peer-r1"
+    },
+    {
+      "admission": "selected-kernel-source",
+      "bytes": 11700,
+      "kind": "kernel",
+      "package": "linux",
+      "path": "fs/d_path.c",
+      "sha256": "bf0f8ce9a7c42b51842ef91516b866ba00e4a30a2afdcbc67fef4281ea1c8c45",
+      "version": "6.18.64-p4ctx6181-fusectl-aafs-peer-r1"
+    },
+    {
+      "admission": "selected-kernel-source",
+      "bytes": 96491,
+      "kind": "kernel",
+      "package": "linux",
+      "path": "security/selinux/ss/services.c",
+      "sha256": "a3dc132fceec9f42a8d1728cef1b45685d5d2e0f3b5dcb812bec4049c5c19f67",
+      "version": "6.18.64-p4ctx6181-fusectl-aafs-peer-r1"
+    }
+  ]
+}

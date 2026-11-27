@@ -1,0 +1,107 @@
+; Fixed one-shot read-only observer for an already-running selected App.
+; Context is always u:r:droidloom_engine_observer:s0. Actual package/PM UID,
+; target PIDFD/zygote/USERNS/epoch and fixed engine VMA are verified by the normal
+; source-owned helper. No request supplies a path, type, category or engine hash.
+(type droidloom_engine_observer)
+(roletype r droidloom_engine_observer)
+(typeattributeset p4_all_board_owned (droidloom_engine_observer))
+; The original process transition MLS constraint requires the helper's fixed
+; s0 entry. A distinct trusted subject reads the target's actual categories;
+; the old broker/metadata types and every original MLS constraint are unchanged.
+(typeattributeset mlstrustedsubject (droidloom_engine_observer))
+
+; The parent already owns setexec. Only this fixed same-ELF helper is added.
+; It returns a data packet, no helper-origin FD or execution authority.
+(allow droidloom_broker droidloom_engine_observer (process (transition getattr sigkill)))
+(allow droidloom_broker droidloom_engine_observer (process2 (nnp_transition nosuid_transition)))
+(allow droidloom_engine_observer droidloom_container_entry_exec_t (file (getattr open read map execute entrypoint)))
+(allow droidloom_engine_observer p4_linux_elf_interpreter_t (file (getattr open read map execute)))
+(allow droidloom_engine_observer p4_linux_runtime_lib_t (file (getattr open read map execute)))
+; Only the exact normal loader cache, never the generic host configuration body.
+(allow droidloom_engine_observer p4_linux_console_ld_cache_native_config_t (file (getattr open read map)))
+(allow droidloom_engine_observer p4_linux_rootdir_t (dir (getattr search)))
+; The exact /etc parent and its normal sysusers alias permit loader-cache lookup.
+(allow droidloom_engine_observer p4_linux_etc_dir_t (dir (getattr search)))
+(allow droidloom_engine_observer p4_linux_usrmerge_link_t (lnk_file (getattr read)))
+(allow droidloom_engine_observer p4_linux_timezone_link_t (lnk_file (getattr read)))
+(allow droidloom_engine_observer droidloom_broker (process (getattr sigchld)))
+(allow droidloom_engine_observer droidloom_broker (fd (use)))
+(allow droidloom_engine_observer kernel (fd (use)))
+(allow droidloom_engine_observer droidloom_broker (file (getattr open read)))
+(allow droidloom_engine_observer droidloom_broker (lnk_file (getattr read)))
+(allow droidloom_engine_observer droidloom_broker (fifo_file (getattr read)))
+(allow droidloom_engine_observer droidloom_broker (unix_stream_socket (getattr getopt read write)))
+
+; Only enter the already-held target USERNS, then keep its SYS_PTRACE solely
+; for the kernel's READ_FSCREDS check. No ptrace/signal/exec syscall survives.
+(allow droidloom_engine_observer self (cap_userns (sys_admin sys_ptrace)))
+(allow droidloom_engine_observer self (process (getcap setcap)))
+(neverallow droidloom_engine_observer self (capability (all)))
+(neverallow droidloom_engine_observer self (capability2 (all)))
+(neverallow droidloom_engine_observer self (cap_userns (not (sys_admin sys_ptrace))))
+(neverallow droidloom_engine_observer self (cap2_userns (all)))
+
+; Conditional candidates from the immutable selected seapp rules and fixed39
+; metadata. Each runtime label is still read from the actual held target.
+; Unknown/vendor, isolated, SDK sandbox, ephemeral and run-as types are rejected.
+(typeattribute p4_fixed_engine_app_types)
+(expandtypeattribute (p4_fixed_engine_app_types) false)
+(typeattributeset p4_fixed_engine_app_types
+ (gmscore_app platform_app platform_app_36 priv_app priv_app_36 system_app untrusted_app untrusted_app_25 untrusted_app_27 untrusted_app_29 untrusted_app_30 untrusted_app_32 untrusted_app_34))
+(allow droidloom_engine_observer p4_fixed_engine_app_types (process (getattr)))
+(allow droidloom_engine_observer p4_fixed_engine_app_types (dir (getattr search open read)))
+(allow droidloom_engine_observer p4_fixed_engine_app_types (file (getattr open read)))
+(allow droidloom_engine_observer p4_fixed_engine_app_types (lnk_file (getattr read)))
+(allow droidloom_engine_observer proc (dir (getattr search)))
+(allow droidloom_engine_observer proc (lnk_file (getattr read)))
+(allow droidloom_engine_observer self (dir (getattr search)))
+(allow droidloom_engine_observer self (file (getattr open read)))
+(allow droidloom_engine_observer self (lnk_file (getattr read)))
+
+; The original App executable is only an O_PATH/fstat witness, never readable.
+; The only public library body opened after confinement is the selected engine, resolved
+; below that held root with no symlink/magiclink and compared to its held image.
+(allow droidloom_engine_observer rootfs (dir (getattr open read search)))
+(allow droidloom_engine_observer system_file (dir (getattr search)))
+(allow droidloom_engine_observer system_lib_file (dir (getattr search)))
+(allow droidloom_engine_observer zygote_exec (file (getattr)))
+(allow droidloom_engine_observer system_lib_file (file (getattr open read)))
+(allow droidloom_engine_observer p4_kernel_ns_handle_t (file (getattr open read ioctl)))
+(allowx droidloom_engine_observer p4_kernel_ns_handle_t (ioctl file (0xb701 0xb703)))
+(neverallowx droidloom_engine_observer p4_kernel_ns_handle_t (ioctl file (not (0xb701 0xb703))))
+(allow droidloom_engine_observer p4_kernel_ns_handle_t (filesystem (getattr)))
+(allow droidloom_engine_observer p4_kernel_pid_handle_t (file (getattr)))
+(allow droidloom_engine_observer proc (filesystem (getattr)))
+
+; Explicit full complements. The permanent verifier additionally enumerates
+; every concrete target/class, all inbound actors, all extended commands and
+; all sixteen selected category pairs; no unnamed ambient authority is accepted.
+(typeattribute p4_fixed_engine_all_types)
+(typeattributeset p4_fixed_engine_all_types (all))
+(typeattribute p4_fixed_engine_other_handles)
+(typeattributeset p4_fixed_engine_other_handles (not (p4_kernel_ns_handle_t)))
+(typeattribute p4_fixed_engine_other_entries)
+(typeattributeset p4_fixed_engine_other_entries (not (droidloom_container_entry_exec_t)))
+(neverallow droidloom_engine_observer p4_fixed_engine_all_types (process (not (getattr sigchld getcap setcap))))
+(neverallow droidloom_engine_observer p4_fixed_engine_all_types (process2 (all)))
+(neverallow droidloom_engine_observer p4_fixed_engine_all_types (file (not (getattr open read map execute entrypoint ioctl))))
+(neverallow droidloom_engine_observer p4_fixed_engine_all_types (file (execute_no_trans)))
+(neverallow droidloom_engine_observer p4_fixed_engine_other_entries (file (entrypoint)))
+(neverallow droidloom_engine_observer p4_fixed_engine_other_handles (file (ioctl)))
+(neverallowx droidloom_engine_observer p4_fixed_engine_other_handles (ioctl file (range 0x0000 0xffff)))
+(neverallow droidloom_engine_observer p4_fixed_engine_all_types (dir (not (getattr search open read))))
+(neverallow droidloom_engine_observer p4_fixed_engine_all_types (lnk_file (not (getattr read))))
+(neverallow droidloom_engine_observer p4_fixed_engine_all_types (filesystem (not (getattr))))
+(neverallow droidloom_engine_observer p4_fixed_engine_all_types (binder (all)))
+(neverallow droidloom_engine_observer p4_fixed_engine_all_types (security (all)))
+(neverallow droidloom_engine_observer p4_fixed_engine_all_types (dbus (all)))
+(neverallow p4_fixed_engine_all_types droidloom_engine_observer (dbus (all)))
+(neverallow droidloom_engine_observer p4_fixed_engine_all_types (chr_file (all)))
+(neverallow droidloom_engine_observer p4_fixed_engine_all_types (blk_file (all)))
+(neverallow droidloom_engine_observer p4_fixed_engine_all_types (sock_file (all)))
+(neverallow droidloom_engine_observer p4_fixed_engine_all_types (tcp_socket (all)))
+(neverallow droidloom_engine_observer p4_fixed_engine_all_types (udp_socket (all)))
+(neverallow droidloom_engine_observer p4_fixed_engine_all_types (rawip_socket (all)))
+(neverallow droidloom_engine_observer p4_fixed_engine_all_types (packet_socket (all)))
+(neverallow droidloom_engine_observer p4_fixed_engine_all_types (netlink_route_socket (all)))
+(neverallow droidloom_engine_observer p4_fixed_engine_all_types (netlink_kobject_uevent_socket (all)))

@@ -20,6 +20,8 @@ use std::time::{Duration, Instant};
 
 #[path = "production_early_image_custody.rs"]
 mod image_custody;
+#[path = "production_early_engine_custody.rs"]
+mod engine_custody;
 #[path = "production_early_main_custody.rs"]
 mod main_custody;
 #[path = "production_early_task_control.rs"]

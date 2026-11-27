@@ -31,6 +31,7 @@ IOCTLS = {
 # Keep this list explicit: an unrelated actor never gains cache access merely
 # by joining an attribute. Existing native-service cache permissions are kept.
 CACHE_LOADERS = {
+    "droidloom_engine_observer",
     "p4_linux_tmpfiles_t",
     "p4_linux_update_done_t",
     "p4_linux_random_seed_t",
@@ -393,7 +394,8 @@ def verify(library, binary, exported, here, expected, export):
     for actor in sorted(CACHE_LOADERS):
         # The exception is justified by the already admitted loader edge.
         names = ["open", "read", "execute", "map"]
-        actual = policy.context_av(_context("system_r", actor),
+        role = "r" if actor == "droidloom_engine_observer" else "system_r"
+        actual = policy.context_av(_context(role, actor),
             _context("object_r", "p4_linux_elf_interpreter_t"), "file", names)
         _, bits = policy.permissions("file", names)
         if actual != sum(bits.values()):

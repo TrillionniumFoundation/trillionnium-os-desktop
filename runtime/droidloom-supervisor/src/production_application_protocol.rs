@@ -84,6 +84,17 @@ pub(super) enum Message {
         nonce: [u8; 16],
         reason: String,
     },
+    EngineRequest {
+        nonce: [u8; 16],
+        request: super::engine_observer::EngineTarget,
+        deadline_ns: u64,
+    },
+    EngineObserved {
+        nonce: [u8; 16],
+        sample: super::engine_observer::EngineSample,
+    },
+    EngineNotTarget { nonce: [u8; 16] },
+    EngineRejected { nonce: [u8; 16], reason: String },
     Request {
         nonce: [u8; 16],
         query: ApplicationOperation,

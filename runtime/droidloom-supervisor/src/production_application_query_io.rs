@@ -829,6 +829,138 @@ pub(super) fn filter(executable: Option<RawFd>, metadata: bool) -> Vec<libc::soc
     f.push(ins(0x06, 0, 0, deny));
     f
 }
+// Independent bootstrap for the engine observer. The original query/metadata
+// filter above remains byte-for-byte unchanged; final engine entry removes exec
+// and restricts openat2 to one static path, root FD and immutable how structure.
+pub(super) fn engine_filter(executable: Option<RawFd>) -> Vec<libc::sock_filter> {
+    let metadata = true;
+    let ins = |code, jt, jf, k| libc::sock_filter { code, jt, jf, k };
+    let deny = 0x0005_0000 | libc::EPERM as u32;
+    let allow = 0x7fff_0000;
+    let mut f = vec![
+        ins(0x20, 0, 0, 4),
+        ins(0x15, 1, 0, 0xc000_003e),
+        ins(0x06, 0, 0, 0x8000_0000),
+        ins(0x20, 0, 0, 0),
+        ins(0x35, 0, 1, 0x4000_0000),
+        ins(0x06, 0, 0, deny),
+    ];
+    if metadata {
+        // Before fixed entry consumes its held namespace, allow only the two
+        // read-only identity ioctls it needs. The final filter binds PIDFD_INFO
+        // to the exact original target descriptor.
+        f.extend([
+            ins(0x15, 0, 9, libc::SYS_ioctl as u32),
+            ins(0x20, 0, 0, 28),
+            ins(0x15, 1, 0, 0),
+            ins(0x06, 0, 0, deny),
+            ins(0x20, 0, 0, 24),
+            ins(0x15, 3, 0, PIDFD_GET_INFO as u32),
+            ins(0x15, 2, 0, 0xb703),
+            ins(0x15, 1, 0, 0xb701),
+            ins(0x06, 0, 0, deny),
+            ins(0x06, 0, 0, allow),
+            ins(0x20, 0, 0, 0),
+        ]);
+    }
+    let mut narrow = |syscall: libc::c_long, arguments: &[(u32, u64)]| {
+        let mut body = Vec::new();
+        for &(index, value) in arguments {
+            for (offset, value) in [
+                (16 + index * 8, value as u32),
+                (20 + index * 8, (value >> 32) as u32),
+            ] {
+                body.extend([
+                    ins(0x20, 0, 0, offset),
+                    ins(0x15, 1, 0, value),
+                    ins(0x06, 0, 0, deny),
+                ]);
+            }
+        }
+        body.push(ins(0x06, 0, 0, allow));
+        f.push(ins(0x15, 0, body.len() as u8, syscall as u32));
+        f.extend(body);
+        f.push(ins(0x20, 0, 0, 0));
+    };
+    if !metadata {
+        narrow(libc::SYS_ioctl, &[(1, PIDFD_GET_INFO)]);
+    }
+    narrow(libc::SYS_recvmsg, &[(0, 3)]);
+    narrow(libc::SYS_sendmsg, &[(0, 3)]);
+    narrow(libc::SYS_pipe2, &[(1, libc::O_CLOEXEC as u64)]);
+    if metadata {
+        narrow(libc::SYS_setns, &[(0, 4), (1, libc::CLONE_NEWUSER as u64)]);
+    }
+    if let Some(fd) = executable {
+        narrow(
+            libc::SYS_execveat,
+            &[(0, fd as u64), (4, libc::AT_EMPTY_PATH as u64)],
+        );
+    }
+    for syscall in [
+        libc::SYS_read,
+        libc::SYS_write,
+        libc::SYS_close,
+        libc::SYS_fstat,
+        libc::SYS_newfstatat,
+        libc::SYS_statx,
+        libc::SYS_fstatfs,
+        libc::SYS_openat,
+        libc::SYS_openat2,
+        libc::SYS_readlink,
+        libc::SYS_readlinkat,
+        libc::SYS_mmap,
+        libc::SYS_mprotect,
+        libc::SYS_munmap,
+        libc::SYS_brk,
+        libc::SYS_madvise,
+        libc::SYS_rt_sigaction,
+        libc::SYS_rt_sigprocmask,
+        libc::SYS_rt_sigreturn,
+        libc::SYS_arch_prctl,
+        libc::SYS_prlimit64,
+        libc::SYS_getrlimit,
+        libc::SYS_getrandom,
+        libc::SYS_set_tid_address,
+        libc::SYS_set_robust_list,
+        libc::SYS_rseq,
+        libc::SYS_access,
+        libc::SYS_faccessat,
+        libc::SYS_faccessat2,
+        libc::SYS_futex,
+        libc::SYS_clock_gettime,
+        libc::SYS_clock_nanosleep,
+        libc::SYS_nanosleep,
+        libc::SYS_poll,
+        libc::SYS_ppoll,
+        libc::SYS_fcntl,
+        libc::SYS_getpid,
+        libc::SYS_getppid,
+        libc::SYS_getuid,
+        libc::SYS_geteuid,
+        libc::SYS_getgid,
+        libc::SYS_getegid,
+        libc::SYS_getgroups,
+        libc::SYS_capget,
+        libc::SYS_prctl,
+        libc::SYS_getsockopt,
+        libc::SYS_fgetxattr,
+        libc::SYS_lseek,
+        libc::SYS_pread64,
+        libc::SYS_sched_getaffinity,
+        libc::SYS_exit_group,
+        libc::SYS_exit,
+    ] {
+        f.extend([ins(0x15, 0, 1, syscall as u32), ins(0x06, 0, 0, allow)]);
+    }
+    if metadata {
+        for syscall in [libc::SYS_capset, libc::SYS_dup3] {
+            f.extend([ins(0x15, 0, 1, syscall as u32), ins(0x06, 0, 0, allow)]);
+        }
+    }
+    f.push(ins(0x06, 0, 0, deny));
+    f
+}
 pub(super) fn install_filter(program: &[libc::sock_filter]) -> Result<()> {
     let f = libc::sock_fprog {
         len: program.len() as u16,
@@ -1045,6 +1177,7 @@ unsafe fn raw_attribute(path: &CStr, expected: &[u8], write: bool) -> bool {
 pub(super) enum HelperRole {
     QueryIo,
     MetadataObserver,
+    EngineObserver,
     NativeCamera,
 }
 impl HelperRole {
@@ -1052,6 +1185,7 @@ impl HelperRole {
         match self {
             Self::QueryIo => b"u:r:droidloom_query_io:s0\0",
             Self::MetadataObserver => b"u:r:droidloom_metadata_observer:s0\0",
+            Self::EngineObserver => b"u:r:droidloom_engine_observer:s0\0",
             Self::NativeCamera => b"u:r:droidloom_camera_capture:s0\0",
         }
     }
@@ -1059,6 +1193,7 @@ impl HelperRole {
         match self {
             Self::QueryIo => CREATOR,
             Self::MetadataObserver => b"u:r:droidloom_metadata_observer:s0",
+            Self::EngineObserver => b"u:r:droidloom_engine_observer:s0",
             Self::NativeCamera => b"u:r:droidloom_camera_capture:s0",
         }
     }

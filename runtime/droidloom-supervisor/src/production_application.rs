@@ -71,8 +71,17 @@ pub(crate) use operation::{BrowserCommand, OperationDomain};
 mod metadata_observer;
 pub(crate) use metadata_observer::{
     MetadataObservation, MetadataRole, observe as observe_metadata,
-    retirement_failed as metadata_retirement_failed,
 };
+
+#[path = "production_engine_observer.rs"]
+mod engine_observer;
+pub(crate) use engine_observer::{EngineSample, EngineTarget, observe as observe_engine};
+pub(crate) fn metadata_retirement_failed() -> bool {
+    metadata_observer::retirement_failed() || engine_observer::retirement_failed()
+}
+#[path = "production_application_engine.rs"]
+mod engine;
+pub(crate) use engine::observe_running_engine;
 
 #[path = "production_application_camera.rs"]
 pub(crate) mod camera;
@@ -786,6 +795,11 @@ pub fn run_query_io_creator() -> Result<()> {
 /// or any failed namespace, clone, or fixed-query preparation operation.
 pub fn run_metadata_observer() -> Result<()> {
     metadata_observer::entry()
+}
+
+/// Fixed internal engine observer; accepts only the authenticated inherited channel.
+pub fn run_engine_observer() -> Result<()> {
+    engine_observer::entry()
 }
 
 /// Runs the fixed original application worker after private entry admission.

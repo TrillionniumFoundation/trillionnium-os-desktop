@@ -121,6 +121,13 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             droidloom_supervisor::production_application::run_query_io_creator()?;
             return Ok(());
         }
+        if action.as_deref() == Some(std::ffi::OsStr::new("__production-engine-observer")) {
+            if arguments.next().is_some() {
+                return Err("private engine observer accepts no parameters".into());
+            }
+            droidloom_supervisor::production_application::run_engine_observer()?;
+            return Ok(());
+        }
         if action.as_deref() == Some(std::ffi::OsStr::new("__production-metadata-observer")) {
             if arguments.next().is_some() {
                 return Err("private metadata observer accepts no parameters".into());

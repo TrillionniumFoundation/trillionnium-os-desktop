@@ -52,7 +52,7 @@ mod progress;
 
 #[path = "control_identity.rs"]
 mod identity;
-pub use identity::{ActualApplicationObservation, MainCustodyObservation, NativeApplicationInspector, NativeInspectionPeer};
+pub use identity::{ActualApplicationObservation, EngineMappingObservation, MainCustodyObservation, NativeApplicationInspector, NativeInspectionPeer};
 
 #[cfg(target_os = "linux")]
 #[path = "production_package.rs"]
@@ -255,6 +255,13 @@ pub enum ControlRequest {
     /// This grants neither account continuity nor application acceptance.
     ObserveRuntimeMain {
         /// Previously observed generation; never a process selector.
+        expected_epoch: application_probe::RuntimeEpoch,
+    },
+    /// Observe the engine mapped by a currently running selected user-0 package.
+    /// Inputs compare the current owner; no PID, path, label or hash is accepted.
+    ObserveApplicationEngine {
+        package: String,
+        user: u32,
         expected_epoch: application_probe::RuntimeEpoch,
     },
     /// Open a reviewed HTTPS fixture via the current implicit Firefox resolver.
@@ -482,6 +489,9 @@ impl Daemon {
             ControlRequest::OpenBrowser { expected, url } => {
                 self.open_browser(peer_uid, &expected, &url)
             }
+            ControlRequest::ObserveApplicationEngine { .. } => Err(ControlError::Invalid(
+                "running engine observation requires the original kernel-first Ready owner".into(),
+            )),
             ControlRequest::ObserveRuntimeMain { .. } => Err(ControlError::Invalid(
                 "Main resource observation requires the original kernel-first Ready owner".into(),
             )),

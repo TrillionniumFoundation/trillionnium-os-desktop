@@ -101,7 +101,7 @@ impl EarlyApplicationControl {
             // The finite read starts its one absolute budget before original
             // owner acquisition. Main custody uses this same metadata-only budget;
             // other request lifetimes keep their existing limits.
-            vintf_budget = matches!(&request, ControlRequest::ObserveRuntimeVintf { .. } | ControlRequest::ObserveRuntimeMain { .. })
+            vintf_budget = matches!(&request, ControlRequest::ObserveRuntimeVintf { .. } | ControlRequest::ObserveRuntimeMain { .. } | ControlRequest::ObserveApplicationEngine { .. })
                 .then(crate::production_application::RuntimeVintfBudget::start);
             let observation_deadline = vintf_budget.as_ref().map(|budget| budget.work_deadline());
             // Request-local acquisition starts only after transport admission.
@@ -244,6 +244,25 @@ impl EarlyApplicationControl {
                     }
                     response.diagnostics = Some(body);
                     response.message = "Current Main and writable resource custody observed; data-origin business acceptance remains separate".into();
+                }
+                ControlRequest::ObserveApplicationEngine { package, user, expected_epoch } => {
+                    validate_package(&package)?;
+                    if user!=0 || !crate::engine_custody::selected_package(&package) {
+                        return Err(ControlError::Invalid("engine observation requires a fixed selected user-0 package".into()));
+                    }
+                    let budget=vintf_budget.as_ref().expect("fixed engine observation budget");
+                    let observed=crate::production_application::observe_running_engine(
+                        authority,&package,user,&expected_epoch,budget,
+                    ).map_err(|e|{
+                        vintf_failure=Some(classify_vintf_failure(&e,budget.work_deadline()));
+                        early_application_error(e,&mut acquisition_quarantined)
+                    })?;
+                    let body=serde_json::to_string(&observed)?;
+                    if body.len()>crate::engine_custody::MAX_WIRE_BYTES {
+                        return Err(ControlError::Invalid("engine observation exceeds its bound".into()));
+                    }
+                    response.diagnostics=Some(body);
+                    response.message="Actual running package engine mapping observed; translation business acceptance remains separate".into();
                 }
                 ControlRequest::InspectApplication { package, user } => {
                     validate_package(&package)?;

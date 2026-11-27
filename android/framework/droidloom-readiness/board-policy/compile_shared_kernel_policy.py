@@ -45,6 +45,9 @@ from verify_native_utility_bridges import verify_native_utility_bridges
 from verify_native_netplan_trigger import (verify_native_netplan_trigger,
     source_inputs as native_netplan_trigger_source_inputs,
     validate_sources as validate_netplan_trigger_sources)
+from verify_native_engine_observer import (verify_native_engine_observer,
+    source_inputs as native_engine_source_inputs,
+    source_contract as validate_engine_sources)
 
 
 @contextmanager
@@ -1730,6 +1733,7 @@ def main():
         "ubuntu-native-maintenance.cil", "ubuntu-original-once.cil",
         "frontend-android-interface.cil", "native-camera-interface.cil", "linux-frontend-observer.cil", "instance-launcher.cil",
         "linux-query-owner.cil", "linux-fixed-metadata-observer.cil",
+        "linux-fixed-engine-observer.cil",
         "instance-factory-cgroup.cil", "ubuntu-systemd-unit-status.cil",
         "linux-application-roles.cil", "linux-install-catalog.cil", "linux-display-control.cil",
         "ubuntu-dbus.cil", "ubuntu-native-selinux-query.cil",
@@ -1780,12 +1784,14 @@ def main():
                here / "verify_native_resolved_runtime.py", here / "native-resolved-runtime-source.json",
                here / "verify_native_utility_bridges.py", here / "native-utility-bridges-source.json",
                here / "verify_native_netplan_trigger.py", *native_netplan_trigger_source_inputs(here),
+               here / "verify_native_engine_observer.py", *native_engine_source_inputs(here),
                here.parents[3] / "packaging/ubuntu/systemd/source.lock.json",
                here.parents[3] / "packaging/ubuntu/systemd/p4-native-generator-tmpfs.patch",
                *(here / name for name in COMPOSED_FILE_CONTEXT_SOURCES)]
     if any(output.resolve() == path.resolve() for path in sources):
         raise ValueError("The output path is a policy input or build tool")
     output.parent.mkdir(parents=True, exist_ok=True)
+    validate_engine_sources(here)
     with policy_work_directory(output.parent) as work:
         original = work / "original.policy"
         contexts = work / "contexts"
@@ -1882,6 +1888,8 @@ def main():
                                  logind_aliases, netplan_aliases, sysusers_aliases], linked, contexts, environment)
         host_control = verify_host_control(library, linked, work / "host-control-binary.cil", contract)
         tcgets2_audit = verify_native_tcgets2_audit(work / "host-control-binary.cil")
+        native_engine_observer = verify_native_engine_observer(
+            library, linked, work / "host-control-binary.cil", here)
         kmod_access = verify_kmod_static(library, linked, work / "kmod-static-after.cil",
                                          here, kmod_contract, export_binary_policy)
         tmpfiles_access = verify_tmpfiles(library, linked, work / "tmpfiles-after.cil",
@@ -1934,6 +1942,7 @@ def main():
         result = {
             "native_composed_file_contexts": composed_file_contexts,
             "native_tcgets2_audit": tcgets2_audit,
+            "native_engine_observer": native_engine_observer,
             "native_tcgets2_audit_verifier": sha256(here / "verify_native_tcgets2_audit.py"),
             "native_uevent": uevent_access,
             "native_kmod_static_nodes": kmod_access,

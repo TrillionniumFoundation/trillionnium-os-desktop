@@ -51,6 +51,45 @@ pub struct ApplicationInspection {
     pub apks: Vec<InstalledApk>,
 }
 
+/// Comparison-only Package Manager metadata. No installed APK byte read or
+/// checksum is represented by this record.
+#[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct ApplicationMetadata {
+    pub package: String,
+    pub user: u32,
+    pub uid: u32,
+    pub version_code: u64,
+    pub epoch: RuntimeEpoch,
+    pub apks: Vec<InstalledApkPath>,
+}
+#[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct InstalledApkPath {
+    pub name: String,
+    pub path: String,
+}
+impl ApplicationMetadata {
+    /// This only compares a live PM metadata record with a separately observed
+    /// full APK set. It never upgrades metadata into byte identity authority.
+    pub fn matches_inspection(&self, other: &ApplicationInspection) -> bool {
+        self.package == other.package
+            && self.user == other.user
+            && self.uid == other.uid
+            && self.version_code == other.version_code
+            && self.epoch == other.epoch
+            && self.apks
+                == other
+                    .apks
+                    .iter()
+                    .map(|apk| InstalledApkPath {
+                        name: apk.name.clone(),
+                        path: apk.path.clone(),
+                    })
+                    .collect::<Vec<_>>()
+    }
+}
+
 /// Existing daemon transport, after peer authorization and readiness admission.
 pub trait AndroidProbe {
     /// Recheck the actual current framework identity.
@@ -181,6 +220,69 @@ fn fence(probe: &mut impl AndroidProbe, epoch: &RuntimeEpoch) -> Result<(), Stri
         return Err("Android framework generation changed".into());
     }
     Ok(())
+}
+
+/// Read one fixed package's actual UID, version and complete PM path set.
+/// This performs exactly two metadata commands and no APK body read. The
+/// running-engine owner compares a second such observation after its helper;
+/// the client separately joins a normal opaque full-APK observation.
+pub(crate) fn inspect_metadata(
+    probe: &mut impl AndroidProbe,
+    package: &str,
+    user: u32,
+) -> Result<ApplicationMetadata, String> {
+    if !package_valid(package) || user > 21_474 {
+        return Err("invalid package or Android user".into());
+    }
+    let epoch = probe.epoch()?;
+    let user_string = user.to_string();
+    let (uid, version_code) = parse_package(
+        &probe.command(&argv(&[
+            "/system/bin/cmd",
+            "package",
+            "list",
+            "packages",
+            "--user",
+            &user_string,
+            "-U",
+            "--show-versioncode",
+            package,
+        ]))?,
+        package,
+        user,
+    )?;
+    let paths = parse_paths(&probe.command(&argv(&[
+        "/system/bin/cmd",
+        "package",
+        "path",
+        "--user",
+        &user_string,
+        package,
+    ]))?)?;
+    let mut apks = Vec::new();
+    let mut names = BTreeSet::new();
+    for (index, path) in paths.into_iter().enumerate() {
+        let name = if index == 0 {
+            "base.apk"
+        } else {
+            path.rsplit('/').next().ok_or("missing split name")?
+        }
+        .to_owned();
+        if !names.insert(name.clone()) {
+            return Err("normalized APK role is duplicated".into());
+        }
+        apks.push(InstalledApkPath { name, path });
+    }
+    fence(probe, &epoch)?;
+    apks.sort_by(|a, b| a.name.cmp(&b.name));
+    Ok(ApplicationMetadata {
+        package: package.into(),
+        user,
+        uid,
+        version_code,
+        epoch,
+        apks,
+    })
 }
 
 /// Inspect the exact installed package and all PM-returned APK source paths.
@@ -389,6 +491,85 @@ mod tests {
             .into(),
             mutations: 0,
         }
+    }
+
+    #[test]
+    fn engine_metadata_reads_only_two_pm_commands_and_compares_full_identity() {
+        struct MetadataOnly {
+            inner: Mock,
+            commands: Vec<Vec<String>>,
+        }
+        impl AndroidProbe for MetadataOnly {
+            fn epoch(&mut self) -> Result<RuntimeEpoch, String> {
+                self.inner.epoch()
+            }
+            fn command(&mut self, args: &[String]) -> Result<String, String> {
+                assert_eq!(args.first().map(String::as_str), Some("/system/bin/cmd"));
+                assert_eq!(args.get(1).map(String::as_str), Some("package"));
+                assert!(matches!(
+                    args.get(2).map(String::as_str),
+                    Some("list" | "path")
+                ));
+                self.commands.push(args.to_vec());
+                self.inner.command(args)
+            }
+        }
+        let actual = inspect(&mut fixture(10237), "org.mozilla.firefox", 0).unwrap();
+        let mut metadata = MetadataOnly {
+            inner: fixture(10237),
+            commands: Vec::new(),
+        };
+        metadata.inner.output.truncate(2);
+        let observed = inspect_metadata(&mut metadata, "org.mozilla.firefox", 0).unwrap();
+        assert_eq!(metadata.commands.len(), 2);
+        assert!(metadata.inner.output.is_empty());
+        assert!(observed.matches_inspection(&actual));
+        let mut other = actual.clone();
+        other.uid += 1;
+        assert!(!observed.matches_inspection(&other));
+        other = actual.clone();
+        other.apks[0].path = "/data/app/other/base.apk".into();
+        assert!(!observed.matches_inspection(&other));
+        other = actual;
+        other.epoch.framework_start_ticks += 1;
+        assert!(!observed.matches_inspection(&other));
+    }
+
+    #[test]
+    fn engine_metadata_rejects_ambiguous_uid_private_path_and_epoch_change() {
+        let mut ambiguous = fixture(10021);
+        ambiguous.output[0] = format!("{}\n{}", ambiguous.output[0], ambiguous.output[0]);
+        assert!(inspect_metadata(&mut ambiguous, "org.mozilla.firefox", 0).is_err());
+        let mut private = fixture(10021);
+        private.output[1] = "package:/data/user/0/org.mozilla.firefox/private.apk".into();
+        assert!(inspect_metadata(&mut private, "org.mozilla.firefox", 0).is_err());
+        assert!(inspect_metadata(&mut fixture(110021), "org.mozilla.firefox", 0).is_err());
+        struct Changed {
+            inner: Mock,
+            epochs: u32,
+        }
+        impl AndroidProbe for Changed {
+            fn epoch(&mut self) -> Result<RuntimeEpoch, String> {
+                let mut epoch = self.inner.epoch()?;
+                epoch.framework_start_ticks += self.epochs as u64;
+                self.epochs += 1;
+                Ok(epoch)
+            }
+            fn command(&mut self, args: &[String]) -> Result<String, String> {
+                self.inner.command(args)
+            }
+        }
+        assert!(
+            inspect_metadata(
+                &mut Changed {
+                    inner: fixture(10021),
+                    epochs: 0
+                },
+                "org.mozilla.firefox",
+                0
+            )
+            .is_err()
+        );
     }
     #[test]
     fn uid_is_read_from_current_pm_and_not_fixed() {

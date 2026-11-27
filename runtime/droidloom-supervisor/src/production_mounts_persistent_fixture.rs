@@ -115,6 +115,7 @@
         let mut prepared = PreparedMounts {
             exported: false,
             resources: Some(MountResources {
+                engine: None,
                 images: Vec::new(),
                 cohort,
                 userns,

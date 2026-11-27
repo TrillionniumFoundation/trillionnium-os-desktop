@@ -23,6 +23,7 @@ mod native_once_capabilities;
 pub mod native_once_return;
 pub mod control;
 pub mod main_custody;
+pub mod engine_custody;
 #[cfg(target_os = "linux")]
 pub mod native_leaf_baseline;
 #[cfg(target_os = "linux")]

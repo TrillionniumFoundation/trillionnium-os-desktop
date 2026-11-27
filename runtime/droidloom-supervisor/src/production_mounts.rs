@@ -34,6 +34,8 @@ pub(crate) mod system_ext;
 
 #[path = "production_mounts_custody.rs"]
 pub(crate) mod custody;
+#[path = "production_mounts_engine_custody.rs"]
+mod engine_custody;
 
 #[path = "production_persistent_data.rs"]
 pub(crate) mod persistent_data;
@@ -1112,6 +1114,7 @@ struct MountedImage {
 }
 #[derive(Debug)]
 struct MountResources {
+    engine: Option<engine_custody::EngineOrigin>,
     images: Vec<MountedImage>,
     cohort: VerifiedCohort,
     userns: File,
@@ -1263,6 +1266,7 @@ impl PreparedMounts {
         let mut guard = Self {
             exported: false,
             resources: Some(MountResources {
+                engine: None,
                 images: Vec::new(),
                 cohort,
                 userns,
@@ -1310,7 +1314,10 @@ impl PreparedMounts {
                 resources.cohort.revalidate(witness)?;
             }
             require(resources.has_declared_set(), "complete declared base mount set")?;
-            if resources.cohort.system_ext_lib64.is_some() { system_ext::compose(resources)?; }
+            if resources.cohort.system_ext_lib64.is_some() {
+                system_ext::compose(resources)?;
+                resources.engine = Some(engine_custody::capture(resources)?);
+            }
             if let Some((_,decl))=&resources.cohort.system_ext_readiness {
                 let root=resources.images[0].mount.as_ref().ok_or(MountError::Rejected("system root absent"))?;
                 let carrier=resources.images[3].mount.as_ref().ok_or(MountError::Rejected("readiness root absent"))?;
@@ -1884,6 +1891,7 @@ pub(crate) mod private_control {
         let mut prepared = PreparedMounts {
             exported: false,
             resources: Some(MountResources {
+                engine: None,
                 images: Vec::new(),
                 cohort,
                 userns,

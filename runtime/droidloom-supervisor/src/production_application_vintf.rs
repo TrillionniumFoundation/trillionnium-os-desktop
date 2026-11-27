@@ -36,6 +36,7 @@ impl RuntimeVintfBudget {
             work_deadline: started + (WORKFLOW - RETIRE_RESERVE),
         }
     }
+    pub(super) fn operation_deadline(&self) -> Instant { self.deadline }
     pub(crate) fn work_deadline(&self) -> Instant {
         self.work_deadline
     }
@@ -160,7 +161,7 @@ fn pure_expiry(error: &ApplicationError, expected: Instant) -> bool {
 }
 /// Preserve the first substantive failure. A later clock observation cannot
 /// erase it; a real failure to retire always takes precedence in either branch.
-fn finish_vintf<T>(
+pub(super) fn finish_vintf<T>(
     result: Result<T>,
     postcheck: impl FnOnce() -> Result<()>,
     work_deadline: Instant,
