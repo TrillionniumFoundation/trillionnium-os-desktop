@@ -48,6 +48,7 @@ pub(crate) struct WorkingSchedule {
     pub(crate) case_count: usize,
     pub(crate) native_case_count: usize,
     pub(crate) family_case_count: usize,
+    pub(crate) photo_case_count: usize,
     pub(crate) authorization_end_by_boot_seconds: u64,
     pub(crate) parent_retirement_seconds: u64,
     pub(crate) service_runtime_seconds: u64,
@@ -75,6 +76,7 @@ impl WorkingSchedule {
             case_count: budget::CASE_COUNT,
             native_case_count: budget::NATIVE_CASE_COUNT,
             family_case_count: budget::FAMILY_CASE_COUNT,
+            photo_case_count: budget::PHOTO_CASE_COUNT,
             authorization_end_by_boot_seconds: authorization_end,
             parent_retirement_seconds: budget::RETIREMENT_SECONDS,
             service_runtime_seconds: budget::SERVICE_SECONDS,
@@ -381,13 +383,22 @@ mod tests {
         let s = WorkingSchedule::selected();
         s.validate().unwrap();
         assert_eq!(
-            (s.native_case_count, s.family_case_count, s.case_count),
-            (14, 31, 45)
+            (
+                s.native_case_count,
+                s.family_case_count,
+                s.photo_case_count,
+                s.case_count
+            ),
+            (14, 31, 1, 46)
         );
-        assert_eq!(s.whole_suite_seconds, 114505);
+        assert_eq!(s.whole_suite_seconds, 118795);
         assert_eq!(
             s.whole_suite_seconds,
-            budget::NATIVE_CASE_WINDOWS.iter().sum::<u64>() + 31 * (250 + 2615) + 140 + 120
+            budget::NATIVE_CASE_WINDOWS.iter().sum::<u64>()
+                + 31 * (250 + 2615)
+                + budget::PHOTO_CASE_COUNT as u64 * budget::CAMERA_PHOTO_CASE_SECONDS
+                + 140
+                + 120
         );
         assert_eq!(s.watchdog_interval_seconds, 900);
         assert_eq!(
@@ -409,6 +420,10 @@ mod tests {
             (budget::SERVICE_SECONDS - budget::SUITE_SECONDS) + budget::RETIREMENT_SECONDS + 900
         );
         for field in [
+            "case_count",
+            "native_case_count",
+            "family_case_count",
+            "photo_case_count",
             "whole_suite_seconds",
             "watchdog_interval_seconds",
             "keepalive_period_seconds",

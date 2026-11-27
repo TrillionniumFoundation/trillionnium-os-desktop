@@ -38,6 +38,7 @@ mod native_leaf_engine;
 mod native_once_capabilities;
 #[cfg(target_os = "linux")]
 mod native_once_contract;
+mod native_working_contract;
 #[cfg(target_os = "linux")]
 pub mod native_once_return;
 #[cfg(target_os = "linux")]
