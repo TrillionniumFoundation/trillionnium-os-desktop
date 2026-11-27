@@ -310,6 +310,9 @@ pub(super) struct Snapshot {
     handle: PersistentHandle,
     attributes: BTreeMap<String, Vec<u8>>,
 }
+pub(super) fn snapshot_identity(snapshot: &Snapshot) -> &Identity {
+    &snapshot.identity
+}
 pub(super) fn snapshot(file: &File) -> Result<Snapshot> {
     let identity = fs::stat(file)?;
     let handle = PersistentHandle::capture(file)?;

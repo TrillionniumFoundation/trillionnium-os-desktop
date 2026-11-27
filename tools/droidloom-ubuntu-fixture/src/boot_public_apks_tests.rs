@@ -435,15 +435,18 @@ fn public_material_roster_accepts_only_complete_declared_apks_and_provenance() {
 
 #[test]
 fn actual_ext4_public_material_readback_detects_tampered_bytes_and_is_create_only() -> Result<()> {
-    for with_registry in [false, true] {
+    // Preserve the historical three-document case, the current 65+4-file
+    // import, and a complete future split-count change. All use real ext4
+    // dump/readback, including the source registry bytes.
+    for (with_registry, split_apps) in [(false, 26), (true, 26), (true, 27)] {
         let temp = tempfile::tempdir()?;
         let root = temp.path().join("root");
         let stage = root.join(STAGE.trim_start_matches('/'));
         std::fs::create_dir_all(&stage)?;
         let mut material = if with_registry {
-            add_registry(staged_with_split_count(27))
+            add_registry(staged_with_split_count(split_apps))
         } else {
-            staged()
+            staged_with_split_count(split_apps)
         };
         for (index, item) in material.files.iter_mut().enumerate() {
             let path = root.join(item.guest_path.trim_start_matches('/'));
@@ -486,6 +489,9 @@ fn actual_ext4_public_material_readback_detects_tampered_bytes_and_is_create_onl
         boot_files::private_dir(&good)?;
         let receipt = readback_bodies(&good, &disk, &material.files)?;
         let provenance = if with_registry { 4 } else { 3 };
+        if with_registry && split_apps == 26 {
+            assert_eq!(material.files.len(), 69);
+        }
         assert_eq!(
             receipt["files"].as_array().unwrap().len(),
             material.apk_file_count + provenance

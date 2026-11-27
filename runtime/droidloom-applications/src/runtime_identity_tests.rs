@@ -2,6 +2,23 @@ use super::*;
 use droidloom_supervisor::control::application_probe::InstalledApk;
 use tempfile::TempDir;
 
+#[test]
+fn compiled_current_physical_selection_has_one_exact_r7_material_admission() {
+    use crate::runtime_plan::physical_gate_roster as roster;
+    let compiled = admissions().unwrap();
+    let current: Vec<_> = compiled
+        .iter()
+        .filter(|row| {
+            row.selection.bytes == roster::CURRENT_SELECTION_BYTES
+                && row.selection.sha256 == roster::CURRENT_SELECTION_SHA256
+        })
+        .collect();
+    assert_eq!(current.len(), 1);
+    assert_eq!(current[0].id, "p4-public-apk-candidate-4b91-r7");
+    assert_eq!(current[0].package_count, roster::PACKAGE_COUNT);
+    assert_eq!(current[0].apk_file_count, 65);
+}
+
 fn write_pin(root: &Path, name: &str, raw: &[u8]) -> FilePin {
     let path = root.join(name);
     std::fs::write(&path, raw).unwrap();
