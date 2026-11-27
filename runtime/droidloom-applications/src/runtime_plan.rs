@@ -38,6 +38,16 @@ mod runtime_prepare;
 pub use runtime_prepare::{PreparationReport, prepare_files};
 #[path = "runtime_identity.rs"]
 mod runtime_identity;
+#[path = "physical_gate_roster.rs"]
+mod physical_gate_roster;
+#[path = "common_gate.rs"]
+mod common_gate;
+#[path = "physical_acceptance.rs"]
+mod physical_acceptance;
+pub use physical_acceptance::{
+    CompletePhysicalApplicationRun, PhysicalApplicationSummary, PhysicalRunOutcome,
+    physical_qualification_window_seconds, run_physical_files,
+};
 
 /// Prepare the next normal material batch for source review. The result cannot
 /// extend the compiled admission table or authorize an application.

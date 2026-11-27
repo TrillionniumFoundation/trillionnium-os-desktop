@@ -1,0 +1,577 @@
+{
+  "schema": "pocket4-app-release-gates-v1",
+  "common_gates": {
+    "identity": "Bind the exact installed APK SHA-256/signing identity, UID, Android user, version, framework epoch and actual per-App engine mapping.",
+    "lifecycle": "Prove owned-task normal close and separate reopen; retain the required state and exclude pre-existing tasks.",
+    "stability": "Run the reviewed repeat/soak budget with fresh exact-UID crash/ANR/exit evidence and resource/epoch fences; unexplained self-exit is not a pass.",
+    "data_permissions": "Preserve existing data, permissions and accounts; verify intended test-state persistence and cleanup only owned fixtures.",
+    "release_scope": "Review the complete supported feature checklist, dependencies and failure paths; reconcile retained failures and explicitly accept the whole App release.",
+    "ui_observation": "Verify the correct owned foreground window, usable visual/native controls and exact input readback. A tool observation failure alone does not prove an App crash."
+  },
+  "profiles": {
+    "hotel": {
+      "checks": {
+        "hotel.query": "Enter location/dates/occupancy and verify populated matching availability.",
+        "hotel.details": "Open the selected hotel; match address, images, amenities, room/rate and total-price details.",
+        "hotel.return": "Return/edit query and reopen without losing or mismatching the selected search.",
+        "hotel.account": "Verify supported account/booking-management paths using an authorized test account and non-chargeable test data."
+      }
+    },
+    "train": {
+      "checks": {
+        "train.query": "Enter origin/destination/date; verify matching trains and seat availability.",
+        "train.details": "Match service/date/timetable/fare details to the chosen result.",
+        "train.return": "Change a query, return, and reopen with correct state.",
+        "train.account": "Qualify supported login/traveller/booking-management paths with approved test data; no real booking is implied."
+      }
+    },
+    "retail": {
+      "checks": {
+        "retail.search": "Enter a product query; verify matching populated search results.",
+        "retail.detail": "Match selected product, variant, image, price and availability.",
+        "retail.navigation": "Verify filters, back navigation and reopen state; render detail without blank/pale corruption.",
+        "retail.account": "Qualify supported account/cart/order-management paths with an authorized test account; paid submission needs a separate approved test."
+      }
+    },
+    "calendar": {
+      "checks": {
+        "calendar.edit": "Create/edit one uniquely owned local event; verify dates, timezone and recurrence.",
+        "calendar.persist": "Close/reopen and retrieve the exact edited event.",
+        "calendar.reminder": "Observe the owned reminder behavior and remove only the owned event.",
+        "calendar.sync": "Qualify supported account/sync and denied-permission paths with authorized test fixtures."
+      }
+    },
+    "camera": {
+      "checks": {
+        "camera.preview": "Observe a real live preview without the cannot-connect dialog; correlate the exact provider session.",
+        "camera.photo": "Take exactly one owned photo; verify a new MediaStore row, JPEG decode, dimensions and matching visual content.",
+        "camera.persist": "Normal close/reopen preserves the same new photo bytes and MediaStore identity.",
+        "camera.video": "Qualify supported video recording, audio and playback using an owned local clip.",
+        "camera.recovery": "Verify provider disconnect/reconnect, permission denial and orientation/resource recovery without false success."
+      }
+    },
+    "contacts": {
+      "checks": {
+        "contacts.edit": "Create and edit one uniquely owned contact fixture with exact field readback.",
+        "contacts.persist": "Close/reopen; search and reopen the same edited contact.",
+        "contacts.cleanup": "Remove only the fixture and prove all pre-existing contacts remain.",
+        "contacts.sync": "Qualify supported contact-provider/sync and permission paths with an authorized account or local fixture."
+      }
+    },
+    "clock": {
+      "checks": {
+        "clock.alarm": "Create one owned alarm, observe delivery and dismiss it; preserve pre-existing alarms.",
+        "clock.timer": "Start/pause/resume an owned timer and observe completion.",
+        "clock.persist": "Verify alarm/timezone behavior after normal close/reopen and remove only owned test state."
+      }
+    },
+    "dialer": {
+      "checks": {
+        "dialer.ui": "Verify number entry/editing, contact lookup and supported dialer routes.",
+        "dialer.call": "Use a separately authorized test endpoint to prove call setup, two-way audio and normal end.",
+        "dialer.history": "Verify the owned call record and lifecycle without disturbing existing history."
+      }
+    },
+    "documents": {
+      "checks": {
+        "documents.io": "Create, rename, open and read a uniquely owned file with content hash verification.",
+        "documents.provider": "Verify open/create-document URI grants and supported file-provider navigation.",
+        "documents.persist": "Close/reopen and retrieve the same bytes; remove only owned files and grants."
+      }
+    },
+    "gallery": {
+      "checks": {
+        "gallery.enumeration": "Observe known owned image/video fixtures with matching metadata and thumbnails.",
+        "gallery.open": "Decode and render full image/video, rotation and supported playback controls.",
+        "gallery.persist": "Reopen the same fixtures; verify any supported edit on a copy and preserve pre-existing media."
+      }
+    },
+    "messaging": {
+      "checks": {
+        "messaging.compose": "Verify recipient resolution and exact draft composition with owned test data.",
+        "messaging.delivery": "Prove send/receive and delivery semantics only with an explicitly authorized test recipient/service.",
+        "messaging.persist": "Reopen the owned conversation and verify content/state; preserve existing messages."
+      }
+    },
+    "search": {
+      "checks": {
+        "search.query": "Enter Unicode queries with exact readback and verify matching local/web results.",
+        "search.open": "Open a known result, return and verify query state.",
+        "search.failure": "Verify empty/offline/error paths and lifecycle without a blank or unusable UI."
+      }
+    },
+    "settings": {
+      "checks": {
+        "settings.pages": "Verify supported system, network, display, storage and application settings pages.",
+        "settings.roundtrip": "Change one explicitly selected reversible test setting, verify effect/persistence and restore its original value.",
+        "settings.permissions": "Verify permission/account interfaces and error handling without granting or changing unrelated state."
+      }
+    },
+    "thread": {
+      "checks": {
+        "thread.inventory": "Identify the exact demo contract, supported radio/service and controlled peer prerequisites.",
+        "thread.operation": "Exercise the supported network operation with an authorized isolated test peer.",
+        "thread.cleanup": "Verify resource release and original network/configuration preservation."
+      }
+    },
+    "rental": {
+      "checks": {
+        "rental.query": "Enter pickup/dropoff location and dates; verify populated matching vehicle availability.",
+        "rental.details": "Match vehicle class, location, dates and complete displayed price breakdown.",
+        "rental.return": "Change query and return/reopen without stale results.",
+        "rental.account": "Qualify supported account/reservation-management paths using authorized non-chargeable test data."
+      }
+    },
+    "voip": {
+      "checks": {
+        "voip.environment": "Resolve legitimate login/Play/service prerequisites with same-epoch exact-UID evidence.",
+        "voip.messaging": "Verify send/receive and notification semantics with an explicitly authorized test recipient.",
+        "voip.call": "Verify call setup/audio/end with an authorized test endpoint.",
+        "voip.persist": "Reopen the owned conversation/call state and preserve existing account/history."
+      }
+    },
+    "gms": {
+      "checks": {
+        "gms.identity": "Verify the actual installed microG/GMS implementation, enabled services and declared compatibility scope.",
+        "gms.consumer": "Exercise each required account/token/push/location API through an owned dependent test App.",
+        "gms.failure": "Verify permission-denied/unavailable-service behavior; do not infer integrity bypass or missing packages from an alert."
+      }
+    },
+    "housing": {
+      "checks": {
+        "housing.query": "Enter location/filters and verify matching populated listings.",
+        "housing.details": "Open a matching listing and verify image, address, price and detail data.",
+        "housing.navigation": "Verify return/reopen and legitimate authenticated routes; a blank login router is a failure."
+      }
+    },
+    "delivery": {
+      "checks": {
+        "delivery.start": "Reach a stable usable home without a self-exit loop.",
+        "delivery.query": "Verify merchant/item search and location-specific matching results.",
+        "delivery.detail": "Open matching menu/item details and return with query preserved.",
+        "delivery.order_scope": "Qualify supported account/cart/order-management paths using an approved test environment; no paid order is implied."
+      }
+    },
+    "ride": {
+      "checks": {
+        "ride.location": "Verify legitimate account and selected pickup/destination handling.",
+        "ride.quote": "Obtain matching route/service/estimate data without dispatching a driver.",
+        "ride.lifecycle": "Verify editing, return/reopen and supported trip/account paths using an approved test environment."
+      }
+    },
+    "video": {
+      "checks": {
+        "video.search": "Enter a legitimate public query and verify matching title/author results.",
+        "video.playback": "Prove advancing decoded video frames and actual audio; buffering-label changes do not qualify.",
+        "video.controls": "Verify pause/resume/seek and in-App return against the same selected item.",
+        "video.reopen": "Close the owned task, reopen separately and verify supported playback/history state."
+      }
+    },
+    "services": {
+      "checks": {
+        "services.query": "Enter a service query and verify matching populated results.",
+        "services.detail": "Open a matching service/provider detail and return with query preserved.",
+        "services.account": "Qualify supported authenticated/order-management paths with approved test data; no real message/order is implied."
+      }
+    },
+    "travel": {
+      "checks": {
+        "travel.query": "Verify the supported flight/hotel/train search routes with location/date input.",
+        "travel.details": "Match availability, itinerary/property and complete displayed fare/rate details.",
+        "travel.account": "Verify return/reopen and supported account/booking-management paths using approved test data."
+      }
+    },
+    "fixture": {
+      "checks": {
+        "fixture.contract": "Identify and review the exact fixture source/APK and its intended shipping/test purpose.",
+        "fixture.controls": "Exercise every declared fixture control with positive and negative results.",
+        "fixture.isolation": "Prove fixture cleanup, data isolation and no accidental external side effects; keep this tracked entry even if it is not an end-user App."
+      }
+    },
+    "webview": {
+      "checks": {
+        "webview.render": "Load controlled local/HTTPS fixtures and verify layout, text, images and JavaScript.",
+        "webview.input": "Verify focus, Unicode editing, forms and supported media behavior.",
+        "webview.navigation": "Verify navigation, back, error handling and reload/reopen persistence using owned fixture data."
+      }
+    },
+    "editor": {
+      "checks": {
+        "editor.input": "Verify focus, Unicode composition, exact text readback, selection and deletion in the editor contract.",
+        "editor.ime": "Exercise IME/action/enter, resize and focus transitions with positive and negative controls.",
+        "editor.isolation": "Verify separate owned task lifecycle, restoration and absence of unintended input into another App."
+      }
+    },
+    "ime": {
+      "checks": {
+        "ime.composition": "Verify configured Chinese/Unicode composition, candidate selection and exact commit into an owned field.",
+        "ime.editing": "Verify deletion, selection, enter/action behavior and focus transitions.",
+        "ime.lifecycle": "Verify reopen and switch/restore behavior without recording private password input or changing unrelated input settings."
+      }
+    },
+    "flight": {
+      "checks": {
+        "flight.query": "Enter route/date/passenger query and verify matching populated availability.",
+        "flight.details": "Match itinerary, dates, fare, restrictions and selected flight details.",
+        "flight.return": "Verify back/edit/reopen state without stale query results.",
+        "flight.account": "Qualify supported login/check-in/booking-management paths with authorized test data; no real purchase/change is implied."
+      }
+    },
+    "unclassified": {
+      "checks": {
+        "unclassified.contract": "Identify the new launcher and add a reviewed App-specific release checklist before any readiness promotion."
+      }
+    },
+    "browser": {
+      "checks": {
+        "browser.external_https": "From an owned Android caller, open an implicit ACTION_VIEW HTTPS intent with the browsable category and no explicit Firefox component. Record the BROWSER/default-handler resolution and the actually opened activity; both must identify org.mozilla.firefox in the selected installed identity. The owned/public fixture must display the expected URL and document, and Back must return to the caller. Resolver output alone does not qualify the flow.",
+        "browser.document": "Load a predeclared HTTPS fixture containing exact reference text, one editable field, and one reference image. Verify visible text and layout, type and edit an owned Unicode value without submitting a form, and read back the exact result. Verify that the reference image decoded with the expected dimensions and matching visible content; a DOM record or successful HTTP response without the rendered UI is insufficient.",
+        "browser.media": "Play a predeclared owned/public audio-video clip with known reference frames and audio. Observe both advancing rendered video and actual output of the reference audio in the current run; require position to advance during playback, remain paused when paused, and move to the requested segment after a seek. Resume and finish or stop normally, then confirm output stops and no crash, self-exit, blank video, or stuck audio remains. A play-button action or decoder log alone is insufficient.",
+        "browser.return": "Using only owned normal tabs, navigate between two uniquely identified fixtures, then exercise Back and Forward and confirm the correct URL and document at each step. Leave and reopen Firefox normally and verify the owned tab/page state promised by the recorded current browser settings. Preserve pre-existing tabs, history, and preferences; close only the owned fixture tabs after evidence is captured.",
+        "browser.recovery": "For an owned fixture request, induce a scoped unavailable-network condition without disrupting the host network, observe the browser's failure UI, restore the fixture and retry successfully. On an owned fixture origin, deny one declared site-permission request and verify that denial is honored while the page and navigation remain usable; restore only that fixture origin's original permission state. Record unsupported capability as unsupported and unavailable prerequisites as blocked; neither can become passed."
+      }
+    }
+  },
+  "packages": {
+    "com.Hyatt.hyt": {
+      "app": "Hyatt",
+      "kind": "third_party",
+      "profile": "hotel",
+      "prerequisites": [
+        "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+      ]
+    },
+    "com.MobileTicket": {
+      "app": "12306",
+      "kind": "third_party",
+      "profile": "train",
+      "prerequisites": [
+        "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+      ]
+    },
+    "com.amazon.mShop.android.shopping": {
+      "app": "Amazon",
+      "kind": "third_party",
+      "profile": "retail",
+      "prerequisites": [
+        "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+      ]
+    },
+    "com.android.calendar": {
+      "app": "Calendar",
+      "kind": "system",
+      "profile": "calendar",
+      "prerequisites": []
+    },
+    "com.android.camera2": {
+      "app": "Camera",
+      "kind": "system",
+      "profile": "camera",
+      "prerequisites": []
+    },
+    "com.android.contacts": {
+      "app": "Contacts",
+      "kind": "system",
+      "profile": "contacts",
+      "prerequisites": []
+    },
+    "com.android.deskclock": {
+      "app": "DeskClock",
+      "kind": "system",
+      "profile": "clock",
+      "prerequisites": []
+    },
+    "com.android.dialer": {
+      "app": "Dialer",
+      "kind": "system",
+      "profile": "dialer",
+      "prerequisites": [
+        "No outbound message or call until an explicit authorized test recipient/endpoint is available."
+      ]
+    },
+    "com.android.documentsui": {
+      "app": "DocumentsUI",
+      "kind": "system",
+      "profile": "documents",
+      "prerequisites": []
+    },
+    "com.android.gallery3d": {
+      "app": "Gallery",
+      "kind": "system",
+      "profile": "gallery",
+      "prerequisites": []
+    },
+    "com.android.messaging": {
+      "app": "Messaging",
+      "kind": "system",
+      "profile": "messaging",
+      "prerequisites": [
+        "No outbound message or call until an explicit authorized test recipient/endpoint is available."
+      ]
+    },
+    "com.android.quicksearchbox": {
+      "app": "QuickSearchBox",
+      "kind": "system",
+      "profile": "search",
+      "prerequisites": []
+    },
+    "com.android.settings": {
+      "app": "Settings",
+      "kind": "system",
+      "profile": "settings",
+      "prerequisites": []
+    },
+    "com.android.threadnetwork.demoapp": {
+      "app": "Thread network demo",
+      "kind": "support_demo",
+      "profile": "thread",
+      "prerequisites": [
+        "A supported controlled Thread radio/peer and isolated test network are required."
+      ]
+    },
+    "com.bestbuy.android": {
+      "app": "Best Buy",
+      "kind": "third_party",
+      "profile": "retail",
+      "prerequisites": [
+        "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+      ]
+    },
+    "com.ehi.national.mobile": {
+      "app": "National",
+      "kind": "third_party",
+      "profile": "rental",
+      "prerequisites": [
+        "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+      ]
+    },
+    "com.enflick.android.TextNow": {
+      "app": "TextNow",
+      "kind": "third_party",
+      "profile": "voip",
+      "prerequisites": [
+        "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress.",
+        "No outbound message or call until an explicit authorized test recipient/endpoint is available."
+      ]
+    },
+    "com.google.android.gms": {
+      "app": "Google Play services / installed compatibility provider",
+      "kind": "platform_service",
+      "profile": "gms",
+      "prerequisites": []
+    },
+    "com.hertz.android.digital": {
+      "app": "Hertz",
+      "kind": "third_party",
+      "profile": "rental",
+      "prerequisites": [
+        "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+      ]
+    },
+    "com.hilton.android.hhonors": {
+      "app": "Hilton",
+      "kind": "third_party",
+      "profile": "hotel",
+      "prerequisites": [
+        "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+      ]
+    },
+    "com.ihg.apps.android": {
+      "app": "IHG",
+      "kind": "third_party",
+      "profile": "hotel",
+      "prerequisites": [
+        "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+      ]
+    },
+    "com.jingdong.app.mall": {
+      "app": "JD",
+      "kind": "third_party",
+      "profile": "retail",
+      "prerequisites": [
+        "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+      ]
+    },
+    "com.lianjia.beike": {
+      "app": "Beike",
+      "kind": "third_party",
+      "profile": "housing",
+      "prerequisites": []
+    },
+    "com.marriott.mrt": {
+      "app": "Marriott",
+      "kind": "third_party",
+      "profile": "hotel",
+      "prerequisites": [
+        "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+      ]
+    },
+    "com.pinger.textfree": {
+      "app": "TextFree",
+      "kind": "third_party",
+      "profile": "voip",
+      "prerequisites": [
+        "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress.",
+        "No outbound message or call until an explicit authorized test recipient/endpoint is available."
+      ]
+    },
+    "com.rytong.airchina": {
+      "app": "Air China",
+      "kind": "third_party",
+      "profile": "flight",
+      "prerequisites": [
+        "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+      ]
+    },
+    "com.rytong.ceair": {
+      "app": "China Eastern",
+      "kind": "third_party",
+      "profile": "flight",
+      "prerequisites": [
+        "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+      ]
+    },
+    "com.sankuai.meituan.takeoutnew": {
+      "app": "Meituan Takeout",
+      "kind": "third_party",
+      "profile": "delivery",
+      "prerequisites": [
+        "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+      ]
+    },
+    "com.sdu.didi.psnger": {
+      "app": "DiDi",
+      "kind": "third_party",
+      "profile": "ride",
+      "prerequisites": [
+        "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+      ]
+    },
+    "com.ss.android.ugc.aweme": {
+      "app": "Douyin",
+      "kind": "third_party",
+      "profile": "video",
+      "prerequisites": []
+    },
+    "com.szzc": {
+      "app": "SZZC",
+      "kind": "third_party",
+      "profile": "rental",
+      "prerequisites": [
+        "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+      ]
+    },
+    "com.taobao.taobao": {
+      "app": "Taobao",
+      "kind": "third_party",
+      "profile": "retail",
+      "prerequisites": [
+        "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+      ]
+    },
+    "com.tencent.mm": {
+      "app": "WeChat",
+      "kind": "third_party",
+      "profile": "messaging",
+      "prerequisites": [
+        "No outbound message or call until an explicit authorized test recipient/endpoint is available."
+      ]
+    },
+    "com.ubercab": {
+      "app": "Uber",
+      "kind": "third_party",
+      "profile": "ride",
+      "prerequisites": [
+        "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+      ]
+    },
+    "com.united.mobile.android": {
+      "app": "United",
+      "kind": "third_party",
+      "profile": "flight",
+      "prerequisites": [
+        "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+      ]
+    },
+    "com.xunmeng.pinduoduo": {
+      "app": "Pinduoduo",
+      "kind": "third_party",
+      "profile": "retail",
+      "prerequisites": [
+        "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+      ]
+    },
+    "com.zhubajie.client": {
+      "app": "Zhubajie",
+      "kind": "third_party",
+      "profile": "services",
+      "prerequisites": [
+        "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+      ]
+    },
+    "com.zillow.android.streeteasy": {
+      "app": "StreetEasy",
+      "kind": "third_party",
+      "profile": "housing",
+      "prerequisites": []
+    },
+    "ctrip.android.view": {
+      "app": "Ctrip",
+      "kind": "third_party",
+      "profile": "travel",
+      "prerequisites": [
+        "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+      ]
+    },
+    "jp.co.ana.android.tabidachi": {
+      "app": "ANA",
+      "kind": "third_party",
+      "profile": "flight",
+      "prerequisites": [
+        "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+      ]
+    },
+    "local.pocket4.fixture": {
+      "app": "Pocket4 fixture",
+      "kind": "qa_fixture",
+      "profile": "fixture",
+      "prerequisites": []
+    },
+    "org.chromium.webview_shell": {
+      "app": "WebView shell",
+      "kind": "support_demo",
+      "profile": "webview",
+      "prerequisites": []
+    },
+    "org.droidloom.qa.editorcontract": {
+      "app": "Editor contract QA",
+      "kind": "qa_fixture",
+      "profile": "editor",
+      "prerequisites": []
+    },
+    "org.fcitx.fcitx5.android": {
+      "app": "Fcitx5",
+      "kind": "input_method",
+      "profile": "ime",
+      "prerequisites": []
+    },
+    "tv.danmaku.bili": {
+      "app": "Bilibili",
+      "kind": "third_party",
+      "profile": "video",
+      "prerequisites": []
+    },
+    "org.mozilla.firefox": {
+      "app": "Firefox",
+      "kind": "third_party",
+      "profile": "browser",
+      "prerequisites": [
+        "Execution requires the runtime owner's fresh final Main qualification and exact current installed Firefox identity under the six common gates; this contract supplies no Main, boot, process, or acceptance evidence.",
+        "Use predeclared owned fixtures or public HTTPS resources with expected text, image and media identities. Use only owned test inputs and no account login, SMS, message recipient, purchase, booking or ride request.",
+        "Use valid HTTPS trust and the actual implicit browser routing; do not bypass certificate checks, force an explicit Firefox component to conceal resolver failure, alter unrelated user data, or disrupt the host network.",
+        "Capture the current relevant browser settings and owned-fixture baselines before testing. Restore only fixture-local state and remove only owned tabs/data; any unavailable required capability remains blocked or unsupported.",
+        "Pair visible observations with the current runtime's exact app/UID and compact byte-pinned receipts. Pending definitions, source tests, and prepared entrypoints confer no runtime acceptance."
+      ]
+    }
+  }
+}

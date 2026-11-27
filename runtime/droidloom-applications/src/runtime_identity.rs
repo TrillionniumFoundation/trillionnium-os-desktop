@@ -488,6 +488,21 @@ pub(super) struct IdentityObservation {
     production_ready: bool,
 }
 impl IdentityObservation {
+    /// Compare an already minted material fact; this grants no new facet.
+    pub(super) fn require_application(&self, actual: &ApplicationInspection) -> Result<(),String> {
+        if self.package != actual.package || self.android_user != actual.user
+            || self.uid != actual.uid || self.version_code != actual.version_code
+            || self.epoch_before != actual.epoch || self.epoch_after != actual.epoch
+            || self.apks.len() != actual.apks.len()
+            || !self.apks.iter().all(|saved| actual.apks.iter().any(|apk|
+                saved.name == apk.name && saved.path == apk.path && saved.bytes == apk.bytes
+                    && saved.sha256 == apk.sha256))
+        {
+            return Err("material observation belongs to another complete installed identity".into());
+        }
+        Ok(())
+    }
+
     pub(super) fn complete_identity_gate_passed(&self) -> bool {
         self.complete_identity_gate_passed
     }
