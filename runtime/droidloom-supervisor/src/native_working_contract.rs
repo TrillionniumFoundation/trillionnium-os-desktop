@@ -79,6 +79,44 @@ impl WorkingNamespaceEntryPin {
     }
 }
 
+/// Comparison copied from the unique normal host payload member. The complete
+/// ADMITTED-MATERIALS input is already held and boot-hash authenticated before
+/// a live owner may expose this pin. Deserialization alone grants no execution.
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
+pub(crate) struct WorkingOwnedFilesEntryPin {
+    pub(crate) path: String,
+    pub(crate) bytes: u64,
+    pub(crate) sha256: String,
+}
+impl WorkingOwnedFilesEntryPin {
+    pub(crate) fn validate(&self) -> io::Result<()> {
+        if self.path != layout::WORKING_OWNED_FILES_ENTRY
+            || !(1024..=layout::WORKING_OWNED_FILES_ENTRY_MAX_BYTES).contains(&self.bytes)
+            || !digest(&self.sha256)
+        {
+            return Err(reject(
+                "working owned-files entry differs from its fixed normal member",
+            ));
+        }
+        Ok(())
+    }
+    pub(crate) fn from_admitted_materials(bytes: &[u8]) -> io::Result<Self> {
+        if bytes.len() > 16 * 1024 * 1024 {
+            return Err(reject(
+                "working admitted material comparison exceeds its fixed bound",
+            ));
+        }
+        let document: serde_json::Value = serde_json::from_slice(bytes)?;
+        let value = document
+            .get("working_owned_files")
+            .ok_or_else(|| reject("normal working owned-files entry member is absent"))?;
+        let pin: Self = serde_json::from_value(value.clone())?;
+        pin.validate()?;
+        Ok(pin)
+    }
+}
+
 /// Two distinct clocks: one immutable source-derived work end and a shorter
 /// failure-recovery interval. Refreshing the latter cannot alter the former.
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
@@ -607,5 +645,50 @@ mod tests {
         for name in PACKAGE_WRITERS.iter().chain(SUSPEND_TARGETS.iter()) {
             assert!(boot_arguments(&s.replace(&format!("systemd.mask={name}"), "")).is_err());
         }
+    }
+}
+
+#[cfg(test)]
+mod owned_files_entry_pin_tests {
+    use super::*;
+    #[test]
+    fn working_owned_files_pin_is_a_distinct_required_normal_member() {
+        let pin = WorkingOwnedFilesEntryPin {
+            path: layout::WORKING_OWNED_FILES_ENTRY.into(),
+            bytes: 2048,
+            sha256: "b".repeat(64),
+        };
+        let mut doc = serde_json::json!({"working_owned_files":pin});
+        assert_eq!(
+            WorkingOwnedFilesEntryPin::from_admitted_materials(&serde_json::to_vec(&doc).unwrap())
+                .unwrap(),
+            pin
+        );
+        assert!(
+            WorkingNamespaceEntryPin::from_admitted_materials(&serde_json::to_vec(&doc).unwrap())
+                .is_err()
+        );
+        for (field, value) in [
+            ("path", serde_json::json!(layout::WORKING_NAMESPACE_ENTRY)),
+            (
+                "bytes",
+                serde_json::json!(layout::WORKING_OWNED_FILES_ENTRY_MAX_BYTES + 1),
+            ),
+            ("sha256", serde_json::json!("B".repeat(64))),
+        ] {
+            let mut wrong = doc.clone();
+            wrong["working_owned_files"][field] = value;
+            assert!(
+                WorkingOwnedFilesEntryPin::from_admitted_materials(
+                    &serde_json::to_vec(&wrong).unwrap()
+                )
+                .is_err()
+            );
+        }
+        doc["working_owned_files"]["saved_cleanup_authority"] = true.into();
+        assert!(
+            WorkingOwnedFilesEntryPin::from_admitted_materials(&serde_json::to_vec(&doc).unwrap())
+                .is_err()
+        );
     }
 }

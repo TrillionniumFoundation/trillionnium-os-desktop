@@ -5,6 +5,8 @@ use std::{fs, os::unix::fs::symlink, path::Path, process::Command};
 
 #[path = "early_boot_package.rs"]
 mod early_boot_package;
+#[path = "working_helper_package.rs"]
+mod working_helper_package;
 
 // Exercise the actual native publisher through the normal archive in tests,
 // without exporting any additional production entry point.
@@ -72,6 +74,7 @@ pub fn stage_container_host(
     run_build(&mut crate::container_entry_build::command(
         repo, &target, jobs,
     ))?;
+    working_helper_package::build(repo, &target, jobs)?;
     let stage = tempfile::Builder::new()
         .prefix("container-host-stage-")
         .tempdir_in(&work)?;
@@ -129,6 +132,7 @@ pub fn stage(repo: &Path, work: &Path, destination: &Path, clean: bool, jobs: us
     run_build(&mut crate::container_entry_build::command(
         repo, &cargo, jobs,
     ))?;
+    working_helper_package::build(repo, &cargo, jobs)?;
     assemble::prepare_complete_inputs(repo, &work, "x86_64")?;
     python::prepare(repo, &work)?;
     assemble::mesa_tools(&work, jobs)?;
@@ -406,7 +410,8 @@ fn production_host_payload(repo: &Path, host: &Path, runtime: &Path) -> Result<(
     let public_apks = runtime.join("var/lib/droidloom-public-apks");
     fs::create_dir_all(&public_apks)?;
     mode(&public_apks, 0o755)?;
-    early_boot_package::stage(runtime)
+    early_boot_package::stage(runtime)?;
+    working_helper_package::stage(host, runtime)
 }
 
 fn portable_template(template: &mut Value) {
@@ -551,6 +556,22 @@ mod tests {
             b"normal fixed maintenance peer",
         )
         .unwrap();
+        // The normal payload must contain both freshly built working helpers.
+        assert!(production_host_payload(&repo, &host, &runtime).is_err());
+        for (index, binary) in [
+            "droidloom-working-namespace-entry",
+            "droidloom-working-owned-files",
+        ]
+        .iter()
+        .enumerate()
+        {
+            let source = host.join(binary);
+            fs::write(&source, vec![index as u8 + 1; 2048]).unwrap();
+            fs::set_permissions(source, fs::Permissions::from_mode(0o755)).unwrap();
+            if index == 0 {
+                assert!(production_host_payload(&repo, &host, &runtime).is_err());
+            }
+        }
         production_host_payload(&repo, &host, &runtime).unwrap();
         let uevent = runtime.join("usr/lib/droidloom/production/current/droidloom-native-uevent-label");
         let uevent_metadata = fs::symlink_metadata(&uevent).unwrap();

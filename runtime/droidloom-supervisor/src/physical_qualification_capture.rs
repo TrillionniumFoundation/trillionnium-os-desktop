@@ -516,6 +516,13 @@ impl WorkingQualificationOwner {
         self.guard()?;
         Ok(self.configuration.namespace_entry_pin())
     }
+    /// The separate normal live owned-files member, never a saved cleanup receipt.
+    pub(crate) fn owned_files_entry_pin(
+        &self,
+    ) -> Result<&crate::native_working_contract::WorkingOwnedFilesEntryPin, String> {
+        self.guard()?;
+        Ok(self.configuration.owned_files_entry_pin())
+    }
     /// Actual boot-admitted applications input comparison.
     pub fn applications_pin(&self) -> Result<(u64, &str), String> {
         self.guard()?;
