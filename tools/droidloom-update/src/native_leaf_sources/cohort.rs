@@ -148,11 +148,32 @@ fn embedded(name: &str) -> Result<&'static [u8]> {
         "ihg_timer_flow.py" => include_bytes!("../../resources/native-leaves/cp3a-20261126-apps-r2/ihg_timer_flow.py"),
         "system_calendar_base.py" => include_bytes!("../../resources/native-leaves/cp3a-20261126-apps-r2/system_calendar_base.py"),
         "system_contacts_search.py" => include_bytes!("../../resources/native-leaves/cp3a-20261126-apps-r2/system_contacts_search.py"),
+        "business_commands.py" => include_bytes!("../../resources/native-leaves/cp3a-20261126-apps-r2/business_commands.py"),
+        "camera_entry.py" => include_bytes!("../../resources/native-leaves/cp3a-20261126-apps-r2/camera_entry.py"),
+        "camera_plan.py" => include_bytes!("../../resources/native-leaves/cp3a-20261126-apps-r2/camera_plan.py"),
+        "clock_entry.py" => include_bytes!("../../resources/native-leaves/cp3a-20261126-apps-r2/clock_entry.py"),
+        "documents_saf_build.py" => include_bytes!("../../resources/native-leaves/cp3a-20261126-apps-r2/documents_saf_build.py"),
+        "documents_saf_entry.py" => include_bytes!("../../resources/native-leaves/cp3a-20261126-apps-r2/documents_saf_entry.py"),
+        "documents_saf_plan.py" => include_bytes!("../../resources/native-leaves/cp3a-20261126-apps-r2/documents_saf_plan.py"),
+        "documents_search_build.py" => include_bytes!("../../resources/native-leaves/cp3a-20261126-apps-r2/documents_search_build.py"),
+        "documents_search_entry.py" => include_bytes!("../../resources/native-leaves/cp3a-20261126-apps-r2/documents_search_entry.py"),
+        "documents_search_plan.py" => include_bytes!("../../resources/native-leaves/cp3a-20261126-apps-r2/documents_search_plan.py"),
+        "gallery_image_entry.py" => include_bytes!("../../resources/native-leaves/cp3a-20261126-apps-r2/gallery_image_entry.py"),
+        "ihg_app_plan.py" => include_bytes!("../../resources/native-leaves/cp3a-20261126-apps-r2/ihg_app_plan.py"),
+        "native_calendar_release.py" => include_bytes!("../../resources/native-leaves/cp3a-20261126-apps-r2/native_calendar_release.py"),
+        "native_release_guard.py" => include_bytes!("../../resources/native-leaves/cp3a-20261126-apps-r2/native_release_guard.py"),
+        "native_settings_release.py" => include_bytes!("../../resources/native-leaves/cp3a-20261126-apps-r2/native_settings_release.py"),
+        "reminder_system_entry.py" => include_bytes!("../../resources/native-leaves/cp3a-20261126-apps-r2/reminder_system_entry.py"),
+        "reminder_system_plan.py" => include_bytes!("../../resources/native-leaves/cp3a-20261126-apps-r2/reminder_system_plan.py"),
+        "settings_plan.py" => include_bytes!("../../resources/native-leaves/cp3a-20261126-apps-r2/settings_plan.py"),
+        "system_entry.py" => include_bytes!("../../resources/native-leaves/cp3a-20261126-apps-r2/system_entry.py"),
+        "system_plan.py" => include_bytes!("../../resources/native-leaves/cp3a-20261126-apps-r2/system_plan.py"),
+        "photo_display_wrapper.py" => include_bytes!("../../resources/native-leaves/cp3a-20261126-apps-r2/photo_display_wrapper.py"),
         _ => return fail("unlisted embedded leaf source"),
     })
 }
 
-const EMBEDDED_MEMBERS: [(&str, &str); 36] = [
+const EMBEDDED_MEMBERS: [(&str, &str); 58] = [
     ("source/calendar-reminder/calendar_base.py", "reminder_calendar_base.py"),
     ("source/camera-photo/camera_photo_trial.py", "camera_photo_trial.py"),
     ("source/clock/clock_alarm_flow.py", "clock_alarm_flow.py"),
@@ -220,6 +241,28 @@ const EMBEDDED_MEMBERS: [(&str, &str); 36] = [
         "source/clock-support/business_ui_entry.py",
         "clock_business_ui_entry.py",
     ),
+    ("source/calendar-reminder/native_calendar_release.py", "native_calendar_release.py"),
+    ("source/calendar-reminder/system_entry.py", "reminder_system_entry.py"),
+    ("source/calendar-reminder/system_plan.py", "reminder_system_plan.py"),
+    ("source/camera-photo/camera_entry.py", "camera_entry.py"),
+    ("source/camera-photo/camera_plan.py", "camera_plan.py"),
+    ("source/clock-support/business_commands.py", "business_commands.py"),
+    ("source/clock/clock_entry.py", "clock_entry.py"),
+    ("source/documents-saf/documents_build.py", "documents_saf_build.py"),
+    ("source/documents-saf/documents_entry.py", "documents_saf_entry.py"),
+    ("source/documents-saf/documents_plan.py", "documents_saf_plan.py"),
+    ("source/documents-search/documents_build.py", "documents_search_build.py"),
+    ("source/documents-search/documents_entry.py", "documents_search_entry.py"),
+    ("source/documents-search/documents_plan.py", "documents_search_plan.py"),
+    ("source/gallery/source/gallery_image_entry.py", "gallery_image_entry.py"),
+    ("source/gallery/source/native_release_guard.py", "native_release_guard.py"),
+    ("source/ihg/app_plan.py", "ihg_app_plan.py"),
+    ("source/settings/native_settings_release.py", "native_settings_release.py"),
+    ("source/settings/settings_plan.py", "settings_plan.py"),
+    ("source/support/business_commands.py", "business_commands.py"),
+    ("source/system/system_entry.py", "system_entry.py"),
+    ("source/system/system_plan.py", "system_plan.py"),
+    ("source/camera-display/photo_display_wrapper.py", "photo_display_wrapper.py"),
 ];
 const NEW_MEMBERS: [(&str, &str); 3] = [
     (
@@ -372,8 +415,8 @@ fn fixed_recipe() -> Result<CohortRecipe> {
     if origins.len() != 474
         || new_sources != 3
         || binaries != 1
-        || embedded_names.len() != 35
-        || embedded_members.len() != 36
+        || embedded_names.len() != 56
+        || embedded_members.len() != 58
         || total != r.output_bytes
     {
         return fail("fixed successor source closure differs");
@@ -786,7 +829,7 @@ mod tests {
                 .iter()
                 .filter(|m| m.embedded_source.is_some())
                 .count(),
-            36
+            58
         );
         assert_eq!(
             r.members

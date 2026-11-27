@@ -7,7 +7,8 @@ use std::collections::BTreeSet;
 use std::fmt;
 use std::fs::{self, OpenOptions};
 use std::io::Write;
-use std::os::unix::fs::OpenOptionsExt;
+use std::os::unix::fs::{DirBuilderExt, MetadataExt, OpenOptionsExt};
+use std::os::fd::AsRawFd;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::time::{Duration, Instant};
@@ -27,7 +28,7 @@ use super::runtime_identity::{IdentityObservation, VerifiedMaterialBatch};
 const QUALIFICATION: &str = "/var/lib/droidloom/qualification/pocket4";
 const SELECTION_PATH: &str = "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2/selection/selection-14.json";
 const SELECTION_BYTES: u64 = 4769;
-const SELECTION_SHA: &str = "e46570ce965d4cb1abd9a9b2433fa71293525ccad8b4ed6ed65e19c4dfc85c73";
+const SELECTION_SHA: &str = "78cc5f1bcfb6d5fc2d055973154b34be24b58e336b66addea8c0ccb5b78f10ec";
 const SOURCE_CATALOG: &str = include_str!("leaf_sources.json");
 
 pub(super) fn compiled_release_sources() -> (FilePin, &'static str) {
@@ -868,9 +869,9 @@ fn case_document(plan: &LeafPlan, request: &Value) -> Result<(Option<FilePin>, V
 // cannot construct Main, a package observation, a data handle, or a business gate.
 const NATIVE_BASELINE_SCHEMA: &str = "droidloom.native-leaf-business-baseline.v1";
 const NATIVE_QUALIFICATION_SCHEMA: &str = "droidloom.native-leaf-business-qualification.v1";
-const NORMAL_SOURCE_RECIPE_BYTES: u64 = 815042;
+const NORMAL_SOURCE_RECIPE_BYTES: u64 = 809024;
 const NORMAL_SOURCE_RECIPE_SHA: &str =
-    "16777fe0bede8ac8524a28a84e908303fc13d3696d0d468401082affc916e1d2";
+    "96145cde99440f773a8b556f6e14e0a4876f7c8066da4b8ed2943a1ebe883bcc";
 
 fn canonical_value(value: &Value) -> Value {
     match value {
@@ -1118,6 +1119,86 @@ fn output_path(plan: &LeafPlan, request: &Value, case: &Value) -> Result<PathBuf
     Ok(result)
 }
 
+pub(super) fn working_case_name(route: Route) -> Result<&'static str, String> {
+    Ok(match route {
+        Route::CalendarCore => "calendar-core",
+        Route::CalendarReminder => "calendar-reminder",
+        Route::CameraPhoto => "camera-photo",
+        Route::ContactsSearch => "contacts-search",
+        Route::ClockTimerPair => "clock-timer-pair",
+        Route::ClockTimerRemaining => "clock-timer15",
+        Route::ClockExpiry => "clock-expiry06",
+        Route::ClockAlarm => "clock-alarm",
+        Route::DocumentsSaf => "documents-saf",
+        Route::DocumentsSearchSort => "documents-search-sort",
+        Route::GalleryRotation => "gallery-image-rotation",
+        Route::GalleryVideo => "gallery-image-video",
+        Route::GallerySeek => "gallery-image-seek",
+        Route::GalleryAlbum => "gallery-image-album",
+        Route::SettingsSupportedPages => "settings-supported-pages",
+        Route::IhgLondon => "ihg-london",
+        Route::ClockTimer => return Err("legacy Clock timer route has no working suite case".into()),
+    })
+}
+fn working_case_output(
+    plan: &LeafPlan, request: &Value, case: &Value, release: &NativeRelease,
+) -> Result<PathBuf, String> {
+    let Some(runtime) = release.working_root()? else { return output_path(plan, request, case); };
+    let expected = runtime.join("native-cases").join(working_case_name(plan.route)?);
+    let actual = if plan.route == Route::CameraPhoto {
+        plan.output.clone().ok_or("working Camera output absent")?
+    } else if plan.route.current_gallery() {
+        PathBuf::from(request["output"].as_str().ok_or("working Gallery output absent")?)
+    } else {
+        PathBuf::from(case["case_root"].as_str().ok_or("working case root absent")?)
+    };
+    require(actual == expected, "working leaf output differs from its compiled case under this owner")?;
+    let parent = expected.parent().ok_or("working case parent absent")?;
+    let held = private_runtime_directory(parent)?;
+    let result = if plan.route == Route::IhgLondon {
+        expected.join("coordinator/result.json")
+    } else { expected.join("result.json") };
+    require(!result.try_exists().map_err(|e|e.to_string())?,
+        "working case result exists; no replay or implicit reconciliation")?;
+    let original = held.metadata().map_err(|e|e.to_string())?;
+    let current = private_runtime_directory(parent)?.metadata().map_err(|e|e.to_string())?;
+    require((original.dev(),original.ino()) == (current.dev(),current.ino()),
+        "working case parent changed during binding")?;
+    release.guard()?;
+    Ok(result)
+}
+fn private_runtime_directory(path: &Path) -> Result<fs::File, String> {
+    require(path.canonicalize().map_err(|e|e.to_string())? == path,
+        "working runtime child directory has an alias")?;
+    let held = OpenOptions::new().read(true).custom_flags(0x20000 | 0x10000)
+        .open(path).map_err(|e|e.to_string())?;
+    let m = held.metadata().map_err(|e|e.to_string())?;
+    let named = fs::symlink_metadata(path).map_err(|e|e.to_string())?;
+    require(m.mode() == 0o040700 && m.uid() == 0 && m.gid() == 0
+        && (m.dev(),m.ino(),m.mode(),m.uid(),m.gid())
+            == (named.dev(),named.ino(),named.mode(),named.uid(),named.gid()),
+        "working runtime child must be a held root private directory")?;
+    Ok(held)
+}
+fn validate_working_gallery_request(
+    plan: &LeafPlan, request: &Value, case: &Value, release: &NativeRelease,
+) -> Result<(), String> {
+    let root = release.working_root()?.ok_or("working Gallery requires the actual source owner")?;
+    require(plan.route.current_gallery() && plan.output.is_none() && case == request,
+        "working Gallery request is not the compiled direct case")?;
+    exact_keys(request, &["schema","baseline","qualification","output"])?;
+    require(request["schema"] == "droidloom.working-gallery-image-request.v1",
+        "working Gallery schema must explicitly select installed source custody")?;
+    for name in ["baseline","qualification"] {
+        let reference = ref_field(request,name)?;
+        require(reference.path.starts_with(root.join("native-baselines"))
+            && !reference.path.components().any(|c| matches!(c,
+                std::path::Component::ParentDir | std::path::Component::CurDir)),
+            "working Gallery Main input escaped this actual owner")?;
+    }
+    Ok(())
+}
+
 fn command(plan: &LeafPlan, source: &SelectedSource) -> Result<Command, String> {
     let mut command = Command::new("/usr/bin/python3");
     command
@@ -1155,9 +1236,25 @@ fn claim(
     plan: &LeafPlan,
     actual: &ApplicationInspection,
     source: &SelectedSource,
+    release: &NativeRelease,
 ) -> Result<(), String> {
-    let path =
-        Path::new(QUALIFICATION).join(format!("native-app-dispatch-{}.json", plan.request.sha256));
+    let working = release.working_root()?.map(Path::to_owned);
+    let claim_parent = if let Some(root) = &working {
+        let parent = root.join("native-claims");
+        match fs::DirBuilder::new().mode(0o700).create(&parent) {
+            Ok(()) => (),
+            Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists => (),
+            Err(e) => return Err(e.to_string()),
+        }
+        parent
+    } else { PathBuf::from(QUALIFICATION) };
+    let held_parent = if working.is_some() { Some(private_runtime_directory(&claim_parent)?) } else { None };
+    let name = if working.is_some() {
+        format!("{}.json",working_case_name(plan.route)?)
+    } else { format!("native-app-dispatch-{}.json",plan.request.sha256) };
+    let path = claim_parent.join(&name);
+    let anchored = held_parent.as_ref().map_or_else(||path.clone(),|held|
+        PathBuf::from(format!("/proc/self/fd/{}",held.as_raw_fd())).join(&name));
     let bytes = serde_json::to_vec_pretty(&json!({
         "schema": "droidloom-native-application-leaf-claim-v1",
         "route": plan.route, "request": plan.request, "preparation": source.preparation,
@@ -1170,14 +1267,22 @@ fn claim(
         .create_new(true)
         .write(true)
         .mode(0o600)
-        .open(&path)
+        .custom_flags(0x20000)
+        .open(&anchored)
         .map_err(|e| format!("leaf invocation claim not new; do not replay: {e}"))?;
     file.write_all(&bytes)
         .and_then(|_| file.sync_all())
         .map_err(|e| e.to_string())?;
-    fs::File::open(QUALIFICATION)
-        .and_then(|f| f.sync_all())
-        .map_err(|e| e.to_string())?;
+    if let Some(parent) = held_parent {
+        parent.sync_all().map_err(|e|e.to_string())?;
+        let current = private_runtime_directory(&claim_parent)?;
+        let a = parent.metadata().map_err(|e|e.to_string())?;
+        let b = current.metadata().map_err(|e|e.to_string())?;
+        require((a.dev(),a.ino()) == (b.dev(),b.ino()), "working claim directory changed")?;
+        release.guard()?;
+    } else {
+        fs::File::open(QUALIFICATION).and_then(|f| f.sync_all()).map_err(|e|e.to_string())?;
+    }
     Ok(())
 }
 
@@ -1805,17 +1910,21 @@ fn execute_observed(
     pinned(&source.entry)?;
     let request = value(&plan.request)?;
     let (case_ref, case) = case_document(plan, &request)?;
-    validate_case(plan, &request, &case, source, &sources)?;
+    if release.working_root()?.is_some() && plan.route.current_gallery() {
+        validate_working_gallery_request(plan, &request, &case, release)?;
+    } else {
+        validate_case(plan, &request, &case, source, &sources)?;
+    }
     release.guard()?;
     require(baseline.deadline() == end && baseline.application() == actual,
         "leaf execution context differs from the original identity or deadline")?;
     baseline.verify_local(inspector, end).map_err(|error| error.to_string())?;
     let (baseline_ref, qualification) = main_binding(&case, actual, main, baseline)?;
-    let expected_result = output_path(plan, &request, &case)?;
+    let expected_result = working_case_output(plan, &request, &case, release)?;
     let cmd = command(plan, source)?;
     // The trusted selected entry still validates the complete transitive source
     // graph and every original business/support/provider gate before its actions.
-    claim(plan, actual, source)?;
+    claim(plan, actual, source, release)?;
     let kind = if plan.route.current_gallery() {
         control::NativeLeafCommandKind::GalleryImage
     } else if plan.route == Route::CalendarReminder {
@@ -1881,8 +1990,13 @@ fn execute_observed(
         pinned(&pin)?;
     }
     if plan.route.current_gallery() {
-        require(ref_field(&result, "native_release")? == ref_field(&request, "native_release")?,
-            "Gallery result is not bound to this adopted native release")?;
+        if let Some(expected) = release.working_channel_comparison()? {
+            require(result["working_native_source"] == expected && result.get("native_release").is_none(),
+                "working Gallery result differs from its retained actual source owner")?;
+        } else {
+            require(ref_field(&result, "native_release")? == ref_field(&request, "native_release")?,
+                "Gallery result is not bound to this adopted native release")?;
+        }
     }
     release.guard()?;
     main.require_application(actual)?;
@@ -2245,11 +2359,11 @@ mod tests {
                 "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2/source/ihg/app_entry.py"
             )
         );
-        assert_eq!(source.entry.bytes, 14093);
-        assert_eq!(
-            source.entry.sha256,
-            "2e3259dbc6f73e9baf7c86075ffb398a5f33e279756046c789941e43303d9c82"
+        let current_entry = include_bytes!(
+            "../../../tools/droidloom-update/resources/native-leaves/cp3a-20261126-apps-r2/ihg_app_entry.py"
         );
+        assert_eq!(source.entry.bytes, current_entry.len() as u64);
+        assert_eq!(source.entry.sha256, hex::encode(Sha256::digest(current_entry)));
         for route in [Route::ClockTimer, Route::IhgLondon] {
             assert_eq!(route.definition().source, 5);
             let plan = LeafPlan {

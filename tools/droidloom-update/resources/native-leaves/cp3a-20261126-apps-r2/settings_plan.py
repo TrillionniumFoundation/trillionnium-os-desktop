@@ -56,8 +56,7 @@ def inputs(c, request, packet):
 
 def source_packet(c, value, prepared):
     root = Path(value['case_root'])
-    c.need(root.parent == c.QUALIFICATION
-           and re.fullmatch('business-settings-pages-plan-[0-9a-f]{32}', root.name)
+    c.need(c.case_root_matches(root,'settings-supported-pages','business-settings-pages-plan-[0-9a-f]{32}')
            and Path(value['task_source_manifest']['path']) == root / 'task-source.json',
            'SETTINGS_EXACT_CREATE_ONLY_TASK_SOURCE_ROOT')
     task = c.parse(c.read_ref(value['task_source_manifest']))
@@ -99,7 +98,7 @@ def validate(c, value, baseline, scope=None):
            'TWO_DISTINCT_SETTINGS_LAUNCH_SCOPES_REQUIRED')
     for flow in flows:
         c.need(set(flow) == {'nonce','flow_root'} and re.fullmatch('[0-9a-f]{32}', flow['nonce'])
-               and flow['flow_root'] == str(c.QUALIFICATION/('business-flow-settings-pages-'+flow['nonce'])),
+               and flow['flow_root'] == str(c.flow_root('settings-supported-pages',flow['nonce'],'settings-pages')),
                'EXACT_NONCE_OWNED_SETTINGS_FLOW_REQUIRED')
     if active:
         original = c.parse(c.read_ref(value['base_plan']))
@@ -125,8 +124,7 @@ def create(c, request, output, preparation_ref):
     c.need(os.getuid() == os.geteuid() == 0, 'ROOT_SETTINGS_FACTORY_REQUIRED')
     prepared = preparation(c, preparation_ref); baseline, profile = inputs(c, request, prepared)
     root = Path(output)
-    c.need(root.parent == c.QUALIFICATION
-           and re.fullmatch('business-settings-pages-plan-[0-9a-f]{32}', root.name),
+    c.need(c.case_root_matches(root,'settings-supported-pages','business-settings-pages-plan-[0-9a-f]{32}'),
            'NEW_SETTINGS_CASE_DIRECTORY_REQUIRED')
     c.private_dir(root, create=True); c.private_dir(root/'source', create=True)
     files = [c.write_new(root/'source'/Path(row['path']).name, c.read_ref(row), 0o400)
@@ -142,7 +140,7 @@ def create(c, request, output, preparation_ref):
     for _ in range(2):
         nonce=secrets.token_hex(16)
         c.need(nonce not in {x['nonce'] for x in flows}, 'DISTINCT_NEW_SETTINGS_NONCES')
-        flows.append({'nonce':nonce,'flow_root':str(c.QUALIFICATION/('business-flow-settings-pages-'+nonce))})
+        flows.append({'nonce':nonce,'flow_root':str(c.flow_root('settings-supported-pages',nonce,'settings-pages'))})
     value={'schema':'pocket4-settings-pages-plan-v2','kind':'settings_supported_pages',**request,
            'framework_epoch_sha256':baseline.value['framework_epoch']['sha256'],
            'support_manifest':c.SUPPORT_REF,'target_profile':profile.TARGET,'helper_profile':profile.HELPER,

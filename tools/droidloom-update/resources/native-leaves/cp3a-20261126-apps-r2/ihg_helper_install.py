@@ -25,8 +25,7 @@ def install(common, build_ref, target_identity_ref, output, profiles_ref, stagin
     identity = common.parse(common.read_ref(target_identity_ref))
     common.validate_identity(identity, profiles.IHG, source['baseline'], source['qualification'])
     root = Path(output)
-    common.need(root.parent == common.QUALIFICATION and
-                re.fullmatch(r'business-ihg-install-[0-9a-f]{32}', root.name), 'NEW_PRIVATE_ONCE_INSTALL_ROOT_REQUIRED')
+    common.need(common.input_root_matches(root,'ihg-london','helper-install',r'business-ihg-install-[0-9a-f]{32}'), 'NEW_PRIVATE_ONCE_INSTALL_ROOT_REQUIRED')
     common.private_dir(root, create=True); journal = common.private_dir(root / 'commands', create=True)
     nonce = secrets.token_hex(16); state_nonce = secrets.token_hex(16)
     guest_name = 'pocket4-final-ihg-qa-' + nonce; guest = '/data/local/tmp/' + guest_name + '/owned-ihg-qa.apk'

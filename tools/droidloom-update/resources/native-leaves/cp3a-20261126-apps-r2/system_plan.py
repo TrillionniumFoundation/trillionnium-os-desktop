@@ -43,8 +43,8 @@ def source_packet(c, value, packet):
         and value['schema'] in ('pocket4-final-system-case-plan-v1', 'pocket4-final-system-active-plan-v1')
         and kind in ('contacts_search', 'calendar_core'), 'SOURCE_PACKET_NEEDS_EXACT_NEW_PLAN')
     root = Path(value['case_root'])
-    c.need(root.parent == c.QUALIFICATION
-        and re.fullmatch('business-' + kind.replace('_', '-') + '-plan-[0-9a-f]{32}', root.name)
+    c.need(c.case_root_matches(root,kind.replace('_','-'),
+            'business-'+kind.replace('_','-')+'-plan-[0-9a-f]{32}')
         and Path(value['task_source_manifest']['path']) == root / 'task-source.json',
         'EXACT_CREATE_ONLY_TASK_SOURCE_LOCATION')
     task = c.parse(c.read_ref(value['task_source_manifest']))
@@ -105,8 +105,8 @@ def create(c, kind, request, output, preparation_ref):
     packet = preparation(c, preparation_ref)
     baseline, target, provider, helper, limits, _ = inputs(c, kind, request, packet)
     root = Path(output)
-    c.need(root.parent == c.QUALIFICATION
-        and re.fullmatch('business-' + kind.replace('_', '-') + '-plan-[0-9a-f]{32}', root.name),
+    c.need(c.case_root_matches(root,kind.replace('_','-'),
+            'business-'+kind.replace('_','-')+'-plan-[0-9a-f]{32}'),
         'NEW_CREATE_ONLY_SYSTEM_CASE_ROOT')
     root = c.private_dir(root, create=True); source = c.private_dir(root / 'source', create=True)
     files = [c.write_new(source / Path(row['path']).name, c.read_ref(row), 0o400) for row in packet['files']]
@@ -124,8 +124,7 @@ def create(c, kind, request, output, preparation_ref):
     for _ in range(2):
         nonce = secrets.token_hex(16)
         c.need(nonce not in {r['nonce'] for r in flows}, 'DISTINCT_NEW_LAUNCH_NONCES')
-        flows.append({'nonce': nonce, 'flow_root': str(c.QUALIFICATION /
-            ('business-flow-' + kind.replace('_', '-') + '-' + nonce))})
+        flows.append({'nonce': nonce, 'flow_root': str(c.flow_root(kind.replace('_','-'),nonce,kind.replace('_','-')))})
     plan = {'schema': 'pocket4-final-system-case-plan-v1', 'kind': kind, **request,
         'framework_epoch_sha256': baseline.value['framework_epoch']['sha256'], 'support_manifest': c.SUPPORT_REF,
         'target_profile': target, 'provider_profile': provider, 'helper_profile': helper, 'limits': limits,
@@ -152,8 +151,7 @@ def validate(c, value, baseline, scope=None, *, semantic=True):
     source_packet(c, value, packet)
     c.need(len(value['flows']) == 2 and len({r['nonce'] for r in value['flows']}) == 2
         and all(set(r) == {'nonce', 'flow_root'} and re.fullmatch('[0-9a-f]{32}', r['nonce'])
-            and Path(r['flow_root']) == c.QUALIFICATION /
-                ('business-flow-' + kind.replace('_', '-') + '-' + r['nonce']) for r in value['flows']),
+            and Path(r['flow_root']) == c.flow_root(kind.replace('_','-'),r['nonce'],kind.replace('_','-')) for r in value['flows']),
         'TWO_INDEPENDENT_FRESH_LAUNCH_SCOPES')
     if scope is not None:
         c.need(active and scope['task_source_manifest'] == value['task_source_manifest']

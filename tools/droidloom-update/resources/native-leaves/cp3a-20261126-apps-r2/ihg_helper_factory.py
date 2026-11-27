@@ -101,8 +101,7 @@ def create(common, request, output, source_packet_ref):
                                           'bytes': size, 'sha256': digest})
     rendered, changes = render(originals, actual_values(baseline))
     root = Path(output)
-    need(root.parent == common.QUALIFICATION and
-         re.fullmatch(r'business-ihg-helper-source-[0-9a-f]{32}', root.name),
+    need(common.input_root_matches(root,'ihg-london','helper-source',r'business-ihg-helper-source-[0-9a-f]{32}'),
          'NEW_HELPER_SOURCE_ROOT_REQUIRED')
     root = common.private_dir(root, create=True)
     result = {'schema': 'pocket4-final-ihg-helper-source-v1', 'state': 'SOURCE_GENERATED_ANDROID_UNRUN',

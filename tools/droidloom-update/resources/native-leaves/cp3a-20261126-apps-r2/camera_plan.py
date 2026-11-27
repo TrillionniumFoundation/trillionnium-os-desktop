@@ -38,8 +38,7 @@ def source_packet(c, value, packet):
         and value['schema'] in ('pocket4-final-camera-photo-plan-v1', 'pocket4-final-camera-active-plan-v1')
         and value['kind'] == 'camera_photo', 'EXACT_NEW_CAMERA_SOURCE_PLAN')
     root = Path(value['case_root'])
-    c.need(root.parent == c.QUALIFICATION
-        and re.fullmatch('business-camera-photo-plan-[0-9a-f]{32}', root.name)
+    c.need(c.input_root_matches(root,'camera-photo','base-plan','business-camera-photo-plan-[0-9a-f]{32}')
         and Path(value['task_source_manifest']['path']) == root / 'task-source.json',
         'CREATE_ONLY_CURRENT_CAMERA_PACKET_LOCATION')
     task = c.parse(c.read_ref(value['task_source_manifest']))
@@ -90,8 +89,7 @@ def create(c, kind, request, output, preparation_ref):
     packet = preparation(c, preparation_ref)
     baseline, target, helper, limits, _ = inputs(c, kind, request, packet)
     root = Path(output)
-    c.need(root.parent == c.QUALIFICATION
-        and re.fullmatch('business-camera-photo-plan-[0-9a-f]{32}', root.name),
+    c.need(c.input_root_matches(root,'camera-photo','base-plan','business-camera-photo-plan-[0-9a-f]{32}'),
         'FRESH_CREATE_ONLY_CAMERA_PLAN')
     root = c.private_dir(root, create=True); source = c.private_dir(root / 'source', create=True)
     files = [c.write_new(source / Path(row['path']).name, c.read_ref(row), 0o400) for row in packet['files']]
@@ -108,8 +106,7 @@ def create(c, kind, request, output, preparation_ref):
     for _ in range(2):
         nonce = secrets.token_hex(16)
         c.need(nonce not in {row['nonce'] for row in flows}, 'DISTINCT_NEW_CAMERA_LAUNCH_NONCES')
-        flows.append({'nonce': nonce, 'flow_root': str(c.QUALIFICATION /
-                      ('business-flow-camera-photo-' + nonce))})
+        flows.append({'nonce': nonce, 'flow_root': str(c.flow_root('camera-photo',nonce,'camera-photo'))})
     plan = {'schema': 'pocket4-final-camera-photo-plan-v1', 'kind': kind, **request,
         'framework_epoch_sha256': baseline.value['framework_epoch']['sha256'], 'support_manifest': c.SUPPORT_REF,
         'target_profile': target, 'helper_profile': helper, 'limits': limits,
@@ -135,8 +132,7 @@ def validate(c, value, baseline, scope=None, *, semantic=True):
     source_packet(c, value, packet)
     c.need(len(value['flows']) == 2 and len({row['nonce'] for row in value['flows']}) == 2
         and all(set(row) == {'nonce', 'flow_root'} and re.fullmatch('[0-9a-f]{32}', row['nonce'])
-            and Path(row['flow_root']) == c.QUALIFICATION /
-                ('business-flow-camera-photo-' + row['nonce']) for row in value['flows']),
+            and Path(row['flow_root']) == c.flow_root('camera-photo',row['nonce'],'camera-photo') for row in value['flows']),
         'TWO_FRESH_IMMUTABLE_CAMERA_LAUNCH_SCOPES')
     if scope is not None:
         c.need(active and scope['task_source_manifest'] == value['task_source_manifest']
