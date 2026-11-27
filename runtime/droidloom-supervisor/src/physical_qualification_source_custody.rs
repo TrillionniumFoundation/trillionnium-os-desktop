@@ -475,6 +475,12 @@ impl WorkingNativeSourceCustody {
         self.guard()?;
         Ok(&self.inner.directory.path)
     }
+    pub(crate) fn namespace_entry_pin(
+        &self,
+    ) -> io::Result<&crate::native_working_contract::WorkingNamespaceEntryPin> {
+        self.guard()?;
+        self.inner.plan.working_namespace_entry_pin()
+    }
     pub fn applications_pin(&self) -> io::Result<(u64, &str)> {
         self.guard()?;
         Ok((

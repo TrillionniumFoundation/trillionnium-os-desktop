@@ -514,6 +514,13 @@ impl WorkingQualificationOwner {
         self.guard()?;
         Ok(self.directory.path())
     }
+    /// The new normal host helper member from this actual boot's held materials.
+    pub(crate) fn namespace_entry_pin(
+        &self,
+    ) -> Result<&crate::native_working_contract::WorkingNamespaceEntryPin, String> {
+        self.guard()?;
+        Ok(self.configuration.namespace_entry_pin())
+    }
     /// Actual boot-admitted applications input comparison.
     pub fn applications_pin(&self) -> Result<(u64, &str), String> {
         self.guard()?;
