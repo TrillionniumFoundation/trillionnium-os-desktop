@@ -453,11 +453,17 @@ def verify_file_contexts(here, work):
             if (actual == PARENT) != (mode == stat.S_IFDIR):
                 raise ValueError("Logind parent alias escaped its exact inode class")
             checks.append(["/var/lib/systemd", mode, actual])
-        for filename in ("/var", "/var/lib", "/var/lib/systemd-extra", "/var/lib/systemdx",
-                         "/var/lib/other/systemd", "/var/lib/systemd/unselected",
-                         "/var/lib/systemd/linger-extra", "/var/lib/systemd/lingers"):
+        # The composed policy already assigns /var its exact update-done alias.
+        # Preserve that label as well as the original labels of every sibling;
+        # none of these directories may acquire the logind parent alias.
+        for filename, expected in (
+                ("/var", "p4_linux_update_done_var_dir_t"),
+                *((name, ALIASES[0]["source"]) for name in (
+                    "/var/lib", "/var/lib/systemd-extra", "/var/lib/systemdx",
+                    "/var/lib/other/systemd", "/var/lib/systemd/unselected",
+                    "/var/lib/systemd/linger-extra", "/var/lib/systemd/lingers"))):
             actual = lookup(filename, stat.S_IFDIR)
-            if actual != ALIASES[0]["source"]:
+            if actual != expected:
                 raise ValueError("Logind parent alias changed another directory: " + filename)
             checks.append([filename, stat.S_IFDIR, actual])
         for filename, mode in (("/var/lib/systemd/linger", stat.S_IFDIR),
