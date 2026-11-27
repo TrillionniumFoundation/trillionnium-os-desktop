@@ -146,6 +146,9 @@ impl<'a> NativeLeafBaselineObservation<'a> {
         self.preparation_owner = Some(owner);
         Ok(())
     }
+    pub(crate) fn preparation_owner(&self) -> Option<&WorkingQualificationOwner> {
+        self.preparation_owner
+    }
     pub(crate) fn working_source_comparison(&self) -> Result<Option<serde_json::Value>, ControlError> {
         self.working_source.as_ref().map(|source| {
             source.guard().map_err(|e| ControlError::Invalid(e.to_string()))?;
