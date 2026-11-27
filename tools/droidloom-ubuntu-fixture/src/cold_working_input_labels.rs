@@ -412,8 +412,11 @@ mod tests {
     #[test]
     fn directory_growth_is_allowed_but_mode_owner_and_inode_changes_are_not() {
         let area = tempfile::tempdir().unwrap();
+        // Set an actual private starting mode, independent of the runner's umask.
+        std::fs::set_permissions(area.path(), std::fs::Permissions::from_mode(0o700)).unwrap();
         let held = File::open(area.path()).unwrap();
         let before = fs::stat(&held).unwrap();
+        assert_eq!(before.mode & 0o7777, 0o700);
         std::fs::create_dir(area.path().join("fixed-child")).unwrap();
         let grown = fs::stat(&held).unwrap();
         assert!(stable_directory(&before, &grown));

@@ -74,7 +74,7 @@ fn actual_source_window_seconds() -> u64 {
             .iter()
             .map(|row| {
                 if row.cases.is_empty() {
-                    family_window_seconds()
+                    family_window_seconds(row.package)
                 } else {
                     row.cases.iter().copied().map(case_window_seconds).sum()
                 }
@@ -82,16 +82,18 @@ fn actual_source_window_seconds() -> u64 {
             .sum::<u64>()
         + camera_photo_window_seconds()
 }
-fn family_window_seconds() -> u64 {
-    INSPECT_SECONDS + family_observation::window_seconds()
+fn family_window_seconds(package: &str) -> u64 {
+    INSPECT_SECONDS + family_observation::window_seconds_for(package)
 }
-fn family_work_end(now: Instant, case_end: Instant) -> Result<Instant, String> {
+fn family_work_end(package: &str, now: Instant, case_end: Instant) -> Result<Instant, String> {
     require(
         now < case_end,
         "family pre-inspection consumed its original case deadline",
     )?;
     Ok(now
-        .checked_add(Duration::from_secs(family_observation::window_seconds()))
+        .checked_add(Duration::from_secs(family_observation::window_seconds_for(
+            package,
+        )))
         .ok_or("family work deadline overflow")?
         .min(case_end))
 }
@@ -165,7 +167,7 @@ fn require_channel_roster() -> Result<(), String> {
     for row in roster::PACKAGES.iter().filter(|row| row.cases.is_empty()) {
         let case = QualificationCase::for_family(row.package).map_err(|e| e.to_string())?;
         require(
-            case as usize == ordinal && case.window_seconds() == family_window_seconds(),
+            case as usize == ordinal && case.window_seconds() == family_window_seconds(row.package),
             "physical family order or original bound differs from its normal parent",
         )?;
         ordinal += 1;
@@ -518,8 +520,7 @@ impl HistoricalFamilyCase {
         let actual = before.facts();
         observation.require_subject(main.facts(), actual)?;
         identity.bind_stability_execution(actual, main, observation.stability())?;
-        let common =
-            common_gate::from_stability(observation.stability(), &identity, main.facts(), actual)?;
+        let common = common_gate::from_family(&observation, &identity, main.facts(), actual)?;
         let fixed = roster::package(&actual.package)?;
         require(
             fixed.cases.is_empty(),
@@ -1261,8 +1262,9 @@ pub fn run_physical_files(
         if row.cases.is_empty() {
             let result = (|| -> Result<HistoricalFamilyCase, String> {
                 deadline(end)?;
-                let case_end =
-                    (Instant::now() + Duration::from_secs(family_window_seconds())).min(end);
+                let case_end = (Instant::now()
+                    + Duration::from_secs(family_window_seconds(&row.package)))
+                .min(end);
                 let case_owner = channel
                     .begin_case(
                         QualificationCase::for_family(&row.package).map_err(|e| e.to_string())?,
@@ -1282,7 +1284,7 @@ pub fn run_physical_files(
                 )?;
                 let identity =
                     materials.observe(&requested, 0, &runtime.expected_epoch, actual, actual)?;
-                let work_end = family_work_end(Instant::now(), case_end)?;
+                let work_end = family_work_end(&row.package, Instant::now(), case_end)?;
                 let observation = {
                     let mut baseline =
                         droidloom_supervisor::native_leaf_baseline::NativeLeafBaselineObservation::capture_from_observed(
@@ -1764,11 +1766,15 @@ mod tests {
     #[test]
     fn physical_channel_uses_exact_source_order_windows_and_no_legacy_single_case() {
         require_channel_roster().unwrap();
-        assert_eq!(physical_qualification_window_seconds(), 165_297);
+        assert_eq!(physical_qualification_window_seconds(), 195_672);
         assert_eq!(camera_photo_window_seconds(), 4_290);
         assert_eq!(QualificationCase::CameraPhotoCaptureReopen as usize, 45);
         assert_eq!(case_window_seconds(Route::CameraPhoto), 1_260);
-        assert_eq!(family_window_seconds(), 2_865);
+        assert_eq!(family_window_seconds("com.Hyatt.hyt"), 2_865);
+        assert_eq!(
+            family_window_seconds("com.amazon.mShop.android.shopping"),
+            8_940
+        );
         assert_eq!(
             roster::PACKAGES
                 .iter()
@@ -1789,16 +1795,23 @@ mod tests {
     #[test]
     fn physical_family_work_window_cannot_reborrow_preinspection_or_extend_case() {
         let now = Instant::now();
-        let whole_case = now + Duration::from_secs(family_window_seconds());
-        let first = family_work_end(now, whole_case).unwrap();
-        assert_eq!(
-            first,
-            now + Duration::from_secs(family_observation::window_seconds())
-        );
-        let late = now + Duration::from_secs(300);
-        assert_eq!(family_work_end(late, whole_case).unwrap(), whole_case);
-        assert!(family_work_end(whole_case, whole_case).is_err());
-        assert!(family_work_end(whole_case + Duration::from_nanos(1), whole_case).is_err());
+        for package in ["com.Hyatt.hyt", "com.amazon.mShop.android.shopping"] {
+            let whole_case = now + Duration::from_secs(family_window_seconds(package));
+            let first = family_work_end(package, now, whole_case).unwrap();
+            assert_eq!(
+                first,
+                now + Duration::from_secs(family_observation::window_seconds_for(package))
+            );
+            let late = now + Duration::from_secs(300);
+            assert_eq!(
+                family_work_end(package, late, whole_case).unwrap(),
+                whole_case
+            );
+            assert!(family_work_end(package, whole_case, whole_case).is_err());
+            assert!(
+                family_work_end(package, whole_case + Duration::from_nanos(1), whole_case).is_err()
+            );
+        }
     }
 
     #[test]

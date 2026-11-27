@@ -247,6 +247,15 @@ impl QualificationCase {
     pub fn window_seconds(self) -> u64 {
         if self == Self::CameraPhotoCaptureReopen {
             budget::CAMERA_PHOTO_CASE_SECONDS
+        } else if matches!(
+            self,
+            Self::FamilyAmazon
+                | Self::FamilyBestBuy
+                | Self::FamilyJingdong
+                | Self::FamilyTaobao
+                | Self::FamilyPinduoduo
+        ) {
+            budget::RETAIL_CASE_SECONDS
         } else {
             budget::NATIVE_CASE_WINDOWS
                 .get(self as usize)
@@ -833,14 +842,16 @@ mod tests {
         assert_eq!(total, budget::NATIVE_SECONDS);
         assert_eq!(
             total
-                + FAMILY_CASE_COUNT as u64 * budget::FAMILY_CASE_SECONDS
+                + budget::FAMILY_SECONDS
                 + budget::CAMERA_PHOTO_CASE_SECONDS
                 + 140
                 + budget::SOURCE_AND_CAPTURE_SECONDS,
             SUITE_SECONDS
         );
         assert_eq!(budget::SOURCE_AND_CAPTURE_SECONDS, 46_622);
-        assert_eq!(SUITE_SECONDS, 165_297);
+        assert_eq!(SUITE_SECONDS, 195_672);
+        assert_eq!(SERVICE_SECONDS, 195_852);
+        assert_eq!(budget::RETAIL_WORK_SECONDS, 8_690);
         assert_eq!(CASE_COUNT, 46);
         assert_eq!(PHOTO_CASE_COUNT, 1);
         assert_eq!(QualificationCase::CameraPhoto.ordinal(), 2);
@@ -864,7 +875,15 @@ mod tests {
             assert_eq!(case.ordinal() as usize, ordinal);
             assert_eq!(QualificationCase::for_family(case.package()).unwrap(), case);
             assert!(case.native_route().is_none());
-            assert_eq!(case.window_seconds(), 2_865);
+            let retail = matches!(
+                case,
+                QualificationCase::FamilyAmazon
+                    | QualificationCase::FamilyBestBuy
+                    | QualificationCase::FamilyJingdong
+                    | QualificationCase::FamilyTaobao
+                    | QualificationCase::FamilyPinduoduo
+            );
+            assert_eq!(case.window_seconds(), if retail { 8_940 } else { 2_865 });
             assert_eq!(case.profile(), KernelProfile::Standard);
             assert!(selected.insert(case.package()));
         }
@@ -900,7 +919,7 @@ mod tests {
             assert!(lines.contains(line.as_str()), "{line}");
         }
         assert_eq!(NOFILE_LIMIT, 32_768);
-        assert_eq!(SERVICE_SECONDS, 165_477);
+        assert_eq!(SERVICE_SECONDS, 195_852);
         assert!(lines.contains("MemoryMax=2147483648"));
         assert!(lines.contains("MemorySwapMax=0"));
         assert!(lines.contains("CPUQuota=200%"));

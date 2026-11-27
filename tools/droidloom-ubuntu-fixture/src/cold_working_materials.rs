@@ -100,6 +100,7 @@ pub(super) struct WorkingQualificationMaterials {
     candidate: String,
     report: SealedInput,
     intent: SealedInput,
+    mac_files: Vec<SealedInput>,
     records: Vec<SealedInput>,
 }
 impl WorkingQualificationMaterials {
@@ -107,9 +108,13 @@ impl WorkingQualificationMaterials {
         let input_guard = SealedInput::open(input)?;
         let plan: Plan = serde_json::from_slice(&input_guard.read()?)?;
         validate_plan(&plan)?;
-        // The historical factory obtains the actual original owner and its four
-        // locks. No second lock open and no old live authority is attempted.
-        let returned = ReturnedWorkingCopyObservation::observe(&plan.first_once_candidate)?;
+        // A new live cold unit owns the unchanged historical observation and
+        // the same four existing locks. No old live retirement is reconstructed.
+        let returned = ReturnedWorkingCopyObservation::observe_working(
+            &plan.first_once_candidate,
+            &plan.candidate_id,
+            input,
+        )?;
         ensure(
             returned.history().current_boot_id() == plan.original_boot_id,
             "working plan does not name this actual returned original boot",
@@ -254,7 +259,7 @@ impl WorkingQualificationMaterials {
                 "new_boot_epoch_predeclared":false
             }),
         )?;
-        let mut records = mac_files;
+        let mut records = Vec::new();
         for pin in [
             &cell_copy_pin,
             &new_cell,
@@ -281,6 +286,7 @@ impl WorkingQualificationMaterials {
             candidate: plan.candidate_id,
             report: SealedInput::open(&report)?,
             intent: SealedInput::open(&intent)?,
+            mac_files,
             records,
         };
         value.revalidate()?;
@@ -307,12 +313,56 @@ impl WorkingQualificationMaterials {
         for guard in &self.guards {
             guard.revalidate()?;
         }
-        for record in &self.records {
+        for record in self.mac_files.iter().chain(&self.records) {
             record.revalidate()?;
         }
         self.report.revalidate()?;
         self.intent.revalidate()?;
         self.returned.guard()
+    }
+    pub(super) fn admitted(&self) -> Result<Value> {
+        self.revalidate()?;
+        let value = serde_json::from_slice(&self.report.read()?)?;
+        self.revalidate()?;
+        Ok(value)
+    }
+    pub(super) fn normal_host_file(&self, relative: &str) -> Result<FilePin> {
+        let admitted = self.admitted()?;
+        let pin = materials::normal_host_file_from_admission(
+            self.sources.source_pin(),
+            &admitted,
+            relative,
+        )?;
+        self.revalidate()?;
+        Ok(pin)
+    }
+    pub(super) fn mac_files(&self) -> Result<Vec<FilePin>> {
+        self.revalidate()?;
+        Ok(self.mac_files.iter().map(|x| x.pin().clone()).collect())
+    }
+    fn fixed_record(&self, name: &str) -> Result<FilePin> {
+        self.revalidate()?;
+        let path = self.work.join(name);
+        let rows: Vec<_> = self
+            .records
+            .iter()
+            .filter(|x| x.pin().path == path)
+            .collect();
+        ensure(
+            rows.len() == 1,
+            "one actual held working source record required",
+        )?;
+        Ok(rows[0].pin().clone())
+    }
+    pub(super) fn candidate_cell(&self) -> Result<FilePin> {
+        self.fixed_record("CANDIDATE-CELL.json")
+    }
+    pub(super) fn selection(&self) -> Result<FilePin> {
+        self.fixed_record("SELECTION.json")
+    }
+    pub(super) fn original_grub_inputs(&self) -> Result<(FilePin, FilePin)> {
+        self.revalidate()?;
+        self.grub.current_inputs()
     }
     pub(super) fn recovery_directory(&self) -> Result<PathBuf> {
         self.revalidate()?;
