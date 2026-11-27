@@ -7,18 +7,18 @@ use super::clock_timer::{self, ClockResultCustody};
 use super::common_gate::{self, CommonGateFact};
 use super::family_observation::{self, FamilyObservation};
 use super::leaf_release;
-use super::working_leaf_release::NativeSourceRelease as NativeRelease;
-use std::sync::Arc;
 use super::leaf_routes::{self, LeafPlan, Route};
 use super::native_business::{self, NativeBusinessFact, NativeCaseEvidence};
 use super::physical_gate_roster as roster;
 use super::runtime_identity::{IdentityObservation, VerifiedMaterialBatch};
+use super::working_leaf_release::NativeSourceRelease as NativeRelease;
 use super::*;
 use droidloom_supervisor::control::physical_qualification_channel::{
     self as owned_channel, ChildChannel, QualificationCase,
 };
 use droidloom_supervisor::main_custody::RuntimeMainCustody;
 use serde_json::Value;
+use std::sync::Arc;
 
 const SCHEMA: &str = "droidloom.physical-application-plan.v1";
 const REPORT_SCHEMA: &str = "droidloom.physical-application-run.v1";
@@ -83,9 +83,14 @@ fn family_window_seconds() -> u64 {
     INSPECT_SECONDS + family_observation::window_seconds()
 }
 fn family_work_end(now: Instant, case_end: Instant) -> Result<Instant, String> {
-    require(now < case_end, "family pre-inspection consumed its original case deadline")?;
-    Ok(now.checked_add(Duration::from_secs(family_observation::window_seconds()))
-        .ok_or("family work deadline overflow")?.min(case_end))
+    require(
+        now < case_end,
+        "family pre-inspection consumed its original case deadline",
+    )?;
+    Ok(now
+        .checked_add(Duration::from_secs(family_observation::window_seconds()))
+        .ok_or("family work deadline overflow")?
+        .min(case_end))
 }
 fn case_window_seconds(route: Route) -> u64 {
     if route == Route::ClockTimerPair {
@@ -151,6 +156,16 @@ fn require_channel_roster() -> Result<(), String> {
         ordinal == owned_channel::CASE_COUNT,
         "physical parent case coverage differs",
     )
+}
+
+pub(super) fn validate_prepared_plan(
+    value: &Value,
+    runtime: &RuntimePlan,
+    registry: &GateRegistry,
+) -> Result<(), String> {
+    let plan: PhysicalPlan = serde_json::from_value(value.clone())
+        .map_err(|e| format!("prepared physical plan: {e}"))?;
+    require_compiled_roster(&plan, runtime, registry)
 }
 
 fn require_compiled_roster(
@@ -443,7 +458,6 @@ impl HistoricalCompletedCase {
     }
 }
 
-
 #[derive(Debug, Serialize)]
 struct FamilyCaseSummary {
     kind: &'static str,
@@ -478,11 +492,13 @@ impl HistoricalFamilyCase {
         let actual = before.facts();
         observation.require_subject(main.facts(), actual)?;
         identity.bind_stability_execution(actual, main, observation.stability())?;
-        let common = common_gate::from_stability(
-            observation.stability(), &identity, main.facts(), actual,
-        )?;
+        let common =
+            common_gate::from_stability(observation.stability(), &identity, main.facts(), actual)?;
         let fixed = roster::package(&actual.package)?;
-        require(fixed.cases.is_empty(), "native package cannot acquire family history")?;
+        require(
+            fixed.cases.is_empty(),
+            "native package cannot acquire family history",
+        )?;
         let mut business = Vec::new();
         for fact in observation.business_facts() {
             fact.require_subject(main.facts(), actual)?;
@@ -496,14 +512,19 @@ impl HistoricalFamilyCase {
             kind: "family_observation",
             actual: actual.clone(),
             evidence: observation.comparison()?,
-            material_identity: serde_json::to_value(&identity).map_err(|e|e.to_string())?,
+            material_identity: serde_json::to_value(&identity).map_err(|e| e.to_string())?,
             common,
             business_gates: business,
             sealed_inside_original_case_window: true,
             historical_observation: true,
             continuous_app_or_target_directory_custody_after_case_claimed: false,
         };
-        let history = Self { summary, custody:observation, material_identity:identity, before };
+        let history = Self {
+            summary,
+            custody: observation,
+            material_identity: identity,
+            before,
+        };
         history.guard()?;
         deadline(end)?;
         Ok(history)
@@ -573,7 +594,10 @@ fn native_basis_indices(
     let mut indices = Vec::new();
     let mut seen = BTreeSet::new();
     for route in routes {
-        require(route.package() == package, "native fact basis crossed a package")?;
+        require(
+            route.package() == package,
+            "native fact basis crossed a package",
+        )?;
         let matching = available
             .iter()
             .filter(|(_, present)| present == route)
@@ -594,13 +618,22 @@ struct HistoricalNativeBusinessFact {
 }
 impl HistoricalNativeBusinessFact {
     // All histories must have passed guard() before this immutable typed join.
-    fn require_retained_binding(&self, histories: &[HistoricalCompletedCase]) -> Result<(), String> {
+    fn require_retained_binding(
+        &self,
+        histories: &[HistoricalCompletedCase],
+    ) -> Result<(), String> {
         let first = histories
-            .get(*self.case_indices.first().ok_or("native fact lost its case basis")?)
+            .get(
+                *self
+                    .case_indices
+                    .first()
+                    .ok_or("native fact lost its case basis")?,
+            )
             .ok_or("native fact basis is outside the retained histories")?;
         let actual = &first.summary.actual;
         let package = actual.package.as_str();
-        self.fact.require_subject(package, first.binding(), actual)?;
+        self.fact
+            .require_subject(package, first.binding(), actual)?;
         let available = histories
             .iter()
             .enumerate()
@@ -613,11 +646,17 @@ impl HistoricalNativeBusinessFact {
             "native fact no longer names exactly its contributing retained histories",
         )?;
         for index in &self.case_indices {
-            let case = histories.get(*index).ok_or("native historical case disappeared")?;
+            let case = histories
+                .get(*index)
+                .ok_or("native historical case disappeared")?;
             require_same_main(first.binding(), case.binding())?;
-            require(case.summary.actual == *actual,
-                "native historical cases differ in actual package, UID or complete APK identity")?;
-            case.native.as_ref().ok_or("native historical case lost its typed evidence")?
+            require(
+                case.summary.actual == *actual,
+                "native historical cases differ in actual package, UID or complete APK identity",
+            )?;
+            case.native
+                .as_ref()
+                .ok_or("native historical case lost its typed evidence")?
                 .require_subject(package, first.binding(), actual)?;
         }
         Ok(())
@@ -637,14 +676,19 @@ fn join_native_histories(
         let selected = histories
             .iter()
             .enumerate()
-            .filter(|(_, case)| case.summary.actual.package == fixed.package && case.native.is_some())
+            .filter(|(_, case)| {
+                case.summary.actual.package == fixed.package && case.native.is_some()
+            })
             .collect::<Vec<_>>();
         if selected.is_empty() {
             continue;
         }
-        let available = selected.iter()
-            .map(|(index, case)| (*index, case.summary.route)).collect::<Vec<_>>();
-        let cases = selected.iter()
+        let available = selected
+            .iter()
+            .map(|(index, case)| (*index, case.summary.route))
+            .collect::<Vec<_>>();
+        let cases = selected
+            .iter()
             .map(|(_, case)| case.native.as_ref().expect("selected typed native case"))
             .collect::<Vec<_>>();
         let mut gate_ids = BTreeSet::new();
@@ -809,14 +853,18 @@ fn summarize_rows(
             .enumerate()
             .filter(|(_, case)| case.summary.actual.package == fixed.package)
             .collect::<Vec<_>>();
-        let families = family_histories.iter().enumerate()
+        let families = family_histories
+            .iter()
+            .enumerate()
             .filter(|(_, history)| history.summary.actual.package == fixed.package)
             .collect::<Vec<_>>();
         require(
             families.len() <= usize::from(fixed.cases.is_empty()),
             "family history is duplicated or attached to a native package",
         )?;
-        for (_, family) in &families { family.guard()?; }
+        for (_, family) in &families {
+            family.guard()?;
+        }
         // IDs come only from consuming original factories and their retained
         // opaque objects. A serialized blocked row is never a passed map.
         let mut assertions = Vec::new();
@@ -832,7 +880,8 @@ fn summarize_rows(
             for fact in native_facts.iter().filter(|fact| fact.fact.gate() == id) {
                 fact.require_retained_binding(histories)?;
                 if fact.case_indices.iter().all(|index| {
-                    histories.get(*index)
+                    histories
+                        .get(*index)
                         .is_some_and(|case| case.summary.actual.package == fixed.package)
                 }) {
                     indices.extend(fact.case_indices.iter().copied());
@@ -879,16 +928,22 @@ fn summarize_rows(
             // copied through serialization, never used to construct authority.
             cases: Vec::new(),
             gate_assertions: assertions,
-            native_business_facts: native_facts.iter()
-                .filter(|fact| fact.case_indices.first().is_some_and(|index| {
-                    histories.get(*index)
-                        .is_some_and(|case| case.summary.actual.package == fixed.package)
-                }))
+            native_business_facts: native_facts
+                .iter()
+                .filter(|fact| {
+                    fact.case_indices.first().is_some_and(|index| {
+                        histories
+                            .get(*index)
+                            .is_some_and(|case| case.summary.actual.package == fixed.package)
+                    })
+                })
                 .map(|fact| fact.fact.comparison())
                 .collect::<Result<Vec<_>, _>>()?,
-            blocked_gates: families.iter().flat_map(|(_, history)| history.custody.blocked())
-                .map(|blocked| serde_json::to_value(blocked).map_err(|e|e.to_string()))
-                .collect::<Result<Vec<_>,_>>()?,
+            blocked_gates: families
+                .iter()
+                .flat_map(|(_, history)| history.custody.blocked())
+                .map(|blocked| serde_json::to_value(blocked).map_err(|e| e.to_string()))
+                .collect::<Result<Vec<_>, _>>()?,
             blocked: errors.get(fixed.package).cloned(),
             accepted_gates: 0,
             runtime_qualified: complete,
@@ -940,10 +995,16 @@ pub fn run_physical_files(
     // The parent charged plan production and child setup to this same source
     // window. The child never starts another 120-second preparation allowance.
     let preparation_end = channel.preparation_deadline();
-    require(preparation_end <= end, "parent preparation end exceeds the original suite")?;
+    require(
+        preparation_end <= end,
+        "parent preparation end exceeds the original suite",
+    )?;
     deadline(preparation_end)?;
-    let working_sources = Arc::new(channel.working_source_custody()
-        .map_err(|error| error.to_string())?);
+    let working_sources = Arc::new(
+        channel
+            .working_source_custody()
+            .map_err(|error| error.to_string())?,
+    );
     let selection = runtime
         .preparation_selection
         .clone()
@@ -997,7 +1058,10 @@ pub fn run_physical_files(
     // Preserve the original fourteen native cases, then append the fixed
     // thirty-one family observations. The input document still has each package
     // once in canonical order; it cannot choose a different execution order.
-    for row in plan.applications.iter().filter(|row| !row.cases.is_empty())
+    for row in plan
+        .applications
+        .iter()
+        .filter(|row| !row.cases.is_empty())
         .chain(plan.applications.iter().filter(|row| row.cases.is_empty()))
     {
         if let Some(reason) = &first_failure {
@@ -1016,23 +1080,27 @@ pub fn run_physical_files(
         if row.cases.is_empty() {
             let result = (|| -> Result<HistoricalFamilyCase, String> {
                 deadline(end)?;
-                let case_end = (Instant::now() + Duration::from_secs(family_window_seconds())).min(end);
-                let case_owner = channel.begin_case(
-                    QualificationCase::for_family(&row.package).map_err(|e|e.to_string())?,
-                    case_end,
-                ).map_err(|e|e.to_string())?;
+                let case_end =
+                    (Instant::now() + Duration::from_secs(family_window_seconds())).min(end);
+                let case_owner = channel
+                    .begin_case(
+                        QualificationCase::for_family(&row.package).map_err(|e| e.to_string())?,
+                        case_end,
+                    )
+                    .map_err(|e| e.to_string())?;
                 let cutoff = (Instant::now() + Duration::from_secs(INSPECT_SECONDS)).min(case_end);
-                let before = inspector.inspect_observed_until(&row.package, 0, cutoff)
+                let before = inspector
+                    .inspect_observed_until(&row.package, 0, cutoff)
                     .map_err(|error| error.to_string())?;
                 let actual = before.facts();
                 require(
-                    actual.package == row.package && actual.user == 0
+                    actual.package == row.package
+                        && actual.user == 0
                         && actual.epoch == runtime.expected_epoch,
                     "family pre-inspection changed its fixed actual package/user/epoch",
                 )?;
-                let identity = materials.observe(
-                    &requested, 0, &runtime.expected_epoch, actual, actual,
-                )?;
+                let identity =
+                    materials.observe(&requested, 0, &runtime.expected_epoch, actual, actual)?;
                 let work_end = family_work_end(Instant::now(), case_end)?;
                 let observation = {
                     let mut baseline =
@@ -1043,7 +1111,11 @@ pub fn run_physical_files(
                     family_observation::run_family_case(&mut inspector, &mut baseline, work_end)?
                 };
                 let completed = HistoricalFamilyCase::from_observed(
-                    observation, identity, before, &main, case_end,
+                    observation,
+                    identity,
+                    before,
+                    &main,
+                    case_end,
                 )?;
                 completed.guard()?;
                 require_same_main(completed.binding(), main.facts())?;
@@ -1051,7 +1123,9 @@ pub fn run_physical_files(
                 materials.revalidate()?;
                 source_owner.guard()?;
                 deadline(case_end)?;
-                case_owner.finish_after_history(case_end).map_err(|e|e.to_string())?;
+                case_owner
+                    .finish_after_history(case_end)
+                    .map_err(|e| e.to_string())?;
                 Ok(completed)
             })();
             match result {
@@ -1227,10 +1301,12 @@ pub fn run_physical_files(
         }
     }
     for row in &mut summary.applications {
-        for history in family_histories.iter()
+        for history in family_histories
+            .iter()
             .filter(|case| case.summary.actual.package == row.package)
         {
-            row.cases.push(serde_json::to_value(&history.summary).map_err(|e|e.to_string())?);
+            row.cases
+                .push(serde_json::to_value(&history.summary).map_err(|e| e.to_string())?);
         }
     }
     let custody = RunCustody {
@@ -1339,17 +1415,28 @@ mod tests {
     }
     #[test]
     fn physical_native_basis_keeps_exact_distinct_history_indices() {
-        let available = [(4, Route::GalleryRotation), (7, Route::GalleryVideo),
-            (8, Route::GallerySeek), (9, Route::GalleryAlbum)];
+        let available = [
+            (4, Route::GalleryRotation),
+            (7, Route::GalleryVideo),
+            (8, Route::GallerySeek),
+            (9, Route::GalleryAlbum),
+        ];
         assert_eq!(
-            native_basis_indices("com.android.gallery3d",
-                &[Route::GalleryRotation, Route::GalleryAlbum], &available).unwrap(),
+            native_basis_indices(
+                "com.android.gallery3d",
+                &[Route::GalleryRotation, Route::GalleryAlbum],
+                &available
+            )
+            .unwrap(),
             vec![4, 9],
         );
         assert_eq!(
-            native_basis_indices("com.android.documentsui",
+            native_basis_indices(
+                "com.android.documentsui",
                 &[Route::DocumentsSaf, Route::DocumentsSearchSort],
-                &[(2, Route::DocumentsSaf), (3, Route::DocumentsSearchSort)]).unwrap(),
+                &[(2, Route::DocumentsSaf), (3, Route::DocumentsSearchSort)]
+            )
+            .unwrap(),
             vec![2, 3],
         );
     }
@@ -1358,18 +1445,43 @@ mod tests {
     fn physical_native_basis_rejects_missing_duplicate_and_foreign_cases() {
         let one = [(4, Route::GalleryRotation)];
         assert!(native_basis_indices("com.android.gallery3d", &[], &one).is_err());
-        assert!(native_basis_indices("com.android.gallery3d",
-            &[Route::GalleryAlbum], &one).is_err());
-        assert!(native_basis_indices("com.android.gallery3d",
-            &[Route::ContactsSearch], &[(1, Route::ContactsSearch)]).is_err());
+        assert!(
+            native_basis_indices("com.android.gallery3d", &[Route::GalleryAlbum], &one).is_err()
+        );
+        assert!(
+            native_basis_indices(
+                "com.android.gallery3d",
+                &[Route::ContactsSearch],
+                &[(1, Route::ContactsSearch)]
+            )
+            .is_err()
+        );
         let ambiguous = [(4, Route::GalleryRotation), (5, Route::GalleryRotation)];
-        assert!(native_basis_indices("com.android.gallery3d",
-            &[Route::GalleryRotation], &ambiguous).is_err());
-        assert!(native_basis_indices("com.android.gallery3d",
-            &[Route::GalleryRotation, Route::GalleryRotation], &ambiguous).is_err());
+        assert!(
+            native_basis_indices(
+                "com.android.gallery3d",
+                &[Route::GalleryRotation],
+                &ambiguous
+            )
+            .is_err()
+        );
+        assert!(
+            native_basis_indices(
+                "com.android.gallery3d",
+                &[Route::GalleryRotation, Route::GalleryRotation],
+                &ambiguous
+            )
+            .is_err()
+        );
         let aliased = [(4, Route::GalleryRotation), (4, Route::GalleryAlbum)];
-        assert!(native_basis_indices("com.android.gallery3d",
-            &[Route::GalleryRotation, Route::GalleryAlbum], &aliased).is_err());
+        assert!(
+            native_basis_indices(
+                "com.android.gallery3d",
+                &[Route::GalleryRotation, Route::GalleryAlbum],
+                &aliased
+            )
+            .is_err()
+        );
     }
 
     #[test]
@@ -1377,7 +1489,13 @@ mod tests {
         require_channel_roster().unwrap();
         assert_eq!(physical_qualification_window_seconds(), 114_505);
         assert_eq!(family_window_seconds(), 2_865);
-        assert_eq!(roster::PACKAGES.iter().filter(|row| row.cases.is_empty()).count(), 31);
+        assert_eq!(
+            roster::PACKAGES
+                .iter()
+                .filter(|row| row.cases.is_empty())
+                .count(),
+            31
+        );
         assert_eq!(owned_channel::CASE_COUNT, 45);
         for route in [
             Route::ClockTimer,
@@ -1388,13 +1506,15 @@ mod tests {
         }
     }
 
-
     #[test]
     fn physical_family_work_window_cannot_reborrow_preinspection_or_extend_case() {
         let now = Instant::now();
         let whole_case = now + Duration::from_secs(family_window_seconds());
         let first = family_work_end(now, whole_case).unwrap();
-        assert_eq!(first, now + Duration::from_secs(family_observation::window_seconds()));
+        assert_eq!(
+            first,
+            now + Duration::from_secs(family_observation::window_seconds())
+        );
         let late = now + Duration::from_secs(300);
         assert_eq!(family_work_end(late, whole_case).unwrap(), whole_case);
         assert!(family_work_end(whole_case, whole_case).is_err());
@@ -1405,29 +1525,56 @@ mod tests {
     fn physical_family_rows_without_opaque_history_never_get_gate_credit() {
         let rows = summarize_rows(&[], &[], &[], &BTreeMap::new()).unwrap();
         assert_eq!(rows.len(), roster::PACKAGE_COUNT);
-        assert_eq!(rows.iter().map(|row| row.gate_assertions.len()).sum::<usize>(), 377);
+        assert_eq!(
+            rows.iter()
+                .map(|row| row.gate_assertions.len())
+                .sum::<usize>(),
+            377
+        );
         for row in rows {
             assert_eq!(row.accepted_gates, 0);
             assert!(!row.runtime_qualified && !row.production_ready);
             assert!(row.cases.is_empty() && row.blocked_gates.is_empty());
-            assert!(row.gate_assertions.iter().all(|gate|
-                gate.status == "pending" && gate.completed_cases.is_empty()));
+            assert!(
+                row.gate_assertions
+                    .iter()
+                    .all(|gate| gate.status == "pending" && gate.completed_cases.is_empty())
+            );
         }
     }
 
     #[test]
     fn physical_family_source_inputs_cannot_select_a_native_case_or_unbound_material() {
         let (mut plan, runtime, gates) = fixture();
-        let native = plan.applications.iter().find(|row| !row.cases.is_empty()).unwrap()
-            .cases[0].leaf.clone();
-        let family = plan.applications.iter_mut().find(|row| row.cases.is_empty()).unwrap();
+        let native = plan
+            .applications
+            .iter()
+            .find(|row| !row.cases.is_empty())
+            .unwrap()
+            .cases[0]
+            .leaf
+            .clone();
+        let family = plan
+            .applications
+            .iter_mut()
+            .find(|row| row.cases.is_empty())
+            .unwrap();
         family.cases.push(PhysicalCasePlan {
-            leaf:native, main_qualification:runtime.main_qualification.clone(),
+            leaf: native,
+            main_qualification: runtime.main_qualification.clone(),
         });
         assert!(require_compiled_roster(&plan, &runtime, &gates).is_err());
         let (plan, mut runtime, gates) = fixture();
-        let selected = roster::PACKAGES.iter().find(|row| row.cases.is_empty()).unwrap().package;
-        runtime.applications.iter_mut().find(|row| row.package == selected).unwrap()
+        let selected = roster::PACKAGES
+            .iter()
+            .find(|row| row.cases.is_empty())
+            .unwrap()
+            .package;
+        runtime
+            .applications
+            .iter_mut()
+            .find(|row| row.package == selected)
+            .unwrap()
             .expected_input = None;
         assert!(require_compiled_roster(&plan, &runtime, &gates).is_err());
     }

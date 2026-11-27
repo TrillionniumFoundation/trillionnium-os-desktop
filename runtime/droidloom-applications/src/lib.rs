@@ -8,6 +8,7 @@
 
 pub mod release;
 pub mod runtime_plan;
+pub use runtime_plan::prepare_owned_physical_plan;
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::ffi::OsString;
