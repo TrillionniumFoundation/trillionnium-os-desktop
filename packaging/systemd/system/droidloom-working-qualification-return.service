@@ -1,0 +1,39 @@
+[Unit]
+Description=Droidloom independent working-copy qualification return
+After=droidloom-working-qualification.service
+ConditionKernelCommandLine=droidloom.working
+
+[Service]
+Type=exec
+User=root
+Group=root
+AppArmorProfile=droidloom-working-return
+ExecStart=/usr/lib/droidloom/production/current/droidloom-original-once-return --working-qualification-return
+Restart=no
+KillMode=control-group
+KillSignal=SIGTERM
+FinalKillSignal=SIGKILL
+SendSIGKILL=yes
+TimeoutStopFailureMode=terminate
+TimeoutStopSec=10s
+RuntimeMaxSec=180s
+CPUQuota=100%
+CPUQuotaPeriodSec=100ms
+CPUAffinity=20
+MemoryAccounting=yes
+MemoryMax=536870912
+MemorySwapMax=0
+TasksAccounting=yes
+TasksMax=32
+CapabilityBoundingSet=CAP_SETUID CAP_SETGID CAP_KILL
+AmbientCapabilities=
+NoNewPrivileges=no
+StandardInput=null
+LimitCORE=0
+LimitNOFILE=32768
+UMask=0077
+WorkingDirectory=/
+Environment=PATH=/usr/sbin:/usr/bin:/sbin:/bin
+Environment=LANG=C.UTF-8
+StandardOutput=journal
+StandardError=journal

@@ -1,6 +1,12 @@
 [Unit]
 Description=Droidloom owned working-copy qualification
+Requires=droidloom-container-entry.service
 After=droidloom-container-entry.service
+ConditionKernelCommandLine=droidloom.working
+OnSuccess=droidloom-working-qualification-return.service
+OnFailure=droidloom-working-qualification-return.service
+OnSuccessJobMode=replace
+OnFailureJobMode=replace
 
 [Service]
 Type=exec
@@ -15,7 +21,7 @@ FinalKillSignal=SIGKILL
 SendSIGKILL=yes
 TimeoutStopFailureMode=terminate
 TimeoutStopSec=180s
-RuntimeMaxSec=161187s
+RuntimeMaxSec=165477s
 CPUQuota=200%
 CPUQuotaPeriodSec=100ms
 CPUAffinity=20 21

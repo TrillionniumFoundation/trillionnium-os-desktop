@@ -3,7 +3,7 @@
 //! PID1 bus and held executable/namespace machinery, not a second trust model.
 use super::super::physical_qualification_channel as protocol;
 use super::*;
-use std::cell::Cell;
+use std::cell::{Cell, RefCell};
 use std::io::{Read, Write};
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -446,7 +446,7 @@ pub(crate) struct UnitOwner {
     memory_current: Control,
     profile: Cell<KernelProfile>,
     source_unit: SourceUnit,
-    child_arguments: Option<Vec<String>>,
+    child_arguments: RefCell<Option<Vec<String>>>,
     end: Instant,
 }
 impl UnitOwner {
@@ -547,7 +547,7 @@ impl UnitOwner {
             memory_current,
             profile: Cell::new(KernelProfile::Standard),
             source_unit,
-            child_arguments: None,
+            child_arguments: RefCell::new(None),
             end,
         };
         value.properties = value.query(end)?;
@@ -665,11 +665,11 @@ impl UnitOwner {
         self.end = end;
         Ok(())
     }
-    pub(crate) fn bind_plan(&mut self, plan: &protocol::Plan, end: Instant) -> Result<(), String> {
+    pub(crate) fn bind_plan(&self, plan: &protocol::Plan, end: Instant) -> Result<(), String> {
         self.boundary(None, end)?;
         plan.guard().map_err(|e| e.to_string())?;
         let pin = plan.working_applications_pin().map_err(|e| e.to_string())?;
-        if self.child_arguments.is_some()
+        if self.child_arguments.borrow().is_some()
             || self.executable.identity[6] != pin.bytes
             || self.executable.sha != pin.sha256
         {
@@ -677,7 +677,7 @@ impl UnitOwner {
                 "working owner already has a plan or selected another applications input".into(),
             );
         }
-        self.child_arguments =
+        *self.child_arguments.borrow_mut() =
             Some(protocol::child_argv(&plan.path, &plan.digest).map_err(|e| e.to_string())?);
         Ok(())
     }
@@ -697,6 +697,7 @@ impl UnitOwner {
         if cmdline(child).map_err(|e| e.to_string())?
             != *self
                 .child_arguments
+                .borrow()
                 .as_ref()
                 .ok_or("working owner has no retained source plan")?
             || identity(&child.open("exe", false).map_err(|e| e.to_string())?)
@@ -735,7 +736,32 @@ impl UnitOwner {
         self.boundary(None, deadline)?;
         Ok((&self.group_path, &self.group))
     }
+    /// The same actual unit and cgroup while a bounded child is in flight.
+    /// All ordinary case and completion boundaries still require full retirement.
+    pub(crate) fn watchdog_boundary(
+        &self,
+        child: Option<&BoundProcess>,
+        preparation: bool,
+        end: Instant,
+    ) -> Result<(), String> {
+        if self.query(end)? != self.properties {
+            return Err("working watchdog manager properties changed".into());
+        }
+        self.kernel_guard_mode(child, preparation, child.is_some())?;
+        if Instant::now() >= self.end.min(end) {
+            return Err("working watchdog original owner end exhausted".into());
+        }
+        Ok(())
+    }
     fn kernel_guard(&self, child: Option<&BoundProcess>, preparation: bool) -> Result<(), String> {
+        self.kernel_guard_mode(child, preparation, false)
+    }
+    fn kernel_guard_mode(
+        &self,
+        child: Option<&BoundProcess>,
+        preparation: bool,
+        live_suite: bool,
+    ) -> Result<(), String> {
         if current_cgroup_parent().map_err(|e| e.to_string())? != self.group_path {
             return Err("physical qualifier moved cgroup".into());
         }
@@ -786,6 +812,13 @@ impl UnitOwner {
                 &self.group,
             )
             .map_err(|e| e.to_string())?;
+        } else if live_suite {
+            super::super::working_owned_probe::verify_live_suite_children(
+                &self.group_path,
+                &self.group,
+                child.ok_or("actual working suite child absent")?,
+            )
+            .map_err(|e| e.to_string())?;
         } else if fs::read_dir(&self.group_path)
             .map_err(|e| e.to_string())?
             .any(|r| r.map_or(true, |e| e.file_type().map_or(true, |t| t.is_dir())))
@@ -819,7 +852,7 @@ impl UnitOwner {
         Ok(())
     }
     pub(crate) fn switch(
-        &mut self,
+        &self,
         profile: KernelProfile,
         child: &BoundProcess,
         deadline: Instant,
@@ -870,6 +903,8 @@ impl UnitOwner {
             "unit":self.invocation.unit,"invocation":self.invocation.id.iter().map(|b| format!("{b:02x}")).collect::<String>(),
             "parent_pid":self.current.identity.pid,"parent_start_ticks":self.current.identity.start_ticks,
             "properties":self.properties,"cgroup":self.group_path,"cgroup_identity":self.group_pin,
+            "normal_unit":{"path":self.source_unit.path,"f9":self.source_unit.pin,
+                "sha256":format!("{:x}",Sha256::digest(protocol::UNIT_SOURCE.as_bytes()))},
             "normal_executable":{"path":self.executable.path,"f9":self.executable.identity,"sha256":self.executable.sha},
             "profile":format!("{:?}",self.profile.get()),"all_child_processes_retired":true,
             "parent_unit_retirement_requires_external_readback":true})
@@ -889,6 +924,15 @@ fn qualification_properties(
         || unit.get("Transient") != Some(&V::Boolean(false))
         || unit.get("NeedDaemonReload") != Some(&V::Boolean(false))
         || unit.get("DropInPaths") != Some(&V::Strings(Vec::new()))
+        || ["OnSuccess", "OnFailure"].iter().any(|key| {
+            unit.get(*key)
+                != Some(&V::Strings(vec![
+                    crate::native_working_contract::RETURN_UNIT.into(),
+                ]))
+        })
+        || ["OnSuccessJobMode", "OnFailureJobMode"]
+            .iter()
+            .any(|key| unit.get(*key) != Some(&V::Text("replace".into())))
     {
         return Err("fixed installed physical unit or invocation metadata differs".into());
     }
@@ -982,13 +1026,17 @@ fn qualification_properties(
         || command.arguments != protocol::parent_argv()
         || !command.flags.is_empty()
         || command.pid != pid
-        || command.started[1] == 0
+        || command.started.iter().any(|n| *n == 0)
         || command.exited != [0, 0]
         || command.code != 0
         || command.status != 0
     {
         return Err("physical qualifier exact normal command differs".into());
     }
+    values.insert(
+        "ExecStartCommandRealtime".into(),
+        command.started[0].to_string(),
+    );
     values.insert(
         "ExecStartCommandMonotonic".into(),
         command.started[1].to_string(),
@@ -1126,6 +1174,15 @@ mod tests {
         unit.insert("Transient".into(), V::Boolean(false));
         unit.insert("NeedDaemonReload".into(), V::Boolean(false));
         unit.insert("DropInPaths".into(), V::Strings(vec![]));
+        for name in ["OnSuccess", "OnFailure"] {
+            unit.insert(
+                name.into(),
+                V::Strings(vec![crate::native_working_contract::RETURN_UNIT.into()]),
+            );
+        }
+        for name in ["OnSuccessJobMode", "OnFailureJobMode"] {
+            unit.insert(name.into(), V::Text("replace".into()));
+        }
         for (key, value) in [
             ("Type", "exec"),
             ("User", "root"),
@@ -1257,6 +1314,30 @@ mod tests {
         let mut wrong = service.clone();
         wrong.insert("ExecStartPostEx".into(), service["ExecStartEx"].clone());
         assert!(qualification_properties(&unit, &wrong, &invocation, 1234).is_err());
+    }
+    #[test]
+    fn physical_qualification_rejects_missing_or_foreign_independent_return() {
+        use bus::Value as V;
+        let (unit, service, invocation) = fixture();
+        for key in ["OnSuccess", "OnFailure"] {
+            for destinations in [
+                vec![],
+                vec!["caller.service".into()],
+                vec![
+                    crate::native_working_contract::RETURN_UNIT.into(),
+                    "caller.service".into(),
+                ],
+            ] {
+                let mut wrong = unit.clone();
+                wrong.insert(key.into(), V::Strings(destinations));
+                assert!(qualification_properties(&wrong, &service, &invocation, 1234).is_err());
+            }
+        }
+        for key in ["OnSuccessJobMode", "OnFailureJobMode"] {
+            let mut wrong = unit.clone();
+            wrong.insert(key.into(), V::Text("ignore-dependencies".into()));
+            assert!(qualification_properties(&wrong, &service, &invocation, 1234).is_err());
+        }
     }
     #[test]
     fn physical_qualification_profiles_preserve_original_exact_memory_and_quota() {

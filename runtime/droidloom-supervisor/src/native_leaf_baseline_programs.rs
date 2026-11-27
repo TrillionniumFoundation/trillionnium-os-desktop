@@ -17,6 +17,8 @@ fn bad(why: &'static str) -> io::Error {
     io::Error::other(why)
 }
 fn before(end: Instant) -> io::Result<()> {
+    crate::control::physical_qualification_channel::working_runtime::progress()
+        .map_err(io::Error::other)?;
     if Instant::now() >= end {
         Err(bad("normal host ELF original budget expired"))
     } else {

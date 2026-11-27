@@ -25,14 +25,21 @@ use std::process::{Command, Output};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::{Duration, Instant};
 
-#[path = "native_application_ui_tasks.rs"]
-mod tasks;
 #[path = "native_application_ui_common.rs"]
 mod common;
-pub use common::{NativeUiStabilityWindow, NativeUiStabilityEvidence, NativeUiStabilitySummary, stability_additional_window_seconds};
+#[path = "native_application_ui_tasks.rs"]
+mod tasks;
+pub use common::{
+    NativeUiStabilityEvidence, NativeUiStabilitySummary, NativeUiStabilityWindow,
+    RetainedNativeUiTranscript, stability_additional_window_seconds,
+};
 #[path = "native_application_ui_media.rs"]
 mod media;
-pub use media::{CameraPhotoObservation, RetainedScopedWindowPixels, ScopedWindowPixels};
+pub use media::{
+    CameraPhotoCaseObservation, CameraPhotoObservation, CameraPhotoSceneObservation,
+    RetainedScopedWindowPixels, ScopedWindowPixels, camera_photo_case_window_seconds,
+    run_camera_photo_case,
+};
 
 const COHORT: &str =
     "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2";
@@ -767,6 +774,7 @@ pub struct NativeUiTranscript {
     actions: u32,
     engine: crate::control::EngineMappingObservation,
     journal_custody: Journal,
+    original_end: Instant,
 }
 impl NativeUiTranscript {
     pub fn journal(&self) -> &Path {
@@ -1307,7 +1315,8 @@ impl<'a, 'b> NativeUiSession<'a, 'b> {
         self,
         inspector: &mut NativeApplicationInspector,
     ) -> Result<NativeUiTranscript, String> {
-        self.close_before_bookends(inspector)?.finish_bookends(inspector)
+        self.close_before_bookends(inspector)?
+            .finish_bookends(inspector)
     }
     fn close_before_bookends(
         mut self,
@@ -1335,8 +1344,10 @@ impl<'a, 'b> NativeUiSession<'a, 'b> {
         mut self,
         inspector: &mut NativeApplicationInspector,
     ) -> Result<NativeUiTranscript, String> {
-        need(self.cleanup_started && !self.poisoned,
-            "native UI final bookends require the successful original owned close")?;
+        need(
+            self.cleanup_started && !self.poisoned,
+            "native UI final bookends require the successful original owned close",
+        )?;
         let task = self.task.ok_or("native UI original owned task absent")?;
         let package = self.baseline.application().package.clone();
         let after_helper = inspector
@@ -1374,6 +1385,7 @@ impl<'a, 'b> NativeUiSession<'a, 'b> {
                 .take()
                 .ok_or("native UI original running Engine observation absent")?,
             journal_custody: self.journal,
+            original_end: self.end,
         })
     }
 }

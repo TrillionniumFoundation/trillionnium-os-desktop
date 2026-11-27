@@ -344,17 +344,17 @@ mod tests {
     use super::*;
 
     #[test]
-    fn complete_forty_five_case_transcript_and_acks_fit_the_wire_bound() {
+    fn complete_compiled_case_transcript_and_acks_fit_the_wire_bound() {
         // Hello is 0. Each actual case has Begin and End, then Complete.
         // ACK echoes its request sequence rather than consuming another number.
-        assert_eq!(super::super::CASE_COUNT, 45);
+        assert_eq!(super::super::CASE_COUNT, 46);
         let mut requests = vec![(1, 255)];
         for ordinal in 0..super::super::CASE_COUNT {
             requests.push((2, u8::try_from(ordinal).unwrap()));
             requests.push((3, u8::try_from(ordinal).unwrap()));
         }
         requests.push((4, 255));
-        assert_eq!(requests.len(), 92);
+        assert_eq!(requests.len(), 2 + 2 * super::super::CASE_COUNT);
         for (sequence, (kind, case)) in requests.into_iter().enumerate() {
             let packet = Packet {
                 sequence: u32::try_from(sequence).unwrap(),
@@ -383,7 +383,7 @@ mod tests {
     #[test]
     fn terminal_sequence_is_exact_and_larger_wire_values_are_rejected() {
         let terminal = Packet {
-            sequence: 91,
+            sequence: MAX_SEQUENCE,
             kind: 4,
             case: 255,
             end_ns: 900,
@@ -391,7 +391,7 @@ mod tests {
         };
         let raw = terminal.bytes().unwrap();
         assert_eq!(Packet::parse(&raw).unwrap(), terminal);
-        for sequence in [92, u32::MAX] {
+        for sequence in [MAX_SEQUENCE + 1, u32::MAX] {
             let packet = Packet {
                 sequence,
                 kind: terminal.kind,

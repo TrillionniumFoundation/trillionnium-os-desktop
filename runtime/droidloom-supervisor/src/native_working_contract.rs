@@ -25,6 +25,7 @@ pub(crate) const APPLICATIONS_EXECUTABLE: &str = "/usr/bin/droidloom-application
 // The normal nine-binary release still supplies this executable. Its new,
 // distinct fixed mode checks a separate context/configuration/boot namespace.
 pub(crate) const RETURN_EXECUTABLE: &str = original::RETURN_EXECUTABLE;
+pub(crate) const WORKING_TARGET: &str = "droidloom-working-qualification.target";
 pub(crate) const PARENT_UNIT: &str = "droidloom-working-qualification.service";
 pub(crate) const RETURN_UNIT: &str = "droidloom-working-qualification-return.service";
 pub(crate) const PARENT_MODE: &str = "--owned-working-qualification";
@@ -96,7 +97,7 @@ impl WorkingSchedule {
             || self.watchdog_interval_seconds > u32::from(u16::MAX)
             || self.keepalive_period_seconds + self.main_revalidation_seconds
                 >= u64::from(self.watchdog_interval_seconds)
-            || self.owner_start_by_boot_seconds + self.main_revalidation_seconds
+            || self.owner_start_by_boot_seconds + budget::PREPARATION_BOOTSTRAP_SECONDS
                 >= u64::from(self.watchdog_interval_seconds)
             || self.normal_return_seconds >= u64::from(self.watchdog_interval_seconds)
         {
@@ -296,9 +297,14 @@ pub(crate) fn boot_arguments(input: &str) -> io::Result<BTreeMap<String, String>
     }
     let mut result = BTreeMap::new();
     let mut masks = BTreeMap::<&str, usize>::new();
+    let mut wants = 0usize;
     for arg in input.split_whitespace() {
         let Some((name, value)) = arg.split_once('=') else {
-            if arg.starts_with("droidloom.working") || arg.starts_with("droidloom.once") {
+            if arg.starts_with("droidloom.working")
+                || arg.starts_with("droidloom.once")
+                || arg == "systemd.wants"
+                || arg == "rd.systemd.wants"
+            {
                 return Err(reject("bare or mixed recovery boot argument"));
             }
             continue;
@@ -320,11 +326,22 @@ pub(crate) fn boot_arguments(input: &str) -> io::Result<BTreeMap<String, String>
                 "mixed once/working or unknown working boot argument",
             ));
         }
+        if name == "systemd.wants" {
+            if value != WORKING_TARGET {
+                return Err(reject("working boot selects another host target"));
+            }
+            wants += 1;
+        } else if name == "rd.systemd.wants" {
+            return Err(reject(
+                "working boot does not admit an additional initrd target",
+            ));
+        }
         if name == "systemd.mask" {
             *masks.entry(value).or_default() += 1;
         }
     }
     if result.len() != 5
+        || wants != 1
         || result.get("root") != Some(&format!("UUID={ROOT_UUID}"))
         || result.get("panic").map(String::as_str) != Some("10")
         || [
@@ -341,7 +358,7 @@ pub(crate) fn boot_arguments(input: &str) -> io::Result<BTreeMap<String, String>
             .any(|name| masks.get(name) != Some(&1))
     {
         return Err(reject(
-            "working boot requires its exact intent/root/panic and fixed writer/suspend masks",
+            "working boot requires its exact intent/root/panic, one fixed target and writer/suspend masks",
         ));
     }
     Ok(result)
@@ -370,7 +387,7 @@ mod tests {
     }
     fn line() -> String {
         format!(
-            "root=UUID={ROOT_UUID} panic=10 droidloom.working={} droidloom.working.config={} droidloom.working.return={} {}",
+            "root=UUID={ROOT_UUID} panic=10 droidloom.working={} droidloom.working.config={} droidloom.working.return={} systemd.wants={WORKING_TARGET} {}",
             "a".repeat(64),
             "b".repeat(64),
             "c".repeat(64),
@@ -388,14 +405,15 @@ mod tests {
         s.validate().unwrap();
         assert_eq!(
             (s.native_case_count, s.family_case_count, s.case_count),
-            (14, 31, 45)
+            (14, 31, 46)
         );
         assert_eq!(budget::SOURCE_AND_CAPTURE_SECONDS, 46622);
-        assert_eq!(s.whole_suite_seconds, 161007);
+        assert_eq!(s.whole_suite_seconds, 165297);
         assert_eq!(
             s.whole_suite_seconds,
             budget::NATIVE_CASE_WINDOWS.iter().sum::<u64>()
                 + 31 * (250 + 2615)
+                + budget::CAMERA_PHOTO_CASE_SECONDS
                 + 140
                 + budget::SOURCE_AND_CAPTURE_SECONDS
         );
@@ -491,11 +509,18 @@ mod tests {
             "droidloom.working",
             "root=bad",
             "panic=0",
+            "systemd.wants",
+            "rd.systemd.wants=droidloom-working-qualification.target",
+            "systemd.wants=droidloom-working-qualification.target",
+            "systemd.wants=caller.service",
             "systemd.mask=sleep.target",
             "systemd.mask=droidloom-working-qualification-return.service",
         ] {
             assert!(boot_arguments(&format!("{s} {extra}")).is_err());
         }
+        assert!(
+            boot_arguments(&s.replace(&format!("systemd.wants={WORKING_TARGET}"), "")).is_err()
+        );
         for name in PACKAGE_WRITERS.iter().chain(SUSPEND_TARGETS.iter()) {
             assert!(boot_arguments(&s.replace(&format!("systemd.mask={name}"), "")).is_err());
         }

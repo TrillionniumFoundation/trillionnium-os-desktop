@@ -225,7 +225,7 @@ impl CapturedFile {
             return fail("normal capture evidence file shape differs");
         }
         let mut raw = Vec::new();
-        Read::by_ref(&mut file)
+        crate::control::physical_qualification_channel::working_runtime::progress_reader(&mut file)
             .take(maximum + 1)
             .read_to_end(&mut raw)?;
         if raw.len() as u64 != m.len()
@@ -256,7 +256,7 @@ impl CapturedFile {
         }
         self.file.seek(SeekFrom::Start(0))?;
         let mut raw = Vec::new();
-        Read::by_ref(&mut self.file)
+        crate::control::physical_qualification_channel::working_runtime::progress_reader(&mut self.file)
             .take(self.raw.len() as u64 + 1)
             .read_to_end(&mut raw)?;
         if raw != self.raw || node(&self.file.metadata()?) != self.identity {
@@ -283,7 +283,8 @@ fn write_private(root: &Path, name: &str, raw: &[u8]) -> Result<Value> {
     let first = node(&file.metadata()?);
     file.seek(SeekFrom::Start(0))?;
     let mut after = Vec::new();
-    file.read_to_end(&mut after)?;
+    crate::control::physical_qualification_channel::working_runtime::progress_reader(&mut file)
+        .read_to_end(&mut after)?;
     if after != raw
         || node(&file.metadata()?) != first
         || node(&fs::symlink_metadata(&path)?) != first

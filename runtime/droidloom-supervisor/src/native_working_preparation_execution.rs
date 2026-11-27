@@ -35,6 +35,7 @@ fn digest(value: &str) -> bool {
             .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
 }
 fn before(end: Instant) -> Result<()> {
+    crate::control::physical_qualification_channel::working_runtime::progress()?;
     require(
         Instant::now() < end,
         "original working preparation deadline expired",
@@ -115,7 +116,7 @@ impl Held {
         )?;
         let identity = node(&metadata);
         let mut raw = vec![0_u8; pin.bytes as usize];
-        file.read_exact_at(&mut raw, 0).map_err(|e| e.to_string())?;
+        crate::control::physical_qualification_channel::working_runtime::read_exact_at_progress(&file, &mut raw, 0).map_err(|e| e.to_string())?;
         let value = Self {
             pin: pin.clone(),
             file,
@@ -128,8 +129,7 @@ impl Held {
     fn recheck(&self, end: Instant) -> Result<()> {
         before(end)?;
         let mut actual = vec![0_u8; self.raw.len()];
-        self.file
-            .read_exact_at(&mut actual, 0)
+        crate::control::physical_qualification_channel::working_runtime::read_exact_at_progress(&self.file, &mut actual, 0)
             .map_err(|e| e.to_string())?;
         require(
             node(&self.file.metadata().map_err(|e| e.to_string())?) == self.identity

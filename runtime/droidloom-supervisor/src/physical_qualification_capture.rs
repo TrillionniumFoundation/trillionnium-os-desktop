@@ -1,13 +1,17 @@
 //! Actual parent-owned child execution and full private Complete capture.
 use super::super::application_leaf_unit::qualification::{KernelProfile, UnitOwner};
+use super::working_runtime::LivePulse;
 use super::*;
+use crate::control::{MainCustodyObservation, NativeApplicationInspector};
 use crate::development::owned_process::open_pidfd;
 use serde_json::{Value, json};
+use std::cell::RefCell;
 use std::collections::BTreeSet;
 use std::io::{Read, Write};
 use std::os::fd::{AsFd, FromRawFd, OwnedFd};
 use std::os::unix::process::CommandExt;
 use std::process::{Child, Command, ExitStatus, Stdio};
+use std::rc::Rc;
 #[path = "physical_qualification_roster.rs"]
 mod roster;
 use super::source_custody::{CHILD_LOCK_FDS, ParentWorkingNativeSourceCustody};
@@ -256,11 +260,15 @@ fn validate_case_summaries(package: &str, row: &Value, epoch: &RuntimeEpoch) -> 
     }
     let epoch = serde_json::to_value(epoch)?;
     for (case, history) in expected.iter().zip(actual) {
-        let kind_matches = match case.native_route() {
-            Some(route) => {
+        let kind_matches = match (case.native_route(), *case) {
+            (Some(route), _) => {
                 history.get("route") == Some(&json!(route)) && history.get("kind").is_none()
             }
-            None => {
+            (None, QualificationCase::CameraPhotoCaptureReopen) => {
+                history.get("kind") == Some(&json!("camera_photo_capture_reopen"))
+                    && history.get("route").is_none()
+            }
+            (None, _) => {
                 history.get("kind") == Some(&json!("family_observation"))
                     && history.get("route").is_none()
             }
@@ -403,7 +411,9 @@ impl WorkingPreparationDirectory {
 /// caller path, digest, process identifier, deadline or pass value constructs it.
 pub struct WorkingQualificationOwner {
     probes: super::super::working_owned_probe::Scope,
-    owner: UnitOwner,
+    bootstrap: RefCell<Option<(NativeApplicationInspector, MainCustodyObservation)>>,
+    owner: Rc<UnitOwner>,
+    pulse: Rc<LivePulse>,
     configuration: Arc<AdmittedWorkingConfiguration>,
     directory: RuntimeDirectory,
     owner_start_ns: u64,
@@ -435,9 +445,20 @@ impl WorkingQualificationOwner {
         let directory = RuntimeDirectory::acquire(&configuration).map_err(|e| e.to_string())?;
         let probes = super::super::working_owned_probe::Scope::parent(&owner, preparation_end)
             .map_err(|e| e.to_string())?;
+        let owner = Rc::new(owner);
+        let (pulse, inspector, main) = LivePulse::acquire(
+            owner.clone(),
+            configuration.clone(),
+            owner_start_ns,
+            end_ns,
+            end,
+            preparation_end,
+        )?;
         let value = Self {
             probes,
+            bootstrap: RefCell::new(Some((inspector, main))),
             owner,
+            pulse,
             configuration,
             directory,
             owner_start_ns,
@@ -454,9 +475,20 @@ impl WorkingQualificationOwner {
         if Instant::now() >= self.preparation_end {
             return Err("original working preparation window exhausted".into());
         }
-        self.configuration.guard().map_err(|e| e.to_string())?;
         self.directory.guard().map_err(|e| e.to_string())?;
-        self.owner.preparation_boundary(self.preparation_end)
+        self.pulse.guard().map_err(|e| e.to_string())
+    }
+    /// Move the one real bootstrap pair to the normal preparation producer.
+    /// No caller epoch, saved Main receipt or replacement token is accepted.
+    pub fn take_preparation_bootstrap(
+        &self,
+    ) -> Result<(NativeApplicationInspector, MainCustodyObservation), String> {
+        self.guard()?;
+        self.bootstrap
+            .try_borrow_mut()
+            .map_err(|_| "working bootstrap reentered")?
+            .take()
+            .ok_or_else(|| "working bootstrap was already consumed".into())
     }
     /// Immutable absolute suite end derived from the actual manager start.
     pub fn deadline(&self) -> Instant {
@@ -514,6 +546,9 @@ impl WorkingQualificationOwner {
     pub fn capture(self) -> Result<CapturedCompleteApplicationRun, String> {
         self.guard()?;
         self.probes.idle().map_err(|e| e.to_string())?;
+        if self.bootstrap.borrow().is_some() {
+            return Err("normal preparation did not consume its actual bootstrap Main".into());
+        }
         capture_owned_working_run(self)
     }
     pub(crate) fn begin_documents_build_resources(
@@ -567,7 +602,8 @@ impl Drop for WorkingDocumentsBuildResources<'_> {
 /// Parent-side historical capture of this run, not a deserialized App Complete.
 /// The actual parent unit must still be externally retired after this process exits.
 pub struct CapturedCompleteApplicationRun {
-    owner: UnitOwner,
+    owner: Rc<UnitOwner>,
+    pulse: Rc<LivePulse>,
     plan: Plan,
     directory: RuntimeDirectory,
     source: ParentWorkingNativeSourceCustody,
@@ -585,7 +621,7 @@ impl CapturedCompleteApplicationRun {
         &self.binding
     }
     pub fn guard(&self) -> Result<(), String> {
-        self.owner.boundary(None, self.end)?;
+        self.pulse.guard().map_err(|e| e.to_string())?;
         self.plan.guard().map_err(|e| e.to_string())?;
         self.directory.guard().map_err(|e| e.to_string())?;
         self.source.guard().map_err(|e| e.to_string())?;
@@ -606,6 +642,7 @@ impl CapturedCompleteApplicationRun {
             "summary":self.summary.observation(),"stderr":self.stderr.observation(),
             "main_binding":self.binding_output.observation(),
             "working_source":source,
+            "original_working_owner":self.pulse.observation().map_err(|e| e.to_string())?,
             "source_factory_complete_captured":true,"runtime_qualified":false,
             "production_ready":false,"requires_independent_parent_retirement_and_private_copy_return":true}),
         )
@@ -640,7 +677,9 @@ fn capture_owned_working_run(
 ) -> Result<CapturedCompleteApplicationRun, String> {
     let WorkingQualificationOwner {
         probes,
-        mut owner,
+        bootstrap,
+        owner,
+        pulse,
         configuration,
         directory,
         owner_start_ns,
@@ -651,6 +690,7 @@ fn capture_owned_working_run(
     } = value;
     probes.idle().map_err(|e| e.to_string())?;
     drop(probes);
+    drop(bootstrap);
     let plan = Plan::open_admitted(configuration).map_err(|e| e.to_string())?;
     owner.bind_plan(&plan, preparation_end)?;
     let source = ParentWorkingNativeSourceCustody::create(
@@ -691,6 +731,7 @@ fn capture_owned_working_run(
         .env("LANG", "C.UTF-8")
         .current_dir("/");
     let channel_fd = inherited.as_raw_fd();
+    let watchdog_fd = pulse.child_close_fd().map_err(|e| e.to_string())?;
     let lock_fds = [
         inherited_locks[0].as_raw_fd(),
         inherited_locks[1].as_raw_fd(),
@@ -698,6 +739,9 @@ fn capture_owned_working_run(
     // SAFETY: only async-signal-safe descriptor/prctl operations before exec.
     unsafe {
         command.pre_exec(move || {
+            if libc::close(watchdog_fd) != 0 {
+                return Err(io::Error::last_os_error());
+            }
             if libc::prctl(libc::PR_SET_PDEATHSIG, libc::SIGKILL) != 0 {
                 return Err(io::Error::last_os_error());
             }
@@ -750,7 +794,7 @@ fn capture_owned_working_run(
     };
     let cleanup_end = end + Duration::from_secs(RETIREMENT_SECONDS);
     let execute = (|| -> Result<(RuntimeMainCustody, u64, SealedOutput), String> {
-        let bound = BoundProcess::capture(pid).map_err(|e| e.to_string())?;
+        let bound = Rc::new(BoundProcess::capture(pid).map_err(|e| e.to_string())?);
         let mut phase = Phase::Hello;
         let mut sequence = 0u32;
         let mut epoch = None;
@@ -765,6 +809,9 @@ fn capture_owned_working_run(
             };
             if Instant::now() >= until {
                 return Err("physical producer exhausted its original case/suite end".into());
+            }
+            if !matches!(phase, Phase::Hello | Phase::Complete) {
+                super::working_runtime::progress()?;
             }
             source.guard().map_err(|e| e.to_string())?;
             directory.guard().map_err(|e| e.to_string())?;
@@ -792,6 +839,7 @@ fn capture_owned_working_run(
                             acknowledgement.validate(ack_end).map_err(|e|e.to_string())?;
                             ack_payload=serde_json::to_vec(&acknowledgement).map_err(|e|e.to_string())?;
                             owner.boundary(Some(&bound),end)?;
+                            pulse.begin_suite(bound.clone(), &hello.epoch)?;
                             epoch=Some(hello.epoch);phase=Phase::Between(0);
                         }
                         (Phase::Between(next),2) if packet.case==*next && packet.payload.is_empty()=>{
@@ -824,6 +872,7 @@ fn capture_owned_working_run(
                             }
                             let binding:RuntimeMainCustody=serde_json::from_slice(&body).map_err(|e|e.to_string())?;
                             binding.validate(epoch.as_ref().ok_or("Complete lacks initial actual epoch")?)?;
+                            pulse.require_complete_binding(&binding)?;
                             if packet.end_ns>parent_end_ns {return Err("Complete attempted to extend the original end".into());}
                             pending=Some(PendingComplete{header,binding,body,packet});
                             continue;
@@ -904,6 +953,7 @@ fn capture_owned_working_run(
                     return Err("Complete stdout changed after acknowledgement".into());
                 }
                 owner.boundary(None, end)?;
+                pulse.retired_suite()?;
                 plan.guard().map_err(|e| e.to_string())?;
                 source.guard().map_err(|e| e.to_string())?;
                 let mut binding_out = Output::create(
@@ -964,6 +1014,7 @@ fn capture_owned_working_run(
     let (binding, child_start, binding_output) = match execute {
         Ok(value) => value,
         Err(original) => {
+            pulse.poison();
             let retirement = child.stop(cleanup_end);
             let source_retirement = source.guard_immutable();
             let _ = stdout.drain(&mut output_pipe);
@@ -979,6 +1030,7 @@ fn capture_owned_working_run(
     let stderr = stderr.seal().map_err(|e| e.to_string())?;
     let value = CapturedCompleteApplicationRun {
         owner,
+        pulse,
         plan,
         directory,
         source,
@@ -1020,6 +1072,8 @@ mod tests {
                     });
                     if let Some(route) = case.native_route() {
                         history["route"] = json!(route);
+                    } else if case == QualificationCase::CameraPhotoCaptureReopen {
+                        history["kind"] = json!("camera_photo_capture_reopen");
                     } else {
                         history["kind"] = json!("family_observation");
                     }
@@ -1033,6 +1087,25 @@ mod tests {
             total += validate_case_summaries(package, &make(package), &epoch).unwrap();
         }
         assert_eq!(total, CASE_COUNT);
+        let camera = make("com.android.camera2");
+        assert_eq!(camera["cases"].as_array().unwrap().len(), 2);
+        assert_eq!(camera["cases"][0]["route"], "camera_photo");
+        assert_eq!(camera["cases"][1]["kind"], "camera_photo_capture_reopen");
+        let mut wrong = camera.clone();
+        wrong["cases"].as_array_mut().unwrap().pop();
+        assert!(validate_case_summaries("com.android.camera2", &wrong, &epoch).is_err());
+        let mut wrong = camera.clone();
+        wrong["cases"].as_array_mut().unwrap().swap(0, 1);
+        assert!(validate_case_summaries("com.android.camera2", &wrong, &epoch).is_err());
+        let mut wrong = camera.clone();
+        wrong["cases"][1]["kind"] = json!("family_observation");
+        assert!(validate_case_summaries("com.android.camera2", &wrong, &epoch).is_err());
+        let mut wrong = camera.clone();
+        wrong["cases"][1]["actual"]["epoch"]["framework_start_ticks"] = json!(44);
+        assert!(validate_case_summaries("com.android.camera2", &wrong, &epoch).is_err());
+        let mut wrong = camera;
+        wrong["cases"][1]["route"] = json!("camera_photo");
+        assert!(validate_case_summaries("com.android.camera2", &wrong, &epoch).is_err());
         let family = make("org.mozilla.firefox");
         let mut wrong = family.clone();
         wrong["cases"] = json!([]);

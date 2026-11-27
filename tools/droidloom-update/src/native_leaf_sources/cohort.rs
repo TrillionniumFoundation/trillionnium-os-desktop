@@ -111,6 +111,7 @@ fn embedded(name: &str) -> Result<&'static [u8]> {
         "clock_business_ui_entry.py" => include_bytes!(
             "../../resources/native-leaves/cp3a-20261126-apps-r2/clock_business_ui_entry.py"
         ),
+        "clock_audio_observe.py" => include_bytes!("../../resources/native-leaves/cp3a-20261126-apps-r2/clock_audio_observe.py"),
         "clock_notify_supervisor.py" => include_bytes!(
             "../../resources/native-leaves/cp3a-20261126-apps-r2/clock_notify_supervisor.py"
         ),
@@ -173,10 +174,11 @@ fn embedded(name: &str) -> Result<&'static [u8]> {
     })
 }
 
-const EMBEDDED_MEMBERS: [(&str, &str); 58] = [
+const EMBEDDED_MEMBERS: [(&str, &str); 59] = [
     ("source/calendar-reminder/calendar_base.py", "reminder_calendar_base.py"),
     ("source/camera-photo/camera_photo_trial.py", "camera_photo_trial.py"),
     ("source/clock/clock_alarm_flow.py", "clock_alarm_flow.py"),
+    ("source/clock/clock_audio_observe.py", "clock_audio_observe.py"),
     ("source/clock/clock_timer_core.py", "clock_timer_core.py"),
     ("source/documents-saf/documents_saf_core.py", "documents_saf_core.py"),
     ("source/documents-search/documents_features_core.py", "documents_features_core.py"),
@@ -415,8 +417,8 @@ fn fixed_recipe() -> Result<CohortRecipe> {
     if origins.len() != 474
         || new_sources != 3
         || binaries != 1
-        || embedded_names.len() != 56
-        || embedded_members.len() != 58
+        || embedded_names.len() != 57
+        || embedded_members.len() != 59
         || total != r.output_bytes
     {
         return fail("fixed successor source closure differs");
@@ -829,7 +831,7 @@ mod tests {
                 .iter()
                 .filter(|m| m.embedded_source.is_some())
                 .count(),
-            58
+            59
         );
         assert_eq!(
             r.members

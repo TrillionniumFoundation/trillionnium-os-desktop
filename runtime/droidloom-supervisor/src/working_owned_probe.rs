@@ -392,3 +392,124 @@ pub(super) fn verify_preparation_children(path: &Path, parent: &File) -> io::Res
         .ok_or_else(|| invalid("nested group has no private factory lease"))?;
     active.guard_live()
 }
+
+/// Parent-side local watch of the exact source-created suite probe. Unlike a
+/// case boundary this does not assert retirement. It never admits another name,
+/// a caller PID list or a new owner; every live process must actually descend
+/// from the still-held private suite child. The suite's own invocation lease
+/// and all strict empty-group case boundaries remain unchanged.
+pub(super) fn verify_live_suite_children(
+    path: &Path,
+    parent: &File,
+    suite: &super::BoundProcess,
+) -> io::Result<()> {
+    suite.validate()?;
+    if current_cgroup_parent()? != path || identity(parent)? != identity(&directory(path)?)? {
+        return Err(invalid("working suite pulse parent changed"));
+    }
+    let nested = fs::read_dir(path)?
+        .map(|entry| {
+            let entry = entry?;
+            Ok(if entry.file_type()?.is_dir() {
+                Some(entry.path())
+            } else {
+                None
+            })
+        })
+        .collect::<io::Result<Vec<_>>>()?
+        .into_iter()
+        .flatten()
+        .collect::<Vec<_>>();
+    if nested.is_empty() {
+        return Ok(());
+    }
+    if nested != [path.join(NAME)] {
+        return Err(invalid("working suite has a foreign nested group"));
+    }
+    let group_path = &nested[0];
+    let group = directory(group_path)?;
+    let pin = identity(&group)?;
+    if crate::native_hardware_label::label(&group)? != GROUP_LABEL || pin[3..5] != [0, 0] {
+        return Err(invalid(
+            "working suite probe has another kernel label/owner",
+        ));
+    }
+    no_subdirectories(group_path)?;
+    let procs = open_at(
+        group.as_raw_fd(),
+        c"cgroup.procs",
+        libc::O_RDONLY | libc::O_NOFOLLOW,
+    )?;
+    if crate::native_hardware_label::label(&procs)? != PROCS_LABEL {
+        return Err(invalid("working suite probe membership label changed"));
+    }
+    let pids = bounded_text(procs, 8192)?
+        .lines()
+        .map(|s| {
+            s.parse::<u32>()
+                .map_err(|_| invalid("working suite probe PID is not canonical"))
+        })
+        .collect::<io::Result<Vec<_>>>()?;
+    if pids.len() > 64 {
+        return Err(invalid(
+            "working suite probe exceeds the actual fixed process bound",
+        ));
+    }
+    let mut held = Vec::new();
+    for pid in pids {
+        let process = super::BoundProcess::capture(pid)?;
+        let membership = bounded_text(process.open("cgroup", false)?, 8192)?;
+        let relative = group_path
+            .strip_prefix("/sys/fs/cgroup")
+            .map_err(|_| invalid("working suite group prefix"))?;
+        if membership.trim() != format!("0::{}", relative.display()) {
+            return Err(invalid("working suite probe process changed group"));
+        }
+        let mut ancestor = process;
+        let mut chain = Vec::new();
+        for _ in 0..64 {
+            let stat = bounded_text(ancestor.open("stat", false)?, 4096)?;
+            let (_, fields) = stat
+                .rsplit_once(") ")
+                .ok_or_else(|| invalid("working suite ancestry stat malformed"))?;
+            let parent_pid = fields
+                .split_ascii_whitespace()
+                .nth(1)
+                .ok_or_else(|| invalid("working suite ancestry parent absent"))?
+                .parse::<u32>()
+                .map_err(|_| invalid("working suite ancestry parent invalid"))?;
+            ancestor.validate()?;
+            chain.push(ancestor);
+            if parent_pid == suite.identity.pid {
+                suite.validate()?;
+                break;
+            }
+            if parent_pid <= 1
+                || chain.iter().any(|p| p.identity.pid == parent_pid)
+                || chain.len() == 64
+            {
+                return Err(invalid(
+                    "working probe is not descended from the actual private suite",
+                ));
+            }
+            ancestor = super::BoundProcess::capture(parent_pid)?;
+        }
+        for process in &chain {
+            process.validate()?;
+        }
+        held.extend(chain);
+    }
+    no_subdirectories(group_path)?;
+    if identity(&group)? != pin
+        || identity(&directory(group_path)?)? != pin
+        || crate::native_hardware_label::label(&group)? != GROUP_LABEL
+    {
+        return Err(invalid(
+            "working suite probe changed during local observation",
+        ));
+    }
+    for process in &held {
+        process.validate()?;
+    }
+    suite.validate()
+}

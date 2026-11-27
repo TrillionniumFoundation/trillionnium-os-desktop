@@ -168,7 +168,8 @@ fn read_all(fd: &mut File, expected: u64) -> Result<Vec<u8>> {
     }
     fd.seek(SeekFrom::Start(0))?;
     let mut raw = Vec::with_capacity(expected as usize);
-    fd.take(expected + 1).read_to_end(&mut raw)?;
+    crate::control::physical_qualification_channel::working_runtime::progress_reader(fd)
+        .take(expected + 1).read_to_end(&mut raw)?;
     if raw.len() as u64 != expected {
         return fail("short or growing leaf source file");
     }
@@ -373,6 +374,7 @@ pub(crate) struct InstalledCohort {
     files: BTreeMap<String, Held>,
 }
 fn before(end: Instant) -> Result<()> {
+    crate::control::physical_qualification_channel::working_runtime::progress()?;
     if Instant::now() >= end {
         fail("installed cohort original budget expired")
     } else {

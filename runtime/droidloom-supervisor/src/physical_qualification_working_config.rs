@@ -220,7 +220,7 @@ impl SourceInput {
             ));
         }
         let mut bytes = vec![0; pin[6] as usize];
-        file.read_exact_at(&mut bytes, 0)?;
+        crate::control::physical_qualification_channel::working_runtime::read_exact_at_progress(&file, &mut bytes, 0)?;
         if file.read_at(&mut [0; 1], pin[6])? != 0 || f9(&file)? != pin {
             return Err(error(
                 "working source input changed during its first complete read",
@@ -269,7 +269,7 @@ impl SourceInput {
             return Err(error("held working source input changed"));
         }
         let mut bytes = vec![0; self.pin[6] as usize];
-        self.file.read_exact_at(&mut bytes, 0)?;
+        crate::control::physical_qualification_channel::working_runtime::read_exact_at_progress(&self.file, &mut bytes, 0)?;
         if self.file.read_at(&mut [0; 1], self.pin[6])? != 0
             || sha(&bytes) != self.digest
             || f9(&self.file)? != self.pin
@@ -510,6 +510,13 @@ impl AdmittedWorkingConfiguration {
                     "working input custody changed its original mount namespace",
                 ));
             }
+        }
+        Ok(())
+    }
+    pub(super) fn require_same_return(&self, actual: &WorkingReturnConfiguration) -> io::Result<()> {
+        self.guard()?;
+        if serde_json::to_value(actual)? != serde_json::to_value(&self.config)? {
+            return Err(error("working boot owners retained different normal return inputs"));
         }
         Ok(())
     }

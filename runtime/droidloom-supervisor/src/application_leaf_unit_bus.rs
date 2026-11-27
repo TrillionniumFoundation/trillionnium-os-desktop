@@ -387,11 +387,10 @@ impl Interface {
     fn signature(self, name: &str) -> Option<&'static CStr> {
         match self {
             Self::Unit => match name {
-                "Id" | "LoadState" | "ActiveState" | "SubState" | "FragmentPath" | "SourcePath" => {
-                    Some(c"s")
-                }
+                "Id" | "LoadState" | "ActiveState" | "SubState" | "FragmentPath" | "SourcePath"
+                | "OnSuccessJobMode" | "OnFailureJobMode" => Some(c"s"),
                 "Transient" | "NeedDaemonReload" => Some(c"b"),
-                "DropInPaths" => Some(c"as"),
+                "DropInPaths" | "OnSuccess" | "OnFailure" => Some(c"as"),
                 "InvocationID" => Some(c"ay"),
                 "StateChangeTimestampMonotonic" => Some(c"t"),
                 "Job" => Some(c"(uo)"),

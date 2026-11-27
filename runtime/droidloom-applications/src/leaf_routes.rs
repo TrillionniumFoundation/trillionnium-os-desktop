@@ -28,7 +28,7 @@ use super::runtime_identity::{IdentityObservation, VerifiedMaterialBatch};
 const QUALIFICATION: &str = "/var/lib/droidloom/qualification/pocket4";
 const SELECTION_PATH: &str = "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2/selection/selection-14.json";
 const SELECTION_BYTES: u64 = 4769;
-const SELECTION_SHA: &str = "17f8d0e6aa23c4549a2d70db120f38006151cfd3ab8372f85c57d0e13b5c4c71";
+const SELECTION_SHA: &str = "2527bcba4db05bfd1eb999abe23298c6358097f9d74e586534a0c73610336a42";
 const SOURCE_CATALOG: &str = include_str!("leaf_sources.json");
 
 pub(super) fn compiled_release_sources() -> (FilePin, &'static str) {
@@ -869,9 +869,9 @@ fn case_document(plan: &LeafPlan, request: &Value) -> Result<(Option<FilePin>, V
 // cannot construct Main, a package observation, a data handle, or a business gate.
 const NATIVE_BASELINE_SCHEMA: &str = "droidloom.native-leaf-business-baseline.v1";
 const NATIVE_QUALIFICATION_SCHEMA: &str = "droidloom.native-leaf-business-qualification.v1";
-const NORMAL_SOURCE_RECIPE_BYTES: u64 = 809649;
+const NORMAL_SOURCE_RECIPE_BYTES: u64 = 809879;
 const NORMAL_SOURCE_RECIPE_SHA: &str =
-    "5cea56ebc5d1cde71595f9f6b50eb904158c4b366f6533f3abd34c938a9c792a";
+    "ecb6f41d7dadf4fa86c9e717b754956c2c097ede3987d2d8ab6469c88fd602e0";
 
 fn canonical_value(value: &Value) -> Value {
     match value {
