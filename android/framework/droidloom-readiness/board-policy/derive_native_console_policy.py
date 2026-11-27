@@ -80,6 +80,11 @@ def _fixed_transitions():
                  filename + '" p4_linux_console_run_t)')
     rows.add('(typetransition ' + ROLE + ' p4_linux_run_t dir "console-setup" p4_linux_console_run_t)')
     rows.add('(typetransition ' + ROLE + ' p4_linux_tmp_t file p4_linux_console_tmp_t)')
+    # The normal ldconfig producer already publishes this shared console cache.
+    # Its source contract fixes /etc, the temporary basename, class and result
+    # type; the complete transition set must require this existing edge too.
+    rows.add('(typetransition p4_linux_ldconfig_t p4_linux_sysusers_etc_root_t '
+             'file "ld.so.cache~" p4_linux_console_ld_cache_native_config_t)')
     return rows
 
 
