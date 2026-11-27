@@ -163,6 +163,7 @@ fn required_members(kind: JournalKind) -> &'static [&'static str] {
         ],
         JournalKind::Permissions => &[
             "PERMISSION-BEGIN.json", "PERMISSION-BEFORE.json",
+            "APPOPS-BEFORE.json", "APPOPS-AFTER.json",
             "PERMISSION-AFTER.json", "PERMISSION-COMPLETE.json",
         ],
     }
@@ -234,7 +235,7 @@ fn require_generated_permission_records(
         && sha.len() == 64
         && sha.bytes().all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b)))
         && generated == actual,
-        "PM permission retained records differ from the actual factory's generated full bytes")
+        "PM/AppOps permission retained records differ from the actual factory's generated full bytes")
 }
 
 impl RetainedJournal {
@@ -828,9 +829,12 @@ mod tests {
         let expected: BTreeMap<String, (u64, String)> = required_members(JournalKind::Permissions)
             .iter().map(|name| (name.to_string(), (17, "ab".repeat(32)))).collect();
         require_generated_permission_records(&expected, &expected).unwrap();
-        let mut missing = expected.clone();
-        missing.remove("PERMISSION-AFTER.json");
-        assert!(require_generated_permission_records(&expected, &missing).is_err());
+        assert_eq!(expected.len(), 6);
+        for name in required_members(JournalKind::Permissions) {
+            let mut missing = expected.clone();
+            missing.remove(*name);
+            assert!(require_generated_permission_records(&expected, &missing).is_err());
+        }
         let mut extra = expected.clone();
         extra.insert("PERMISSION-FAILED.json".into(), (17, "ab".repeat(32)));
         assert!(require_generated_permission_records(&expected, &extra).is_err());
@@ -841,6 +845,11 @@ mod tests {
         changed = expected.clone();
         changed.get_mut("PERMISSION-AFTER.json").unwrap().0 += 1;
         assert!(require_generated_permission_records(&expected, &changed).is_err());
+        for name in ["APPOPS-BEFORE.json", "APPOPS-AFTER.json"] {
+            let mut changed = expected.clone();
+            changed.get_mut(name).unwrap().1 = "cd".repeat(32);
+            assert!(require_generated_permission_records(&expected, &changed).is_err());
+        }
         let mut malformed = expected.clone();
         malformed.get_mut("PERMISSION-COMPLETE.json").unwrap().0 = 0;
         assert!(require_generated_permission_records(&malformed, &malformed).is_err());
