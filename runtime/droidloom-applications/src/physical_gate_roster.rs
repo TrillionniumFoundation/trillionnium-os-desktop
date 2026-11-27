@@ -6,9 +6,9 @@ use super::leaf_routes::Route;
 pub(super) const REGISTRY_BYTES: u64 = 27_878;
 pub(super) const REGISTRY_SHA256: &str =
     "0b21f963898308b082f3808dd48165c1397badd1fa8a753c3a766e135b3cb3c8";
-pub(super) const CURRENT_SELECTION_BYTES: u64 = 423_460;
+pub(super) const CURRENT_SELECTION_BYTES: u64 = 422_063;
 pub(super) const CURRENT_SELECTION_SHA256: &str =
-    "6964ddaba93445caf98ccfab4787254c8e2886fc9e3869ef20da7f615e81266c";
+    "524cd083ee1362911078232eac99977049ad6238380732f0c0e04a0c6b0fed43";
 pub(super) const PACKAGE_COUNT: usize = 39;
 pub(super) const GATE_COUNT: usize = 377;
 pub(super) const COMMON: [&str; 6] = [
@@ -27,7 +27,7 @@ pub(super) struct PackageGates {
     pub(super) cases: &'static [Route],
 }
 
-// Source of this table: the exact normal r6 APP-RELEASE-GATES.json above,
+// Source of this table: the exact normal r7 APP-RELEASE-GATES.json above,
 // joined to its actual source-admitted SELECTED39 roster. Its other seven
 // package definitions do not become selected applications.
 pub(super) const PACKAGES: &[PackageGates] = &[
