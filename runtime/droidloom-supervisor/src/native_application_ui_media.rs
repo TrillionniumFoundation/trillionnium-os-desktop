@@ -4,6 +4,13 @@
 //! The returned objects contain actual decoded observations, not business gates.
 //! In particular JPEG validity does not establish that its scene matches the
 //! preview, and a screenshot does not establish video/audio or recovery.
+#[path = "native_application_ui_media_scene.rs"]
+mod scene;
+pub use scene::CameraPhotoSceneObservation;
+#[path = "native_application_ui_camera_case.rs"]
+mod camera_case;
+pub use camera_case::{CameraPhotoCaseObservation, camera_photo_case_window_seconds, run_camera_photo_case};
+
 use super::{Identity, NativeUiSession, before, need};
 use crate::control::NativeApplicationInspector;
 use crate::control::application_probe::ApplicationInspection;
@@ -501,6 +508,61 @@ impl CameraPhotoObservation {
             "one_fixed_shutter":true,"full_jpeg_decoded":true,"preview_scene_match_verified":false,
             "video_audio_playback_verified":false,"recovery_verified":false,"business_accepted":false}),
         )
+    }
+}
+
+
+// Historical photo bytes after the actual pixel work. The original PNG/JPEG
+// and Android source descriptors remain held; decoded RGB buffers are dropped.
+struct RetainedCameraPhotoObservation {
+    subject: Subject,
+    preview: RetainedScopedWindowPixels,
+    row: MediaRow,
+    before_ids: BTreeSet<u64>,
+    guest_shutter_seconds: u64,
+    encoded: HeldRecord,
+    source: AndroidFile,
+    width: u32,
+    height: u32,
+    pixels_sha256: String,
+}
+impl CameraPhotoObservation {
+    fn into_retained(self) -> Result<RetainedCameraPhotoObservation, String> {
+        self.verify_retained()?;
+        let CameraPhotoObservation {
+            subject, preview, row, before_ids, guest_shutter_seconds,
+            encoded, source, width, height, rgb, pixels_sha256,
+        } = self;
+        drop(rgb);
+        Ok(RetainedCameraPhotoObservation {
+            subject, preview: preview.into_retained()?, row, before_ids,
+            guest_shutter_seconds, encoded, source, width, height, pixels_sha256,
+        })
+    }
+}
+impl RetainedCameraPhotoObservation {
+    fn verify_retained(&self) -> Result<(), String> {
+        self.preview.verify_retained()?;
+        self.encoded.verify()?;
+        self.source.verify()
+    }
+    fn require_transcript(&self, transcript: &super::NativeUiTranscript) -> Result<(), String> {
+        self.verify_retained()?;
+        self.preview.require_transcript(transcript)?;
+        self.subject.require_transcript(transcript)
+    }
+    fn comparison(&self) -> Result<Value, String> {
+        self.verify_retained()?;
+        Ok(serde_json::json!({
+            "schema":"droidloom.native-camera-retained-owned-photo.v1",
+            "subject":self.subject.comparison(),"row":self.row,"preexisting_image_ids":self.before_ids,
+            "guest_shutter_seconds":self.guest_shutter_seconds,
+            "encoded_sha256":self.encoded.sha256,"encoded_bytes":self.encoded.identity.bytes,
+            "decoded_dimensions":[self.width,self.height],"rgb_sha256":self.pixels_sha256,
+            "one_fixed_shutter":true,"full_jpeg_decoded_during_case":true,
+            "decoded_rgb_retained":false,"source_png_jpeg_fds_retained":true,
+            "business_accepted":false
+        }))
     }
 }
 
