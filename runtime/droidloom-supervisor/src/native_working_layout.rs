@@ -40,6 +40,10 @@ pub const WORKING_NAMESPACE_ENTRY: &str =
 pub const WORKING_NAMESPACE_ENTRY_MAX_BYTES: u64 = 32 * 1024 * 1024;
 pub const WORKING_NAMESPACE_ENTRY_EXEC_LABEL: &[u8] =
     b"u:object_r:p4_linux_working_namespace_entry_exec_t:s0";
+pub const WORKING_OWNED_FILES_ENTRY: &str = "/usr/lib/droidloom/qualification/working-owned-files";
+pub const WORKING_OWNED_FILES_ENTRY_MAX_BYTES: u64 = 32 * 1024 * 1024;
+pub const WORKING_OWNED_FILES_ENTRY_EXEC_LABEL: &[u8] =
+    b"u:object_r:p4_linux_working_owned_files_exec_t:s0";
 pub const WORKING_NATIVE_UI_DIRECTORY_LABEL: &[u8] = b"u:object_r:p4_linux_working_ui_dir_t:s0";
 pub const WORKING_NATIVE_UI_SESSION_DIRECTORY_LABEL: &[u8] =
     b"u:object_r:p4_linux_working_ui_session_dir_t:s0";
