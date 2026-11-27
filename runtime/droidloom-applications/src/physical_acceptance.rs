@@ -4,12 +4,13 @@
 //! completed gates. Only the existing live factories below can create the
 //! move-only case histories retained by CompletePhysicalApplicationRun.
 use super::clock_timer::{self, ClockResultCustody};
-use super::common_gate::CommonGateFact;
+use super::common_gate::{self, CommonGateFact};
+use super::family_observation::{self, FamilyObservation};
 use super::leaf_release::{self, NativeRelease};
 use super::leaf_routes::{self, LeafPlan, Route};
 use super::native_business::{self, NativeBusinessFact, NativeCaseEvidence};
 use super::physical_gate_roster as roster;
-use super::runtime_identity::VerifiedMaterialBatch;
+use super::runtime_identity::{IdentityObservation, VerifiedMaterialBatch};
 use super::*;
 use droidloom_supervisor::control::physical_qualification_channel::{
     self as owned_channel, ChildChannel, QualificationCase,
@@ -19,9 +20,9 @@ use serde_json::Value;
 
 const SCHEMA: &str = "droidloom.physical-application-plan.v1";
 const REPORT_SCHEMA: &str = "droidloom.physical-application-run.v1";
-const SOURCE_AND_CAPTURE_SECONDS: u64 = 120;
-const MAIN_SECONDS: u64 = 70;
-const INSPECT_SECONDS: u64 = 250;
+const SOURCE_AND_CAPTURE_SECONDS: u64 = owned_channel::budget::SOURCE_AND_CAPTURE_SECONDS;
+const MAIN_SECONDS: u64 = owned_channel::budget::MAIN_SECONDS;
+const INSPECT_SECONDS: u64 = owned_channel::budget::INSPECT_SECONDS;
 
 /// Comparison document only. Each package occurs once; its exact executable
 /// case order comes from the compiled roster, including empty unsupported rows.
@@ -55,22 +56,34 @@ fn deadline(end: Instant) -> Result<(), String> {
     )
 }
 
-/// This initial source roster has fourteen native case entries. Each entry
-/// retains its original source-owned work/retirement bound. The timer pair
-/// consumes its supplied pre-inspection inside its existing 2100-second window.
+/// The native fourteen keep their original work/retirement bounds. The fixed
+/// thirty-one family observations each add their reviewed UI/stability window
+/// to the existing pre-inspection. All cases share one original suite end;
+/// no case lease is renewed by this source-owned sum.
 pub fn physical_qualification_window_seconds() -> u64 {
+    owned_channel::SUITE_SECONDS
+}
+fn actual_source_window_seconds() -> u64 {
     SOURCE_AND_CAPTURE_SECONDS
         + 2 * MAIN_SECONDS
         + roster::PACKAGES
             .iter()
             .map(|row| {
                 if row.cases.is_empty() {
-                    INSPECT_SECONDS
+                    family_window_seconds()
                 } else {
                     row.cases.iter().copied().map(case_window_seconds).sum()
                 }
             })
             .sum::<u64>()
+}
+fn family_window_seconds() -> u64 {
+    INSPECT_SECONDS + family_observation::window_seconds()
+}
+fn family_work_end(now: Instant, case_end: Instant) -> Result<Instant, String> {
+    require(now < case_end, "family pre-inspection consumed its original case deadline")?;
+    Ok(now.checked_add(Duration::from_secs(family_observation::window_seconds()))
+        .ok_or("family work deadline overflow")?.min(case_end))
 }
 fn case_window_seconds(route: Route) -> u64 {
     if route == Route::ClockTimerPair {
@@ -107,7 +120,8 @@ fn qualification_case(route: Route) -> Result<QualificationCase, String> {
 
 fn require_channel_roster() -> Result<(), String> {
     require(
-        physical_qualification_window_seconds() == owned_channel::SUITE_SECONDS,
+        actual_source_window_seconds() == owned_channel::SUITE_SECONDS
+            && family_observation::window_seconds() == owned_channel::budget::FAMILY_WORK_SECONDS,
         "physical producer and normal parent suite bounds differ",
     )?;
     let mut ordinal = 0usize;
@@ -120,6 +134,16 @@ fn require_channel_roster() -> Result<(), String> {
             )?;
             ordinal += 1;
         }
+    }
+    // Preserve all original native ordinals before appending the fixed family
+    // sequence. An external plan cannot move a family ahead of those cases.
+    for row in roster::PACKAGES.iter().filter(|row| row.cases.is_empty()) {
+        let case = QualificationCase::for_family(row.package).map_err(|e| e.to_string())?;
+        require(
+            case as usize == ordinal && case.window_seconds() == family_window_seconds(),
+            "physical family order or original bound differs from its normal parent",
+        )?;
+        ordinal += 1;
     }
     require(
         ordinal == owned_channel::CASE_COUNT,
@@ -305,6 +329,7 @@ struct ApplicationSummary {
     cases: Vec<Value>,
     gate_assertions: Vec<PhysicalGateSummary>,
     native_business_facts: Vec<Value>,
+    blocked_gates: Vec<Value>,
     blocked: Option<String>,
     accepted_gates: usize,
     runtime_qualified: bool,
@@ -411,6 +436,96 @@ impl HistoricalCompletedCase {
                 self.binding(),
                 &self.summary.actual,
             )?;
+        }
+        Ok(())
+    }
+}
+
+
+#[derive(Debug, Serialize)]
+struct FamilyCaseSummary {
+    kind: &'static str,
+    actual: ApplicationInspection,
+    evidence: Value,
+    material_identity: Value,
+    common: Vec<CommonGateFact>,
+    business_gates: Vec<&'static str>,
+    sealed_inside_original_case_window: bool,
+    historical_observation: bool,
+    continuous_app_or_target_directory_custody_after_case_claimed: bool,
+}
+
+/// A successful normal close may leave explicit source-owned business blocks.
+/// This type owns the actual evidence and pre-PM token; it is not constructed
+/// from a report, a result flag, or an error interpreted as "safe".
+struct HistoricalFamilyCase {
+    summary: FamilyCaseSummary,
+    custody: FamilyObservation,
+    material_identity: IdentityObservation,
+    before: control::ActualApplicationObservation,
+}
+impl HistoricalFamilyCase {
+    fn from_observed(
+        observation: FamilyObservation,
+        mut identity: IdentityObservation,
+        before: control::ActualApplicationObservation,
+        main: &control::MainCustodyObservation,
+        end: Instant,
+    ) -> Result<Self, String> {
+        deadline(end)?;
+        let actual = before.facts();
+        observation.require_subject(main.facts(), actual)?;
+        identity.bind_stability_execution(actual, main, observation.stability())?;
+        let common = common_gate::from_stability(
+            observation.stability(), &identity, main.facts(), actual,
+        )?;
+        let fixed = roster::package(&actual.package)?;
+        require(fixed.cases.is_empty(), "native package cannot acquire family history")?;
+        let mut business = Vec::new();
+        for fact in observation.business_facts() {
+            fact.require_subject(main.facts(), actual)?;
+            require(
+                fixed.business.contains(&fact.id()) && !business.contains(&fact.id()),
+                "family business history repeats or substitutes a source-owned gate",
+            )?;
+            business.push(fact.id());
+        }
+        let summary = FamilyCaseSummary {
+            kind: "family_observation",
+            actual: actual.clone(),
+            evidence: observation.comparison()?,
+            material_identity: serde_json::to_value(&identity).map_err(|e|e.to_string())?,
+            common,
+            business_gates: business,
+            sealed_inside_original_case_window: true,
+            historical_observation: true,
+            continuous_app_or_target_directory_custody_after_case_claimed: false,
+        };
+        let history = Self { summary, custody:observation, material_identity:identity, before };
+        history.guard()?;
+        deadline(end)?;
+        Ok(history)
+    }
+    fn binding(&self) -> &RuntimeMainCustody {
+        &self.custody.stability().transcript().engine().facts().main
+    }
+    fn guard(&self) -> Result<(), String> {
+        let actual = self.before.facts();
+        require(
+            actual == &self.summary.actual && roster::package(&actual.package)?.cases.is_empty(),
+            "family history changed its actual package or complete installed identity",
+        )?;
+        self.custody.require_subject(self.binding(), actual)?;
+        self.material_identity.require_application(actual)?;
+        require(
+            self.material_identity.complete_identity_gate_passed(),
+            "family history lost its actual signed-material/Engine join",
+        )?;
+        for fact in &self.summary.common {
+            fact.require_subject(&actual.package, &actual.epoch)?;
+        }
+        for fact in self.custody.business_facts() {
+            fact.require_subject(self.binding(), actual)?;
         }
         Ok(())
     }
@@ -554,6 +669,7 @@ struct RunCustody {
     inputs: PlanInputs,
     source_owner: NativeRelease,
     histories: Vec<HistoricalCompletedCase>,
+    family_histories: Vec<HistoricalFamilyCase>,
     native_facts: Vec<HistoricalNativeBusinessFact>,
     channel: ChildChannel,
     end: Instant,
@@ -577,6 +693,10 @@ impl RunCustody {
         for history in &self.histories {
             history.guard()?;
             require_same_main(history.binding(), self.original_main.facts())?;
+        }
+        for family in &self.family_histories {
+            family.guard()?;
+            require_same_main(family.binding(), self.original_main.facts())?;
         }
         for fact in &self.native_facts {
             fact.require_retained_binding(&self.histories)?;
@@ -677,6 +797,7 @@ impl PhysicalRunOutcome {
 fn summarize_rows(
     histories: &[HistoricalCompletedCase],
     native_facts: &[HistoricalNativeBusinessFact],
+    family_histories: &[HistoricalFamilyCase],
     errors: &BTreeMap<String, String>,
 ) -> Result<Vec<ApplicationSummary>, String> {
     let mut rows = Vec::new();
@@ -686,8 +807,16 @@ fn summarize_rows(
             .enumerate()
             .filter(|(_, case)| case.summary.actual.package == fixed.package)
             .collect::<Vec<_>>();
-        // Do not borrow an arbitrary caller gate map: these IDs come only from
-        // the two consuming original-factory constructors above.
+        let families = family_histories.iter().enumerate()
+            .filter(|(_, history)| history.summary.actual.package == fixed.package)
+            .collect::<Vec<_>>();
+        require(
+            families.len() <= usize::from(fixed.cases.is_empty()),
+            "family history is duplicated or attached to a native package",
+        )?;
+        for (_, family) in &families { family.guard()?; }
+        // IDs come only from consuming original factories and their retained
+        // opaque objects. A serialized blocked row is never a passed map.
         let mut assertions = Vec::new();
         for id in roster::required(fixed) {
             let mut indices = cases
@@ -705,6 +834,13 @@ fn summarize_rows(
                         .is_some_and(|case| case.summary.actual.package == fixed.package)
                 }) {
                     indices.extend(fact.case_indices.iter().copied());
+                }
+            }
+            for (index, family) in &families {
+                if family.summary.common.iter().any(|fact| fact.id() == id)
+                    || family.summary.business_gates.contains(&id)
+                {
+                    indices.push(histories.len() + *index);
                 }
             }
             indices.sort_unstable();
@@ -731,6 +867,7 @@ fn summarize_rows(
             "historical execution repeated or reordered a source-owned package case",
         )?;
         let complete = cases.len() == expected.len()
+            && families.len() == usize::from(expected.is_empty())
             && !errors.contains_key(fixed.package)
             && assertions.iter().all(|gate| gate.status == "passed");
         rows.push(ApplicationSummary {
@@ -747,6 +884,9 @@ fn summarize_rows(
                 }))
                 .map(|fact| fact.fact.comparison())
                 .collect::<Result<Vec<_>, _>>()?,
+            blocked_gates: families.iter().flat_map(|(_, history)| history.custody.blocked())
+                .map(|blocked| serde_json::to_value(blocked).map_err(|e|e.to_string()))
+                .collect::<Result<Vec<_>,_>>()?,
             blocked: errors.get(fixed.package).cloned(),
             accepted_gates: 0,
             runtime_qualified: complete,
@@ -841,9 +981,15 @@ pub fn run_physical_files(
         .map_err(|error| error.to_string())?;
     require_main(main.facts(), &runtime.expected_epoch)?;
     let mut histories = Vec::new();
+    let mut family_histories = Vec::new();
     let mut errors = BTreeMap::new();
     let mut first_failure: Option<String> = None;
-    for row in &plan.applications {
+    // Preserve the original fourteen native cases, then append the fixed
+    // thirty-one family observations. The input document still has each package
+    // once in canonical order; it cannot choose a different execution order.
+    for row in plan.applications.iter().filter(|row| !row.cases.is_empty())
+        .chain(plan.applications.iter().filter(|row| row.cases.is_empty()))
+    {
         if let Some(reason) = &first_failure {
             errors.insert(
                 row.package.clone(),
@@ -858,26 +1004,54 @@ pub fn run_physical_files(
             .ok_or("physical row not in normal runtime selection")?
             .clone();
         if row.cases.is_empty() {
-            let inspected = (|| -> Result<(), String> {
+            let result = (|| -> Result<HistoricalFamilyCase, String> {
                 deadline(end)?;
-                let cutoff = (Instant::now() + Duration::from_secs(INSPECT_SECONDS)).min(end);
-                let actual = inspector
-                    .inspect_observed_until(&row.package, 0, cutoff)
+                let case_end = (Instant::now() + Duration::from_secs(family_window_seconds())).min(end);
+                let case_owner = channel.begin_case(
+                    QualificationCase::for_family(&row.package).map_err(|e|e.to_string())?,
+                    case_end,
+                ).map_err(|e|e.to_string())?;
+                let cutoff = (Instant::now() + Duration::from_secs(INSPECT_SECONDS)).min(case_end);
+                let before = inspector.inspect_observed_until(&row.package, 0, cutoff)
                     .map_err(|error| error.to_string())?;
-                materials.observe(
-                    &requested,
-                    0,
-                    &runtime.expected_epoch,
-                    actual.facts(),
-                    actual.facts(),
+                let actual = before.facts();
+                require(
+                    actual.package == row.package && actual.user == 0
+                        && actual.epoch == runtime.expected_epoch,
+                    "family pre-inspection changed its fixed actual package/user/epoch",
                 )?;
-                // A single actual PM read is a precondition, not a complete
-                // identity/lifecycle/business gate or an Engine observation.
-                Ok(())
+                let identity = materials.observe(
+                    &requested, 0, &runtime.expected_epoch, actual, actual,
+                )?;
+                let work_end = family_work_end(Instant::now(), case_end)?;
+                let observation = {
+                    let mut baseline =
+                        droidloom_supervisor::native_leaf_baseline::NativeLeafBaselineObservation::capture_from_observed(
+                            &inspector, &main, &before, work_end,
+                        ).map_err(|e|e.to_string())?;
+                    family_observation::run_family_case(&mut inspector, &mut baseline, work_end)?
+                };
+                let completed = HistoricalFamilyCase::from_observed(
+                    observation, identity, before, &main, case_end,
+                )?;
+                completed.guard()?;
+                require_same_main(completed.binding(), main.facts())?;
+                inputs.guard()?;
+                materials.revalidate()?;
+                source_owner.guard()?;
+                deadline(case_end)?;
+                case_owner.finish_after_history(case_end).map_err(|e|e.to_string())?;
+                Ok(completed)
             })();
-            if let Err(error) = inspected {
-                errors.insert(row.package.clone(), error.clone());
-                first_failure = Some(error);
+            match result {
+                // Only the actual successful close/window/history constructor
+                // reaches here. Missing business assertions remain structured
+                // blocks and permit the next independent source-owned case.
+                Ok(history) => family_histories.push(history),
+                Err(error) => {
+                    errors.insert(row.package.clone(), error.clone());
+                    first_failure = Some(error);
+                }
             }
             continue;
         }
@@ -973,6 +1147,10 @@ pub fn run_physical_files(
         for history in &histories {
             history.guard()?;
         }
+        for history in &family_histories {
+            history.guard()?;
+            require_same_main(history.binding(), main.facts())?;
+        }
         Ok(actual)
     })() {
         Ok(actual) => Some(actual),
@@ -994,7 +1172,7 @@ pub fn run_physical_files(
         }
     };
     let native_facts = join_native_histories(&histories)?;
-    let applications = summarize_rows(&histories, &native_facts, &errors)?;
+    let applications = summarize_rows(&histories, &native_facts, &family_histories, &errors)?;
     let accepted_gates = applications.iter().map(|row| row.accepted_gates).sum();
     let accepted_applications = applications
         .iter()
@@ -1015,7 +1193,7 @@ pub fn run_physical_files(
         original_window_seconds: seconds,
         selected_applications: roster::PACKAGE_COUNT,
         required_gates: roster::GATE_COUNT,
-        observed_cases: histories.len(),
+        observed_cases: histories.len() + family_histories.len(),
         accepted_gates,
         accepted_applications,
         runtime_qualified: qualified,
@@ -1035,6 +1213,13 @@ pub fn run_physical_files(
                 .push(serde_json::to_value(&history.summary).map_err(|error| error.to_string())?);
         }
     }
+    for row in &mut summary.applications {
+        for history in family_histories.iter()
+            .filter(|case| case.summary.actual.package == row.package)
+        {
+            row.cases.push(serde_json::to_value(&history.summary).map_err(|e|e.to_string())?);
+        }
+    }
     let custody = RunCustody {
         inspector,
         original_main: main,
@@ -1043,6 +1228,7 @@ pub fn run_physical_files(
         inputs,
         source_owner,
         histories,
+        family_histories,
         native_facts,
         channel,
         end,
@@ -1176,7 +1362,10 @@ mod tests {
     #[test]
     fn physical_channel_uses_exact_source_order_windows_and_no_legacy_single_case() {
         require_channel_roster().unwrap();
-        assert_eq!(physical_qualification_window_seconds(), 33_440);
+        assert_eq!(physical_qualification_window_seconds(), 114_505);
+        assert_eq!(family_window_seconds(), 2_865);
+        assert_eq!(roster::PACKAGES.iter().filter(|row| row.cases.is_empty()).count(), 31);
+        assert_eq!(owned_channel::CASE_COUNT, 45);
         for route in [
             Route::ClockTimer,
             Route::ClockTimerRemaining,
@@ -1184,6 +1373,50 @@ mod tests {
         ] {
             assert!(qualification_case(route).is_err());
         }
+    }
+
+
+    #[test]
+    fn physical_family_work_window_cannot_reborrow_preinspection_or_extend_case() {
+        let now = Instant::now();
+        let whole_case = now + Duration::from_secs(family_window_seconds());
+        let first = family_work_end(now, whole_case).unwrap();
+        assert_eq!(first, now + Duration::from_secs(family_observation::window_seconds()));
+        let late = now + Duration::from_secs(300);
+        assert_eq!(family_work_end(late, whole_case).unwrap(), whole_case);
+        assert!(family_work_end(whole_case, whole_case).is_err());
+        assert!(family_work_end(whole_case + Duration::from_nanos(1), whole_case).is_err());
+    }
+
+    #[test]
+    fn physical_family_rows_without_opaque_history_never_get_gate_credit() {
+        let rows = summarize_rows(&[], &[], &[], &BTreeMap::new()).unwrap();
+        assert_eq!(rows.len(), roster::PACKAGE_COUNT);
+        assert_eq!(rows.iter().map(|row| row.gate_assertions.len()).sum::<usize>(), 377);
+        for row in rows {
+            assert_eq!(row.accepted_gates, 0);
+            assert!(!row.runtime_qualified && !row.production_ready);
+            assert!(row.cases.is_empty() && row.blocked_gates.is_empty());
+            assert!(row.gate_assertions.iter().all(|gate|
+                gate.status == "pending" && gate.completed_cases.is_empty()));
+        }
+    }
+
+    #[test]
+    fn physical_family_source_inputs_cannot_select_a_native_case_or_unbound_material() {
+        let (mut plan, runtime, gates) = fixture();
+        let native = plan.applications.iter().find(|row| !row.cases.is_empty()).unwrap()
+            .cases[0].leaf.clone();
+        let family = plan.applications.iter_mut().find(|row| row.cases.is_empty()).unwrap();
+        family.cases.push(PhysicalCasePlan {
+            leaf:native, main_qualification:runtime.main_qualification.clone(),
+        });
+        assert!(require_compiled_roster(&plan, &runtime, &gates).is_err());
+        let (plan, mut runtime, gates) = fixture();
+        let selected = roster::PACKAGES.iter().find(|row| row.cases.is_empty()).unwrap().package;
+        runtime.applications.iter_mut().find(|row| row.package == selected).unwrap()
+            .expected_input = None;
+        assert!(require_compiled_roster(&plan, &runtime, &gates).is_err());
     }
 
     #[test]

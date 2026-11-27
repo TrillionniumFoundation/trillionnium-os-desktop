@@ -23,8 +23,9 @@ mod socket;
 use super::application_leaf_unit::qualification::{ChildPeer, KernelProfile};
 pub use capture::{CapturedCompleteApplicationRun, capture_installed_physical_run};
 
-pub const SUITE_SECONDS: u64 = 33_440;
-pub const CASE_COUNT: usize = 14;
+#[path = "physical_qualification_budget.rs"]
+pub mod budget;
+pub use budget::{CASE_COUNT, FAMILY_CASE_COUNT, NATIVE_CASE_COUNT, NOFILE_LIMIT, RETIREMENT_SECONDS, SERVICE_SECONDS, SUITE_SECONDS};
 pub const SUMMARY_LIMIT: usize = 16 * 1024 * 1024;
 pub const BINDING_LIMIT: usize = 128 * 1024;
 pub(super) const EXE: &str = "/usr/bin/droidloom-applications";
@@ -125,6 +126,37 @@ pub enum QualificationCase {
     GalleryAlbum,
     SettingsSupportedPages,
     IhgLondon,
+    FamilyHyatt,
+    FamilyMobileTicket,
+    FamilyAmazon,
+    FamilyDialer,
+    FamilyMessaging,
+    FamilyQuickSearch,
+    FamilyBestBuy,
+    FamilyNational,
+    FamilyGoogleServices,
+    FamilyHertz,
+    FamilyHilton,
+    FamilyJingdong,
+    FamilyBeike,
+    FamilyMarriott,
+    FamilyAirChina,
+    FamilyChinaEastern,
+    FamilyMeituan,
+    FamilyDidi,
+    FamilyDouyin,
+    FamilySzzc,
+    FamilyTaobao,
+    FamilyWeChat,
+    FamilyUnited,
+    FamilyPinduoduo,
+    FamilyZhubajie,
+    FamilyStreetEasy,
+    FamilyCtrip,
+    FamilyAna,
+    FamilyFcitx,
+    FamilyFirefox,
+    FamilyBilibili,
 }
 impl QualificationCase {
     pub(super) fn ordinal(self) -> u8 {
@@ -146,6 +178,37 @@ impl QualificationCase {
             QualificationCase::GalleryAlbum,
             QualificationCase::SettingsSupportedPages,
             QualificationCase::IhgLondon,
+            QualificationCase::FamilyHyatt,
+            QualificationCase::FamilyMobileTicket,
+            QualificationCase::FamilyAmazon,
+            QualificationCase::FamilyDialer,
+            QualificationCase::FamilyMessaging,
+            QualificationCase::FamilyQuickSearch,
+            QualificationCase::FamilyBestBuy,
+            QualificationCase::FamilyNational,
+            QualificationCase::FamilyGoogleServices,
+            QualificationCase::FamilyHertz,
+            QualificationCase::FamilyHilton,
+            QualificationCase::FamilyJingdong,
+            QualificationCase::FamilyBeike,
+            QualificationCase::FamilyMarriott,
+            QualificationCase::FamilyAirChina,
+            QualificationCase::FamilyChinaEastern,
+            QualificationCase::FamilyMeituan,
+            QualificationCase::FamilyDidi,
+            QualificationCase::FamilyDouyin,
+            QualificationCase::FamilySzzc,
+            QualificationCase::FamilyTaobao,
+            QualificationCase::FamilyWeChat,
+            QualificationCase::FamilyUnited,
+            QualificationCase::FamilyPinduoduo,
+            QualificationCase::FamilyZhubajie,
+            QualificationCase::FamilyStreetEasy,
+            QualificationCase::FamilyCtrip,
+            QualificationCase::FamilyAna,
+            QualificationCase::FamilyFcitx,
+            QualificationCase::FamilyFirefox,
+            QualificationCase::FamilyBilibili,
         ];
         ALL.get(value as usize)
             .copied()
@@ -153,9 +216,114 @@ impl QualificationCase {
     }
     /// Complete original case budget; resource acknowledgements consume this window.
     pub fn window_seconds(self) -> u64 {
-        [
-            1690, 1450, 1260, 1180, 2100, 1570, 1960, 1960, 2290, 2290, 2290, 2290, 1660, 1440,
-        ][self as usize]
+        budget::NATIVE_CASE_WINDOWS.get(self as usize)
+            .copied().unwrap_or(budget::FAMILY_CASE_SECONDS)
+    }
+    /// Only these compiled selected packages have a family case. No caller
+    /// ordinal, profile, command, or budget is admitted through this lookup.
+    pub fn for_family(package: &str) -> io::Result<Self> {
+        match package {
+            "com.Hyatt.hyt" => Ok(Self::FamilyHyatt),
+            "com.MobileTicket" => Ok(Self::FamilyMobileTicket),
+            "com.amazon.mShop.android.shopping" => Ok(Self::FamilyAmazon),
+            "com.android.dialer" => Ok(Self::FamilyDialer),
+            "com.android.messaging" => Ok(Self::FamilyMessaging),
+            "com.android.quicksearchbox" => Ok(Self::FamilyQuickSearch),
+            "com.bestbuy.android" => Ok(Self::FamilyBestBuy),
+            "com.ehi.national.mobile" => Ok(Self::FamilyNational),
+            "com.google.android.gms" => Ok(Self::FamilyGoogleServices),
+            "com.hertz.android.digital" => Ok(Self::FamilyHertz),
+            "com.hilton.android.hhonors" => Ok(Self::FamilyHilton),
+            "com.jingdong.app.mall" => Ok(Self::FamilyJingdong),
+            "com.lianjia.beike" => Ok(Self::FamilyBeike),
+            "com.marriott.mrt" => Ok(Self::FamilyMarriott),
+            "com.rytong.airchina" => Ok(Self::FamilyAirChina),
+            "com.rytong.ceair" => Ok(Self::FamilyChinaEastern),
+            "com.sankuai.meituan.takeoutnew" => Ok(Self::FamilyMeituan),
+            "com.sdu.didi.psnger" => Ok(Self::FamilyDidi),
+            "com.ss.android.ugc.aweme" => Ok(Self::FamilyDouyin),
+            "com.szzc" => Ok(Self::FamilySzzc),
+            "com.taobao.taobao" => Ok(Self::FamilyTaobao),
+            "com.tencent.mm" => Ok(Self::FamilyWeChat),
+            "com.united.mobile.android" => Ok(Self::FamilyUnited),
+            "com.xunmeng.pinduoduo" => Ok(Self::FamilyPinduoduo),
+            "com.zhubajie.client" => Ok(Self::FamilyZhubajie),
+            "com.zillow.android.streeteasy" => Ok(Self::FamilyStreetEasy),
+            "ctrip.android.view" => Ok(Self::FamilyCtrip),
+            "jp.co.ana.android.tabidachi" => Ok(Self::FamilyAna),
+            "org.fcitx.fcitx5.android" => Ok(Self::FamilyFcitx),
+            "org.mozilla.firefox" => Ok(Self::FamilyFirefox),
+            "tv.danmaku.bili" => Ok(Self::FamilyBilibili),
+            _ => Err(error("package has no compiled physical family case")),
+        }
+    }
+    pub(super) fn package(self) -> &'static str {
+        match self {
+            Self::CalendarCore => "com.android.calendar",
+            Self::CalendarReminder => "com.android.calendar",
+            Self::CameraPhoto => "com.android.camera2",
+            Self::ContactsSearch => "com.android.contacts",
+            Self::ClockTimerPair => "com.android.deskclock",
+            Self::ClockAlarm => "com.android.deskclock",
+            Self::DocumentsSaf => "com.android.documentsui",
+            Self::DocumentsSearchSort => "com.android.documentsui",
+            Self::GalleryRotation => "com.android.gallery3d",
+            Self::GalleryVideo => "com.android.gallery3d",
+            Self::GallerySeek => "com.android.gallery3d",
+            Self::GalleryAlbum => "com.android.gallery3d",
+            Self::SettingsSupportedPages => "com.android.settings",
+            Self::IhgLondon => "com.ihg.apps.android",
+            Self::FamilyHyatt => "com.Hyatt.hyt",
+            Self::FamilyMobileTicket => "com.MobileTicket",
+            Self::FamilyAmazon => "com.amazon.mShop.android.shopping",
+            Self::FamilyDialer => "com.android.dialer",
+            Self::FamilyMessaging => "com.android.messaging",
+            Self::FamilyQuickSearch => "com.android.quicksearchbox",
+            Self::FamilyBestBuy => "com.bestbuy.android",
+            Self::FamilyNational => "com.ehi.national.mobile",
+            Self::FamilyGoogleServices => "com.google.android.gms",
+            Self::FamilyHertz => "com.hertz.android.digital",
+            Self::FamilyHilton => "com.hilton.android.hhonors",
+            Self::FamilyJingdong => "com.jingdong.app.mall",
+            Self::FamilyBeike => "com.lianjia.beike",
+            Self::FamilyMarriott => "com.marriott.mrt",
+            Self::FamilyAirChina => "com.rytong.airchina",
+            Self::FamilyChinaEastern => "com.rytong.ceair",
+            Self::FamilyMeituan => "com.sankuai.meituan.takeoutnew",
+            Self::FamilyDidi => "com.sdu.didi.psnger",
+            Self::FamilyDouyin => "com.ss.android.ugc.aweme",
+            Self::FamilySzzc => "com.szzc",
+            Self::FamilyTaobao => "com.taobao.taobao",
+            Self::FamilyWeChat => "com.tencent.mm",
+            Self::FamilyUnited => "com.united.mobile.android",
+            Self::FamilyPinduoduo => "com.xunmeng.pinduoduo",
+            Self::FamilyZhubajie => "com.zhubajie.client",
+            Self::FamilyStreetEasy => "com.zillow.android.streeteasy",
+            Self::FamilyCtrip => "ctrip.android.view",
+            Self::FamilyAna => "jp.co.ana.android.tabidachi",
+            Self::FamilyFcitx => "org.fcitx.fcitx5.android",
+            Self::FamilyFirefox => "org.mozilla.firefox",
+            Self::FamilyBilibili => "tv.danmaku.bili",
+        }
+    }
+    pub(super) fn native_route(self) -> Option<&'static str> {
+        match self {
+            Self::CalendarCore => Some("calendar_core"),
+            Self::CalendarReminder => Some("calendar_reminder"),
+            Self::CameraPhoto => Some("camera_photo"),
+            Self::ContactsSearch => Some("contacts_search"),
+            Self::ClockTimerPair => Some("clock_timer_pair"),
+            Self::ClockAlarm => Some("clock_alarm"),
+            Self::DocumentsSaf => Some("documents_saf"),
+            Self::DocumentsSearchSort => Some("documents_search_sort"),
+            Self::GalleryRotation => Some("gallery_rotation"),
+            Self::GalleryVideo => Some("gallery_video"),
+            Self::GallerySeek => Some("gallery_seek"),
+            Self::GalleryAlbum => Some("gallery_album"),
+            Self::SettingsSupportedPages => Some("settings_supported_pages"),
+            Self::IhgLondon => Some("ihg_london"),
+            _ => None,
+        }
     }
     pub(super) fn profile(self) -> KernelProfile {
         if self == Self::CalendarReminder {
@@ -519,8 +687,53 @@ mod tests {
             );
         }
         assert_eq!(total, 25_430);
-        assert_eq!(total + 31 * 250 + 140 + 120, SUITE_SECONDS);
-        assert!(QualificationCase::from_ordinal(14).is_err());
+        assert_eq!(total, budget::NATIVE_SECONDS);
+        assert_eq!(total + FAMILY_CASE_COUNT as u64 * budget::FAMILY_CASE_SECONDS + 140 + 120, SUITE_SECONDS);
+        assert_eq!(SUITE_SECONDS, 114_505);
+        assert!(QualificationCase::from_ordinal(CASE_COUNT as u8).is_err());
         assert!(plan_path("../caller").is_err());
+    }
+    #[test]
+    fn physical_family_channel_rejects_foreign_native_and_reordered_cases() {
+        let mut selected = std::collections::BTreeSet::new();
+        for ordinal in NATIVE_CASE_COUNT..CASE_COUNT {
+            let case = QualificationCase::from_ordinal(ordinal as u8).unwrap();
+            assert_eq!(case.ordinal() as usize, ordinal);
+            assert_eq!(QualificationCase::for_family(case.package()).unwrap(), case);
+            assert!(case.native_route().is_none());
+            assert_eq!(case.window_seconds(), 2_865);
+            assert_eq!(case.profile(), KernelProfile::Standard);
+            assert!(selected.insert(case.package()));
+        }
+        assert_eq!(selected.len(), FAMILY_CASE_COUNT);
+        for ordinal in 0..NATIVE_CASE_COUNT {
+            let case = QualificationCase::from_ordinal(ordinal as u8).unwrap();
+            assert!(QualificationCase::for_family(case.package()).is_err());
+            assert!(case.native_route().is_some());
+        }
+        for package in ["", "../caller", "com.android.permissioncontroller", "org.droidloom.qa.editorcontract",
+            "com.Hyatt.hyt ", "com.hyatt.hyt", "caller.package"] {
+            assert!(QualificationCase::for_family(package).is_err(), "{package}");
+        }
+        assert_eq!(QualificationCase::FamilyHyatt.ordinal(), 14);
+        assert_eq!(QualificationCase::FamilyBilibili.ordinal(), 44);
+    }
+
+    #[test]
+    fn physical_family_template_and_shared_budget_preserve_the_fixed_owner_bounds() {
+        let lines: std::collections::BTreeSet<_> = TEMPLATE.lines().collect();
+        for line in [
+            format!("RuntimeMaxSec={}s", SERVICE_SECONDS),
+            format!("TimeoutStopSec={}s", RETIREMENT_SECONDS),
+            format!("LimitNOFILE={NOFILE_LIMIT}"),
+        ] {
+            assert!(lines.contains(line.as_str()), "{line}");
+        }
+        assert_eq!(NOFILE_LIMIT, 32_768);
+        assert_eq!(SERVICE_SECONDS, 114_685);
+        assert!(lines.contains("MemoryMax=2147483648"));
+        assert!(lines.contains("MemorySwapMax=0"));
+        assert!(lines.contains("CPUQuota=200%"));
+        assert!(lines.contains("TasksMax=64"));
     }
 }

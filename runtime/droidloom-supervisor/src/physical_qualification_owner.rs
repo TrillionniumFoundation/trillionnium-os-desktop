@@ -51,7 +51,7 @@ fn root() -> io::Result<()> {
         return Err(io::Error::last_os_error());
     }
     let limit = unsafe { limit.assume_init() };
-    if limit.rlim_cur != 16384 || limit.rlim_max != 16384 {
+    if limit.rlim_cur != protocol::NOFILE_LIMIT || limit.rlim_max != protocol::NOFILE_LIMIT {
         return Err(invalid(
             "physical qualification requires its actual fixed NOFILE limit",
         ));
@@ -725,9 +725,9 @@ fn qualification_properties(
         ("CPUQuotaPeriodUSec", 100_000),
         (
             "RuntimeMaxUSec",
-            (protocol::SUITE_SECONDS + 180) * 1_000_000,
+            protocol::SERVICE_SECONDS * 1_000_000,
         ),
-        ("TimeoutStopUSec", 180_000_000),
+        ("TimeoutStopUSec", protocol::RETIREMENT_SECONDS * 1_000_000),
     ] {
         if service.get(key) != Some(&V::U64(want)) {
             return Err(format!("physical service source budget {key} differs"));
@@ -846,9 +846,9 @@ mod tests {
             ("CPUQuotaPeriodUSec", 100_000),
             (
                 "RuntimeMaxUSec",
-                (protocol::SUITE_SECONDS + 180) * 1_000_000,
+                protocol::SERVICE_SECONDS * 1_000_000,
             ),
-            ("TimeoutStopUSec", 180_000_000),
+            ("TimeoutStopUSec", protocol::RETIREMENT_SECONDS * 1_000_000),
             ("ExecMainStartTimestampMonotonic", 100),
         ] {
             service.insert(key.into(), V::U64(value));
@@ -905,7 +905,7 @@ mod tests {
             ("CPUQuotaPerSecUSec", 2_000_001),
             (
                 "RuntimeMaxUSec",
-                (protocol::SUITE_SECONDS + 181) * 1_000_000,
+                (protocol::SERVICE_SECONDS + 1) * 1_000_000,
             ),
         ] {
             let mut wrong = service.clone();

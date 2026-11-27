@@ -66,6 +66,40 @@ fn identity_fact(
     })
 }
 
+
+/// These two complete common assertions consume an actual finished stability
+/// object and a material identity joined to its opaque running Engine. Pixels,
+/// account state, independent reopen and business success are separate facts.
+pub(super) fn from_stability(
+    evidence: &control::NativeUiStabilityEvidence,
+    identity: &IdentityObservation,
+    main: &RuntimeMainCustody,
+    actual: &ApplicationInspection,
+) -> Result<Vec<CommonGateFact>, String> {
+    identity.require_application(actual)?;
+    evidence.require_subject(main, actual)?;
+    let identity = identity_fact(identity, &actual.package, main)
+        .ok_or("finished family history lacks its complete actual material/Engine identity")?;
+    Ok(vec![
+        identity,
+        fact(
+            "stability",
+            &actual.package,
+            main,
+            json!({
+                "factory":"normal_native_ui_stability",
+                "sample_kind":"actual_case_history",
+                "source_owned_window":evidence.summary(),
+                "journal":evidence.transcript().journal(),
+                "task":evidence.transcript().task(),
+                "independent_reopen_inferred":false,
+                "data_permissions_or_accounts_inferred":false,
+                "whole_application_accepted":false
+            }),
+        ),
+    ])
+}
+
 fn distinct_pair(value: &Value) -> bool {
     value
         .as_array()

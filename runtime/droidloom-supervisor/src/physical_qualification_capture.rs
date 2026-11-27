@@ -221,6 +221,38 @@ struct PendingComplete {
     packet: socket::Packet,
 }
 
+// This is a comparison of this actual child's committed output. It cannot
+// create an application Complete or turn a saved summary into runtime authority.
+fn validate_case_summaries(package: &str, row: &Value, epoch: &RuntimeEpoch) -> io::Result<usize> {
+    let expected = (0..CASE_COUNT)
+        .map(|ordinal| QualificationCase::from_ordinal(ordinal as u8))
+        .collect::<io::Result<Vec<_>>>()?
+        .into_iter().filter(|case| case.package() == package).collect::<Vec<_>>();
+    let actual = row.get("cases").and_then(Value::as_array)
+        .ok_or_else(|| error("complete row omitted its actual case histories"))?;
+    if expected.is_empty() || actual.len() != expected.len() {
+        return Err(error("complete row does not have its exact source-owned case histories"));
+    }
+    let epoch = serde_json::to_value(epoch)?;
+    for (case, history) in expected.iter().zip(actual) {
+        let kind_matches = match case.native_route() {
+            Some(route) => history.get("route") == Some(&json!(route)) && history.get("kind").is_none(),
+            None => history.get("kind") == Some(&json!("family_observation")) && history.get("route").is_none(),
+        };
+        if !kind_matches
+            || history.get("sealed_inside_original_case_window") != Some(&json!(true))
+            || history.get("historical_observation") != Some(&json!(true))
+            || history.get("continuous_app_or_target_directory_custody_after_case_claimed") != Some(&json!(false))
+            || history.get("actual").and_then(|v| v.get("package")) != Some(&json!(package))
+            || history.get("actual").and_then(|v| v.get("user")) != Some(&json!(0))
+            || history.get("actual").and_then(|v| v.get("epoch")) != Some(&epoch)
+        {
+            return Err(error("complete historical case order, subject or original window differs"));
+        }
+    }
+    Ok(actual.len())
+}
+
 fn validate_summary(raw: &[u8], plan: &Plan, epoch: &RuntimeEpoch) -> io::Result<Value> {
     if raw.last() != Some(&b'\n') {
         return Err(error(
@@ -236,6 +268,7 @@ fn validate_summary(raw: &[u8], plan: &Plan, epoch: &RuntimeEpoch) -> io::Result
     if get("schema")? != "droidloom.physical-application-run.v1"
         || get("selected_applications")? != 39
         || get("required_gates")? != 377
+        || get("observed_cases")? != CASE_COUNT
         || get("accepted_applications")? != 39
         || get("accepted_gates")? != 377
         || get("runtime_qualified")? != true
@@ -259,6 +292,7 @@ fn validate_summary(raw: &[u8], plan: &Plan, epoch: &RuntimeEpoch) -> io::Result
         .ok_or_else(|| error("complete application rows absent"))?;
     let mut packages = BTreeSet::new();
     let mut gates = 0;
+    let mut observed_cases = 0;
     for row in rows {
         let package = row
             .get("package")
@@ -268,9 +302,11 @@ fn validate_summary(raw: &[u8], plan: &Plan, epoch: &RuntimeEpoch) -> io::Result
             || row.get("runtime_qualified") != Some(&Value::Bool(true))
             || row.get("production_ready") != Some(&Value::Bool(true))
             || row.get("blocked") != Some(&Value::Null)
+            || !matches!(row.get("blocked_gates"), Some(Value::Array(blocked)) if blocked.is_empty())
         {
             return Err(error("complete application row remains partial"));
         }
+        observed_cases += validate_case_summaries(package, row, epoch)?;
         let assertions = row
             .get("gate_assertions")
             .and_then(Value::as_array)
@@ -304,7 +340,7 @@ fn validate_summary(raw: &[u8], plan: &Plan, epoch: &RuntimeEpoch) -> io::Result
         }
         gates += assertions.len();
     }
-    if rows.len() != 39 || packages.len() != 39 || gates != 377 {
+    if rows.len() != 39 || packages.len() != 39 || gates != 377 || observed_cases != CASE_COUNT {
         return Err(error(
             "actual complete producer did not cover the exact normal 39/377 roster",
         ));
@@ -459,7 +495,7 @@ pub fn capture_installed_physical_run(
         pid,
         reaped: None,
     };
-    let cleanup_end = initial_end + Duration::from_secs(180);
+    let cleanup_end = initial_end + Duration::from_secs(RETIREMENT_SECONDS);
     let execute = (|| -> Result<(RuntimeMainCustody, u64, SealedOutput), String> {
         let bound = BoundProcess::capture(pid).map_err(|e| e.to_string())?;
         let mut phase = Phase::Hello;
@@ -515,7 +551,7 @@ pub fn capture_installed_physical_run(
                             owner.boundary(Some(&bound),case_end)?;
                             phase=Phase::Between(*ordinal+1);
                         }
-                        (Phase::Between(14),4) if packet.case==255=>{
+                        (Phase::Between(next),4) if usize::from(*next)==CASE_COUNT && packet.case==255=>{
                             let line=packet.payload.iter().position(|b|*b==b'\n').ok_or("Complete header missing")?;
                             if line>4096 {return Err("Complete header exceeds fixed bound".into());}
                             let header:CompleteHeader=serde_json::from_slice(&packet.payload[..line]).map_err(|e|e.to_string())?;
@@ -687,4 +723,56 @@ pub fn capture_installed_physical_run(
     };
     value.guard()?;
     Ok(value)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn physical_complete_case_comparison_rejects_missing_reordered_and_foreign_histories() {
+        let epoch = RuntimeEpoch {
+            boot_id: "12345678-1234-4234-8234-123456789abc".into(),
+            cell_host_pid: 41,
+            framework_host_pid: 42,
+            framework_start_ticks: 43,
+        };
+        let make = |package: &str| -> Value {
+            let cases = (0..CASE_COUNT).filter_map(|ordinal| {
+                let case = QualificationCase::from_ordinal(ordinal as u8).unwrap();
+                if case.package() != package { return None; }
+                let mut history = json!({
+                    "actual":{"package":package,"user":0,"epoch":epoch},
+                    "sealed_inside_original_case_window":true,
+                    "historical_observation":true,
+                    "continuous_app_or_target_directory_custody_after_case_claimed":false,
+                });
+                if let Some(route) = case.native_route() {
+                    history["route"] = json!(route);
+                } else {
+                    history["kind"] = json!("family_observation");
+                }
+                Some(history)
+            }).collect::<Vec<_>>();
+            json!({"cases":cases})
+        };
+        let mut total = 0;
+        for (package, _) in roster::PACKAGES {
+            total += validate_case_summaries(package, &make(package), &epoch).unwrap();
+        }
+        assert_eq!(total, CASE_COUNT);
+        let family = make("org.mozilla.firefox");
+        let mut wrong = family.clone();
+        wrong["cases"] = json!([]);
+        assert!(validate_case_summaries("org.mozilla.firefox", &wrong, &epoch).is_err());
+        let mut wrong = family.clone();
+        wrong["cases"][0]["actual"]["package"] = json!("com.android.settings");
+        assert!(validate_case_summaries("org.mozilla.firefox", &wrong, &epoch).is_err());
+        let mut wrong = family;
+        wrong["cases"][0]["actual"]["epoch"]["framework_start_ticks"] = json!(44);
+        assert!(validate_case_summaries("org.mozilla.firefox", &wrong, &epoch).is_err());
+        let mut wrong = make("com.android.calendar");
+        wrong["cases"].as_array_mut().unwrap().swap(0,1);
+        assert!(validate_case_summaries("com.android.calendar", &wrong, &epoch).is_err());
+        assert!(validate_case_summaries("caller.package", &json!({"cases":[]}), &epoch).is_err());
+    }
 }

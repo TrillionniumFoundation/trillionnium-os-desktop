@@ -546,6 +546,49 @@ impl IdentityObservation {
         self.complete_identity_gate_passed = true;
         Ok(())
     }
+
+    /// Complete the existing material identity only from this actually finished
+    /// UI/stability session. The opaque evidence owns its running Engine and
+    /// normal post-close Main/PM bookends; no serialized pixels or gate map enters.
+    pub(super) fn bind_stability_execution(
+        &mut self,
+        actual: &ApplicationInspection,
+        main: &control::MainCustodyObservation,
+        evidence: &control::NativeUiStabilityEvidence,
+    ) -> Result<(), String> {
+        self.require_application(actual)?;
+        if self.complete_identity_gate_passed || !self.actual_engine_evidence.is_empty() {
+            return Err("material identity already has an execution binding".into());
+        }
+        evidence.require_subject(main.facts(), actual)?;
+        let engine = evidence.transcript().engine();
+        if engine.peer() != main.peer() || engine.application() != actual
+            || &engine.facts().main != main.facts()
+        {
+            return Err("finished stability belongs to another actual Main/PM peer".into());
+        }
+        let data = &main.facts().persistent_data;
+        let origin = data.original_copy_origin.as_ref()
+            .ok_or("actual UI Main lacks the source-admitted working-copy origin")?;
+        if origin.working != [data.backings[0].backing.stable7(), data.backings[1].backing.stable7()] {
+            return Err("actual UI Main working pair differs from its source-admitted origin".into());
+        }
+        let body = serde_json::to_vec(&json!({
+            "factory":"finished_native_ui_stability",
+            "engine":engine.facts(),
+            "application":engine.application(),
+            "stability":evidence.summary(),
+            "journal":evidence.transcript().journal(),
+            "task":evidence.transcript().task()
+        })).map_err(|e|e.to_string())?;
+        self.actual_engine_evidence.push(BytesPin {
+            bytes:body.len() as u64, sha256:hex::encode(Sha256::digest(&body)),
+        });
+        self.verified_facets.extend(["main_qualification_semantics", "engine_mapping"]);
+        self.unsupported_identity_facets.clear();
+        self.complete_identity_gate_passed = true;
+        Ok(())
+    }
 }
 
 impl VerifiedMaterialBatch {

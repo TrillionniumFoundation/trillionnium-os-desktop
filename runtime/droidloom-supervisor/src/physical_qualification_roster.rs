@@ -320,6 +320,15 @@ mod tests {
         }
         assert_eq!(count, 377);
         assert_eq!(COMMON.len(), 6);
-        assert!(PACKAGES.len() > super::super::super::CASE_COUNT);
+        use super::super::super::{CASE_COUNT, FAMILY_CASE_COUNT, NATIVE_CASE_COUNT, QualificationCase};
+        assert_eq!(CASE_COUNT, NATIVE_CASE_COUNT + FAMILY_CASE_COUNT);
+        let families = PACKAGES.iter()
+            .filter(|(package, _)| QualificationCase::for_family(package).is_ok()).count();
+        assert_eq!(families, FAMILY_CASE_COUNT);
+        let all_cases = (0..CASE_COUNT).map(|ordinal| QualificationCase::from_ordinal(ordinal as u8).unwrap()).collect::<Vec<_>>();
+        assert_eq!(all_cases.iter().filter(|case| case.native_route().is_some()).count(), NATIVE_CASE_COUNT);
+        let covered: BTreeSet<_> = all_cases.iter().map(|case| case.package()).collect();
+        assert_eq!(covered, packages);
+        // Forty-five observed histories are still not any of the 377 opaque gate facts.
     }
 }
