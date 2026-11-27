@@ -60,6 +60,8 @@ static const char *exec_context(uint32_t domain) {
     case 5:return "u:r:droidloom_install:s0";
     case 6:return "u:r:droidloom_catalog_read:s0";
     case 7:return "u:r:droidloom_display_control:s0";
+    case 8:return "u:r:droidloom_appops_read:s0";
+    case 9:return "u:r:droidloom_account_read:s0";
     default:return NULL;
     }
 }
@@ -133,6 +135,7 @@ static _Noreturn void child(const struct droidloom_factory_query *q) {
        label(LSM_ID_APPARMOR,"droidloom-instance-factory (enforce)")||
        prctl(PR_SET_DUMPABLE,1,0,0,0))_exit(125);
     park(q->deadline_ns);
+    const unsigned guest_uid=q->domain==9?1000U:2000U;
     /* The real parent now owns PTRACE_SEIZE on the non-kernel birth SID.
        USERNS is entered only after attach, with the original capabilities. */
     if(setns(8,CLONE_NEWUSER)||setns(10,CLONE_NEWIPC)||
@@ -140,8 +143,8 @@ static _Noreturn void child(const struct droidloom_factory_query *q) {
        setns(13,CLONE_NEWCGROUP)||setns(9,CLONE_NEWNS)||
        fchdir(7)||chroot(".")||chdir("/")||
        syscall(SYS_getgroups,0,NULL)!=0||
-       syscall(SYS_setresgid,2000U,2000U,2000U)||
-       syscall(SYS_setresuid,2000U,2000U,2000U))_exit(125);
+       syscall(SYS_setresgid,guest_uid,guest_uid,guest_uid)||
+       syscall(SYS_setresuid,guest_uid,guest_uid,guest_uid))_exit(125);
     struct __user_cap_header_struct header={.version=_LINUX_CAPABILITY_VERSION_3,.pid=0};
     struct __user_cap_data_struct caps[2]={{0},{0}};
     if(syscall(SYS_capset,&header,caps)||prctl(PR_CAP_AMBIENT,PR_CAP_AMBIENT_CLEAR_ALL,0,0,0)||

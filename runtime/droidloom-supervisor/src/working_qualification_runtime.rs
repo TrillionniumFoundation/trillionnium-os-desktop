@@ -219,7 +219,7 @@ impl LivePulse {
         &self,
         child: Rc<BoundProcess>,
         actual_epoch: &crate::control::application_probe::RuntimeEpoch,
-    ) -> Result<(), String> {
+    ) -> Result<RuntimeMainCustody, String> {
         self.cheap_guard().map_err(|e| e.to_string())?;
         if self.phase.get() != Phase::Preparation
             || self.child.borrow().is_some()
@@ -231,7 +231,10 @@ impl LivePulse {
         self.owner.boundary(Some(&child), self.end)?;
         *self.child.borrow_mut() = Some(child);
         self.phase.set(Phase::Suite);
-        self.guard().map_err(|e| e.to_string())
+        self.guard().map_err(|e| e.to_string())?;
+        // Only this actual admitted parent can publish its retained bootstrap
+        // comparison after the same child and complete Main still pass guard.
+        Ok(self.main.facts().clone())
     }
     pub(super) fn require_complete_binding(
         &self,

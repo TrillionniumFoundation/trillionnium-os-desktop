@@ -122,6 +122,19 @@ impl NativeSourceRelease {
         }
         Ok(())
     }
+    pub(super) fn compare_working_main(
+        &self,
+        main: &droidloom_supervisor::control::MainCustodyObservation,
+    ) -> Result<(), String> {
+        self.guard()?;
+        match self {
+            Self::Working(release) => release.custody.compare_main(main).map_err(|e| e.to_string())?,
+            Self::Legacy(_) => {
+                return Err("working Main comparison requires the authenticated working source".into());
+            }
+        }
+        self.guard()
+    }
     pub(super) fn guard(&self) -> Result<(), String> {
         match self {
             Self::Legacy(release) => release.guard(),

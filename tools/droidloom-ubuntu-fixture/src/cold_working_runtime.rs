@@ -667,35 +667,3 @@ impl WorkingGrubSource {
         source.revalidate()
     }
 }
-
-impl WorkingRuntimeSources {
-    fn require_published_owner(&self, published: &super::PublishedWorkingRuntime) -> Result<()> {
-        ensure(
-            std::rc::Rc::ptr_eq(&self.custody, &published.source().custody),
-            "working pair belongs to another actual published source owner",
-        )?;
-        published.guard()
-    }
-    pub(super) fn advance_pair(&self, published: &super::PublishedWorkingRuntime) -> Result<()> {
-        self.require_published_owner(published)?;
-        self.custody.advance_pair(published)?;
-        published.guard()
-    }
-    pub(super) fn pair_exchanged(
-        &self,
-        published: &super::PublishedWorkingRuntime,
-    ) -> Result<bool> {
-        self.require_published_owner(published)?;
-        let result = self.custody.pair_exchanged()?;
-        published.guard()?;
-        Ok(result)
-    }
-    pub(super) fn restore_pair_cold(
-        &self,
-        published: &super::PublishedWorkingRuntime,
-    ) -> Result<()> {
-        self.require_published_owner(published)?;
-        self.custody.restore_pair_cold()?;
-        published.guard()
-    }
-}

@@ -541,13 +541,13 @@ impl ReturnedOnceHistory {
     }
     /// These are comparisons from the still-held returned source, not a new
     /// mutable owner or a reconstruction of its historical live retirement.
-    pub(crate) fn current_boot_id(&self) -> &str {
+    pub(super) fn current_boot_id(&self) -> &str {
         self.owner.boot_id()
     }
     pub(super) fn current_owner_evidence(&self) -> Value {
         self.owner.evidence()
     }
-    pub(crate) fn retained_cold_clone(&self) -> Result<FilePin> {
+    pub(super) fn retained_cold_clone(&self) -> Result<FilePin> {
         self.guard()?;
         let retained = pin(&self.intent["cold_clone"])?;
         ensure(

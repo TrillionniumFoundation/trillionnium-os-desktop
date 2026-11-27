@@ -89,6 +89,8 @@ pub(crate) struct WorkingSchedule {
     pub(crate) case_count: usize,
     pub(crate) native_case_count: usize,
     pub(crate) family_case_count: usize,
+    pub(crate) photo_case_count: usize,
+    pub(crate) settings_case_count: usize,
     pub(crate) authorization_end_by_boot_seconds: u64,
     pub(crate) parent_retirement_seconds: u64,
     pub(crate) service_runtime_seconds: u64,
@@ -116,6 +118,8 @@ impl WorkingSchedule {
             case_count: budget::CASE_COUNT,
             native_case_count: budget::NATIVE_CASE_COUNT,
             family_case_count: budget::FAMILY_CASE_COUNT,
+            photo_case_count: budget::PHOTO_CASE_COUNT,
+            settings_case_count: budget::SETTINGS_CASE_COUNT,
             authorization_end_by_boot_seconds: authorization_end,
             parent_retirement_seconds: budget::RETIREMENT_SECONDS,
             service_runtime_seconds: budget::SERVICE_SECONDS,
@@ -476,18 +480,19 @@ mod tests {
         let s = WorkingSchedule::selected();
         s.validate().unwrap();
         assert_eq!(
-            (s.native_case_count, s.family_case_count, s.case_count),
-            (14, 31, 46)
+            (s.native_case_count, s.family_case_count, s.photo_case_count, s.settings_case_count, s.case_count),
+            (14, 31, 1, 1, 47)
         );
-        assert_eq!(budget::SOURCE_AND_CAPTURE_SECONDS, 46622);
-        assert_eq!(s.whole_suite_seconds, 195672);
+        assert_eq!(budget::SOURCE_AND_CAPTURE_SECONDS, 46_622);
+        assert_eq!(s.whole_suite_seconds, 315_742);
         assert_eq!(
             s.whole_suite_seconds,
             budget::NATIVE_CASE_WINDOWS.iter().sum::<u64>()
-                + 26 * (250 + 2615)
-                + 5 * (250 + 8690)
+                + 26 * (250 + 6_910)
+                + 5 * (250 + 9_110)
                 + budget::CAMERA_PHOTO_CASE_SECONDS
-                + 140
+                + budget::SETTINGS_PERMISSION_CASE_SECONDS
+                + 2 * budget::MAIN_SECONDS
                 + budget::SOURCE_AND_CAPTURE_SECONDS
         );
         assert_eq!(s.watchdog_interval_seconds, 900);
@@ -510,6 +515,11 @@ mod tests {
             (budget::SERVICE_SECONDS - budget::SUITE_SECONDS) + budget::RETIREMENT_SECONDS + 900
         );
         for field in [
+            "case_count",
+            "native_case_count",
+            "family_case_count",
+            "photo_case_count",
+            "settings_case_count",
             "whole_suite_seconds",
             "watchdog_interval_seconds",
             "keepalive_period_seconds",

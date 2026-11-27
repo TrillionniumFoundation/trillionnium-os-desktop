@@ -111,6 +111,24 @@ pub(super) fn from_family(
     observation.require_subject(main, actual)?;
     let mut result = from_stability(observation.stability(), identity, main, actual)?;
     let first = observation.stability().transcript();
+    if let Some(ui) = observation.ordinary_ui() {
+        let basis = ui.comparison()?;
+        for id in ["lifecycle", "ui_observation"] {
+            result.push(fact(
+                id,
+                &actual.package,
+                main,
+                json!({
+                    "factory":"normal_source_fixed_family_ui_and_separate_reopen",
+                    "actual_pair":basis,
+                    "business_or_account_scope_inferred":false,
+                    "whole_application_accepted":false
+                }),
+            ));
+        }
+        observation.guard_immutable()?;
+        return Ok(result);
+    }
     if observation.complete_ui_input()? {
         result.push(fact(
             "ui_observation",

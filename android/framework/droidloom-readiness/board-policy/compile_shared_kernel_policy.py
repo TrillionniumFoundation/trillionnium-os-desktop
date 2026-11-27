@@ -33,7 +33,8 @@ from verify_native_login_audit import verify_login_audit
 from verify_native_journal_storage import verify_journal_storage
 from verify_greeter_home import verify_greeter_home
 from verify_native_maintenance import verify_native_maintenance
-from verify_original_once import verify_original_once, source_inputs as original_once_source_inputs
+from verify_original_once import (verify_original_once, source_inputs as original_once_source_inputs,
+    verify_sources as validate_original_once_sources)
 from verify_native_camera import verify_camera
 from verify_fixed_display import verify_fixed_display
 from verify_native_stdio import verify_native_stdio, source_inputs as native_stdio_source_inputs
@@ -1697,6 +1698,7 @@ def main():
     args = parser.parse_args()
     here = Path(__file__).resolve().parent
     composed_file_contexts = verify_composed_file_contexts(here)
+    validate_original_once_sources(here)
     validate_netplan_trigger_sources(here)
     release = json.loads((here / "cp3a-kernel-handle-inputs.json").read_text())
     actual = sorted(sha256(path) for path in args.android_cil)

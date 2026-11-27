@@ -3,6 +3,8 @@
 //! A path, report or copied historical lock cannot construct this authority.
 use super::{ChildPeer, EXE, Plan, error, f9, sha};
 use crate::native_working_contract::PayloadPin;
+use crate::control::MainCustodyObservation;
+use crate::main_custody::RuntimeMainCustody;
 use serde_json::{Value, json};
 use std::fs::{File, OpenOptions};
 use std::io;
@@ -48,6 +50,14 @@ fn lock_metadata(pin: &[u64; 9]) -> io::Result<()> {
 }
 fn same_payload(a: &PayloadPin, b: &PayloadPin) -> bool {
     a.bytes == b.bytes && a.sha256 == b.sha256
+}
+
+fn require_main_binding(expected: &RuntimeMainCustody, actual: &RuntimeMainCustody) -> io::Result<()> {
+    actual.validate(&expected.epoch).map_err(|why| error(&why))?;
+    if actual != expected {
+        return Err(error("actual working Main differs from the authenticated parent's held Main"));
+    }
+    Ok(())
 }
 
 /// Every pathname component is opened relative to an already held directory.
@@ -400,6 +410,7 @@ impl ParentWorkingNativeSourceCustody {
 struct WorkingCustody {
     peer: Arc<ChildPeer>,
     plan: Arc<Plan>,
+    main_binding: RuntimeMainCustody,
     directory: Directory,
     locks: [ScopedLock; 2],
     executable: Executable,
@@ -416,12 +427,14 @@ impl WorkingNativeSourceCustody {
     pub(super) fn from_hello(
         peer: Arc<ChildPeer>,
         plan: Arc<Plan>,
+        main_binding: RuntimeMainCustody,
         end: Instant,
     ) -> io::Result<Self> {
         root()?;
         live(end)?;
         peer.guard()?;
         plan.guard()?;
+        main_binding.validate(&main_binding.epoch).map_err(|why| error(&why))?;
         let directory = Directory::open(plan.working_runtime_evidence_directory()?, true)?;
         let executable = Executable::open(plan.working_applications_pin()?)?;
         let locks = [
@@ -435,6 +448,7 @@ impl WorkingNativeSourceCustody {
             inner: Arc::new(WorkingCustody {
                 peer,
                 plan,
+                main_binding,
                 directory,
                 locks,
                 executable,
@@ -470,6 +484,14 @@ impl WorkingNativeSourceCustody {
             lock.guard(&self.inner.directory)?;
         }
         self.inner.executable.guard()
+    }
+    /// Compare an actual normal-control observation with the complete Main held
+    /// by the authenticated parent at Hello. Saved facts cannot construct the
+    /// observation or this inherited custody, and no deadline is renewed.
+    pub fn compare_main(&self, main: &MainCustodyObservation) -> io::Result<()> {
+        self.guard()?;
+        require_main_binding(&self.inner.main_binding, main.facts())?;
+        self.guard()
     }
     pub fn runtime_evidence_directory(&self) -> io::Result<&Path> {
         self.guard()?;
@@ -523,6 +545,40 @@ mod tests {
     use super::*;
     use std::sync::atomic::{AtomicU64, Ordering};
     static NEXT: AtomicU64 = AtomicU64::new(0);
+
+    #[test]
+    fn working_main_binding_rejects_other_valid_generations_releases_and_backings() {
+        // These are comparison fixtures, never forged opaque observations.
+        let expected = crate::main_custody::tests::sample();
+        require_main_binding(&expected, &expected).unwrap();
+        for case in 0..9 {
+            let mut actual = expected.clone();
+            match case {
+                0 => {
+                    actual.owner.cell_start_ticks += 1;
+                    actual.init.start_ticks += 1;
+                }
+                1 => {
+                    actual.owner.selection_binding_sha256 = "f".repeat(64);
+                    actual.persistent_data.selection_binding_sha256 = "f".repeat(64);
+                }
+                2 => actual.owner.runtime_manifest_sha256 = "f".repeat(64),
+                3 => actual.normal_host_release.manager.sha256 = "f".repeat(64),
+                4 => actual.normal_host_release.presenter.sha256 = "f".repeat(64),
+                5 => actual.persistent_data.backings[1].loop_binding.node.inode += 1,
+                6 => actual.persistent_data.original_copy_origin = None,
+                7 => actual.epoch.boot_id = "11234567-1234-1234-1234-0123456789ab".into(),
+                _ => {
+                    actual.epoch.cell_host_pid = 200;
+                    actual.owner.cell_host_pid = 200;
+                    actual.init.host_pid = 200;
+                    actual.zygote.parent_host_pid = 200;
+                }
+            }
+            actual.validate(&actual.epoch).unwrap();
+            assert!(require_main_binding(&expected, &actual).is_err(), "case {case}");
+        }
+    }
     fn temporary() -> (PathBuf, File) {
         let path = std::env::temp_dir().join(format!(
             "droidloom-working-flock-{}-{}",

@@ -45,11 +45,12 @@ pub mod budget;
 #[path = "native_working_layout.rs"]
 pub mod layout;
 pub use budget::{
-    CASE_COUNT, FAMILY_CASE_COUNT, NATIVE_CASE_COUNT, NOFILE_LIMIT, PHOTO_CASE_COUNT,
+    CASE_COUNT, FAMILY_CASE_COUNT, NATIVE_CASE_COUNT, NOFILE_LIMIT, PHOTO_CASE_COUNT, SETTINGS_CASE_COUNT,
     RETIREMENT_SECONDS, SERVICE_SECONDS, SUITE_SECONDS,
 };
 pub const SUMMARY_LIMIT: usize = 16 * 1024 * 1024;
 pub const BINDING_LIMIT: usize = 128 * 1024;
+const HELLO_ACK_LIMIT: usize = BINDING_LIMIT + 256;
 pub(super) const EXE: &str = crate::native_working_contract::APPLICATIONS_EXECUTABLE;
 pub(super) const UNIT_NAME: &str = crate::native_working_contract::PARENT_UNIT;
 pub(super) const UNIT_FRAGMENT: &str =
@@ -77,6 +78,14 @@ pub(super) fn digest_ok(value: &str) -> bool {
         && value
             .bytes()
             .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
+}
+
+fn acknowledgement_payload_allowed(request_kind: u8, payload: &[u8]) -> bool {
+    if request_kind == 1 {
+        !payload.is_empty() && payload.len() <= HELLO_ACK_LIMIT
+    } else {
+        payload.is_empty()
+    }
 }
 pub(super) fn monotonic_ns() -> io::Result<u64> {
     let mut time = std::mem::MaybeUninit::<libc::timespec>::uninit();
@@ -185,6 +194,7 @@ pub enum QualificationCase {
     FamilyBilibili,
     // Append after all original fourteen native and thirty-one family cases.
     CameraPhotoCaptureReopen,
+    SettingsPermissionInterfaces,
 }
 impl QualificationCase {
     pub(super) fn ordinal(self) -> u8 {
@@ -238,6 +248,7 @@ impl QualificationCase {
             QualificationCase::FamilyFirefox,
             QualificationCase::FamilyBilibili,
             QualificationCase::CameraPhotoCaptureReopen,
+            QualificationCase::SettingsPermissionInterfaces,
         ];
         ALL.get(value as usize)
             .copied()
@@ -247,6 +258,8 @@ impl QualificationCase {
     pub fn window_seconds(self) -> u64 {
         if self == Self::CameraPhotoCaptureReopen {
             budget::CAMERA_PHOTO_CASE_SECONDS
+        } else if self == Self::SettingsPermissionInterfaces {
+            budget::SETTINGS_PERMISSION_CASE_SECONDS
         } else if matches!(
             self,
             Self::FamilyAmazon
@@ -315,7 +328,7 @@ impl QualificationCase {
             Self::GalleryVideo => "com.android.gallery3d",
             Self::GallerySeek => "com.android.gallery3d",
             Self::GalleryAlbum => "com.android.gallery3d",
-            Self::SettingsSupportedPages => "com.android.settings",
+            Self::SettingsSupportedPages | Self::SettingsPermissionInterfaces => "com.android.settings",
             Self::IhgLondon => "com.ihg.apps.android",
             Self::FamilyHyatt => "com.Hyatt.hyt",
             Self::FamilyMobileTicket => "com.MobileTicket",
@@ -549,9 +562,16 @@ pub(super) struct Hello {
 pub(super) struct HelloAcknowledgement {
     pub owner_start_ns: u64,
     pub preparation_end_ns: u64,
+    pub main_binding: RuntimeMainCustody,
 }
 impl HelloAcknowledgement {
-    fn validate(&self, suite_end_ns: u64) -> io::Result<()> {
+    fn validate(&self, suite_end_ns: u64, expected_epoch: &RuntimeEpoch) -> io::Result<()> {
+        self.main_binding
+            .validate(expected_epoch)
+            .map_err(|why| error(&why))?;
+        if serde_json::to_vec(&self.main_binding)?.len() > BINDING_LIMIT {
+            return Err(error("private parent ACK Main binding exceeds its fixed complete bound"));
+        }
         let schedule = crate::native_working_contract::WorkingSchedule::selected();
         if schedule.authorization_end_ns(self.owner_start_ns)? != suite_end_ns
             || self
@@ -637,11 +657,12 @@ impl ChildChannel {
         result.wire_end = ack.end_ns;
         result.end = instant_until(ack.end_ns, original_end)?;
         let acknowledgement: HelloAcknowledgement = serde_json::from_slice(&ack.payload)?;
-        acknowledgement.validate(ack.end_ns)?;
+        acknowledgement.validate(ack.end_ns, &result.epoch)?;
         result.preparation_end = instant_until(acknowledgement.preparation_end_ns, result.end)?;
         result.source = Some(WorkingNativeSourceCustody::from_hello(
             Arc::clone(&result.peer),
             Arc::clone(&result.plan),
+            acknowledgement.main_binding,
             result.end,
         )?);
         result.probe_scope = Some(super::working_owned_probe::Scope::child(
@@ -700,8 +721,7 @@ impl ChildChannel {
         if ack.kind != 5
             || ack.sequence != self.sequence
             || ack.case != case
-            || (kind != 1 && !ack.payload.is_empty())
-            || (kind == 1 && (ack.payload.is_empty() || ack.payload.len() > 256))
+            || !acknowledgement_payload_allowed(kind, &ack.payload)
         {
             self.socket.take();
             return Err(error(
@@ -846,19 +866,15 @@ mod tests {
         }
         assert_eq!(total, 25_430);
         assert_eq!(total, budget::NATIVE_SECONDS);
-        assert_eq!(
-            total
-                + budget::FAMILY_SECONDS
-                + budget::CAMERA_PHOTO_CASE_SECONDS
-                + 140
-                + budget::SOURCE_AND_CAPTURE_SECONDS,
-            SUITE_SECONDS
-        );
+        assert_eq!(total + budget::FAMILY_SECONDS + budget::CAMERA_PHOTO_CASE_SECONDS
+            + budget::SETTINGS_PERMISSION_CASE_SECONDS + 2 * budget::MAIN_SECONDS
+            + budget::SOURCE_AND_CAPTURE_SECONDS, SUITE_SECONDS);
         assert_eq!(budget::SOURCE_AND_CAPTURE_SECONDS, 46_622);
-        assert_eq!(SUITE_SECONDS, 195_672);
-        assert_eq!(SERVICE_SECONDS, 195_852);
-        assert_eq!(budget::RETAIL_WORK_SECONDS, 8_690);
-        assert_eq!(CASE_COUNT, 46);
+        assert_eq!(SUITE_SECONDS, 315_742);
+        assert_eq!(SERVICE_SECONDS, 315_922);
+        assert_eq!(budget::RETAIL_WORK_SECONDS, 9_110);
+        assert_eq!(CASE_COUNT, 47);
+        assert_eq!(SETTINGS_CASE_COUNT, 1);
         assert_eq!(PHOTO_CASE_COUNT, 1);
         assert_eq!(QualificationCase::CameraPhoto.ordinal(), 2);
         assert_eq!(QualificationCase::CameraPhoto.window_seconds(), 1_260);
@@ -870,6 +886,13 @@ mod tests {
         assert_eq!(photo.profile(), KernelProfile::Standard);
         assert!(photo.native_route().is_none());
         assert!(QualificationCase::for_family(photo.package()).is_err());
+        let settings = QualificationCase::from_ordinal(46).unwrap();
+        assert_eq!(settings, QualificationCase::SettingsPermissionInterfaces);
+        assert_eq!(settings.package(), "com.android.settings");
+        assert_eq!(settings.window_seconds(), 250 + 6_050);
+        assert_eq!(settings.profile(), KernelProfile::Standard);
+        assert!(settings.native_route().is_none());
+        assert!(QualificationCase::for_family(settings.package()).is_err());
         assert!(QualificationCase::from_ordinal(CASE_COUNT as u8).is_err());
         assert!(child_argv(Path::new("/PLAN.json"), "../caller").is_err());
     }
@@ -889,7 +912,7 @@ mod tests {
                     | QualificationCase::FamilyTaobao
                     | QualificationCase::FamilyPinduoduo
             );
-            assert_eq!(case.window_seconds(), if retail { 8_940 } else { 2_865 });
+            assert_eq!(case.window_seconds(), if retail { 9_360 } else { 7_160 });
             assert_eq!(case.profile(), KernelProfile::Standard);
             assert!(selected.insert(case.package()));
         }
@@ -925,7 +948,7 @@ mod tests {
             assert!(lines.contains(line.as_str()), "{line}");
         }
         assert_eq!(NOFILE_LIMIT, 32_768);
-        assert_eq!(SERVICE_SECONDS, 195_852);
+        assert_eq!(SERVICE_SECONDS, 315_922);
         assert!(lines.contains("MemoryMax=2147483648"));
         assert!(lines.contains("MemorySwapMax=0"));
         assert!(lines.contains("CPUQuota=200%"));
@@ -977,6 +1000,39 @@ fn working_entry_arguments(
 #[cfg(test)]
 mod working_entry_tests {
     use super::*;
+
+    #[test]
+    fn working_main_binding_ack_rejects_old_missing_foreign_and_extended_observations() {
+        let main = crate::main_custody::tests::sample();
+        let owner_start_ns = 1_000_000_000;
+        let end = crate::native_working_contract::WorkingSchedule::selected()
+            .authorization_end_ns(owner_start_ns)
+            .unwrap();
+        let acknowledgement = HelloAcknowledgement {
+            owner_start_ns,
+            preparation_end_ns: owner_start_ns + budget::SOURCE_AND_CAPTURE_SECONDS * 1_000_000_000,
+            main_binding: main.clone(),
+        };
+        acknowledgement.validate(end, &main.epoch).unwrap();
+        let bytes = serde_json::to_vec(&acknowledgement).unwrap();
+        assert!(acknowledgement_payload_allowed(1, &bytes));
+        let encoded: serde_json::Value = serde_json::from_slice(&bytes).unwrap();
+        for replacement in [None, Some(serde_json::json!("saved-pass")), Some(serde_json::json!({}))] {
+            let mut old = encoded.clone();
+            old.as_object_mut().unwrap().remove("main_binding");
+            if let Some(replacement) = replacement {
+                old["main_binding"] = replacement;
+            }
+            assert!(serde_json::from_value::<HelloAcknowledgement>(old).is_err());
+        }
+        let mut substituted = encoded.clone();
+        substituted["main_binding_sha256"] = serde_json::json!("a".repeat(64));
+        assert!(serde_json::from_value::<HelloAcknowledgement>(substituted).is_err());
+        let mut wrong_epoch = main.epoch.clone();
+        wrong_epoch.boot_id = "11234567-1234-1234-1234-0123456789ab".into();
+        assert!(acknowledgement.validate(end, &wrong_epoch).is_err());
+        assert!(acknowledgement.validate(end + 1, &main.epoch).is_err());
+    }
     #[test]
     fn physical_working_entry_binds_real_child_shape_to_suite_domain_only() {
         use working_config::WorkingActor;

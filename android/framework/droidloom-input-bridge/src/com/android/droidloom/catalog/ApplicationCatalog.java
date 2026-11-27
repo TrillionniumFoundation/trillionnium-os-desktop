@@ -222,7 +222,7 @@ public final class ApplicationCatalog {
         return (List<ResolveInfo>) query.invoke(packageManager, launcher, 0, userId);
     }
 
-    private static Context systemContext() throws Exception {
+    static Context systemContext() throws Exception {
         // app_process does not create an Application. Obtain Android's system
         // context through its framework bootstrap without teaching Linux how
         // to parse Android packages or resources.

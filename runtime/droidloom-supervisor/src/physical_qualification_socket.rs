@@ -344,6 +344,73 @@ mod tests {
     use super::*;
 
     #[test]
+    fn working_main_binding_ack_survives_exact_wire_ceiling_and_rejects_overflow() {
+        use super::super::{
+            BINDING_LIMIT, HELLO_ACK_LIMIT, HelloAcknowledgement, acknowledgement_payload_allowed,
+            budget,
+        };
+        let main = crate::main_custody::tests::sample();
+        let schedule = crate::native_working_contract::WorkingSchedule::selected();
+        let owner_start_ns = schedule.owner_start_by_boot_seconds * 1_000_000_000;
+        let end = schedule.authorization_end_ns(owner_start_ns).unwrap();
+        let acknowledgement = HelloAcknowledgement {
+            owner_start_ns,
+            preparation_end_ns: owner_start_ns + budget::SOURCE_AND_CAPTURE_SECONDS * 1_000_000_000,
+            main_binding: main.clone(),
+        };
+        let bytes = serde_json::to_vec(&acknowledgement).unwrap();
+        let main_bytes = serde_json::to_vec(&main).unwrap().len();
+        // Both other fields are u64. Even their widest encoding fits the fixed
+        // envelope; these deliberately invalid clock values grant no window.
+        let widest = HelloAcknowledgement {
+            owner_start_ns: u64::MAX,
+            preparation_end_ns: u64::MAX,
+            main_binding: main.clone(),
+        };
+        let maximum_fixed_envelope = serde_json::to_vec(&widest).unwrap().len() - main_bytes;
+        assert!(widest.validate(end, &main.epoch).is_err());
+        assert!(maximum_fixed_envelope <= 256);
+        assert!(BINDING_LIMIT + maximum_fixed_envelope <= HELLO_ACK_LIMIT);
+        assert!(HELLO_ACK_LIMIT <= PAYLOAD_MAX);
+        assert!(bytes.len() > 256);
+        assert!(acknowledgement_payload_allowed(1, &bytes));
+        assert!(!acknowledgement_payload_allowed(2, &bytes));
+        assert!(!acknowledgement_payload_allowed(1, &[]));
+        let packet = Packet {
+            sequence: 0,
+            kind: 5,
+            case: 255,
+            end_ns: end,
+            payload: bytes.clone(),
+        };
+        let wire = packet.bytes().unwrap();
+        let decoded = Packet::parse(&wire).unwrap();
+        let received: HelloAcknowledgement = serde_json::from_slice(&decoded.payload).unwrap();
+        received.validate(decoded.end_ns, &main.epoch).unwrap();
+
+        // A complete ACK remains valid with JSON whitespace up to the exact
+        // Hello ceiling. One extra byte is rejected by the real exchange bound.
+        let mut maximum = packet;
+        maximum.payload.resize(HELLO_ACK_LIMIT, b' ');
+        assert!(acknowledgement_payload_allowed(1, &maximum.payload));
+        let maximum_wire = maximum.bytes().unwrap();
+        let maximum_decoded = Packet::parse(&maximum_wire).unwrap();
+        let maximum_ack: HelloAcknowledgement =
+            serde_json::from_slice(&maximum_decoded.payload).unwrap();
+        maximum_ack.validate(maximum_decoded.end_ns, &main.epoch).unwrap();
+        maximum.payload.push(b' ');
+        assert!(!acknowledgement_payload_allowed(1, &maximum.payload));
+        assert!(Packet::parse(&maximum_wire[..maximum_wire.len() - 1]).is_err());
+        maximum.payload.resize(PAYLOAD_MAX + 1, b' ');
+        assert!(maximum.bytes().is_err());
+        eprintln!(
+            "ACK_BOUNDARY main_bytes={} ack_payload_bytes={} ack_wire_bytes={} max_ack_payload_bytes={} max_ack_wire_bytes={} transport_payload_bytes={} maximum_fixed_envelope_bytes={}",
+            main_bytes, bytes.len(), wire.len(), HELLO_ACK_LIMIT, maximum_wire.len(),
+            PAYLOAD_MAX, maximum_fixed_envelope,
+        );
+    }
+
+    #[test]
     fn complete_compiled_case_transcript_and_acks_fit_the_wire_bound() {
         // Hello is 0. Each actual case has Begin and End, then Complete.
         // ACK echoes its request sequence rather than consuming another number.

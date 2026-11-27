@@ -66,6 +66,21 @@ mod package_inventory;
 mod application_exit_state_query;
 pub(crate) use application_exit_state_query::{ApplicationExitStateObservation, read_application_exit_state};
 
+#[path = "production_application_account_state.rs"]
+mod application_account_state_query;
+pub(crate) use application_account_state_query::{ApplicationAccountStateObservation, read_application_account_state};
+#[path = "production_application_account_secret.rs"]
+mod account_secret;
+pub(crate) use account_secret::AccountAnonymityKey;
+
+#[path = "production_application_appops_state.rs"]
+mod application_appops_state_query;
+pub(crate) use application_appops_state_query::{ApplicationAppOpsStateObservation, read_application_appops_state};
+
+#[path = "production_application_permission_state.rs"]
+mod application_permission_state_query;
+pub(crate) use application_permission_state_query::{ApplicationPermissionStateObservation, read_application_permission_state};
+
 #[path = "production_application_package_inventory.rs"]
 mod package_inventory_query;
 pub(crate) use package_inventory_query::{
