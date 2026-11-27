@@ -137,6 +137,25 @@ impl PreparedWorkingCopyObservation {
             published,
         )
     }
+    pub(super) fn begin_pair_label_custody(
+        &self,
+        pair: &mut crate::cold_original_data::WorkingPairTransaction,
+    ) -> Result<()> {
+        pair.begin_label_custody(&self.data, &self.history)
+    }
+    pub(super) fn pair_label_targets(
+        &self,
+        pair: &crate::cold_original_data::WorkingPairTransaction,
+    ) -> Result<Vec<(std::path::PathBuf, File)>> {
+        pair.label_targets(&self.data, &self.history)
+    }
+    pub(super) fn accept_pair_label_batch(
+        &self,
+        pair: &mut crate::cold_original_data::WorkingPairTransaction,
+        batch: &crate::cold_original_data::labels::WorkingLabelBatch,
+    ) -> Result<()> {
+        pair.accept_working_label_batch(&self.data, &self.history, batch)
+    }
     pub(super) fn guard_pair(
         &self,
         pair: &crate::cold_original_data::WorkingPairTransaction,

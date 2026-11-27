@@ -108,6 +108,21 @@ impl WorkingLabelDerivation {
     pub(crate) fn after_identity(&self) -> &Identity {
         &self.core.after.identity
     }
+    pub(in crate::cold_original_data) fn require_snapshot_transition(
+        &self,
+        path: &Path,
+        before: &Snapshot,
+        after: &Snapshot,
+    ) -> Result<()> {
+        self.revalidate()?;
+        ensure(
+            self.paths.iter().any(|known| known == path)
+                && before == &self.core.before
+                && after == &self.core.after,
+            "working pair snapshot differs from the actual full inode label operation",
+        )?;
+        self.revalidate()
+    }
     pub(crate) fn require_transition(
         &self,
         path: &Path,
@@ -229,6 +244,10 @@ impl WorkingLabelBatch {
     }
     pub(crate) fn records(&self) -> &[WorkingLabelDerivation] {
         &self.records
+    }
+    pub(crate) fn require_identity(&self, source: &WorkingLabelSourceIdentity) -> Result<()> {
+        self.origin.source.require_identity(source)?;
+        self.revalidate()
     }
     pub(crate) fn require_source(&self, source: &WorkingRuntimeSources) -> Result<()> {
         self.origin.source.require_source(source)?;

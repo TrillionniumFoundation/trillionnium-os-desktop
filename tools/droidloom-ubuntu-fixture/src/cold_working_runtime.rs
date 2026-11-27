@@ -625,6 +625,22 @@ impl WorkingRuntimeSources {
         self.revalidate()?;
         Ok(pin)
     }
+    pub(crate) fn prepare_working_label_custody(&self) -> Result<()> {
+        self.revalidate()?;
+        self.custody.prepare_working_label_custody()?;
+        self.revalidate()
+    }
+    pub(crate) fn working_label_targets(&self) -> Result<Vec<(std::path::PathBuf, std::fs::File)>> {
+        self.revalidate()?;
+        self.custody.working_label_targets()
+    }
+    pub(crate) fn accept_working_label_custody(
+        &self,
+        batch: &crate::cold_original_data::labels::WorkingLabelBatch,
+    ) -> Result<()> {
+        batch.require_source(self)?;
+        self.custody.accept_working_label_custody(batch)
+    }
     pub(crate) fn label_sources(
         &self,
     ) -> &std::sync::Arc<crate::cold_original_data::labels::OriginalLabelSources> {
@@ -726,6 +742,12 @@ impl WorkingRuntimeSources {
     }
 }
 impl WorkingLabelSourceIdentity {
+    pub(crate) fn require_identity(&self, other: &Self) -> Result<()> {
+        ensure(
+            std::rc::Rc::ptr_eq(&self.custody, &other.custody),
+            "working label proofs belong to different actual cold source owners",
+        )
+    }
     /// Comparison only. A label batch temporarily precedes adoption of the
     /// owner's exact changed checkpoints, so full source guarding belongs after
     /// all batch checkpoints have been verified and advanced together.

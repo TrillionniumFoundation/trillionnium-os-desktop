@@ -3,6 +3,9 @@
 //! This module cannot publish selected.json, relabel a backing, or arm GRUB.
 use super::*;
 use crate::cold_original_qualification::PublishedWorkingRuntime;
+#[path = "cold_working_pair_labels.rs"]
+mod label_custody;
+use label_custody::PairLabelState;
 
 type ImageOfds = Vec<(File, Identity, bool)>;
 
@@ -305,6 +308,8 @@ pub(crate) struct WorkingPairTransaction {
     parents: Vec<labels::Snapshot>,
     in_flight: Option<PendingStep>,
     pending_file: File,
+    labelled: Option<PairLabelState>,
+    label_source: crate::cold_original_qualification::WorkingLabelSourceIdentity,
 }
 impl WorkingPairTransaction {
     pub(crate) fn prepare(
@@ -449,10 +454,122 @@ impl WorkingPairTransaction {
                 .collect(),
             in_flight: None,
             pending_file,
+            labelled: None,
+            label_source: source.label_source_identity()?,
         };
         value.guard(prepared, history)?;
         published.guard()?;
         Ok(value)
+    }
+
+    fn observe(&self) -> Result<(Layout, SelectionState)> {
+        match &self.labelled {
+            Some(state) => state.observe(&self.tx, &self.pending_file, self.in_flight.as_ref()),
+            None => self.tx.observe(false),
+        }
+    }
+
+    pub(crate) fn begin_label_custody(
+        &mut self,
+        prepared: &PreparedReturnedPair,
+        history: &ReturnedOnceHistory,
+    ) -> Result<()> {
+        self.guard(prepared, history)?;
+        ensure(
+            self.in_flight.is_none()
+                && self.observe()? == (Layout::Switched, SelectionState::Original),
+            "working label source requires a settled directory exchange",
+        )?;
+        if self.labelled.is_none() {
+            self.labelled = Some(PairLabelState::capture(&self.tx, &self.pending_file)?);
+        }
+        self.guard(prepared, history)
+    }
+
+    pub(crate) fn label_targets(
+        &self,
+        prepared: &PreparedReturnedPair,
+        history: &ReturnedOnceHistory,
+    ) -> Result<Vec<(PathBuf, File)>> {
+        self.guard(prepared, history)?;
+        ensure(
+            self.in_flight.is_none()
+                && self.observe()? == (Layout::Switched, SelectionState::Original),
+            "working label targets left the actual exchanged layout",
+        )?;
+        let targets = self
+            .labelled
+            .as_ref()
+            .ok_or("working label inode custody was not prepared")?
+            .targets(&self.pending_file)?;
+        self.guard(prepared, history)?;
+        Ok(targets)
+    }
+
+    pub(crate) fn accept_working_label_batch(
+        &mut self,
+        prepared: &PreparedReturnedPair,
+        history: &ReturnedOnceHistory,
+        batch: &labels::WorkingLabelBatch,
+    ) -> Result<()> {
+        batch.require_identity(&self.label_source)?;
+        ensure(
+            self.in_flight.is_none() && batch.candidate_id() == self.tx.intent.candidate_id,
+            "working label batch entered an unsettled pair operation or another candidate",
+        )?;
+        // Source locks were advanced by the same actual batch before this call.
+        // Private history/intent/working-source records never receive exceptions.
+        history.guard()?;
+        prepared.work.guard()?;
+        prepared.source_work.guard()?;
+        if let Some((directory, _)) = &prepared.recovery {
+            directory.guard()?;
+        }
+        self.tx.validate_intent()?;
+        self.tx.require_writer_locks()?;
+        let state = self
+            .labelled
+            .as_ref()
+            .ok_or("working label batch has no pre-write held-inode custody")?;
+        let update = state.stage_batch(&self.pending_file, batch)?;
+        let parents = prepared
+            .pair
+            .parents
+            .iter()
+            .zip(&self.parents)
+            .map(|((path, held, _), before)| {
+                let after = labels::snapshot(held)?;
+                let named = fs::Tree::open("/", 0)?.dir(&fs::absolute_string(path)?)?;
+                ensure(
+                    labels::snapshot(&named)? == after,
+                    "working pair label parent left its held named inode",
+                )?;
+                label_custody::changed_snapshot(batch, path, before, &after)?;
+                Ok(after)
+            })
+            .collect::<Result<Vec<_>>>()?;
+        ensure(
+            parents.len() == self.parents.len(),
+            "working pair label parent roster changed",
+        )?;
+        // The actual held descriptors remain the same; only verified snapshots
+        // advance. A failed final fence retains both the batch and old state.
+        let state = self.labelled.as_mut().unwrap();
+        let old_working = state.working.clone();
+        let old_pending = state.pending.clone();
+        let old_pending_snapshot = state.pending_snapshot.clone();
+        let old_parents = self.parents.clone();
+        state.adopt(update);
+        self.parents = parents;
+        let result = self.guard(prepared, history);
+        if result.is_err() {
+            let state = self.labelled.as_mut().unwrap();
+            state.working = old_working;
+            state.pending = old_pending;
+            state.pending_snapshot = old_pending_snapshot;
+            self.parents = old_parents;
+        }
+        result
     }
 
     pub(crate) fn guard(
@@ -482,23 +599,43 @@ impl WorkingPairTransaction {
             prepared.pair.backings.len() == 4 && self.tx.images.len() == 4,
             "held working backing roster differs",
         )?;
-        for (old, (held, expected, _)) in prepared.pair.backings.iter().zip(&self.tx.images) {
+        for (index, (old, (held, initial, working))) in prepared
+            .pair
+            .backings
+            .iter()
+            .zip(&self.tx.images)
+            .enumerate()
+        {
+            let labelled = self
+                .labelled
+                .as_ref()
+                .filter(|_| *working)
+                .map(|state| &state.working.members[IMAGES[index % 2]]);
+            let expected = labelled.map_or(initial, |member| &member.identity);
+            let snapshot = labelled.map_or(&old.snapshot, |member| &member.label_identity);
             ensure(
-                old.identity == *expected
+                old.identity == *initial
                     && fs::stat(&old.file)? == *expected
                     && fs::stat(held)? == *expected
-                    && labels::data_snapshot(&old.file, expected)? == old.snapshot,
+                    && labels::data_snapshot(&old.file, expected)? == *snapshot,
                 "cold working exchange changed an actual backing or its complete source attributes",
             )?;
         }
         self.tx.require_writer_locks()?;
-        let (layout, selection) = self.tx.observe(false)?;
+        let (layout, selection) = self.observe()?;
         ensure(
             selection == SelectionState::Original,
             "pair exchange cannot publish a candidate selection",
         )?;
         ensure(
-            fs::stat(&self.pending_file)? == self.tx.intent.new_selection.identity
+            fs::stat(&self.pending_file)?
+                == self
+                    .labelled
+                    .as_ref()
+                    .map_or(&self.tx.intent.new_selection.identity, |state| {
+                        &state.pending.identity
+                    })
+                    .clone()
                 && fs::digest(&read_small(&self.pending_file, 16384)?)
                     == self.tx.intent.selection.sha256,
             "pending selection left its held complete prelabel source",
@@ -516,7 +653,9 @@ impl WorkingPairTransaction {
         }
         let _ = reference_scan::require_no_other_references(&reference_targets(
             &self.tx.intent.original,
-            &self.tx.intent.working,
+            self.labelled
+                .as_ref()
+                .map_or(&self.tx.intent.working, |state| &state.working),
         ))?;
         history.guard()
     }
@@ -530,7 +669,7 @@ impl WorkingPairTransaction {
         self.guard(prepared, history)?;
         if self.in_flight.is_none() {
             ensure(
-                self.tx.observe(false)?.0 == step.states().0,
+                self.observe()?.0 == step.states().0,
                 "working exchange step is out of order",
             )?;
             let witness = PendingStep::capture(step, prepared, &self.tx)?;
@@ -545,7 +684,7 @@ impl WorkingPairTransaction {
             self.in_flight.as_ref().unwrap().step == step,
             "another atomic working step is still unsettled",
         )?;
-        let layout = self.tx.observe(false)?.0;
+        let layout = self.observe()?.0;
         self.in_flight
             .as_ref()
             .unwrap()
@@ -563,7 +702,7 @@ impl WorkingPairTransaction {
                     .move_pair(Place::Rollback, Place::Working)?,
             }
         }
-        let layout = self.tx.observe(false)?.0;
+        let layout = self.observe()?.0;
         ensure(
             layout == step.states().1,
             "fixed working rename did not reach its exact next layout",
@@ -573,6 +712,9 @@ impl WorkingPairTransaction {
             .as_ref()
             .unwrap()
             .verify(prepared, &self.tx, layout)?;
+        if let Some(state) = &mut self.labelled {
+            state.after_move(self.in_flight.as_ref().unwrap(), &self.pending_file)?;
+        }
         self.parents = after;
         self.in_flight = None;
         self.guard(prepared, history)
@@ -587,7 +729,7 @@ impl WorkingPairTransaction {
         let step = if let Some(pending) = &self.in_flight {
             pending.step
         } else {
-            match self.tx.observe(false)?.0 {
+            match self.observe()?.0 {
                 Layout::Ready => Step::Stage,
                 Layout::Staged => Step::Exchange,
                 Layout::Switched => return Ok(()),
@@ -605,7 +747,7 @@ impl WorkingPairTransaction {
         history: &ReturnedOnceHistory,
     ) -> Result<bool> {
         self.guard(prepared, history)?;
-        Ok(self.in_flight.is_none() && self.tx.observe(false)?.0 == Layout::Switched)
+        Ok(self.in_flight.is_none() && self.observe()?.0 == Layout::Switched)
     }
     pub(crate) fn restore_cold(
         &mut self,
@@ -614,20 +756,23 @@ impl WorkingPairTransaction {
     ) -> Result<()> {
         self.guard(prepared, history)?;
         if let Some(pending) = &self.in_flight {
-            let actual = self.tx.observe(false)?.0;
+            let actual = self.observe()?.0;
             let after = pending.verify(prepared, &self.tx, actual)?;
+            if let Some(state) = &mut self.labelled {
+                state.after_move(pending, &self.pending_file)?;
+            }
             self.parents = after;
             self.in_flight = None;
         }
-        match self.tx.observe(false)?.0 {
+        match self.observe()?.0 {
             Layout::Switched => self.operation(prepared, history, Step::Unexchange)?,
             Layout::Staged | Layout::Ready => (),
         }
-        if self.tx.observe(false)?.0 == Layout::Staged {
+        if self.observe()?.0 == Layout::Staged {
             self.operation(prepared, history, Step::Return)?;
         }
         ensure(
-            self.tx.observe(false)? == (Layout::Ready, SelectionState::Original),
+            self.observe()? == (Layout::Ready, SelectionState::Original),
             "same-boot working rollback did not restore the actual original pair",
         )?;
         self.guard(prepared, history)

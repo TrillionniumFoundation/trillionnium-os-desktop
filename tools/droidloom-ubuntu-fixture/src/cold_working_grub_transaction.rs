@@ -296,11 +296,11 @@ impl PublishedWorkingBootFiles {
         )?;
         self.publication.transaction.guard()
     }
-    /// Accept the actual same-owner batch across every boot-file consumer.
-    /// Full source guarding is deliberately left to the window driver after
-    /// its data-pair and cold-lock consumers have accepted this same batch.
-    /// Each component retains its live descriptors on failure; replay accepts
-    /// only the exact already-observed transition, never a refreshed source.
+    /// Adopt one actual same-owner batch across boot files, runtime parents,
+    /// the four image OFDs, pair members, and cold-owner locks. Full source
+    /// guarding happens only after all these live checkpoints have advanced.
+    /// Each component retains its descriptors on failure; the window keeps
+    /// the batch and retries this same transition before it can reverse.
     pub(crate) fn accept_working_label_batch(&mut self, batch: &WorkingLabelBatch) -> Result<()> {
         batch.require_source(self.runtime().source())?;
         let kernel = Path::new("/boot/droidloom/kernels")
@@ -328,6 +328,11 @@ impl PublishedWorkingBootFiles {
             .accept_working_label_batch(batch)?;
         self.publication.sources[0].accept_working_label_update(kernel_update)?;
         self.publication.sources[1].revalidate()?;
+        self.runtime().source().accept_working_label_custody(batch)?;
+        // Pair/history guards before this point would compare some old F9
+        // checkpoints to the kernel's already completed batch. The complete
+        // fence belongs after every exact same-batch consumer has advanced.
+        self.guard()?;
         batch.revalidate()
     }
     pub(crate) fn restore(
