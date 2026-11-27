@@ -6,7 +6,9 @@
 use super::clock_timer::{self, ClockResultCustody};
 use super::common_gate::{self, CommonGateFact};
 use super::family_observation::{self, FamilyObservation};
-use super::leaf_release::{self, NativeRelease};
+use super::leaf_release;
+use super::working_leaf_release::NativeSourceRelease as NativeRelease;
+use std::sync::Arc;
 use super::leaf_routes::{self, LeafPlan, Route};
 use super::native_business::{self, NativeBusinessFact, NativeCaseEvidence};
 use super::physical_gate_roster as roster;
@@ -935,6 +937,8 @@ pub fn run_physical_files(
     )
     .map_err(|e| e.to_string())?;
     let end = channel.deadline();
+    let working_sources = Arc::new(channel.working_source_custody()
+        .map_err(|error| error.to_string())?);
     let selection = runtime
         .preparation_selection
         .clone()
@@ -966,13 +970,8 @@ pub fn run_physical_files(
     let materials = runtime_identity::admit_plan(&runtime)?.ok_or(
         "complete physical qualification requires the source-admitted current normal batch",
     )?;
-    let source_owner = leaf_routes::qualification_release(&selection)?;
-    source_owner.cover_window(
-        end.checked_duration_since(Instant::now())
-            .ok_or("physical source preflight consumed its original window")?
-            .as_secs()
-            .saturating_add(1),
-    )?;
+    let source_owner = leaf_routes::qualification_release(&selection, &working_sources)?;
+    source_owner.cover_until(end)?;
     let mut inspector =
         control::NativeApplicationInspector::acquire(Path::new(control::DEFAULT_CONTROL_SOCKET))
             .map_err(|error| error.to_string())?;
@@ -1089,6 +1088,7 @@ pub fn run_physical_files(
                         &selection,
                         before,
                         case_end,
+                        &working_sources,
                     )?;
                     require(
                         after == actual,
@@ -1105,6 +1105,7 @@ pub fn run_physical_files(
                         &selection,
                         before,
                         case_end,
+                        &working_sources,
                     )?;
                     require(
                         after == actual,
