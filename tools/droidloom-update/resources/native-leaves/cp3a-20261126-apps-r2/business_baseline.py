@@ -12,7 +12,7 @@ import types
 
 ROOT=Path('/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2')
 SOURCE=ROOT/'source/main/kernel_native_observation.py'
-SOURCE_SHA='b61fdf6e13325a2e131f23314da51ca77e927b43a1d73875efaa3d4e526827e4'
+SOURCE_SHA='cf3daba1b6005ecce46272872f76e8f9201550053410a1a8ac3ca5d57e67cf8e'
 META=('st_dev','st_ino','st_mode','st_uid','st_gid','st_nlink','st_size','st_mtime_ns','st_ctime_ns')
 def _load():
     for parent in SOURCE.parents:

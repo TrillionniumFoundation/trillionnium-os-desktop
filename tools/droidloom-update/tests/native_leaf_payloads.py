@@ -142,6 +142,56 @@ class Flow:
         return raw
 
 class SourcePayloadTests(unittest.TestCase):
+
+    def test_working_jvm_keeps_case_limits_and_maps_only_held_cwd(self):
+        commands = load("working_build_commands", ROOT / "source/support/business_commands.py")
+        self.assertEqual(commands.WORKING_BUILD_CASES, {
+            "documents-saf": "com.android.documentsui",
+            "documents-search-sort": "com.android.documentsui",
+            "ihg-london": "com.ihg.apps.android",
+        })
+        root = Path("/var/lib/droidloom/qualification/working-qualification-candidate/runtime-evidence/native-inputs/ihg-london/helper-build")
+        jdk = "/usr/lib/droidloom-native-leaf-toolchain/aosp-21.0.4-r1/jdk/jdk21/linux-x86"
+        for case, heap in (("ihg-london", "256m"), ("documents-saf", "192m"), ("documents-search-sort", "192m")):
+            logical = [jdk + "/bin/javac", "-J-XX:ActiveProcessorCount=1", "-J-XX:+UseSerialGC",
+                       "-J-Xmx" + heap, "-source", "8", "-target", "8", "-d", str(root / "classes"),
+                       str(root / "src/Probe.java")]
+            original = list(logical)
+            actual = commands.working_build_argv(logical, root, case)
+            self.assertEqual(logical, original)
+            self.assertEqual(actual, [jdk + "/bin/javac", "-J-Duser.dir=/proc/self/cwd",
+                "-J-XX:ActiveProcessorCount=1", "-J-XX:+UseSerialGC", "-J-Xmx" + heap,
+                "-source", "8", "-target", "8", "-d", "./classes", "./src/Probe.java"])
+        verify = ["/usr/lib/android-sdk/build-tools/debian/apksigner", "verify", "--verbose",
+                  "--print-certs", "--min-sdk-version", "31", str(root / "owned-ihg-qa.apk")]
+        self.assertEqual(commands.working_build_argv(verify, root, "ihg-london"), [
+            jdk + "/bin/java", "-Duser.dir=/proc/self/cwd", "-XX:ActiveProcessorCount=1",
+            "-XX:+UseSerialGC", "-Xmx256m", "-jar", "/usr/share/java/apksigner-35.0.2.jar",
+            "verify", "--verbose", "--print-certs", "--min-sdk-version", "31", "./owned-ihg-qa.apk"])
+        self.assertEqual(commands.relative_build_argv(verify, root)[0], verify[0])
+
+    def test_working_build_rejects_cross_case_argv_and_caller_proc_paths(self):
+        commands = load("working_build_negative_commands", ROOT / "source/support/business_commands.py")
+        root = Path("/var/lib/droidloom/qualification/working-qualification-candidate/runtime-evidence/native-inputs/ihg-london/helper-build")
+        jdk = "/usr/lib/droidloom-native-leaf-toolchain/aosp-21.0.4-r1/jdk/jdk21/linux-x86"
+        javac = [jdk + "/bin/javac", "-J-XX:ActiveProcessorCount=1", "-J-XX:+UseSerialGC",
+                 "-J-Xmx256m", "-d", str(root / "classes"), str(root / "Probe.java")]
+        signer = ["/usr/lib/android-sdk/build-tools/debian/apksigner", "verify", "--verbose",
+                  "--print-certs", "--min-sdk-version", "31", str(root / "owned-ihg-qa.apk")]
+        negatives = [
+            (javac, "documents-saf"),
+            (javac, "caller-selected-case"),
+            (javac + ["-J-Duser.dir=/tmp"], "ihg-london"),
+            (javac[:-1] + ["/proc/self/cwd/Probe.java"], "ihg-london"),
+            (javac[:-1] + [str(root / "../Probe.java")], "ihg-london"),
+            (signer, "documents-search-sort"),
+            (signer[:-1] + [str(root / "unrelated.apk")], "ihg-london"),
+            (["/bin/sh", "-c", "true"], "ihg-london"),
+        ]
+        for argv, case in negatives:
+            with self.subTest(argv=argv, case=case), self.assertRaises(RuntimeError):
+                commands.working_build_argv(argv, root, case)
+
     def test_exact_provider_and_absence_reject_noncanonical_or_unknown_values(self):
         self.assertEqual(ROUNDTRIP.provider_value(b"null\n"), {"present":False,"text":None,"effective":1.0})
         self.assertEqual(ROUNDTRIP.provider_value(b"1.000\n")["text"], "1.000")

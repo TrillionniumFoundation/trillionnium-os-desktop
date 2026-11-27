@@ -19,8 +19,8 @@ import types
 FINAL = Path('/home/alex/work/pocket4-android-final')
 QUALIFICATION = Path('/var/lib/droidloom/qualification/pocket4')
 SUPPORT=Path('/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2/source/support')
-SUPPORT_REF={'path': '/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2/source/support/source-manifest.json', 'bytes': 1001, 'sha256': '2ec6a885372a05383575f983bc20e097e61a48221197c6a063ed23e941dbc5e4'}
-CLOCK_SUPPORT_REF={'path': '/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2/source/clock-support/source-manifest.json', 'bytes': 1001, 'sha256': 'e83bc6050d340d471d493ad6e23b5d9a3860654cd85a41dd8220d615f90f228f'}
+SUPPORT_REF={'path': '/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2/source/support/source-manifest.json', 'bytes': 1001, 'sha256': 'c8c75e83aee37abaa43ee1198433e7c9756b4d8c27acdc90f90dfccce03d0cde'}
+CLOCK_SUPPORT_REF={'path': '/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2/source/clock-support/source-manifest.json', 'bytes': 1001, 'sha256': 'a6d7000e4727832cd32c66c27e2dc0ccf849e71e204d1780c8c17b9be5c5486a'}
 SCOPE_SHA='b0448b794102efbcd839bb3e3747ffc75a5eccdbf6859c83a6b3d1bdc9acba5b'
 GATES={'path': '/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2/source/contracts/app-gates.json', 'bytes': 24135, 'sha256': '35d566406aacc77ebe2dbd44430cea7f80533569647947c01772cd118aff3161'}
 SIGNER = '/usr/bin/apksigner'

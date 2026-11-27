@@ -9,7 +9,7 @@ import re
 import stat
 import types
 
-COMMON_PIN=(47688, 'a5e5cf3402fa86aa5662d3fb68f5c6464c75b0579f6a6be076ec3288c9c579bb')
+COMMON_PIN=(47688, 'd7ecbe8bdff6804f2c26ab7d2edd5ce5e4851aba788174f09c6ec6a746b440d4')
 SOURCE_NAMES = {'app_common.py', 'app_flow.py', 'app_runtime.py', 'camera_case.py', 'camera_entry.py',
     'camera_flow.py', 'camera_guard.py', 'camera_observations.py', 'camera_photo_model.py',
     'camera_photo_trial.py', 'camera_plan.py', 'camera_policy.py', 'camera_profiles.py',
