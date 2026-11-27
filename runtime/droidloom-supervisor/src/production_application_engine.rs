@@ -2,7 +2,9 @@
 //! The application must already be running. This API neither launches it nor
 //! infers an engine from zygote presence, APK ABI, a saved receipt or absence.
 use super::*;
-use crate::engine_custody::{MAX_WIRE_BYTES, RuntimeEngineObservation};
+use crate::engine_custody::{
+    EngineAbiComparison, EngineKind, MAX_WIRE_BYTES, RuntimeEngineObservation,
+};
 use crate::production_selection::early_generation::{
     EarlyApplicationAuthority, EarlyFrameworkObservation,
 };
@@ -125,9 +127,50 @@ pub(crate) fn observe_running_engine(
             &before.epoch == expected,
             "engine PM query belongs to a different Main epoch",
         )?;
+        let abi_before = read_runtime_abi(owner, package, deadline)?;
+        let principal = abi_before.main_process(before.uid, package)?;
+        // AMS selects only one of these two fixed comparison modes. The owner
+        // independently enumerates original PIDFDs and then joins the real PIDNS
+        // number below; no AMS PID opens proc or constructs process authority.
+        let kind = match (principal.required_abi(), principal.instruction_set()) {
+            (Some("x86_64"), None | Some("x86_64")) => EngineKind::NativeX86_64,
+            (Some("arm64-v8a"), None | Some("arm64") | Some("x86_64")) => EngineKind::BerberisArm64,
+            _ => {
+                return Err(reject(
+                    "actual required ABI has no fixed positive runtime branch",
+                ));
+            }
+        };
         let held = owner
-            .begin_engine_observation(&before, &main, deadline)
+            .begin_engine_observation(&before, &main, kind, deadline)
             .map_err(observation_authority_error)?;
+        let process = held.process();
+        let first_abi =
+            abi_before.match_process(process.guest_pid, before.uid, &process.command)?;
+        require(
+            first_abi == principal,
+            "AMS main record differs from the independently held task",
+        )?;
+        let abi_after = read_runtime_abi(owner, package, deadline)?;
+        let last_abi = abi_after.match_process(process.guest_pid, before.uid, &process.command)?;
+        require(
+            first_abi == last_abi,
+            "actual AMS process ABI or start sequence changed",
+        )?;
+        let runtime_abi = EngineAbiComparison {
+            guest_pid: first_abi.guest_pid(),
+            uid: first_abi.uid(),
+            user: first_abi.user(),
+            process_name: first_abi.process_name().into(),
+            required_abi: first_abi
+                .required_abi()
+                .ok_or_else(|| reject("AMS required ABI absent"))?
+                .into(),
+            instruction_set: first_abi.instruction_set().map(str::to_owned),
+            start_seq: first_abi.start_seq(),
+            before_query_sha256: abi_before.receipt().output_sha256.clone(),
+            after_query_sha256: abi_after.receipt().output_sha256.clone(),
+        };
         let after = metadata_fixed(owner, package, budget)?;
         require(
             after == before,
@@ -141,7 +184,7 @@ pub(crate) fn observe_running_engine(
             "actual Main or persistent resource changed during engine observation",
         )?;
         let observed = owner
-            .complete_engine_observation(held, before, main, deadline)
+            .complete_engine_observation(held, before, main, runtime_abi, deadline)
             .map_err(observation_authority_error)?;
         require(
             serde_json::to_vec(&observed).map_err(external)?.len() <= MAX_WIRE_BYTES,

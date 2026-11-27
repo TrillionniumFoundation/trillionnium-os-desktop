@@ -3,7 +3,9 @@
 //! no public request selects a process, path, context, image or namespace.
 use super::*;
 use crate::control::application_probe::ApplicationMetadata;
-use crate::engine_custody::{EngineImageSource, RuntimeEngineObservation};
+use crate::engine_custody::{
+    EngineAbiComparison, EngineImageSource, EngineKind, EngineProcess, RuntimeEngineObservation,
+};
 use crate::main_custody::RuntimeMainCustody;
 use crate::production_application::{EngineTarget, observe_engine};
 
@@ -12,6 +14,11 @@ pub(crate) struct HeldEngineObservation {
     framework: EarlyFrameworkObservation,
     source: EngineImageSource,
     first: crate::production_application::EngineSample,
+}
+impl HeldEngineObservation {
+    pub(crate) fn process(&self) -> &EngineProcess {
+        &self.first.process
+    }
 }
 fn observer_error(error: crate::production_application::ApplicationError) -> NamespaceError {
     match error {
@@ -27,6 +34,7 @@ impl EarlyApplicationAuthority<'_> {
         &self,
         application: &ApplicationMetadata,
         main: &RuntimeMainCustody,
+        kind: EngineKind,
         deadline: Instant,
     ) -> Result<HeldEngineObservation> {
         require(
@@ -47,7 +55,7 @@ impl EarlyApplicationAuthority<'_> {
         )?;
         let source = self
             .images
-            .observe_engine_origin_early(&self.base, deadline, self.progress)
+            .observe_engine_origin_early(&self.base, kind, deadline, self.progress)
             .map_err(external)?;
         let (uids, gids) = self.base.identity_lease().broker_ranges();
         require(
@@ -93,7 +101,7 @@ impl EarlyApplicationAuthority<'_> {
                         package: application.package.clone(),
                         uid: application.uid,
                         main: main.clone(),
-                        engine: source.engine.clone(),
+                        source: source.clone(),
                     };
                     let observed =
                         observe_engine(request, &fd, self.base.user_namespace(), deadline)
@@ -132,6 +140,7 @@ impl EarlyApplicationAuthority<'_> {
         held: HeldEngineObservation,
         application: ApplicationMetadata,
         main: RuntimeMainCustody,
+        runtime_abi: EngineAbiComparison,
         deadline: Instant,
     ) -> Result<RuntimeEngineObservation> {
         self.check_request_deadline()?;
@@ -140,7 +149,7 @@ impl EarlyApplicationAuthority<'_> {
             package: application.package.clone(),
             uid: application.uid,
             main: main.clone(),
-            engine: held.source.engine.clone(),
+            source: held.source.clone(),
         };
         let last = observe_engine(request, &held.pidfd, self.base.user_namespace(), deadline)
             .map_err(observer_error)?
@@ -150,12 +159,18 @@ impl EarlyApplicationAuthority<'_> {
         require(
             last.process == held.first.process
                 && last.engine == held.first.engine
-                && last.mappings == held.first.mappings,
+                && last.mappings == held.first.mappings
+                && last.native_executable == held.first.native_executable,
             "original engine process or mappings changed during PM and Main bookends",
         )?;
         require(
             self.images
-                .observe_engine_origin_early(&self.base, deadline, self.progress)
+                .observe_engine_origin_early(
+                    &self.base,
+                    held.source.kind(),
+                    deadline,
+                    self.progress,
+                )
                 .map_err(external)?
                 == held.source,
             "original immutable engine owner changed",
@@ -172,6 +187,8 @@ impl EarlyApplicationAuthority<'_> {
             process: last.process,
             actual_engine: last.engine,
             mappings: last.mappings,
+            native_executable: last.native_executable,
+            runtime_abi,
             maps_before_sha256: held.first.maps_before_sha256,
             maps_after_sha256: last.maps_after_sha256,
             observed_monotonic_ns: last.observed_monotonic_ns,

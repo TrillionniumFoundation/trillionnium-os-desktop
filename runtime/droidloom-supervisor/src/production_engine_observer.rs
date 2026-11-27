@@ -2,12 +2,14 @@
 //! The helper enters only the original held Android USERNS. It cannot open
 //! private data, change namespaces again, ptrace, signal, execute, or create
 //! descendants. Only a bounded comparison packet returns after real waitid 0.
-use super::{external, reject, require, ApplicationError, Result};
+use super::{ApplicationError, Result, external, reject, require};
 use super::{protocol, query_io as helper};
 use crate::control::application_custody::{CustodyFileIdentity, CustodyNamespace};
+use crate::engine_custody::native_profile::NativeFileKind;
 use crate::engine_custody::{
-    app_context, engine_mappings, selected_package, user_zero_app_uid, valid_engine, EngineFile,
-    EngineMapping, EngineProcess, MAX_ENGINE_BYTES, MAX_MAP_BYTES,
+    EngineFile, EngineFileMount, EngineImageSource, EngineMapping, EngineProcess, MAX_ENGINE_BYTES,
+    MAX_MAP_BYTES, NativeExecutableObservation, app_context, engine_mappings, native_mappings,
+    selected_package, user_zero_app_uid,
 };
 use crate::main_custody::{MainNodeIdentity, RuntimeMainCustody};
 use serde::{Deserialize, Serialize};
@@ -49,6 +51,8 @@ static CGROUP: &CStr = c"cgroup";
 static CMDLINE: &CStr = c"cmdline";
 static MAPS: &CStr = c"maps";
 static ENGINE_NAME: &CStr = c"system/system_ext/lib64/libberberis_arm64.so";
+static NATIVE_EXE_NAME: &CStr = c"system/bin/app_process64";
+static NATIVE_ART_NAME: &CStr = c"apex/com.android.art/lib64/libart.so";
 const EXE_FLAGS: i32 = libc::O_PATH | libc::O_CLOEXEC;
 const ROOT_FLAGS: i32 = libc::O_RDONLY | libc::O_DIRECTORY | libc::O_CLOEXEC | libc::O_NONBLOCK;
 const NS_FLAGS: i32 = libc::O_RDONLY | libc::O_CLOEXEC;
@@ -72,15 +76,14 @@ pub(crate) struct EngineTarget {
     pub(crate) package: String,
     pub(crate) uid: u32,
     pub(crate) main: RuntimeMainCustody,
-    pub(crate) engine: EngineFile,
+    pub(crate) source: EngineImageSource,
 }
 impl EngineTarget {
     fn validate(&self) -> Result<()> {
         self.main.validate(&self.main.epoch).map_err(reject)?;
+        self.source.validate_origin(&self.main).map_err(reject)?;
         require(
-            selected_package(&self.package)
-                && user_zero_app_uid(self.uid)
-                && valid_engine(&self.engine),
+            selected_package(&self.package) && user_zero_app_uid(self.uid),
             "engine private request shape differs",
         )
     }
@@ -91,6 +94,7 @@ pub(crate) struct EngineSample {
     pub(crate) process: EngineProcess,
     pub(crate) engine: EngineFile,
     pub(crate) mappings: Vec<EngineMapping>,
+    pub(crate) native_executable: Option<NativeExecutableObservation>,
     pub(crate) maps_before_sha256: String,
     pub(crate) maps_after_sha256: String,
     pub(crate) observed_monotonic_ns: u64,
@@ -145,6 +149,43 @@ fn birth(text: &str, expected_pid: u32) -> Result<(u32, u32, u64)> {
     require(ticks > 0, "engine stat birth absent")?;
     Ok((expected_pid, parent, ticks))
 }
+
+/// procfs is the original host PIDNS mount. Only the original host and the
+/// verified Main PID namespace may occur; a number from AMS never opens proc.
+fn guest_process_id(text: &str, host: u32) -> Result<u32> {
+    let exact = |key: &str| -> Result<Vec<u32>> {
+        let mut lines = text.lines().filter_map(|line| line.strip_prefix(key));
+        let value = lines
+            .next()
+            .ok_or_else(|| reject("engine proc PID field absent"))?;
+        require(lines.next().is_none(), "duplicate engine proc PID field")?;
+        value
+            .split_ascii_whitespace()
+            .map(|n| {
+                require(
+                    !n.is_empty() && n.bytes().all(|c| c.is_ascii_digit()) && !n.starts_with('0'),
+                    "noncanonical engine proc PID",
+                )?;
+                n.parse::<u32>().map_err(external)
+            })
+            .collect()
+    };
+    let pid = exact("Pid:")?;
+    let tgid = exact("Tgid:")?;
+    let ns = exact("NSpid:")?;
+    let groups = exact("NStgid:")?;
+    require(
+        pid == [host]
+            && tgid == [host]
+            && ns.len() == 2
+            && ns == groups
+            && ns[0] == host
+            && ns[1] > 1,
+        "engine process PID namespace chain differs",
+    )?;
+    Ok(ns[1])
+}
+
 fn raw_open(parent: RawFd, name: &CStr, flags: i32) -> Result<File> {
     let raw = unsafe { libc::openat(parent, name.as_ptr(), flags) };
     if raw < 0 {
@@ -298,12 +339,17 @@ fn read_filter() -> Vec<libc::sock_filter> {
     );
     narrow(
         libc::SYS_openat2,
-        vec![vec![
-            (0, ROOT_FD as u64),
-            (1, ENGINE_NAME.as_ptr() as u64),
-            (2, (&ENGINE_HOW as *const OpenHow) as u64),
-            (3, mem::size_of::<OpenHow>() as u64),
-        ]],
+        [ENGINE_NAME, NATIVE_EXE_NAME, NATIVE_ART_NAME]
+            .into_iter()
+            .map(|name| {
+                vec![
+                    (0, ROOT_FD as u64),
+                    (1, name.as_ptr() as u64),
+                    (2, (&ENGINE_HOW as *const OpenHow) as u64),
+                    (3, mem::size_of::<OpenHow>() as u64),
+                ]
+            })
+            .collect(),
     );
     narrow(libc::SYS_sendmsg, vec![vec![(0, 3)]]);
     narrow(
@@ -498,6 +544,139 @@ fn fixed_engine(deadline: Instant) -> Result<EngineFile> {
         sha256: format!("{:x}", hash.finalize()),
     })
 }
+
+fn native_name(kind: NativeFileKind) -> &'static CStr {
+    match kind {
+        NativeFileKind::Executable => NATIVE_EXE_NAME,
+        NativeFileKind::Art => NATIVE_ART_NAME,
+    }
+}
+fn native_mount(file: &File) -> Result<EngineFileMount> {
+    let mut fs: libc::statfs = unsafe { mem::zeroed() };
+    if unsafe { libc::fstatfs(file.as_raw_fd(), &mut fs) } != 0 {
+        return Err(io::Error::last_os_error().into());
+    }
+    let mut sx: libc::statx = unsafe { mem::zeroed() };
+    if unsafe {
+        libc::statx(
+            file.as_raw_fd(),
+            c"".as_ptr(),
+            libc::AT_EMPTY_PATH | libc::AT_SYMLINK_NOFOLLOW,
+            libc::STATX_MNT_ID,
+            &mut sx,
+        )
+    } != 0
+    {
+        return Err(io::Error::last_os_error().into());
+    }
+    // Normal glibc fstatvfs obtains flags through the same descriptor's
+    // fstatfs syscall; it opens no pathname and only removes ST_VALID.
+    let mut vf: libc::statvfs = unsafe { mem::zeroed() };
+    if unsafe { libc::fstatvfs(file.as_raw_fd(), &mut vf) } != 0 {
+        return Err(io::Error::last_os_error().into());
+    }
+    let out = EngineFileMount {
+        filesystem_type: fs.f_type as i64,
+        mount_flags: vf.f_flag as u64,
+        mount_id: sx.stx_mnt_id,
+    };
+    require(
+        sx.stx_mask & libc::STATX_MNT_ID != 0 && out.readonly_ext4(),
+        "native runtime file is not on the original readonly executable ext4 mount",
+    )?;
+    Ok(out)
+}
+fn open_native(kind: NativeFileKind) -> Result<File> {
+    let raw = unsafe {
+        libc::syscall(
+            libc::SYS_openat2,
+            ROOT_FD,
+            native_name(kind).as_ptr(),
+            &ENGINE_HOW as *const OpenHow,
+            mem::size_of::<OpenHow>(),
+        )
+    };
+    if raw < 0 {
+        return Err(io::Error::last_os_error().into());
+    }
+    Ok(unsafe { File::from_raw_fd(raw as RawFd) })
+}
+fn read_native(file: &File, kind: NativeFileKind, deadline: Instant) -> Result<EngineFile> {
+    let before = file_node(file)?;
+    let (bytes, expected_sha, mode, uid, gid) = kind.expected();
+    require(
+        before.mode == mode
+            && before.uid == uid
+            && before.gid == gid
+            && before.links == 1
+            && before.bytes == bytes,
+        "native runtime exact source metadata differs",
+    )?;
+    let mut header = [0_u8; 64];
+    file.read_exact_at(&mut header, 0)?;
+    require(
+        &header[..7] == b"\x7fELF\x02\x01\x01"
+            && u16::from_le_bytes([header[16], header[17]]) == 3
+            && u16::from_le_bytes([header[18], header[19]]) == 62
+            && u32::from_le_bytes(header[20..24].try_into().unwrap()) == 1,
+        "native runtime is not the selected x86_64 ELF",
+    )?;
+    let mut hash = Sha256::new();
+    let mut offset = 0;
+    let mut buffer = [0_u8; 65536];
+    while offset < before.bytes {
+        crate::production_host_admission::check_observation_before(deadline)?;
+        let count = (before.bytes - offset).min(buffer.len() as u64) as usize;
+        file.read_exact_at(&mut buffer[..count], offset)?;
+        hash.update(&buffer[..count]);
+        offset += count as u64;
+    }
+    let out = EngineFile {
+        identity: before,
+        sha256: format!("{:x}", hash.finalize()),
+    };
+    require(
+        file_node(file)? == before && out.sha256 == expected_sha && kind.validate(&out),
+        "native runtime held bytes or identity differ from the selected source",
+    )?;
+    Ok(out)
+}
+struct NativeHeldFile {
+    file: File,
+    kind: NativeFileKind,
+    observed: EngineFile,
+    mount: EngineFileMount,
+}
+impl NativeHeldFile {
+    fn open(kind: NativeFileKind, deadline: Instant) -> Result<Self> {
+        let file = open_native(kind)?;
+        let mount = native_mount(&file)?;
+        let observed = read_native(&file, kind, deadline)?;
+        require(
+            native_mount(&file)? == mount,
+            "native runtime mount changed during full read",
+        )?;
+        Ok(Self {
+            file,
+            kind,
+            observed,
+            mount,
+        })
+    }
+    fn revalidate(&self, deadline: Instant) -> Result<()> {
+        require(
+            read_native(&self.file, self.kind, deadline)? == self.observed
+                && native_mount(&self.file)? == self.mount,
+            "native runtime held file changed across actual mappings",
+        )?;
+        let named = open_native(self.kind)?;
+        require(
+            file_node(&named)? == self.observed.identity && native_mount(&named)? == self.mount,
+            "native runtime fixed pathname no longer names the original held file",
+        )
+    }
+}
+
 fn sample(
     request: &EngineTarget,
     userns: &File,
@@ -570,6 +749,7 @@ fn sample(
         stat == initial_birth,
         "engine original process birth changed",
     )?;
+    let guest_pid = guest_process_id(&text_at(STATUS, 65536)?, scoped.pid)?;
     let selinux = text_at(SELINUX, 256)?;
     require(
         app_context(&selinux),
@@ -631,25 +811,75 @@ fn sample(
         held_ns.push(file);
     }
     ns.sort_by(|a, b| a.name.cmp(&b.name));
-    let actual_engine = fixed_engine(deadline)?;
-    require(
-        actual_engine == request.engine,
-        "engine library differs from normal selected image",
-    )?;
+    let (actual_engine, native_files) = match &request.source {
+        EngineImageSource::BerberisArm64 { image } => {
+            let file = fixed_engine(deadline)?;
+            require(
+                file == image.engine,
+                "engine library differs from normal selected image",
+            )?;
+            (file, None)
+        }
+        EngineImageSource::NativeX86_64 { image } => {
+            let exe = NativeHeldFile::open(NativeFileKind::Executable, deadline)?;
+            let art = NativeHeldFile::open(NativeFileKind::Art, deadline)?;
+            require(
+                node(&exe.file)? == node(&executable)?
+                    && exe.observed.identity.device == image.system_image.mount_root.device
+                    && art.observed.identity.device != exe.observed.identity.device
+                    && exe.mount.mount_id != art.mount.mount_id,
+                "native runtime does not match the actual app executable and selected system",
+            )?;
+            (art.observed.clone(), Some((exe, art)))
+        }
+    };
     let before_maps = bytes_at(MAPS, MAX_MAP_BYTES)?;
-    let mappings = engine_mappings(&before_maps, &actual_engine).map_err(reject)?;
+    let (mappings, native_executable) = match &native_files {
+        None => (
+            engine_mappings(&before_maps, &actual_engine).map_err(reject)?,
+            None,
+        ),
+        Some((exe, art)) => (
+            native_mappings(&before_maps, &art.observed, NativeFileKind::Art).map_err(reject)?,
+            Some(NativeExecutableObservation {
+                file: exe.observed.clone(),
+                mappings: native_mappings(&before_maps, &exe.observed, NativeFileKind::Executable)
+                    .map_err(reject)?,
+                mount: exe.mount.clone(),
+                art_mount: art.mount.clone(),
+            }),
+        ),
+    };
     let after_maps = bytes_at(MAPS, MAX_MAP_BYTES)?;
-    require(
-        engine_mappings(&after_maps, &actual_engine).map_err(reject)? == mappings,
-        "actual engine mappings changed during observation",
-    )?;
-    require(
-        fixed_engine(deadline)? == actual_engine,
-        "named engine changed across mapping observation",
-    )?;
+    match (&native_files, &native_executable) {
+        (None, None) => {
+            require(
+                engine_mappings(&after_maps, &actual_engine).map_err(reject)? == mappings,
+                "actual engine mappings changed during observation",
+            )?;
+            require(
+                fixed_engine(deadline)? == actual_engine,
+                "named engine changed across mapping observation",
+            )?;
+        }
+        (Some((exe, art)), Some(observed)) => {
+            require(
+                native_mappings(&after_maps, &art.observed, NativeFileKind::Art).map_err(reject)?
+                    == mappings
+                    && native_mappings(&after_maps, &exe.observed, NativeFileKind::Executable)
+                        .map_err(reject)?
+                        == observed.mappings,
+                "actual native executable or ART mappings changed during observation",
+            )?;
+            exe.revalidate(deadline)?;
+            art.revalidate(deadline)?;
+        }
+        _ => return Err(reject("native runtime observation shape differs")),
+    }
     require(
         birth(&text_at(STAT, 2048)?, scoped.pid)? == initial_birth
             && command()? == cmd
+            && guest_process_id(&text_at(STATUS, 65536)?, scoped.pid)? == guest_pid
             && text_at(SELINUX, 256)? == selinux
             && text_at(APPARMOR, 256)? == apparmor
             && text_at(CGROUP, 4096)? == cgroup
@@ -675,6 +905,7 @@ fn sample(
     Ok(Some(EngineSample {
         process: EngineProcess {
             host_pid: scoped.pid,
+            guest_pid,
             host_parent_pid: scoped.ppid,
             start_ticks: stat.2,
             pidfd: node(target)?,
@@ -693,6 +924,7 @@ fn sample(
         },
         engine: actual_engine,
         mappings,
+        native_executable,
         maps_before_sha256: format!("{:x}", Sha256::digest(&before_maps)),
         maps_after_sha256: format!("{:x}", Sha256::digest(&after_maps)),
         observed_monotonic_ns: protocol::monotonic_ns()?,
@@ -921,6 +1153,18 @@ mod tests {
         ));
         std::fs::create_dir(&root).unwrap();
         std::fs::create_dir_all(root.join("system/system_ext/lib64")).unwrap();
+        std::fs::create_dir_all(root.join("system/bin")).unwrap();
+        std::fs::create_dir_all(root.join("apex/com.android.art/lib64")).unwrap();
+        std::fs::write(
+            root.join("system/bin/app_process64"),
+            b"public executable fixture",
+        )
+        .unwrap();
+        std::fs::write(
+            root.join("apex/com.android.art/lib64/libart.so"),
+            b"public ART fixture",
+        )
+        .unwrap();
         let engine = root.join("system/system_ext/lib64/libberberis_arm64.so");
         if symlink {
             std::fs::write(root.join("other"), b"public test fixture").unwrap();
@@ -997,6 +1241,27 @@ mod tests {
             }
             unsafe {
                 libc::close(engine as i32);
+            }
+            for name in [NATIVE_EXE_NAME, NATIVE_ART_NAME] {
+                let fd = unsafe {
+                    libc::syscall(
+                        libc::SYS_openat2,
+                        ROOT_FD,
+                        name.as_ptr(),
+                        &ENGINE_HOW as *const OpenHow,
+                        mem::size_of::<OpenHow>(),
+                    )
+                };
+                if fd < 0 {
+                    unsafe { libc::_exit(100) }
+                }
+                let mut vf: libc::statvfs = unsafe { mem::zeroed() };
+                if unsafe { libc::fstatvfs(fd as i32, &mut vf) } != 0 || vf.f_bsize == 0 {
+                    unsafe { libc::_exit(101) }
+                }
+                unsafe {
+                    libc::close(fd as i32);
+                }
             }
             for (name, how) in [
                 (copied_name.as_ptr(), &ENGINE_HOW as *const OpenHow),
@@ -1107,5 +1372,28 @@ mod tests {
     #[test]
     fn engine_observer_rejects_unconfined_direct_entry() {
         assert!(entry().is_err());
+    }
+
+    #[test]
+    fn engine_namespace_pid_comes_only_from_the_same_host_proc_status() {
+        let text = "Name:\tclock\nPid:\t5678\nTgid:\t5678\nNSpid:\t5678\t432\nNStgid:\t5678\t432\n";
+        assert_eq!(guest_process_id(text, 5678).unwrap(), 432);
+        for bad in [
+            text.replace("NSpid:\t5678\t432", "NSpid:\t5678"),
+            text.replace("NSpid:\t5678\t432", "NSpid:\t5678\t432\t21"),
+            text.replace("NStgid:\t5678\t432", "NStgid:\t5678\t433"),
+            text.replace("Pid:\t5678", "Pid:\t5679"),
+            text.replace("\t432", "\t0432"),
+            format!("{text}NSpid:\t5678\t432\n"),
+        ] {
+            assert!(guest_process_id(&bad, 5678).is_err(), "{bad}");
+        }
+        assert!(guest_process_id(text, 5679).is_err());
+        // Equality of numeric host/guest PIDs by coincidence is not a foreign
+        // namespace. The held namespace identities are checked separately.
+        assert_eq!(
+            guest_process_id(&text.replace("\t432", "\t5678"), 5678).unwrap(),
+            5678
+        );
     }
 }

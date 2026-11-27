@@ -58,13 +58,16 @@
 (allow droidloom_engine_observer self (file (getattr open read)))
 (allow droidloom_engine_observer self (lnk_file (getattr read)))
 
-; The original App executable is only an O_PATH/fstat witness, never readable.
-; The only public library body opened after confinement is the selected engine, resolved
-; below that held root with no symlink/magiclink and compared to its held image.
+; The original proc/exe is O_PATH-only. The native branch separately opens the
+; exact source-owned app_process64 and ART paths below the same held root, reads
+; complete selected bytes, and compares real VMAs/inodes on readonly mounts.
+; The bridge branch retains its fixed immutable library owner comparison.
 (allow droidloom_engine_observer rootfs (dir (getattr open read search)))
 (allow droidloom_engine_observer system_file (dir (getattr search)))
 (allow droidloom_engine_observer system_lib_file (dir (getattr search)))
-(allow droidloom_engine_observer zygote_exec (file (getattr)))
+(allow droidloom_engine_observer zygote_exec (file (getattr open read)))
+(allow droidloom_engine_observer apex_mnt_dir (dir (search)))
+(allow droidloom_engine_observer labeledfs (filesystem (getattr)))
 (allow droidloom_engine_observer system_lib_file (file (getattr open read)))
 (allow droidloom_engine_observer p4_kernel_ns_handle_t (file (getattr open read ioctl)))
 (allowx droidloom_engine_observer p4_kernel_ns_handle_t (ioctl file (0xb701 0xb703)))

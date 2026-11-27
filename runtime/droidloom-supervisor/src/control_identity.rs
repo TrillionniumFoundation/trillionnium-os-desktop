@@ -788,7 +788,7 @@ impl NativeApplicationInspector {
 
 /// An authenticated historical observation of one actual running process.
 /// APK byte identity comes from the borrowed normal PM token. The server itself
-/// reads PM metadata, Main, the selected immutable engine and the actual maps.
+/// reads PM/AMS metadata, Main, selected runtime bytes and the actual maps.
 pub struct EngineMappingObservation {
     facts: crate::engine_custody::RuntimeEngineObservation,
     application: application_probe::ApplicationInspection,
@@ -942,6 +942,8 @@ impl NativeApplicationInspector {
             || after.facts.source != prior.facts.source
             || after.facts.actual_engine != prior.facts.actual_engine
             || after.facts.mappings != prior.facts.mappings
+            || after.facts.native_executable != prior.facts.native_executable
+            || !after.facts.runtime_abi.same_process(&prior.facts.runtime_abi)
             || after.observed_at <= prior.observed_at
         {
             return Err(ControlError::Invalid(

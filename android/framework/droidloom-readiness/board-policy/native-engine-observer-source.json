@@ -2,12 +2,25 @@
   "apparmor_normal_admission_required": {
     "engine_rule": "/{system,run/droidloom-early-slot/rootfs/system,.droidloom-kernel-apparmorfs/system}/system_ext/lib64/libberberis_arm64.so r,",
     "maps_rule": "@{PROC}/[0-9]*/maps r,",
+    "native_art_rule": "/{apex,run/droidloom-early-slot/rootfs/apex,.droidloom-kernel-apparmorfs/apex}/com.android.art{,@371899999}/lib64/libart.so r,",
+    "native_executable_rule": "/{system,run/droidloom-early-slot/rootfs/system,.droidloom-kernel-apparmorfs/system}/bin/app_process64 r,",
     "normal_175_rebuild_required": true,
     "profile": "board-policy/apparmor/droidloom-production-broker",
     "separate_old_archive_reuse_allowed": false
   },
   "boundary": {
     "actor": "droidloom_engine_observer",
+    "ams_command": [
+      "/system/bin/cmd",
+      "activity",
+      "dump",
+      "processes",
+      "<fixed39package>"
+    ],
+    "ams_pid_is_process_selector": false,
+    "ams_record_join": "same actual PIDFD/NSpid/UID/name/epoch and two equal records including startSeq",
+    "ams_role": "droidloom_launch_read",
+    "apex_vintf_avb_qualification_is_separate": true,
     "app_types": [
       "gmscore_app",
       "platform_app",
@@ -34,16 +47,25 @@
     "client_cap_seconds": 70,
     "client_full_apk_binding": "borrowed ActualApplicationObservation from the normal inspector",
     "context": "u:r:droidloom_engine_observer:s0",
+    "engine_request_ams_metadata_commands": 2,
     "engine_request_full_apk_reads": 0,
     "engine_request_pm_metadata_commands": 4,
-    "executable_witness": "O_PATH/fstat, no readable executable descriptor",
+    "executable_witness": "proc/exe O_PATH plus native-only fixed source app_process64 full bytes",
     "fixed_engine_path": "/system/system_ext/lib64/libberberis_arm64.so",
     "initial_namespace_capabilities": [],
     "namespace_ioctl_commands": [
       46849,
       46851
     ],
+    "native_actual_executable_and_art_vmas_required": true,
+    "native_apex_loop_owner_borrowed": false,
+    "native_art_paths": [
+      "/apex/com.android.art/lib64/libart.so",
+      "/apex/com.android.art@371899999/lib64/libart.so"
+    ],
     "native_engine_inferred_from_missing_mapping": false,
+    "native_files_full_sha256_reads": true,
+    "native_files_readonly_ext4": true,
     "normal_broker_engine_body_access": false,
     "operation_work_seconds": 48,
     "parent": "droidloom_broker",
@@ -54,13 +76,17 @@
     "returned_descriptors": 0,
     "roletype": "r",
     "runtime_qualified": false,
+    "runtime_routes": [
+      "berberis_arm64",
+      "native_x86_64"
+    ],
     "translation_business_qualified": false,
     "unchanged_original_mls_constraints": true,
     "wire_caller_uid_or_apk_authority": false
   },
   "component": {
-    "bytes": 8101,
-    "sha256": "757a047d488205f0c43e83b7955f26e8ab112bf42b65a9fd1696ea2a6f9e316f"
+    "bytes": 8302,
+    "sha256": "cbc2356879cdfac9bf1c64111028a48e3da625eed72025681d26eb66b5b26090"
   },
   "constraints": {
     "baseline_binary": {
@@ -90,16 +116,16 @@
       "sha256": "bcee262d8f4c899f6ceb33513eef79ba18611d1ca58c6150c7fe062eff667659"
     },
     "runtime/droidloom-supervisor/src/control_identity.rs": {
-      "bytes": 41212,
-      "sha256": "080c166a799c706401162fc7f2e24f4bb417705fca6d94cf627627716d1a957a"
+      "bytes": 41366,
+      "sha256": "ed029e3d275bee6a004365ea29b6f154ed837179cb9fa2f63b72611cd80825fa"
     },
     "runtime/droidloom-supervisor/src/control_progress.rs": {
       "bytes": 22555,
       "sha256": "c6d13947adde8ad6949eb983e9c1d22ead54e8d5ee17c22b657ce1059296bf9c"
     },
     "runtime/droidloom-supervisor/src/engine_custody.rs": {
-      "bytes": 21621,
-      "sha256": "a0508dc089cc40454b1ecf1ea9890ae9b5c44dd3aa28f1b087717b42483ace2c"
+      "bytes": 32919,
+      "sha256": "f4dc5d88fbe1427986068c5e1ad725ebe8479895fbaf5ada7a571604d51f18aa"
     },
     "runtime/droidloom-supervisor/src/lib.rs": {
       "bytes": 39459,
@@ -109,13 +135,29 @@
       "bytes": 12885,
       "sha256": "f7fbf01986a7bad40fec8b808ae5c065ea337a750836226d435cb0005281ccfe"
     },
+    "runtime/droidloom-supervisor/src/production_apex_input_profile.json": {
+      "bytes": 22836,
+      "sha256": "f3ab57e31c73ea963bd6cf4bed81779f49ebb052c68207582c75039b6fdc039f"
+    },
+    "runtime/droidloom-supervisor/src/production_apex_input_profile.rs": {
+      "bytes": 8774,
+      "sha256": "7c643fc20a5b358a285142728570a797c35ee7fcc9a544200883c587ced89e73"
+    },
     "runtime/droidloom-supervisor/src/production_application.rs": {
-      "bytes": 30856,
-      "sha256": "90f2a5ee81e688cb8fd141ed2f5fa08be711b7307a2ba57bb311b93ab14a3049"
+      "bytes": 31062,
+      "sha256": "3ed5877b397fb3f28216f20fe9c079ab9ac8d21c724cd6e58b93f0512ea21483"
+    },
+    "runtime/droidloom-supervisor/src/production_application_art_profile.rs": {
+      "bytes": 41584,
+      "sha256": "453c3e881b334648508707348b688377b8aed20f21fe21b0c90752b74d3a1b83"
     },
     "runtime/droidloom-supervisor/src/production_application_engine.rs": {
-      "bytes": 5959,
-      "sha256": "b9e2ad7af39f80be8496ddca4d2686e99d08085ee7aeb9bc864b24e47db7215a"
+      "bytes": 8095,
+      "sha256": "146cbab08e9c100512874d4a349e7ee64768beeb03afb8adc9ee1e9c7940761c"
+    },
+    "runtime/droidloom-supervisor/src/production_application_operation.rs": {
+      "bytes": 17436,
+      "sha256": "4a65693b9c430af1b20985a7bc08d8690283659fbde73175d98a12760f75cec1"
     },
     "runtime/droidloom-supervisor/src/production_application_protocol.rs": {
       "bytes": 16718,
@@ -124,6 +166,10 @@
     "runtime/droidloom-supervisor/src/production_application_query_io.rs": {
       "bytes": 67039,
       "sha256": "ffe64f575a2c09bd1e0dff118291fd226512d0363d6aa4849aaf5678bcd19d2f"
+    },
+    "runtime/droidloom-supervisor/src/production_application_runtime_abi.rs": {
+      "bytes": 6031,
+      "sha256": "cb5002eb2338375d466b2d7c7063203d1cc572220c678a3e332346a319d9dff3"
     },
     "runtime/droidloom-supervisor/src/production_application_vintf.rs": {
       "bytes": 29242,
@@ -138,12 +184,16 @@
       "sha256": "3b33a1f9332233db4d7baf46986e7d6c574b3bc32fb3c11ec815fe5311a3e17f"
     },
     "runtime/droidloom-supervisor/src/production_early_engine_custody.rs": {
-      "bytes": 7967,
-      "sha256": "358bb4dbeba5318a8a23549cc2c24b91b958e348a3ebecbdd34f457895864ca9"
+      "bytes": 8473,
+      "sha256": "98ed1fb49d89ee297745e479731256daaa71a73681cd5e9dd6ac94ecab7b244e"
     },
     "runtime/droidloom-supervisor/src/production_engine_observer.rs": {
-      "bytes": 40903,
-      "sha256": "b47a894ebdf07a152dfda0be4bb8ea5e055b6bd58da2eb68ec2819e684c510d6"
+      "bytes": 52136,
+      "sha256": "e166f2268de90d2cef85ab7b4dbb30180c34d546d69d3c923c3749e19ff8220d"
+    },
+    "runtime/droidloom-supervisor/src/production_execution_profile.rs": {
+      "bytes": 4494,
+      "sha256": "9c8c352cd8938665e3c2f57c7cf83c7cbd7ee0ea11cf477700b450ad85329587"
     },
     "runtime/droidloom-supervisor/src/production_host_admission.rs": {
       "bytes": 191923,
@@ -158,8 +208,8 @@
       "sha256": "d986c33b8bad384eac6293a5b0f48c9bd61fadec7c3f2dac1801f8f6e5966fd6"
     },
     "runtime/droidloom-supervisor/src/production_mounts_engine_custody.rs": {
-      "bytes": 4734,
-      "sha256": "7da207ccf632150ea327a27040b1cc3f7e774981e041eca0477ed661d2ac443f"
+      "bytes": 6042,
+      "sha256": "52a8a1a9fc1ffcc005f1457a3753f13747230a3a53649dd26918a9cec9a3c358"
     },
     "runtime/droidloom-supervisor/src/production_mounts_persistent_fixture.rs": {
       "bytes": 7532,
@@ -168,9 +218,93 @@
     "runtime/droidloom-supervisor/src/production_mounts_system_ext.rs": {
       "bytes": 24196,
       "sha256": "2cd2d2e04de189898aad881e4ea215a7dca25fbdf32607cd9c6436ae4c090546"
+    },
+    "runtime/droidloom-supervisor/src/production_native_engine_profile.rs": {
+      "bytes": 4217,
+      "sha256": "50aa07250e269a9e5cf22a587d67afd97f82426e689e69d5a38a2d8ee9767b3c"
+    },
+    "runtime/droidloom-supervisor/src/production_query_input_profile.rs": {
+      "bytes": 3200,
+      "sha256": "8485a94b29cabdc493baab6b3ced9052315747e0a7326efc99fcf1daf77247ba"
+    },
+    "runtime/droidloom-supervisor/src/runtime_abi.rs": {
+      "bytes": 32151,
+      "sha256": "246fb2915c1c208663060dc90c74d2432064e44781ffddbbb42e75f2aaee4ee9"
     }
   },
-  "schema": "droidloom.native-engine-observer-source.v1",
+  "native_runtime_inputs": {
+    "app_process64": {
+      "bytes": 51616,
+      "elf_class": 64,
+      "elf_machine": 62,
+      "gid": 2000,
+      "label": "u:object_r:zygote_exec:s0",
+      "mode": 33261,
+      "path": "/system/bin/app_process64",
+      "sha256": "bcc150b9c7e2abcc9aef312ea04f5bbcba631dbb2e23cb1b240b7219df1229a2",
+      "uid": 0
+    },
+    "art": {
+      "bytes": 14884360,
+      "container_bytes": 20357120,
+      "container_file": "com.android.art.capex",
+      "container_sha256": "5d0e18b7e2ff241989323c1d0d1695c97921ba85b617ba12e5aa69775b7bd5c0",
+      "elf_class": 64,
+      "elf_machine": 62,
+      "filesystem": "ext4",
+      "gid": 1000,
+      "label": "u:object_r:system_lib_file:s0",
+      "mapping_paths": [
+        "/apex/com.android.art/lib64/libart.so",
+        "/apex/com.android.art@371899999/lib64/libart.so"
+      ],
+      "member": "/lib64/libart.so",
+      "mode": 33188,
+      "name": "com.android.art",
+      "open_path": "/apex/com.android.art/lib64/libart.so",
+      "original_apex_bytes": 49065984,
+      "original_apex_sha256": "5ace9ff8a8ab73aa64b63901fe18782028d5c61c452a35b8ad07fb0b711247d0",
+      "payload_bytes": 48865280,
+      "payload_sha256": "8dd4693cf110e6d69fdd34868c337cd94e4251151466b799d95762c7bf150bb4",
+      "sha256": "38849876d2101a7bac548d3438e3effff01e38f13f3b5740a2364b762fc229d3",
+      "uid": 1000,
+      "version": 371899999
+    },
+    "exact_elf_readback": {
+      "bytes": 14198,
+      "path": "/home/qq/work/p4-application-engine-r14-4b91-r1/native-source-r1/RESULT.json",
+      "sha256": "775ef50059da0d35aed9c1827a4f7991b07cab144af5b7ed54ad5bf4521779f4"
+    },
+    "framework_jar": {
+      "bytes": 49754098,
+      "sha256": "bc8a175a95dcb50b5ae62a03a0ec2ba0fdea34169f83b2aab3c8bf2790707587"
+    },
+    "metadata_limit": "Independent app_process64 debugfs stat failed with EAGAIN; executable metadata comes from the already admitted fixed normal query-input profile, not that failed stat.",
+    "normal_apex_profile": {
+      "bytes": 22836,
+      "count": 38,
+      "sha256": "f3ab57e31c73ea963bd6cf4bed81779f49ebb052c68207582c75039b6fdc039f"
+    },
+    "selected_abi_grammar": {
+      "bytes": 23689,
+      "path": "/home/qq/work/p4-runtime-abi-query-4b91-r1/GRAMMAR-SOURCE-READBACK-r1.json",
+      "sha256": "490bc4e02258749d88e3096d96056cd8cd67e9d5e11425f054d74d58ea494f3d"
+    },
+    "selected_abi_source": {
+      "bytes": 58109,
+      "path": "/home/qq/work/p4-runtime-abi-selected-source-4b91-r3/SELECTED-SOURCE-PROOF-r1.json",
+      "sha256": "3f4df283943bc340ca93e56d02daf1870d750117d1f8cccf12ea396cf679c092"
+    },
+    "selected_system": {
+      "bytes": 2294853632,
+      "sha256": "dc781249bb4724b7a0777e5077321b84576db46f61abb4b9086b81077bfd0ab4"
+    },
+    "services_jar": {
+      "bytes": 25716529,
+      "sha256": "bc5d11f4f09ec079c5804a01008e8317a0854231502550acaff89aa9f1083a86"
+    }
+  },
+  "schema": "droidloom.native-engine-observer-source.v2",
   "selected_public_inputs": {
     "conditional_rule_proof": {
       "bytes": 31143,
@@ -371,6 +505,69 @@
       "path": "security/selinux/ss/services.c",
       "sha256": "a3dc132fceec9f42a8d1728cef1b45685d5d2e0f3b5dcb812bec4049c5c19f67",
       "version": "6.18.64-p4ctx6181-fusectl-aafs-peer-r1"
+    },
+    {
+      "admission": "selected-kernel-source",
+      "bytes": 23118,
+      "kind": "kernel",
+      "package": "linux",
+      "path": "fs/proc/array.c",
+      "sha256": "d7f9b0b88d5ea4bf2016b5f354cb4dc20ab273a1e218e72b7421446546b32846",
+      "version": "6.18.64-p4ctx6181-fusectl-aafs-peer-r1"
+    },
+    {
+      "admission": "selected-kernel-source",
+      "bytes": 9897,
+      "kind": "kernel",
+      "package": "linux",
+      "path": "fs/statfs.c",
+      "sha256": "b211b13c420f2f07a0a06bc03b919ddd2cc6a44478d2490717ff4d3a3c7a5cbc",
+      "version": "6.18.64-p4ctx6181-fusectl-aafs-peer-r1"
+    },
+    {
+      "admission": "selected-kernel-source",
+      "bytes": 27519,
+      "kind": "kernel",
+      "package": "linux",
+      "path": "fs/stat.c",
+      "sha256": "920cd3cdb2d6f167939dd79a86732a66a8ea7eb2954c31bdd4d1fa0796f89a17",
+      "version": "6.18.64-p4ctx6181-fusectl-aafs-peer-r1"
+    },
+    {
+      "admission": "normal-signed-apt-quilt-source",
+      "bytes": 1505,
+      "kind": "glibc",
+      "package": "glibc",
+      "path": "sysdeps/unix/sysv/linux/fstatvfs64.c",
+      "sha256": "d351c94dbf52fa5c1ae0d54cfe7c6a56391ff61b93c35b0878159d8ce758fcd2",
+      "version": "2.43-2ubuntu2.7"
+    },
+    {
+      "admission": "normal-signed-apt-quilt-source",
+      "bytes": 4295,
+      "kind": "glibc",
+      "package": "glibc",
+      "path": "sysdeps/unix/sysv/linux/internal_statvfs.c",
+      "sha256": "0af31f50f9b5c9a3aa32a72fcdc67ec8548f4dc6596e2dbf02518baa9b8a53e2",
+      "version": "2.43-2ubuntu2.7"
+    },
+    {
+      "admission": "normal-signed-apt-quilt-source",
+      "bytes": 1471,
+      "kind": "glibc",
+      "package": "glibc",
+      "path": "sysdeps/unix/sysv/linux/fstatfs64.c",
+      "sha256": "e465783ec0e48f5663bb52e2b3f3bfa3bcb6c119b3be0e472857ba6ae3d3d815",
+      "version": "2.43-2ubuntu2.7"
+    },
+    {
+      "admission": "normal-signed-apt-quilt-source",
+      "bytes": 1006,
+      "kind": "glibc",
+      "package": "glibc",
+      "path": "sysdeps/unix/sysv/linux/kernel_stat.h",
+      "sha256": "7063dbc01ca9039b3d773756a92a4b8f3b2948a4b9b472bf1da53960609fe8d3",
+      "version": "2.43-2ubuntu2.7"
     }
   ]
 }

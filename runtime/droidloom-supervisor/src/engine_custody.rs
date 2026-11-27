@@ -1,4 +1,4 @@
-//! Comparison records for one live application's fixed native-bridge mapping.
+//! Comparison records for one live application's positively observed runtime.
 //!
 //! These serializable records carry no authority. Only the authenticated normal
 //! inspector constructs EngineMappingObservation after the actual owner returns
@@ -9,7 +9,10 @@ use crate::main_custody::{MainNodeIdentity, RuntimeMainCustody};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeSet;
 
-pub const SCHEMA: &str = "droidloom.running-application-engine.v1";
+#[path = "production_native_engine_profile.rs"]
+pub(crate) mod native_profile;
+
+pub const SCHEMA: &str = "droidloom.running-application-engine.v2";
 pub const ENGINE_PATH: &str = "/system/system_ext/lib64/libberberis_arm64.so";
 pub const ENGINE_RELATIVE: &str = "system/system_ext/lib64/libberberis_arm64.so";
 pub const MAX_ENGINE_BYTES: u64 = 128 * 1024 * 1024;
@@ -97,7 +100,7 @@ pub struct EngineMapping {
     pub path: String,
 }
 
-/// File identity in the actual target USERNS. Ownership is namespace root.
+/// File identity in the actual target USERNS; ownership is checked per source.
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
 pub struct EngineFile {
@@ -108,11 +111,186 @@ pub struct EngineFile {
 /// A private immutable image owner's comparison projection.
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
-pub struct EngineImageSource {
+pub struct BridgeEngineImageSource {
     pub base_cohort_sha256: String,
     pub library_image: CustodyImage,
     pub engine: EngineFile,
     pub whole_image_body_rehashed_by_this_observation: bool,
+}
+
+/// Source-owned route selector. A wire value alone conveys no authority.
+#[derive(Clone, Copy, Debug, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum EngineKind {
+    BerberisArm64,
+    NativeX86_64,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
+pub struct NativeArtInput {
+    pub name: String,
+    pub version: u64,
+    pub container_bytes: u64,
+    pub container_sha256: String,
+    pub original_apex_bytes: u64,
+    pub original_apex_sha256: String,
+    pub payload_bytes: u64,
+    pub payload_sha256: String,
+    pub member_path: String,
+    pub member_bytes: u64,
+    pub member_sha256: String,
+}
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
+pub struct NativeEngineImageSource {
+    pub base_cohort_sha256: String,
+    pub system_image: CustodyImage,
+    pub art_input: NativeArtInput,
+    pub whole_image_body_rehashed_by_this_observation: bool,
+    /// The normal original APEX/VINTF/AVB lifecycle is a separate gate.
+    pub apex_mount_owner_borrowed: bool,
+}
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(tag = "route", deny_unknown_fields)]
+pub enum EngineImageSource {
+    #[serde(rename = "berberis_arm64")]
+    BerberisArm64 { image: BridgeEngineImageSource },
+    #[serde(rename = "native_x86_64")]
+    NativeX86_64 { image: NativeEngineImageSource },
+}
+impl EngineImageSource {
+    pub fn kind(&self) -> EngineKind {
+        match self {
+            Self::BerberisArm64 { .. } => EngineKind::BerberisArm64,
+            Self::NativeX86_64 { .. } => EngineKind::NativeX86_64,
+        }
+    }
+    pub(crate) fn validate_origin(&self, main: &RuntimeMainCustody) -> Result<(), String> {
+        match self {
+            Self::BerberisArm64 { image: src } => need(
+                src.base_cohort_sha256 == main.owner.base_cohort_sha256
+                    && src.library_image.role == "system_ext_lib64"
+                    && src.library_image.file.bytes >= 4096
+                    && digest(&src.library_image.sha256)
+                    && src.library_image.loop_source_device == src.library_image.file.device
+                    && src.library_image.loop_source_inode == src.library_image.file.inode
+                    && src.library_image.loop_device == src.library_image.mount_root.device
+                    && src.library_image.mount_id > 0
+                    && src.engine.identity.device == src.library_image.mount_root.device
+                    && !src.whole_image_body_rehashed_by_this_observation
+                    && valid_engine(&src.engine),
+                "fixed bridge lacks its original immutable image owner",
+            ),
+            Self::NativeX86_64 { image: src } => need(
+                src.base_cohort_sha256 == main.owner.base_cohort_sha256
+                    && src.system_image.role == "system"
+                    && src.system_image.file.bytes
+                        == crate::production_execution_profile::SYSTEM_BYTES
+                    && src.system_image.sha256
+                        == crate::production_execution_profile::SYSTEM_SHA256
+                    && src.system_image.loop_source_device == src.system_image.file.device
+                    && src.system_image.loop_source_inode == src.system_image.file.inode
+                    && src.system_image.loop_device == src.system_image.mount_root.device
+                    && src.system_image.mount_id > 0
+                    && src.art_input == native_profile::art_input().map_err(str::to_owned)?
+                    && !src.whole_image_body_rehashed_by_this_observation
+                    && !src.apex_mount_owner_borrowed,
+                "native runtime differs from its actual selected system and fixed ART source",
+            ),
+        }
+    }
+}
+/// Read from the actual mapped file descriptor, not supplied by AMS.
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
+pub struct EngineFileMount {
+    pub filesystem_type: i64,
+    pub mount_flags: u64,
+    pub mount_id: u64,
+}
+impl EngineFileMount {
+    pub(crate) fn readonly_ext4(&self) -> bool {
+        self.filesystem_type == 0xef53
+            && self.mount_flags & 1 != 0
+            && self.mount_flags & 8 == 0
+            && self.mount_id > 0
+    }
+}
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
+pub struct NativeExecutableObservation {
+    pub file: EngineFile,
+    pub mappings: Vec<EngineMapping>,
+    pub mount: EngineFileMount,
+    pub art_mount: EngineFileMount,
+}
+/// Two bounded normal AMS reads are comparison facts. The actual PIDFD,
+/// namespace, UID and maps are independently obtained from the live owner.
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
+pub struct EngineAbiComparison {
+    pub guest_pid: u32,
+    pub uid: u32,
+    pub user: u32,
+    pub process_name: String,
+    pub required_abi: String,
+    pub instruction_set: Option<String>,
+    pub start_seq: u64,
+    pub before_query_sha256: String,
+    pub after_query_sha256: String,
+}
+impl EngineAbiComparison {
+    pub(crate) fn same_process(&self, other: &Self) -> bool {
+        (
+            self.guest_pid,
+            self.uid,
+            self.user,
+            &self.process_name,
+            &self.required_abi,
+            &self.instruction_set,
+            self.start_seq,
+        ) == (
+            other.guest_pid,
+            other.uid,
+            other.user,
+            &other.process_name,
+            &other.required_abi,
+            &other.instruction_set,
+            other.start_seq,
+        )
+    }
+    pub(crate) fn validate(
+        &self,
+        kind: EngineKind,
+        p: &EngineProcess,
+        expected: &ApplicationMetadata,
+    ) -> Result<(), String> {
+        need(
+            self.guest_pid == p.guest_pid
+                && self.uid == expected.uid
+                && self.user == 0
+                && self.process_name == expected.package
+                && self.process_name == p.command
+                && self.start_seq > 0
+                && digest(&self.before_query_sha256)
+                && digest(&self.after_query_sha256),
+            "AMS comparison differs from the actual held task",
+        )?;
+        let actual = self.instruction_set.as_deref();
+        need(
+            match kind {
+                EngineKind::NativeX86_64 => {
+                    self.required_abi == "x86_64" && matches!(actual, None | Some("x86_64"))
+                }
+                EngineKind::BerberisArm64 => {
+                    self.required_abi == "arm64-v8a"
+                        && matches!(actual, None | Some("arm64") | Some("x86_64"))
+                }
+            },
+            "actual required ABI is incompatible with the positively observed runtime",
+        )
+    }
 }
 
 /// Actual process identity from the fixed scoped helper.
@@ -120,6 +298,8 @@ pub struct EngineImageSource {
 #[serde(deny_unknown_fields)]
 pub struct EngineProcess {
     pub host_pid: u32,
+    /// Kernel NSpid in the same held Main PID namespace, not an AMS-selected PID.
+    pub guest_pid: u32,
     pub host_parent_pid: u32,
     pub start_ticks: u64,
     pub pidfd: MainNodeIdentity,
@@ -149,6 +329,8 @@ pub struct RuntimeEngineObservation {
     pub process: EngineProcess,
     pub actual_engine: EngineFile,
     pub mappings: Vec<EngineMapping>,
+    pub native_executable: Option<NativeExecutableObservation>,
+    pub runtime_abi: EngineAbiComparison,
     pub maps_before_sha256: String,
     pub maps_after_sha256: String,
     pub observed_monotonic_ns: u64,
@@ -241,7 +423,11 @@ pub(crate) fn valid_engine(file: &EngineFile) -> bool {
         && (64..=MAX_ENGINE_BYTES).contains(&n.bytes)
         && digest(&file.sha256)
 }
-fn valid_mappings(rows: &[EngineMapping], file: &EngineFile) -> Result<(), String> {
+fn valid_mappings_for(
+    rows: &[EngineMapping],
+    file: &EngineFile,
+    paths: &[&str],
+) -> Result<(), String> {
     need(
         !rows.is_empty() && rows.len() <= MAX_ENGINE_MAPPINGS,
         "fixed engine is not uniquely observed",
@@ -266,7 +452,7 @@ fn valid_mappings(rows: &[EngineMapping], file: &EngineFile) -> Result<(), Strin
                 && !(p[1] == b'w' && p[2] == b'x')
                 && m.device == file.identity.device
                 && m.inode == file.identity.inode
-                && m.path == ENGINE_PATH,
+                && paths.contains(&m.path.as_str()),
             "engine VMA identity, extent or permissions differ",
         )?;
         executable |= p[2] == b'x';
@@ -302,6 +488,7 @@ impl RuntimeEngineObservation {
         let p = &self.process;
         need(
             p.host_pid > 1
+                && p.guest_pid > 1
                 && p.host_pid != main.init.host_pid
                 && p.host_pid != main.framework.host_pid
                 && p.host_pid != main.zygote.host_pid
@@ -352,23 +539,42 @@ impl RuntimeEngineObservation {
             p.namespaces.iter().all(|n| n.device > 0 && n.inode > 0),
             "engine process namespace inode absent",
         )?;
-        let src = &self.source;
-        need(
-            src.base_cohort_sha256 == main.owner.base_cohort_sha256
-                && src.library_image.role == "system_ext_lib64"
-                && src.library_image.file.bytes >= 4096
-                && digest(&src.library_image.sha256)
-                && src.library_image.loop_source_device == src.library_image.file.device
-                && src.library_image.loop_source_inode == src.library_image.file.inode
-                && src.library_image.loop_device == src.library_image.mount_root.device
-                && src.library_image.mount_id > 0
-                && src.engine.identity.device == src.library_image.mount_root.device
-                && !src.whole_image_body_rehashed_by_this_observation
-                && valid_engine(&src.engine)
-                && self.actual_engine == src.engine,
-            "fixed engine lacks its original immutable image owner",
-        )?;
-        valid_mappings(&self.mappings, &self.actual_engine)?;
+        self.source.validate_origin(main)?;
+        self.runtime_abi.validate(self.source.kind(), p, expected)?;
+        match &self.source {
+            EngineImageSource::BerberisArm64 { image: src } => {
+                need(
+                    self.native_executable.is_none() && self.actual_engine == src.engine,
+                    "bridge observation contains native or substituted file evidence",
+                )?;
+                valid_mappings_for(&self.mappings, &self.actual_engine, &[ENGINE_PATH])?;
+            }
+            EngineImageSource::NativeX86_64 { image: src } => {
+                use native_profile::NativeFileKind;
+                let exe = self
+                    .native_executable
+                    .as_ref()
+                    .ok_or_else(|| "native runtime omitted its actual executable".to_owned())?;
+                need(
+                    NativeFileKind::Executable.validate(&exe.file)
+                        && NativeFileKind::Art.validate(&self.actual_engine)
+                        && exe.file.identity.device == p.executable.device
+                        && exe.file.identity.inode == p.executable.inode
+                        && exe.file.identity.device == src.system_image.mount_root.device
+                        && self.actual_engine.identity.device != exe.file.identity.device
+                        && exe.mount.readonly_ext4()
+                        && exe.art_mount.readonly_ext4()
+                        && exe.mount.mount_id != exe.art_mount.mount_id,
+                    "native runtime lacks exact executable/ART bytes and readonly mounts",
+                )?;
+                valid_mappings_for(&exe.mappings, &exe.file, NativeFileKind::Executable.paths())?;
+                valid_mappings_for(
+                    &self.mappings,
+                    &self.actual_engine,
+                    NativeFileKind::Art.paths(),
+                )?;
+            }
+        }
         need(
             digest(&self.maps_before_sha256)
                 && digest(&self.maps_after_sha256)
@@ -383,11 +589,30 @@ impl RuntimeEngineObservation {
 /// Any line naming this engine, or this actual engine inode, must agree with
 /// the fixed path. Anonymous/JIT content is never opened or returned.
 pub(crate) fn engine_mappings(raw: &[u8], file: &EngineFile) -> Result<Vec<EngineMapping>, String> {
+    need(valid_engine(file), "invalid fixed engine identity")?;
+    selected_mappings(raw, file, &[ENGINE_PATH], b"libberberis_arm64.so")
+}
+pub(crate) fn native_mappings(
+    raw: &[u8],
+    file: &EngineFile,
+    kind: native_profile::NativeFileKind,
+) -> Result<Vec<EngineMapping>, String> {
+    need(
+        kind.validate(file),
+        "native runtime file differs from exact selected bytes",
+    )?;
+    selected_mappings(raw, file, kind.paths(), kind.basename())
+}
+fn selected_mappings(
+    raw: &[u8],
+    file: &EngineFile,
+    paths: &[&str],
+    basename: &[u8],
+) -> Result<Vec<EngineMapping>, String> {
     need(
         !raw.is_empty() && raw.len() <= MAX_MAP_BYTES && raw.ends_with(b"\n"),
         "maps input is empty, truncated or too large",
     )?;
-    need(valid_engine(file), "invalid fixed engine identity")?;
     let mut out = Vec::new();
     let mut count = 0usize;
     let mut previous = 0;
@@ -456,12 +681,10 @@ pub(crate) fn engine_mappings(raw: &[u8], file: &EngineFile) -> Result<Vec<Engin
             "maps inode field",
         )?;
         let inode = number.parse::<u64>().map_err(|_| "maps inode overflow")?;
-        let named = path
-            .windows(b"libberberis_arm64.so".len())
-            .any(|s| s == b"libberberis_arm64.so");
+        let named = path.windows(basename.len()).any(|s| s == basename);
         if named || (device == file.identity.device && inode == file.identity.inode) {
             need(
-                path == ENGINE_PATH.as_bytes()
+                paths.iter().any(|p| path == p.as_bytes())
                     && device == file.identity.device
                     && inode == file.identity.inode,
                 "engine path or actual mapped inode differs",
@@ -477,11 +700,11 @@ pub(crate) fn engine_mappings(raw: &[u8], file: &EngineFile) -> Result<Vec<Engin
                 offset: map_offset,
                 device,
                 inode,
-                path: ENGINE_PATH.into(),
+                path: ascii(path)?.into(),
             });
         }
     }
-    valid_mappings(&out, file)?;
+    valid_mappings_for(&out, file, paths)?;
     Ok(out)
 }
 
@@ -569,5 +792,65 @@ mod tests {
         let raw = std::fs::read("/proc/self/maps").unwrap();
         assert!(raw.ends_with(b"\n"));
         assert!(engine_mappings(&raw, &file()).is_err());
+    }
+
+    fn native_file(kind: native_profile::NativeFileKind) -> EngineFile {
+        let (bytes, sha, mode, uid, gid) = kind.expected();
+        let mut value = file();
+        value.identity.bytes = bytes;
+        value.identity.mode = mode;
+        value.identity.uid = uid;
+        value.identity.gid = gid;
+        value.sha256 = sha.into();
+        value
+    }
+    #[test]
+    fn engine_native_maps_need_positive_selected_executable_and_art() {
+        use native_profile::NativeFileKind;
+        for kind in [NativeFileKind::Executable, NativeFileKind::Art] {
+            let file = native_file(kind);
+            for path in kind.paths() {
+                let raw = format!(
+                    "1000-2000 r--p 0 08:11 91 {path}\n2000-3000 r-xp 1000 08:11 91 {path}\n"
+                );
+                let rows = native_mappings(raw.as_bytes(), &file, kind).unwrap();
+                assert_eq!(rows.len(), 2);
+                assert!(rows.iter().all(|row| row.path == *path));
+            }
+        }
+        let source = native_profile::art_input().unwrap();
+        assert_eq!(source.version, 371_899_999);
+        assert_eq!(source.member_bytes, native_profile::ART_BYTES);
+        assert_eq!(source.member_sha256, native_profile::ART_SHA256);
+    }
+    #[test]
+    fn engine_native_maps_reject_absence_alias_old_version_wrong_bytes_or_inode() {
+        use native_profile::NativeFileKind;
+        let kind = NativeFileKind::Art;
+        let file = native_file(kind);
+        let path = native_profile::ART_VERSIONED_PATH;
+        let raw = format!("1000-2000 r-xp 0 08:11 91 {path}\n");
+        for bad in [
+            raw.replace("@371899999", "@371899998"),
+            raw.replace(path, "/data/local/tmp/libart.so"),
+            raw.replace(path, &format!("{path} (deleted)")),
+            raw.replace("08:11 91", "08:11 92"),
+            raw.replace("r-xp", "r--p"),
+            raw.replace("r-xp", "rwxp"),
+            "1000-2000 r-xp 0 00:00 0 [anon:unrelated]\n".into(),
+        ] {
+            assert!(
+                native_mappings(bad.as_bytes(), &file, kind).is_err(),
+                "{bad}"
+            );
+        }
+        let mut wrong = file.clone();
+        wrong.sha256 = "0".repeat(64);
+        assert!(native_mappings(raw.as_bytes(), &wrong, kind).is_err());
+        wrong = file.clone();
+        wrong.identity.uid = 0;
+        assert!(native_mappings(raw.as_bytes(), &wrong, kind).is_err());
+        // Native proof never accepts a bridge-only mapping in lieu of ART.
+        assert!(native_mappings(&maps(), &file, kind).is_err());
     }
 }

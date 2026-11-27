@@ -20,16 +20,18 @@ BROKER = "droidloom_broker"
 NS = "p4_kernel_ns_handle_t"
 ENTRY = "droidloom_container_entry_exec_t"
 CACHE = "p4_linux_console_ld_cache_native_config_t"
-SCHEMA = "droidloom.native-engine-observer-proof.v1"
-SOURCE_SCHEMA = "droidloom.native-engine-observer-source.v1"
+SCHEMA = "droidloom.native-engine-observer-proof.v2"
+SOURCE_SCHEMA = "droidloom.native-engine-observer-source.v2"
 CONTRACT = "native-engine-observer-source.json"
 ENGINE = "/system/system_ext/lib64/libberberis_arm64.so"
 APP_TYPES = ["gmscore_app","platform_app","platform_app_36","priv_app","priv_app_36","system_app","untrusted_app","untrusted_app_25","untrusted_app_27","untrusted_app_29","untrusted_app_30","untrusted_app_32","untrusted_app_34"]
 FAMILIES = ["derive_native_kmod_static_policy","derive_native_tmpfiles_policy","derive_native_journal_catalog_policy","derive_native_update_done_policy","derive_native_random_seed_policy","derive_native_timesync_policy","derive_native_ldconfig_policy","derive_native_console_policy","derive_native_remount_policy","derive_native_logind_state_policy","derive_native_netplan_policy","derive_native_sysusers_policy"]
 ALIASES = [{"source":"p4_linux_rootdir_t","target":"p4_linux_kmod_tmpfiles_dir_t","class":"dir"},{"source":"p4_linux_native_data_t","target":"p4_linux_kmod_static_nodes_t","class":"file"},{"source":"p4_linux_setup_exec_t","target":"p4_linux_tmpfiles_exec_t","class":"file"},{"source":"p4_linux_runtime_lib_t","target":"p4_linux_tmpfiles_usr_config_t","class":"file"},{"source":"p4_linux_native_config_t","target":"p4_linux_tmpfiles_etc_config_t","class":"file"},{"source":"p4_linux_rootdir_t","target":"p4_linux_tmpfiles_config_dir_t","class":"dir"},{"source":"p4_linux_rootdir_t","target":"p4_linux_tmpfiles_runtime_dir_t","class":"dir"},{"source":"p4_linux_native_data_t","target":"p4_linux_tmpfiles_nologin_t","class":"file"},{"source":"p4_linux_usrmerge_link_t","target":"p4_linux_tmpfiles_shm_link_t","class":"lnk_file"},{"source":"p4_linux_rootdir_t","target":"p4_linux_journal_catalog_dir_t","class":"dir"},{"source":"p4_linux_native_data_t","target":"p4_linux_journal_catalog_file_t","class":"file"},{"source":"p4_linux_setup_exec_t","target":"p4_linux_update_done_exec_t","class":"file"},{"source":"p4_linux_rootdir_t","target":"p4_linux_update_done_var_dir_t","class":"dir"},{"source":"p4_linux_native_config_t","target":"p4_linux_update_done_etc_file_t","class":"file"},{"source":"p4_linux_native_data_t","target":"p4_linux_update_done_var_file_t","class":"file"},{"source":"p4_linux_setup_exec_t","target":"p4_linux_random_seed_exec_t","class":"file"},{"source":"p4_linux_native_data_t","target":"p4_linux_random_seed_file_t","class":"file"},{"source":"p4_linux_runtime_lib_t","target":"p4_linux_timesyncd_exec_t","class":"file"},{"source":"p4_linux_rootdir_t","target":"p4_linux_timesyncd_run_t","class":"dir"},{"source":"p4_linux_native_data_t","target":"p4_linux_timesyncd_run_t","class":"file"},{"source":"p4_linux_rootdir_t","target":"p4_linux_timesyncd_state_t","class":"dir"},{"source":"p4_linux_native_data_t","target":"p4_linux_timesyncd_state_t","class":"file"},{"source":"p4_linux_native_config_t","target":"p4_linux_timesyncd_config_t","class":"file"},{"source":"p4_linux_native_config_t","target":"p4_linux_timesyncd_nsswitch_t","class":"file"},{"source":"p4_linux_rootdir_t","target":"p4_linux_timesyncd_netif_t","class":"dir"},{"source":"p4_linux_native_data_t","target":"p4_linux_timesyncd_netif_t","class":"file"},{"source":"p4_linux_setup_exec_t","target":"p4_linux_ldconfig_exec_t","class":"file"},{"source":"p4_linux_native_config_t","target":"p4_linux_ldconfig_config_t","class":"file"},{"source":"p4_linux_rootdir_t","target":"p4_linux_ldconfig_config_dir_t","class":"dir"},{"source":"p4_linux_rootdir_t","target":"p4_linux_ldconfig_aux_dir_t","class":"dir"},{"source":"p4_linux_native_data_t","target":"p4_linux_ldconfig_aux_t","class":"file"},{"class":"file","source":"p4_linux_native_bin_t","target":"p4_linux_console_helper_native_bin_t"},{"class":"file","source":"p4_linux_native_bin_t","target":"p4_linux_console_vtrgb_native_bin_t"},{"class":"file","source":"p4_linux_native_config_t","target":"p4_linux_console_cache_exec_native_config_t"},{"class":"file","source":"p4_linux_native_config_t","target":"p4_linux_console_cache_native_config_t"},{"class":"file","source":"p4_linux_native_config_t","target":"p4_linux_console_config_native_config_t"},{"class":"file","source":"p4_linux_native_config_t","target":"p4_linux_console_public_native_config_t"},{"class":"file","source":"p4_linux_native_data_t","target":"p4_linux_console_public_native_data_t"},{"class":"dir","source":"p4_linux_rootdir_t","target":"p4_linux_console_cache_dir_t"},{"class":"file","source":"p4_linux_runtime_lib_t","target":"p4_linux_console_entry_runtime_lib_t"},{"class":"file","source":"p4_linux_runtime_lib_t","target":"p4_linux_console_library_runtime_lib_t"},{"class":"file","source":"p4_linux_runtime_lib_t","target":"p4_linux_console_public_runtime_lib_t"},{"class":"file","source":"p4_linux_native_bin_t","target":"p4_linux_console_interpreter_native_bin_t"},{"class":"file","source":"p4_linux_native_config_t","target":"p4_linux_console_ld_cache_native_config_t"},{"class":"file","source":"p4_linux_runtime_lib_t","target":"p4_linux_console_locale_runtime_lib_t"},{"source":"p4_linux_runtime_lib_t","target":"p4_linux_remount_exec_t","class":"file"},{"source":"p4_linux_native_bin_t","target":"p4_linux_remount_mount_exec_t","class":"file"},{"source":"p4_linux_native_config_t","target":"p4_linux_remount_fstab_native_config_t","class":"file"},{"source":"device","target":"p4_linux_root_uuid_link_t","class":"lnk_file"},{"source":"device","target":"p4_linux_root_block_t","class":"blk_file"},{"source":"p4_linux_rootdir_t","target":"p4_linux_systemd_state_parent_t","class":"dir"},{"source":"p4_linux_native_bin_t","target":"p4_linux_netplan_exec_t","class":"file"},{"source":"p4_linux_runtime_lib_t","target":"p4_linux_netplan_library_t","class":"file"},{"source":"p4_linux_runtime_lib_t","target":"p4_linux_netplan_yaml_t","class":"file"},{"source":"p4_linux_rootdir_t","target":"p4_linux_netplan_input_dir_t","class":"dir"},{"source":"p4_linux_network_manager_run_t","target":"p4_linux_netplan_output_t","class":"file"},{"source":"p4_linux_native_config_t","target":"p4_linux_netplan_private_config_t","class":"file"},{"source":"p4_linux_network_manager_run_t","target":"p4_linux_netplan_profiles_dir_t","class":"dir"},{"source":"p4_linux_rootdir_t","target":"p4_linux_netplan_link_dir_t","class":"dir"},{"source":"p4_linux_rootdir_t","target":"p4_linux_netplan_rule_dir_t","class":"dir"},{"source":"p4_linux_native_data_t","target":"p4_linux_netplan_link_rule_t","class":"file"},{"source":"p4_linux_etc_dir_t","target":"p4_linux_sysusers_etc_root_t","class":"dir"},{"source":"p4_linux_native_config_t","target":"p4_linux_sysusers_passwd_lock_t","class":"file"}]
-SOURCE_DOCUMENTS = [{"admission":"selected-kernel-source","bytes":212133,"kind":"kernel","package":"linux","path":"security/selinux/hooks.c","sha256":"4fa2a20bff2788fffc1f6bc95d49af3e1145e6a679f69ff5aa2d5a1bd85272a0","version":"6.18.64-p4ctx6181-fusectl-aafs-peer-r1"},{"admission":"selected-kernel-source","bytes":44689,"kind":"kernel","package":"linux","path":"security/commoncap.c","sha256":"29b61388bc205bdf27d83d323fb770be514c5e6743bebe4ce6ab0d9fc8549788","version":"6.18.64-p4ctx6181-fusectl-aafs-peer-r1"},{"admission":"selected-kernel-source","bytes":41482,"kind":"kernel","package":"linux","path":"kernel/ptrace.c","sha256":"312d2cb4946694b907e7ee7cdd4020be3ff16ab3db9d64235d843fbce5dd12be","version":"6.18.64-p4ctx6181-fusectl-aafs-peer-r1"},{"admission":"selected-kernel-source","bytes":98852,"kind":"kernel","package":"linux","path":"fs/proc/base.c","sha256":"df7f8ac0998775fe6a3c6062ac8eaf666b0a17a1a17b3cc5bc8c49f1eb06b631","version":"6.18.64-p4ctx6181-fusectl-aafs-peer-r1"},{"admission":"selected-kernel-source","bytes":86881,"kind":"kernel","package":"linux","path":"fs/proc/task_mmu.c","sha256":"a2be94149acaacfc85bbdae0a5ed6d8d3de57044bd5881435a5b1d1ce14b5532","version":"6.18.64-p4ctx6181-fusectl-aafs-peer-r1"},{"admission":"selected-kernel-source","bytes":14991,"kind":"kernel","package":"linux","path":"fs/nsfs.c","sha256":"fb1366d38c672d0fdfa0925fb6f89a5f25c31e3bc3b84e5b558643c46174829f","version":"6.18.64-p4ctx6181-fusectl-aafs-peer-r1"},{"admission":"selected-kernel-source","bytes":29306,"kind":"kernel","package":"linux","path":"fs/pidfs.c","sha256":"e94f42e40118fb76c6e1f318bc51c988b84e1ba2fbabca96fd39a21bca387a09","version":"6.18.64-p4ctx6181-fusectl-aafs-peer-r1"},{"admission":"selected-kernel-source","bytes":36834,"kind":"kernel","package":"linux","path":"kernel/user_namespace.c","sha256":"921c4be164146fce51cce1382b18ba84a9d38c765679e4ca0d00e25df865bdf1","version":"6.18.64-p4ctx6181-fusectl-aafs-peer-r1"},{"admission":"selected-kernel-source","bytes":41015,"kind":"kernel","package":"linux","path":"fs/open.c","sha256":"a56d47d20ade4758344f21458c2e7bc5ff4fc3b0dccd064f3a96b070c2d8a6f6","version":"6.18.64-p4ctx6181-fusectl-aafs-peer-r1"},{"admission":"selected-kernel-source","bytes":26177,"kind":"kernel","package":"linux","path":"fs/seq_file.c","sha256":"5f72519c4a5e36d869c554b685bbdbb575da36e191bba09eade2a330c8a0e51e","version":"6.18.64-p4ctx6181-fusectl-aafs-peer-r1"},{"admission":"selected-kernel-source","bytes":11700,"kind":"kernel","package":"linux","path":"fs/d_path.c","sha256":"bf0f8ce9a7c42b51842ef91516b866ba00e4a30a2afdcbc67fef4281ea1c8c45","version":"6.18.64-p4ctx6181-fusectl-aafs-peer-r1"},{"admission":"selected-kernel-source","bytes":96491,"kind":"kernel","package":"linux","path":"security/selinux/ss/services.c","sha256":"a3dc132fceec9f42a8d1728cef1b45685d5d2e0f3b5dcb812bec4049c5c19f67","version":"6.18.64-p4ctx6181-fusectl-aafs-peer-r1"}]
+SOURCE_DOCUMENTS = [{"admission":"selected-kernel-source","bytes":212133,"kind":"kernel","package":"linux","path":"security/selinux/hooks.c","sha256":"4fa2a20bff2788fffc1f6bc95d49af3e1145e6a679f69ff5aa2d5a1bd85272a0","version":"6.18.64-p4ctx6181-fusectl-aafs-peer-r1"},{"admission":"selected-kernel-source","bytes":44689,"kind":"kernel","package":"linux","path":"security/commoncap.c","sha256":"29b61388bc205bdf27d83d323fb770be514c5e6743bebe4ce6ab0d9fc8549788","version":"6.18.64-p4ctx6181-fusectl-aafs-peer-r1"},{"admission":"selected-kernel-source","bytes":41482,"kind":"kernel","package":"linux","path":"kernel/ptrace.c","sha256":"312d2cb4946694b907e7ee7cdd4020be3ff16ab3db9d64235d843fbce5dd12be","version":"6.18.64-p4ctx6181-fusectl-aafs-peer-r1"},{"admission":"selected-kernel-source","bytes":98852,"kind":"kernel","package":"linux","path":"fs/proc/base.c","sha256":"df7f8ac0998775fe6a3c6062ac8eaf666b0a17a1a17b3cc5bc8c49f1eb06b631","version":"6.18.64-p4ctx6181-fusectl-aafs-peer-r1"},{"admission":"selected-kernel-source","bytes":86881,"kind":"kernel","package":"linux","path":"fs/proc/task_mmu.c","sha256":"a2be94149acaacfc85bbdae0a5ed6d8d3de57044bd5881435a5b1d1ce14b5532","version":"6.18.64-p4ctx6181-fusectl-aafs-peer-r1"},{"admission":"selected-kernel-source","bytes":14991,"kind":"kernel","package":"linux","path":"fs/nsfs.c","sha256":"fb1366d38c672d0fdfa0925fb6f89a5f25c31e3bc3b84e5b558643c46174829f","version":"6.18.64-p4ctx6181-fusectl-aafs-peer-r1"},{"admission":"selected-kernel-source","bytes":29306,"kind":"kernel","package":"linux","path":"fs/pidfs.c","sha256":"e94f42e40118fb76c6e1f318bc51c988b84e1ba2fbabca96fd39a21bca387a09","version":"6.18.64-p4ctx6181-fusectl-aafs-peer-r1"},{"admission":"selected-kernel-source","bytes":36834,"kind":"kernel","package":"linux","path":"kernel/user_namespace.c","sha256":"921c4be164146fce51cce1382b18ba84a9d38c765679e4ca0d00e25df865bdf1","version":"6.18.64-p4ctx6181-fusectl-aafs-peer-r1"},{"admission":"selected-kernel-source","bytes":41015,"kind":"kernel","package":"linux","path":"fs/open.c","sha256":"a56d47d20ade4758344f21458c2e7bc5ff4fc3b0dccd064f3a96b070c2d8a6f6","version":"6.18.64-p4ctx6181-fusectl-aafs-peer-r1"},{"admission":"selected-kernel-source","bytes":26177,"kind":"kernel","package":"linux","path":"fs/seq_file.c","sha256":"5f72519c4a5e36d869c554b685bbdbb575da36e191bba09eade2a330c8a0e51e","version":"6.18.64-p4ctx6181-fusectl-aafs-peer-r1"},{"admission":"selected-kernel-source","bytes":11700,"kind":"kernel","package":"linux","path":"fs/d_path.c","sha256":"bf0f8ce9a7c42b51842ef91516b866ba00e4a30a2afdcbc67fef4281ea1c8c45","version":"6.18.64-p4ctx6181-fusectl-aafs-peer-r1"},{"admission":"selected-kernel-source","bytes":96491,"kind":"kernel","package":"linux","path":"security/selinux/ss/services.c","sha256":"a3dc132fceec9f42a8d1728cef1b45685d5d2e0f3b5dcb812bec4049c5c19f67","version":"6.18.64-p4ctx6181-fusectl-aafs-peer-r1"},{"admission":"selected-kernel-source","bytes":23118,"kind":"kernel","package":"linux","path":"fs/proc/array.c","sha256":"d7f9b0b88d5ea4bf2016b5f354cb4dc20ab273a1e218e72b7421446546b32846","version":"6.18.64-p4ctx6181-fusectl-aafs-peer-r1"},{"admission":"selected-kernel-source","bytes":9897,"kind":"kernel","package":"linux","path":"fs/statfs.c","sha256":"b211b13c420f2f07a0a06bc03b919ddd2cc6a44478d2490717ff4d3a3c7a5cbc","version":"6.18.64-p4ctx6181-fusectl-aafs-peer-r1"},{"admission":"selected-kernel-source","bytes":27519,"kind":"kernel","package":"linux","path":"fs/stat.c","sha256":"920cd3cdb2d6f167939dd79a86732a66a8ea7eb2954c31bdd4d1fa0796f89a17","version":"6.18.64-p4ctx6181-fusectl-aafs-peer-r1"},{"admission":"normal-signed-apt-quilt-source","bytes":1505,"kind":"glibc","package":"glibc","path":"sysdeps/unix/sysv/linux/fstatvfs64.c","sha256":"d351c94dbf52fa5c1ae0d54cfe7c6a56391ff61b93c35b0878159d8ce758fcd2","version":"2.43-2ubuntu2.7"},{"admission":"normal-signed-apt-quilt-source","bytes":4295,"kind":"glibc","package":"glibc","path":"sysdeps/unix/sysv/linux/internal_statvfs.c","sha256":"0af31f50f9b5c9a3aa32a72fcdc67ec8548f4dc6596e2dbf02518baa9b8a53e2","version":"2.43-2ubuntu2.7"},{"admission":"normal-signed-apt-quilt-source","bytes":1471,"kind":"glibc","package":"glibc","path":"sysdeps/unix/sysv/linux/fstatfs64.c","sha256":"e465783ec0e48f5663bb52e2b3f3bfa3bcb6c119b3be0e472857ba6ae3d3d815","version":"2.43-2ubuntu2.7"},{"admission":"normal-signed-apt-quilt-source","bytes":1006,"kind":"glibc","package":"glibc","path":"sysdeps/unix/sysv/linux/kernel_stat.h","sha256":"7063dbc01ca9039b3d773756a92a4b8f3b2948a4b9b472bf1da53960609fe8d3","version":"2.43-2ubuntu2.7"}]
 FIXED_PUBLIC_INPUTS = {"selection":{"bytes":423460,"sha256":"6964ddaba93445caf98ccfab4787254c8e2886fc9e3869ef20da7f615e81266c"},"metadata_proof":{"bytes":16866,"sha256":"603e95a0510ba70fbf7e8fc68f9e1e6d04db83ac7ae0d7499a0589e44662466d"},"conditional_rule_proof":{"bytes":31143,"sha256":"d8d4503d1fa009c5af953ab2f289ca8cc943603f3f70ee0f11eecdeabe25a104"},"selected_system":{"bytes":2294853632,"sha256":"dc781249bb4724b7a0777e5077321b84576db46f61abb4b9086b81077bfd0ab4"},"platform":{"bytes":5030,"sha256":"eb24be4624f15413dc51b49635087feff8c49aa7a1870d67488da36bd2364641"},"system_ext":{"bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},"product":{"bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}}
 ORIGINAL_CONSTRAINTS = {"commitment":{"forms":95,"sha256":"4fc553f9fc7bcf206adbcc7d2b92f9ef2697797a7db54e02306e5fd102f6050f"},"baseline_export":{"bytes":13329512,"sha256":"bde03fda4d120725bead55ed6d7627ae160b5c2ade445edf320bf90b435a1c4e"},"baseline_binary":{"bytes":1468180,"sha256":"fdb26ceb9f8cb7f235f9d7a5ed7d063632fcb4e6d31af32abc842e17d0a4d0e8"}}
+
+NATIVE_RUNTIME_INPUTS = {"selected_system":{"bytes":2294853632,"sha256":"dc781249bb4724b7a0777e5077321b84576db46f61abb4b9086b81077bfd0ab4"},"app_process64":{"path":"/system/bin/app_process64","bytes":51616,"sha256":"bcc150b9c7e2abcc9aef312ea04f5bbcba631dbb2e23cb1b240b7219df1229a2","mode":33261,"uid":0,"gid":2000,"label":"u:object_r:zygote_exec:s0","elf_class":64,"elf_machine":62},"art":{"name":"com.android.art","version":371899999,"container_file":"com.android.art.capex","container_bytes":20357120,"container_sha256":"5d0e18b7e2ff241989323c1d0d1695c97921ba85b617ba12e5aa69775b7bd5c0","original_apex_bytes":49065984,"original_apex_sha256":"5ace9ff8a8ab73aa64b63901fe18782028d5c61c452a35b8ad07fb0b711247d0","payload_bytes":48865280,"payload_sha256":"8dd4693cf110e6d69fdd34868c337cd94e4251151466b799d95762c7bf150bb4","filesystem":"ext4","member":"/lib64/libart.so","bytes":14884360,"sha256":"38849876d2101a7bac548d3438e3effff01e38f13f3b5740a2364b762fc229d3","mode":33188,"uid":1000,"gid":1000,"label":"u:object_r:system_lib_file:s0","open_path":"/apex/com.android.art/lib64/libart.so","mapping_paths":["/apex/com.android.art/lib64/libart.so","/apex/com.android.art@371899999/lib64/libart.so"],"elf_class":64,"elf_machine":62},"normal_apex_profile":{"bytes":22836,"sha256":"f3ab57e31c73ea963bd6cf4bed81779f49ebb052c68207582c75039b6fdc039f","count":38},"exact_elf_readback":{"path":"/home/qq/work/p4-application-engine-r14-4b91-r1/native-source-r1/RESULT.json","bytes":14198,"sha256":"775ef50059da0d35aed9c1827a4f7991b07cab144af5b7ed54ad5bf4521779f4"},"metadata_limit":"Independent app_process64 debugfs stat failed with EAGAIN; executable metadata comes from the already admitted fixed normal query-input profile, not that failed stat.","selected_abi_source":{"path":"/home/qq/work/p4-runtime-abi-selected-source-4b91-r3/SELECTED-SOURCE-PROOF-r1.json","bytes":58109,"sha256":"3f4df283943bc340ca93e56d02daf1870d750117d1f8cccf12ea396cf679c092"},"selected_abi_grammar":{"path":"/home/qq/work/p4-runtime-abi-query-4b91-r1/GRAMMAR-SOURCE-READBACK-r1.json","bytes":23689,"sha256":"490bc4e02258749d88e3096d96056cd8cd67e9d5e11425f054d74d58ea494f3d"},"framework_jar":{"bytes":49754098,"sha256":"bc8a175a95dcb50b5ae62a03a0ec2ba0fdea34169f83b2aab3c8bf2790707587"},"services_jar":{"bytes":25716529,"sha256":"bc5d11f4f09ec079c5804a01008e8317a0854231502550acaff89aa9f1083a86"}}
 
 GIT_SOURCES = [
     "runtime/droidloom-supervisor/src/engine_custody.rs",
@@ -55,6 +57,15 @@ GIT_SOURCES = [
     "runtime/droidloom-supervisor/src/production_host_admission.rs",
     "runtime/droidloom-supervisor/src/production_mounts_custody.rs",
     "runtime/droidloom-supervisor/src/production_mounts_system_ext.rs",
+    "runtime/droidloom-supervisor/src/production_native_engine_profile.rs",
+    "runtime/droidloom-supervisor/src/runtime_abi.rs",
+    "runtime/droidloom-supervisor/src/production_application_runtime_abi.rs",
+    "runtime/droidloom-supervisor/src/production_application_operation.rs",
+    "runtime/droidloom-supervisor/src/production_execution_profile.rs",
+    "runtime/droidloom-supervisor/src/production_query_input_profile.rs",
+    "runtime/droidloom-supervisor/src/production_apex_input_profile.rs",
+    "runtime/droidloom-supervisor/src/production_apex_input_profile.json",
+    "runtime/droidloom-supervisor/src/production_application_art_profile.rs",
 ]
 # Fixed vectors before normal alias preservation. All absent class/target cells
 # are zero, including private application bodies, every socket creation,
@@ -86,7 +97,9 @@ BASE = {
     ("rootfs", "dir"): READ | {"search"},
     ("system_file", "dir"): {"getattr", "search"},
     ("system_lib_file", "dir"): {"getattr", "search"},
-    ("zygote_exec", "file"): {"getattr"},
+    ("zygote_exec", "file"): READ,
+    ("apex_mnt_dir", "dir"): {"search"},
+    ("labeledfs", "filesystem"): {"getattr"},
     ("system_lib_file", "file"): READ,
     (NS, "file"): READ | {"ioctl"},
     (NS, "filesystem"): {"getattr"},
@@ -117,7 +130,15 @@ SHAPE = {
     "app_types": APP_TYPES,
     "app_types_are_conditional_candidates_only": True,
     "fixed_engine_path": ENGINE,
-    "executable_witness": "O_PATH/fstat, no readable executable descriptor",
+    "executable_witness": "proc/exe O_PATH plus native-only fixed source app_process64 full bytes",
+    "runtime_routes": ["berberis_arm64", "native_x86_64"],
+    "native_art_paths": NATIVE_RUNTIME_INPUTS["art"]["mapping_paths"],
+    "native_files_full_sha256_reads": True,
+    "native_files_readonly_ext4": True,
+    "native_actual_executable_and_art_vmas_required": True,
+    "native_apex_loop_owner_borrowed": False,
+    "apex_vintf_avb_qualification_is_separate": True,
+    "ams_pid_is_process_selector": False,
     "initial_namespace_capabilities": [],
     "borrowed_user_namespace_capabilities": ["sys_admin", "sys_ptrace"],
     "post_setns_capabilities": ["sys_ptrace"],
@@ -126,6 +147,10 @@ SHAPE = {
     "normal_broker_engine_body_access": False,
     "engine_request_full_apk_reads": 0,
     "engine_request_pm_metadata_commands": 4,
+    "engine_request_ams_metadata_commands": 2,
+    "ams_command": ["/system/bin/cmd", "activity", "dump", "processes", "<fixed39package>"],
+    "ams_role": "droidloom_launch_read",
+    "ams_record_join": "same actual PIDFD/NSpid/UID/name/epoch and two equal records including startSeq",
     "client_full_apk_binding": "borrowed ActualApplicationObservation from the normal inspector",
     "wire_caller_uid_or_apk_authority": False,
     "operation_work_seconds": 48,
@@ -178,7 +203,7 @@ def source_contract(here):
     data = json.loads(body)
     required = {"schema", "boundary", "git_sources", "component",
                 "selected_public_inputs", "selected_seapp", "source_documents",
-                "constraints", "apparmor_normal_admission_required"}
+                "constraints", "apparmor_normal_admission_required", "native_runtime_inputs"}
     if set(data) != required or data["schema"] != SOURCE_SCHEMA or data["boundary"] != SHAPE:
         raise ValueError("Engine fixed source contract shape or semantics changed")
     if set(data["git_sources"]) != set(GIT_SOURCES):
@@ -227,12 +252,37 @@ def source_contract(here):
     if any(seapp[key] != FIXED_PUBLIC_INPUTS[key]
            for key in ("selected_system", "platform", "system_ext", "product")):
         raise ValueError("Engine actual selected-system rule inputs changed")
+    native = data["native_runtime_inputs"]
+    if native != NATIVE_RUNTIME_INPUTS:
+        raise ValueError("Native selected ELF/ART/AMS source inputs changed")
+    abi = (here.parents[3] / "runtime/droidloom-supervisor/src/runtime_abi.rs").read_text()
+    abi_names = re.search(r"const PACKAGES:.*?= \[(.*?)\];", abi, re.S)
+    if abi_names is None or re.findall(r'"([^"]+)"', abi_names[1]) != selected["packages"]:
+        raise ValueError("AMS and Engine fixed39 selectors differ")
+    profile_path = here.parents[3] / "runtime/droidloom-supervisor/src/production_apex_input_profile.json"
+    profile_pin = native["normal_apex_profile"]
+    if pin(profile_path) != {key: profile_pin[key] for key in ("bytes", "sha256")}:
+        raise ValueError("Native original APEX profile changed")
+    profile = json.loads(profile_path.read_bytes())
+    if (profile["source_system_bytes"] != native["selected_system"]["bytes"]
+            or profile["source_system_sha256"] != native["selected_system"]["sha256"]
+            or len(profile["apexes"]) != profile_pin["count"]):
+        raise ValueError("Native source profile is not the exact selected system")
+    art = [row for row in profile["apexes"] if row["input"]["name"] == "com.android.art"]
+    if len(art) != 1 or art[0]["filesystem"] != "ext4":
+        raise ValueError("Native ART fixed role or filesystem differs")
+    for key in ("name", "version", "container_file", "container_bytes", "container_sha256",
+                "original_apex_bytes", "original_apex_sha256", "payload_bytes", "payload_sha256"):
+        if art[0]["input"][key] != native["art"][key]:
+            raise ValueError("Native ART exact source lineage changed: " + key)
     if data["source_documents"] != SOURCE_DOCUMENTS or data["constraints"] != ORIGINAL_CONSTRAINTS:
-        raise ValueError("Engine selected kernel sources or original constraint commitment changed")
+        raise ValueError("Engine selected kernel/libc sources or original constraint commitment changed")
     if not data["source_documents"] or data["apparmor_normal_admission_required"] != {
         "profile": "board-policy/apparmor/droidloom-production-broker",
         "maps_rule": "@{PROC}/[0-9]*/maps r,",
         "engine_rule": "/{system,run/droidloom-early-slot/rootfs/system,.droidloom-kernel-apparmorfs/system}/system_ext/lib64/libberberis_arm64.so r,",
+        "native_executable_rule": "/{system,run/droidloom-early-slot/rootfs/system,.droidloom-kernel-apparmorfs/system}/bin/app_process64 r,",
+        "native_art_rule": "/{apex,run/droidloom-early-slot/rootfs/apex,.droidloom-kernel-apparmorfs/apex}/com.android.art{,@371899999}/lib64/libart.so r,",
         "normal_175_rebuild_required": True,
         "separate_old_archive_reuse_allowed": False,
     }:
@@ -391,6 +441,8 @@ def _no_transitions(text, members):
 def verify_native_engine_observer(library, binary, exported, here):
     source = source_contract(here)
     text = exported.read_text()
+    if "(fsuse xattr ext4 (u object_r labeledfs ((s0) (s0))))" not in text.splitlines():
+        raise ValueError("Native readonly ext4 filesystem uses an unreviewed SID")
     preliminary = Membership(text)
     wanted = expected(here, preliminary.types)
     members, classes, inbound, raw_rules = raw_tables(text, wanted)
@@ -442,6 +494,9 @@ def verify_native_engine_observer(library, binary, exported, here):
     return {
         "schema": SCHEMA, "source": source,
         "actor": ROLE, "actor_role": "r", "app_types": APP_TYPES,
+        "runtime_routes": SHAPE["runtime_routes"],
+        "native_runtime_inputs": NATIVE_RUNTIME_INPUTS,
+        "native_apex_loop_owner_borrowed": False,
         "concrete_types": len(members.types), "classes": len(classes),
         "raw_rules_checked": raw_rules,
         "whole_raw_outbound_vectors": len(members.types) * len(classes),
