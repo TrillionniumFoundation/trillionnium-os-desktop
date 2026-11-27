@@ -18,7 +18,7 @@ HELPER={'path':str(COHORT/'bin/held-namespace-entry'),'bytes':3972024,
 SOURCE={'path':str(COHORT/'source/held_namespace_entry.rs'),'bytes':21907,
         'sha256':'5367f5c9786b9d3795b14c51af6c6bd488782a624b9066ce84e64af7feacf792'}
 EVIDENCE={'path':str(COHORT/'evidence/helper/evidence-manifest.json'),'bytes':19353,
-          'sha256':'fc20a33d502707bf0a3f9194a966b44282eca214f62bfe830f7eae498c8c8c1a'}
+          'sha256':'3aad09d9e19677a3318a0110613d03e758b9133d582c1e1e858a7819726d7ac3'}
 COMMANDS=(('guest-uid',('/system/bin/toybox','id','-u'),b'0\n'),
           ('guest-gid',('/system/bin/toybox','id','-g'),b'0\n'),
           ('boot-completed',('/system/bin/getprop','sys.boot_completed'),b'1\n'))
