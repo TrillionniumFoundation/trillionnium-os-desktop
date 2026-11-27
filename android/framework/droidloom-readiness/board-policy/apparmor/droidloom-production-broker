@@ -53,8 +53,7 @@ profile droidloom-production-broker flags=(attach_disconnected.path=/.droidloom-
   capability sys_admin,
   capability sys_chroot,
   # Only the fixed metadata and engine observer SELinux roles can use this
-  # in a target user namespace; neither grants this to the broker.
-  # user namespace. SELinux forbids it for the broker in both capability classes.
+  # in a target user namespace. SELinux forbids it for the broker in both classes.
   capability sys_ptrace,
   capability mknod,
   userns,
