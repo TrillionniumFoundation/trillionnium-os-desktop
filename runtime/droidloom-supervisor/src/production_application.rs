@@ -60,6 +60,14 @@ pub(crate) mod runtime_abi;
 mod runtime_abi_query;
 pub(crate) use runtime_abi_query::{RuntimeAbiObservation, read_runtime_abi};
 
+#[path = "user_zero_package_inventory.rs"]
+mod package_inventory;
+#[path = "production_application_package_inventory.rs"]
+mod package_inventory_query;
+pub(crate) use package_inventory_query::{
+    UserZeroPackageInventoryObservation, read_user_zero_package_inventory,
+};
+
 #[path = "production_application_display.rs"]
 mod display;
 use display::DisplayCommand;
