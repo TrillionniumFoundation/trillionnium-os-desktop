@@ -32,6 +32,8 @@ mod returned_history;
 #[path = "cold_original_once_state.rs"]
 mod state;
 pub(crate) use returned_history::ReturnedOnceHistory;
+#[path = "cold_working_boot.rs"]
+mod working_boot;
 #[path = "cold_working_grub.rs"]
 mod working_grub;
 #[path = "cold_working_material_policy.rs"]

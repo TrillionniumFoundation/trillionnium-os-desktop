@@ -300,6 +300,16 @@ impl WorkingQualificationMaterials {
         self.intent.revalidate()?;
         self.returned.guard()
     }
+    pub(super) fn recovery_directory(&self) -> Result<PathBuf> {
+        self.revalidate()?;
+        self.returned.recovery_directory(&self.candidate)
+    }
+    pub(super) fn prepare_boot_recovery(&mut self, input: &FilePin) -> Result<FilePin> {
+        self.revalidate()?;
+        let receipt = self.returned.prepare_recovery(&self.candidate, input)?;
+        self.revalidate()?;
+        Ok(receipt)
+    }
     pub(super) fn candidate(&self) -> &str {
         &self.candidate
     }
