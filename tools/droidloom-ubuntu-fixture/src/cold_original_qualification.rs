@@ -34,6 +34,8 @@ mod state;
 pub(crate) use returned_history::ReturnedOnceHistory;
 #[path = "cold_working_boot.rs"]
 mod working_boot;
+#[path = "cold_working_custody.rs"]
+mod working_custody;
 #[path = "cold_working_grub.rs"]
 mod working_grub;
 #[path = "cold_working_material_policy.rs"]
@@ -502,13 +504,18 @@ pub(super) fn prepare_working(input: &Path, expected: &str) -> Result<serde_json
     let materials = working_materials::WorkingQualificationMaterials::admit(&pin)?;
     let boot = working_boot::PreparedWorkingBoot::prepare(materials)?;
     let prepared = working_runtime::PreparedWorkingRuntime::prepare(boot)?;
-    prepared.revalidate()?;
+    let (sources, cell_preimage, grub_preimage) = prepared.into_publication_sources()?;
+    sources.revalidate()?;
+    cell_preimage.require_sources(&sources)?;
+    grub_preimage.require_sources(&sources)?;
     let result: serde_json::Value =
-        serde_json::from_slice(&files::read_pin(prepared.report(), 16 * 1024 * 1024)?)?;
+        serde_json::from_slice(&files::read_pin(sources.report(), 16 * 1024 * 1024)?)?;
     ensure(
         result["boot_armed"] == false && result["production_ready"] == false,
         "normal working runtime preparation must not claim a later live phase",
     )?;
-    prepared.revalidate()?;
+    cell_preimage.require_sources(&sources)?;
+    grub_preimage.require_sources(&sources)?;
+    sources.revalidate()?;
     Ok(result)
 }
