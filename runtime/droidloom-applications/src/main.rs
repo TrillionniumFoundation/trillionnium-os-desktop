@@ -18,6 +18,21 @@ mod cli_tests {
     use super::*;
 
     #[test]
+    fn physical_case_execution_uses_only_its_complete_source_owned_plan() {
+        assert!(Cli::try_parse_from(["apps","--physical-application-plan","/plan"]).is_err());
+        assert!(Cli::try_parse_from(["apps","--expect-physical-plan-sha256","sha"]).is_err());
+        let args=["apps","--physical-application-plan","/plan","--expect-physical-plan-sha256","sha"];
+        assert!(Cli::try_parse_from(args).is_ok());
+        for extra in [vec!["--expect-app-count","38"],vec!["--socket","/other"],
+            vec!["--user","1"],vec!["--once"],vec!["--remove-managed"],
+            vec!["--runtime-plan","/other","--expect-runtime-plan-sha256","sha","--expect-app-count","39"],
+            vec!["--release-check","/manifest"]] {
+            let mut combined=args.to_vec();combined.extend(extra);
+            assert!(Cli::try_parse_from(combined).is_err());
+        }
+    }
+
+    #[test]
     fn preparation_requires_external_intent_and_count_and_cannot_execute_other_actions() {
         assert!(Cli::try_parse_from(["apps", "--prepare-runtime-plan", "/intent"]).is_err());
         assert!(Cli::try_parse_from(["apps", "--expect-preparation-sha256", "pin"]).is_err());
@@ -164,6 +179,16 @@ mod cli_tests {
 #[command(name = "droidloom-applications", version, about)]
 #[command(group(clap::ArgGroup::new("release_action").args(["release_check", "runtime_plan", "prepare_runtime_plan", "verify_material_identity"])))]
 struct Cli {
+    /// Execute the source-owned complete physical case roster on the current working copy.
+    #[arg(long, requires = "expect_physical_plan_sha256",
+        conflicts_with_all = ["verify_material_identity","prepare_material_admission",
+            "owned_leaf_profile","adopt_native_leaf_release","release_check","runtime_plan",
+            "prepare_runtime_plan","inspect_package","inspect_contacts_fixture",
+            "remove_managed","socket","user","once","refresh_seconds","expect_app_count"])]
+    physical_application_plan: Option<PathBuf>,
+    /// Whole input-plan pin; it cannot change the compiled package/case/gate roster.
+    #[arg(long, requires = "physical_application_plan")]
+    expect_physical_plan_sha256: Option<String>,
     /// Verify live installed material identity only; never execute routes in the plan.
     #[arg(long, requires_all = ["expect_identity_plan_sha256", "expect_app_count"],
         conflicts_with_all = ["owned_leaf_profile", "adopt_native_leaf_release", "release_check",
@@ -258,6 +283,21 @@ fn main() {
 
 fn run() -> Result<(), Box<dyn std::error::Error>> {
     let cli = Cli::parse();
+    if let Some(path)=&cli.physical_application_plan {
+        let outcome=droidloom_applications::runtime_plan::run_physical_files(path,
+            cli.expect_physical_plan_sha256.as_deref().ok_or("physical input pin missing")?)?;
+        return match outcome.into_complete() {
+            Ok(mut complete)=>{
+                complete.guard()?;
+                println!("{}",serde_json::to_string_pretty(complete.summary())?);
+                Ok(())
+            }
+            Err(partial)=>{
+                println!("{}",serde_json::to_string_pretty(partial.summary())?);
+                Err("complete physical application qualification retains pending or failed gates".into())
+            }
+        };
+    }
     if let Some(path) = &cli.prepare_material_admission {
         let candidate = droidloom_applications::runtime_plan::prepare_identity_material_admission(
             path, cli.expect_material_admission_sha256.as_deref()
