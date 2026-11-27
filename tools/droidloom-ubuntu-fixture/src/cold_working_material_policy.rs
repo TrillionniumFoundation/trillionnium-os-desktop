@@ -208,6 +208,9 @@ impl CurrentPublicMaterials {
         }
         self.actual.revalidate()
     }
+    pub(super) fn documents(&self) -> &[VerifiedSourceDocument] {
+        &self.documents
+    }
     pub(super) fn report(&self) -> Value {
         json!({
             "schema":"droidloom.working-qualification-public-materials.v1",

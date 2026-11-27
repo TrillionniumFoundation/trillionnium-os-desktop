@@ -24,7 +24,11 @@ use serde_json::{Value, json};
 use std::{
     fs::File,
     path::{Path, PathBuf},
+    sync::Arc,
 };
+
+#[path = "cold_working_runtime_inputs.rs"]
+mod runtime_inputs;
 
 const BASE: &str = "/var/lib/droidloom-qualification";
 #[derive(Deserialize, Serialize)]
@@ -83,7 +87,8 @@ fn same_work(before: &Identity, actual: &Identity) -> bool {
 pub(super) struct WorkingQualificationMaterials {
     returned: PreparedWorkingCopyObservation,
     public_materials: CurrentPublicMaterials,
-    sources: OriginalLabelSources,
+    runtime_inputs: runtime_inputs::RuntimeInputs,
+    sources: Arc<OriginalLabelSources>,
     fresh_owned: WorkingOwnedObservation,
     guards: Vec<Guard>,
     input: SealedInput,
@@ -133,6 +138,7 @@ impl WorkingQualificationMaterials {
             &plan.prepared_initramfs,
             &plan.label_tools,
         )?;
+        let sources = Arc::new(sources);
         let work = returned.work().to_owned();
         let work_fd = returned.work_file().try_clone()?;
         let work_identity = fs::stat(&work_fd)?;
@@ -222,6 +228,12 @@ impl WorkingQualificationMaterials {
                 "boot_armed":false,"application_business_accepted":false,"production_ready":false
             }),
         )?;
+        let runtime_inputs = runtime_inputs::RuntimeInputs::publish(
+            &plan.candidate_id,
+            &public_materials,
+            &report,
+            Arc::clone(&sources),
+        )?;
         let intent = save(
             &work.join("MATERIALS-INTENT.json"),
             &json!({
@@ -256,6 +268,7 @@ impl WorkingQualificationMaterials {
         let value = Self {
             returned,
             public_materials,
+            runtime_inputs,
             sources,
             fresh_owned,
             guards,
@@ -288,6 +301,7 @@ impl WorkingQualificationMaterials {
         self.sources.revalidate_custody()?;
         self.fresh_owned.revalidate()?;
         self.public_materials.revalidate()?;
+        self.runtime_inputs.revalidate()?;
         self.original_cell.revalidate()?;
         self.grub.revalidate()?;
         for guard in &self.guards {
