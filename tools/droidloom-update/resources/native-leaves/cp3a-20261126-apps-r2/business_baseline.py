@@ -12,7 +12,7 @@ import types
 
 ROOT=Path('/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2')
 SOURCE=ROOT/'source/main/kernel_native_observation.py'
-SOURCE_SHA='11c01f246ace327bf3bfaed3aad785979c5a5cf332e1ef60f4a69eb2e8f53384'
+SOURCE_SHA='b61fdf6e13325a2e131f23314da51ca77e927b43a1d73875efaa3d4e526827e4'
 META=('st_dev','st_ino','st_mode','st_uid','st_gid','st_nlink','st_size','st_mtime_ns','st_ctime_ns')
 def _load():
     for parent in SOURCE.parents:
@@ -38,3 +38,6 @@ _current=_load()
 SCHEMA=_current.SCHEMA
 QUAL_SCHEMA=_current.QUAL_SCHEMA
 BusinessBaseline=_current.BusinessBaseline
+
+def current_channel():
+    return _current.channel()

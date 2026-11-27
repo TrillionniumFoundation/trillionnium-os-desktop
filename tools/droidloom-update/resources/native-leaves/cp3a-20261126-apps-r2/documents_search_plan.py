@@ -44,7 +44,7 @@ def source_packet(c,value,packet):
     c.need(type(value) is dict and set(value)==SOURCE_FIELDS and value['schema']=='pocket4-documents-fresh-source-v1',
         'EXACT_NEW_DOCUMENTS_SOURCE_SCHEMA')
     root=Path(value['case_root'])
-    c.need(root.parent==c.QUALIFICATION and re.fullmatch('business-documents-case-[0-9a-f]{32}',root.name)
+    c.need(c.case_root_matches(root,'documents-search-sort','business-documents-case-[0-9a-f]{32}')
         and Path(value['task_source_manifest']['path'])==root/'task-source.json','NEW_CASE_SOURCE_PACKET_LOCATION')
     task=c.parse(c.read_ref(value['task_source_manifest']))
     expected=[{'path':str(root/'source'/Path(r['path']).name),'bytes':r['bytes'],'sha256':r['sha256']} for r in packet['files']]
@@ -85,8 +85,7 @@ def templates(c,packet):
 def create_source(c,request,output,prep_ref):
     c.need(os.getuid()==os.geteuid()==0,'ROOT_FRESH_SOURCE_ASSEMBLY')
     packet=preparation(c,prep_ref);baseline,_,profiles=inputs(c,request,packet)
-    root=Path(output);c.need(root.parent==c.QUALIFICATION
-        and re.fullmatch('business-documents-case-[0-9a-f]{32}',root.name),'NEW_PRIVATE_DOCUMENTS_CASE_ROOT')
+    root=Path(output);c.need(c.case_root_matches(root,'documents-search-sort','business-documents-case-[0-9a-f]{32}'),'NEW_PRIVATE_DOCUMENTS_CASE_ROOT')
     names_module=named(c,packet,'documents_names.py');names=names_module.FeaturesNames(secrets.token_hex(8),root)
     render=named(c,packet,'documents_helper_source.py');rendered,manifest=render.render(names,templates(c,packet))
     root=c.private_dir(root,create=True);src=c.private_dir(root/'source',create=True)
@@ -133,8 +132,7 @@ def validate_source(c,ref,prep_ref):
 
 def observe_pm_help(c,source_ref,output,prep_ref):
     source,baseline,_,packet,_,_=validate_source(c,source_ref,prep_ref)
-    root=Path(output);c.need(root.parent==c.QUALIFICATION
-        and re.fullmatch('business-documents-pm-help-[0-9a-f]{32}',root.name),'NEW_READONLY_PM_PROOF_ROOT')
+    root=Path(output);c.need(c.input_root_matches(root,'documents-search-sort','pm-help','business-documents-pm-help-[0-9a-f]{32}'),'NEW_READONLY_PM_PROOF_ROOT')
     root=c.private_dir(root,create=True);journal=c.private_dir(root/'commands',create=True)
     view=None;calls=0;result={'schema':'pocket4-documents-current-pm-no-replace-v1','state':'FAILED','source':source_ref,
         'source_preparation':prep_ref,'baseline':source['baseline'],'qualification':source['qualification'],
@@ -166,8 +164,7 @@ def observe_pm_help(c,source_ref,output,prep_ref):
 
 def validate_pm_help(c,ref,source_ref,source,baseline):
     v=c.parse(c.read_ref(ref,16384));root=Path(ref['path']).parent
-    c.need(Path(ref['path']).name=='result.json' and root.parent==c.QUALIFICATION
-        and re.fullmatch('business-documents-pm-help-[0-9a-f]{32}',root.name)
+    c.need(Path(ref['path']).name=='result.json' and c.input_root_matches(root,'documents-search-sort','pm-help','business-documents-pm-help-[0-9a-f]{32}')
         and v.get('schema')=='pocket4-documents-current-pm-no-replace-v1' and v['state']=='ACTUAL_NO_REPLACE_FLAG_VERIFIED'
         and v['source']==source_ref and v['source_preparation']==source['source_preparation']
         and v['baseline']==source['baseline'] and v['qualification']==source['qualification']

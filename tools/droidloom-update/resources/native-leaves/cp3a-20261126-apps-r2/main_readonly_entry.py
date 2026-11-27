@@ -22,7 +22,7 @@ def capture(base,mapping,reader,commands,contract,guard,root):
     host=contract.verify_host_helper();binding=contract.main_binding(base)
     need(mapping.guard()==base['main_user_namespace'],'ACTUAL_HELD_MAIN_MAPPING_REQUIRED')
     root=Path(root)
-    need(root.is_absolute() and root.resolve()==root and root.is_relative_to(contract.QUALIFICATION)
+    need(root.is_absolute() and root.resolve()==root and root.is_relative_to(contract.qualification_root())
          and not root.exists(),'FRESH_CANONICAL_MAIN_ENTRY_DIRECTORY_REQUIRED')
     parent=root.parent.lstat()
     need(stat.S_ISDIR(parent.st_mode) and parent.st_uid==parent.st_gid==0

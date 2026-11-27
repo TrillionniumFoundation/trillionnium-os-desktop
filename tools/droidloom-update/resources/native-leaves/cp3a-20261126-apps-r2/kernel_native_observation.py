@@ -21,15 +21,15 @@ import types
 ROOT=Path('/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2')
 MAIN=ROOT/'source/main'
 QUALIFICATION=Path('/var/lib/droidloom/qualification/pocket4')
-CHANNEL_SHA='3ec881482aef5bffb2c9d05e79d6ca3f44cd3c0d94a36c3c1dd7fd995e5e7ac1'
+CHANNEL_SHA='b87eb453836022d772c11c6fa58ca55ab35348391f2e3445726adbe56720b826'
 DATA_SHA='700c81b80bf8378cb1d3e2e916d82ba3a9004bfb9d2d75c9aab7773a8c3c98ed'
 ANCESTRY_SHA='824492a2e9068aa30c3d5dc148402802843a3aaa574c41c290819a9f3d65d201'
 EPOCH_SHA='ba4854fcc42def3fb37ac8add1e2b4382d24cb716e2d8181e84b286d5975c377'
 READER_SHA='3d2860cde4ec7c7cbe67ed4756d9f599646ee39dc36f2f80b3ef008fba6b80cb'
-CAPTURE_SHA='eac7d44f24f299718dd4f090a2aecfe1e40bace3578c0ddb15831357615dabff'
-HELPER_SHA='3a3dd3037c03c09fd7ebc1068123a202a29d286c1bf77fb81a4476fb25576a3c'
-READONLY_SHA='98f6af7733896835da8d375a950a5cc0de01bd4429622c8ada230a869efc25d1'
-COMMANDS_SHA='25aac17bf57736ab0a6680b2da2304cc2b68fec31c1f9c421d62b2bcbf1a759a'
+CAPTURE_SHA='b064339fcc7ece6736e7fd173b58795938f4ea3693dee66d60b7d023dc88a37e'
+HELPER_SHA='69910d18de875966b469202345f6c50e3c6e146da4046af18ef61cd82ec9fc32'
+READONLY_SHA='ed7979ba7cbffcaa05648b5a09fb99e7b00a38928c989e18032a24b8622bc4c9'
+COMMANDS_SHA='7b8b9635a1f7783450e3b8fe040ff011fc25fb076b681a74dfd38d35a1728f5a'
 SCHEMA='droidloom.native-leaf-business-baseline.v1'
 QUAL_SCHEMA='droidloom.native-leaf-business-qualification.v1'
 RUNTIME_SCHEMA='droidloom.native-leaf-runtime-comparison.v1'
@@ -70,7 +70,10 @@ def root_parents(path,private=False):
         need(stat.S_ISDIR(st.st_mode) and st.st_uid==st.st_gid==0 and not st.st_mode&0o022,
              'ROOT_PROTECTED_NATIVE_LEAF_PARENT_REQUIRED')
     if private:
-        need(path.is_relative_to(QUALIFICATION) and
+        live=channel();runtime=live.working_runtime_root()
+        root=(runtime/'native-baselines'/('capture-'+live.core['application']['package'])
+              if runtime is not None else QUALIFICATION)
+        need(path.is_relative_to(root) and
              stat.S_IMODE(path.parent.lstat().st_mode)==0o700,
              'PRIVATE_NORMAL_BASELINE_DIRECTORY_REQUIRED')
 def read_ref(ref,maximum=16*1024*1024,source=False):
@@ -582,11 +585,14 @@ class BusinessBaseline:
 def collect(output_directory):
     """Internal comparison collector, invoked only by the source-owned Rust CLI."""
     need(os.getuid()==os.geteuid()==0,'NORMAL_ROOT_OBSERVER_REQUIRED')
+    live=channel();runtime=live.working_runtime_root()
     output=Path(output_directory);root_parents(output/'OBSERVED.json',private=True)
-    need(output.is_relative_to(QUALIFICATION) and output.is_dir() and
+    location=(output==runtime/'native-baselines'/('capture-'+live.core['application']['package'])
+              if runtime is not None else output.is_relative_to(QUALIFICATION))
+    need(location and output.is_dir() and
          stat.S_IMODE(output.lstat().st_mode)==0o700 and not (output/'OBSERVED.json').exists(),
          'FRESH_PRIVATE_NORMAL_CAPTURE_DIRECTORY_REQUIRED')
-    live=channel();observer=None;primary=None;closed=None
+    observer=None;primary=None;closed=None
     commands=load(ROOT/'source/support/business_commands.py',COMMANDS_SHA,'normal_current_readonly_commands')
     helper=load(MAIN/'helper_contract.py',HELPER_SHA,'normal_current_readonly_contract')
     entry=load(MAIN/'main_readonly_entry.py',READONLY_SHA,'normal_current_readonly_entry')

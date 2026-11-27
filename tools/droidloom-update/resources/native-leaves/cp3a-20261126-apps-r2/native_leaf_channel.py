@@ -178,15 +178,21 @@ class ComparisonChannel:
         need(len(self.raw)==st.st_size and metadata(self.facts_fd)==self.before,
              'COMPLETE_NORMAL_COMPARISON_MEMFD_REQUIRED')
         envelope=parse(self.raw)
-        need(type(envelope) is dict and set(envelope)=={
-            'schema','baseline','normal_source_recipe','host_source_entries','user_zero_package_inventory',
-            'deadline_monotonic_ns','comparison_only'} and
-            envelope['schema']=='droidloom.native-leaf-channel.v1' and
+        keys={'schema','baseline','normal_source_recipe','host_source_entries','user_zero_package_inventory',
+              'deadline_monotonic_ns','comparison_only'}
+        working=type(envelope) is dict and envelope.get('schema')=='droidloom.native-leaf-channel.v2'
+        allowed=(keys|{'working_native_source'},keys|{'working_preparation_owner'}) if working else (keys,)
+        need(type(envelope) is dict and set(envelope) in allowed and
+            envelope['schema'] in ('droidloom.native-leaf-channel.v1','droidloom.native-leaf-channel.v2') and
             envelope['comparison_only'] is True and
             number(envelope['deadline_monotonic_ns'],1) and
             0<envelope['deadline_monotonic_ns']-time.monotonic_ns()<=7200*10**9,
             'ORIGINAL_NORMAL_LEAF_ABSOLUTE_DEADLINE_REQUIRED')
         self.deadline_ns=envelope['deadline_monotonic_ns']
+        self.working_native_source=(validate_working_native_source(envelope['working_native_source'])
+                                    if 'working_native_source' in envelope else None)
+        self.working_preparation_owner=(validate_working_preparation_owner(envelope['working_preparation_owner'])
+                                       if 'working_preparation_owner' in envelope else None)
         self.core=validate_core(envelope['baseline'])
         self.user_zero_package_inventory=envelope['user_zero_package_inventory']
         self.user_zero_records=inventory_table(self.user_zero_package_inventory,self.core)
@@ -212,6 +218,9 @@ class ComparisonChannel:
                  sock.getsockname() in ('',b'') and sock.getpeername() in ('',b''),
                  'UNNAMED_NORMAL_CHECK_SOCKETPAIR_REQUIRED')
         self.guard()
+
+    def working_runtime_root(self):
+        return working_runtime_root(self)
 
     def validate_inventory_comparison(self,value):
         # A stored pre-install table is compared explicitly by the fixed IHG
@@ -423,3 +432,145 @@ def inherit_for_host(argv,environment,pass_fds):
     for key,fd in zip((FACTS_ENV,GUARD_ENV),pair):env[key]=str(fd)
     channel.guard()
     return env,tuple(pass_fds)+pair
+
+
+def validate_working_native_source(value):
+    """Validate comparison shape; only the retained Rust owner grants custody."""
+    need(type(value) is dict and set(value)=={
+        'schema','custody','selection','catalog','comparison_only'} and
+        value['schema']=='droidloom.working-native-source-comparison.v1' and
+        value['comparison_only'] is True,'EXACT_WORKING_SOURCE_COMPARISON_REQUIRED')
+    owner=value['custody']
+    need(type(owner) is dict and set(owner)=={
+        'schema','runtime_evidence_directory','fresh_source_lock','fresh_application_lock',
+        'applications','actual_pid','historical_original_lock_identity_claimed',
+        'runtime_qualified','production_ready','physical_plan'} and
+        owner['schema']=='droidloom.working-native-source-custody.v1' and
+        owner['historical_original_lock_identity_claimed'] is False and
+        owner['runtime_qualified'] is False and owner['production_ready'] is False and
+        number(owner['actual_pid'],2,2**32-1),
+        'ACTUAL_WORKING_OWNER_COMPARISON_REQUIRED')
+    root=owner['runtime_evidence_directory']
+    need(type(root) is str and re.fullmatch(
+        r'/var/lib/droidloom/qualification/working-qualification-[0-9a-f]{64}/runtime-evidence',root),
+        'EXACT_ADMITTED_WORKING_RUNTIME_DIRECTORY_REQUIRED')
+    def pin(row,path=None):
+        need(type(row) is dict and set(row)=={'path','bytes','sha256'} and
+             type(row['path']) is str and number(row['bytes'],1,128*1024*1024) and
+             type(row['sha256']) is str and re.fullmatch('[0-9a-f]{64}',row['sha256']) and
+             (path is None or row['path']==str(path)),'EXACT_WORKING_SOURCE_FILE_PIN_REQUIRED')
+    def identity(row,mode=None):
+        need(type(row) is list and len(row)==9 and all(number(v) for v in row) and
+             row[3:6]==[0,0,1] and (mode is None or row[2]==mode),
+             'ACTUAL_ROOT_SOURCE_F9_REQUIRED')
+    locks=[]
+    for key,name in [('fresh_source_lock','source.lock'),('fresh_application_lock','application.lock')]:
+        row=owner[key]
+        need(type(row) is dict and set(row)=={'name','f9'} and row['name']==name,
+             'DISTINCT_WORKING_SOURCE_LOCK_ROLES_REQUIRED')
+        identity(row['f9'],stat.S_IFREG|0o600)
+        need(row['f9'][6]==0,'EMPTY_FRESH_WORKING_LOCK_REQUIRED')
+        locks.append(row['f9'][:2])
+    need(locks[0]!=locks[1],'WORKING_LOCK_ROLES_CANNOT_SHARE_AN_INODE')
+    app=owner['applications']
+    need(type(app) is dict and set(app)=={'path','bytes','sha256','f9'},
+         'EXACT_INSTALLED_APPLICATIONS_COMPARISON_REQUIRED')
+    pin({k:app[k] for k in ('path','bytes','sha256')},'/usr/bin/droidloom-applications')
+    identity(app['f9'])
+    need(app['f9'][6]==app['bytes'] and stat.S_ISREG(app['f9'][2]) and
+         app['f9'][2]&0o6022==0 and app['f9'][2]&0o111!=0,
+         'ACTUAL_INSTALLED_APPLICATIONS_ELF_REQUIRED')
+    pin(value['selection'],ROOT/'selection/selection-14.json')
+    pin(value['catalog'])
+    need(value['catalog']['path']=='/etc/droidloom/native-application-leaves/catalogs/'+
+         value['catalog']['sha256']+'.json','COMPILED_WORKING_CATALOG_PATH_REQUIRED')
+    plan=owner['physical_plan']
+    need(type(plan) is dict and set(plan)=={'path','bytes','sha256','f9'},
+         'ACTUAL_AUTHENTICATED_PHYSICAL_PLAN_REQUIRED')
+    pin({k:plan[k] for k in ('path','bytes','sha256')})
+    identity(plan['f9'],stat.S_IFREG|0o400)
+    need(plan['f9'][6]==plan['bytes'] and Path(plan['path']).is_relative_to(root),
+         'WORKING_PLAN_MUST_REMAIN_IN_THIS_ACTUAL_RUNTIME_DIRECTORY')
+    return value
+
+
+def working_release(legacy,preparation_ref,channel):
+    """Borrow the actual live Rust source owner, retaining normal source FDs.
+
+    This adapter cannot mint a Rust lease. Each guard asks the already inherited
+    private channel to revalidate the opaque source owner and original deadline.
+    The original resource class still observes the real native parent/cgroup.
+    """
+    source=channel.working_native_source
+    need(channel.working_preparation_owner is None,'PREPARATION_OWNER_CANNOT_EXECUTE_AN_APPLICATION_LEAF')
+    if source is None:return None
+    base=legacy['ReleaseLease']
+    class WorkingLease(base):
+        def __init__(self):
+            need(os.getuid()==os.geteuid()==0,'ACTUAL_ROOT_WORKING_LEAF_REQUIRED')
+            self.pid=os.getpid();self.closed=False
+            self.directories={};self.files=[];self.lock_fds=[]
+            self.resource_scope=None;self.release_ref=None
+            self.preparation_ref=dict(preparation_ref);self.working_channel=channel
+            self.working_source=source
+            try:
+                channel.guard()
+                owner=source['custody']
+                need(os.getppid()==owner['actual_pid'],'ACTUAL_RUST_WORKING_PARENT_REQUIRED')
+                select_pin=source['selection'];catalog_pin=source['catalog']
+                selection=legacy['parse'](self._file(Path(select_pin['path']),select_pin,1024*1024,root_owned=True))
+                catalog=legacy['parse'](self._file(Path(catalog_pin['path']),catalog_pin,65536,root_owned=True))
+                selected=legacy['selected_preparation'](catalog,selection,preparation_ref)
+                self._file(Path(preparation_ref['path']),preparation_ref,1024*1024,root_owned=True)
+                self._file(Path(selected['entry']['path']),selected['entry'],262144,root_owned=True)
+                app=owner['applications']
+                self.cli_reference={k:app[k] for k in ('path','bytes','sha256')}
+                self._file(legacy['CLI'],self.cli_reference,128*1024*1024,root_owned=True,executable=True)
+                actual=next(identity for _,identity,_,_,ref in self.files
+                            if ref['path']==str(legacy['CLI']))
+                need(actual==app['f9'],'HELD_APPLICATIONS_ELF_DIFFERS_FROM_ACTUAL_RUST_OWNER')
+                self.guard()
+            except BaseException:
+                self.close();raise
+        def guard(self):
+            need(not self.closed and os.getpid()==self.pid,'SAME_WORKING_LEAF_PROCESS_REQUIRED')
+            self.working_channel.guard()
+            for path,(fd,identity,parent,name,required) in self.directories.items():
+                need(legacy['f9'](os.fstat(fd))[:6]==identity==legacy['f9'](os.lstat(path))[:6],
+                     'WORKING_SOURCE_DIRECTORY_CHANGED')
+                if parent is not None:
+                    need(legacy['f9'](os.stat(name,dir_fd=parent,follow_symlinks=False))[:6]==identity,
+                         'WORKING_SOURCE_DIRECTORY_LINK_CHANGED')
+            for fd,identity,parent,name,reference in self.files:
+                need(legacy['f9'](os.fstat(fd))==identity==
+                     legacy['f9'](os.stat(name,dir_fd=parent,follow_symlinks=False)),
+                     'WORKING_SOURCE_FILE_IDENTITY_CHANGED')
+                need(hashlib.sha256(self._body(fd,identity[6])).hexdigest()==reference['sha256'],
+                     'WORKING_SOURCE_FILE_BODY_CHANGED')
+                need(legacy['f9'](os.fstat(fd))==identity==
+                     legacy['f9'](os.stat(name,dir_fd=parent,follow_symlinks=False)),
+                     'WORKING_SOURCE_CHANGED_DURING_BOOKEND')
+            if self.resource_scope is not None:self.resource_scope.report()
+            self.working_channel.guard()
+            return dict(self.cli_reference)
+    return WorkingLease()
+
+
+def validate_working_preparation_owner(value):
+    need(type(value) is dict and set(value)=={
+        'schema','runtime_evidence_directory','actual_pid','comparison_only'} and
+        value['schema']=='droidloom.working-native-preparation-comparison.v1' and
+        value['comparison_only'] is True and number(value['actual_pid'],2,2**32-1) and
+        type(value['runtime_evidence_directory']) is str and re.fullmatch(
+            r'/var/lib/droidloom/qualification/working-qualification-[0-9a-f]{64}/runtime-evidence',
+            value['runtime_evidence_directory']),
+        'EXACT_ACTUAL_PREPARATION_OWNER_COMPARISON_REQUIRED')
+    return value
+
+
+def working_runtime_root(channel):
+    """Read-only pathname derived from the actual retained source owner."""
+    channel.guard()
+    value=(channel.working_native_source['custody'] if channel.working_native_source is not None
+           else channel.working_preparation_owner)
+    return Path(value['runtime_evidence_directory']) if value is not None else None

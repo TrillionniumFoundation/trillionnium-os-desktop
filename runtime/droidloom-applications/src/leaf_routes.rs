@@ -28,7 +28,7 @@ use super::runtime_identity::{IdentityObservation, VerifiedMaterialBatch};
 const QUALIFICATION: &str = "/var/lib/droidloom/qualification/pocket4";
 const SELECTION_PATH: &str = "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2/selection/selection-14.json";
 const SELECTION_BYTES: u64 = 4769;
-const SELECTION_SHA: &str = "e46570ce965d4cb1abd9a9b2433fa71293525ccad8b4ed6ed65e19c4dfc85c73";
+const SELECTION_SHA: &str = "78cc5f1bcfb6d5fc2d055973154b34be24b58e336b66addea8c0ccb5b78f10ec";
 const SOURCE_CATALOG: &str = include_str!("leaf_sources.json");
 
 pub(super) fn compiled_release_sources() -> (FilePin, &'static str) {
@@ -869,9 +869,9 @@ fn case_document(plan: &LeafPlan, request: &Value) -> Result<(Option<FilePin>, V
 // cannot construct Main, a package observation, a data handle, or a business gate.
 const NATIVE_BASELINE_SCHEMA: &str = "droidloom.native-leaf-business-baseline.v1";
 const NATIVE_QUALIFICATION_SCHEMA: &str = "droidloom.native-leaf-business-qualification.v1";
-const NORMAL_SOURCE_RECIPE_BYTES: u64 = 815042;
+const NORMAL_SOURCE_RECIPE_BYTES: u64 = 809024;
 const NORMAL_SOURCE_RECIPE_SHA: &str =
-    "16777fe0bede8ac8524a28a84e908303fc13d3696d0d468401082affc916e1d2";
+    "96145cde99440f773a8b556f6e14e0a4876f7c8066da4b8ed2943a1ebe883bcc";
 
 fn canonical_value(value: &Value) -> Value {
     match value {
@@ -2359,11 +2359,11 @@ mod tests {
                 "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2/source/ihg/app_entry.py"
             )
         );
-        assert_eq!(source.entry.bytes, 14093);
-        assert_eq!(
-            source.entry.sha256,
-            "2e3259dbc6f73e9baf7c86075ffb398a5f33e279756046c789941e43303d9c82"
+        let current_entry = include_bytes!(
+            "../../../tools/droidloom-update/resources/native-leaves/cp3a-20261126-apps-r2/ihg_app_entry.py"
         );
+        assert_eq!(source.entry.bytes, current_entry.len() as u64);
+        assert_eq!(source.entry.sha256, hex::encode(Sha256::digest(current_entry)));
         for route in [Route::ClockTimer, Route::IhgLondon] {
             assert_eq!(route.definition().source, 5);
             let plan = LeafPlan {

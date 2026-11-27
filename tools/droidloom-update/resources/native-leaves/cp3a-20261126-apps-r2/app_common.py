@@ -19,9 +19,9 @@ import types
 FINAL = Path('/home/alex/work/pocket4-android-final')
 QUALIFICATION = Path('/var/lib/droidloom/qualification/pocket4')
 SUPPORT=Path('/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2/source/support')
-SUPPORT_REF={'path': '/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2/source/support/source-manifest.json', 'bytes': 1001, 'sha256': 'c72ad0236f61ce7f0bd2e21e8143d2e4963c0c477de5057d92e8912db6dd633e'}
-CLOCK_SUPPORT_REF={'path': '/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2/source/clock-support/source-manifest.json', 'bytes': 1001, 'sha256': '2c37ea0f7a15ffd333c710942aceb064b6dcd6e3a7344c5fd08d1bf310663f29'}
-SCOPE_SHA='9a27966cf73b006630d4ee823b76a6a341225a0a49616ce131d8f11880c039f0'
+SUPPORT_REF={'path': '/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2/source/support/source-manifest.json', 'bytes': 1001, 'sha256': '2ec6a885372a05383575f983bc20e097e61a48221197c6a063ed23e941dbc5e4'}
+CLOCK_SUPPORT_REF={'path': '/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2/source/clock-support/source-manifest.json', 'bytes': 1001, 'sha256': 'e83bc6050d340d471d493ad6e23b5d9a3860654cd85a41dd8220d615f90f228f'}
+SCOPE_SHA='b0448b794102efbcd839bb3e3747ffc75a5eccdbf6859c83a6b3d1bdc9acba5b'
 GATES={'path': '/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2/source/contracts/app-gates.json', 'bytes': 24135, 'sha256': '35d566406aacc77ebe2dbd44430cea7f80533569647947c01772cd118aff3161'}
 SIGNER = '/usr/bin/apksigner'
 SIGNER_SHA = '52947059a664b85f0475bcdc3dbbe6089b50f8f59e3aa051e6e74cf0ba7db70f'
@@ -837,3 +837,46 @@ def mapped_file_info(view, file_fd, guest_uid, guest_gid=None):
                 errors.append(error)
         if errors:
             raise RuntimeError('ACTUAL_OWNER_METADATA_FD_CLOSE_FAILED') from errors[0]
+
+
+# These are comparison paths derived from the already inherited normal channel.
+# A pathname, environment variable or saved JSON never creates a Rust owner.
+WORKING_CASES=frozenset({
+    'calendar-core','calendar-reminder','camera-photo','contacts-search',
+    'clock-timer15','clock-expiry06','clock-alarm','documents-saf','documents-search-sort',
+    'gallery-image-rotation','gallery-image-video','gallery-image-seek','gallery-image-album',
+    'settings-supported-pages','ihg-london',
+})
+def working_runtime_root():
+    keys=('DROIDLOOM_NATIVE_LEAF_FACTS_FD','DROIDLOOM_NATIVE_LEAF_GUARD_FD')
+    if not any(key in os.environ for key in keys):return None
+    need(all(key in os.environ for key in keys),'COMPLETE_NORMAL_CHANNEL_REQUIRED_FOR_WORKING_PATH')
+    _,modules=support()
+    return modules['business_baseline.py'].current_channel().working_runtime_root()
+
+def working_case_root(case):
+    root=working_runtime_root()
+    if root is None:return None
+    need(case in WORKING_CASES,'COMPILED_WORKING_CASE_NAME_REQUIRED')
+    return root/'native-cases'/case
+
+def case_root_matches(path,case,legacy_pattern):
+    path=Path(path);root=working_case_root(case)
+    if root is not None:return path==root
+    return path.parent==QUALIFICATION and re.fullmatch(legacy_pattern,path.name) is not None
+
+def input_root_matches(path,case,role,legacy_pattern,legacy_parent=QUALIFICATION):
+    path=Path(path);root=working_runtime_root()
+    if root is not None:
+        need(case in WORKING_CASES and role in {
+            'helper-build','pm-help','helper-source','helper-install','helper-identity','target-identity',
+            'base-plan',
+        },'COMPILED_WORKING_INPUT_ROLE_REQUIRED')
+        need(role!='base-plan' or case=='camera-photo','CAMERA_ONLY_BASE_PLAN_ROLE')
+        return path==root/'native-inputs'/case/role
+    return path.parent==legacy_parent and re.fullmatch(legacy_pattern,path.name) is not None
+
+def flow_root(case,nonce,legacy_kind):
+    need(re.fullmatch('[0-9a-f]{32}',nonce),'EXACT_FRESH_FLOW_NONCE_REQUIRED')
+    root=working_case_root(case)
+    return (root if root is not None else QUALIFICATION)/('business-flow-'+legacy_kind+'-'+nonce)
