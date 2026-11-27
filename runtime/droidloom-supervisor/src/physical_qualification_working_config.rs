@@ -220,7 +220,9 @@ impl SourceInput {
             ));
         }
         let mut bytes = vec![0; pin[6] as usize];
-        crate::control::physical_qualification_channel::working_runtime::read_exact_at_progress(&file, &mut bytes, 0)?;
+        crate::control::physical_qualification_channel::working_runtime::read_exact_at_progress(
+            &file, &mut bytes, 0,
+        )?;
         if file.read_at(&mut [0; 1], pin[6])? != 0 || f9(&file)? != pin {
             return Err(error(
                 "working source input changed during its first complete read",
@@ -269,7 +271,9 @@ impl SourceInput {
             return Err(error("held working source input changed"));
         }
         let mut bytes = vec![0; self.pin[6] as usize];
-        crate::control::physical_qualification_channel::working_runtime::read_exact_at_progress(&self.file, &mut bytes, 0)?;
+        crate::control::physical_qualification_channel::working_runtime::read_exact_at_progress(
+            &self.file, &mut bytes, 0,
+        )?;
         if self.file.read_at(&mut [0; 1], self.pin[6])? != 0
             || sha(&bytes) != self.digest
             || f9(&self.file)? != self.pin
@@ -379,6 +383,7 @@ pub(super) struct AdmittedWorkingConfiguration {
     installed_directories: [TypedDirectory; 2],
     config: WorkingReturnConfiguration,
     comparisons: WorkingSourcePins,
+    namespace_entry: contract::WorkingNamespaceEntryPin,
     runtime_directory: PathBuf,
     input_directory: PathBuf,
     inputs: [SourceInput; 4],
@@ -464,11 +469,14 @@ impl AdmittedWorkingConfiguration {
             16 * 1024 * 1024,
             MATERIAL_LABEL,
         )?;
+        let namespace_entry =
+            contract::WorkingNamespaceEntryPin::from_admitted_materials(&materials.bytes()?)?;
         let result = Self {
             actor,
             installed_directories,
             config,
             comparisons,
+            namespace_entry,
             runtime_directory,
             input_directory,
             inputs: [input, early_input, witness, materials],
@@ -513,12 +521,20 @@ impl AdmittedWorkingConfiguration {
         }
         Ok(())
     }
-    pub(super) fn require_same_return(&self, actual: &WorkingReturnConfiguration) -> io::Result<()> {
+    pub(super) fn require_same_return(
+        &self,
+        actual: &WorkingReturnConfiguration,
+    ) -> io::Result<()> {
         self.guard()?;
         if serde_json::to_value(actual)? != serde_json::to_value(&self.config)? {
-            return Err(error("working boot owners retained different normal return inputs"));
+            return Err(error(
+                "working boot owners retained different normal return inputs",
+            ));
         }
         Ok(())
+    }
+    pub(super) fn namespace_entry_pin(&self) -> &contract::WorkingNamespaceEntryPin {
+        &self.namespace_entry
     }
     pub(super) fn applications_pin(&self) -> &PayloadPin {
         &self.config.applications
@@ -624,6 +640,17 @@ impl RuntimeDirectory {
             children: RefCell::new(BTreeMap::new()),
         };
         result.guard()?;
+        // The suite may write its finite claim files, but cannot add children
+        // to the parent-only runtime evidence directory. Create this one
+        // private source-owned directory before starting any suite process.
+        result.create_typed_child(
+            layout::WORKING_NATIVE_CLAIMS_DIRECTORY,
+            layout::WORKING_NATIVE_CLAIMS_DIRECTORY_LABEL,
+        )?;
+        result.create_typed_child(
+            layout::WORKING_NATIVE_UI_DIRECTORY,
+            layout::WORKING_NATIVE_UI_DIRECTORY_LABEL,
+        )?;
         config.guard()?;
         Ok(result)
     }
@@ -657,9 +684,12 @@ impl RuntimeDirectory {
         &self.path
     }
     pub(super) fn create_child(&self, name: &'static str) -> io::Result<PathBuf> {
-        self.guard()?;
         let label = layout::preparation_directory_label(name)
             .ok_or_else(|| error("working preparation has no such source directory"))?;
+        self.create_typed_child(name, label)
+    }
+    fn create_typed_child(&self, name: &'static str, label: &'static [u8]) -> io::Result<PathBuf> {
+        self.guard()?;
         if self.children.borrow().contains_key(name) {
             return Err(error("working preparation directory was already created"));
         }

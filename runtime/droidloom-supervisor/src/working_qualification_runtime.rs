@@ -18,9 +18,12 @@ use std::{
 };
 
 #[path = "working_qualification_boot.rs"]
-mod boot;
+pub(crate) mod boot;
+#[path = "working_qualification_return.rs"]
+mod return_entry;
 #[path = "working_qualification_watchdog.rs"]
 mod watchdog;
+pub(super) use return_entry::dispatch as dispatch_working_return;
 
 thread_local! {
     static CURRENT: RefCell<Option<Weak<LivePulse>>> = const { RefCell::new(None) };
