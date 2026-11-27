@@ -32,6 +32,8 @@ pub const WORKING_LEAF_ROLE: &[u8] = b"u:system_r:p4_linux_working_leaf_t:s0";
 pub const WORKING_PARENT_PROFILE: &[u8] = b"droidloom-working-qualification (enforce)";
 pub const WORKING_SUITE_PROFILE: &[u8] = b"droidloom-working-suite (enforce)";
 pub const WORKING_LEAF_PROFILE: &[u8] = b"droidloom-working-leaf (enforce)";
+/// Fixed common ancestor; installed through the normal H2 host label roster.
+pub const WORKING_ROOT_DIRECTORY_LABEL: &[u8] = b"u:object_r:p4_linux_working_root_dir_t:s0";
 pub const WORKING_CANDIDATE_DIRECTORY_LABEL: &[u8] =
     b"u:object_r:p4_linux_working_candidate_dir_t:s0";
 pub const WORKING_INPUT_DIRECTORY_LABEL: &[u8] = b"u:object_r:p4_linux_working_inputs_dir_t:s0";
