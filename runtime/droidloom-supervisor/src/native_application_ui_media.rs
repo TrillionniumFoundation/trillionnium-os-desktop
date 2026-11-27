@@ -4,6 +4,10 @@
 //! The returned objects contain actual decoded observations, not business gates.
 //! In particular JPEG validity does not establish that its scene matches the
 //! preview, and a screenshot does not establish video/audio or recovery.
+#[path = "native_application_ui_media_scene.rs"]
+mod scene;
+pub use scene::CameraPhotoSceneObservation;
+
 use super::{Identity, NativeUiSession, before, need};
 use crate::control::NativeApplicationInspector;
 use crate::control::application_probe::ApplicationInspection;

@@ -32,7 +32,7 @@ mod common;
 pub use common::{NativeUiStabilityWindow, NativeUiStabilityEvidence, NativeUiStabilitySummary, stability_additional_window_seconds};
 #[path = "native_application_ui_media.rs"]
 mod media;
-pub use media::{CameraPhotoObservation, RetainedScopedWindowPixels, ScopedWindowPixels};
+pub use media::{CameraPhotoObservation, CameraPhotoSceneObservation, RetainedScopedWindowPixels, ScopedWindowPixels};
 
 const COHORT: &str =
     "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2";
