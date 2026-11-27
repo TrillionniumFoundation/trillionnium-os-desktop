@@ -481,6 +481,12 @@ impl WorkingNativeSourceCustody {
         self.guard()?;
         self.inner.plan.working_namespace_entry_pin()
     }
+    pub(crate) fn owned_files_entry_pin(
+        &self,
+    ) -> io::Result<&crate::native_working_contract::WorkingOwnedFilesEntryPin> {
+        self.guard()?;
+        self.inner.plan.working_owned_files_entry_pin()
+    }
     pub fn applications_pin(&self) -> io::Result<(u64, &str)> {
         self.guard()?;
         Ok((
