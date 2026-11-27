@@ -1269,6 +1269,7 @@ pub fn run_physical_files(
         .observe_main_until(&runtime.expected_epoch, end)
         .map_err(|error| error.to_string())?;
     require_main(main.facts(), &runtime.expected_epoch)?;
+    source_owner.compare_working_main(&main)?;
     let mut histories = Vec::new();
     let mut family_histories = Vec::new();
     let mut photo_history = None;
@@ -1554,6 +1555,7 @@ pub fn run_physical_files(
             .refresh_main_until(&main, end)
             .map_err(|error| error.to_string())?;
         require_same_main(main.facts(), actual.facts())?;
+        source_owner.compare_working_main(&actual)?;
         for history in &histories {
             history.guard()?;
         }

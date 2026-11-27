@@ -5,6 +5,8 @@ use super::super::physical_qualification_channel as protocol;
 use super::*;
 use std::io::{Read, Write};
 use crate::native_working_contract as working;
+#[path = "working_qualification_peer.rs"]
+pub(crate) mod working_peer;
 
 // Source-selected service modes. The working singleton is admitted from its
 // actual boot configuration before any dynamic plan exists; a template hash
@@ -559,6 +561,33 @@ impl UnitOwner {
             return Err("physical manager observation exhausted original request end".into());
         }
         Ok(values)
+    }
+    /// Local held-resource check for the working owner's short event-loop
+    /// iterations. The full actual PID1 observation remains mandatory before
+    /// feeding the watchdog, switching profiles or accepting a boundary.
+    pub(crate) fn local_guard(&self, child: Option<&BoundProcess>, deadline: Instant) -> Result<(), String> {
+        self.source_guard()?;
+        self.kernel_owner_guard()?;
+        if let Some(child) = child { self.child_guard(child)?; }
+        if Instant::now() >= self.end.min(deadline) {
+            return Err("working local owner exhausted its original end".into());
+        }
+        Ok(())
+    }
+    pub(crate) fn working_identity(&self) -> Result<super::super::working_qualification::WorkingUnitIdentity, String> {
+        if self.kind != OwnerKind::WorkingSingleton {
+            return Err("working source identity requires the actual singleton".into());
+        }
+        self.source_guard()?;
+        Ok(super::super::working_qualification::WorkingUnitIdentity {
+            unit: self.invocation.unit.clone(),
+            invocation: self.invocation.id.iter().map(|b| format!("{b:02x}")).collect(),
+            parent_pid: self.current.identity.pid,
+            parent_start_ticks: self.current.identity.start_ticks,
+            cgroup: self.group_path.to_str().ok_or("working cgroup is not UTF-8")?.into(),
+            cgroup_identity: self.group_pin[..5].try_into().map_err(|_| "working cgroup identity")?,
+            owner_start_monotonic_ns: self.manager_start_ns()?,
+        })
     }
     pub(crate) fn manager_start_ns(&self) -> Result<u64, String> {
         [

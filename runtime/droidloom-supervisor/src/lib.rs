@@ -15,6 +15,7 @@ pub mod application_exit_state;
 pub mod application_permission_state;
 pub mod control;
 pub use control::physical_qualification_channel;
+pub use control::working_qualification;
 pub mod engine_custody;
 mod cpu_placement;
 pub mod development;

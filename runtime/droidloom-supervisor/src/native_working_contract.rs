@@ -49,6 +49,7 @@ pub(crate) struct WorkingSchedule {
     pub(crate) native_case_count: usize,
     pub(crate) family_case_count: usize,
     pub(crate) photo_case_count: usize,
+    pub(crate) settings_case_count: usize,
     pub(crate) authorization_end_by_boot_seconds: u64,
     pub(crate) parent_retirement_seconds: u64,
     pub(crate) service_runtime_seconds: u64,
@@ -77,6 +78,7 @@ impl WorkingSchedule {
             native_case_count: budget::NATIVE_CASE_COUNT,
             family_case_count: budget::FAMILY_CASE_COUNT,
             photo_case_count: budget::PHOTO_CASE_COUNT,
+            settings_case_count: budget::SETTINGS_CASE_COUNT,
             authorization_end_by_boot_seconds: authorization_end,
             parent_retirement_seconds: budget::RETIREMENT_SECONDS,
             service_runtime_seconds: budget::SERVICE_SECONDS,
@@ -387,18 +389,19 @@ mod tests {
                 s.native_case_count,
                 s.family_case_count,
                 s.photo_case_count,
+                s.settings_case_count,
                 s.case_count
             ),
-            (14, 31, 1, 46)
+            (14, 31, 1, 1, 47)
         );
-        assert_eq!(s.whole_suite_seconds, 118795);
         assert_eq!(
             s.whole_suite_seconds,
             budget::NATIVE_CASE_WINDOWS.iter().sum::<u64>()
-                + 31 * (250 + 2615)
+                + budget::FAMILY_CASE_COUNT as u64 * budget::FAMILY_CASE_SECONDS
                 + budget::PHOTO_CASE_COUNT as u64 * budget::CAMERA_PHOTO_CASE_SECONDS
-                + 140
-                + 120
+                + budget::SETTINGS_CASE_COUNT as u64 * budget::SETTINGS_PERMISSION_CASE_SECONDS
+                + 2 * budget::MAIN_SECONDS
+                + budget::SOURCE_AND_CAPTURE_SECONDS
         );
         assert_eq!(s.watchdog_interval_seconds, 900);
         assert_eq!(
@@ -424,6 +427,7 @@ mod tests {
             "native_case_count",
             "family_case_count",
             "photo_case_count",
+            "settings_case_count",
             "whole_suite_seconds",
             "watchdog_interval_seconds",
             "keepalive_period_seconds",

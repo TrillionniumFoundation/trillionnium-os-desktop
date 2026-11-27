@@ -184,7 +184,7 @@ impl BootOwner {
             return Err(reject("working owner is not on the original root filesystem"));
         }
         let proc=root_directory(Path::new("/proc"))?;filesystem(&proc,0x9fa0)?;
-        if text("/proc/sys/kernel/osrelease",256)?!=c::KERNEL || text("/sys/fs/selinux/enforce",8)!="1" {
+        if text("/proc/sys/kernel/osrelease",256)?!=c::KERNEL || text("/sys/fs/selinux/enforce",8)?!="1" {
             return Err(reject("working owner requires the selected enforcing shared kernel"));
         }
         let args=c::boot_arguments(&text("/proc/cmdline",32768)?)?;
@@ -229,7 +229,7 @@ impl BootOwner {
     pub(super) fn guard(&self)->io::Result<()> {
         if self.pid!=std::process::id() || held::current(101)?!=ROLE || held::current(104)?!=PROFILE
             || text("/proc/sys/kernel/random/boot_id",64)?!=self.boot_id
-            || text("/proc/sys/kernel/osrelease",256)?!=c::KERNEL || text("/sys/fs/selinux/enforce",8)!="1"
+            || text("/proc/sys/kernel/osrelease",256)?!=c::KERNEL || text("/sys/fs/selinux/enforce",8)?!="1"
             || Node::of(&self.root)?.stable[..5]!=self.root_identity
             || Node::of(&root_directory(Path::new("/"))?)?.stable[..5]!=self.root_identity {
             return Err(reject("working owner lost its exact boot/process/MAC/root"));
