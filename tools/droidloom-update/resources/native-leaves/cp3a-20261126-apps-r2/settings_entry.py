@@ -76,7 +76,7 @@ def main():
         c.need(args.role is not None and args.output is not None,'EXACT_SETTINGS_IDENTITY_ARGUMENTS')
         profile=planner.named(c,packet,'settings_profiles.py')
         target=profile.TARGET if args.role=='settings' else profile.HELPER
-        c.need(c.parse(c.read_ref(request['qualification'])).get('source_manifest')==c.SUPPORT_REF,
+        c.need(c.current_qualification_support(request['baseline'], request['qualification'])==c.SUPPORT_REF,
                'ACTUAL_NEW_MAIN_SUPPORT_REQUIRED_FOR_SETTINGS_IDENTITY')
         source=next(r for r in packet['files'] if Path(r['path']).name=='settings_entry.py')
         result=c.collect_identity(request,args.output,target,source)
