@@ -31,6 +31,8 @@ mod native_leaf_baseline_data;
 #[cfg(target_os = "linux")]
 mod native_leaf_baseline_programs;
 #[cfg(target_os = "linux")]
+mod native_leaf_engine;
+#[cfg(target_os = "linux")]
 mod native_once_capabilities;
 #[cfg(target_os = "linux")]
 mod native_once_contract;
@@ -40,6 +42,8 @@ pub mod native_once_return;
 pub mod native_uevent_label;
 pub mod normal_host_release;
 mod package_cache;
+pub mod package_inventory_observation;
+pub mod native_ihg_preparation;
 #[cfg(target_os = "linux")]
 mod production_activation_command;
 #[cfg(target_os = "linux")]

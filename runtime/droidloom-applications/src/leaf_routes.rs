@@ -25,7 +25,7 @@ use super::runtime_identity::{IdentityObservation, VerifiedMaterialBatch};
 const QUALIFICATION: &str = "/var/lib/droidloom/qualification/pocket4";
 const SELECTION_PATH: &str = "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2/selection/selection-14.json";
 const SELECTION_BYTES: u64 = 4769;
-const SELECTION_SHA: &str = "38489a64787e94373d4c9d8f64aa58385f3d67a91e44bb956f4344161fea5bf6";
+const SELECTION_SHA: &str = "f979bda38d95c6ad0bf25a52e2fc85b92e24f84672c5bbd6db62065f6ed558a4";
 const SOURCE_CATALOG: &str = include_str!("leaf_sources.json");
 
 pub(super) fn compiled_release_sources() -> (FilePin, &'static str) {
@@ -205,6 +205,11 @@ impl HeldMainCustody {
     }
 
     /// Borrow the actual opaque fact; serialized facts do not recreate it.
+    pub(super) fn require_engine(&self, engine: &control::NativeLeafEngineEvidence) -> Result<(), String> {
+        self.guard_projection()?;
+        engine.require_identity(&self.observation, self.application.facts())
+    }
+
     pub(super) fn normal_observation(&self) -> &control::MainCustodyObservation {
         &self.observation
     }
@@ -296,6 +301,8 @@ pub(super) struct LeafObservation {
     pub state: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub(super) custody: Option<HeldLeafCustody>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub(super) engine_observations: Option<control::NativeLeafEngineEvidence>,
     pub original_entry_result_verified: bool,
     pub original_business_success_reported: bool,
     pub business_outcome_unknown: bool,
@@ -309,7 +316,10 @@ pub(super) struct LeafObservation {
 
 impl LeafObservation {
     pub(super) fn retained_bookends(&self) -> Result<(), String> {
-        self.custody.as_ref().ok_or("leaf has no actual normal Main/result custody")?.guard()
+        let custody = self.custody.as_ref().ok_or("leaf has no actual normal Main/result custody")?;
+        custody.guard()?;
+        if let Some(engine) = &self.engine_observations { custody.main.require_engine(engine)?; }
+        Ok(())
     }
 
     pub(super) fn has_main_custody(&self) -> bool { self.custody.is_some() }
@@ -764,9 +774,9 @@ fn case_document(plan: &LeafPlan, request: &Value) -> Result<(Option<FilePin>, V
 // cannot construct Main, a package observation, a data handle, or a business gate.
 const NATIVE_BASELINE_SCHEMA: &str = "droidloom.native-leaf-business-baseline.v1";
 const NATIVE_QUALIFICATION_SCHEMA: &str = "droidloom.native-leaf-business-qualification.v1";
-const NORMAL_SOURCE_RECIPE_BYTES: u64 = 805315;
+const NORMAL_SOURCE_RECIPE_BYTES: u64 = 815042;
 const NORMAL_SOURCE_RECIPE_SHA: &str =
-    "d8ab352dbe373117316bb29ee53756e8161229310a38f08b7085d054578c196c";
+    "16777fe0bede8ac8524a28a84e908303fc13d3696d0d468401082affc916e1d2";
 
 fn canonical_value(value: &Value) -> Value {
     match value {
@@ -786,6 +796,26 @@ fn canonical_sha(value: &Value) -> Result<String, String> {
         .map_err(|error| error.to_string())
 }
 
+// Saved pre-install IHG inventory remains a comparison document. Its exact
+// relationship to the installed helper is checked by the fixed canonical IHG
+// source/build/install/thirteen-command chain during the actual owned leaf.
+// The ordinary invocation's fresh before/after inventories are separately
+// opaque observations and must have identical complete tables.
+fn compare_saved_inventory(
+    actual: &ApplicationInspection,
+    inventory: &Value,
+) -> Result<(), String> {
+    if actual.package != "com.ihg.apps.android" {
+        return require(inventory.is_null(),
+            "non-IHG baseline must not carry a user-0 inventory");
+    }
+    let facts: droidloom_supervisor::package_inventory_observation::UserZeroPackageInventoryFacts =
+        serde_json::from_value(inventory.clone()).map_err(|error| error.to_string())?;
+    facts.validate_comparison(&actual.epoch)?;
+    require(facts.records().get(actual.package.as_str()) == Some(&actual.uid),
+        "saved complete inventory differs from the actual target package UID")
+}
+
 // This is deliberately a private comparison helper, including in its tests.
 // Only main_binding below supplies core from a live, held normal factory.
 fn compare_native_main_documents(
@@ -801,7 +831,9 @@ fn compare_native_main_documents(
         "observation", "classpath", "artifacts", "data_continuity", "sampling",
         "observation_fds", "captured_unix_ns", "comparison_only",
         "account_contents_read", "whole_app_business_accepted", "production_ready",
+        "user_zero_package_inventory",
     ])?;
+    compare_saved_inventory(actual, &baseline["user_zero_package_inventory"])?;
     require(
         baseline["schema"] == NATIVE_BASELINE_SCHEMA
             && core["schema"] == "droidloom.native-leaf-baseline.v1"
@@ -887,6 +919,7 @@ fn compare_native_main_documents(
         "working_target_directory_identity_preserved", "fixed_main_readonly_entry_observed",
         "comparison_only", "account_contents_read", "business_actions_admitted",
         "whole_app_business_accepted", "production_ready", "observation_fds",
+        "user_zero_package_inventory_sha256",
     ])?;
     require(
         qualification["schema"] == NATIVE_QUALIFICATION_SCHEMA
@@ -895,6 +928,8 @@ fn compare_native_main_documents(
                 "bytes":NORMAL_SOURCE_RECIPE_BYTES, "sha256":NORMAL_SOURCE_RECIPE_SHA,
             })
             && qualification["core_sha256"].as_str() == Some(canonical_sha(core)?.as_str())
+            && qualification["user_zero_package_inventory_sha256"].as_str()
+                == Some(canonical_sha(&baseline["user_zero_package_inventory"])?.as_str())
             && qualification["main_epoch_sha256"] == epoch["sha256"]
             && qualification["observation_fds"] == *closed
             && qualification["actual_main_and_target_metadata_observed"] == true
@@ -934,6 +969,8 @@ fn main_binding(
 ) -> Result<(FilePin, FilePin), String> {
     main.require_application(actual)?;
     require(held.application() == actual, "native leaf context belongs to another package")?;
+    require(held.inventory_facts().is_some() == (actual.package == "com.ihg.apps.android"),
+        "IHG requires the actual complete pre-invocation inventory; other routes do not")?;
     let baseline_ref = ref_field(case, "baseline")?;
     let qualification_ref = ref_field(case, "qualification")?;
     require((1..=16 * 1024 * 1024).contains(&baseline_ref.bytes)
@@ -1548,25 +1585,52 @@ pub(super) fn execute_admitted(
     materials.observe(requested, runtime.android_user, &runtime.expected_epoch, &actual, &actual)?;
     let mut main = HeldMainCustody::observe(inspector, actual_token, end)?;
     let mut baseline = main.baseline(inspector, end)?;
+    let inventory_window = if actual.package == "com.ihg.apps.android" { 70 } else { 0 };
+    if inventory_window != 0 {
+        leaf_window(end, 70 + 250 + 70 + 70 + 30)?;
+        let before = inspector.observe_user_zero_package_inventory_until(
+            &main.observation, &main.application, end,
+        ).map_err(|error| error.to_string())?;
+        baseline.attach_user_zero_inventory(inspector, before)
+            .map_err(|error| error.to_string())?;
+    }
     release.guard()?;
-    leaf_window(end, seconds + 70 + 250 + 30)?;
+    if inventory_window == 0 {
+        leaf_window(end, seconds + 70 + 250 + 30)?;
+    } else {
+        // The two necessary inventory requests consume the existing lease.
+        // The owned runner caps its original route work at the remaining
+        // window after reserving PM/Main/inventory and retirement; no renewal.
+        leaf_window(end, 250 + 70 + inventory_window + 30)?;
+    }
     let (mut observation, _, result) = execute_observed(
         plan, selection, &actual, &main, &release, inspector, &mut baseline, end,
     )?;
     result.guard()?;
     release.guard()?;
-    leaf_window(end, 250 + 70 + 30)?;
+    leaf_window(end, 250 + 70 + inventory_window + 30)?;
     let after_token = inspector.inspect_observed_until(&actual.package, actual.user, end)
         .map_err(|error| error.to_string())?;
     let after = after_token.facts().clone();
     main.require_application(&after)?;
-    leaf_window(end, 70 + 30)?;
+    leaf_window(end, 70 + inventory_window + 30)?;
     let after_main = main.refresh(inspector, &after_token, end)?;
+    if inventory_window != 0 {
+        leaf_window(end, inventory_window + 30)?;
+        let after_inventory = inspector.observe_user_zero_package_inventory_until(
+            &after_main, &after_token, end,
+        ).map_err(|error| error.to_string())?;
+        baseline.record_inventory_bookend(inspector, after_inventory, end)
+            .map_err(|error| error.to_string())?;
+    }
     baseline.finish_from_observed(inspector, &after_main, &after_token, end)
         .map_err(|error| error.to_string())?;
     materials.revalidate()?;
-    let final_identity = materials.observe(requested, runtime.android_user,
+    let mut final_identity = materials.observe(requested, runtime.android_user,
         &runtime.expected_epoch, &actual, &after)?;
+    if let Some(engine) = &observation.engine_observations {
+        final_identity.bind_native_execution(&after, &after_main, &[engine])?;
+    }
     release.guard()?;
     result.guard()?;
     baseline.verify_local(inspector, end).map_err(|error| error.to_string())?;
@@ -1624,9 +1688,10 @@ fn execute_observed(
     } else {
         control::NativeLeafCommandKind::Standard { budget:Duration::from_secs(d.seconds) }
     };
-    let output = control::run_prepared_native_leaf_until(
+    let executed = control::run_prepared_native_leaf_observed_until(
         cmd, &actual.epoch, kind, inspector, baseline, end,
     )?;
+    let (output, engine_observations) = executed.into_parts();
     require(
         output.status.success(),
         "actual leaf process failed; preserve its claim and original logs without replay",
@@ -1655,6 +1720,15 @@ fn execute_observed(
         &qualification,
         source,
     )?;
+    // These three source-owned workflows each establish exactly two launch
+    // claims. A saved result or an old no-E entry cannot supply their history.
+    if matches!(plan.route, Route::ClockTimerRemaining | Route::ClockExpiry
+        | Route::SettingsSupportedPages)
+    {
+        require(engine_observations.as_ref().is_some_and(|history| history.observation_count() == 2),
+            "both actual normal launch claims require their running-engine checkpoints")?;
+    }
+    if let Some(engine) = &engine_observations { main.require_engine(engine)?; }
     // Re-read the externally selected inputs after completed child retirement.
     for pin in [
         selection,
@@ -1686,6 +1760,7 @@ fn execute_observed(
             .unwrap_or("original_leaf_ok")
             .into(),
         custody: None,
+        engine_observations,
         original_entry_result_verified: true,
         original_business_success_reported: plan.route != Route::IhgLondon,
         business_outcome_unknown: plan.route == Route::IhgLondon,
@@ -2033,10 +2108,10 @@ mod tests {
                 "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2/source/ihg/app_entry.py"
             )
         );
-        assert_eq!(source.entry.bytes, 13828);
+        assert_eq!(source.entry.bytes, 14093);
         assert_eq!(
             source.entry.sha256,
-            "c7c42c574b9f72b6880991bedd670ffce5a97146748315c249b9fa116bc79b4d"
+            "2e3259dbc6f73e9baf7c86075ffb398a5f33e279756046c789941e43303d9c82"
         );
         for route in [Route::ClockTimer, Route::IhgLondon] {
             assert_eq!(route.definition().source, 5);
@@ -2403,6 +2478,7 @@ mod tests {
         baseline["observation_fds"] = json!({"acquired":12,"closed":12,"close_attempts":12,
             "remaining":0,"errors":[]});
         baseline["captured_unix_ns"] = json!(42);
+        baseline["user_zero_package_inventory"] = Value::Null;
         baseline["comparison_only"] = json!(true);
         for key in ["account_contents_read","whole_app_business_accepted","production_ready"] {
             baseline[key] = json!(false);
@@ -2411,7 +2487,8 @@ mod tests {
         let mut qualification = json!({"schema":NATIVE_QUALIFICATION_SCHEMA,"baseline":baseline_ref,
             "normal_source_recipe":{"bytes":NORMAL_SOURCE_RECIPE_BYTES,"sha256":NORMAL_SOURCE_RECIPE_SHA},
             "core_sha256":canonical_sha(&core).unwrap(),"main_epoch_sha256":epoch["sha256"],
-            "observation_fds":baseline["observation_fds"]});
+            "observation_fds":baseline["observation_fds"],
+            "user_zero_package_inventory_sha256":canonical_sha(&Value::Null).unwrap()});
         for key in ["actual_main_and_target_metadata_observed","working_copy_lineage_bound",
             "working_target_directory_identity_preserved","fixed_main_readonly_entry_observed",
             "comparison_only"] { qualification[key] = json!(true); }
@@ -2468,6 +2545,56 @@ mod tests {
         wrong["data_continuity"]["original_directory_identity_compared"] = json!(true);
         wrong["runtime_observation"]["data_continuity"] = wrong["data_continuity"].clone();
         assert!(check(&wrong,&qualification).is_err());
+    }
+
+    #[test]
+    fn native_inventory_documents_are_comparisons_not_installation_authority() {
+        let (actual,core,case,reference,baseline,qualification) = native_document_model();
+        compare_native_main_documents(&case,&actual,&core,&reference,&baseline,&qualification).unwrap();
+        let mut changed = baseline.clone();
+        changed["user_zero_package_inventory"] = json!({});
+        assert!(compare_native_main_documents(&case,&actual,&core,&reference,&changed,&qualification).is_err());
+        let mut changed = qualification.clone();
+        changed["user_zero_package_inventory_sha256"] = json!("a".repeat(64));
+        assert!(compare_native_main_documents(&case,&actual,&core,&reference,&baseline,&changed).is_err());
+        let mut target = actual.clone();
+        target.package = "com.ihg.apps.android".into();
+        assert!(compare_saved_inventory(&target, &Value::Null).is_err());
+        let records = json!([{"package":"android","uid":1000},
+            {"package":target.package,"uid":target.uid}]);
+        let raw = format!("package:android uid:1000\\npackage:{} uid:{}\\n", target.package, target.uid)
+            .replace("\\n", "\n");
+        let raw_sha = hex::encode(Sha256::digest(raw.as_bytes()));
+        let mut inventory = json!({
+            "schema":"droidloom.user-zero-package-inventory.v1",
+            "epoch":target.epoch, "records":records,
+            "records_sha256":hex::encode(Sha256::digest(serde_json::to_vec(&records).unwrap())),
+            "stdout_bytes":raw.len(),"stdout_sha256":raw_sha,"comparison_only":true
+        });
+        // Pure comparison fixture: no actual token or live inventory is minted.
+        inventory["query_receipt"] = json!({"schema":2,"query_pid":300,
+            "query_waitid_code":1,"query_waitid_status":0,"exec":{},
+            "output_bytes":raw.len(),"output_sha256":raw_sha,"elapsed_millis":1,
+            "cgroup_removed":true});
+        inventory["query_receipt"]["lifecycle"] = json!({
+            "owner":"instance_factory","factory_pid":200,"factory_tid":200,
+            "factory_pidfd_device":1,"factory_pidfd_inode":2,
+            "query_pidfd_device":1,"query_pidfd_inode":3,"release_acknowledged":true,
+            "stdio_creator":{"pid":400,"waitid_code":1,"waitid_status":0}
+        });
+        compare_saved_inventory(&target,&inventory).unwrap();
+        let mut changed = inventory.clone();
+        changed["query_receipt"]["query_pid"] = json!(301);
+        changed["query_receipt"]["elapsed_millis"] = json!(2);
+        compare_saved_inventory(&target,&changed).unwrap();
+        changed["query_receipt"]["cgroup_removed"] = json!(false);
+        assert!(compare_saved_inventory(&target,&changed).is_err());
+        let mut changed = target.clone(); changed.uid += 1;
+        assert!(compare_saved_inventory(&changed,&inventory).is_err());
+        let mut changed = target.clone(); changed.epoch.framework_start_ticks += 1;
+        assert!(compare_saved_inventory(&changed,&inventory).is_err());
+        let mut changed = inventory.clone(); changed["passed"] = json!(true);
+        assert!(compare_saved_inventory(&target,&changed).is_err());
     }
 
     #[test]

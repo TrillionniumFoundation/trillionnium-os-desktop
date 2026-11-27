@@ -507,17 +507,23 @@ struct NativeLeafRun<'a, 'b> {
     observation: &'a mut crate::native_leaf_baseline::NativeLeafBaselineObservation<'b>,
     inspector: &'a mut super::NativeApplicationInspector,
     until: Instant,
+    engines: Option<&'a mut crate::native_leaf_engine::PendingLeafEngines>,
 }
 impl NativeLeafRun<'_, '_> {
     fn work_deadline(&self, budget: Duration) -> Result<Instant, String> {
         let app = self.observation.application();
-        let after =
+        let mut after =
             super::progress::response_timeout(&super::ControlRequest::InspectApplication {
                 package: app.package.clone(),
                 user: app.user,
             }) + super::progress::response_timeout(&super::ControlRequest::ObserveRuntimeMain {
                 expected_epoch: app.epoch.clone(),
             }) + RETIRE_TIMEOUT;
+        if self.observation.requires_inventory_bookend() {
+            after += super::progress::response_timeout(&super::ControlRequest::ObserveUserZeroPackageInventory {
+                expected_epoch: app.epoch.clone(),
+            });
+        }
         native_leaf_work_deadline(
             Instant::now(),
             self.until.min(self.observation.deadline()),
@@ -701,7 +707,10 @@ fn run_owned_observed(
                     if let (Some(channel), Some(observation)) =
                         (channel.as_mut(), observation.as_mut())
                     {
-                        channel.serve(observation.observation, observation.inspector)?;
+                        channel.serve(
+                            observation.observation, observation.inspector,
+                            observation.engines.as_deref_mut(),
+                        )?;
                     }
                     drain(&mut stdout, &mut out)
                         .and_then(|_| drain(&mut stderr, &mut err))
@@ -1090,10 +1099,45 @@ pub(super) fn run_prepared_native_leaf_until(
     baseline: &mut crate::native_leaf_baseline::NativeLeafBaselineObservation<'_>,
     until: Instant,
 ) -> Result<Output, String> {
+    run_prepared_native_leaf_inner(command, epoch, kind, inspector, baseline, until, None)
+}
+
+pub(super) fn run_prepared_native_leaf_observed_until(
+    command: Command,
+    epoch: &super::application_probe::RuntimeEpoch,
+    kind: super::NativeLeafCommandKind,
+    inspector: &mut super::NativeApplicationInspector,
+    baseline: &mut crate::native_leaf_baseline::NativeLeafBaselineObservation<'_>,
+    until: Instant,
+) -> Result<crate::native_leaf_engine::NativeLeafExecution, String> {
+    if !matches!(&kind, super::NativeLeafCommandKind::Standard { .. }
+        | super::NativeLeafCommandKind::GalleryImage
+        | super::NativeLeafCommandKind::CalendarReminder
+        | super::NativeLeafCommandKind::SettingsPages)
+    {
+        return Err("capture or preparation cannot request a running-engine checkpoint".into());
+    }
+    let mut engines = crate::native_leaf_engine::PendingLeafEngines::new(until)?;
+    let output = run_prepared_native_leaf_inner(
+        command, epoch, kind, inspector, baseline, until, Some(&mut engines),
+    )?;
+    engines.finish(output)
+}
+
+fn run_prepared_native_leaf_inner(
+    command: Command,
+    epoch: &super::application_probe::RuntimeEpoch,
+    kind: super::NativeLeafCommandKind,
+    inspector: &mut super::NativeApplicationInspector,
+    baseline: &mut crate::native_leaf_baseline::NativeLeafBaselineObservation<'_>,
+    until: Instant,
+    engines: Option<&mut crate::native_leaf_engine::PendingLeafEngines>,
+) -> Result<Output, String> {
     let observation = NativeLeafRun {
         observation: baseline,
         inspector,
         until,
+        engines,
     };
     match kind {
         super::NativeLeafCommandKind::BaselineCapture => {
@@ -1104,6 +1148,10 @@ pub(super) fn run_prepared_native_leaf_until(
                 Duration::from_secs(240),
                 Some(observation),
             )
+        }
+        super::NativeLeafCommandKind::IhgPreparation { mode } => {
+            crate::native_ihg_preparation::check_command(&command, mode)?;
+            run_prepared_host_leaf_observed(command, epoch, mode.budget(), Some(observation))
         }
         super::NativeLeafCommandKind::Standard { budget } => {
             run_prepared_host_leaf_observed(command, epoch, budget, Some(observation))

@@ -623,7 +623,7 @@ fn dispatch_with_materials(
                                     row.reason = format!("Clock pair retained custody failed: {error}");
                                 } else {
                                     row.status = "partial_leaf_observation";
-                                    row.reason = "Both original Clock cases completed with one actual normal Main/copy-origin fact, complete package identity and unchanged source/owner lease. Only clock.timer is proved; engine and the remaining common/business gates still require their own observations.".into();
+                                    row.reason = "Both original Clock cases completed with one actual normal Main/copy-origin fact, complete package identity and unchanged source/owner lease. The scoped clock.timer assertion and actual identity observations are retained; other common/business gates still require their own observations.".into();
                                     for assertion in &mut row.gate_assertions {
                                         if assertion.scope == "business"
                                             && result.verified_business_gates().contains(&assertion.id.as_str())
@@ -728,12 +728,15 @@ fn dispatch_with_materials(
                     });
                 match observation {
                     Ok(observation) => {
+                        let complete_identity = observation.complete_identity_gate_passed();
                         row.identity_observation = Some(observation);
                         if let Some(gate) = row.gate_assertions.iter_mut()
                             .find(|gate| gate.scope == "common" && gate.id == "identity")
                         {
-                            gate.status = "partial";
-                            gate.reason = if row.clock_timer_observation.is_some()
+                            gate.status = if complete_identity { "passed" } else { "partial" };
+                            gate.reason = if complete_identity {
+                                "Exact admitted APK/signing identity, user/UID/version and framework epoch are joined to retained actual Main and source-triggered running native/bridge mappings. This proves identity only, not translation business success or whole-App acceptance."
+                            } else if row.clock_timer_observation.is_some()
                                 || row.leaf_observation.as_ref().is_some_and(LeafObservation::has_main_custody)
                             {
                                 "Live package/user/UID/version and complete APKs are bound to admitted SDK signer evidence and actual normal Main/copy-origin custody. Actual per-application engine mapping is still pending; this is not the complete identity gate."
@@ -813,7 +816,7 @@ fn dispatch_with_materials(
         production_ready: false,
         automatic_retry: false,
         main_qualification_semantics_checked: false,
-        meaning: "Live Package Manager/APK observations and actual bounded entry results. Successful normal leaves retain an opaque Main/copy-origin fact and actual result custody; other rows cannot inherit it. Complete identity still requires actual per-application engine mapping. Only the specifically proved original-leaf business assertions are credited; untested gates and whole-application readiness remain incomplete.",
+        meaning: "Live Package Manager/APK observations and actual bounded entry results. Successful normal leaves retain an opaque Main/copy-origin fact and actual result custody; other rows cannot inherit it. Identity completes only for rows retaining source-triggered actual running-engine facts; old/readonly rows cannot infer it. Only the specifically proved original-leaf business assertions are credited; untested gates and whole-application readiness remain incomplete.",
         applications,
     }
 }
@@ -1480,6 +1483,7 @@ mod tests {
                 route: leaf_routes::Route::SettingsSupportedPages, request: pin.clone(), preparation: pin.clone(),
                 entry_source: pin.clone(), result: pin.clone(), state: "SETTINGS_FONT_SCALE_RESTORED_WITH_PAGES".into(),
                 custody: None,
+                engine_observations: None,
                 original_entry_result_verified: true, original_business_success_reported: true,
                 business_outcome_unknown: unknown, main_epoch_unchanged: true, owned_host_tree_retired: true,
                 automatic_retry: false, whole_app_business_accepted: false, production_ready: false,

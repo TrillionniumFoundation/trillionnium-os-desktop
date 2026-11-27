@@ -21,15 +21,15 @@ import types
 ROOT=Path('/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2')
 MAIN=ROOT/'source/main'
 QUALIFICATION=Path('/var/lib/droidloom/qualification/pocket4')
-CHANNEL_SHA='db2d3990fa2c5634b49c537943228f08c373622ea947aba632b28480efad0b11'
+CHANNEL_SHA='3ec881482aef5bffb2c9d05e79d6ca3f44cd3c0d94a36c3c1dd7fd995e5e7ac1'
 DATA_SHA='700c81b80bf8378cb1d3e2e916d82ba3a9004bfb9d2d75c9aab7773a8c3c98ed'
 ANCESTRY_SHA='824492a2e9068aa30c3d5dc148402802843a3aaa574c41c290819a9f3d65d201'
 EPOCH_SHA='ba4854fcc42def3fb37ac8add1e2b4382d24cb716e2d8181e84b286d5975c377'
 READER_SHA='3d2860cde4ec7c7cbe67ed4756d9f599646ee39dc36f2f80b3ef008fba6b80cb'
-CAPTURE_SHA='b95edd5f1ca7a9eaeb6f011ef760b7f35ce9bb147947d659d71e7c3f1c222e27'
+CAPTURE_SHA='eac7d44f24f299718dd4f090a2aecfe1e40bace3578c0ddb15831357615dabff'
 HELPER_SHA='3a3dd3037c03c09fd7ebc1068123a202a29d286c1bf77fb81a4476fb25576a3c'
 READONLY_SHA='98f6af7733896835da8d375a950a5cc0de01bd4429622c8ada230a869efc25d1'
-COMMANDS_SHA='6aa1758e421ef71460f78da5a7f8f077efa35b2fd152f3ce570452b698c3b783'
+COMMANDS_SHA='25aac17bf57736ab0a6680b2da2304cc2b68fec31c1f9c421d62b2bcbf1a759a'
 SCHEMA='droidloom.native-leaf-business-baseline.v1'
 QUAL_SCHEMA='droidloom.native-leaf-business-qualification.v1'
 RUNTIME_SCHEMA='droidloom.native-leaf-runtime-comparison.v1'
@@ -463,12 +463,13 @@ class Observation:
 
 def validate_document(value,live):
     need(type(value) is dict and set(value)=={'schema','native_owner','runtime_observation','framework_epoch',
-        'observation','classpath','artifacts','data_continuity','sampling','observation_fds',
+        'observation','classpath','artifacts','data_continuity','user_zero_package_inventory','sampling','observation_fds',
         'captured_unix_ns','comparison_only','account_contents_read','whole_app_business_accepted',
         'production_ready'} and value['schema']==SCHEMA and value['comparison_only'] is True and
         value['account_contents_read'] is False and value['whole_app_business_accepted'] is False and
         value['production_ready'] is False,'EXACT_CURRENT_KERNEL_FIRST_BASELINE_REQUIRED')
     live.require_core(value['native_owner'])
+    live.validate_inventory_comparison(value['user_zero_package_inventory'])
     runtime=value['runtime_observation']
     need(runtime['schema']==RUNTIME_SCHEMA and runtime['native_owner']==value['native_owner'] and
         runtime['main_epoch']==value['framework_epoch'] and
@@ -495,7 +496,7 @@ class BusinessBaseline:
         self.baseline_ref=baseline_ref;self.qualification_ref=qualification_ref
         self.value=parse(read_ref(baseline_ref));self.qualification=parse(read_ref(qualification_ref,262144))
         runtime=validate_document(self.value,self.live);q=self.qualification
-        need(set(q)=={'schema','baseline','normal_source_recipe','core_sha256','main_epoch_sha256',
+        need(set(q)=={'schema','baseline','normal_source_recipe','core_sha256','main_epoch_sha256','user_zero_package_inventory_sha256',
             'actual_main_and_target_metadata_observed','working_copy_lineage_bound',
             'working_target_directory_identity_preserved','fixed_main_readonly_entry_observed',
             'comparison_only','account_contents_read','business_actions_admitted',
@@ -503,6 +504,7 @@ class BusinessBaseline:
             q['schema']==QUAL_SCHEMA and q['baseline']==baseline_ref and
             q['normal_source_recipe']==self.live.normal_source_recipe and
             q['core_sha256']==sha(canonical(self.live.core)) and
+            q['user_zero_package_inventory_sha256']==sha(canonical(self.value['user_zero_package_inventory'])) and
             q['main_epoch_sha256']==self.value['framework_epoch']['sha256'] and
             q['actual_main_and_target_metadata_observed'] is True and
             q['working_copy_lineage_bound'] is True and
@@ -516,6 +518,29 @@ class BusinessBaseline:
         self._current_native_discovery=None
         helper=load(MAIN/'helper_contract.py',HELPER_SHA,'native_leaf_current_helper_contract')
         helper.verify_main_receipt(runtime)
+
+    def package_uid_preimage(self):
+        need(self.live.core['application']['package']=='com.ihg.apps.android',
+             'FIXED_IHG_PACKAGE_INVENTORY_REQUIRED')
+        return self.live.validate_inventory_comparison(self.value['user_zero_package_inventory'])
+    def require_preinstall_inventory(self):
+        before=self.package_uid_preimage();self.live.guard()
+        need('org.droidloom.qa.ihg.finalmain.r1' not in before and
+             self.live.user_zero_records==before,
+             'COMPLETE_ACTUAL_PREINSTALL_TABLE_AND_HELPER_ABSENCE_REQUIRED')
+        return dict(before)
+    def require_installed_helper_inventory(self,helper_uid):
+        before=self.package_uid_preimage();self.live.guard()
+        name='org.droidloom.qa.ihg.finalmain.r1'
+        need(name not in before and type(helper_uid) is int and 10000<=helper_uid<100000 and
+             helper_uid not in before.values(),'NEW_HELPER_CANNOT_SHARE_ANY_PRESERVED_UID')
+        expected=dict(before);expected[name]=helper_uid
+        need(self.live.user_zero_records==expected,
+             'ONLY_THE_ACTUAL_FIXED_HELPER_MAY_BE_ADDED_TO_USER0')
+        return {'before_records_sha256':self.value['user_zero_package_inventory']['records_sha256'],
+                'current_records_sha256':self.live.user_zero_package_inventory['records_sha256'],
+                'only_added_package':name,'helper_uid':helper_uid}
+
     @property
     def protected_pids(self):
         return tuple(row['host_pid'] for row in self.value['observation']['roles'].values())
@@ -600,6 +625,7 @@ def collect(output_directory):
         value={'schema':SCHEMA,'native_owner':live.core,'runtime_observation':runtime,
             'framework_epoch':runtime['main_epoch'],'observation':first,'classpath':classpath,
             'artifacts':artifacts,'data_continuity':runtime['data_continuity'],
+            'user_zero_package_inventory':live.user_zero_package_inventory,
             'sampling':{'double_observation_pairs':3,'pairs_equal':True,
                 'started_monotonic_ns':started,'finished_monotonic_ns':finished},
             'captured_unix_ns':time.time_ns(),'comparison_only':True,'account_contents_read':False,

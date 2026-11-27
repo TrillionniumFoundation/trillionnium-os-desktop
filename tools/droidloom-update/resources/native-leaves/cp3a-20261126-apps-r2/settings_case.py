@@ -76,6 +76,8 @@ def execute(c,base_ref,modules,release,resources):
             claim,claim_ref=session.require_owned_task(flow)
             c.need(set(claim['prelaunch_task_ids'])==before_tasks,'SETTINGS_LAUNCH_BASELINE_CHANGED')
             session.task_claims.append(claim_ref);result['launches'].append(launched)
+            # Original finally can now prove this task belongs to the case.
+            flow.bound.commands.native_channel_module().ComparisonChannel().observe_running_engine()
             flow.phase='inspect';flow._new_step('inspect-pages','phase',None,False);flow._bridge();flow.guard()
             home=pages.observe(flow,session,None)
             result['initial_home' if index==0 else 'reopened_home']=home

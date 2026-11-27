@@ -49,6 +49,15 @@ struct Args {
 }
 #[derive(Subcommand)]
 enum Action {
+    /// Run one fixed IHG preparation mode under the current normal Main/data owner.
+    PrepareNativeIhg {
+        #[arg(long, value_parser=["target-identity","helper-source","helper-build","helper-install","helper-identity","plan"])]
+        mode: String,
+        #[arg(long)]
+        request: PathBuf,
+        #[arg(long)]
+        request_sha256: String,
+    },
     /// Capture the current normal Main, target metadata and three fixed readonly helper observations.
     CaptureNativeLeafBusinessBaseline {
         #[arg(long)]
@@ -607,6 +616,13 @@ fn execute(args: Args) -> Result<()> {
         );
     }
     match &args.command {
+        Some(Action::PrepareNativeIhg { mode, request, request_sha256 }) => {
+            if args.clean || args.build_only || args.bootstrapped || args.jobs.is_some() || args.source.is_some() {
+                return fail("fixed IHG preparation accepts no build, source, cleanup or activation options");
+            }
+            println!("{}", serde_json::to_string_pretty(&native_leaf_baseline::prepare_ihg(mode, request, request_sha256)?)?);
+            return Ok(());
+        }
         Some(Action::CaptureNativeLeafBusinessBaseline { package }) => {
             if args.clean
                 || args.build_only

@@ -4,7 +4,10 @@
 //! Saved JSON is comparison data. This component grants no UI, engine, account
 //! content, application business or deployment qualification.
 use crate::control::application_probe::{ApplicationInspection, RuntimeEpoch};
-use crate::control::{ActualApplicationObservation, ControlError, NativeApplicationInspector};
+use crate::control::{
+    ActualApplicationObservation, ActualUserZeroPackageInventoryObservation, ControlError,
+    NativeApplicationInspector,
+};
 use crate::main_custody::{MainCustodyObservation, RuntimeMainCustody};
 use crate::native_leaf_baseline_data::{HeldLeafData, LeafDataFacts};
 use crate::native_leaf_baseline_programs::NormalHostPrograms;
@@ -46,6 +49,8 @@ pub struct NativeLeafBaselineObservation<'a> {
     programs: NormalHostPrograms,
     deadline: Instant,
     full_bookend_after: Instant,
+    inventory: Option<ActualUserZeroPackageInventoryObservation>,
+    inventory_bookend: Option<ActualUserZeroPackageInventoryObservation>,
 }
 impl<'a> NativeLeafBaselineObservation<'a> {
     /// Consume the caller's existing actual PM and Main observations. This
@@ -79,6 +84,8 @@ impl<'a> NativeLeafBaselineObservation<'a> {
             programs,
             deadline,
             full_bookend_after: Instant::now(),
+            inventory: None,
+            inventory_bookend: None,
         })
     }
     pub fn facts(&self) -> NativeLeafBaselineFacts<'_> {
@@ -96,11 +103,99 @@ impl<'a> NativeLeafBaselineObservation<'a> {
     pub fn application(&self) -> &ApplicationInspection {
         self.application.facts()
     }
+    pub(crate) fn actual_application(&self) -> &ActualApplicationObservation {
+        self.application
+    }
     pub fn main(&self) -> &MainCustodyObservation {
         self.main
     }
     pub fn deadline(&self) -> Instant {
         self.deadline
+    }
+
+    /// Attach the fixed complete user-0 observation for IHG's original helper
+    /// UID collision precondition. Target CE/DE directory custody is unchanged.
+    pub fn attach_user_zero_inventory(
+        &mut self,
+        inspector: &NativeApplicationInspector,
+        inventory: ActualUserZeroPackageInventoryObservation,
+    ) -> Result<(), ControlError> {
+        self.verify_local(inspector, self.deadline)?;
+        if self.application.facts().package != "com.ihg.apps.android"
+            || self.inventory.is_some()
+            || inventory.observed_at() <= self.full_bookend_after
+        {
+            return Err(ControlError::Invalid(
+                "fresh complete IHG inventory is required exactly once".into(),
+            ));
+        }
+        inspector.require_inventory_local(
+            self.main,
+            self.application,
+            &inventory,
+            self.deadline,
+        )?;
+        self.inventory = Some(inventory);
+        self.inventory_bookend = None;
+        Ok(())
+    }
+    pub fn inventory_facts(
+        &self,
+    ) -> Option<&crate::package_inventory_observation::UserZeroPackageInventoryFacts> {
+        self.inventory.as_ref().map(|i| i.facts())
+    }
+    pub fn requires_inventory_bookend(&self) -> bool {
+        self.inventory.is_some()
+    }
+    /// Reuse one actual post query. No receipt or caller map can create it.
+    /// Ordinary leaf execution must preserve the entire original table.
+    pub fn record_inventory_bookend(
+        &mut self,
+        inspector: &NativeApplicationInspector,
+        after: ActualUserZeroPackageInventoryObservation,
+        until: Instant,
+    ) -> Result<(), ControlError> {
+        let end = until.min(self.deadline);
+        self.verify_local(inspector, end)?;
+        inspector.require_inventory_local(self.main, self.application, &after, end)?;
+        let before = self.inventory.as_ref().ok_or_else(|| {
+            ControlError::Invalid(
+                "complete inventory was not observed before the invocation".into(),
+            )
+        })?;
+        if after.observed_at() <= self.full_bookend_after
+            || !before.facts().same_table(after.facts())
+        {
+            return Err(ControlError::Invalid(
+                "complete user-0 table changed or post observation is stale".into(),
+            ));
+        }
+        self.inventory_bookend = Some(after);
+        Ok(())
+    }
+
+    /// The one source-owned IHG preparation factory calls this only after its
+    /// actual fixed child, thirteen original commands, signed APK equality and
+    /// fresh helper PM prove the exact singleton installation difference.
+    pub(crate) fn record_fixed_ihg_install_bookend(
+        &mut self,
+        inspector: &NativeApplicationInspector,
+        after: ActualUserZeroPackageInventoryObservation,
+        until: Instant,
+    ) -> Result<(), ControlError> {
+        let end = until.min(self.deadline);
+        self.verify_local(inspector, end)?;
+        inspector.require_inventory_local(self.main, self.application, &after, end)?;
+        if self.application.facts().package != crate::native_ihg_preparation::TARGET
+            || self.inventory.is_none()
+            || after.observed_at() <= self.full_bookend_after
+        {
+            return Err(ControlError::Invalid(
+                "fixed IHG installation lacks a fresh actual post inventory".into(),
+            ));
+        }
+        self.inventory_bookend = Some(after);
+        Ok(())
     }
 
     /// G is local custody, not a new full Main/PM observation: all held/named
@@ -114,6 +209,12 @@ impl<'a> NativeLeafBaselineObservation<'a> {
         let end = until.min(self.deadline);
         before(end)?;
         inspector.require_observations_local(self.main, self.application, end)?;
+        for inventory in [&self.inventory, &self.inventory_bookend]
+            .into_iter()
+            .flatten()
+        {
+            inspector.require_inventory_local(self.main, self.application, inventory, end)?;
+        }
         self.programs
             .verify(end)
             .map_err(|e| ControlError::Invalid(e.to_string()))?;
@@ -138,6 +239,16 @@ impl<'a> NativeLeafBaselineObservation<'a> {
         let end = until.min(self.deadline);
         self.verify_local(inspector, end)?;
         inspector.require_observations_local(after_main, after_application, end)?;
+        if self.inventory.is_some()
+            && self
+                .inventory_bookend
+                .as_ref()
+                .is_none_or(|i| i.observed_at() <= self.full_bookend_after)
+        {
+            return Err(ControlError::Invalid(
+                "complete IHG user-0 inventory lacks a fresh actual post query".into(),
+            ));
+        }
         require_new_bookend(
             self.full_bookend_after,
             after_main.observed_at(),

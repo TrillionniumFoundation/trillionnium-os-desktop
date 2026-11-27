@@ -476,8 +476,9 @@ pub(super) struct IdentityObservation {
     epoch_before: RuntimeEpoch,
     epoch_after: RuntimeEpoch,
     apks: Vec<IdentityApk>,
-    verified_facets: [&'static str; 8],
-    unsupported_identity_facets: [&'static str; 2],
+    verified_facets: Vec<&'static str>,
+    unsupported_identity_facets: Vec<&'static str>,
+    actual_engine_evidence: Vec<BytesPin>,
     apk_signatures_reexecuted: bool,
     normal_input_verifier_reexecuted: bool,
     latest_version_qualified: bool,
@@ -486,6 +487,52 @@ pub(super) struct IdentityObservation {
     application_accepted: bool,
     production_ready: bool,
 }
+impl IdentityObservation {
+    pub(super) fn complete_identity_gate_passed(&self) -> bool {
+        self.complete_identity_gate_passed
+    }
+
+    /// Only actual opaque Engine histories from the successful owned execution
+    /// can complete the material fact. No saved projection or caller flag enters.
+    pub(super) fn bind_native_execution(
+        &mut self,
+        actual: &ApplicationInspection,
+        main: &control::MainCustodyObservation,
+        histories: &[&control::NativeLeafEngineEvidence],
+    ) -> Result<(), String> {
+        if self.complete_identity_gate_passed || !self.actual_engine_evidence.is_empty()
+            || histories.is_empty()
+            || self.package != actual.package || self.android_user != actual.user
+            || self.uid != actual.uid || self.version_code != actual.version_code
+            || self.epoch_before != actual.epoch || self.epoch_after != actual.epoch
+            || main.facts().epoch != actual.epoch || self.apks.len() != actual.apks.len()
+            || !self.apks.iter().all(|saved| actual.apks.iter().any(|apk|
+                saved.name == apk.name && saved.path == apk.path && saved.bytes == apk.bytes
+                    && saved.sha256 == apk.sha256))
+        {
+            return Err("actual engine/Main histories do not join this complete material identity".into());
+        }
+        let data = &main.facts().persistent_data;
+        let origin = data.original_copy_origin.as_ref()
+            .ok_or("actual Main lacks the source-admitted working-copy origin")?;
+        if origin.working != [data.backings[0].backing.stable7(), data.backings[1].backing.stable7()] {
+            return Err("actual Main working pair differs from its source-admitted origin".into());
+        }
+        let mut commitments = Vec::new();
+        for history in histories {
+            history.require_identity(main, actual)?;
+            let bytes = serde_json::to_vec(history).map_err(|e|e.to_string())?;
+            commitments.push(BytesPin { bytes:bytes.len() as u64,
+                sha256:hex::encode(Sha256::digest(&bytes)) });
+        }
+        self.actual_engine_evidence = commitments;
+        self.verified_facets.extend(["main_qualification_semantics", "engine_mapping"]);
+        self.unsupported_identity_facets.clear();
+        self.complete_identity_gate_passed = true;
+        Ok(())
+    }
+}
+
 impl VerifiedMaterialBatch {
     pub(super) fn revalidate(&self) -> Result<(), String> {
         self.admission
@@ -573,7 +620,7 @@ impl VerifiedMaterialBatch {
         }
         apks.sort_by(|left, right| left.name.cmp(&right.name));
         Ok(IdentityObservation {
-            schema: "droidloom.application-live-material-identity.v1",
+            schema: "droidloom.application-live-material-identity.v2",
             admission_id: self.admission.id.clone(),
             selection: self.selection.clone(),
             signature_receipt: self.signature_receipt.clone(),
@@ -586,7 +633,7 @@ impl VerifiedMaterialBatch {
             epoch_before: before.epoch.clone(),
             epoch_after: after.epoch.clone(),
             apks,
-            verified_facets: [
+            verified_facets: vec![
                 "package",
                 "android_user",
                 "stable_uid",
@@ -596,7 +643,8 @@ impl VerifiedMaterialBatch {
                 "signers_from_identical_sdk_verified_apks",
                 "unchanged_live_main_epoch",
             ],
-            unsupported_identity_facets: ["engine_mapping", "main_qualification_semantics"],
+            unsupported_identity_facets: vec!["engine_mapping", "main_qualification_semantics"],
+            actual_engine_evidence: Vec::new(),
             apk_signatures_reexecuted: false,
             normal_input_verifier_reexecuted: false,
             latest_version_qualified: false,

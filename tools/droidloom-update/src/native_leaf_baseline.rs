@@ -65,6 +65,11 @@ fn bookend(
 ) -> Result<()> {
     let application = inspector.inspect_observed_until(&held.application().package, 0, end)?;
     let main = inspector.refresh_main_until(held.main(), end)?;
+    if held.requires_inventory_bookend() {
+        let inventory =
+            inspector.observe_user_zero_package_inventory_until(&main, &application, end)?;
+        held.record_inventory_bookend(inspector, inventory, end)?;
+    }
     held.finish_from_observed(inspector, &main, &application, end)?;
     Ok(())
 }
@@ -398,7 +403,7 @@ fn write_value(root: &Path, name: &str, value: &Value) -> Result<Value> {
     raw.push(b'\n');
     write_private(root, name, &raw)
 }
-fn validate_current_observation(v: &Value, core: &Value) -> Result<()> {
+fn validate_current_observation(v: &Value, core: &Value, inventory: &Value) -> Result<()> {
     if !exact_keys(
         v,
         &[
@@ -410,6 +415,7 @@ fn validate_current_observation(v: &Value, core: &Value) -> Result<()> {
             "classpath",
             "artifacts",
             "data_continuity",
+            "user_zero_package_inventory",
             "sampling",
             "observation_fds",
             "captured_unix_ns",
@@ -420,6 +426,7 @@ fn validate_current_observation(v: &Value, core: &Value) -> Result<()> {
         ],
     ) || v["schema"] != BASELINE_SCHEMA
         || &v["native_owner"] != core
+        || &v["user_zero_package_inventory"] != inventory
         || v["comparison_only"] != true
         || v["account_contents_read"] != false
         || v["whole_app_business_accepted"] != false
@@ -613,6 +620,12 @@ pub fn capture_business(package: &str) -> Result<Value> {
     let (mut inspector, main, application) = actual(package, end)?;
     let mut observed =
         NativeLeafBaselineObservation::capture_from_observed(&inspector, &main, &application, end)?;
+    if package == droidloom_supervisor::native_ihg_preparation::TARGET {
+        let inventory =
+            inspector.observe_user_zero_package_inventory_until(&main, &application, end)?;
+        observed.attach_user_zero_inventory(&inspector, inventory)?;
+    }
+    let inventory = serde_json::to_value(observed.inventory_facts())?;
     let core = serde_json::to_value(observed.facts())?;
     let mut sources = crate::native_leaf_sources::installed::InstalledCohort::capture(end)?;
     let (root, root_fd, identity) = private_capture_root()?;
@@ -695,7 +708,7 @@ pub fn capture_business(package: &str) -> Result<Value> {
         {
             return fail("normal collector stdout did not name this exact new observation");
         }
-        validate_current_observation(&value, &core)?;
+        validate_current_observation(&value, &core, &inventory)?;
         validate_readonly_receipt(&root, &value, &evidence)?;
         sources.recheck(end)?;
         bookend(&mut inspector, &mut observed, end)?;
@@ -716,6 +729,7 @@ pub fn capture_business(package: &str) -> Result<Value> {
             &json!({
             "schema":QUALIFICATION_SCHEMA,"baseline":baseline,"normal_source_recipe":sources.recipe(),
             "core_sha256":sha(&serde_json::to_vec(&canonical_value(&core))?),
+            "user_zero_package_inventory_sha256":sha(&serde_json::to_vec(&canonical_value(&inventory))?),
             "main_epoch_sha256":value["framework_epoch"]["sha256"],
             "actual_main_and_target_metadata_observed":true,"working_copy_lineage_bound":true,
             "working_target_directory_identity_preserved":true,"fixed_main_readonly_entry_observed":true,
@@ -734,6 +748,7 @@ pub fn capture_business(package: &str) -> Result<Value> {
             "baseline":baseline,"qualification":qualification,"normal_source_recipe":sources.recipe(),
             "actual_owner_reobserved":true,"original_working_copy_lineage_bound":true,
             "target_package_directories_only":true,"normal_readonly_commands":3,
+            "complete_user_zero_inventory_observed":observed.requires_inventory_bookend(),
             "installed_source_full_bookends_equal":true,"all_observation_evidence_read_back":true,
             "application_leaf_executed":false,"application_business_actions":0,"account_contents_read":false,
             "normal_runtime_qualified":false,"whole_app_business_accepted":false,"production_ready":false});
@@ -748,6 +763,99 @@ pub fn capture_business(package: &str) -> Result<Value> {
             &json!({"schema":"droidloom.native-leaf-business-baseline-capture-failure.v1",
             "error":error.to_string(),"evidence_directory":root,"automatic_retry":false,
             "whole_app_business_accepted":false,"production_ready":false}),
+        );
+    }
+    operation
+}
+
+/// Source-owned IHG preparation adapter. The public request contains only the
+/// normal comparison/artifact pins for one fixed mode; it cannot select argv.
+pub fn prepare_ihg(mode_name: &str, request: &Path, request_sha256: &str) -> Result<Value> {
+    use droidloom_supervisor::native_ihg_preparation::{self, IhgPreparationMode};
+    let mode = IhgPreparationMode::parse(mode_name).map_err(|e| format!("IHG mode: {e}"))?;
+    let end = Instant::now() + Duration::from_secs(1800);
+    let (root, root_fd, identity) = private_capture_root()?;
+    let operation = (|| -> Result<Value> {
+        let mut random = [0_u8; 16];
+        File::open("/dev/urandom")?.read_exact(&mut random)?;
+        let output = Path::new(mode.output_parent()).join(format!(
+            "{}{}",
+            mode.output_prefix(),
+            hex::encode(random)
+        ));
+        let (mut inspector, main, application) = actual(native_ihg_preparation::TARGET, end)?;
+        let mut observed = NativeLeafBaselineObservation::capture_from_observed(
+            &inspector,
+            &main,
+            &application,
+            end,
+        )?;
+        let inventory =
+            inspector.observe_user_zero_package_inventory_until(&main, &application, end)?;
+        observed.attach_user_zero_inventory(&inspector, inventory)?;
+        let mut sources = crate::native_leaf_sources::installed::InstalledCohort::capture(end)?;
+        write_value(
+            &root,
+            "IHG-PREPARATION-INTENT.json",
+            &json!({
+                "schema":"droidloom.native-ihg-preparation-intent.v1","mode":mode.name(),
+                "request":{"path":request,"sha256":request_sha256},
+                "fixed_output":output,"normal_source_recipe":sources.recipe(),
+                "actual_owner_comparison":observed.facts(),
+                "complete_user_zero_inventory":observed.inventory_facts(),
+                "original_budget_seconds":1800,"fixed_source_entry_required":true,
+                "application_business_actions":0,"automatic_retry":false,
+                "whole_app_business_accepted":false,"production_ready":false
+            }),
+        )?;
+        let mut execution = native_ihg_preparation::run(
+            mode,
+            request,
+            request_sha256,
+            &output,
+            &root,
+            &mut inspector,
+            &mut observed,
+            end,
+        )
+        .map_err(|e| format!("fixed IHG preparation: {e}"))?;
+        sources.recheck(end)?;
+        execution
+            .recheck()
+            .map_err(|e| format!("IHG final held readback: {e}"))?;
+        observed.verify_local(&inspector, end)?;
+        if directory_identity(&root_fd.metadata()?) != identity
+            || directory_identity(&fs::symlink_metadata(&root)?) != identity
+        {
+            return fail("normal IHG capture root changed before final publication");
+        }
+        let result = json!({
+            "schema":"droidloom.native-ihg-preparation.v1","mode":mode.name(),
+            "normal_source_recipe":sources.recipe(),"execution":execution.comparison_report(),
+            "result":execution.result_pin(),"source_full_bookends_equal":true,
+            "complete_user_zero_table_observed":true,"actual_main_and_target_metadata_observed":true,
+            "application_business_actions":0,"account_contents_read":false,
+            "whole_app_business_accepted":false,"production_ready":false,"automatic_retry":false
+        });
+        let pin = write_value(&root, "IHG-PREPARATION-RESULT.json", &result)?;
+        execution
+            .recheck()
+            .map_err(|e| format!("IHG retained evidence changed: {e}"))?;
+        observed.verify_local(&inspector, end)?;
+        root_fd.sync_all()?;
+        check_before(end)?;
+        Ok(json!({"report":pin,"result":execution.result_pin(),
+            "whole_app_business_accepted":false,"production_ready":false}))
+    })();
+    if let Err(error) = &operation {
+        let _ = write_value(
+            &root,
+            "FAILED.json",
+            &json!({
+                "schema":"droidloom.native-ihg-preparation-failure.v1","mode":mode.name(),
+                "actual_error":error.to_string(),"evidence_directory":root,"automatic_retry":false,
+                "whole_app_business_accepted":false,"production_ready":false
+            }),
         );
     }
     operation
@@ -791,7 +899,7 @@ mod business_capture_tests {
             "observation":observation,"classpath":classpath,"artifacts":artifacts,"data_continuity":data});
         let value = json!({"schema":BASELINE_SCHEMA,"native_owner":core,"runtime_observation":runtime,
             "framework_epoch":epoch,"observation":observation,"classpath":classpath,"artifacts":artifacts,
-            "data_continuity":data,"sampling":{"double_observation_pairs":3,"pairs_equal":true,
+            "data_continuity":data,"user_zero_package_inventory":Value::Null,"sampling":{"double_observation_pairs":3,"pairs_equal":true,
             "started_monotonic_ns":10,"finished_monotonic_ns":10_000_000_010u64},
             "observation_fds":{"acquired":12,"closed":12,"close_attempts":12,"remaining":0,"errors":[]},
             "captured_unix_ns":42,"comparison_only":true,"account_contents_read":false,
@@ -802,22 +910,22 @@ mod business_capture_tests {
     fn business_capture_binds_actual_owner_epoch_and_only_target_working_directories() {
         // These are parser fixtures, not constructors for opaque runtime authority.
         let (core, value) = fixture();
-        validate_current_observation(&value, &core).unwrap();
+        validate_current_observation(&value, &core, &Value::Null).unwrap();
         let mut wrong = core.clone();
         wrong["application"]["uid"] = json!(10124);
-        assert!(validate_current_observation(&value, &wrong).is_err());
+        assert!(validate_current_observation(&value, &wrong, &Value::Null).is_err());
         let mut bad = value.clone();
         bad["framework_epoch"]["binding"]["processes"]["init"]["start_ticks"] = json!(21);
         bad["runtime_observation"]["main_epoch"] = bad["framework_epoch"].clone();
-        assert!(validate_current_observation(&bad, &core).is_err());
+        assert!(validate_current_observation(&bad, &core, &Value::Null).is_err());
         let mut bad = value.clone();
         bad["data_continuity"]["package_uids"]["com.unobserved.package"] = json!(10300);
         bad["runtime_observation"]["data_continuity"] = bad["data_continuity"].clone();
-        assert!(validate_current_observation(&bad, &core).is_err());
+        assert!(validate_current_observation(&bad, &core, &Value::Null).is_err());
         let mut bad = value.clone();
         bad["data_continuity"]["original_directory_identity_compared"] = json!(true);
         bad["runtime_observation"]["data_continuity"] = bad["data_continuity"].clone();
-        assert!(validate_current_observation(&bad, &core).is_err());
+        assert!(validate_current_observation(&bad, &core, &Value::Null).is_err());
     }
     #[test]
     fn business_capture_rejects_qualification_claims_unretired_fds_and_incomplete_samples() {
@@ -829,22 +937,22 @@ mod business_capture_tests {
         ] {
             let mut bad = value.clone();
             bad[key] = json!(true);
-            assert!(validate_current_observation(&bad, &core).is_err());
+            assert!(validate_current_observation(&bad, &core, &Value::Null).is_err());
         }
         let mut bad = value.clone();
         bad["caller_passed"] = json!(true);
-        assert!(validate_current_observation(&bad, &core).is_err());
+        assert!(validate_current_observation(&bad, &core, &Value::Null).is_err());
         let mut bad = value.clone();
         bad["observation_fds"]["remaining"] = json!(1);
-        assert!(validate_current_observation(&bad, &core).is_err());
+        assert!(validate_current_observation(&bad, &core, &Value::Null).is_err());
         let mut bad = value.clone();
         bad["observation_fds"]["errors"] = json!(["close failed"]);
-        assert!(validate_current_observation(&bad, &core).is_err());
+        assert!(validate_current_observation(&bad, &core, &Value::Null).is_err());
         let mut bad = value.clone();
         bad["sampling"]["finished_monotonic_ns"] = json!(11);
-        assert!(validate_current_observation(&bad, &core).is_err());
+        assert!(validate_current_observation(&bad, &core, &Value::Null).is_err());
         let mut bad = value;
         bad["sampling"]["double_observation_pairs"] = json!(2);
-        assert!(validate_current_observation(&bad, &core).is_err());
+        assert!(validate_current_observation(&bad, &core, &Value::Null).is_err());
     }
 }

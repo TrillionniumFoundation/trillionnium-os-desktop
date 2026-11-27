@@ -229,19 +229,80 @@ observations, rechecks the complete installed source set and every recorded
 output, and creates new baseline and qualification documents in its own private
 qualification directory. There is no caller-provided result, command or hash map.
 
-The compiled recipe adds two explicit kernel-first comparison modules and binds
-14 embedded source assets to 15 members. Its comparison channel is inherited only
+The compiled recipe includes the kernel-first comparisons and the fixed IHG
+preparation inputs, binding 35 embedded source assets to 36 members. Its comparison channel is inherited only
 by the five reviewed host entrypoints and their exact argument shapes. Android
 commands, the namespace helper and independent monitor/display observers do not
 receive it. Saved comparison documents cannot construct opaque Main authority.
 
+Business checkpoints send a single E only after the target is actually running
+and the original cleanup owner is registered. The parent uses its opaque Main
+and package observations to obtain the normal native-x86_64 or Berberis mapping
+fact within the same original deadline. The child receives only an acknowledgement;
+the opaque facts remain in Rust. Failed observations cannot be retried or confer
+identity credit; local G checks remain available for original cleanup only while
+custody and the original deadline still hold. Documents picker/provider pending
+state is preserved on failure. Read-only Gallery identity and preparation/capture
+operations do not produce running-engine credit. These checkpoints do not claim
+continuous process custody after sampling or whole-application business acceptance.
+
 The baseline distinguishes original-to-working image lineage from the current
-target package's working CE/DE directory identities. It does not claim a global
-installed-package UID inventory. IHG retains that complete-table prerequisite
-before any helper installation; target-only metadata cannot satisfy it. Baseline
-capture and materialization leave business acceptance, application readiness and
-production qualification false. The normal App owner must still perform the
-actual qualified business invocation and its final custody checks.
+target package's working CE/DE directory identities. For IHG only, the normal
+owner also observes the complete installed user-0 package/UID table through the
+fixed `cmd package list packages -U --user 0` query. It retains shared UIDs and
+every package, rejects duplicate or truncated output, and checks actual query
+retirement. This table is a separate comparison projection; it does not replace
+the actual target-directory or original-to-working lineage checks. Fresh query
+receipts have different process identities, so the full same-epoch table is
+compared while each receipt is independently validated.
+
+### Fixed IHG preparation
+
+After normal baseline capture, the same normal CLI exposes six fixed preparation
+modes:
+
+```sh
+droidloom-update prepare-native-ihg \
+  --mode MODE --request ROOT_OWNED_REQUEST_JSON --request-sha256 REQUEST_SHA256
+```
+
+| Mode | Exact request fields | Normal output |
+| --- | --- | --- |
+| `target-identity` | `baseline`, `qualification` | Actual IHG target identity |
+| `helper-source` | `baseline`, `qualification` | Fixed helper source inputs |
+| `helper-build` | `source` | Normal signed helper APK and build result |
+| `helper-install` | `build`, `target_identity` | The original 13-command installation chain |
+| `helper-identity` | `baseline`, `qualification`, `build`, `install`, `target_identity` | Actual installed helper identity |
+| `plan` | `baseline`, `qualification`, `target_identity`, `helper_identity`, `helper_build`, `helper_install` | Fixed `ihg_london` plan |
+
+Each request value is the actual normal artifact's `path`, `bytes` and
+`sha256`. The caller cannot select an executable, argument vector, helper
+package, Android user or output directory. The Rust adapter constructs the
+canonical cohort entry, generates a fresh mode-specific output directory, holds
+the entire installed cohort, and supplies the current opaque Main/PM and working
+data context under one original deadline. Preparation is distinct from business
+execution and cannot issue a business Engine checkpoint.
+
+Helper source, build and installation require the helper to be absent from the
+complete current user-0 table. Installation preserves the original 13 commands,
+its single mutation and state-only instrumentation. The normal postchecks require
+the target PM/Main to remain unchanged, the actual helper APK bytes to match the
+normal signed build, and the complete table to differ by exactly that helper and
+one previously unused UID. Subsequent helper identity and plan operations compare
+that installed helper to the preserved pre-install table; they do not discard it
+from the inventory or replace the baseline embedded in the helper source. The
+ordinary business invocation still requires its complete actual before/after
+tables to agree. The preparation CLI's private live execution object is not a
+cross-process installation credential, and saved JSON cannot reconstruct it. An ambiguous dispatch or failed retirement never triggers an
+automatic installation retry or uninstall.
+
+The adapter preserves the actual child exit, stdout, stderr and held output
+references. All preparation/capture/materialization results keep business
+acceptance and production qualification false. The normal App owner must still
+execute the actual qualified business invocation, observe any required Engine
+checkpoint and complete its final custody checks. Building or installing this
+software does not establish that the fixed helper toolchain or Android operation
+has run.
 
 ## Explicit launch observations in runtime plans
 

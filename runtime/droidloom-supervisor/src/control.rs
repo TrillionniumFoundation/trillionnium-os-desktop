@@ -52,7 +52,11 @@ mod progress;
 
 #[path = "control_identity.rs"]
 mod identity;
-pub use identity::{ActualApplicationObservation, EngineMappingObservation, MainCustodyObservation, NativeApplicationInspector, NativeInspectionPeer};
+pub use identity::{
+    ActualApplicationObservation, ActualUserZeroPackageInventoryObservation,
+    EngineMappingObservation, MainCustodyObservation, NativeApplicationInspector,
+    NativeInspectionPeer,
+};
 
 #[cfg(target_os = "linux")]
 #[path = "production_package.rs"]
@@ -84,6 +88,7 @@ mod application_command;
 #[path = "application_leaf_locks.rs"]
 mod application_leaf_locks;
 pub use application_command::{NativeOwnedLeafUnit, OwnedLeafProfile};
+pub use crate::native_leaf_engine::{NativeLeafEngineEvidence, NativeLeafExecution};
 pub use application_leaf_locks::NativeApplicationSourceLocks;
 
 /// Run a finite prepared application leaf from the native applications CLI.
@@ -129,6 +134,8 @@ pub fn run_prepared_settings_pages_leaf(
 pub enum NativeLeafCommandKind {
     /// The fixed normal read-only baseline collector, never an arbitrary leaf.
     BaselineCapture,
+    /// Fixed preparation is distinct from business execution and carries no Engine checkpoint.
+    IhgPreparation { mode: crate::native_ihg_preparation::IhgPreparationMode },
     Standard {
         budget: std::time::Duration,
     },
@@ -155,6 +162,21 @@ pub fn run_prepared_native_leaf_until(
         inspector,
         observation,
         until,
+    )
+}
+
+/// Execute a business leaf with fixed post-claim E checkpoints. The original
+/// capture/preparation entry point cannot mint running-engine evidence.
+pub fn run_prepared_native_leaf_observed_until(
+    command: std::process::Command,
+    epoch: &application_probe::RuntimeEpoch,
+    kind: NativeLeafCommandKind,
+    inspector: &mut NativeApplicationInspector,
+    observation: &mut crate::native_leaf_baseline::NativeLeafBaselineObservation<'_>,
+    until: Instant,
+) -> Result<NativeLeafExecution, String> {
+    application_command::run_prepared_native_leaf_observed_until(
+        command, epoch, kind, inspector, observation, until,
     )
 }
 
@@ -273,6 +295,12 @@ pub enum ControlRequest {
     ObserveApplicationEngine {
         package: String,
         user: u32,
+        expected_epoch: application_probe::RuntimeEpoch,
+    },
+    /// Read the complete fixed user-0 package/UID table from the actual owner.
+    /// No caller can select a package, user, command, UID, PID or query role.
+    ObserveUserZeroPackageInventory {
+        /// Compare the previously observed actual owner; never select one.
         expected_epoch: application_probe::RuntimeEpoch,
     },
     /// Open a reviewed HTTPS fixture via the current implicit Firefox resolver.
@@ -502,6 +530,9 @@ impl Daemon {
             }
             ControlRequest::ObserveApplicationEngine { .. } => Err(ControlError::Invalid(
                 "running engine observation requires the original kernel-first Ready owner".into(),
+            )),
+            ControlRequest::ObserveUserZeroPackageInventory { .. } => Err(ControlError::Invalid(
+                "complete user-0 inventory requires the original kernel-first Ready owner".into(),
             )),
             ControlRequest::ObserveRuntimeMain { .. } => Err(ControlError::Invalid(
                 "Main resource observation requires the original kernel-first Ready owner".into(),

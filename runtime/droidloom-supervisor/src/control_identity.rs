@@ -206,6 +206,49 @@ impl ActualApplicationObservation {
         self.observed_at
     }
 }
+
+/// One actual complete user-0 inventory from this retained normal peer. The
+/// serializable facts are comparisons; only the fixed request mints this token.
+pub struct ActualUserZeroPackageInventoryObservation {
+    facts: crate::package_inventory_observation::UserZeroPackageInventoryFacts,
+    peer: NativeInspectionPeer,
+    pidfd: fs::File,
+    observed_at: Instant,
+}
+impl ActualUserZeroPackageInventoryObservation {
+    pub fn facts(&self) -> &crate::package_inventory_observation::UserZeroPackageInventoryFacts {
+        &self.facts
+    }
+    pub(crate) fn observed_at(&self) -> Instant { self.observed_at }
+}
+
+fn inventory_response(
+    response: ControlResponse,
+    application: &application_probe::ApplicationInspection,
+) -> Result<crate::package_inventory_observation::UserZeroPackageInventoryFacts, ControlError> {
+    if !response.ok || response.state != CellState::Running
+        || response.host_pid != Some(application.epoch.cell_host_pid)
+        || response.launch.is_some() || response.applications.is_some()
+        || response.application_icon.is_some() || response.inspection.is_some()
+        || response.image_custody.is_some() || response.runtime_vintf.is_some()
+        || application.user != 0
+    {
+        return Err(ControlError::Invalid("actual complete user-0 inventory did not complete".into()));
+    }
+    let raw = response.diagnostics.ok_or_else(|| ControlError::Invalid(
+        "actual complete user-0 inventory omitted its comparison body".into()))?;
+    if raw.len() > crate::package_inventory_observation::MAX_WIRE_BYTES {
+        return Err(ControlError::Invalid("actual complete inventory exceeded its bound".into()));
+    }
+    let facts: crate::package_inventory_observation::UserZeroPackageInventoryFacts =
+        serde_json::from_str(&raw)?;
+    facts.validate(&application.epoch).map_err(ControlError::Invalid)?;
+    if facts.records().get(application.package.as_str()) != Some(&application.uid) {
+        return Err(ControlError::Invalid("complete inventory differs from the actual target UID".into()));
+    }
+    Ok(facts)
+}
+
 fn application_response(
     response: ControlResponse,
     package: &str,
@@ -770,6 +813,63 @@ impl NativeApplicationInspector {
         check_deadline(deadline)?;
         Ok(after)
     }
+
+    /// One fixed complete user-0 query. This borrows the existing actual Main
+    /// and PM tokens and never adds a Main/PM request or renews the outer lease.
+    pub fn observe_user_zero_package_inventory_until(
+        &mut self,
+        main: &MainCustodyObservation,
+        application: &ActualApplicationObservation,
+        deadline: Instant,
+    ) -> Result<ActualUserZeroPackageInventoryObservation, ControlError> {
+        self.require_observations_local(main, application, deadline)?;
+        if application.facts.user != 0 {
+            return Err(ControlError::Invalid("complete inventory is fixed to Android user zero".into()));
+        }
+        let request = ControlRequest::ObserveUserZeroPackageInventory {
+            expected_epoch: main.facts.epoch.clone(),
+        };
+        // Do not launch a fresh fixed-budget server request late in an outer
+        // invocation. The server retains its original 48s work/12s retirement
+        // budget and the complete 70s transport must fit in this original end.
+        if deadline.saturating_duration_since(Instant::now()) < progress::response_timeout(&request) {
+            return Err(ControlError::Invalid("original leaf budget cannot fit complete inventory request".into()));
+        }
+        let facts = inventory_response(
+            self.request_fixed_until(&request, Some(deadline))?,
+            &application.facts,
+        )?;
+        self.require_observations_local(main, application, deadline)?;
+        let peer = self.observation()?;
+        let pidfd = self.pidfd.try_clone()
+            .map_err(|e| io_error("retain actual complete inventory peer", e))?;
+        live(&pidfd).map_err(|e| io_error("check actual complete inventory peer", e))?;
+        check_deadline(Some(deadline))?;
+        Ok(ActualUserZeroPackageInventoryObservation {
+            facts, peer, pidfd, observed_at: Instant::now(),
+        })
+    }
+    pub(crate) fn require_inventory_local(
+        &self,
+        main: &MainCustodyObservation,
+        application: &ActualApplicationObservation,
+        inventory: &ActualUserZeroPackageInventoryObservation,
+        deadline: Instant,
+    ) -> Result<(), ControlError> {
+        self.require_observations_local(main, application, deadline)?;
+        live(&inventory.pidfd).map_err(|e| io_error("recheck actual inventory peer", e))?;
+        let held = inventory.pidfd.metadata().map_err(|e| io_error("stat inventory peer", e))?;
+        let current = self.pidfd.metadata().map_err(|e| io_error("stat current inventory peer", e))?;
+        if (held.dev(), held.ino()) != (current.dev(), current.ino())
+            || inventory.peer != self.observation()?
+            || inventory.facts.epoch != main.facts.epoch
+            || inventory.facts.records().get(application.facts.package.as_str()) != Some(&application.facts.uid)
+        {
+            return Err(ControlError::Invalid("complete inventory belongs to another actual owner or target".into()));
+        }
+        check_deadline(Some(deadline))
+    }
+
     /// Return factual provenance only; the struct is not an authority input.
     pub fn observation(&self) -> Result<NativeInspectionPeer, ControlError> {
         self.revalidate()?;
