@@ -160,6 +160,24 @@ impl NativeSourceRelease {
             ),
         }
     }
+    pub(super) fn working_root(&self) -> Result<Option<&Path>, String> {
+        match self {
+            Self::Legacy(_) => Ok(None),
+            Self::Working(release) => release.custody.runtime_evidence_directory()
+                .map(Some).map_err(|e|e.to_string()),
+        }
+    }
+    pub(super) fn working_channel_comparison(&self) -> Result<Option<Value>, String> {
+        match self {
+            Self::Legacy(_) => Ok(None),
+            Self::Working(release) => {
+                self.guard()?;
+                Ok(Some(json!({"schema":"droidloom.working-native-source-comparison.v1",
+                    "custody":release.custody.comparison().map_err(|e|e.to_string())?,
+                    "selection":release.selection,"catalog":release.catalog,"comparison_only":true})))
+            }
+        }
+    }
     pub(super) fn working_comparison(&self) -> Result<Option<Value>, String> {
         match self {
             Self::Legacy(_) => Ok(None),
