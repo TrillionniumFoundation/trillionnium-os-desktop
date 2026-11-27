@@ -2,6 +2,8 @@
 //!
 //! This preserves every selected row. A real browser invocation remains partial
 //! progress; unsupported profiles and pending gates never become acceptance.
+#[path = "native_camera_photo.rs"]
+mod native_camera_photo;
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant};

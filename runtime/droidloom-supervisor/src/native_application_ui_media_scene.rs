@@ -64,6 +64,46 @@ impl CameraPhotoSceneObservation {
         }))
     }
 }
+
+/// Only the completed actual case consumes the decoded buffers. This private
+/// history type retains the original source/result FDs and matching proof.
+pub(super) struct RetainedCameraPhotoSceneObservation {
+    photo: super::RetainedCameraPhotoObservation,
+    scene: SceneMatch,
+    record: HeldRecord,
+}
+impl CameraPhotoSceneObservation {
+    pub(super) fn into_retained(self) -> Result<RetainedCameraPhotoSceneObservation, String> {
+        self.verify_retained()?;
+        Ok(RetainedCameraPhotoSceneObservation {
+            photo: self.photo.into_retained()?, scene: self.scene, record: self.record,
+        })
+    }
+}
+impl RetainedCameraPhotoSceneObservation {
+    pub(super) fn photo(&self) -> &super::RetainedCameraPhotoObservation { &self.photo }
+    pub(super) fn verify_retained(&self) -> Result<(), String> {
+        self.photo.verify_retained()?;
+        self.record.verify()
+    }
+    pub(super) fn require_transcript(
+        &self, transcript: &super::super::NativeUiTranscript,
+    ) -> Result<(), String> {
+        self.verify_retained()?;
+        self.photo.require_transcript(transcript)
+    }
+    pub(super) fn comparison(&self) -> Result<Value, String> {
+        self.verify_retained()?;
+        Ok(serde_json::json!({
+            "schema":"droidloom.native-camera-retained-scene.v1",
+            "photo":self.photo.comparison()?,"scene_match":self.scene,
+            "actual_prior_window_and_owned_jpeg_compared":true,
+            "decoded_rgb_retained":false,"record_sha256":self.record.sha256,
+            "business_accepted":false
+        }))
+    }
+}
+
 impl NativeUiSession<'_, '_> {
     /// The original single-shutter intent remains authoritative. A failed scene
     /// comparison does not authorize a second shutter or delete the owned photo.
