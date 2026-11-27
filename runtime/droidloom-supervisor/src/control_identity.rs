@@ -266,6 +266,122 @@ fn exit_state_response(
     Ok(facts)
 }
 
+/// One actual complete selected-package PM-permission sample. The wire body is
+/// comparison only; this token retains the admitted peer and installed identity.
+pub struct ActualApplicationPermissionObservation {
+    facts: crate::application_permission_state::ApplicationPermissionStateFacts,
+    application: application_probe::ApplicationInspection,
+    peer: NativeInspectionPeer,
+    pidfd: fs::File,
+    observed_at: Instant,
+}
+impl ActualApplicationPermissionObservation {
+    pub fn facts(&self) -> &crate::application_permission_state::ApplicationPermissionStateFacts { &self.facts }
+    /// The actual local receipt time, never supplied by a caller or wire document.
+    pub fn observed_at(&self) -> Instant { self.observed_at }
+}
+
+fn permission_state_response(
+    response: ControlResponse,
+    application: &application_probe::ApplicationInspection,
+) -> Result<crate::application_permission_state::ApplicationPermissionStateFacts, ControlError> {
+    if !response.ok || response.state != CellState::Running
+        || response.host_pid != Some(application.epoch.cell_host_pid)
+        || response.launch.is_some() || response.applications.is_some()
+        || response.application_icon.is_some() || response.inspection.is_some()
+        || response.image_custody.is_some() || response.runtime_vintf.is_some()
+    {
+        return Err(ControlError::Invalid("actual complete PM-permission query did not complete".into()));
+    }
+    let raw=response.diagnostics.ok_or_else(||ControlError::Invalid(
+        "actual complete PM-permission query omitted its comparison body".into()))?;
+    if raw.len()>crate::application_permission_state::MAX_WIRE_BYTES {
+        return Err(ControlError::Invalid("actual PM-permission body exceeded its fixed bound".into()));
+    }
+    let facts:crate::application_permission_state::ApplicationPermissionStateFacts=serde_json::from_str(&raw)?;
+    facts.require_application(application).map_err(ControlError::Invalid)?;
+    Ok(facts)
+}
+
+/// One actual complete selected-package AppOps sample. The wire body is
+/// comparison only; this token retains the admitted peer and installed identity.
+pub struct ActualApplicationAppOpsObservation {
+    facts: crate::application_appops_state::ApplicationAppOpsStateFacts,
+    application: application_probe::ApplicationInspection,
+    peer: NativeInspectionPeer,
+    pidfd: fs::File,
+    observed_at: Instant,
+}
+impl ActualApplicationAppOpsObservation {
+    pub fn facts(&self) -> &crate::application_appops_state::ApplicationAppOpsStateFacts { &self.facts }
+    /// The actual local receipt time, never supplied by a caller or wire document.
+    pub fn observed_at(&self) -> Instant { self.observed_at }
+}
+
+fn appops_state_response(
+    response: ControlResponse,
+    application: &application_probe::ApplicationInspection,
+) -> Result<crate::application_appops_state::ApplicationAppOpsStateFacts, ControlError> {
+    if !response.ok || response.state != CellState::Running
+        || response.host_pid != Some(application.epoch.cell_host_pid)
+        || response.launch.is_some() || response.applications.is_some()
+        || response.application_icon.is_some() || response.inspection.is_some()
+        || response.image_custody.is_some() || response.runtime_vintf.is_some()
+    {
+        return Err(ControlError::Invalid("actual complete AppOps query did not complete".into()));
+    }
+    let raw=response.diagnostics.ok_or_else(||ControlError::Invalid(
+        "actual complete AppOps query omitted its comparison body".into()))?;
+    if raw.len()>crate::application_appops_state::MAX_WIRE_BYTES {
+        return Err(ControlError::Invalid("actual AppOps body exceeded its fixed bound".into()));
+    }
+    let facts:crate::application_appops_state::ApplicationAppOpsStateFacts=serde_json::from_str(&raw)?;
+    facts.require_application(application).map_err(ControlError::Invalid)?;
+    Ok(facts)
+}
+
+
+/// One actual anonymous registered-account sample from the same live broker key. The wire body is
+/// comparison only; this token retains the admitted peer and installed identity.
+pub struct ActualApplicationAccountObservation {
+    facts: crate::application_account_state::ApplicationAccountStateFacts,
+    application: application_probe::ApplicationInspection,
+    peer: NativeInspectionPeer,
+    pidfd: fs::File,
+    observed_at: Instant,
+    original_end: Instant,
+    main: crate::main_custody::RuntimeMainCustody,
+}
+impl ActualApplicationAccountObservation {
+    pub fn facts(&self) -> &crate::application_account_state::ApplicationAccountStateFacts { &self.facts }
+    /// The actual local receipt time, never supplied by a caller or wire document.
+    pub fn observed_at(&self) -> Instant { self.observed_at }
+}
+
+fn account_state_response(
+    response: ControlResponse,
+    application: &application_probe::ApplicationInspection,
+) -> Result<crate::application_account_state::ApplicationAccountStateFacts, ControlError> {
+    if !response.ok || response.state != CellState::Running
+        || response.host_pid != Some(application.epoch.cell_host_pid)
+        || response.launch.is_some() || response.applications.is_some()
+        || response.application_icon.is_some() || response.inspection.is_some()
+        || response.image_custody.is_some() || response.runtime_vintf.is_some()
+    {
+        return Err(ControlError::Invalid("actual complete Account query did not complete".into()));
+    }
+    let raw=response.diagnostics.ok_or_else(||ControlError::Invalid(
+        "actual complete Account query omitted its comparison body".into()))?;
+    if raw.len()>crate::application_account_state::MAX_WIRE_BYTES {
+        return Err(ControlError::Invalid("actual Account body exceeded its fixed bound".into()));
+    }
+    let facts:crate::application_account_state::ApplicationAccountStateFacts=serde_json::from_str(&raw)
+        .map_err(|_|ControlError::Invalid("anonymous account response schema differs".into()))?;
+    facts.require_application(application).map_err(ControlError::Invalid)?;
+    Ok(facts)
+}
+
+
 fn inventory_response(
     response: ControlResponse,
     application: &application_probe::ApplicationInspection,
@@ -1007,6 +1123,182 @@ impl NativeApplicationInspector {
         }
         observation.facts.require_application(&application.facts).map_err(ControlError::Invalid)?;
         check_deadline(Some(deadline))
+    }
+
+    /// One actual fixed PM-permission query; borrows the original Main/PM owner
+    /// and the caller's original end. No fresh Main or PM request is added.
+    pub fn observe_application_permission_state_until(
+        &mut self,
+        main: &MainCustodyObservation,
+        application: &ActualApplicationObservation,
+        deadline: Instant,
+    ) -> Result<ActualApplicationPermissionObservation, ControlError> {
+        self.require_observations_local(main,application,deadline)?;
+        if application.facts.user!=0 || !crate::engine_custody::selected_package(&application.facts.package) {
+            return Err(ControlError::Invalid("PM-permission requires a selected actual user-zero application".into()));
+        }
+        let request=ControlRequest::ObserveApplicationPermissionState{
+            package:application.facts.package.clone(), expected_epoch:main.facts.epoch.clone(),
+        };
+        if deadline.saturating_duration_since(Instant::now())<progress::response_timeout(&request) {
+            return Err(ControlError::Invalid("original observation budget cannot fit the fixed PM-permission request".into()));
+        }
+        let facts=permission_state_response(self.request_fixed_until(&request,Some(deadline))?,&application.facts)?;
+        self.require_observations_local(main,application,deadline)?;
+        let peer=self.observation()?;
+        let pidfd=self.pidfd.try_clone().map_err(|e|io_error("retain actual PM-permission peer",e))?;
+        live(&pidfd).map_err(|e|io_error("check actual PM-permission peer",e))?;
+        check_deadline(Some(deadline))?;
+        Ok(ActualApplicationPermissionObservation{
+            facts, application:application.facts.clone(), peer, pidfd, observed_at:Instant::now(),
+        })
+    }
+    /// Recheck an actual sample's owner and complete installed identity. This
+    /// does not refresh its observation time or turn comparison JSON into a fact.
+    pub fn require_permission_state_local(
+        &self,
+        main: &MainCustodyObservation,
+        application: &ActualApplicationObservation,
+        observation: &ActualApplicationPermissionObservation,
+        deadline: Instant,
+    ) -> Result<(), ControlError> {
+        self.require_observations_local(main,application,deadline)?;
+        live(&observation.pidfd).map_err(|e|io_error("recheck actual PM-permission peer",e))?;
+        let held=observation.pidfd.metadata().map_err(|e|io_error("stat PM-permission peer",e))?;
+        let current=self.pidfd.metadata().map_err(|e|io_error("stat current PM-permission peer",e))?;
+        if (held.dev(),held.ino())!=(current.dev(),current.ino())
+            || observation.peer!=self.observation()? || observation.application!=application.facts
+            || observation.facts.epoch()!=&main.facts.epoch
+        {
+            return Err(ControlError::Invalid("PM-permission observation belongs to another original owner or application".into()));
+        }
+        observation.facts.require_application(&application.facts).map_err(ControlError::Invalid)?;
+        check_deadline(Some(deadline))
+    }
+
+    /// One actual fixed AppOps query; borrows the original Main/PM owner
+    /// and the caller's original end. No fresh Main or PM request is added.
+    pub fn observe_application_appops_state_until(
+        &mut self,
+        main: &MainCustodyObservation,
+        application: &ActualApplicationObservation,
+        deadline: Instant,
+    ) -> Result<ActualApplicationAppOpsObservation, ControlError> {
+        self.require_observations_local(main,application,deadline)?;
+        if application.facts.user!=0 || !crate::engine_custody::selected_package(&application.facts.package) {
+            return Err(ControlError::Invalid("AppOps requires a selected actual user-zero application".into()));
+        }
+        let request=ControlRequest::ObserveApplicationAppOpsState{
+            package:application.facts.package.clone(), expected_epoch:main.facts.epoch.clone(),
+        };
+        if deadline.saturating_duration_since(Instant::now())<progress::response_timeout(&request) {
+            return Err(ControlError::Invalid("original observation budget cannot fit the fixed AppOps request".into()));
+        }
+        let facts=appops_state_response(self.request_fixed_until(&request,Some(deadline))?,&application.facts)?;
+        self.require_observations_local(main,application,deadline)?;
+        let peer=self.observation()?;
+        let pidfd=self.pidfd.try_clone().map_err(|e|io_error("retain actual AppOps peer",e))?;
+        live(&pidfd).map_err(|e|io_error("check actual AppOps peer",e))?;
+        check_deadline(Some(deadline))?;
+        Ok(ActualApplicationAppOpsObservation{
+            facts, application:application.facts.clone(), peer, pidfd, observed_at:Instant::now(),
+        })
+    }
+    /// Recheck an actual sample's owner and complete installed identity. This
+    /// does not refresh its observation time or turn comparison JSON into a fact.
+    pub fn require_appops_state_local(
+        &self,
+        main: &MainCustodyObservation,
+        application: &ActualApplicationObservation,
+        observation: &ActualApplicationAppOpsObservation,
+        deadline: Instant,
+    ) -> Result<(), ControlError> {
+        self.require_observations_local(main,application,deadline)?;
+        live(&observation.pidfd).map_err(|e|io_error("recheck actual AppOps peer",e))?;
+        let held=observation.pidfd.metadata().map_err(|e|io_error("stat AppOps peer",e))?;
+        let current=self.pidfd.metadata().map_err(|e|io_error("stat current AppOps peer",e))?;
+        if (held.dev(),held.ino())!=(current.dev(),current.ino())
+            || observation.peer!=self.observation()? || observation.application!=application.facts
+            || observation.facts.epoch()!=&main.facts.epoch
+        {
+            return Err(ControlError::Invalid("AppOps observation belongs to another original owner or application".into()));
+        }
+        observation.facts.require_application(&application.facts).map_err(ControlError::Invalid)?;
+        check_deadline(Some(deadline))
+    }
+
+
+    /// One actual fixed Account query; borrows the original Main/PM owner
+    /// and the caller's original end. No fresh Main or PM request is added.
+    pub fn observe_application_account_state_until(
+        &mut self,
+        main: &MainCustodyObservation,
+        application: &ActualApplicationObservation,
+        deadline: Instant,
+    ) -> Result<ActualApplicationAccountObservation, ControlError> {
+        self.require_observations_local(main,application,deadline)?;
+        if application.facts.user!=0 || !crate::engine_custody::selected_package(&application.facts.package) {
+            return Err(ControlError::Invalid("Account requires a selected actual user-zero application".into()));
+        }
+        let request=ControlRequest::ObserveApplicationAccountState{
+            package:application.facts.package.clone(), expected_epoch:main.facts.epoch.clone(),
+        };
+        if deadline.saturating_duration_since(Instant::now())<progress::response_timeout(&request) {
+            return Err(ControlError::Invalid("original observation budget cannot fit the fixed Account request".into()));
+        }
+        let facts=account_state_response(self.request_fixed_until(&request,Some(deadline))?,&application.facts)?;
+        self.require_observations_local(main,application,deadline)?;
+        let peer=self.observation()?;
+        let pidfd=self.pidfd.try_clone().map_err(|e|io_error("retain actual Account peer",e))?;
+        live(&pidfd).map_err(|e|io_error("check actual Account peer",e))?;
+        check_deadline(Some(deadline))?;
+        Ok(ActualApplicationAccountObservation{
+            facts, application:application.facts.clone(), peer, pidfd, observed_at:Instant::now(),
+            original_end:deadline,main:main.facts.clone(),
+        })
+    }
+    /// Recheck an actual sample's owner and complete installed identity. This
+    /// does not refresh its observation time or turn comparison JSON into a fact.
+    pub fn require_account_state_local(
+        &self,
+        main: &MainCustodyObservation,
+        application: &ActualApplicationObservation,
+        observation: &ActualApplicationAccountObservation,
+        deadline: Instant,
+    ) -> Result<(), ControlError> {
+        self.require_observations_local(main,application,deadline)?;
+        live(&observation.pidfd).map_err(|e|io_error("recheck actual Account peer",e))?;
+        let held=observation.pidfd.metadata().map_err(|e|io_error("stat Account peer",e))?;
+        let current=self.pidfd.metadata().map_err(|e|io_error("stat current Account peer",e))?;
+        if (held.dev(),held.ino())!=(current.dev(),current.ino())
+            || observation.peer!=self.observation()? || observation.application!=application.facts
+            || observation.facts.epoch()!=&main.facts.epoch
+            || observation.main!=main.facts || deadline>observation.original_end
+            || observation.observed_at>=observation.original_end
+        {
+            return Err(ControlError::Invalid("Account observation belongs to another original owner or application".into()));
+        }
+        observation.facts.require_application(&application.facts).map_err(ControlError::Invalid)?;
+        check_deadline(Some(deadline))
+    }
+
+
+    /// Partial preservation only: both non-reconstructible samples must belong
+    /// to the same live peer, complete Main/PM identity and original work end.
+    pub fn require_account_state_pair_local(
+        &self,
+        main: &MainCustodyObservation,
+        application: &ActualApplicationObservation,
+        before: &ActualApplicationAccountObservation,
+        after: &ActualApplicationAccountObservation,
+        deadline: Instant,
+    ) -> Result<(), ControlError> {
+        self.require_account_state_local(main,application,before,deadline)?;
+        self.require_account_state_local(main,application,after,deadline)?;
+        if before.original_end!=after.original_end || after.observed_at<=before.observed_at {
+            return Err(ControlError::Invalid("account samples do not share the original ordered window".into()));
+        }
+        before.facts.same_registered_accounts(&after.facts).map_err(ControlError::Invalid)
     }
 
     /// Return factual provenance only; the struct is not an authority input.

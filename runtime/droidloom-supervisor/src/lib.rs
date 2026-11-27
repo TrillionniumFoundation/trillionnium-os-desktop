@@ -12,6 +12,9 @@ fn main() {
 }
 
 pub mod application_exit_state;
+pub mod application_permission_state;
+pub mod application_appops_state;
+pub mod application_account_state;
 pub mod control;
 pub use control::native_leaf_business_capture;
 pub use control::physical_qualification_channel;
@@ -44,6 +47,7 @@ mod native_leaf_installed_cohort;
 mod native_once_capabilities;
 #[cfg(target_os = "linux")]
 mod native_once_contract;
+mod native_working_contract;
 #[cfg(target_os = "linux")]
 pub mod native_once_return;
 #[cfg(target_os = "linux")]

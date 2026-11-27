@@ -261,17 +261,12 @@ fn validate_case_summaries(package: &str, row: &Value, epoch: &RuntimeEpoch) -> 
     let epoch = serde_json::to_value(epoch)?;
     for (case, history) in expected.iter().zip(actual) {
         let kind_matches = match (case.native_route(), *case) {
-            (Some(route), _) => {
-                history.get("route") == Some(&json!(route)) && history.get("kind").is_none()
-            }
-            (None, QualificationCase::CameraPhotoCaptureReopen) => {
-                history.get("kind") == Some(&json!("camera_photo_capture_reopen"))
-                    && history.get("route").is_none()
-            }
-            (None, _) => {
-                history.get("kind") == Some(&json!("family_observation"))
-                    && history.get("route").is_none()
-            }
+            (Some(route), _) => history.get("route") == Some(&json!(route)) && history.get("kind").is_none(),
+            (None, QualificationCase::CameraPhotoCaptureReopen) =>
+                history.get("kind") == Some(&json!("camera_photo_capture_reopen")) && history.get("route").is_none(),
+            (None, QualificationCase::SettingsPermissionInterfaces) =>
+                history.get("kind") == Some(&json!("settings_permission_interfaces")) && history.get("route").is_none(),
+            (None, _) => history.get("kind") == Some(&json!("family_observation")) && history.get("route").is_none(),
         };
         if !kind_matches
             || history.get("sealed_inside_original_case_window") != Some(&json!(true))
@@ -1076,28 +1071,26 @@ mod tests {
             framework_start_ticks: 43,
         };
         let make = |package: &str| -> Value {
-            let cases = (0..CASE_COUNT)
-                .filter_map(|ordinal| {
-                    let case = QualificationCase::from_ordinal(ordinal as u8).unwrap();
-                    if case.package() != package {
-                        return None;
-                    }
-                    let mut history = json!({
-                        "actual":{"package":package,"user":0,"epoch":epoch},
-                        "sealed_inside_original_case_window":true,
-                        "historical_observation":true,
-                        "continuous_app_or_target_directory_custody_after_case_claimed":false,
-                    });
-                    if let Some(route) = case.native_route() {
-                        history["route"] = json!(route);
-                    } else if case == QualificationCase::CameraPhotoCaptureReopen {
-                        history["kind"] = json!("camera_photo_capture_reopen");
-                    } else {
-                        history["kind"] = json!("family_observation");
-                    }
-                    Some(history)
-                })
-                .collect::<Vec<_>>();
+            let cases = (0..CASE_COUNT).filter_map(|ordinal| {
+                let case = QualificationCase::from_ordinal(ordinal as u8).unwrap();
+                if case.package() != package { return None; }
+                let mut history = json!({
+                    "actual":{"package":package,"user":0,"epoch":epoch},
+                    "sealed_inside_original_case_window":true,
+                    "historical_observation":true,
+                    "continuous_app_or_target_directory_custody_after_case_claimed":false,
+                });
+                if let Some(route) = case.native_route() {
+                    history["route"] = json!(route);
+                } else if case == QualificationCase::CameraPhotoCaptureReopen {
+                    history["kind"] = json!("camera_photo_capture_reopen");
+                } else if case == QualificationCase::SettingsPermissionInterfaces {
+                    history["kind"] = json!("settings_permission_interfaces");
+                } else {
+                    history["kind"] = json!("family_observation");
+                }
+                Some(history)
+            }).collect::<Vec<_>>();
             json!({"cases":cases})
         };
         let mut total = 0;
@@ -1124,6 +1117,20 @@ mod tests {
         let mut wrong = camera;
         wrong["cases"][1]["route"] = json!("camera_photo");
         assert!(validate_case_summaries("com.android.camera2", &wrong, &epoch).is_err());
+        let settings = make("com.android.settings");
+        assert_eq!(settings["cases"].as_array().unwrap().len(), 2);
+        assert_eq!(settings["cases"][0]["route"], "settings_supported_pages");
+        assert_eq!(settings["cases"][1]["kind"], "settings_permission_interfaces");
+        for changed in 0..4 {
+            let mut wrong = settings.clone();
+            match changed {
+                0 => { wrong["cases"].as_array_mut().unwrap().pop(); }
+                1 => { wrong["cases"].as_array_mut().unwrap().swap(0, 1); }
+                2 => { wrong["cases"][1]["kind"] = json!("family_observation"); }
+                _ => { wrong["cases"][1]["actual"]["package"] = json!("com.android.permissioncontroller"); }
+            }
+            assert!(validate_case_summaries("com.android.settings", &wrong, &epoch).is_err());
+        }
         let family = make("org.mozilla.firefox");
         let mut wrong = family.clone();
         wrong["cases"] = json!([]);

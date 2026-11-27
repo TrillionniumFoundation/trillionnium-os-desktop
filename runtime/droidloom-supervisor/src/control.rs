@@ -53,9 +53,9 @@ mod progress;
 #[path = "control_identity.rs"]
 mod identity;
 pub use identity::{
-    ActualApplicationExitObservation, ActualApplicationObservation,
-    ActualUserZeroPackageInventoryObservation, EngineMappingObservation, MainCustodyObservation,
-    NativeApplicationInspector, NativeInspectionPeer,
+    ActualApplicationObservation, ActualApplicationExitObservation, ActualApplicationPermissionObservation, ActualApplicationAccountObservation, ActualApplicationAppOpsObservation, ActualUserZeroPackageInventoryObservation,
+    EngineMappingObservation, MainCustodyObservation, NativeApplicationInspector,
+    NativeInspectionPeer,
 };
 
 #[cfg(target_os = "linux")]
@@ -90,6 +90,7 @@ mod application_leaf_locks;
 pub use crate::native_application_ui_protocol::{
     ProtocolError as NativeUiError, Reply as NativeUiReply, Selector as NativeUiSelector,
 };
+pub use application_command::{SettingsPermissionCaseObservation, run_settings_permission_case, settings_permission_case_window_seconds, NativeUiPermissionWindow, NativeUiPermissionPreservation, permission_preservation_additional_window_seconds};
 pub use crate::native_leaf_engine::{NativeLeafEngineEvidence, NativeLeafExecution};
 pub use application_command::native_leaf_business_capture;
 pub use application_command::physical_qualification_channel;
@@ -322,6 +323,24 @@ pub enum ControlRequest {
     /// Read complete exit history for one source-selected user-zero application.
     /// Expected epoch compares the actual owner; no PID, UID, path or command is accepted.
     ObserveApplicationExitState {
+        package: String,
+        expected_epoch: application_probe::RuntimeEpoch,
+    },
+    /// Observe complete PackageManager grants for one source-selected user-zero
+    /// application, including its actual shared UID. No permission mutation.
+    ObserveApplicationPermissionState {
+        package: String,
+        expected_epoch: application_probe::RuntimeEpoch,
+    },
+    /// Observe the complete scoped AppOps modes for one selected user-zero
+    /// application. UID and default tables are read by the original Android owner.
+    ObserveApplicationAppOpsState {
+        package: String,
+        expected_epoch: application_probe::RuntimeEpoch,
+    },
+    /// Anonymous complete registered-account/target-visibility comparison.
+    /// The source-owned normal observer alone receives its private stdin key.
+    ObserveApplicationAccountState {
         package: String,
         expected_epoch: application_probe::RuntimeEpoch,
     },
@@ -561,6 +580,15 @@ impl Daemon {
             )),
             ControlRequest::ObserveApplicationExitState { .. } => Err(ControlError::Invalid(
                 "exit-state observation requires the original kernel-first Ready owner".into(),
+            )),
+            ControlRequest::ObserveApplicationPermissionState { .. } => Err(ControlError::Invalid(
+                "PM permission observation requires the original kernel-first Ready owner".into(),
+            )),
+            ControlRequest::ObserveApplicationAppOpsState { .. } => Err(ControlError::Invalid(
+                "AppOps observation requires the original kernel-first Ready owner".into(),
+            )),
+            ControlRequest::ObserveApplicationAccountState { .. } => Err(ControlError::Invalid(
+                "account observation requires the original kernel-first Ready owner".into(),
             )),
             ControlRequest::ObserveUserZeroPackageInventory { .. } => Err(ControlError::Invalid(
                 "complete user-0 inventory requires the original kernel-first Ready owner".into(),

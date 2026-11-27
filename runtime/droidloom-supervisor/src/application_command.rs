@@ -32,6 +32,7 @@ mod gallery_resources;
 mod native_application_ui_entry;
 #[path = "working_owned_probe.rs"]
 mod working_owned_probe;
+pub use native_application_ui_entry::{SettingsPermissionCaseObservation, run_settings_permission_case, settings_permission_case_window_seconds, NativeUiPermissionWindow, NativeUiPermissionPreservation, permission_preservation_additional_window_seconds};
 pub use application_leaf_unit::{NativeOwnedLeafUnit, OwnedLeafProfile};
 pub use native_application_ui_entry::{
     CameraPhotoCaseObservation, CameraPhotoObservation, CameraPhotoSceneObservation,

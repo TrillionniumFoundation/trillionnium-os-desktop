@@ -45,7 +45,7 @@ pub mod budget;
 #[path = "native_working_layout.rs"]
 pub mod layout;
 pub use budget::{
-    CASE_COUNT, FAMILY_CASE_COUNT, NATIVE_CASE_COUNT, NOFILE_LIMIT, PHOTO_CASE_COUNT,
+    CASE_COUNT, FAMILY_CASE_COUNT, NATIVE_CASE_COUNT, NOFILE_LIMIT, PHOTO_CASE_COUNT, SETTINGS_CASE_COUNT,
     RETIREMENT_SECONDS, SERVICE_SECONDS, SUITE_SECONDS,
 };
 pub const SUMMARY_LIMIT: usize = 16 * 1024 * 1024;
@@ -185,6 +185,7 @@ pub enum QualificationCase {
     FamilyBilibili,
     // Append after all original fourteen native and thirty-one family cases.
     CameraPhotoCaptureReopen,
+    SettingsPermissionInterfaces,
 }
 impl QualificationCase {
     pub(super) fn ordinal(self) -> u8 {
@@ -238,6 +239,7 @@ impl QualificationCase {
             QualificationCase::FamilyFirefox,
             QualificationCase::FamilyBilibili,
             QualificationCase::CameraPhotoCaptureReopen,
+            QualificationCase::SettingsPermissionInterfaces,
         ];
         ALL.get(value as usize)
             .copied()
@@ -247,6 +249,8 @@ impl QualificationCase {
     pub fn window_seconds(self) -> u64 {
         if self == Self::CameraPhotoCaptureReopen {
             budget::CAMERA_PHOTO_CASE_SECONDS
+        } else if self == Self::SettingsPermissionInterfaces {
+            budget::SETTINGS_PERMISSION_CASE_SECONDS
         } else if matches!(
             self,
             Self::FamilyAmazon
@@ -315,7 +319,7 @@ impl QualificationCase {
             Self::GalleryVideo => "com.android.gallery3d",
             Self::GallerySeek => "com.android.gallery3d",
             Self::GalleryAlbum => "com.android.gallery3d",
-            Self::SettingsSupportedPages => "com.android.settings",
+            Self::SettingsSupportedPages | Self::SettingsPermissionInterfaces => "com.android.settings",
             Self::IhgLondon => "com.ihg.apps.android",
             Self::FamilyHyatt => "com.Hyatt.hyt",
             Self::FamilyMobileTicket => "com.MobileTicket",
@@ -846,19 +850,15 @@ mod tests {
         }
         assert_eq!(total, 25_430);
         assert_eq!(total, budget::NATIVE_SECONDS);
-        assert_eq!(
-            total
-                + budget::FAMILY_SECONDS
-                + budget::CAMERA_PHOTO_CASE_SECONDS
-                + 140
-                + budget::SOURCE_AND_CAPTURE_SECONDS,
-            SUITE_SECONDS
-        );
+        assert_eq!(total + budget::FAMILY_SECONDS + budget::CAMERA_PHOTO_CASE_SECONDS
+            + budget::SETTINGS_PERMISSION_CASE_SECONDS + 2 * budget::MAIN_SECONDS
+            + budget::SOURCE_AND_CAPTURE_SECONDS, SUITE_SECONDS);
         assert_eq!(budget::SOURCE_AND_CAPTURE_SECONDS, 46_622);
-        assert_eq!(SUITE_SECONDS, 195_672);
-        assert_eq!(SERVICE_SECONDS, 195_852);
-        assert_eq!(budget::RETAIL_WORK_SECONDS, 8_690);
-        assert_eq!(CASE_COUNT, 46);
+        assert_eq!(SUITE_SECONDS, 315_742);
+        assert_eq!(SERVICE_SECONDS, 315_922);
+        assert_eq!(budget::RETAIL_WORK_SECONDS, 9_110);
+        assert_eq!(CASE_COUNT, 47);
+        assert_eq!(SETTINGS_CASE_COUNT, 1);
         assert_eq!(PHOTO_CASE_COUNT, 1);
         assert_eq!(QualificationCase::CameraPhoto.ordinal(), 2);
         assert_eq!(QualificationCase::CameraPhoto.window_seconds(), 1_260);
@@ -870,6 +870,13 @@ mod tests {
         assert_eq!(photo.profile(), KernelProfile::Standard);
         assert!(photo.native_route().is_none());
         assert!(QualificationCase::for_family(photo.package()).is_err());
+        let settings = QualificationCase::from_ordinal(46).unwrap();
+        assert_eq!(settings, QualificationCase::SettingsPermissionInterfaces);
+        assert_eq!(settings.package(), "com.android.settings");
+        assert_eq!(settings.window_seconds(), 250 + 6_050);
+        assert_eq!(settings.profile(), KernelProfile::Standard);
+        assert!(settings.native_route().is_none());
+        assert!(QualificationCase::for_family(settings.package()).is_err());
         assert!(QualificationCase::from_ordinal(CASE_COUNT as u8).is_err());
         assert!(child_argv(Path::new("/PLAN.json"), "../caller").is_err());
     }
@@ -889,7 +896,7 @@ mod tests {
                     | QualificationCase::FamilyTaobao
                     | QualificationCase::FamilyPinduoduo
             );
-            assert_eq!(case.window_seconds(), if retail { 8_940 } else { 2_865 });
+            assert_eq!(case.window_seconds(), if retail { 9_360 } else { 7_160 });
             assert_eq!(case.profile(), KernelProfile::Standard);
             assert!(selected.insert(case.package()));
         }
@@ -925,7 +932,7 @@ mod tests {
             assert!(lines.contains(line.as_str()), "{line}");
         }
         assert_eq!(NOFILE_LIMIT, 32_768);
-        assert_eq!(SERVICE_SECONDS, 195_852);
+        assert_eq!(SERVICE_SECONDS, 315_922);
         assert!(lines.contains("MemoryMax=2147483648"));
         assert!(lines.contains("MemorySwapMax=0"));
         assert!(lines.contains("CPUQuota=200%"));

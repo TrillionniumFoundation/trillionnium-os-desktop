@@ -4,6 +4,7 @@ use super::*;
 
 pub(crate) struct EarlyApplicationControl {
     listener: OwnedListener,
+    account_key: crate::production_application::AccountAnonymityKey,
 }
 impl EarlyApplicationControl {
     pub(crate) fn bind(
@@ -15,16 +16,19 @@ impl EarlyApplicationControl {
         let root = trusted_directory(libc::AT_FDCWD, c"/")?;
         let run = trusted_directory(root.as_raw_fd(), c"run")?;
         let parent = trusted_directory(run.as_raw_fd(), c"droidloom")?;
+        let bind_deadline=Instant::now()+Duration::from_secs(10);
         let listener = OwnedListener::bind_early_at(
             parent,
             owner.clone(),
-            Instant::now() + Duration::from_secs(10),
+            bind_deadline,
         )?
         .initialize()?;
         owner
             .objects()
             .map_err(|e| ControlError::Invalid(e.to_string()))?;
-        Ok(Self { listener })
+        let account_key=crate::production_application::AccountAnonymityKey::new(bind_deadline)
+            .map_err(|_|ControlError::Invalid("private account observer initialization failed".into()))?;
+        Ok(Self { listener,account_key })
     }
     pub(crate) fn poll<'owner>(
         &self,
@@ -101,7 +105,7 @@ impl EarlyApplicationControl {
             // The finite read starts its one absolute budget before original
             // owner acquisition. Main custody uses this same metadata-only budget;
             // other request lifetimes keep their existing limits.
-            vintf_budget = matches!(&request, ControlRequest::ObserveRuntimeVintf { .. } | ControlRequest::ObserveRuntimeMain { .. } | ControlRequest::ObserveCurrentRuntimeMain {} | ControlRequest::ObserveApplicationEngine { .. } | ControlRequest::ObserveUserZeroPackageInventory { .. } | ControlRequest::ObserveApplicationExitState { .. })
+            vintf_budget = matches!(&request, ControlRequest::ObserveRuntimeVintf { .. } | ControlRequest::ObserveRuntimeMain { .. } | ControlRequest::ObserveCurrentRuntimeMain {} | ControlRequest::ObserveApplicationEngine { .. } | ControlRequest::ObserveUserZeroPackageInventory { .. } | ControlRequest::ObserveApplicationExitState { .. } | ControlRequest::ObserveApplicationPermissionState { .. } | ControlRequest::ObserveApplicationAppOpsState { .. } | ControlRequest::ObserveApplicationAccountState { .. })
                 .then(crate::production_application::RuntimeVintfBudget::start);
             let observation_deadline = vintf_budget.as_ref().map(|budget| budget.work_deadline());
             // Request-local acquisition starts only after transport admission.
@@ -250,6 +254,72 @@ impl EarlyApplicationControl {
                     }
                     response.diagnostics=Some(body);
                     response.message="Complete selected-package exit history observed with actual query retirement; elapsed stability and business acceptance remain separate".into();
+                }
+                ControlRequest::ObserveApplicationPermissionState { package, expected_epoch } => {
+                    validate_package(&package)?;
+                    if !crate::engine_custody::selected_package(&package) {
+                        return Err(ControlError::Invalid("PM-permission requires a source-selected application".into()));
+                    }
+                    let deadline=vintf_budget.as_ref().expect("fixed PM-permission request budget").work_deadline();
+                    let observed=crate::production_application::read_application_permission_state(
+                        authority,&package,&expected_epoch,deadline,
+                    ).map_err(|e|{
+                        vintf_failure=Some(classify_vintf_failure(&e,deadline));
+                        early_application_error(e,&mut acquisition_quarantined)
+                    })?;
+                    let facts=crate::application_permission_state::ApplicationPermissionStateFacts::from_actual(
+                        &observed,&expected_epoch,
+                    ).map_err(ControlError::Invalid)?;
+                    let body=serde_json::to_string(&facts)?;
+                    if body.len()>crate::application_permission_state::MAX_WIRE_BYTES {
+                        return Err(ControlError::Invalid("complete PM-permission exceeded its fixed bound".into()));
+                    }
+                    response.diagnostics=Some(body);
+                    response.message="Complete user-zero PackageManager permissions observed with actual query retirement; account, AppOps, persistent data and acceptance remain separate".into();
+                }
+                ControlRequest::ObserveApplicationAppOpsState { package, expected_epoch } => {
+                    validate_package(&package)?;
+                    if !crate::engine_custody::selected_package(&package) {
+                        return Err(ControlError::Invalid("AppOps requires a source-selected application".into()));
+                    }
+                    let deadline=vintf_budget.as_ref().expect("fixed AppOps request budget").work_deadline();
+                    let observed=crate::production_application::read_application_appops_state(
+                        authority,&package,&expected_epoch,deadline,
+                    ).map_err(|e|{
+                        vintf_failure=Some(classify_vintf_failure(&e,deadline));
+                        early_application_error(e,&mut acquisition_quarantined)
+                    })?;
+                    let facts=crate::application_appops_state::ApplicationAppOpsStateFacts::from_actual(
+                        &observed,&expected_epoch,
+                    ).map_err(ControlError::Invalid)?;
+                    let body=serde_json::to_string(&facts)?;
+                    if body.len()>crate::application_appops_state::MAX_WIRE_BYTES {
+                        return Err(ControlError::Invalid("complete AppOps exceeded its fixed bound".into()));
+                    }
+                    response.diagnostics=Some(body);
+                    response.message="Complete user-zero scoped AppOps modes observed with actual query retirement; account, PM permissions, persistent data and acceptance remain separate".into();
+                }
+                ControlRequest::ObserveApplicationAccountState { package, expected_epoch } => {
+                    validate_package(&package)?;
+                    if !crate::engine_custody::selected_package(&package) {
+                        return Err(ControlError::Invalid("Account requires a source-selected application".into()));
+                    }
+                    let deadline=vintf_budget.as_ref().expect("fixed Account request budget").work_deadline();
+                    let observed=crate::production_application::read_application_account_state(
+                        authority,&self.account_key,&package,&expected_epoch,deadline,
+                    ).map_err(|e|{
+                        vintf_failure=Some(classify_vintf_failure(&e,deadline));
+                        early_application_error(e,&mut acquisition_quarantined)
+                    })?;
+                    let facts=crate::application_account_state::ApplicationAccountStateFacts::from_actual(
+                        &observed,&expected_epoch,
+                    ).map_err(ControlError::Invalid)?;
+                    let body=serde_json::to_string(&facts)?;
+                    if body.len()>crate::application_account_state::MAX_WIRE_BYTES {
+                        return Err(ControlError::Invalid("complete Account exceeded its fixed bound".into()));
+                    }
+                    response.diagnostics=Some(body);
+                    response.message="Anonymous registered-account and target-visibility comparison observed with actual query retirement; no credential, login-state, persistent-data or acceptance result is claimed".into();
                 }
                 ControlRequest::ObserveUserZeroPackageInventory { expected_epoch } => {
                     let deadline = vintf_budget.as_ref().expect("fixed user-0 inventory budget").work_deadline();
