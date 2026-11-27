@@ -113,12 +113,32 @@ impl NativeSourceRelease {
         result.guard()?;
         Ok(result)
     }
+    pub(super) fn compare_working_main(
+        &self,
+        main: &droidloom_supervisor::control::MainCustodyObservation,
+    ) -> Result<(), String> {
+        self.guard()?;
+        match self {
+            Self::Working(release) => release
+                .custody
+                .compare_main(main)
+                .map_err(|e| e.to_string()),
+            Self::Legacy(_) => {
+                Err("working Main requires its original authenticated source custody".into())
+            }
+        }
+    }
     pub(super) fn attach_to_baseline(
-        &self, baseline: &mut droidloom_supervisor::native_leaf_baseline::NativeLeafBaselineObservation<'_>,
+        &self,
+        baseline: &mut droidloom_supervisor::native_leaf_baseline::NativeLeafBaselineObservation<
+            '_,
+        >,
     ) -> Result<(), String> {
         self.guard()?;
         if let Self::Working(release) = self {
-            baseline.attach_working_source(&release.custody).map_err(|e| e.to_string())?;
+            baseline
+                .attach_working_source(&release.custody)
+                .map_err(|e| e.to_string())?;
         }
         Ok(())
     }
@@ -163,8 +183,11 @@ impl NativeSourceRelease {
     pub(super) fn working_root(&self) -> Result<Option<&Path>, String> {
         match self {
             Self::Legacy(_) => Ok(None),
-            Self::Working(release) => release.custody.runtime_evidence_directory()
-                .map(Some).map_err(|e|e.to_string()),
+            Self::Working(release) => release
+                .custody
+                .runtime_evidence_directory()
+                .map(Some)
+                .map_err(|e| e.to_string()),
         }
     }
     pub(super) fn working_channel_comparison(&self) -> Result<Option<Value>, String> {
@@ -172,9 +195,11 @@ impl NativeSourceRelease {
             Self::Legacy(_) => Ok(None),
             Self::Working(release) => {
                 self.guard()?;
-                Ok(Some(json!({"schema":"droidloom.working-native-source-comparison.v1",
+                Ok(Some(
+                    json!({"schema":"droidloom.working-native-source-comparison.v1",
                     "custody":release.custody.comparison().map_err(|e|e.to_string())?,
-                    "selection":release.selection,"catalog":release.catalog,"comparison_only":true})))
+                    "selection":release.selection,"catalog":release.catalog,"comparison_only":true}),
+                ))
             }
         }
     }

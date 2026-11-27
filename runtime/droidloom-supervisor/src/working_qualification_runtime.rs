@@ -233,6 +233,25 @@ impl LivePulse {
         self.phase.set(Phase::Suite);
         self.guard().map_err(|e| e.to_string())
     }
+    /// Issued only after this live owner has accepted the exact child's epoch.
+    /// The bound Main remains the original held bootstrap, never a caller body.
+    pub(super) fn acknowledged_main_commitment(&self) -> io::Result<String> {
+        self.guard()?;
+        if self.phase.get() != Phase::Suite
+            || self
+                .child
+                .try_borrow()
+                .map_err(|_| failed("working child ACK reentered"))?
+                .is_none()
+        {
+            return Err(failed(
+                "working Main ACK requires the actual admitted suite child",
+            ));
+        }
+        let commitment = super::working_main_commitment(self.main.facts())?;
+        self.guard()?;
+        Ok(commitment)
+    }
     pub(super) fn require_complete_binding(
         &self,
         actual: &RuntimeMainCustody,

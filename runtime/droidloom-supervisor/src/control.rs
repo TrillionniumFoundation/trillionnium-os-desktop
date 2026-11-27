@@ -91,6 +91,7 @@ pub use crate::native_application_ui_protocol::{
     ProtocolError as NativeUiError, Reply as NativeUiReply, Selector as NativeUiSelector,
 };
 pub use application_command::{SettingsPermissionCaseObservation, run_settings_permission_case, settings_permission_case_window_seconds, NativeUiPermissionWindow, NativeUiPermissionPreservation, permission_preservation_additional_window_seconds};
+pub use application_command::{NativeFamilyUiEvidence, observe_native_family_ui, family_ui_window_seconds, family_ui_retained_members_bound};
 pub use crate::native_leaf_engine::{NativeLeafEngineEvidence, NativeLeafExecution};
 pub use application_command::native_leaf_business_capture;
 pub use application_command::physical_qualification_channel;

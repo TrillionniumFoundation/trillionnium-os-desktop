@@ -119,9 +119,16 @@ fn settings_permission_window_seconds() -> u64 {
     INSPECT_SECONDS + native_settings_permissions::window_seconds()
 }
 fn settings_permission_work_end(now: Instant, case_end: Instant) -> Result<Instant, String> {
-    require(now < case_end, "Settings interface pre-inspection consumed its original case deadline")?;
-    Ok(now.checked_add(Duration::from_secs(native_settings_permissions::window_seconds()))
-        .ok_or("Settings interface work deadline overflow")?.min(case_end))
+    require(
+        now < case_end,
+        "Settings interface pre-inspection consumed its original case deadline",
+    )?;
+    Ok(now
+        .checked_add(Duration::from_secs(
+            native_settings_permissions::window_seconds(),
+        ))
+        .ok_or("Settings interface work deadline overflow")?
+        .min(case_end))
 }
 fn case_window_seconds(route: Route) -> u64 {
     if route == Route::ClockTimerPair {
@@ -160,8 +167,10 @@ fn require_channel_roster() -> Result<(), String> {
     require(
         actual_source_window_seconds() == owned_channel::SUITE_SECONDS
             && family_observation::window_seconds() == owned_channel::budget::FAMILY_WORK_SECONDS
-            && native_camera_photo::window_seconds() == owned_channel::budget::CAMERA_PHOTO_WORK_SECONDS
-            && native_settings_permissions::window_seconds() == owned_channel::budget::SETTINGS_PERMISSION_WORK_SECONDS,
+            && native_camera_photo::window_seconds()
+                == owned_channel::budget::CAMERA_PHOTO_WORK_SECONDS
+            && native_settings_permissions::window_seconds()
+                == owned_channel::budget::SETTINGS_PERMISSION_WORK_SECONDS,
         "physical producer and normal parent suite bounds differ",
     )?;
     let mut ordinal = 0usize;
@@ -762,16 +771,20 @@ impl HistoricalSettingsPermissionCase {
         deadline(end)?;
         let actual = before.facts();
         require(
-            actual.package == "com.android.settings" && actual.user == 0
+            actual.package == "com.android.settings"
+                && actual.user == 0
                 && fact.gate() == "settings.permissions"
-                && roster::package(&actual.package)?.business.contains(&fact.gate()),
+                && roster::package(&actual.package)?
+                    .business
+                    .contains(&fact.gate()),
             "Settings interface history has a different selected Settings or business assertion",
         )?;
         fact.require_subject(main.facts(), actual)?;
         identity.require_application(actual)?;
         let engine = fact.observation().transcript().engine();
         require(
-            engine.peer() == main.peer() && engine.application() == actual
+            engine.peer() == main.peer()
+                && engine.application() == actual
                 && &engine.facts().main == main.facts(),
             "Settings interface history changed its actual Main peer or complete installed identity",
         )?;
@@ -779,14 +792,19 @@ impl HistoricalSettingsPermissionCase {
             kind: "settings_permission_interfaces",
             actual: actual.clone(),
             evidence: fact.comparison()?,
-            material_identity: serde_json::to_value(&identity).map_err(|e|e.to_string())?,
+            material_identity: serde_json::to_value(&identity).map_err(|e| e.to_string())?,
             business_gates: [fact.gate()],
             common_gates_supplied: false,
             sealed_inside_original_case_window: true,
             historical_observation: true,
             continuous_app_or_target_directory_custody_after_case_claimed: false,
         };
-        let value = Self { summary, fact, material_identity: identity, before };
+        let value = Self {
+            summary,
+            fact,
+            material_identity: identity,
+            before,
+        };
         value.guard()?;
         deadline(end)?;
         Ok(value)
@@ -800,9 +818,12 @@ impl HistoricalSettingsPermissionCase {
     fn guard(&self) -> Result<(), String> {
         let actual = self.before.facts();
         require(
-            actual == &self.summary.actual && actual.package == "com.android.settings"
-                && actual.user == 0 && self.summary.business_gates == [self.fact.gate()]
-                && self.fact.gate() == "settings.permissions" && !self.summary.common_gates_supplied,
+            actual == &self.summary.actual
+                && actual.package == "com.android.settings"
+                && actual.user == 0
+                && self.summary.business_gates == [self.fact.gate()]
+                && self.fact.gate() == "settings.permissions"
+                && !self.summary.common_gates_supplied,
             "retained Settings interface history changed its actual subject or exact business assertion",
         )?;
         self.fact.guard_immutable()?;
@@ -816,10 +837,17 @@ fn require_settings_permission_predecessor(
     actual: &ApplicationInspection,
     main: &RuntimeMainCustody,
 ) -> Result<(), String> {
-    let mut matching = histories.iter().filter(|case|
-        case.summary.route == Route::SettingsSupportedPages && case.summary.actual.package == "com.android.settings");
-    let original = matching.next().ok_or("supplementary Settings interface lacks its original Settings case")?;
-    require(matching.next().is_none(), "supplementary Settings interface has ambiguous original Settings histories")?;
+    let mut matching = histories.iter().filter(|case| {
+        case.summary.route == Route::SettingsSupportedPages
+            && case.summary.actual.package == "com.android.settings"
+    });
+    let original = matching
+        .next()
+        .ok_or("supplementary Settings interface lacks its original Settings case")?;
+    require(
+        matching.next().is_none(),
+        "supplementary Settings interface has ambiguous original Settings histories",
+    )?;
     original.guard()?;
     require_same_main(original.binding(), main)?;
     require(
@@ -1003,11 +1031,15 @@ struct RunCustody {
 impl RunCustody {
     fn scope_evidence(&self) -> ScopeEvidence<'_> {
         ScopeEvidence {
-            original_main:&self.original_main, final_main:self.final_main.as_ref(),
-            histories:&self.histories, native_facts:&self.native_facts,
-            families:&self.family_histories, photo:self.photo_history.as_ref(),
-            settings:self.settings_history.as_ref(), errors:&self.retained_errors,
-            retained_failure:self.retained_failure.as_deref(),
+            original_main: &self.original_main,
+            final_main: self.final_main.as_ref(),
+            histories: &self.histories,
+            native_facts: &self.native_facts,
+            families: &self.family_histories,
+            photo: self.photo_history.as_ref(),
+            settings: self.settings_history.as_ref(),
+            errors: &self.retained_errors,
+            retained_failure: self.retained_failure.as_deref(),
         }
     }
     fn guard_immutable(&self) -> Result<(), String> {
@@ -1047,13 +1079,21 @@ impl RunCustody {
             fact.require_retained_binding(&self.histories)?;
         }
         self.release_review.guard(&self.inputs)?;
-        require(self.release_scopes.len() == roster::PACKAGE_COUNT
-            && self.release_scopes.iter().zip(roster::PACKAGES)
-                .all(|(fact, fixed)| fact.package() == fixed.package)
-            && self.retained_errors.is_empty() && self.retained_failure.is_none(),
-            "complete run lost a source-owned whole-App release review or retained a failure")?;
+        require(
+            self.release_scopes.len() == roster::PACKAGE_COUNT
+                && self
+                    .release_scopes
+                    .iter()
+                    .zip(roster::PACKAGES)
+                    .all(|(fact, fixed)| fact.package() == fixed.package)
+                && self.retained_errors.is_empty()
+                && self.retained_failure.is_none(),
+            "complete run lost a source-owned whole-App release review or retained a failure",
+        )?;
         let evidence = self.scope_evidence();
-        for fact in &self.release_scopes { fact.guard(&self.release_review, &evidence)?; }
+        for fact in &self.release_scopes {
+            fact.guard(&self.release_review, &evidence)?;
+        }
         deadline(self.end)
     }
     fn refresh(&mut self) -> Result<(), String> {
@@ -1229,16 +1269,20 @@ fn summarize_rows(
                 photo.guard()?;
                 indices.push(QualificationCase::CameraPhotoCaptureReopen as usize);
             }
-            if let Some(settings) = settings_history.filter(|settings|
-                settings.summary.actual.package == fixed.package && settings.fact.gate() == id)
-            {
+            if let Some(settings) = settings_history.filter(|settings| {
+                settings.summary.actual.package == fixed.package && settings.fact.gate() == id
+            }) {
                 settings.guard()?;
                 indices.push(QualificationCase::SettingsPermissionInterfaces as usize);
             }
             if id == "release_scope" {
-                require(indices.is_empty(),
-                    "release_scope may only come from the retained whole-App release factory")?;
-                let scopes = release_scopes.iter().filter(|fact| fact.package() == fixed.package)
+                require(
+                    indices.is_empty(),
+                    "release_scope may only come from the retained whole-App release factory",
+                )?;
+                let scopes = release_scopes
+                    .iter()
+                    .filter(|fact| fact.package() == fixed.package)
                     .collect::<Vec<_>>();
                 require(scopes.len() <= 1, "whole-App release scope is duplicated")?;
                 if let Some(scope) = scopes.first() {
@@ -1291,16 +1335,27 @@ fn summarize_rows(
                     })
                 })
                 .map(|fact| fact.fact.comparison())
-                .chain(photo_history.filter(|photo| photo.summary.actual.package == fixed.package)
-                    .map(|photo| photo.fact.comparison()))
-                .chain(settings_history.filter(|settings| settings.summary.actual.package == fixed.package)
-                    .map(|settings| settings.fact.comparison()))
+                .chain(
+                    photo_history
+                        .filter(|photo| photo.summary.actual.package == fixed.package)
+                        .map(|photo| photo.fact.comparison()),
+                )
+                .chain(
+                    settings_history
+                        .filter(|settings| settings.summary.actual.package == fixed.package)
+                        .map(|settings| settings.fact.comparison()),
+                )
                 .collect::<Result<Vec<_>, _>>()?,
-            release_scope_fact: release_scopes.iter()
-                .find(|fact| fact.package() == fixed.package).map(|fact| fact.comparison()).transpose()?,
-            blocked_gates: families.iter().flat_map(|(_, history)| history.custody.blocked())
-                .map(|blocked| serde_json::to_value(blocked).map_err(|e|e.to_string()))
-                .collect::<Result<Vec<_>,_>>()?,
+            release_scope_fact: release_scopes
+                .iter()
+                .find(|fact| fact.package() == fixed.package)
+                .map(|fact| fact.comparison())
+                .transpose()?,
+            blocked_gates: families
+                .iter()
+                .flat_map(|(_, history)| history.custody.blocked())
+                .map(|blocked| serde_json::to_value(blocked).map_err(|e| e.to_string()))
+                .collect::<Result<Vec<_>, _>>()?,
             blocked: errors.get(fixed.package).cloned(),
             accepted_gates: 0,
             runtime_qualified: complete,
@@ -1666,25 +1721,29 @@ pub fn run_physical_files(
         let result = (|| -> Result<HistoricalSettingsPermissionCase, String> {
             deadline(end)?;
             let case_end = (Instant::now()
-                + Duration::from_secs(settings_permission_window_seconds())).min(end);
-            let case_owner = channel.begin_case(
-                QualificationCase::SettingsPermissionInterfaces, case_end,
-            ).map_err(|e|e.to_string())?;
-            let requested = runtime.applications.iter()
+                + Duration::from_secs(settings_permission_window_seconds()))
+            .min(end);
+            let case_owner = channel
+                .begin_case(QualificationCase::SettingsPermissionInterfaces, case_end)
+                .map_err(|e| e.to_string())?;
+            let requested = runtime
+                .applications
+                .iter()
                 .find(|app| app.package == "com.android.settings")
                 .ok_or("source-admitted Settings permission interface row absent")?;
             let cutoff = (Instant::now() + Duration::from_secs(INSPECT_SECONDS)).min(case_end);
-            let before = inspector.inspect_observed_until("com.android.settings", 0, cutoff)
+            let before = inspector
+                .inspect_observed_until("com.android.settings", 0, cutoff)
                 .map_err(|error| error.to_string())?;
             let actual = before.facts();
             require(
-                actual.package == "com.android.settings" && actual.user == 0
+                actual.package == "com.android.settings"
+                    && actual.user == 0
                     && actual.epoch == runtime.expected_epoch,
                 "Settings pre-inspection changed actual Settings/user/Main epoch",
             )?;
-            let identity = materials.observe(
-                requested, 0, &runtime.expected_epoch, actual, actual,
-            )?;
+            let identity =
+                materials.observe(requested, 0, &runtime.expected_epoch, actual, actual)?;
             require_settings_permission_predecessor(&histories, actual, main.facts())?;
             let work_end = settings_permission_work_end(Instant::now(), case_end)?;
             let fact = {
@@ -1692,6 +1751,7 @@ pub fn run_physical_files(
                     droidloom_supervisor::native_leaf_baseline::NativeLeafBaselineObservation::capture_from_observed(
                         &inspector, &main, &before, work_end,
                     ).map_err(|e|e.to_string())?;
+                source_owner.attach_to_baseline(&mut baseline)?;
                 native_settings_permissions::run(&mut inspector, &mut baseline, work_end)?
             };
             let completed = HistoricalSettingsPermissionCase::from_observed(
@@ -1703,7 +1763,9 @@ pub fn run_physical_files(
             materials.revalidate()?;
             source_owner.guard()?;
             deadline(case_end)?;
-            case_owner.finish_after_history(case_end).map_err(|e|e.to_string())?;
+            case_owner
+                .finish_after_history(case_end)
+                .map_err(|e| e.to_string())?;
             Ok(completed)
         })();
         match result {
@@ -1763,19 +1825,37 @@ pub fn run_physical_files(
         }
     };
     let native_facts = join_native_histories(&histories)?;
-    let release_scopes = release_review.reconcile(&inputs, &ScopeEvidence {
-        original_main:&main, final_main:final_main.as_ref(), histories:&histories,
-        native_facts:&native_facts, families:&family_histories, photo:photo_history.as_ref(),
-        settings:settings_history.as_ref(), errors:&errors, retained_failure:first_failure.as_deref(),
-    })?;
-    let applications = summarize_rows(&histories, &native_facts, &family_histories,
-        photo_history.as_ref(), settings_history.as_ref(), &release_scopes, &errors)?;
+    let release_scopes = release_review.reconcile(
+        &inputs,
+        &ScopeEvidence {
+            original_main: &main,
+            final_main: final_main.as_ref(),
+            histories: &histories,
+            native_facts: &native_facts,
+            families: &family_histories,
+            photo: photo_history.as_ref(),
+            settings: settings_history.as_ref(),
+            errors: &errors,
+            retained_failure: first_failure.as_deref(),
+        },
+    )?;
+    let applications = summarize_rows(
+        &histories,
+        &native_facts,
+        &family_histories,
+        photo_history.as_ref(),
+        settings_history.as_ref(),
+        &release_scopes,
+        &errors,
+    )?;
     let accepted_gates = applications.iter().map(|row| row.accepted_gates).sum();
     let accepted_applications = applications
         .iter()
         .filter(|row| row.production_ready)
         .count();
-    let observed_cases = histories.len() + family_histories.len() + usize::from(photo_history.is_some())
+    let observed_cases = histories.len()
+        + family_histories.len()
+        + usize::from(photo_history.is_some())
         + usize::from(settings_history.is_some());
     let qualified = first_failure.is_none()
         && observed_cases == owned_channel::CASE_COUNT
@@ -1832,10 +1912,13 @@ pub fn run_physical_files(
             .push(serde_json::to_value(&photo.summary).map_err(|e| e.to_string())?);
     }
     if let Some(settings) = &settings_history {
-        let row = summary.applications.iter_mut()
+        let row = summary
+            .applications
+            .iter_mut()
             .find(|row| row.package == "com.android.settings")
             .ok_or("Settings history lost its fixed summary row")?;
-        row.cases.push(serde_json::to_value(&settings.summary).map_err(|e|e.to_string())?);
+        row.cases
+            .push(serde_json::to_value(&settings.summary).map_err(|e| e.to_string())?);
     }
     let custody = RunCustody {
         inspector,
@@ -1851,8 +1934,8 @@ pub fn run_physical_files(
         native_facts,
         release_review,
         release_scopes,
-        retained_errors:errors,
-        retained_failure:first_failure,
+        retained_errors: errors,
+        retained_failure: first_failure,
         channel,
         end,
     };
@@ -2026,8 +2109,17 @@ mod tests {
         assert_eq!(QualificationCase::CameraPhotoCaptureReopen as usize, 45);
         assert_eq!(case_window_seconds(Route::CameraPhoto), 1_260);
         assert_eq!(family_window_seconds("com.Hyatt.hyt"), 7_160);
-        assert_eq!(family_window_seconds("com.amazon.mShop.android.shopping"), 9_360);
-        assert_eq!(roster::PACKAGES.iter().filter(|row| row.cases.is_empty()).count(), 31);
+        assert_eq!(
+            family_window_seconds("com.amazon.mShop.android.shopping"),
+            9_360
+        );
+        assert_eq!(
+            roster::PACKAGES
+                .iter()
+                .filter(|row| row.cases.is_empty())
+                .count(),
+            31
+        );
         assert_eq!(owned_channel::CASE_COUNT, 47);
         assert_eq!(settings_permission_window_seconds(), 6_300);
         assert_eq!(QualificationCase::SettingsPermissionInterfaces as usize, 46);
@@ -2044,13 +2136,26 @@ mod tests {
     fn physical_settings_work_window_keeps_original_end_and_absent_fact_cannot_pass() {
         let now = Instant::now();
         let whole = now + Duration::from_secs(settings_permission_window_seconds());
-        assert_eq!(settings_permission_work_end(now, whole).unwrap(), now + Duration::from_secs(6_050));
-        assert_eq!(settings_permission_work_end(now + Duration::from_secs(300), whole).unwrap(), whole);
+        assert_eq!(
+            settings_permission_work_end(now, whole).unwrap(),
+            now + Duration::from_secs(6_050)
+        );
+        assert_eq!(
+            settings_permission_work_end(now + Duration::from_secs(300), whole).unwrap(),
+            whole
+        );
         assert!(settings_permission_work_end(whole, whole).is_err());
         let rows = summarize_rows(&[], &[], &[], None, None, &[], &BTreeMap::new()).unwrap();
-        let settings = rows.iter().find(|row| row.package == "com.android.settings").unwrap();
+        let settings = rows
+            .iter()
+            .find(|row| row.package == "com.android.settings")
+            .unwrap();
         assert!(!settings.runtime_qualified && !settings.production_ready);
-        let gate = settings.gate_assertions.iter().find(|gate| gate.id == "settings.permissions").unwrap();
+        let gate = settings
+            .gate_assertions
+            .iter()
+            .find(|gate| gate.id == "settings.permissions")
+            .unwrap();
         assert_eq!(gate.status, "pending");
         assert!(gate.completed_cases.is_empty());
         assert!(settings.native_business_facts.is_empty());
@@ -2109,8 +2214,11 @@ mod tests {
             assert!(!row.runtime_qualified && !row.production_ready);
             assert!(row.cases.is_empty() && row.blocked_gates.is_empty());
             assert!(row.release_scope_fact.is_none());
-            assert!(row.gate_assertions.iter().all(|gate|
-                gate.status == "pending" && gate.completed_cases.is_empty()));
+            assert!(
+                row.gate_assertions
+                    .iter()
+                    .all(|gate| gate.status == "pending" && gate.completed_cases.is_empty())
+            );
         }
     }
 

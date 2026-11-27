@@ -45,11 +45,29 @@ pub mod budget;
 #[path = "native_working_layout.rs"]
 pub mod layout;
 pub use budget::{
-    CASE_COUNT, FAMILY_CASE_COUNT, NATIVE_CASE_COUNT, NOFILE_LIMIT, PHOTO_CASE_COUNT, SETTINGS_CASE_COUNT,
-    RETIREMENT_SECONDS, SERVICE_SECONDS, SUITE_SECONDS,
+    CASE_COUNT, FAMILY_CASE_COUNT, NATIVE_CASE_COUNT, NOFILE_LIMIT, PHOTO_CASE_COUNT,
+    RETIREMENT_SECONDS, SERVICE_SECONDS, SETTINGS_CASE_COUNT, SUITE_SECONDS,
 };
 pub const SUMMARY_LIMIT: usize = 16 * 1024 * 1024;
 pub const BINDING_LIMIT: usize = 128 * 1024;
+pub(super) const HELLO_ACK_LIMIT: usize = 256;
+
+/// A complete typed Main comparison for the authenticated private handshake.
+/// This digest alone cannot construct a source owner or an observation.
+pub(super) fn working_main_commitment(main: &RuntimeMainCustody) -> io::Result<String> {
+    main.validate(&main.epoch).map_err(|e| error(&e))?;
+    let body = serde_json::to_vec(main)?;
+    if body.is_empty() || body.len() > BINDING_LIMIT {
+        return Err(error(
+            "working Main binding exceeds its fixed typed body bound",
+        ));
+    }
+    let mut hash = Sha256::new();
+    hash.update(b"droidloom-working-main-ack-v1\0");
+    hash.update((body.len() as u64).to_le_bytes());
+    hash.update(&body);
+    Ok(format!("{:x}", hash.finalize()))
+}
 pub(super) const EXE: &str = crate::native_working_contract::APPLICATIONS_EXECUTABLE;
 pub(super) const UNIT_NAME: &str = crate::native_working_contract::PARENT_UNIT;
 pub(super) const UNIT_FRAGMENT: &str =
@@ -319,7 +337,9 @@ impl QualificationCase {
             Self::GalleryVideo => "com.android.gallery3d",
             Self::GallerySeek => "com.android.gallery3d",
             Self::GalleryAlbum => "com.android.gallery3d",
-            Self::SettingsSupportedPages | Self::SettingsPermissionInterfaces => "com.android.settings",
+            Self::SettingsSupportedPages | Self::SettingsPermissionInterfaces => {
+                "com.android.settings"
+            }
             Self::IhgLondon => "com.ihg.apps.android",
             Self::FamilyHyatt => "com.Hyatt.hyt",
             Self::FamilyMobileTicket => "com.MobileTicket",
@@ -553,21 +573,33 @@ pub(super) struct Hello {
 pub(super) struct HelloAcknowledgement {
     pub owner_start_ns: u64,
     pub preparation_end_ns: u64,
+    pub main_sha256: String,
 }
 impl HelloAcknowledgement {
     fn validate(&self, suite_end_ns: u64) -> io::Result<()> {
         let schedule = crate::native_working_contract::WorkingSchedule::selected();
-        if schedule.authorization_end_ns(self.owner_start_ns)? != suite_end_ns
+        if !digest_ok(&self.main_sha256)
+            || schedule.authorization_end_ns(self.owner_start_ns)? != suite_end_ns
             || self
                 .owner_start_ns
                 .checked_add(budget::SOURCE_AND_CAPTURE_SECONDS * 1_000_000_000)
                 != Some(self.preparation_end_ns)
         {
             return Err(error(
-                "private parent ACK changed the original source preparation or suite end",
+                "private parent ACK changed the actual Main binding or original source window",
             ));
         }
         Ok(())
+    }
+    fn encode(&self, suite_end_ns: u64) -> io::Result<Vec<u8>> {
+        self.validate(suite_end_ns)?;
+        let body = serde_json::to_vec(self)?;
+        if body.is_empty() || body.len() > HELLO_ACK_LIMIT {
+            return Err(error(
+                "private Hello ACK exceeds its original finite envelope",
+            ));
+        }
+        Ok(body)
     }
 }
 #[derive(Serialize, Deserialize)]
@@ -647,6 +679,8 @@ impl ChildChannel {
             Arc::clone(&result.peer),
             Arc::clone(&result.plan),
             result.end,
+            &result.epoch,
+            &acknowledgement.main_sha256,
         )?);
         result.probe_scope = Some(super::working_owned_probe::Scope::child(
             &result.peer,
@@ -705,7 +739,7 @@ impl ChildChannel {
             || ack.sequence != self.sequence
             || ack.case != case
             || (kind != 1 && !ack.payload.is_empty())
-            || (kind == 1 && (ack.payload.is_empty() || ack.payload.len() > 256))
+            || (kind == 1 && (ack.payload.is_empty() || ack.payload.len() > HELLO_ACK_LIMIT))
         {
             self.socket.take();
             return Err(error(
@@ -831,6 +865,40 @@ impl Drop for CaseGuard<'_> {
 
 #[cfg(test)]
 mod tests {
+
+    #[test]
+    fn private_hello_ack_requires_actual_main_binding_and_original_envelope() {
+        let start = 1_000_000_u64;
+        let end = crate::native_working_contract::WorkingSchedule::selected()
+            .authorization_end_ns(start)
+            .unwrap();
+        let mut acknowledgement = HelloAcknowledgement {
+            owner_start_ns: start,
+            preparation_end_ns: start + budget::SOURCE_AND_CAPTURE_SECONDS * 1_000_000_000,
+            main_sha256: "a".repeat(64),
+        };
+        let encoded = acknowledgement.encode(end).unwrap();
+        assert!(encoded.len() <= HELLO_ACK_LIMIT);
+        let decoded: HelloAcknowledgement = serde_json::from_slice(&encoded).unwrap();
+        decoded.validate(end).unwrap();
+        assert_eq!(decoded.main_sha256, acknowledgement.main_sha256);
+        assert!(acknowledgement.validate(end + 1).is_err());
+        for invalid in ["", "a", &"A".repeat(64), &"a".repeat(63), &"a".repeat(65)] {
+            acknowledgement.main_sha256 = invalid.into();
+            assert!(acknowledgement.encode(end).is_err());
+        }
+        let old = serde_json::json!({
+            "owner_start_ns":start,
+            "preparation_end_ns":start + budget::SOURCE_AND_CAPTURE_SECONDS * 1_000_000_000
+        });
+        assert!(serde_json::from_value::<HelloAcknowledgement>(old).is_err());
+        let maximal_envelope = HelloAcknowledgement {
+            owner_start_ns: u64::MAX,
+            preparation_end_ns: u64::MAX,
+            main_sha256: "a".repeat(64),
+        };
+        assert!(serde_json::to_vec(&maximal_envelope).unwrap().len() <= HELLO_ACK_LIMIT);
+    }
     use super::*;
     #[test]
     fn fixed_case_order_and_window_preserve_all_original_budgets() {
@@ -850,9 +918,15 @@ mod tests {
         }
         assert_eq!(total, 25_430);
         assert_eq!(total, budget::NATIVE_SECONDS);
-        assert_eq!(total + budget::FAMILY_SECONDS + budget::CAMERA_PHOTO_CASE_SECONDS
-            + budget::SETTINGS_PERMISSION_CASE_SECONDS + 2 * budget::MAIN_SECONDS
-            + budget::SOURCE_AND_CAPTURE_SECONDS, SUITE_SECONDS);
+        assert_eq!(
+            total
+                + budget::FAMILY_SECONDS
+                + budget::CAMERA_PHOTO_CASE_SECONDS
+                + budget::SETTINGS_PERMISSION_CASE_SECONDS
+                + 2 * budget::MAIN_SECONDS
+                + budget::SOURCE_AND_CAPTURE_SECONDS,
+            SUITE_SECONDS
+        );
         assert_eq!(budget::SOURCE_AND_CAPTURE_SECONDS, 46_622);
         assert_eq!(SUITE_SECONDS, 315_742);
         assert_eq!(SERVICE_SECONDS, 315_922);

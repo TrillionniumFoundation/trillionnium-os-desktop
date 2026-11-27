@@ -405,6 +405,8 @@ struct WorkingCustody {
     executable: Executable,
     pid: u32,
     end: Instant,
+    acknowledged_epoch: crate::control::application_probe::RuntimeEpoch,
+    acknowledged_main_sha256: String,
 }
 
 /// No Deserialize, public fields or caller-facing constructor. A retained handle
@@ -417,9 +419,16 @@ impl WorkingNativeSourceCustody {
         peer: Arc<ChildPeer>,
         plan: Arc<Plan>,
         end: Instant,
+        acknowledged_epoch: &crate::control::application_probe::RuntimeEpoch,
+        acknowledged_main_sha256: &str,
     ) -> io::Result<Self> {
         root()?;
         live(end)?;
+        if !super::digest_ok(acknowledged_main_sha256) {
+            return Err(error(
+                "working source lacks its authenticated full Main acknowledgement",
+            ));
+        }
         peer.guard()?;
         plan.guard()?;
         let directory = Directory::open(plan.working_runtime_evidence_directory()?, true)?;
@@ -440,6 +449,8 @@ impl WorkingNativeSourceCustody {
                 executable,
                 pid: std::process::id(),
                 end,
+                acknowledged_epoch: acknowledged_epoch.clone(),
+                acknowledged_main_sha256: acknowledged_main_sha256.into(),
             }),
         };
         result.guard()?;
@@ -470,6 +481,19 @@ impl WorkingNativeSourceCustody {
             lock.guard(&self.inner.directory)?;
         }
         self.inner.executable.guard()
+    }
+    /// Only an actual inspector-minted Main token can be compared with the
+    /// full typed bootstrap binding received through this owner's private ACK.
+    pub fn compare_main(&self, main: &crate::control::MainCustodyObservation) -> io::Result<()> {
+        self.guard()?;
+        if main.facts().epoch != self.inner.acknowledged_epoch
+            || super::working_main_commitment(main.facts())? != self.inner.acknowledged_main_sha256
+        {
+            return Err(error(
+                "actual working Main differs from the original parent-held bootstrap",
+            ));
+        }
+        self.guard()
     }
     pub fn runtime_evidence_directory(&self) -> io::Result<&Path> {
         self.guard()?;
