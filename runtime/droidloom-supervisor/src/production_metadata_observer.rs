@@ -62,13 +62,14 @@ pub(crate) enum MetadataRole {
     Install,
     CatalogRead,
     AppOpsRead,
+    AccountRead,
     DisplayControl,
 }
 impl MetadataRole {
     fn uid(self) -> u32 {
         match self {
             Self::Init | Self::InitLifecycle | Self::Zygote => 0,
-            Self::Framework | Self::Composer => 1000,
+            Self::Framework | Self::Composer | Self::AccountRead => 1000,
             _ => 2000,
         }
     }
@@ -86,6 +87,7 @@ impl MetadataRole {
             Self::Install => b"u:r:droidloom_install:s0",
             Self::CatalogRead => b"u:r:droidloom_catalog_read:s0",
             Self::AppOpsRead => b"u:r:droidloom_appops_read:s0",
+            Self::AccountRead => b"u:r:droidloom_account_read:s0",
             Self::DisplayControl => b"u:r:droidloom_display_control:s0",
         }
     }
@@ -103,6 +105,7 @@ impl MetadataRole {
             super::OperationDomain::Install => Self::Install,
             super::OperationDomain::CatalogRead => Self::CatalogRead,
             super::OperationDomain::AppOpsRead => Self::AppOpsRead,
+            super::OperationDomain::AccountRead => Self::AccountRead,
             super::OperationDomain::DisplayControl => Self::DisplayControl,
         }
     }

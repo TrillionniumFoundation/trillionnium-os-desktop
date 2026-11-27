@@ -53,7 +53,7 @@ mod progress;
 #[path = "control_identity.rs"]
 mod identity;
 pub use identity::{
-    ActualApplicationObservation, ActualApplicationExitObservation, ActualApplicationPermissionObservation, ActualApplicationAppOpsObservation, ActualUserZeroPackageInventoryObservation,
+    ActualApplicationObservation, ActualApplicationExitObservation, ActualApplicationPermissionObservation, ActualApplicationAccountObservation, ActualApplicationAppOpsObservation, ActualUserZeroPackageInventoryObservation,
     EngineMappingObservation, MainCustodyObservation, NativeApplicationInspector,
     NativeInspectionPeer,
 };
@@ -317,6 +317,12 @@ pub enum ControlRequest {
         package: String,
         expected_epoch: application_probe::RuntimeEpoch,
     },
+    /// Anonymous complete registered-account/target-visibility comparison.
+    /// The source-owned normal observer alone receives its private stdin key.
+    ObserveApplicationAccountState {
+        package: String,
+        expected_epoch: application_probe::RuntimeEpoch,
+    },
     /// Read the complete fixed user-0 package/UID table from the actual owner.
     /// No caller can select a package, user, command, UID, PID or query role.
     ObserveUserZeroPackageInventory {
@@ -559,6 +565,9 @@ impl Daemon {
             )),
             ControlRequest::ObserveApplicationAppOpsState { .. } => Err(ControlError::Invalid(
                 "AppOps observation requires the original kernel-first Ready owner".into(),
+            )),
+            ControlRequest::ObserveApplicationAccountState { .. } => Err(ControlError::Invalid(
+                "account observation requires the original kernel-first Ready owner".into(),
             )),
             ControlRequest::ObserveUserZeroPackageInventory { .. } => Err(ControlError::Invalid(
                 "complete user-0 inventory requires the original kernel-first Ready owner".into(),

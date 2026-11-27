@@ -154,12 +154,7 @@ fn compatibility(root: &Path) -> Result<(String, u16)> {
                     path.display()
                 ));
             }
-            if !data
-                .windows(b"Lcom/android/droidloom/catalog/ApplicationCatalog;".len())
-                .any(|w| w == b"Lcom/android/droidloom/catalog/ApplicationCatalog;")
-            {
-                return fail("bridge is missing the application catalog class");
-            }
+            require_normal_observer_classes(&data)?;
             bridges += 1;
         }
         let mut f = fs::File::open(&path)?;
@@ -177,6 +172,19 @@ fn compatibility(root: &Path) -> Result<(String, u16)> {
     }
     crate::native_generation::verify_bundle(root)?;
     Ok((arch, version))
+}
+/// Normal Soong JAR admission, independent of focused SDK/DEX test evidence.
+fn require_normal_observer_classes(data:&[u8])->Result<()> {
+    for marker in [
+        b"Lcom/android/droidloom/catalog/ApplicationCatalog;".as_slice(),
+        b"Lcom/android/droidloom/catalog/ApplicationAppOpsState;".as_slice(),
+        b"Lcom/android/droidloom/catalog/AccountState;".as_slice(),
+    ] {
+        if !data.windows(marker.len()).any(|w|w==marker) {
+            return fail("normal input bridge is missing a required closed observer class");
+        }
+    }
+    Ok(())
 }
 fn inventory(root: &Path) -> Result<BTreeMap<String, Artifact>> {
     let mut map = BTreeMap::new();
@@ -266,6 +274,22 @@ pub fn source_identity(repo: &Path) -> Result<String> {
 mod tests {
     use super::*;
     #[test]
+    fn account_class_markers_require_every_normal_source_owned_observer() {
+        let classes=[
+            "Lcom/android/droidloom/catalog/ApplicationCatalog;",
+            "Lcom/android/droidloom/catalog/ApplicationAppOpsState;",
+            "Lcom/android/droidloom/catalog/AccountState;",
+        ];
+        assert!(require_normal_observer_classes(classes.concat().as_bytes()).is_ok());
+        for omit in 0..classes.len() {
+            let incomplete=classes.iter().enumerate().filter(|(i,_)|*i!=omit)
+                .map(|(_,s)|*s).collect::<String>();
+            assert!(require_normal_observer_classes(incomplete.as_bytes()).is_err());
+        }
+        assert!(require_normal_observer_classes(b"AccountState.java focused javac passed").is_err());
+    }
+
+    #[test]
     fn mismatched_metadata_is_not_guessed() {
         assert!(input_abi(b"old binary").is_err());
         assert!(input_abi(b"DROIDLOOM_INPUT_ABI=4;DROIDLOOM_INPUT_ABI=5;").is_err());
@@ -298,7 +322,7 @@ mod artifact_tests {
         elf.extend(format!("DROIDLOOM_INPUT_ABI={composer};").bytes());
         write(&root.join("usr/lib/droidloom/runtime/bin/android.hardware.graphics.composer3-service.droidloom"),elf).unwrap();
         let d = tempfile::tempdir().unwrap();
-        write(&d.path().join("classes.dex"),format!("dex\n039\0DROIDLOOM_INPUT_ABI={java};DROIDLOOM_SYSTEMUI_ABI=1;DROIDLOOM_CLIPBOARD_ABI=1;DROIDLOOM_CLIPBOARD_RELAY_ABI=1;DROIDLOOM_NOTIFICATIONS_ABI=1;DROIDLOOM_NOTIFICATIONS_RELAY_ABI=1;Lcom/android/droidloom/catalog/ApplicationCatalog;Lcom/android/droidloom/home/HomeActivity;ro.vendor.droidloom.surfaceflinger_tasks")).unwrap();
+        write(&d.path().join("classes.dex"),format!("dex\n039\0DROIDLOOM_INPUT_ABI={java};DROIDLOOM_SYSTEMUI_ABI=1;DROIDLOOM_CLIPBOARD_ABI=1;DROIDLOOM_CLIPBOARD_RELAY_ABI=1;DROIDLOOM_NOTIFICATIONS_ABI=1;DROIDLOOM_NOTIFICATIONS_RELAY_ABI=1;Lcom/android/droidloom/catalog/ApplicationCatalog;Lcom/android/droidloom/catalog/ApplicationAppOpsState;Lcom/android/droidloom/catalog/AccountState;Lcom/android/droidloom/home/HomeActivity;ro.vendor.droidloom.surfaceflinger_tasks")).unwrap();
         let jar = root.join("usr/lib/droidloom/runtime/framework/droidloom-input-bridge.jar");
         fs::create_dir_all(jar.parent().unwrap()).unwrap();
         run(Command::new("zip")
