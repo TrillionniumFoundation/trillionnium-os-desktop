@@ -504,6 +504,17 @@ pub struct NativeFamilyUiEvidence {
     original_end: Instant,
 }
 impl NativeFamilyUiEvidence {
+    // Borrow only the already-proven actual panel pair, without opening a
+    // session or allowing comparison JSON to reconstruct an observation.
+    pub(super) fn gms_selfcheck_panels(&self) -> Result<(&Value, &Value), String> {
+        self.guard_immutable()?;
+        need(self.stability.transcript().engine().application().package == "com.google.android.gms",
+            "GMS SelfCheck evidence belongs to another installed package")?;
+        match (&self.first, &self.second) {
+            (FirstProof::Panel(a), ReopenedProof::Panel { panel, .. }) => Ok((&a.panel, panel)),
+            _ => Err("GMS identity requires the original source-fixed actual panel mode".into()),
+        }
+    }
     pub fn stability(&self) -> &NativeUiStabilityEvidence {
         &self.stability
     }

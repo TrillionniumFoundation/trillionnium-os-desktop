@@ -125,6 +125,12 @@ def derive(library, baseline, exported, here, output, export):
             ("p4_linux_working_application_t", ROOT_BLOCK, "blk_file"): {"getattr"},
             ("p4_linux_working_return_t", ROOT_LINK, "lnk_file"): {"getattr", "read"},
             ("p4_linux_working_return_t", ROOT_BLOCK, "blk_file"): {"getattr"},
+            # The two fixed production actors already have these exact held
+            # root-identity reads. Preserve only that declared raw preimage.
+            ("p4_linux_production_commit_t", ROOT_LINK, "lnk_file"): {"getattr", "read"},
+            ("p4_linux_production_commit_t", ROOT_BLOCK, "blk_file"): {"getattr"},
+            ("p4_linux_production_verify_t", ROOT_LINK, "lnk_file"): {"getattr", "read"},
+            ("p4_linux_production_verify_t", ROOT_BLOCK, "blk_file"): {"getattr"},
         }, preamble=("; Preserve the real pre-remount-alias access of all existing actors.",),
         mcs_aliases={(ROOT_LINK, "lnk_file"), (ROOT_BLOCK, "blk_file")})
     expected["contract_sha256"] = hashlib.sha256(

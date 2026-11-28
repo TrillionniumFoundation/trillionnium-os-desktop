@@ -176,7 +176,7 @@ FIXED_ACL = r"""
 (allow p4_working_clients p4_linux_working_current_dir_t (dir (getattr search)))
 (allow p4_working_clients p4_linux_working_current_t (file (getattr open read)))
 (allow p4_linux_working_qualification_t p4_linux_working_current_lock_t (file (getattr open read lock)))
-(allow p4_linux_working_qualification_t p4_linux_working_current_dir_t (dir (write add_name remove_name)))
+(allow p4_linux_working_qualification_t p4_linux_working_current_dir_t (dir (open read write add_name remove_name)))
 (typetransition p4_linux_working_qualification_t p4_linux_working_current_dir_t file p4_linux_working_current_t)
 (allow p4_linux_working_qualification_t p4_linux_working_current_t (file (getattr open read create write setattr rename unlink)))
 (allow p4_working_clients p4_linux_native_leaf_layout_t (dir (getattr search)))
@@ -429,8 +429,8 @@ SOURCE_PINS = {'../../../../packaging/systemd/system/droidloom-physical-qualific
                                                                    'sha256': '9a7905c403ce2dfefa5b46b77da624def7bbd89b354e609e33d2b2da22d3e730'},
  '../../../../runtime/droidloom-applications/src/family_news_case.rs': {'bytes': 10786,
                                                                         'sha256': 'b2198596ce713058348649f5c335425c86d9dd59bfaffab166b7396c8f3b8338'},
- '../../../../runtime/droidloom-applications/src/family_observation.rs': {'bytes': 29312,
-                                                                          'sha256': '5a6dcd0d63d41a195c378cdbf6ac6edbbf3ddc6805210cc1b4a360a4c4c94e16'},
+ '../../../../runtime/droidloom-applications/src/family_observation.rs': {'bytes': 31469,
+                                                                          'sha256': 'c7841276cf53499b5d8988953870251e98c3d153927ec178c5befd805901a440'},
  '../../../../runtime/droidloom-applications/src/family_travel.rs': {'bytes': 127567,
                                                                      'sha256': '2ac070e5a707c9a8c7729e6b80fcb74a93691d823f8b89da6c303e9ce7ea1ca8'},
  '../../../../runtime/droidloom-applications/src/family_travel_case.rs': {'bytes': 12010,
@@ -455,22 +455,30 @@ SOURCE_PINS = {'../../../../packaging/systemd/system/droidloom-physical-qualific
                                                                  'sha256': 'afd57bee123fcc843f649e731cb4a8ce9591e33608784dc4bb8f0a488e2cf61a'},
  '../../../../runtime/droidloom-supervisor/src/application_account_state.rs': {'bytes': 17233,
                                                                                'sha256': '9bc63152929a49ba86512d7c7f1c4b66e82f05b860ff68e1cfff765d0544337c'},
- '../../../../runtime/droidloom-supervisor/src/control.rs': {'bytes': 98029,
-                                                             'sha256': '9038a936918f6bc0f7051cae34453de82d0c2dc5f87ed352561f8babe50ae3f6'},
+ '../../../../runtime/droidloom-supervisor/src/application_permission_state.rs': {'bytes': 45814,
+                                                                                  'sha256': 'cd07717a379271ed12ddf4db46d0255011303b9705b12e5c4e85aa5b5c7c52b5'},
+ '../../../../runtime/droidloom-supervisor/src/control.rs': {'bytes': 98089,
+                                                             'sha256': '2dc34c9cf3ceccf159f579c9f6863c6abef3ed18c425700b1a854d9b188eaa1c'},
  '../../../../runtime/droidloom-supervisor/src/control_identity_working_install.rs': {'bytes': 6216,
                                                                                       'sha256': 'd4c6f0360bcbcad02b555e1dd9e8420cc5a5b82e504b0871bcde95987c189ea2'},
  '../../../../runtime/droidloom-supervisor/src/native_application_ui_common.rs': {'bytes': 36806,
                                                                                   'sha256': '9b98c89487bc1e0b7ccd90c718f79f4c90a0abd8e2be1fed4159f709e9884b77'},
- '../../../../runtime/droidloom-supervisor/src/native_application_ui_entry.rs': {'bytes': 44150,
-                                                                                 'sha256': 'a7bfc6cc2cf1f509595d39027bdda00d479ad272907c626498c3a580d10ceb56'},
+ '../../../../runtime/droidloom-supervisor/src/native_application_ui_entry.rs': {'bytes': 44283,
+                                                                                 'sha256': '643629e96121c25f77d8a55bd72fba2b0a64123fcebb6a1cb6177d7e66876c41'},
+ '../../../../runtime/droidloom-supervisor/src/native_application_ui_family.rs': {'bytes': 32318,
+                                                                                  'sha256': 'd88aea249fbd5c2d24ae40117b306a5b43f44caeab1a722a426d5fe8778129db'},
  '../../../../runtime/droidloom-supervisor/src/native_application_ui_gateway.rs': {'bytes': 62825,
                                                                                    'sha256': '8a06b7fcace7e28c84989e457d8f39feaf7cb8887e62abfdfb316e498170f909'},
- '../../../../runtime/droidloom-supervisor/src/native_application_ui_permissions.rs': {'bytes': 41931,
-                                                                                       'sha256': '1b99be2b8e084af53667c0ea68aaa112d229d7d99abb04d679a099549c11f9ee'},
+ '../../../../runtime/droidloom-supervisor/src/native_application_ui_permissions.rs': {'bytes': 42411,
+                                                                                       'sha256': '8e3ed9ea57497f3a110f46d02de2703245c78c780e5d62fd8895877cbc151b2c'},
  '../../../../runtime/droidloom-supervisor/src/native_application_ui_protocol.rs': {'bytes': 45639,
                                                                                     'sha256': 'd5971a00119bb41f1ab7e37cc2d8401676abd1d1035e54f71ccef05a99de78dd'},
  '../../../../runtime/droidloom-supervisor/src/native_feishu_readonly_contract.rs': {'bytes': 6712,
                                                                                      'sha256': '83c7093557bab3512e6fbd42cce42872cbad5cd35982ac822ca9ad1bf05638ee'},
+ '../../../../runtime/droidloom-supervisor/src/native_gms_identity.rs': {'bytes': 16637,
+                                                                         'sha256': 'f749e149be7852d3b211483ef90f0f8c213e06e320a9a4f4b93c67408b394294'},
+ '../../../../runtime/droidloom-supervisor/src/native_gms_identity_manifest.json': {'bytes': 50103,
+                                                                                    'sha256': 'dc2db8a8e380e2a3e569a772c8f8db4bf22abf2617ea60b39103ce341c84b862'},
  '../../../../runtime/droidloom-supervisor/src/native_leaf_apk_protocol.rs': {'bytes': 29451,
                                                                               'sha256': '8d0838110d5d6da7412f77463dab1cc8948ba1ac2f670fb50db12cb87cc2780c'},
  '../../../../runtime/droidloom-supervisor/src/native_leaf_engine.rs': {'bytes': 6754,
@@ -525,8 +533,8 @@ SOURCE_PINS = {'../../../../packaging/systemd/system/droidloom-physical-qualific
                                             'sha256': '750e770bed5cde89e45d848c158f2e14f2344fa57738dc5d1fed0c756058f067'},
  'apparmor/droidloom-working-privateprep': {'bytes': 27646,
                                             'sha256': 'ed078ca329f8ae86982906c472f94b549e3059d98f515ccea4d7fec265dc7e76'},
- 'apparmor/droidloom-working-qualification': {'bytes': 8427,
-                                              'sha256': '7069bad0a6b7ede8472f71fb0f6cedd525f7ca8c53661c79268dedb70fe92b1e'},
+ 'apparmor/droidloom-working-qualification': {'bytes': 8428,
+                                              'sha256': '11ad279abf4dd3aab2f74dc0cf5ddba8e28d769566d850eda9802a237040ffc1'},
  'apparmor/droidloom-working-qualification-return': {'bytes': 3906,
                                                      'sha256': 'f55df8787c44ccfb79243949696ec6ca37c4c3b6afb50546c2da2d3659989e6a'},
  'linux-native-apk.cil': {'bytes': 9697,
@@ -534,13 +542,13 @@ SOURCE_PINS = {'../../../../packaging/systemd/system/droidloom-physical-qualific
  'linux-service-file_contexts': {'bytes': 2557,
                                  'sha256': 'cf5afe7e4c668760a54ed6cd06ffec58d42856e1f028f8832fc29b9b9416d814'},
  'native-apk-source.json': {'bytes': 29478,
-                            'sha256': 'efb5ddc23b3ab7dd3d7583cbdb474b414344af50dd8803a211e4dd3bfd8beb53'},
+                            'sha256': 'f53deeb95f054c0c1267137f95e0049ff5c97c2ecad1330c642121d65e5df73b'},
  'pocket4-linux-board.cil': {'bytes': 20393,
                              'sha256': '59fa17d6774e388d530d203d5fa14b55034418c799329641c6a04f3628359969'},
  'ubuntu-systemd-unit-status.cil': {'bytes': 2228,
                                     'sha256': '5d6cbabec2063cf885b42cf796e7eb2e80a19c9eec08c02d48a1626d864d49e5'},
- 'ubuntu-working-qualification.cil': {'bytes': 50505,
-                                      'sha256': '078b35a373c22d34705254130ef72b20f7dc6b3f3df182e04eb915c5ce282001'}}
+ 'ubuntu-working-qualification.cil': {'bytes': 50515,
+                                      'sha256': 'a2f1530db9c9c0abba3add6db3d59da651ac11f71548b3f67b572cec9741e1b1'}}
 LEVELS = ("s0", "s0:c0", "s0:c1,c512", "s0:c0.c1023")
 FLOW_TAGS = frozenset(("allow", "auditallow", "dontaudit", "allowx",
                        "auditallowx", "dontauditx"))
@@ -969,6 +977,33 @@ def _apk_apparmor(here, profiles):
         raise ValueError("Working original APK profile roster differs")
 
 
+
+def _current_apparmor(profiles):
+    # These existing CURRENT paths are independent of the linked policy. Only
+    # the parent performs the fixed-directory O_RDONLY open and fsync for CAS.
+    root = "/home/alex/work/pocket4-android-final/"
+    read_current = root + "CONTINUATION_CURRENT.json r,"
+    ancestors = "/home/{,alex/,alex/work/,alex/work/pocket4-android-final/} r,"
+    expected = {
+        "droidloom-working-qualification": [
+            ancestors, read_current,
+            root + " rw,",
+            root + "{.CONTINUATION_CURRENT.lock,.qpr1-kernel-control-8b88.lock} rk,",
+            root + "{CONTINUATION_CURRENT.json,.working-native-source-[0-9]*-[0-9a-f]*.new} rwk,",
+        ],
+        "droidloom-working-privateprep": [ancestors, read_current],
+        "droidloom-working-application": [ancestors, read_current],
+        "droidloom-working-qualification-return": [],
+    }
+    if set(profiles) != set(expected):
+        raise ValueError("Working CURRENT AppArmor profile roster differs")
+    for name, body in profiles.items():
+        actual = [line.split("#", 1)[0].strip() for line in body.splitlines()
+                  if "pocket4-android-final" in line.split("#", 1)[0]]
+        if sorted(actual) != sorted(expected[name]):
+            raise ValueError("Working CURRENT AppArmor paths differ: " + name)
+
+
 def verify_sources(here):
     result = {}
     for name, pin in SOURCE_PINS.items():
@@ -988,9 +1023,11 @@ def verify_sources(here):
     expected.extend(_apk_file_contexts(here))
     if sorted(lines) != sorted(expected):
         raise ValueError("Working published path/type roster differs")
-    _apk_apparmor(here, {name: (here / "apparmor" / name).read_text() for name in (
+    profiles = {name: (here / "apparmor" / name).read_text() for name in (
         "droidloom-working-qualification", "droidloom-working-privateprep",
-        "droidloom-working-application", "droidloom-working-qualification-return")})
+        "droidloom-working-application", "droidloom-working-qualification-return")}
+    _apk_apparmor(here, profiles)
+    _current_apparmor(profiles)
     _unit_file_contexts((here / "linux-service-file_contexts").read_text())
     return result
 

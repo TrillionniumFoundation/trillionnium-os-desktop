@@ -1,0 +1,1414 @@
+{
+  "android_ui_executed": false,
+  "apk_bytes": 108520063,
+  "apk_sha256": "1094fa60ace2367ac52bd08d1bd4f33fa8144ba930e355121b28234b8ebbf382",
+  "application": {
+    "enabled_declaration": "absent_default_true",
+    "enabled_default": true,
+    "name": "androidx.multidex.MultiDexApplication"
+  },
+  "enabled_resource_resolution": {
+    "@0x7f050003": {
+      "name": "enable_system_alarm_service_default",
+      "resolved_value": false,
+      "selected_android_api": 37,
+      "selected_configuration": "v23",
+      "values": [
+        {
+          "configuration": "",
+          "value": true
+        },
+        {
+          "configuration": "v23",
+          "value": false
+        }
+      ]
+    },
+    "@0x7f050004": {
+      "name": "enable_system_foreground_service_default",
+      "resolved_value": true,
+      "selected_android_api": 37,
+      "selected_configuration": "",
+      "values": [
+        {
+          "configuration": "",
+          "value": true
+        }
+      ]
+    },
+    "@0x7f050005": {
+      "name": "enable_system_job_service_default",
+      "resolved_value": true,
+      "selected_android_api": 37,
+      "selected_configuration": "v23",
+      "values": [
+        {
+          "configuration": "",
+          "value": false
+        },
+        {
+          "configuration": "v23",
+          "value": true
+        }
+      ]
+    }
+  },
+  "implementation": "microG Services",
+  "manifest_member": {
+    "bytes": 304880,
+    "sha256": "45727d4a307e07ad361c6e244ad3de95a778f778cbbbfc62525ff1f960826d29"
+  },
+  "original_signer_certificates_sha256": [
+    "9bd06727e62796c0130eb6dab39b73157451582cbd138e86c468acc395d14165"
+  ],
+  "package": "com.google.android.gms",
+  "production_ready": false,
+  "provenance": {
+    "aapt2": {
+      "bytes": 6274200,
+      "sha256": "0f1c0e560f99db510a76ebc99ad5c3e68438f62e8e8617018a716ca4a589a699"
+    },
+    "actual_apk_readback": {
+      "bytes": 17084,
+      "path": "/home/alex/work/p4-continued-production-20261127-2ab09bea-r1/gms-identity-static-r1/RESULT.json",
+      "sha256": "eec6e50795ab45d651420fef7aef99bc03b1183dd46d36c5aeab6eedb6998860"
+    },
+    "actual_resources_readback": {
+      "bytes": 1457,
+      "path": "/home/alex/work/p4-continued-production-20261127-2ab09bea-r1/gms-identity-static-r1/RESOURCES-RESULT.json",
+      "sha256": "0b72af8b3857eb9d32ffe4e95f1d85741f271e06b687bfa4994c126de918bb76"
+    },
+    "manifest_xmltree": {
+      "bytes": 422197,
+      "path": "/home/alex/work/p4-continued-production-20261127-2ab09bea-r1/gms-identity-static-r1/manifest-xmltree.txt",
+      "sha256": "614e893e45fb4ec525edeaae1f58e57e97b3e3b78bf489af25ba46edc2a2a77d"
+    },
+    "resources": {
+      "bytes": 4208337,
+      "path": "/home/alex/work/p4-continued-production-20261127-2ab09bea-r1/gms-identity-static-r1/resources.txt",
+      "sha256": "130942a1fc31e5c9f69e23231cbd63a6604f7dcc6861847078f78363a9427c7e"
+    }
+  },
+  "schema": "droidloom.selected-microg-identity-manifest.v1",
+  "scope": "Declared service components and intent actions of this exact original microG APK; no dependent API, account login, push delivery, location accuracy, Play Integrity, or proprietary Google certification acceptance is implied.",
+  "selected_android_api": 37,
+  "selection_bytes": 592108,
+  "selection_sha256": "4abd5c5d0a8ac89e739b2ba6dd508435a1d355b9ce975ba5ceacb50c1ee4a4a0",
+  "services": [
+    {
+      "enabled_declaration": "literal",
+      "enabled_default": false,
+      "exported_declaration": false,
+      "intent_actions": [],
+      "name": "androidx.camera.core.impl.MetadataHolderService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": false,
+      "intent_actions": [],
+      "name": "androidx.room.MultiInstanceInvalidationService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "@0x7f050003",
+      "enabled_default": false,
+      "exported_declaration": false,
+      "intent_actions": [],
+      "name": "androidx.work.impl.background.systemalarm.SystemAlarmService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "@0x7f050005",
+      "enabled_default": true,
+      "exported_declaration": true,
+      "intent_actions": [],
+      "name": "androidx.work.impl.background.systemjob.SystemJobService",
+      "permission": "android.permission.BIND_JOB_SERVICE"
+    },
+    {
+      "enabled_declaration": "@0x7f050004",
+      "enabled_default": true,
+      "exported_declaration": false,
+      "intent_actions": [],
+      "name": "androidx.work.impl.foreground.SystemForegroundService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": true,
+      "intent_actions": [
+        "com.google.android.gms.analytics.service.START"
+      ],
+      "name": "com.google.android.gms.analytics.service.AnalyticsService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": true,
+      "intent_actions": [],
+      "name": "com.google.android.gms.auth.GetToken",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": true,
+      "intent_actions": [
+        "android.service.credentials.system.CredentialProviderService"
+      ],
+      "name": "com.google.android.gms.auth.api.credentials.credman.service.GoogleIdService",
+      "permission": "android.permission.BIND_CREDENTIAL_PROVIDER_SERVICE"
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": true,
+      "intent_actions": [
+        "android.service.credentials.CredentialProviderService"
+      ],
+      "name": "com.google.android.gms.auth.api.credentials.credman.service.PasswordAndPasskeyService",
+      "permission": "android.permission.BIND_CREDENTIAL_PROVIDER_SERVICE"
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": true,
+      "intent_actions": [
+        "android.service.credentials.system.CredentialProviderService"
+      ],
+      "name": "com.google.android.gms.auth.api.credentials.credman.service.RemoteService",
+      "permission": "android.permission.BIND_CREDENTIAL_PROVIDER_SERVICE"
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": false,
+      "intent_actions": [],
+      "name": "com.google.android.gms.cast.framework.ReconnectionService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": false,
+      "intent_actions": [],
+      "name": "com.google.android.gms.cast.framework.media.MediaNotificationService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": null,
+      "intent_actions": [
+        "android.media.MediaRouteProviderService"
+      ],
+      "name": "com.google.android.gms.cast.media.CastMediaRouteProviderService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "literal",
+      "enabled_default": true,
+      "exported_declaration": true,
+      "intent_actions": [
+        "com.google.android.gms.fitness.ConfigApi"
+      ],
+      "name": "com.google.android.gms.fitness.service.config.FitConfigBroker",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "literal",
+      "enabled_default": true,
+      "exported_declaration": true,
+      "intent_actions": [
+        "com.google.android.gms.fitness.HistoryApi"
+      ],
+      "name": "com.google.android.gms.fitness.service.history.FitHistoryBroker",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "literal",
+      "enabled_default": true,
+      "exported_declaration": true,
+      "intent_actions": [
+        "com.google.android.gms.fitness.RecordingApi"
+      ],
+      "name": "com.google.android.gms.fitness.service.recording.FitRecordingBroker",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "literal",
+      "enabled_default": true,
+      "exported_declaration": true,
+      "intent_actions": [
+        "com.google.android.gms.fitness.SessionsApi"
+      ],
+      "name": "com.google.android.gms.fitness.service.sessions.FitSessionsBroker",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": true,
+      "intent_actions": [],
+      "name": "com.google.android.gms.gcm.http.GoogleHttpService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": null,
+      "intent_actions": [
+        "com.google.android.gms.locationsharingreporter.service.START"
+      ],
+      "name": "com.google.android.gms.locationsharingreporter.service.LocationSharingReporterApiService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": true,
+      "intent_actions": [],
+      "name": "com.google.android.gms.maps.auth.ApiTokenService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": true,
+      "intent_actions": [],
+      "name": "com.google.android.gms.nearby.exposurenotification.WakeUpService",
+      "permission": "com.google.android.gms.nearby.exposurenotification.EXPOSURE_CALLBACK"
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": true,
+      "intent_actions": [
+        "com.google.android.gms.semanticlocation.service.START_ODLH"
+      ],
+      "name": "com.google.android.gms.semanticlocation.SemanticLocationService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": true,
+      "intent_actions": [
+        "com.google.android.gms.semanticlocationhistory.service.START"
+      ],
+      "name": "com.google.android.gms.semanticlocationhistory.SemanticLocationHistoryService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": false,
+      "intent_actions": [],
+      "name": "com.google.android.gms.semanticlocationhistory.db.backup.OdlhBackupService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": null,
+      "intent_actions": [
+        "com.google.android.contextmanager.service.ContextManagerService.START",
+        "com.google.android.gms.accounts.ACCOUNT_SERVICE",
+        "com.google.android.gms.ads.identifier.service.EVENT_ATTESTATION",
+        "com.google.android.gms.ads.service.CACHE",
+        "com.google.android.gms.ads.service.CONSENT_LOOKUP",
+        "com.google.android.gms.ads.service.HTTP",
+        "com.google.android.gms.appstate.service.START",
+        "com.google.android.gms.appusage.service.START",
+        "com.google.android.gms.asterism.service.START",
+        "com.google.android.gms.audiomodem.service.AudioModemService.START",
+        "com.google.android.gms.auth.account.authapi.START",
+        "com.google.android.gms.auth.account.authenticator.auto.service.START",
+        "com.google.android.gms.auth.account.authenticator.chromeos.START",
+        "com.google.android.gms.auth.account.authenticator.tv.service.START",
+        "com.google.android.gms.auth.api.identity.service.credentialsaving.START",
+        "com.google.android.gms.auth.api.phone.service.InternalService.START",
+        "com.google.android.gms.auth.api.signin.service.START",
+        "com.google.android.gms.auth.config.service.START",
+        "com.google.android.gms.auth.cryptauth.cryptauthservice.START",
+        "com.google.android.gms.auth.proximity.START",
+        "com.google.android.gms.auth.proximity.devicesyncservice.START",
+        "com.google.android.gms.auth.proximity.securechannelservice.START",
+        "com.google.android.gms.auth.service.START",
+        "com.google.android.gms.backup.G1_BACKUP",
+        "com.google.android.gms.backup.G1_RESTORE",
+        "com.google.android.gms.backup.GMS_MODULE_RESTORE",
+        "com.google.android.gms.beacon.internal.IBleService.START",
+        "com.google.android.gms.carrierauth.service.START",
+        "com.google.android.gms.cast.firstparty.START",
+        "com.google.android.gms.cast.remote_display.service.START",
+        "com.google.android.gms.cast_mirroring.service.START",
+        "com.google.android.gms.chromesync.service.START",
+        "com.google.android.gms.common.download.START",
+        "com.google.android.gms.config.START",
+        "com.google.android.gms.constellation.service.START",
+        "com.google.android.gms.deviceconnection.service.START",
+        "com.google.android.gms.enterprise.loader.service.START",
+        "com.google.android.gms.facs.internal.service.START",
+        "com.google.android.gms.fido.credentialstore.internal_service.START",
+        "com.google.android.gms.fido.fido2.regular.START",
+        "com.google.android.gms.fido.fido2.zeroparty.START",
+        "com.google.android.gms.fido.sourcedevice.service.START",
+        "com.google.android.gms.fido.targetdevice.internal_service.START",
+        "com.google.android.gms.fido.u2f.privileged.START",
+        "com.google.android.gms.fido.u2f.thirdparty.START",
+        "com.google.android.gms.fido.u2f.zeroparty.START",
+        "com.google.android.gms.fitness.BleApi",
+        "com.google.android.gms.fitness.GoalsApi",
+        "com.google.android.gms.fitness.GoogleFitnessService.START",
+        "com.google.android.gms.fitness.InternalApi",
+        "com.google.android.gms.fitness.SensorsApi",
+        "com.google.android.gms.fonts.service.START",
+        "com.google.android.gms.freighter.service.START",
+        "com.google.android.gms.googlehelp.service.GoogleHelpService.START",
+        "com.google.android.gms.growth.service.START",
+        "com.google.android.gms.herrevad.services.LightweightNetworkQualityAndroidService.START",
+        "com.google.android.gms.identity.service.BIND",
+        "com.google.android.gms.instantapps.START",
+        "com.google.android.gms.kids.service.START",
+        "com.google.android.gms.learning.internal.dynamitesupport.START",
+        "com.google.android.gms.learning.intservice.START",
+        "com.google.android.gms.learning.predictor.START",
+        "com.google.android.gms.learning.trainer.START",
+        "com.google.android.gms.learning.training.background.START",
+        "com.google.android.gms.locationsharing.api.START",
+        "com.google.android.gms.locationsharingreporter.service.START",
+        "com.google.android.gms.lockbox.service.START",
+        "com.google.android.gms.matchstick.lighter.service.START",
+        "com.google.android.gms.mdm.services.DeviceManagerApiService.START",
+        "com.google.android.gms.mdns.service.START",
+        "com.google.android.gms.nearby.bootstrap.service.NearbyBootstrapService.START",
+        "com.google.android.gms.nearby.connection.service.START",
+        "com.google.android.gms.nearby.fastpair.START",
+        "com.google.android.gms.nearby.messages.service.NearbyMessagesService.START",
+        "com.google.android.gms.nearby.sharing.START_SERVICE",
+        "com.google.android.gms.nearby.sharing.service.NearbySharingService.START",
+        "com.google.android.gms.notifications.service.START",
+        "com.google.android.gms.ocr.service.START",
+        "com.google.android.gms.ocr.service.internal.START",
+        "com.google.android.gms.payse.service.BIND",
+        "com.google.android.gms.people.contactssync.service.START",
+        "com.google.android.gms.photos.autobackup.service.START",
+        "com.google.android.gms.plus.service.START",
+        "com.google.android.gms.plus.service.default.INTENT",
+        "com.google.android.gms.plus.service.image.INTENT",
+        "com.google.android.gms.plus.service.internal.START",
+        "com.google.android.gms.rcs.START",
+        "com.google.android.gms.romanesco.MODULE_BACKUP_AGENT",
+        "com.google.android.gms.romanesco.service.START",
+        "com.google.android.gms.scheduler.ACTION_PROXY_SCHEDULE",
+        "com.google.android.gms.search.service.SEARCH_AUTH_START",
+        "com.google.android.gms.sesame.service.BIND",
+        "com.google.android.gms.setup.auth.SecondDeviceAuth.START",
+        "com.google.android.gms.smartdevice.d2d.SourceDeviceService.START",
+        "com.google.android.gms.smartdevice.d2d.TargetDeviceService.START",
+        "com.google.android.gms.smartdevice.directtransfer.SourceDirectTransferService.START",
+        "com.google.android.gms.smartdevice.directtransfer.TargetDirectTransferService.START",
+        "com.google.android.gms.smartdevice.postsetup.PostSetupService.START",
+        "com.google.android.gms.smartdevice.setup.accounts.AccountsService.START",
+        "com.google.android.gms.smartdevice.wifi.START_WIFI_HELPER_SERVICE",
+        "com.google.android.gms.social.location.activity.service.START",
+        "com.google.android.gms.speech.service.START",
+        "com.google.android.gms.statementservice.EXECUTE",
+        "com.google.android.gms.stats.ACTION_UPLOAD_DROPBOX_ENTRIES",
+        "com.google.android.gms.telephonyspam.service.START",
+        "com.google.android.gms.testsupport.service.START",
+        "com.google.android.gms.thunderbird.service.START",
+        "com.google.android.gms.trustagent.BridgeApi.START",
+        "com.google.android.gms.trustagent.StateApi.START",
+        "com.google.android.gms.trustagent.trustlet.trustletmanagerservice.BIND",
+        "com.google.android.gms.trustlet.bluetooth.service.BIND",
+        "com.google.android.gms.trustlet.connectionlessble.service.BIND",
+        "com.google.android.gms.trustlet.face.service.BIND",
+        "com.google.android.gms.trustlet.nfc.service.BIND",
+        "com.google.android.gms.trustlet.onbody.service.BIND",
+        "com.google.android.gms.trustlet.place.service.BIND",
+        "com.google.android.gms.trustlet.voiceunlock.service.BIND",
+        "com.google.android.gms.udc.service.START",
+        "com.google.android.gms.update.START_API_SERVICE",
+        "com.google.android.gms.update.START_SERVICE",
+        "com.google.android.gms.update.START_SINGLE_USER_API_SERVICE",
+        "com.google.android.gms.update.START_TV_API_SERVICE",
+        "com.google.android.gms.userlocation.service.START",
+        "com.google.android.gms.vehicle.cabin.service.START",
+        "com.google.android.gms.vehicle.climate.service.START",
+        "com.google.android.gms.vehicle.info.service.START",
+        "com.google.android.gms.walletp2p.service.firstparty.BIND",
+        "com.google.android.gms.walletp2p.service.zeroparty.BIND",
+        "com.google.android.gms.wearable.BIND",
+        "com.google.android.gms.wearable.BIND_LISTENER",
+        "com.google.android.gms.wearable.DATA_CHANGED",
+        "com.google.android.gms.wearable.NODE_CHANGED",
+        "com.google.android.mdd.service.START",
+        "com.google.android.mdh.service.START",
+        "com.google.android.mdh.service.listener.START",
+        "com.google.android.mobstore.service.START"
+      ],
+      "name": "org.microg.gms.DummyService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": null,
+      "intent_actions": [
+        "com.google.android.gms.ads.service.START"
+      ],
+      "name": "org.microg.gms.ads.AdRequestService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": null,
+      "intent_actions": [
+        "com.google.android.gms.ads.gservice.START"
+      ],
+      "name": "org.microg.gms.ads.GService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": null,
+      "intent_actions": [
+        "com.google.android.gms.ads.identifier.service.START"
+      ],
+      "name": "org.microg.gms.ads.identifier.AdvertisingIdService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": true,
+      "intent_actions": [
+        "com.google.android.gms.appinvite.service.START"
+      ],
+      "name": "org.microg.gms.appinivite.AppInviteService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": null,
+      "intent_actions": [
+        "com.google.android.gms.appset.service.START"
+      ],
+      "name": "org.microg.gms.appset.AppSetService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": null,
+      "intent_actions": [
+        "com.google.android.gms.audit.service.START"
+      ],
+      "name": "org.microg.gms.audit.AuditService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "literal",
+      "enabled_default": false,
+      "exported_declaration": false,
+      "intent_actions": [
+        "android.accounts.AccountAuthenticator"
+      ],
+      "name": "org.microg.gms.auth.WorkAccountAuthenticatorService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": null,
+      "intent_actions": [
+        "com.google.android.gms.auth.account.data.service.START"
+      ],
+      "name": "org.microg.gms.auth.account.data.AccountDataService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": null,
+      "intent_actions": [
+        "com.google.android.gms.auth.be.appcert.AppCertService"
+      ],
+      "name": "org.microg.gms.auth.appcert.AppCertService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": null,
+      "intent_actions": [
+        "com.google.android.gms.auth.blockstore.service.START"
+      ],
+      "name": "org.microg.gms.auth.blockstore.BlockstoreApiService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": null,
+      "intent_actions": [
+        "com.google.android.gms.auth.api.credentials.service.START"
+      ],
+      "name": "org.microg.gms.auth.credentials.CredentialsService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": null,
+      "intent_actions": [
+        "com.google.android.gms.auth.api.identity.service.authorization.START"
+      ],
+      "name": "org.microg.gms.auth.credentials.identity.AuthorizationService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": null,
+      "intent_actions": [
+        "com.google.android.gms.auth.api.identity.service.signin.START"
+      ],
+      "name": "org.microg.gms.auth.credentials.identity.IdentitySignInService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": null,
+      "intent_actions": [
+        "com.google.android.gms.auth.key.retrieval.service.START"
+      ],
+      "name": "org.microg.gms.auth.folsom.KeyRetrievalService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": false,
+      "intent_actions": [],
+      "name": "org.microg.gms.auth.gcm.GcmReceiverService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": false,
+      "intent_actions": [
+        "android.accounts.AccountAuthenticator"
+      ],
+      "name": "org.microg.gms.auth.loginservice.GoogleLoginService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": true,
+      "intent_actions": [
+        "com.google.android.gms.auth.api.phone.service.SmsRetrieverApiService.START"
+      ],
+      "name": "org.microg.gms.auth.phone.SmsRetrieverService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": null,
+      "intent_actions": [
+        "com.google.android.gms.auth.service.START"
+      ],
+      "name": "org.microg.gms.auth.proxy.AuthProxyService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": null,
+      "intent_actions": [
+        "com.google.android.gms.auth.api.signin.service.START"
+      ],
+      "name": "org.microg.gms.auth.signin.AuthSignInService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": false,
+      "intent_actions": [],
+      "name": "org.microg.gms.auth.signin.SignInConfigurationService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": true,
+      "intent_actions": [
+        "com.google.android.gms.auth.account.workaccount.START"
+      ],
+      "name": "org.microg.gms.auth.workaccount.WorkAccountService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": true,
+      "intent_actions": [
+        "com.google.android.gms.camera_low_light.service.START"
+      ],
+      "name": "org.microg.gms.cameralowlight.CameraLowLightService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": null,
+      "intent_actions": [
+        "com.google.android.gms.car.service.START"
+      ],
+      "name": "org.microg.gms.car.CarService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": null,
+      "intent_actions": [
+        "com.google.android.gms.cast.service.BIND_CAST_DEVICE_CONTROLLER_SERVICE"
+      ],
+      "name": "org.microg.gms.cast.CastDeviceControllerService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": null,
+      "intent_actions": [
+        "com.google.android.gms.checkin.BIND_TO_SERVICE"
+      ],
+      "name": "org.microg.gms.checkin.CheckinService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": null,
+      "intent_actions": [
+        "com.google.android.gms.clearcut.bootcount.service.START"
+      ],
+      "name": "org.microg.gms.clearcut.BootCountService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": null,
+      "intent_actions": [
+        "com.google.android.gms.clearcut.service.START"
+      ],
+      "name": "org.microg.gms.clearcut.ClearcutLoggerService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": null,
+      "intent_actions": [
+        "com.google.android.gms.common.telemetry.service.START"
+      ],
+      "name": "org.microg.gms.common.ClientTelemetryService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": null,
+      "intent_actions": [
+        "com.google.android.gms.common.service.START"
+      ],
+      "name": "org.microg.gms.common.GmsCommonService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": null,
+      "intent_actions": [
+        "com.google.android.gms.credential.manager.service.firstparty.START"
+      ],
+      "name": "org.microg.gms.credential.CredentialManagerService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": null,
+      "intent_actions": [
+        "com.google.android.gms.drive.ApiService.RESET_AFTER_BOOT",
+        "com.google.android.gms.drive.ApiService.START",
+        "com.google.android.gms.drive.ApiService.STOP"
+      ],
+      "name": "org.microg.gms.drive.api.DriveApiService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "literal",
+      "enabled_default": true,
+      "exported_declaration": true,
+      "intent_actions": [
+        "com.google.android.gms.droidguard.service.INIT",
+        "com.google.android.gms.droidguard.service.PING",
+        "com.google.android.gms.droidguard.service.START"
+      ],
+      "name": "org.microg.gms.droidguard.core.DroidGuardService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": null,
+      "intent_actions": [
+        "com.google.android.gms.feedback.internal.IFeedbackService"
+      ],
+      "name": "org.microg.gms.feedback.FeedbackService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": true,
+      "intent_actions": [
+        "com.google.android.gms.fido.fido2.privileged.START"
+      ],
+      "name": "org.microg.gms.fido.core.privileged.Fido2PrivilegedService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": true,
+      "intent_actions": [
+        "com.google.android.gms.fido.fido2.regular.START"
+      ],
+      "name": "org.microg.gms.fido.core.regular.Fido2AppService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": false,
+      "intent_actions": [],
+      "name": "org.microg.gms.findmydevice.AlarmRingService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": false,
+      "intent_actions": [],
+      "name": "org.microg.gms.findmydevice.gcm.GcmReceiverService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": true,
+      "intent_actions": [
+        "com.google.android.gms.findmydevice.spot.service.locationreport.START"
+      ],
+      "name": "org.microg.gms.findmydevice.spot.locationreporting.LocationReportService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": true,
+      "intent_actions": [
+        "com.google.android.gms.findmydevice.spot.service.management.START"
+      ],
+      "name": "org.microg.gms.findmydevice.spot.management.ManagementService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": null,
+      "intent_actions": [
+        "com.google.firebase.auth.api.gms.service.START"
+      ],
+      "name": "org.microg.gms.firebase.auth.FirebaseAuthService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": false,
+      "intent_actions": [],
+      "name": "org.microg.gms.firebase.auth.ReCaptchaOverlayService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": null,
+      "intent_actions": [
+        "com.google.firebase.dynamiclinks.service.START"
+      ],
+      "name": "org.microg.gms.firebase.dynamiclinks.DynamicLinksService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": false,
+      "intent_actions": [],
+      "name": "org.microg.gms.games.GamesConfigurationService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": true,
+      "intent_actions": [
+        "com.google.android.gms.games.internal.connect.service.START"
+      ],
+      "name": "org.microg.gms.games.GamesConnectService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": true,
+      "intent_actions": [
+        "com.google.android.gms.games.service.START"
+      ],
+      "name": "org.microg.gms.games.GamesService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": null,
+      "intent_actions": [
+        "com.google.android.gms.gass.START"
+      ],
+      "name": "org.microg.gms.gass.GassService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": false,
+      "intent_actions": [],
+      "name": "org.microg.gms.gcm.GcmInGmsService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": null,
+      "intent_actions": [],
+      "name": "org.microg.gms.gcm.McsService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": null,
+      "intent_actions": [
+        "com.google.android.c2dm.intent.REGISTER",
+        "com.google.android.c2dm.intent.UNREGISTER"
+      ],
+      "name": "org.microg.gms.gcm.PushRegisterService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": null,
+      "intent_actions": [
+        "com.google.android.gms.gmscompliance.service.START"
+      ],
+      "name": "org.microg.gms.gmscompliance.GmsDeviceComplianceService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": true,
+      "intent_actions": [
+        "com.google.android.gms.googlehelp.service.GoogleHelpService.START"
+      ],
+      "name": "org.microg.gms.googlehelp.GoogleHelpService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": true,
+      "intent_actions": [
+        "com.google.android.gms.home.interaction.START"
+      ],
+      "name": "org.microg.gms.home.HomeInteractionService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": null,
+      "intent_actions": [
+        "com.google.android.gms.icing.INDEX_SERVICE"
+      ],
+      "name": "org.microg.gms.icing.IndexService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": null,
+      "intent_actions": [
+        "com.google.android.gms.icing.LIGHTWEIGHT_INDEX_SERVICE"
+      ],
+      "name": "org.microg.gms.icing.LightweightIndexService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": null,
+      "intent_actions": [
+        "com.google.android.gms.identitycredentials.service.START"
+      ],
+      "name": "org.microg.gms.identitycredentials.IdentityCredentialApiService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": null,
+      "intent_actions": [
+        "com.google.android.gms.inappreach.service.START"
+      ],
+      "name": "org.microg.gms.inappreach.InAppReachService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": true,
+      "intent_actions": [
+        "com.google.android.gms.languageprofile.service.START"
+      ],
+      "name": "org.microg.gms.languageprofile.LanguageProfileService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": true,
+      "intent_actions": [
+        "com.google.android.location.internal.GoogleLocationManagerService.START"
+      ],
+      "name": "org.microg.gms.location.manager.GoogleLocationManagerService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": false,
+      "intent_actions": [
+        "org.microg.gms.location.manager.ACTION_REPORT_LOCATION"
+      ],
+      "name": "org.microg.gms.location.manager.LocationManagerService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": false,
+      "intent_actions": [
+        "org.microg.gms.location.network.ACTION_NETWORK_IMPORT_EXPORT",
+        "org.microg.gms.location.network.ACTION_NETWORK_LOCATION_SERVICE"
+      ],
+      "name": "org.microg.gms.location.network.NetworkLocationService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": false,
+      "intent_actions": [
+        "com.android.location.service.FusedLocationProvider"
+      ],
+      "name": "org.microg.gms.location.provider.FusedLocationProviderService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": false,
+      "intent_actions": [
+        "com.android.location.service.GeocodeProvider",
+        "com.google.android.location.GeocodeProvider"
+      ],
+      "name": "org.microg.gms.location.provider.GeocodeProviderService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": false,
+      "intent_actions": [
+        "com.android.location.service.v2.NetworkLocationProvider",
+        "com.android.location.service.v3.NetworkLocationProvider"
+      ],
+      "name": "org.microg.gms.location.provider.NetworkLocationProviderService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": true,
+      "intent_actions": [
+        "com.google.android.gms.location.reporting.service.START",
+        "com.google.android.location.reporting.service.START"
+      ],
+      "name": "org.microg.gms.location.reporting.ReportingAndroidService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": null,
+      "intent_actions": [
+        "com.google.android.gms.mdm.services.START"
+      ],
+      "name": "org.microg.gms.mdm.NetworkQualityService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": true,
+      "intent_actions": [
+        "com.google.android.gms.measurement.START"
+      ],
+      "name": "org.microg.gms.measurement.MeasurementService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": true,
+      "intent_actions": [
+        "com.google.android.gms.chimera.container.moduleinstall.ModuleInstallService.START"
+      ],
+      "name": "org.microg.gms.moduleinstall.ModuleInstallService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": null,
+      "intent_actions": [],
+      "name": "org.microg.gms.nearby.exposurenotification.AdvertiserService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": null,
+      "intent_actions": [],
+      "name": "org.microg.gms.nearby.exposurenotification.CleanupService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": true,
+      "intent_actions": [
+        "com.google.android.gms.nearby.exposurenotification.START"
+      ],
+      "name": "org.microg.gms.nearby.exposurenotification.ExposureNotificationService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": null,
+      "intent_actions": [],
+      "name": "org.microg.gms.nearby.exposurenotification.NotifyService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": null,
+      "intent_actions": [],
+      "name": "org.microg.gms.nearby.exposurenotification.ScannerService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": true,
+      "intent_actions": [
+        "com.google.android.gms.oss.licenses.service.START"
+      ],
+      "name": "org.microg.gms.oss.licenses.core.OssLicensesService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": null,
+      "intent_actions": [
+        "com.google.android.gms.panorama.service.START"
+      ],
+      "name": "org.microg.gms.panorama.PanoramaService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": null,
+      "intent_actions": [
+        "com.google.android.gms.pay.service.BIND"
+      ],
+      "name": "org.microg.gms.pay.PayService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": true,
+      "intent_actions": [
+        "com.google.android.gms.pay.service.THIRD_PARTY"
+      ],
+      "name": "org.microg.gms.pay.ThirdPartyPayService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": false,
+      "intent_actions": [
+        "android.content.SyncAdapter"
+      ],
+      "name": "org.microg.gms.people.ContactSyncService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": null,
+      "intent_actions": [
+        "com.google.android.gms.people.service.START"
+      ],
+      "name": "org.microg.gms.people.PeopleService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": null,
+      "intent_actions": [
+        "com.google.android.gms.phenotype.service.START"
+      ],
+      "name": "org.microg.gms.phenotype.PhenotypeService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": null,
+      "intent_actions": [
+        "com.google.android.gms.location.places.GeoDataApi",
+        "com.google.android.gms.location.places.PlacesApi"
+      ],
+      "name": "org.microg.gms.places.GeoDataService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": null,
+      "intent_actions": [
+        "com.google.android.gms.location.places.PlaceDetectionApi"
+      ],
+      "name": "org.microg.gms.places.PlaceDetectionService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": null,
+      "intent_actions": [
+        "com.google.android.gms.playlog.service.START"
+      ],
+      "name": "org.microg.gms.playlog.PlayLogService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": null,
+      "intent_actions": [
+        "com.google.android.gms.potokens.service.START"
+      ],
+      "name": "org.microg.gms.potokens.PoTokensService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": true,
+      "intent_actions": [],
+      "name": "org.microg.gms.provision.ProvisionService",
+      "permission": "org.microg.gms.PROVISION"
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": null,
+      "intent_actions": [
+        "com.google.android.gms.pseudonymous.service.START"
+      ],
+      "name": "org.microg.gms.pseudonymous.PseudonymousIdService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": null,
+      "intent_actions": [
+        "com.google.android.gms.recaptcha.service.START"
+      ],
+      "name": "org.microg.gms.recaptcha.RecaptchaService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": null,
+      "intent_actions": [
+        "com.google.android.gms.reminders.service.START"
+      ],
+      "name": "org.microg.gms.reminders.RemindersService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": null,
+      "intent_actions": [
+        "com.google.android.gms.safetynet.service.START"
+      ],
+      "name": "org.microg.gms.safetynet.SafetyNetClientService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": null,
+      "intent_actions": [
+        "com.google.android.gms.signin.service.START"
+      ],
+      "name": "org.microg.gms.signin.SignInService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": true,
+      "intent_actions": [
+        "com.google.android.gms.tapandpay.service.BIND"
+      ],
+      "name": "org.microg.gms.tapandpay.TapAndPayService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": true,
+      "intent_actions": [
+        "com.google.android.gms.threadnetwork.service.START"
+      ],
+      "name": "org.microg.gms.threadnetwork.ThreadNetworkService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": null,
+      "intent_actions": [
+        "com.google.android.gms.facs.cache.service.START"
+      ],
+      "name": "org.microg.gms.udc.FacsCacheService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": false,
+      "intent_actions": [],
+      "name": "org.microg.gms.ui.AccountLocationSettingsService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": null,
+      "intent_actions": [
+        "com.google.android.gms.usagereporting.service.START"
+      ],
+      "name": "org.microg.gms.usagereporting.UsageReportingService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": null,
+      "intent_actions": [
+        "com.google.android.gms.wallet.service.BIND"
+      ],
+      "name": "org.microg.gms.wallet.PaymentService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": null,
+      "intent_actions": [
+        "com.google.android.gms.wearable.BIND"
+      ],
+      "name": "org.microg.gms.wearable.WearableService",
+      "permission": null
+    },
+    {
+      "enabled_declaration": "absent_default_true",
+      "enabled_default": true,
+      "exported_declaration": null,
+      "intent_actions": [
+        "com.google.android.gms.wearable.MESSAGE_RECEIVED"
+      ],
+      "name": "org.microg.gms.wearable.location.WearableLocationService",
+      "permission": null
+    }
+  ],
+  "version_code": 252432036,
+  "version_name": "0.3.18.252432"
+}

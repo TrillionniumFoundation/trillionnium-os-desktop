@@ -10,7 +10,7 @@ import json
 import re
 import stat
 
-from derive_native_uevent_policy import ContextPolicy, Membership
+from derive_native_uevent_policy import ContextPolicy, Membership, LEVELS
 from derive_preserved_alias_policy import (
     _roles, _context, derive_preserved_aliases, verify_preserved_aliases)
 from derive_shared_payload_cgroup_policy import parse_expression
@@ -30,7 +30,14 @@ IOCTLS = {
 # These normal host ELFs already use the admitted native dynamic loader.
 # Keep this list explicit: an unrelated actor never gains cache access merely
 # by joining an attribute. Existing native-service cache permissions are kept.
+# These isolated, source-bound normal ELFs already have the exact cache edge.
+# Their generic native-config file authority remains zero.
+ISOLATED_CACHE_LOADERS = {
+    "p4_linux_working_payload_birth_t",
+    "p4_linux_production_commit_t", "p4_linux_production_verify_t",
+}
 CACHE_LOADERS = {
+    *ISOLATED_CACHE_LOADERS,
     "droidloom_engine_observer",
     # The fixed normal calibration ELF uses the same admitted dynamic loader.
     "droidloom_policy_loader",
@@ -337,6 +344,79 @@ def _extra(actor, target):
     return set()
 
 
+def _cache_loader_preimages(policy, lines, classes):
+    """Admit only existing raw cache edges; never manufacture a missing grant."""
+    text = "\n".join(lines)
+    if re.search(r"\((?:booleanif|tunableif)\b", text):
+        raise ValueError("Console cache preimage requires unconditional raw authority")
+    members = Membership(text)
+    roles = set(_roles(lines))
+    actors = sorted({actor for _, actor in roles})
+    cache = "p4_linux_console_ld_cache_native_config_t"
+    original = "p4_linux_native_config_t"
+    interpreter = "p4_linux_elf_interpreter_t"
+    targets = (original, cache, interpreter)
+    raw = {(actor, target): set() for actor in actors for target in targets}
+    parsed = 0
+    for line in lines:
+        if not line.startswith("(allow "):
+            continue
+        parsed += 1
+        form = parse_expression(line)
+        if len(form) != 4 or not isinstance(form[3], list) or len(form[3]) != 2:
+            raise ValueError("Unsupported console cache raw statement")
+        source, target, (cls, names) = form[1:]
+        if cls not in classes or not isinstance(names, list) or not set(names) <= set(classes[cls]):
+            raise ValueError("Unknown console cache raw class or permission")
+        if cls != "file":
+            continue
+        selected = [t for t in targets if target != "self" and members.member(target, t)]
+        if not selected:
+            continue
+        for actor in actors:
+            if members.member(source, actor):
+                for obj in selected:
+                    raw[(actor, obj)].update(names)
+    if parsed != text.count("(allow "):
+        raise ValueError("Console cache raw authority is incomplete")
+    # Every non-isolated actor retains its source vector. Only the existing
+    # concrete loader roster can contribute an independently reviewed delta.
+    for actor in actors:
+        if actor in (ROLE, "p4_linux_ldconfig_t"):
+            continue
+        before, preimage = raw[(actor, original)], raw[(actor, cache)]
+        extra = _extra(actor, cache)
+        if not preimage <= before | extra:
+            raise ValueError("Console cache lacks its exact explicit preimage: " + actor)
+    production = {"p4_linux_production_commit_t", "p4_linux_production_verify_t"}
+    if {t for t in members.types if members.member("p4_production_commit_actors", t)} != production:
+        raise ValueError("Console cache production actor attribute differs")
+    wanted = {
+        original: set(),
+        cache: {"getattr", "open", "read", "map"},
+        interpreter: {"getattr", "open", "read", "execute", "map"},
+    }
+    _, bits = policy.permissions("file", classes["file"])
+    checks = []
+    for actor in sorted(ISOLATED_CACHE_LOADERS):
+        if {(role, name) for role, name in roles if name == actor} != {("system_r", actor)}:
+            raise ValueError("Console isolated cache loader role differs: " + actor)
+        for target, permissions in wanted.items():
+            if raw[(actor, target)] != permissions:
+                raise ValueError("Console isolated loader raw preimage differs: " + actor + " " + target)
+            mask = sum(bits[name] for name in permissions)
+            for level in LEVELS:
+                actual = policy.context_av(_context("system_r", actor, level),
+                    _context("object_r", target), "file", classes["file"])
+                if actual != mask:
+                    raise ValueError("Console isolated loader constrained preimage differs: " + actor + " " + target)
+                checks.append([actor, target, level, sorted(permissions)])
+    return {"fixed_isolated_loaders": sorted(ISOLATED_CACHE_LOADERS),
+            "all_concrete_cache_actor_preimages_checked": len(actors) - 2,
+            "raw_and_constrained_vectors": len(checks),
+            "vector_sha256": hashlib.sha256(json.dumps(checks, sort_keys=True).encode()).hexdigest()}
+
+
 def derive(library, baseline, exported, here, output, export):
     value = contract(here)
     extras = {}
@@ -352,6 +432,11 @@ def derive(library, baseline, exported, here, output, export):
         isolated_roles={ROLE, "p4_linux_ldconfig_t"}, extra_permissions=extras, preamble=(
             "; Derived from the actual normal pre-console-alias binary.",
             "; Preserve all existing concrete actors; no generic execute grant."))
+    # The generated file cannot be linked until its three new concrete deltas
+    # are proved against the actual pre-console binary, including denied bits.
+    expected["cache_loader_preimages"] = _cache_loader_preimages(
+        ContextPolicy(library, baseline), exported.read_text().splitlines(),
+        expected["classes"])
     expected["contract_sha256"] = hashlib.sha256(
         (here / "native-console-setup.json").read_bytes()).hexdigest()
     return expected
@@ -368,6 +453,9 @@ def verify(library, binary, exported, here, expected, export):
     native_terminals = _verify_native_terminals(policy, lines, text, expected["classes"])
     finish_metadata = _verify_early_vt_metadata(policy, lines, text, expected["classes"], objects)
     checks = verify_preserved_aliases(policy, exported, value["aliases"], expected)
+    cache_preimages = _cache_loader_preimages(policy, lines, expected["classes"])
+    if cache_preimages != expected["cache_loader_preimages"]:
+        raise ValueError("Console fixed loader cache preimages changed during linking")
     def av(target, cls, permissions, wanted, role="object_r"):
         got = policy.context_av(_context("system_r", ROLE), _context(role, target), cls, permissions)
         _, bits = policy.permissions(cls, permissions)
@@ -459,6 +547,7 @@ def verify(library, binary, exported, here, expected, export):
             "fixed_null_ioctl_filters": {target: ioctls[target] for target in NULL_TYPES},
             "fixed_interpreter_openers": sorted(INTERPRETER_OPENERS),
             "fixed_native_cache_readers": sorted(CACHE_LOADERS),
+            "fixed_isolated_cache_loader_preimages": cache_preimages,
             "fixed_linux_vt_inventory": native_terminals,
             "postload_vt_metadata": finish_metadata,
             "all_character_device_objects_checked": len(objects),

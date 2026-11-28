@@ -45,6 +45,9 @@ pub use family::{
     NativeFamilyUiEvidence, family_ui_retained_members_bound, family_ui_window_seconds,
     observe_native_family_ui,
 };
+#[path = "native_gms_identity.rs"]
+mod gms_identity;
+pub use gms_identity::{NativeGmsIdentityEvidence, observe_native_gms_identity};
 #[path = "native_application_ui_settings.rs"]
 mod settings;
 pub use settings::{

@@ -103,6 +103,7 @@ pub use crate::native_leaf_engine::{NativeLeafEngineEvidence, NativeLeafExecutio
 pub use application_command::physical_qualification_channel;
 pub use application_command::working_qualification;
 pub use application_command::{
+    NativeGmsIdentityEvidence, observe_native_gms_identity,
     CameraPhotoCaseObservation, CameraPhotoObservation, CameraPhotoSceneObservation,
     NativeFamilyUiEvidence, NativeOwnedLeafUnit, NativeUiPermissionPreservation,
     NativeUiPermissionWindow, NativeUiSession, NativeUiStabilityEvidence, NativeUiStabilitySummary,

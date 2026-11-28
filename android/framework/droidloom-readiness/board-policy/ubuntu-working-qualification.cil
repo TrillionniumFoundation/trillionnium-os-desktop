@@ -467,7 +467,7 @@
 (allow p4_working_clients p4_linux_working_current_dir_t (dir (getattr search)))
 (allow p4_working_clients p4_linux_working_current_t (file (getattr open read)))
 (allow p4_linux_working_qualification_t p4_linux_working_current_lock_t (file (getattr open read lock)))
-(allow p4_linux_working_qualification_t p4_linux_working_current_dir_t (dir (write add_name remove_name)))
+(allow p4_linux_working_qualification_t p4_linux_working_current_dir_t (dir (open read write add_name remove_name)))
 (typetransition p4_linux_working_qualification_t p4_linux_working_current_dir_t file p4_linux_working_current_t)
 (allow p4_linux_working_qualification_t p4_linux_working_current_t (file (getattr open read create write setattr rename unlink)))
 (allow p4_working_clients p4_linux_native_leaf_layout_t (dir (getattr search)))

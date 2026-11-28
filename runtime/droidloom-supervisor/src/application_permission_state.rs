@@ -54,6 +54,142 @@ impl SharedUidPermissionState {
         &self.packages
     }
 }
+/// Same fixed dump-package output, for the selected GMS package only.
+/// This is component-enable configuration, never running-service/API evidence.
+/// Selected classes2.dex 4f4c674f... Settings.dumpPackageLPr prints the actual
+/// user header and complete nonempty disabled/enabled component sets. Its
+/// selected dump is c47bcb1d38a3dd7b934c3da7fa1e67e6fe7c71757ac066e857b05178891cff50.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub(crate) struct GmsComponentEnablement {
+    enabled_setting: u8,
+    hidden: bool,
+    suspended: bool,
+    app_lock_enabled: bool,
+    quarantined: bool,
+    enabled_components: BTreeSet<String>,
+    disabled_components: BTreeSet<String>,
+}
+impl GmsComponentEnablement {
+    fn valid(&self) -> bool {
+        self.enabled_setting <= 4
+            && self.enabled_components.len() <= 512
+            && self.disabled_components.len() <= 512
+            && self
+                .enabled_components
+                .iter()
+                .chain(&self.disabled_components)
+                .all(|v| component_name(v))
+            && self
+                .enabled_components
+                .is_disjoint(&self.disabled_components)
+    }
+    pub(crate) fn application_enabled(&self, manifest_default: bool) -> bool {
+        match self.enabled_setting {
+            0 => manifest_default,
+            1 => true,
+            _ => false,
+        }
+    }
+    pub(crate) fn require_unrestricted(&self) -> Result<(), String> {
+        if !self.valid()
+            || self.hidden
+            || self.suspended
+            || self.app_lock_enabled
+            || self.quarantined
+        {
+            return Err("GMS actual user-zero component state is restricted or malformed".into());
+        }
+        Ok(())
+    }
+    pub(crate) fn service_enabled(&self, name: &str, manifest_default: bool) -> bool {
+        if self.enabled_components.contains(name) {
+            true
+        } else if self.disabled_components.contains(name) {
+            false
+        } else {
+            manifest_default
+        }
+    }
+}
+fn component_name(v: &str) -> bool {
+    !v.is_empty()
+        && v.len() <= 512
+        && v.contains('.')
+        && v.split('.').all(|p| {
+            !p.is_empty()
+                && p.bytes()
+                    .all(|c| c.is_ascii_alphanumeric() || c == b'_' || c == b'$')
+        })
+}
+fn gms_components(
+    package_body: &[&str],
+    target_user: &[&str],
+) -> Result<GmsComponentEnablement, String> {
+    let header = one_prefix(package_body, "    User 0: ")?;
+    let fields = header.split(' ').collect::<Vec<_>>();
+    let field = |name: &str| -> Result<&str, String> {
+        let values = fields
+            .iter()
+            .filter_map(|v| v.strip_prefix(name))
+            .collect::<Vec<_>>();
+        if values.len() != 1 {
+            return Err(format!(
+                "GMS actual PM user field {name} is missing or repeated"
+            ));
+        }
+        Ok(values[0])
+    };
+    let boolean = |name: &str| -> Result<bool, String> {
+        match field(name)? {
+            "true" => Ok(true),
+            "false" => Ok(false),
+            _ => Err(format!("GMS actual PM user field {name} is not boolean")),
+        }
+    };
+    let components = |title: &str| -> Result<BTreeSet<String>, String> {
+        let rows = child_rows(target_user, title, "        ")?;
+        // This selected formatter omits an empty set; it never prints an empty
+        // header. Do not reinterpret damaged/indented rows as empty defaults.
+        if rows.as_ref().is_some_and(Vec::is_empty) {
+            return Err("GMS component override header has no complete rows".into());
+        }
+        let mut names = BTreeSet::new();
+        for name in rows.unwrap_or_default() {
+            if !component_name(name) || !names.insert(name.into()) || names.len() > 512 {
+                return Err("GMS component override name/count is malformed or repeated".into());
+            }
+        }
+        Ok(names)
+    };
+    for line in target_user {
+        if (line.contains("enabledComponents") || line.contains("disabledComponents"))
+            && !matches!(
+                *line,
+                "      enabledComponents:" | "      disabledComponents:"
+            )
+        {
+            return Err(
+                "GMS component override title/indentation differs from the selected formatter"
+                    .into(),
+            );
+        }
+    }
+    let value = GmsComponentEnablement {
+        enabled_setting: number(field("enabled=")?)?,
+        hidden: boolean("hidden=")?,
+        suspended: boolean("suspended=")?,
+        app_lock_enabled: boolean("appLockEnabled=")?,
+        quarantined: boolean("quarantined=")?,
+        enabled_components: components("      enabledComponents:")?,
+        disabled_components: components("      disabledComponents:")?,
+    };
+    if !value.valid() {
+        return Err("GMS component override sets overlap or application setting is unknown".into());
+    }
+    Ok(value)
+}
+
 /// Comparison data only. Only the Inspector's non-serializable token is live.
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -68,6 +204,9 @@ pub struct PackagePermissionState {
     runtime_permissions: BTreeMap<String, PermissionGrant>,
     gids: Option<String>,
     shared_uid: Option<SharedUidPermissionState>,
+    // Absent for every other package: preserve their original serialized bytes.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    gms_component_enablement: Option<GmsComponentEnablement>,
 }
 impl PackagePermissionState {
     pub fn package(&self) -> &str {
@@ -95,7 +234,20 @@ impl PackagePermissionState {
         self.shared_uid.as_ref()
     }
 
+    pub(crate) fn gms_component_enablement(&self) -> Option<&GmsComponentEnablement> {
+        self.gms_component_enablement.as_ref()
+    }
     fn validate(&self) -> Result<(), String> {
+        match (&*self.package, &self.gms_component_enablement) {
+            ("com.google.android.gms", Some(value)) if value.valid() => {}
+            ("com.google.android.gms", _) | (_, Some(_)) => {
+                return Err(
+                    "GMS component comparison is absent, malformed or assigned to another package"
+                        .into(),
+                );
+            }
+            (_, None) => {}
+        }
         let valid_map = |map: &BTreeMap<String, PermissionGrant>| {
             map.len() <= MAX_PERMISSIONS
                 && map
@@ -641,6 +793,11 @@ pub(crate) fn parse(
         runtime_permissions,
         gids,
         shared_uid,
+        gms_component_enablement: if package == "com.google.android.gms" {
+            Some(gms_components(package_body, target_user)?)
+        } else {
+            None
+        },
     };
     state.validate()?;
     check(end)?;
@@ -836,5 +993,124 @@ mod tests {
         let a = parse("com.android.settings", &shared(), end()).unwrap();
         let b = shared().replace("      PackageSetting{d4 android/1000}\n", "");
         assert_ne!(a, parse("com.android.settings", &b, end()).unwrap());
+    }
+
+    fn gms() -> String {
+        "Packages:\n  Package [com.google.android.gms] (a1):\n    appId=10118\n    versionCode=252432036 minSdk=19 targetSdk=29\n    User 0: installed=true hidden=false suspended=false appLockEnabled=false stopped=false notLaunched=false enabled=0 instant=false virtual=false quarantined=false\n      runtime permissions:\n      disabledComponents:\n        org.microg.DisabledService\n      enabledComponents:\n        org.microg.EnabledService\n    User 10: installed=true hidden=true suspended=true appLockEnabled=true enabled=3 quarantined=true\n      runtime permissions:\n      disabledComponents:\n        org.microg.EnabledService\n\nHidden system packages:\n  Package [com.google.android.gms] (b2):\n    appId=10118\n    versionCode=1\n    User 0: installed=false hidden=true enabled=3\n".into()
+    }
+    #[test]
+    fn gms_component_state_joins_only_current_package_user_zero() {
+        let state = parse("com.google.android.gms", &gms(), end()).unwrap();
+        assert_eq!(state.version_code(), 252432036);
+        assert_eq!(state.app_id(), 10118);
+        let v = state.gms_component_enablement().unwrap();
+        v.require_unrestricted().unwrap();
+        assert!(v.application_enabled(true));
+        assert!(!v.application_enabled(false));
+        assert!(v.service_enabled("org.microg.EnabledService", false));
+        assert!(!v.service_enabled("org.microg.DisabledService", true));
+        assert!(!v.service_enabled("org.microg.DefaultDisabled", false));
+        assert!(v.service_enabled("org.microg.DefaultEnabled", true));
+        assert_eq!(v.enabled_components.len(), 1);
+        assert_eq!(v.disabled_components.len(), 1);
+    }
+    #[test]
+    fn gms_component_state_rejects_missing_duplicate_conflicting_and_malformed_values() {
+        for raw in [
+            gms().replacen(" enabled=0", "", 1),
+            gms().replacen(" enabled=0", " enabled=0 enabled=1", 1),
+            gms().replacen(" enabled=0", " enabled=5", 1),
+            gms().replacen(" enabled=0", " enabled=00", 1),
+            gms().replacen(" hidden=false", "", 1),
+            gms().replacen(" suspended=false", " suspended=no", 1),
+            gms().replacen(" appLockEnabled=false", "", 1),
+            gms().replacen(" quarantined=false", "", 1),
+            gms().replacen("org.microg.DisabledService", "org.microg.EnabledService", 1),
+            gms().replacen("      enabledComponents:", "     enabledComponents:", 1),
+            gms().replacen("        org.microg.EnabledService\n", "", 1),
+            gms().replacen(
+                "        org.microg.EnabledService\n",
+                "        org.microg.EnabledService\n        org.microg.EnabledService\n",
+                1,
+            ),
+            gms().replacen(
+                "org.microg.DisabledService",
+                "org.microg/DisabledService",
+                1,
+            ),
+            gms().replacen("    User 0:", "    User 1:", 1),
+        ] {
+            assert!(
+                parse("com.google.android.gms", &raw, end()).is_err(),
+                "{raw}"
+            );
+        }
+    }
+    #[test]
+    fn gms_disabled_application_and_restrictions_never_become_enabled_success() {
+        for n in 0..=4 {
+            let raw = gms().replacen("enabled=0", &format!("enabled={n}"), 1);
+            let state = parse("com.google.android.gms", &raw, end()).unwrap();
+            assert_eq!(
+                state
+                    .gms_component_enablement()
+                    .unwrap()
+                    .application_enabled(false),
+                n == 1
+            );
+        }
+        for field in ["hidden", "suspended", "appLockEnabled", "quarantined"] {
+            let raw = gms().replacen(&format!("{field}=false"), &format!("{field}=true"), 1);
+            let state = parse("com.google.android.gms", &raw, end()).unwrap();
+            assert!(
+                state
+                    .gms_component_enablement()
+                    .unwrap()
+                    .require_unrestricted()
+                    .is_err()
+            );
+        }
+    }
+    #[test]
+    fn gms_component_extension_is_required_only_for_exact_gms_wire_identity() {
+        let state = parse("com.google.android.gms", &gms(), end()).unwrap();
+        let mut wire = serde_json::to_value(&state).unwrap();
+        wire.as_object_mut()
+            .unwrap()
+            .remove("gms_component_enablement");
+        let missing: PackagePermissionState = serde_json::from_value(wire).unwrap();
+        assert!(missing.validate().is_err());
+        let mut wire = serde_json::to_value(&state).unwrap();
+        wire["package"] = Value::String("com.android.settings".into());
+        let foreign: PackagePermissionState = serde_json::from_value(wire).unwrap();
+        assert!(foreign.validate().is_err());
+    }
+    #[test]
+    fn non_gms_permission_serialization_and_semantics_remain_unchanged() {
+        let a = parse("com.android.settings", &normal(), end()).unwrap();
+        let raw = normal()
+            .replacen(
+                "installed=true hidden=false",
+                "installed=true hidden=false suspended=false enabled=0",
+                1,
+            )
+            .replacen(
+                "    User 10:",
+                "      disabledComponents:\n        org.example.Service\n    User 10:",
+                1,
+            );
+        let b = parse("com.android.settings", &raw, end()).unwrap();
+        assert_eq!(a, b);
+        assert_eq!(
+            serde_json::to_vec(&a).unwrap(),
+            serde_json::to_vec(&b).unwrap()
+        );
+        assert!(
+            !serde_json::to_value(&a)
+                .unwrap()
+                .as_object()
+                .unwrap()
+                .contains_key("gms_component_enablement")
+        );
     }
 }

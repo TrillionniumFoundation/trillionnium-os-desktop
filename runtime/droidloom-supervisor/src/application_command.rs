@@ -32,6 +32,7 @@ mod gallery_resources;
 mod native_application_ui_entry;
 pub use application_leaf_unit::{NativeOwnedLeafUnit, OwnedLeafProfile};
 pub use native_application_ui_entry::{
+    NativeGmsIdentityEvidence, observe_native_gms_identity,
     NativeFamilyUiEvidence, family_ui_retained_members_bound, family_ui_window_seconds, observe_native_family_ui,
     CameraPhotoCaseObservation, CameraPhotoObservation, CameraPhotoSceneObservation,
     NativeUiPermissionPreservation, NativeUiPermissionWindow, NativeUiSession,

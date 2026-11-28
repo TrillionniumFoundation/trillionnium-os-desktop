@@ -482,6 +482,15 @@ pub struct NativeUiPermissionPreservation {
     retained: RetainedJournal,
 }
 impl NativeUiPermissionPreservation {
+    pub(super) fn gms_permission_observations(&self) -> Result<(
+        &crate::application_permission_state::ApplicationPermissionStateFacts,
+        &crate::application_permission_state::ApplicationPermissionStateFacts,
+    ), String> {
+        self.guard_immutable()?;
+        need(self.application.package == "com.google.android.gms",
+            "GMS component observations belong to another actual PM subject")?;
+        Ok((self.before.facts(), self.after.facts()))
+    }
     /// Historical recheck of the same registered target owner. Positive count
     /// alone grants no authenticated business fact or future execution scope.
     pub fn target_owned_account_count(&self) -> Result<usize, String> {

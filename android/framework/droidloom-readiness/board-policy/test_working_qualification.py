@@ -23,7 +23,7 @@ def index(extra=""):
     rows=["(type "+n+")"for n in sorted(types)]
     rows+=["(class file (getattr open read write create setattr append execute execute_no_trans entrypoint map ioctl))",
            "(class memfd_file (getattr open read write create setattr append execute execute_no_trans entrypoint map ioctl))",
-           "(class dir (getattr search open read write add_name))",
+           "(class dir (getattr search open read write add_name remove_name))",
            "(class lnk_file (getattr read))",
            "(class filesystem (getattr associate))",
            "(class fd (use))",
@@ -169,7 +169,7 @@ class WorkingAuthorityTests(unittest.TestCase):
 
     def test_actual_source_contract_and_alias_roster_remain_complete(self):
         here=Path(v.__file__).resolve().parent
-        self.assertEqual(len(v.verify_sources(here)),66)
+        self.assertEqual(len(v.verify_sources(here)),70)
         self.assertEqual(len(v._fixed_aliases(here)),66)
         self.assertEqual(len(v._apk_paths(here)),67)
 
@@ -414,5 +414,67 @@ class WorkingAuthorityTests(unittest.TestCase):
                 f"(dontaudit {v.PHYSICAL} droidloom_native_leaf_apk_copy (file (read)))"):
             with self.subTest(extra=extra), self.assertRaises(ValueError):
                 v._compare(v._project(baseline + v._forms(extra), idx), expected)
+
+
+    def test_current_cas_directory_matches_only_the_parent_body_access(self):
+        here = Path(v.__file__).resolve().parent
+        target = "p4_linux_working_current_dir_t"
+        def rows(text):
+            forms = v.parse_expression("(" + "\n".join(
+                line.split(";", 1)[0] for line in text.splitlines()) + ")")
+            return [f for f in forms if f[0] in v.FLOW_TAGS
+                    and f[2] == target and f[3][0] == "dir"]
+        idx, _ = index()
+        expected = v._project(rows(v.FIXED_ACL), idx, expected=True)
+        actual = v._project(rows((here / "ubuntu-working-qualification.cil").read_text()), idx)
+        v._compare(actual, expected)
+        self.assertEqual(expected[0], {
+            ("allow", P, target, "dir"): frozenset((
+                "getattr", "search", "open", "read", "write", "add_name", "remove_name")),
+            ("allow", v.PREP, target, "dir"): frozenset(("getattr", "search")),
+            ("allow", v.PHYSICAL, target, "dir"): frozenset(("getattr", "search")),
+        })
+        for permission in ("open", "read"):
+            missing = copy.deepcopy(actual)
+            key = ("allow", P, target, "dir")
+            missing[0][key] = missing[0][key] - {permission}
+            with self.subTest(missing=permission), self.assertRaises(ValueError):
+                v._compare(missing, expected)
+        baseline = rows(v.FIXED_ACL)
+        for actor in (v.PREP, v.PHYSICAL, v.RETURN, B, L,
+                      "old_reader_t", "p4_working_clients", "p4_working_actors"):
+            extra = f"(allow {actor} {target} (dir (open read)))"
+            with self.subTest(actor=actor), self.assertRaises(ValueError):
+                v._compare(v._project(baseline + v._forms(extra), idx), expected)
+        for extra in (
+                f"(allow {P} other_t (dir (open read)))",
+                f"(auditallow {P} {target} (dir (read)))",
+                f"(dontaudit {P} {target} (dir (read)))",
+                f"(allow {P} {target} (file (read)))"):
+            with self.subTest(extra=extra), self.assertRaises(ValueError):
+                v._compare(v._project(baseline + v._forms(extra), idx), expected)
+
+    def test_current_cas_apparmor_rejects_other_directories_roles_and_modes(self):
+        here = Path(v.__file__).resolve().parent
+        names = ("droidloom-working-qualification", "droidloom-working-privateprep",
+                 "droidloom-working-application", "droidloom-working-qualification-return")
+        profiles = {name: (here / "apparmor" / name).read_text() for name in names}
+        v._current_apparmor(profiles)
+        exact = "/home/alex/work/pocket4-android-final/ rw,"
+        mutations = [
+            (names[0], profiles[names[0]].replace(exact, exact.replace("rw,", "w,"))),
+            (names[0], profiles[names[0]].replace(exact, exact.replace("rw,", "rwk,"))),
+            (names[0], profiles[names[0]].replace(exact, exact.replace("final/", "final-other/"))),
+            (names[0], profiles[names[0]].replace(exact, exact.replace("final/", "final*/"))),
+            (names[0], profiles[names[0]].replace("  " + exact + "\n", "")),
+            (names[0], profiles[names[0]] + "\n" + exact + "\n"),
+        ]
+        mutations.extend((name, profiles[name] + "\n" + exact + "\n") for name in names[1:])
+        for name, body in mutations:
+            with self.subTest(name=name, tail=body[-120:]), self.assertRaises(ValueError):
+                v._current_apparmor({**profiles, name: body})
+        with self.assertRaises(ValueError):
+            v._current_apparmor({**profiles, "unreviewed-profile": ""})
+
 
 if __name__=="__main__":unittest.main()

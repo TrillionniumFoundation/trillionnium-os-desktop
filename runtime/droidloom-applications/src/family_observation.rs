@@ -28,6 +28,7 @@ use droidloom_supervisor::control::{
     NativeApplicationInspector, NativeFamilyUiEvidence, NativeUiStabilityEvidence,
     observe_native_family_ui, family_ui_window_seconds, family_ui_retained_members_bound,
     NativeUiPermissionWindow, NativeUiPermissionPreservation,
+    NativeGmsIdentityEvidence, observe_native_gms_identity,
     permission_preservation_additional_window_seconds,
 };
 use droidloom_supervisor::main_custody::RuntimeMainCustody;
@@ -163,7 +164,7 @@ fn blocked(row: &'static roster::PackageGates) -> Vec<FamilyBlockedGate> {
 }
 
 /// No public constructor or deserializer exists. Only the genuine retained
-/// source-owned retail execution may add its completed business assertions.
+/// source-owned execution/retained observation may add its completed business assertions.
 #[derive(Debug, Serialize)]
 pub(super) struct FamilyBusinessFact {
     id: &'static str,
@@ -202,6 +203,8 @@ pub(super) struct FamilyObservation {
     collaboration: Option<collaboration_case::CollaborationCaseObservation>,
     travel: Option<travel_case::TravelCaseObservation>,
     housing: Option<housing_case::HousingCaseObservation>,
+    // Joins existing retained common owners; no additional query/FD/window.
+    gms_identity: Option<NativeGmsIdentityEvidence>,
     business_facts: Vec<FamilyBusinessFact>,
     blocked: Vec<FamilyBlockedGate>,
 }
@@ -225,6 +228,8 @@ impl FamilyObservation {
         // closes and the strict first.finished < reopened.opened boundary.
         self.permissions.require_pair(first, reopened)?;
         let row = family(&first.engine().application().package)?;
+        require(self.gms_identity.is_some() == NativeGmsIdentityEvidence::supports(row.package),
+            "GMS identity cannot be omitted or borrowed by another application family")?;
         let (complete, basis) = match (&self.retail, &self.news, &self.collaboration, &self.travel, &self.housing) {
             (Some(value), None, None, None, None) => {
                 require(retail_case::supports(row.package),
@@ -262,7 +267,10 @@ impl FamilyObservation {
                     && !collaboration_case::supports(row.package) && !travel_case::supports(row.package)
                     && !housing_case::supports(row.package),
                     "a compiled business execution cannot be silently skipped")?;
-                (Vec::new(), Value::Null)
+                if let Some(identity) = &self.gms_identity {
+                    identity.require_existing_evidence(&self.ui, &self.permissions)?;
+                    (identity.completed_gates().to_vec(), identity.comparison(&self.ui, &self.permissions)?)
+                } else { (Vec::new(), Value::Null) }
             }
             _ => return Err("one family cannot borrow two different business factories".into()),
         };
@@ -293,9 +301,10 @@ impl FamilyObservation {
             "collaboration_business":self.collaboration.as_ref().map(|value|value.comparison()).transpose()?,
             "travel_business":self.travel.as_ref().map(|value|value.comparison()).transpose()?,
             "housing_business":self.housing.as_ref().map(|value|value.comparison()).transpose()?,
+            "gms_identity":self.gms_identity.as_ref().map(|value|value.comparison(&self.ui,&self.permissions)).transpose()?,
             "business_facts":self.business_facts,"blocked":self.blocked,
             "decoded_pixels_retained_in_history":false,
-            "business_execution_attempted":self.retail.is_some() || self.news.is_some() || self.collaboration.is_some() || self.travel.is_some() || self.housing.is_some(),
+            "business_execution_attempted":self.retail.is_some() || self.news.is_some() || self.collaboration.is_some() || self.travel.is_some() || self.housing.is_some() || self.gms_identity.is_some(),
             "complete_data_permissions_or_account_acceptance_inferred":false,
             "source_window_seconds":window_seconds_for(row.package),
             "source_maximum_retained_journal_members":retained_journal_members_bound_for(row.package),
@@ -335,6 +344,9 @@ pub(super) fn run_family_case(
     let permissions = permission_window.finish_pair(
         inspector, baseline, ui.stability().transcript(), ui.reopened().transcript(),
     )?;
+    let gms_identity = if NativeGmsIdentityEvidence::supports(&application.package) {
+        Some(observe_native_gms_identity(&ui, &permissions)?)
+    } else { None };
     let retail = if retail_case::supports(&application.package) {
         let retail_end = (Instant::now() + Duration::from_secs(retail_case::window_seconds()))
             .min(original_end);
@@ -366,6 +378,8 @@ pub(super) fn run_family_case(
         (value.completed_gates(), Some(value.comparison()?))
     } else if let Some(value)=&housing {
         (value.completed_gates(),Some(value.comparison()?))
+    } else if let Some(value) = &gms_identity {
+        (value.completed_gates().to_vec(), Some(value.comparison(&ui, &permissions)?))
     } else { (Vec::new(), None) };
     let ordered = ordered_completed(row, &complete)?;
     let business_facts = ordered.into_iter().map(|id| FamilyBusinessFact {
@@ -373,7 +387,7 @@ pub(super) fn run_family_case(
         application:application.clone(), basis:basis.clone().unwrap_or(Value::Null),
     }).collect();
     let blocked = remaining(row, &complete);
-    let observation = FamilyObservation { ui, permissions, retail, news, collaboration, travel, housing, business_facts, blocked };
+    let observation = FamilyObservation { ui, permissions, retail, news, collaboration, travel, housing, gms_identity, business_facts, blocked };
     observation.guard_immutable()?;
     require(Instant::now() < original_end,
         "Family custody sealing exceeded the original case deadline")?;
@@ -550,6 +564,23 @@ mod tests {
             assert!(require_window(package,now,end+Duration::from_nanos(1),end+Duration::from_nanos(1)).is_err());
         }
         assert_eq!(roster::PACKAGES.iter().filter(|r|housing_case::supports(r.package)).count(),2);
+    }
+
+    #[test]
+    fn gms_identity_partition_keeps_consumer_failure_and_all_original_budgets() {
+        let row=family("com.google.android.gms").unwrap();
+        assert_eq!(ordered_completed(row,&["gms.identity"]).unwrap(),vec!["gms.identity"]);
+        assert_eq!(remaining(row,&["gms.identity"]).iter().map(|gate|gate.id()).collect::<Vec<_>>(),
+            vec!["gms.consumer","gms.failure"]);
+        assert!(remaining(row,&["gms.identity"]).iter()
+            .all(|gate|gate.code()==&FamilyBlockCode::DependentServiceConsumerCasePending));
+        assert_eq!(window_seconds_for(row.package),6_910);
+        assert_eq!(retained_journal_members_bound_for(row.package),776);
+        assert_eq!(business_window_seconds(row.package),0);
+        assert_eq!(roster::PACKAGES.iter()
+            .filter(|row|NativeGmsIdentityEvidence::supports(row.package)).count(),1);
+        assert!(ordered_completed(row,&["gms.identity","gms.identity"]).is_err());
+        assert!(ordered_completed(row,&["retail.search"]).is_err());
     }
 
 }

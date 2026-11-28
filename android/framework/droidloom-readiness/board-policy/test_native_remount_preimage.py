@@ -14,6 +14,8 @@ WORKING = (
     "p4_linux_working_qualification_t", "p4_linux_working_privateprep_t",
     "p4_linux_working_application_t", "p4_linux_working_return_t",
 )
+PRODUCTION = ("p4_linux_production_commit_t", "p4_linux_production_verify_t")
+OBSERVERS = WORKING + PRODUCTION
 OUTSIDERS = (
     "unrelated_actor", "p4_linux_working_watchdog_label_t",
     "p4_linux_working_payload_birth_t",
@@ -28,7 +30,7 @@ CLASSES = {
 class WorkingRootPreimage(unittest.TestCase):
     def baseline(self):
         rules = {}
-        for actor in WORKING + (remount.RETURN,):
+        for actor in OBSERVERS + (remount.RETURN,):
             rules[(actor, remount.ROOT_LINK, "lnk_file")] = {"getattr", "read"}
             rules[(actor, remount.ROOT_BLOCK, "blk_file")] = {"getattr"}
         rules[(remount.EARLY, "device", "lnk_file")] = {"getattr", "read"}
@@ -45,7 +47,7 @@ class WorkingRootPreimage(unittest.TestCase):
         The observed AV deliberately hides body/mutation bits for the selected
         root objects. The raw exported rules must still reject those bits.
         """
-        actors = set(WORKING + OUTSIDERS) | {
+        actors = set(OBSERVERS + OUTSIDERS) | {
             "init_t", remount.EXECUTOR, remount.EARLY, remount.RETURN,
             remount.ROLE, remount.TMP_ROLE,
         }
@@ -99,8 +101,29 @@ class WorkingRootPreimage(unittest.TestCase):
             self.assertEqual(row[-2], 0)
         self.assertEqual(proof["isolated_roles"], sorted((remount.ROLE, remount.TMP_ROLE)))
 
+    def test_fixed_production_metadata_uses_exact_existing_raw_preimages(self):
+        proof = self.derive(self.baseline())
+        rows = [row for row in proof["raw_te_samples"] if row[1] in PRODUCTION]
+        self.assertEqual(len(rows), 4)
+        for _, actor, old, target, kind, original, allowed in rows:
+            self.assertIn(actor, PRODUCTION)
+            self.assertEqual((old, original), ("device", 0))
+            wanted = {"getattr", "read"} if target == remount.ROOT_LINK else {"getattr"}
+            self.assertEqual(allowed, sum(1 << CLASSES[kind].index(name) for name in wanted))
+        samples = [row for row in proof["mcs_effective_samples"] if row[1] in PRODUCTION]
+        self.assertEqual(len(samples), 4 * len(LEVELS) ** 2)
+        for row in samples:
+            self.assertEqual(row[-2], 0)
+        declared = {(row[0], row[1], row[2]): set(row[3])
+                    for row in proof["extra_permissions"] if row[0] in PRODUCTION}
+        self.assertEqual(declared, {
+            (actor, target, kind): bits for actor in PRODUCTION
+            for target, kind, bits in (
+                (remount.ROOT_LINK, "lnk_file", {"getattr", "read"}),
+                (remount.ROOT_BLOCK, "blk_file", {"getattr"}))})
+
     def test_declared_extra_cannot_create_an_absent_source_preimage(self):
-        for actor in WORKING:
+        for actor in OBSERVERS:
             for target, kind, missing in (
                     (remount.ROOT_LINK, "lnk_file", "read"),
                     (remount.ROOT_BLOCK, "blk_file", "getattr")):
@@ -111,7 +134,7 @@ class WorkingRootPreimage(unittest.TestCase):
                     self.derive(rules)
 
     def test_effective_av_cannot_hide_extra_device_body_or_mutation_bits(self):
-        for actor in WORKING:
+        for actor in OBSERVERS:
             for target, kind, forbidden in (
                     (remount.ROOT_LINK, "lnk_file", "write"),
                     (remount.ROOT_LINK, "lnk_file", "relabelto"),
