@@ -1,0 +1,186 @@
+{
+  "apparmor_compilation": "normal_182_rebuild_required",
+  "apparmor_profiles": {
+    "droidloom-production-commit": {
+      "bytes": 4266,
+      "sha256": "222420f13869eaca506fa8ec968cc134e5338346221601b22cf55d15ce003966"
+    },
+    "droidloom-production-verify": {
+      "bytes": 5776,
+      "sha256": "bed1337fc1f6d40e106f34f75d93c8ce7cbabf8e8a68390122b5530c97d60d00"
+    }
+  },
+  "normal_apparmor_profiles": 182,
+  "normal_board_profiles": 17,
+  "notes": [
+    "The private commit role consumes a live Complete; saved records cannot construct that authority.",
+    "Kernel SCM_SECURITY carries its captured provider; current working and ordinary LSM order is separately source-bound.",
+    "Neither strict policy nor these source checks establish normal shutdown, activation or application readiness."
+  ],
+  "runtime_qualified": false,
+  "schema": "droidloom.production-commit-policy-source.v1",
+  "selected_scm_sources": {
+    "include/net/scm.h": {
+      "bytes": 3008,
+      "sha256": "84694d5b9b9b5534174acb325ff6a07f653189f81612ab6f81c3c9d18ef89af2"
+    },
+    "net/core/scm.c": {
+      "bytes": 12941,
+      "sha256": "ffeb20b8b10648ac8923f87bd14f61446e479593d8f7d46cc53567af6b6531a8"
+    },
+    "net/unix/af_unix.c": {
+      "bytes": 96357,
+      "sha256": "9684053a9553d7146ac185791923b25897a64261e8078b4a4990da55ac8aa6c0"
+    },
+    "security/security.c": {
+      "bytes": 191795,
+      "sha256": "3b4afe19e5ba78ee68eff86eccbb1d58328b23e0b2920a2204afd958d4125248"
+    }
+  },
+  "source_pins": {
+    "android/framework/droidloom-readiness/board-policy/apparmor/droidloom-production-broker": {
+      "bytes": 22138,
+      "sha256": "f574dd2033a602bb36258a767405e280a8f10de450598c1ac8031316000137b4"
+    },
+    "android/framework/droidloom-readiness/board-policy/apparmor/droidloom-production-commit": {
+      "bytes": 4266,
+      "sha256": "222420f13869eaca506fa8ec968cc134e5338346221601b22cf55d15ce003966"
+    },
+    "android/framework/droidloom-readiness/board-policy/apparmor/droidloom-production-verify": {
+      "bytes": 5776,
+      "sha256": "bed1337fc1f6d40e106f34f75d93c8ce7cbabf8e8a68390122b5530c97d60d00"
+    },
+    "android/framework/droidloom-readiness/board-policy/apparmor/droidloom-ubuntu-journald": {
+      "bytes": 5491,
+      "sha256": "bf98918c2b4af4b5167d508477b2c40804f925a054f74ca4ee9d1e65a2bc382e"
+    },
+    "android/framework/droidloom-readiness/board-policy/apparmor/droidloom-working-qualification": {
+      "bytes": 8427,
+      "sha256": "7069bad0a6b7ede8472f71fb0f6cedd525f7ca8c53661c79268dedb70fe92b1e"
+    },
+    "android/framework/droidloom-readiness/board-policy/linux-production-commit-file_contexts": {
+      "bytes": 1258,
+      "sha256": "b57d65339ade865eb6efd4944e25047d53bf5a9720d50a20e57852305c484128"
+    },
+    "android/framework/droidloom-readiness/board-policy/pack_pocket4_ubuntu_apparmor.py": {
+      "bytes": 4895,
+      "sha256": "a1903925fe94c0122db3ed1e345fb6b911f88c7dfa31d3acba3a882f8d0d6bb4"
+    },
+    "android/framework/droidloom-readiness/board-policy/ubuntu-production-commit.cil": {
+      "bytes": 18356,
+      "sha256": "80428a1cd50b827de0b5dc549fc6c2db31074036c9dfa49c4391ac6c75bff3ad"
+    },
+    "android/framework/droidloom-readiness/board-policy/ubuntu-working-qualification.cil": {
+      "bytes": 50505,
+      "sha256": "078b35a373c22d34705254130ef72b20f7dc6b3f3df182e04eb915c5ce282001"
+    },
+    "packaging/systemd/system/droidloom-production-verify-return.service": {
+      "bytes": 996,
+      "sha256": "5a2479f9790529e520e5e44bff647ef721a7a25a6f388c4484e00b47f22ea2dc"
+    },
+    "packaging/systemd/system/droidloom-production-verify.service": {
+      "bytes": 1311,
+      "sha256": "e5d2dcdb458663cb782325e1d4e58a7649d9c744415ba0ee11e5915b88781e77"
+    },
+    "packaging/systemd/system/droidloom-working-qualification.service": {
+      "bytes": 1170,
+      "sha256": "7722518edaa13638b917184d225bbf7c8be9139c24a08188aee78cd96fb66dc9"
+    },
+    "runtime/droidloom-applications/src/main.rs": {
+      "bytes": 30219,
+      "sha256": "ebf627df7f820be53d4fdcc070ec0b17a17c30940393f0a64a0b2e3b643acb6e"
+    },
+    "runtime/droidloom-applications/src/working_dispatch.rs": {
+      "bytes": 5632,
+      "sha256": "4e533582a778a7e33ae36719ad730cf2f931de8d0f74043bed16584d31875f93"
+    },
+    "runtime/droidloom-supervisor/src/control_identity.rs": {
+      "bytes": 78826,
+      "sha256": "efb785cb00ec07bcae0408414cfd312d35a37206452b7907027fa1f951d5b540"
+    },
+    "runtime/droidloom-supervisor/src/droidloom-early-observer.service": {
+      "bytes": 587,
+      "sha256": "f452f7178ef7e8a48bc0d89f46298cba4126ddf4ea65e1892a1471705b51874b"
+    },
+    "runtime/droidloom-supervisor/src/droidloom-instance-factory.service": {
+      "bytes": 777,
+      "sha256": "6d2f4476a86a234755078d72c83390a5730ba999d3f0b6127928af799fc6217b"
+    },
+    "runtime/droidloom-supervisor/src/droidloom-instance-launcher.service": {
+      "bytes": 1002,
+      "sha256": "087c358c6432eba43fe1047240f7012a07e3696b88cb1c0ad1c8185b11c6860a"
+    },
+    "runtime/droidloom-supervisor/src/droidloom-manager-label.service": {
+      "bytes": 688,
+      "sha256": "950117ce47fbbc389de135d346f7c7c0e20e025565065a1f498e1f2b4d9d376c"
+    },
+    "runtime/droidloom-supervisor/src/droidloom-production.service": {
+      "bytes": 1138,
+      "sha256": "f8bf590dfefd0f516f829a99def3950901d9767970c0e31344f7404e57f15ade"
+    },
+    "runtime/droidloom-supervisor/src/lib.rs": {
+      "bytes": 40834,
+      "sha256": "70602402d16f67c8960d5de0f7d8a12a59dd01d3ca5bca6abe251160497ccd77"
+    },
+    "runtime/droidloom-supervisor/src/native_hardware_label.rs": {
+      "bytes": 29489,
+      "sha256": "2a4a266032fd61b87b71729dcc1005b97c60da35d2b2876d4729434920876736"
+    },
+    "runtime/droidloom-supervisor/src/native_once_contract.rs": {
+      "bytes": 12295,
+      "sha256": "57906347e349b6b89e3f5c657c17982ccfada9bf994f270e2eeb428c11b1e8d9"
+    },
+    "runtime/droidloom-supervisor/src/native_working_contract.rs": {
+      "bytes": 23284,
+      "sha256": "874033cacb571fc1e41289dc8cd03defb0d596075b3718cbd9a691c109f275f4"
+    },
+    "runtime/droidloom-supervisor/src/physical_qualification_capture.rs": {
+      "bytes": 41489,
+      "sha256": "cc19c172f516dea43a15480d1587e88e6f7a50464baf8f6c74c978e7f715e8a2"
+    },
+    "runtime/droidloom-supervisor/src/physical_qualification_channel.rs": {
+      "bytes": 35316,
+      "sha256": "86cce9f071642e7b6402a4438b7c0811ba2bf03b713a67a6246496ab4dc61fd3"
+    },
+    "runtime/droidloom-supervisor/src/physical_qualification_owner.rs": {
+      "bytes": 48270,
+      "sha256": "ba10079c91a9153a8cd6979e1739904f6cbcc3617ee3e3311cde0e336e0c1dfb"
+    },
+    "runtime/droidloom-supervisor/src/production_commit.rs": {
+      "bytes": 20030,
+      "sha256": "1bcd3b608b641e6e27e6153e2893ab01283025e270b6188847ec78f7ebcd13d8"
+    },
+    "runtime/droidloom-supervisor/src/production_commit_contract.rs": {
+      "bytes": 16769,
+      "sha256": "413cc7d2c992397bd36b5d39f370258423fe2f5aa0755c513a88d3538b440a53"
+    },
+    "runtime/droidloom-supervisor/src/production_commit_io.rs": {
+      "bytes": 23488,
+      "sha256": "ec8c6bf3cdc0e1fdcfca1d3211e4b1bfe63bf92d407375cf4b31d6511c73cf0d"
+    },
+    "runtime/droidloom-supervisor/src/production_commit_records.rs": {
+      "bytes": 14368,
+      "sha256": "c29b46669c7f32cff88fd53601dce577249507c9ff679c1380d1423e210d4972"
+    },
+    "runtime/droidloom-supervisor/src/production_commit_source.rs": {
+      "bytes": 23520,
+      "sha256": "00f92835acfe3dd50fffb42481f97ea9cf9e186e209143fc9009dcf4c54a89fa"
+    },
+    "runtime/droidloom-supervisor/src/production_commit_verify.rs": {
+      "bytes": 20187,
+      "sha256": "36694ca72627b99a6919a2f82aa8e6198365d6aa62a4cf9f6759677572b3772d"
+    },
+    "runtime/droidloom-supervisor/src/production_mac_self_attr.rs": {
+      "bytes": 11858,
+      "sha256": "4b09da80158464f3d6c1e07304795c02e0d865f9a435f0a87daabc63ec402adc"
+    },
+    "runtime/droidloom-supervisor/src/working_qualification.rs": {
+      "bytes": 22975,
+      "sha256": "1c680e97b64af7182f00bfd9e3f9bd8b0a8f99a273393f61060f03d5de8081e3"
+    },
+    "runtime/droidloom-supervisor/src/working_qualification_child_exec.rs": {
+      "bytes": 4052,
+      "sha256": "ecbc1ebb6bcef94c611c181fefc0f742a7fd08053a8431a99a988fbcd38d60d1"
+    }
+  }
+}

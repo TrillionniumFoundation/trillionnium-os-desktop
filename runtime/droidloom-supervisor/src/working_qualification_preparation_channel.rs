@@ -209,6 +209,12 @@ impl WorkingPreparationChannel {
             "bytes":self.origin.cell_configuration.bytes,
             "sha256":self.origin.cell_configuration.sha256}))
     }
+    pub fn feishu_readonly_fixture(
+        &self,
+    ) -> Result<Option<crate::working_qualification::FeishuReadonlyFixture>, String> {
+        self.guard()?;
+        Ok(self.witness.feishu_readonly_fixture()?.cloned())
+    }
     pub fn stage_directory(&self)->&Path {&self.root}
     pub fn guard(&self)->Result<(),String> {
         if self.socket.is_none() || Instant::now()>=self.end {

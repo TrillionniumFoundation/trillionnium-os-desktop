@@ -257,8 +257,21 @@ fn admit_service_units(
             "source":source,"state":unit.state}),
         );
     }
+    let mut programs = Vec::new();
+    for name in ["systemctl", "journalctl"] {
+        let source = pin(&root.join("systemd/usr/bin").join(name))?;
+        let guard = Guard::open(&source)?;
+        ensure(
+            guard.identity.mode & 0o7777 == 0o755 && source.bytes > 0,
+            "normal systemd program is not its actual executable package member",
+        )?;
+        programs.push(
+            json!({"name":name,"normal_archive":state_archive(report,"systemd")?,"source":source}),
+        );
+        guards.push(guard);
+    }
     Ok(
-        json!({"schema":"droidloom.normal-systemd-label-state-contract.v1","units":rows,
+        json!({"schema":"droidloom.normal-systemd-label-state-contract.v1","units":rows,"programs":programs,
         "normal_extracts":commands,"random_seed_source_sha256":super::service_state::RANDOM_SEED_SOURCE,
         "timesync_source_sha256":super::service_state::TIMESYNC_SOURCE}),
     )
@@ -301,9 +314,58 @@ fn reopen_service_units(
         )?;
         guards.push(Guard::open(&source)?);
     }
+    // Historical original-once records without a production transition retain
+    // their original reopen semantics. They do not acquire new program sources.
+    if let Some(programs) = value.get("programs") {
+        let rows = programs
+            .as_array()
+            .ok_or("normal program source roster missing")?;
+        ensure(rows.len() == 2, "normal program source roster changed")?;
+        for (row, name) in rows.iter().zip(["systemctl", "journalctl"]) {
+            let source: FilePin = serde_json::from_value(row["source"].clone())?;
+            ensure(
+                row["name"] == name
+                    && row["normal_archive"]
+                        == serde_json::to_value(state_archive(report, "systemd")?)?
+                    && source.path
+                        == work
+                            .join("normal-native-state-payload/systemd/usr/bin")
+                            .join(name)
+                    && source.bytes > 0,
+                "normal program lost its package source",
+            )?;
+            let guard = Guard::open(&source)?;
+            ensure(
+                guard.identity.mode & 0o7777 == 0o755,
+                "normal program mode changed",
+            )?;
+            guards.push(guard);
+        }
+    }
     Ok(())
 }
 impl OriginalLabelSources {
+    pub(crate) fn normal_service_programs(&self) -> Result<(FilePin, FilePin)> {
+        self.revalidate()?;
+        let find = |name: &str| -> Result<FilePin> {
+            let path = self
+                .work
+                .join("normal-native-state-payload/systemd/usr/bin")
+                .join(name);
+            let matches = self
+                .guards
+                .iter()
+                .filter(|guard| guard.pin.path == path)
+                .collect::<Vec<_>>();
+            ensure(
+                matches.len() == 1,
+                "actual normal package program is not uniquely retained",
+            )?;
+            matches[0].revalidate()?;
+            Ok(matches[0].pin.clone())
+        };
+        Ok((find("systemctl")?, find("journalctl")?))
+    }
     pub(crate) fn source_pin(&self) -> &FilePin {
         &self.source_record
     }

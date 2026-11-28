@@ -7,12 +7,18 @@ use serde::{Deserialize, Serialize};
 use std::{collections::BTreeMap, ffi::CString, io, path::PathBuf};
 #[path = "physical_qualification_budget.rs"]
 pub(crate) mod budget;
+#[path = "native_feishu_readonly_contract.rs"]
+pub mod feishu;
 #[path = "working_preparation_budget.rs"]
 pub mod preparation;
 pub(crate) const PREPARATION_WORK_SECONDS: u64 = preparation::WORK_SECONDS;
 pub(crate) const PREPARATION_SECONDS: u64 = preparation::TOTAL_SECONDS;
-pub(crate) const WHOLE_WORK_SECONDS: u64 = PREPARATION_SECONDS + budget::SUITE_SECONDS;
-pub(crate) const SERVICE_SECONDS: u64 = PREPARATION_SECONDS + budget::SERVICE_SECONDS;
+// Reserved at initial acquisition; no case or preparation lease is extended.
+pub(crate) const PRODUCTION_COMMIT_SECONDS: u64 = 180;
+pub(crate) const WHOLE_WORK_SECONDS: u64 =
+    PREPARATION_SECONDS + budget::SUITE_SECONDS + PRODUCTION_COMMIT_SECONDS;
+pub(crate) const SERVICE_SECONDS: u64 =
+    PREPARATION_SECONDS + budget::SERVICE_SECONDS + PRODUCTION_COMMIT_SECONDS;
 #[path = "native_once_contract.rs"]
 mod original;
 pub(crate) use original::{
@@ -78,8 +84,7 @@ impl WorkingSchedule {
         // If the parent itself stalls, systemd can then spend TimeoutStop once
         // more before its final SIGKILL. Count both source-fixed bounds before
         // the one final nowayout close ping. Neither adds working authorization.
-        let parent_end =
-            OWNER_START_BY_BOOT_SECONDS + SERVICE_SECONDS + budget::RETIREMENT_SECONDS;
+        let parent_end = OWNER_START_BY_BOOT_SECONDS + SERVICE_SECONDS + budget::RETIREMENT_SECONDS;
         Self {
             owner_start_by_boot_seconds: OWNER_START_BY_BOOT_SECONDS,
             whole_suite_seconds: WHOLE_WORK_SECONDS,
@@ -239,7 +244,7 @@ impl WorkingEarlyConfiguration {
     }
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Clone, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub(crate) struct WorkingReturnConfiguration {
     pub(crate) schema: String,
@@ -262,9 +267,14 @@ pub(crate) struct WorkingReturnConfiguration {
     pub(crate) installation: PayloadPin,
     pub(crate) cell: PayloadPin,
     pub(crate) selection: PayloadPin,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub(crate) feishu_readonly_fixture: Option<feishu::FeishuReadonlyFixture>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub(crate) production_commit: Option<PayloadPin>,
 }
 impl WorkingReturnConfiguration {
     pub(crate) fn validate(&self) -> io::Result<()> {
+        if let Some(fixture) = &self.feishu_readonly_fixture { fixture.validate()?; }
         self.recovery.validate()?;
         if self.schema != "droidloom.working-qualification-return.v1"
             || !digest(&self.intent_sha256)
@@ -289,7 +299,11 @@ impl WorkingReturnConfiguration {
         self.maintenance.validate(1024 * 1024)?;
         self.installation.validate(1024 * 1024)?;
         self.cell.validate(1024 * 1024)?;
-        self.selection.validate(1024 * 1024)
+        self.selection.validate(1024 * 1024)?;
+        if let Some(pin) = &self.production_commit {
+            pin.validate(65536)?;
+        }
+        Ok(())
     }
     pub(crate) fn runtime_evidence_directory(&self) -> PathBuf {
         // The running candidate never reads the original/rollback/private
@@ -415,15 +429,25 @@ mod tests {
                 + 2 * budget::MAIN_SECONDS
                 + budget::SOURCE_AND_CAPTURE_SECONDS
         );
-        assert_eq!(s.whole_suite_seconds, PREPARATION_SECONDS + s.physical_suite_seconds);
+        assert_eq!(
+            s.whole_suite_seconds,
+            PREPARATION_SECONDS + s.physical_suite_seconds + PRODUCTION_COMMIT_SECONDS
+        );
         assert_eq!(s.preparation_work_seconds, preparation::WORK_SECONDS);
-        assert_eq!(s.preparation_retirement_seconds, preparation::RETIREMENT_SECONDS);
+        assert_eq!(
+            s.preparation_retirement_seconds,
+            preparation::RETIREMENT_SECONDS
+        );
         assert_eq!(s.watchdog_interval_seconds, 900);
+        assert_eq!(PRODUCTION_COMMIT_SECONDS,180);
         assert_eq!(
             s.authorization_end_by_boot_seconds,
-            600 + PREPARATION_SECONDS + budget::SUITE_SECONDS
+            600 + PREPARATION_SECONDS + budget::SUITE_SECONDS + PRODUCTION_COMMIT_SECONDS
         );
-        assert_eq!(s.service_runtime_seconds, PREPARATION_SECONDS + budget::SUITE_SECONDS + 180);
+        assert_eq!(
+            s.service_runtime_seconds,
+            PREPARATION_SECONDS + budget::SUITE_SECONDS + budget::RETIREMENT_SECONDS + PRODUCTION_COMMIT_SECONDS
+        );
         assert_eq!(
             s.parent_stop_end_by_boot_seconds,
             600 + s.service_runtime_seconds + 180

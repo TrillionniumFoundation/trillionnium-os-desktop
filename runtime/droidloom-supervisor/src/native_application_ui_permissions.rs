@@ -289,6 +289,23 @@ impl NativeUiPermissionWindow {
     /// session may choose an earlier source bound, never a later one.
     pub fn ui_deadline(&self) -> Instant { self.ui_end }
 
+    /// Borrow this actual normal Main/PM/account interval for bounded readonly
+    /// navigation. The opaque window cannot be built from saved JSON. This
+    /// compares the source subject and registered owner; it never declares that
+    /// an account is authenticated or permits a message, meeting or data edit.
+    pub fn require_readonly_subject(
+        &self, main: &RuntimeMainCustody, application: &ApplicationInspection, end: Instant,
+    ) -> Result<usize, String> {
+        before(self.ui_end)?;
+        need(&self.main == main && &self.application == application && end == self.ui_end,
+            "readonly UI scope differs from its actual normal Main/PM/account window")?;
+        self.journal.verify()?;
+        self.before.facts().require_application(application)?;
+        self.before_appops.facts().require_application(application)?;
+        self.before_account.facts().require_application(application)?;
+        self.before_account.facts().state().target_owned_account_count(application)
+    }
+
     /// Retain the real UI failure without retrying, claiming normal close or
     /// manufacturing a permission result. The original error remains primary.
     pub fn fail(self, error: String) -> String { failure(&self.journal, error) }
@@ -465,6 +482,15 @@ pub struct NativeUiPermissionPreservation {
     retained: RetainedJournal,
 }
 impl NativeUiPermissionPreservation {
+    /// Historical recheck of the same registered target owner. Positive count
+    /// alone grants no authenticated business fact or future execution scope.
+    pub fn target_owned_account_count(&self) -> Result<usize, String> {
+        self.guard_immutable()?;
+        let a = self.before_account.facts().state().target_owned_account_count(&self.application)?;
+        let z = self.after_account.facts().state().target_owned_account_count(&self.application)?;
+        need(a == z, "readonly target authenticator account population changed")?;
+        Ok(a)
+    }
     /// Compare exact endpoint states of two real sequential windows.
     /// This neither renews either deadline nor creates execution authority.
     pub fn require_continuation(&self, next: &Self) -> Result<(), String> {

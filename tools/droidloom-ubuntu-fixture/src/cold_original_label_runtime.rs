@@ -13,6 +13,7 @@ pub(super) enum RuntimeClass {
     ServiceHome,
     OnceEvidence,
     WorkingEvidence,
+    ProductionEvidence,
     SystemdState,
     RandomSeed,
 }
@@ -87,6 +88,26 @@ pub(super) fn runtime_class(path: &Path, candidate: &str) -> Option<RuntimeClass
         )
     {
         return Some(RuntimeClass::WorkingEvidence);
+    }
+    if fs::valid_digest(candidate) {
+        let base = format!("/var/lib/droidloom/qualification/production-commit-{candidate}");
+        if path == base
+            || path.strip_prefix(&(base + "/")).is_some_and(|n| {
+                [
+                    "PLAN.json",
+                    "SUMMARY.json",
+                    "MAIN.json",
+                    "STDERR.log",
+                    "COMMIT.json",
+                    "TRIAL.json",
+                    "REQUEST.json",
+                    "ACTIVE.json",
+                ]
+                .contains(&n)
+            })
+        {
+            return Some(RuntimeClass::ProductionEvidence);
+        }
     }
     None
 }
@@ -1278,6 +1299,78 @@ mod tests {
         assert_eq!(
             std::fs::read(tmp.path().join("inode")).unwrap(),
             b"runtime original bytes actual candidate evidence"
+        );
+    }
+    #[test]
+    fn production_commit_evidence_is_retained_only_in_the_exact_candidate_roster() {
+        let candidate = "b".repeat(64);
+        let base = format!("/var/lib/droidloom/qualification/production-commit-{candidate}");
+        let path = format!("{base}/COMMIT.json");
+        for name in [
+            "PLAN.json",
+            "SUMMARY.json",
+            "MAIN.json",
+            "STDERR.log",
+            "COMMIT.json",
+            "TRIAL.json",
+            "REQUEST.json",
+            "ACTIVE.json",
+        ] {
+            assert_eq!(
+                runtime_class(Path::new(&format!("{base}/{name}")), &candidate),
+                Some(RuntimeClass::ProductionEvidence)
+            );
+        }
+        assert_eq!(
+            runtime_class(Path::new(&base), &candidate),
+            Some(RuntimeClass::ProductionEvidence)
+        );
+        let tmp = tempfile::Builder::new()
+            .prefix(".p4-production-evidence-return-")
+            .tempdir_in(std::env::current_dir().unwrap())
+            .unwrap();
+        let original = setup(tmp.path(), &path);
+        let applied = snapshot(&original.recovery).unwrap();
+        std::fs::OpenOptions::new()
+            .append(true)
+            .open(tmp.path().join("inode"))
+            .unwrap()
+            .write_all(b" actual ordinary-boot evidence")
+            .unwrap();
+        let current = snapshot(&original.recovery).unwrap();
+        admit_current(
+            &applied,
+            &current,
+            runtime_class(Path::new(&path), &candidate),
+        )
+        .unwrap();
+        for wrong in [
+            format!("{base}/outside.json"),
+            format!("{base}/COMMIT.json/child"),
+            path.replace(&candidate, &"a".repeat(64)),
+            path.replace("production-commit-", "production-commit-other-"),
+        ] {
+            assert_eq!(runtime_class(Path::new(&wrong), &candidate), None);
+            assert!(
+                admit_current(
+                    &applied,
+                    &current,
+                    runtime_class(Path::new(&wrong), &candidate)
+                )
+                .is_err()
+            );
+        }
+        let attempt =
+            RuntimeRestoreAttempt::prepare(original, recovery(tmp.path()), &retirement(tmp.path()))
+                .unwrap();
+        let (result, _) = attempt.restore().unwrap();
+        assert!(only_ctime_changed(
+            &current.identity,
+            &result.after.identity
+        ));
+        assert_eq!(
+            std::fs::read(tmp.path().join("inode")).unwrap(),
+            b"runtime original bytes actual ordinary-boot evidence"
         );
     }
     #[test]

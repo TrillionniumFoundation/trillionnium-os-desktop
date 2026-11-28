@@ -369,9 +369,9 @@ impl Transaction {
     }
     fn staging(&self) -> Result<(PathBuf, PathBuf)> {
         ensure(
-            // Three optional normal parents, two owned evidence directories,
-            // and the exact twelve published runtime files.
-            self.steps.len() < 17,
+            // Three optional normal parents, three owned evidence directories,
+            // and the exact sixteen published runtime files.
+            self.steps.len() < 22,
             "working publication staging exceeds its finite roster",
         )?;
         let record = self.work.join(format!("item-{:03}", self.steps.len()));

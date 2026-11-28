@@ -33,10 +33,10 @@ struct ReleaseInput {
     board_profiles: std::collections::BTreeMap<String, AppArmorProfileInput>,
 }
 
-// Preserve the original ten roles, the four working roles, and append the
-// fixed read-only APK reader. Original raw-loader epoch slots never move.
+// Preserve the original ten roles, four working roles and fixed APK reader.
+// Append the two production handoff roles; raw-loader epoch slots never move.
 // The committed lock owns the serialized order; this is its closed set.
-const APPARMOR_BOARD_ROLES: [&str; 15] = [
+const APPARMOR_BOARD_ROLES: [&str; 17] = [
     "droidloom-ubuntu-journald",
     "droidloom-policy-loader",
     "droidloom-production-android",
@@ -52,6 +52,8 @@ const APPARMOR_BOARD_ROLES: [&str; 15] = [
     "droidloom-working-application",
     "droidloom-working-qualification-return",
     "droidloom-native-leaf-apk-reader",
+    "droidloom-production-commit",
+    "droidloom-production-verify",
 ];
 
 fn sha256_text(value: &str) -> bool {
@@ -117,7 +119,7 @@ fn parse_board_inputs(bytes: &[u8]) -> Result<BoardInputs> {
         || aa.board_profiles.len() != APPARMOR_BOARD_ROLES.len()
     {
         return fail(
-            "AppArmor lock must preserve the bounded Ubuntu prefix and fifteen ordered board roles",
+            "AppArmor lock must preserve the bounded Ubuntu prefix and seventeen ordered board roles",
         );
     }
     for name in &aa.board_profile_order {
@@ -180,12 +182,25 @@ fn board_policy_header(lock: &BoardInputs) -> String {
             ubuntu as usize + index,
         ));
     }
-    let loader = aa.board_profile_order.iter().position(|r| r == "droidloom-policy-loader").unwrap();
-    let camera = aa.board_profile_order.iter().position(|r| r == "droidloom-camera-capture").unwrap();
+    let loader = aa
+        .board_profile_order
+        .iter()
+        .position(|r| r == "droidloom-policy-loader")
+        .unwrap();
+    let camera = aa
+        .board_profile_order
+        .iter()
+        .position(|r| r == "droidloom-camera-capture")
+        .unwrap();
     // Original independently admitted loader birth 164 anchors the same ordered
     // raw loads. The camera generation is derived rather than another index list.
-    let birth = 164usize.checked_sub(loader).and_then(|v| v.checked_add(camera)).unwrap();
-    header.push_str(&format!("#define DROIDLOOM_BOARD_APPARMOR_CAMERA_RAW_BIRTH {birth}U\n"));
+    let birth = 164usize
+        .checked_sub(loader)
+        .and_then(|v| v.checked_add(camera))
+        .unwrap();
+    header.push_str(&format!(
+        "#define DROIDLOOM_BOARD_APPARMOR_CAMERA_RAW_BIRTH {birth}U\n"
+    ));
     header.push_str(concat!(
         "struct droidloom_board_apparmor_profile {\n",
         "    const char *name; unsigned long long size;\n",
@@ -316,6 +331,22 @@ pub(super) fn stage_native_configuration(destination: &Path) -> Result<()> {
         (
             "usr/share/droidloom/production/droidloom-working-qualification-return.service",
             include_bytes!("../../../packaging/systemd/system/droidloom-working-qualification-return.service").as_slice(),
+        ),
+        (
+            "usr/lib/systemd/system/droidloom-production-verify.service",
+            include_bytes!("../../../packaging/systemd/system/droidloom-production-verify.service").as_slice(),
+        ),
+        (
+            "usr/lib/systemd/system/droidloom-production-verify-return.service",
+            include_bytes!("../../../packaging/systemd/system/droidloom-production-verify-return.service").as_slice(),
+        ),
+        (
+            "usr/share/droidloom/production/droidloom-production-verify.service",
+            include_bytes!("../../../packaging/systemd/system/droidloom-production-verify.service").as_slice(),
+        ),
+        (
+            "usr/share/droidloom/production/droidloom-production-verify-return.service",
+            include_bytes!("../../../packaging/systemd/system/droidloom-production-verify-return.service").as_slice(),
         ),
     ]
     .into_iter()
@@ -679,8 +710,8 @@ mod tests {
         }
         for field in ["source_sha256", "compiled_sha256", "kernel_profile_sha256"] {
             let mut value = original.clone();
-            value["files"]["ubuntu-apparmor.profiles"]["board_profiles"]
-                ["droidloom-native-hardware-label"][field] = serde_json::json!("bad");
+            value["files"]["ubuntu-apparmor.profiles"]["board_profiles"]["droidloom-native-hardware-label"]
+                [field] = serde_json::json!("bad");
             assert!(parse_board_inputs(&serde_json::to_vec(&value).unwrap()).is_err());
         }
     }
@@ -829,18 +860,35 @@ mod tests {
             ),
             (
                 "working_watchdog_birth_test.c",
-                include_bytes!("../../../runtime/droidloom-early-boot/tests/working_watchdog_birth_test.c")
-                    .as_slice(),
+                include_bytes!(
+                    "../../../runtime/droidloom-early-boot/tests/working_watchdog_birth_test.c"
+                )
+                .as_slice(),
             ),
         ] {
             fs::write(dir.join(name), source).unwrap();
         }
         let object = Command::new("cc")
             .current_dir(dir)
-            .args(["-std=c11", "-Os", "-fPIC", "-Wall", "-Wextra", "-Werror",
-                   "-c", "board_policy.c", "-o", "normal-board-policy.o"])
-            .output().unwrap();
-        assert!(object.status.success(), "{}", String::from_utf8_lossy(&object.stderr));
+            .args([
+                "-std=c11",
+                "-Os",
+                "-fPIC",
+                "-Wall",
+                "-Wextra",
+                "-Werror",
+                "-c",
+                "board_policy.c",
+                "-o",
+                "normal-board-policy.o",
+            ])
+            .output()
+            .unwrap();
+        assert!(
+            object.status.success(),
+            "{}",
+            String::from_utf8_lossy(&object.stderr)
+        );
         let elf = dir.join("working-watchdog-birth-test");
         let compile = Command::new("cc")
             .current_dir(dir)

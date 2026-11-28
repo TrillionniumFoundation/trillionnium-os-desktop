@@ -2,6 +2,8 @@
 //! and the independent cold fixture. This file has no crate dependencies.
 //! It authorizes no action; actual factories and the same original deadline
 //! remain required for every case and for the final 41/401 Complete.
+#[path = "physical_qualification_resources.rs"]
+pub mod resources;
 pub const NATIVE_CASE_COUNT: usize = 14;
 pub const FAMILY_CASE_COUNT: usize = 33;
 pub const PHOTO_CASE_COUNT: usize = 1;
@@ -73,9 +75,51 @@ pub const NEWS_ADDITIONAL_SECONDS: u64 = NEWS_BUSINESS_SECONDS
     + RETAIL_SESSION_SECONDS + RETAIL_PERMISSION_SECONDS;
 pub const NEWS_WORK_SECONDS: u64 = FAMILY_WORK_SECONDS + NEWS_ADDITIONAL_SECONDS;
 pub const NEWS_CASE_SECONDS: u64 = INSPECT_SECONDS + NEWS_WORK_SECONDS;
-pub const FAMILY_SECONDS: u64 = (FAMILY_CASE_COUNT - RETAIL_CASE_COUNT - NEWS_CASE_COUNT) as u64
+// Feishu keeps navigation and optionally searches one normally declared readonly
+// document. 43+2 normal requests and 12+1 real frames include query readback,
+// changed scroll/restored body/image, original-empty query cleanup and reopen.
+// No login, draft/send, document edit/upload/share, or recovery is inferred.
+pub const COLLABORATION_CASE_COUNT: usize = 1;
+pub const COLLABORATION_BUSINESS_SECONDS: u64 = (43 + 2) * (15 + 70 + 15)
+    + (12 + 1) * (2 * 15 + 2 * 15 + 2 * 15 + 20 + 60);
+pub const COLLABORATION_ADDITIONAL_SECONDS: u64 = COLLABORATION_BUSINESS_SECONDS
+    + RETAIL_SESSION_SECONDS + RETAIL_PERMISSION_SECONDS;
+pub const COLLABORATION_WORK_SECONDS: u64 = FAMILY_WORK_SECONDS + COLLABORATION_ADDITIONAL_SECONDS;
+pub const COLLABORATION_CASE_SECONDS: u64 = INSPECT_SECONDS + COLLABORATION_WORK_SECONDS;
+// Eleven public travel packages each have one route. Ctrip has hotel, flight
+// and train under one first owned session, then one separate reopen. Retain the
+// original common pair and a new independent PM/AppOps/account window for each.
+pub const TRAVEL_CASE_COUNT: usize = 11;
+pub const CTRIP_CASE_COUNT: usize = 1;
+pub const fn travel_additional_seconds(routes: u64) -> u64 {
+    (96 * routes + 24) * (15 + 70 + 15)
+        + (12 * routes + 4) * (2 * 15 + 2 * 15 + 2 * 15 + 20 + 60)
+        + RETAIL_SESSION_SECONDS + RETAIL_PERMISSION_SECONDS
+}
+pub const TRAVEL_ADDITIONAL_SECONDS: u64 = travel_additional_seconds(1);
+pub const CTRIP_ADDITIONAL_SECONDS: u64 = travel_additional_seconds(3);
+pub const TRAVEL_WORK_SECONDS: u64 = FAMILY_WORK_SECONDS + TRAVEL_ADDITIONAL_SECONDS;
+pub const CTRIP_WORK_SECONDS: u64 = FAMILY_WORK_SECONDS + CTRIP_ADDITIONAL_SECONDS;
+pub const TRAVEL_CASE_SECONDS: u64 = INSPECT_SECONDS + TRAVEL_WORK_SECONDS;
+pub const CTRIP_CASE_SECONDS: u64 = INSPECT_SECONDS + CTRIP_WORK_SECONDS;
+// Two housing applications keep the common pair and add bounded public
+// location/filter/detail/return observations. Authentication is still required
+// separately for housing.navigation and is not supplied by these time limits.
+pub const HOUSING_CASE_COUNT: usize = 2;
+pub const HOUSING_BUSINESS_SECONDS: u64 = (48 + 24) * (15 + 70 + 15)
+    + (5 + 3) * (2 * 15 + 2 * 15 + 2 * 15 + 20 + 60);
+pub const HOUSING_ADDITIONAL_SECONDS: u64 = HOUSING_BUSINESS_SECONDS
+    + RETAIL_SESSION_SECONDS + RETAIL_PERMISSION_SECONDS;
+pub const HOUSING_WORK_SECONDS: u64 = FAMILY_WORK_SECONDS + HOUSING_ADDITIONAL_SECONDS;
+pub const HOUSING_CASE_SECONDS: u64 = INSPECT_SECONDS + HOUSING_WORK_SECONDS;
+pub const FAMILY_SECONDS: u64 = (FAMILY_CASE_COUNT - RETAIL_CASE_COUNT - NEWS_CASE_COUNT
+    - COLLABORATION_CASE_COUNT - TRAVEL_CASE_COUNT - CTRIP_CASE_COUNT - HOUSING_CASE_COUNT) as u64
     * FAMILY_CASE_SECONDS + RETAIL_CASE_COUNT as u64 * RETAIL_CASE_SECONDS
-    + NEWS_CASE_COUNT as u64 * NEWS_CASE_SECONDS;
+    + NEWS_CASE_COUNT as u64 * NEWS_CASE_SECONDS
+    + COLLABORATION_CASE_COUNT as u64 * COLLABORATION_CASE_SECONDS
+    + TRAVEL_CASE_COUNT as u64 * TRAVEL_CASE_SECONDS
+    + CTRIP_CASE_COUNT as u64 * CTRIP_CASE_SECONDS
+    + HOUSING_CASE_COUNT as u64 * HOUSING_CASE_SECONDS;
 // The supplementary real single-shutter/reopen case retains the old Camera leaf.
 // Its normal pre-inspection is separate from the two-session factory's window.
 // One intentional normal Photo0 preparation before the Camera business preimage.
@@ -127,4 +171,4 @@ pub const SUITE_SECONDS: u64 = SOURCE_AND_CAPTURE_SECONDS
     + SETTINGS_CASE_COUNT as u64 * SETTINGS_PERMISSION_CASE_SECONDS;
 pub const RETIREMENT_SECONDS: u64 = 180;
 pub const SERVICE_SECONDS: u64 = SUITE_SECONDS + RETIREMENT_SECONDS;
-pub const NOFILE_LIMIT: u64 = 32_768;
+pub const NOFILE_LIMIT: u64 = resources::nofile_limit(NATIVE_CASE_COUNT, CASE_COUNT);

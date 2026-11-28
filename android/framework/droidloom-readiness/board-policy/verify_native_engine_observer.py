@@ -433,7 +433,7 @@ def source_contract(here):
         "engine_rule": "/{system,run/droidloom-early-slot/rootfs/system,.droidloom-kernel-apparmorfs/system}/system_ext/lib64/libberberis_arm64.so r,",
         "native_executable_rule": "/{system,run/droidloom-early-slot/rootfs/system,.droidloom-kernel-apparmorfs/system}/bin/app_process64 r,",
         "native_art_rule": "/{apex,run/droidloom-early-slot/rootfs/apex,.droidloom-kernel-apparmorfs/apex}/com.android.art{,@371899999}/lib64/libart.so r,",
-        "normal_180_rebuild_required": True,
+        "normal_182_rebuild_required": True,
         "separate_old_archive_reuse_allowed": False,
     }:
         raise ValueError("Engine normal source or independent AppArmor admission is absent")

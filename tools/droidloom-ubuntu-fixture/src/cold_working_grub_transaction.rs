@@ -15,7 +15,7 @@ use crate::{
     boot_files::{self as files, FilePin},
     cold_original_data::labels::WorkingLabelBatch,
     cold_working_recovery::contract as c,
-    ensure, fs,
+    ensure, fs, production_commit_contract as permanent,
 };
 use std::{
     fs::File,
@@ -145,7 +145,35 @@ impl Publication {
             None => Vec::new(),
         };
         self.original_observed = true;
-        let body = menuentry(&original, &self.candidate, self.source().arguments())?;
+        let prefix = files::read_pin(self.source().production_prefix(), 1024 * 1024)?;
+        ensure(
+            original == prefix,
+            "original custom GRUB source changed after cold production admission",
+        )?;
+        let mut body = menuentry(&original, &self.candidate, self.source().arguments())?;
+        let returned = self.source().configuration();
+        let return_pin = self
+            .source()
+            .entries()
+            .iter()
+            .find(|v| v.target() == Path::new(c::RETURN_CONFIG))
+            .ok_or("actual working return source missing")?
+            .source_pin();
+        let exact = permanent::working_entry(
+            &self.candidate,
+            &returned.intent_sha256,
+            &returned.early_config_sha256,
+            &return_pin.sha256,
+        )?;
+        ensure(
+            body[original.len()..] == *exact.as_bytes(),
+            "cold and normal production working-entry renderers differ",
+        )?;
+        let configuration = self.source().production_configuration().clone();
+        body.extend_from_slice(
+            permanent::ordinary_entry(&self.candidate, &configuration.sha256)?.as_bytes(),
+        );
+        body.extend_from_slice(permanent::selector(&self.candidate)?.as_bytes());
         let custom = source_file(&self.source().work().join("WORKING-CUSTOM-GRUB.cfg"), &body)?;
         let custom_pin = custom.pin().clone();
         self.sources.push(custom);
@@ -172,8 +200,30 @@ impl Publication {
             .stage_file(&self.initrd, &initrd_source, 0o400)?;
         self.transaction
             .stage_file(Path::new(CUSTOM), &custom_pin, 0o644)?;
+        let ordinary = permanent::initrd(&self.candidate)?;
+        let ordinary_base = Path::new("/boot/droidloom/production");
+        match std::fs::symlink_metadata(ordinary_base) {
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+                self.transaction.stage_directory(ordinary_base)?
+            }
+            Err(e) => return Err(e.into()),
+            Ok(_) => {
+                fs::Tree::open("/", 0)?.dir("/boot/droidloom/production")?;
+            }
+        }
+        let ordinary_parent = ordinary.parent().ok_or("ordinary initrd parent absent")?;
         ensure(
-            (3..=4).contains(&self.transaction.len()),
+            std::fs::symlink_metadata(ordinary_parent)
+                .err()
+                .is_some_and(|e| e.kind() == std::io::ErrorKind::NotFound),
+            "ordinary production candidate directory already exists",
+        )?;
+        self.transaction.stage_directory(ordinary_parent)?;
+        let normal_initrd = self.source().ordinary_initrd().clone();
+        self.transaction
+            .stage_file(&ordinary, &normal_initrd, 0o400)?;
+        ensure(
+            (5..=7).contains(&self.transaction.len()),
             "working boot file roster differs",
         )?;
         let lookup = self

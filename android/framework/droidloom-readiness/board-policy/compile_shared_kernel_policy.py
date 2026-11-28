@@ -39,6 +39,8 @@ from verify_working_qualification import (verify as verify_working_qualification
     source_inputs as working_qualification_source_inputs, verify_sources as verify_working_qualification_sources)
 from verify_native_apk import (verify as verify_native_apk,
     source_inputs as native_apk_source_inputs, verify_sources as verify_native_apk_sources)
+from verify_production_commit import (verify as verify_production_commit,
+    source_inputs as production_commit_source_inputs, verify_sources as verify_production_commit_sources)
 from verify_native_camera import verify_camera
 from verify_fixed_display import verify_fixed_display
 from verify_native_stdio import (verify_native_stdio, class_permissions,
@@ -89,6 +91,7 @@ def sha256(path):
 COMPOSED_FILE_CONTEXT_SOURCES = (
     "ubuntu-native-file_contexts", "ubuntu-real-root-file_contexts",
     "linux-service-file_contexts", "linux-initial-calibration-file_contexts",
+    "linux-production-commit-file_contexts",
 )
 
 
@@ -1764,7 +1767,7 @@ def main():
         "ubuntu-native-netplan.cil", "ubuntu-native-sysusers.cil",
         "ubuntu-native-service-runtime.cil", "ubuntu-native-sandbox.cil",
         "ubuntu-native-maintenance.cil", "ubuntu-original-once.cil",
-        "ubuntu-working-qualification.cil",
+        "ubuntu-working-qualification.cil", "ubuntu-production-commit.cil",
         "frontend-android-interface.cil", "native-camera-interface.cil", "linux-frontend-observer.cil", "instance-launcher.cil",
         "linux-query-owner.cil", "linux-fixed-metadata-observer.cil",
         "linux-fixed-engine-observer.cil",
@@ -1817,6 +1820,7 @@ def main():
                here / "verify_native_original_projection.py",
                here / "verify_working_qualification.py", *working_qualification_source_inputs(here),
                here / "verify_native_apk.py", *native_apk_source_inputs(here),
+               here / "verify_production_commit.py", *production_commit_source_inputs(here),
                here / "verify_native_calibration.py", *native_calibration_source_inputs(here),
                here / "verify_native_entropy.py", *native_entropy_source_inputs(here),
                here / "verify_native_resolved_runtime.py", here / "native-resolved-runtime-source.json",
@@ -1837,6 +1841,7 @@ def main():
     validate_original_once_sources(here)
     verify_working_qualification_sources(here)
     verify_native_apk_sources(here)
+    verify_production_commit_sources(here)
     validate_engine_sources(here)
     validate_native_ui_sources(here)
     validate_calendar_sources(here)
@@ -1996,6 +2001,7 @@ def main():
         working_qualification = verify_working_qualification(
             library, linked, work / "host-control-binary.cil", here)
         native_apk = verify_native_apk(library, linked, work / "host-control-binary.cil", here)
+        production_commit = verify_production_commit(library, linked, work / "host-control-binary.cil", here)
         native_calibration = verify_native_calibration(
             library, linked, work / "host-control-binary.cil", here)
         native_resolved_runtime = verify_native_resolved_runtime(
@@ -2040,6 +2046,8 @@ def main():
             "original_once": original_once,
             "working_qualification": working_qualification,
             "native_apk": native_apk,
+            "production_commit": production_commit,
+            "production_commit_verifier": sha256(here / "verify_production_commit.py"),
             "observed_client_alias": observed_client,
             "native_apk_verifier": sha256(here / "verify_native_apk.py"),
             "original_once_verifier": sha256(here / "verify_original_once.py"),

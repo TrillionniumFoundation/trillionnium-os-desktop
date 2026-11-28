@@ -566,7 +566,10 @@
 (neverallow p4_working_not_parent p4_linux_working_application_t (process (transition dyntransition)))
 (neverallow p4_working_not_parent_or_executor p4_linux_working_privateprep_t (process (transition)))
 (neverallow p4_working_all_types p4_linux_working_privateprep_t (process (dyntransition)))
-(neverallow p4_linux_working_qualification_t p4_working_not_children (process (transition)))
+; The live Complete owner may also select its one fixed production child.
+(typeattribute p4_working_not_children_or_production_commit)
+(typeattributeset p4_working_not_children_or_production_commit (and (p4_working_not_children) (not (p4_linux_production_commit_t))))
+(neverallow p4_linux_working_qualification_t p4_working_not_children_or_production_commit (process (transition)))
 (neverallow p4_linux_working_application_t p4_working_all_types (process (transition dyntransition setexec)))
 (neverallow p4_linux_working_privateprep_t p4_working_payload_not_birth (process (transition)))
 (neverallow p4_linux_working_privateprep_t p4_working_all_types (process (dyntransition)))

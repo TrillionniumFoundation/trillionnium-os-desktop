@@ -301,6 +301,8 @@ impl NativeCurrent {
     pub fn guard(&self) -> io::Result<()> {
         worker(|| user_files(|| self.guard_user()))
     }
+    /// Counts the fixed held root/ancestor/file OFDs; it grants no source authority.
+    pub const fn retained_descriptor_bound() -> usize { PARENTS.len() + 2 }
     pub fn bytes(&self) -> &[u8] {
         &self.raw
     }
@@ -561,5 +563,17 @@ mod tests {
         assert!(root_thread().is_err());
         assert!(UserFiles::enter().is_err());
         assert!(NativeCurrent::capture().is_err());
+    }
+}
+
+
+#[cfg(test)]
+mod descriptor_budget_tests {
+    use super::*;
+    #[test]
+    fn fixed_native_current_and_lock_parent_chain_matches_whole_suite_budget() {
+        assert_eq!(NativeCurrent::retained_descriptor_bound(),
+            crate::control::physical_qualification_channel::budget::resources::SOURCE_CHAIN_DESCRIPTORS);
+        assert_eq!(LOCK_NAMES.len(),2);
     }
 }

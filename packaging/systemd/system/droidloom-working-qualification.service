@@ -4,7 +4,6 @@ Requires=droidloom-production.service
 BindsTo=droidloom-production.service
 After=droidloom-production.service droidloom-container-entry.service
 ConditionKernelCommandLine=droidloom.working
-OnSuccess=droidloom-working-qualification-return.service
 OnFailure=droidloom-working-qualification-return.service
 
 [Service]
@@ -22,7 +21,7 @@ FinalKillSignal=SIGKILL
 SendSIGKILL=yes
 TimeoutStopFailureMode=terminate
 TimeoutStopSec=180s
-RuntimeMaxSec=482487s
+RuntimeMaxSec=760567s
 CPUQuota=200%
 CPUQuotaPeriodSec=100ms
 CPUAffinity=20 21
@@ -32,7 +31,7 @@ MemorySwapMax=0
 TasksAccounting=yes
 TasksMax=64
 LimitCORE=0
-LimitNOFILE=32768
+LimitNOFILE=262144
 UMask=0077
 WorkingDirectory=/
 Environment=PATH=/usr/sbin:/usr/bin:/sbin:/bin

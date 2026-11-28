@@ -138,6 +138,7 @@ pub(crate) enum ExecTarget {
     WorkingOriginalPayloadBirth,
     WorkingPreparation,
     WorkingApplication,
+    ProductionCommit,
 }
 impl ExecTarget {
     fn contexts(self) -> (&'static [u8], &'static [u8]) {
@@ -149,7 +150,9 @@ impl ExecTarget {
             Self::EngineObserver => (broker, b"u:r:droidloom_engine_observer:s0\0"),
             Self::NativeCamera => (broker, b"u:r:droidloom_camera_capture:s0\0"),
             Self::NativeLeafApkReader => (broker, b"u:r:droidloom_native_leaf_apk_reader:s0\0"),
-            Self::WorkingApkPayloadCreator => (broker, b"u:r:droidloom_working_apk_payload_creator:s0\0"),
+            Self::WorkingApkPayloadCreator => {
+                (broker, b"u:r:droidloom_working_apk_payload_creator:s0\0")
+            }
             Self::WorkingOriginalPayloadBirth => (
                 b"u:system_r:p4_linux_working_privateprep_t:s0\0",
                 b"u:system_r:p4_linux_working_payload_birth_t:s0\0",
@@ -160,6 +163,7 @@ impl ExecTarget {
             Self::WorkingApplication => {
                 (working, b"u:system_r:p4_linux_working_application_t:s0\0")
             }
+            Self::ProductionCommit => (working, b"u:system_r:p4_linux_production_commit_t:s0\0"),
         }
     }
 }
@@ -186,7 +190,12 @@ unsafe fn raw_matches(attribute: Attribute, expected: &[u8]) -> bool {
 /// Allocation-free fixed SELF bookend after the working owner's AppArmor EXEC
 /// selection. This cannot inspect a foreign process or accept a caller SID.
 pub(crate) unsafe fn working_parent_current() -> bool {
-    unsafe { raw_matches(Attribute::Current, b"u:system_r:p4_linux_working_qualification_t:s0\0") }
+    unsafe {
+        raw_matches(
+            Attribute::Current,
+            b"u:system_r:p4_linux_working_qualification_t:s0\0",
+        )
+    }
 }
 /// Allocation-free, fixed-label bootstrap for an already owned child.
 /// The caller retains its original end, ELF, PIDFD, credentials and AppArmor
@@ -308,10 +317,14 @@ mod tests {
             ExecTarget::WorkingApplication.contexts().0,
             ExecTarget::WorkingPreparation.contexts().0
         );
-        assert_eq!(ExecTarget::WorkingOriginalPayloadBirth.contexts().0,
-            b"u:system_r:p4_linux_working_privateprep_t:s0\0");
-        assert_eq!(ExecTarget::WorkingOriginalPayloadBirth.contexts().1,
-            b"u:system_r:p4_linux_working_payload_birth_t:s0\0");
+        assert_eq!(
+            ExecTarget::WorkingOriginalPayloadBirth.contexts().0,
+            b"u:system_r:p4_linux_working_privateprep_t:s0\0"
+        );
+        assert_eq!(
+            ExecTarget::WorkingOriginalPayloadBirth.contexts().1,
+            b"u:system_r:p4_linux_working_payload_birth_t:s0\0"
+        );
         assert_eq!(
             ExecTarget::QueryIo.contexts().0,
             b"u:r:droidloom_broker:s0\0"

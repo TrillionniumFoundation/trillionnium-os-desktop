@@ -169,7 +169,7 @@ class WorkingAuthorityTests(unittest.TestCase):
 
     def test_actual_source_contract_and_alias_roster_remain_complete(self):
         here=Path(v.__file__).resolve().parent
-        self.assertEqual(len(v.verify_sources(here)),40)
+        self.assertEqual(len(v.verify_sources(here)),66)
         self.assertEqual(len(v._fixed_aliases(here)),66)
         self.assertEqual(len(v._apk_paths(here)),67)
 

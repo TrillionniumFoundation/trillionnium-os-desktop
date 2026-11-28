@@ -11,6 +11,18 @@ mod retail_case;
 mod family_news;
 #[path = "family_news_case.rs"]
 mod news_case;
+#[path = "family_collaboration.rs"]
+mod family_collaboration;
+#[path = "family_collaboration_case.rs"]
+mod collaboration_case;
+#[path = "family_travel.rs"]
+mod family_travel;
+#[path = "family_travel_case.rs"]
+mod travel_case;
+#[path = "family_housing.rs"]
+mod family_housing;
+#[path = "family_housing_case.rs"]
+mod housing_case;
 use droidloom_supervisor::control::application_probe::ApplicationInspection;
 use droidloom_supervisor::control::{
     NativeApplicationInspector, NativeFamilyUiEvidence, NativeUiStabilityEvidence,
@@ -40,12 +52,18 @@ pub(super) fn window_seconds_for(package: &str) -> u64 {
 }
 fn business_window_seconds(package: &str) -> u64 {
     if retail_case::supports(package) { retail_case::window_seconds() }
-    else if news_case::supports(package) { news_case::window_seconds() } else { 0 }
+    else if news_case::supports(package) { news_case::window_seconds() }
+    else if collaboration_case::supports(package) { collaboration_case::window_seconds() }
+    else if travel_case::supports(package) { travel_case::window_seconds(package) }
+    else if housing_case::supports(package) { housing_case::window_seconds() } else { 0 }
 }
 fn retained_journal_members_bound_for(package: &str) -> usize {
     retained_journal_members_bound()
         + if retail_case::supports(package) { retail_case::retained_journal_members_bound() } else { 0 }
         + if news_case::supports(package) { news_case::retained_journal_members_bound() } else { 0 }
+        + if collaboration_case::supports(package) { collaboration_case::retained_journal_members_bound() } else { 0 }
+        + if travel_case::supports(package) { travel_case::retained_journal_members_bound(package) } else { 0 }
+        + if housing_case::supports(package) { housing_case::retained_journal_members_bound() } else { 0 }
 }
 fn ordered_completed(
     row: &'static roster::PackageGates, complete: &[&'static str],
@@ -97,6 +115,11 @@ pub(super) enum FamilyBlockCode {
     RenderedAudioVideoCasePending,
     BrowserFixtureCasePending,
     InputMethodConsumerCasePending,
+    AuthenticatedWorkspaceCasePending,
+    DeclaredReadonlyDocumentCasePending,
+    OwnedUnsentDraftCasePending,
+    ScopedCollaborationRecoveryCasePending,
+    AuthenticatedHousingRouteCasePending,
 }
 
 /// Source-owned missing assertion, never a success or a claim about whether an
@@ -125,6 +148,13 @@ fn blocked(row: &'static roster::PackageGates) -> Vec<FamilyBlockedGate> {
                 "video" => FamilyBlockCode::RenderedAudioVideoCasePending,
                 "browser" => FamilyBlockCode::BrowserFixtureCasePending,
                 "ime" => FamilyBlockCode::InputMethodConsumerCasePending,
+                "collaboration" => match id {
+                    "collaboration.account" | "collaboration.navigation" => FamilyBlockCode::AuthenticatedWorkspaceCasePending,
+                    "collaboration.search" | "collaboration.documents" => FamilyBlockCode::DeclaredReadonlyDocumentCasePending,
+                    "collaboration.compose" => FamilyBlockCode::OwnedUnsentDraftCasePending,
+                    _ => FamilyBlockCode::ScopedCollaborationRecoveryCasePending,
+                },
+                "housing" if id == "housing.navigation" => FamilyBlockCode::AuthenticatedHousingRouteCasePending,
                 _ => FamilyBlockCode::BusinessFlowNotObserved,
             };
             FamilyBlockedGate { id, code }
@@ -169,6 +199,9 @@ pub(super) struct FamilyObservation {
     permissions: NativeUiPermissionPreservation,
     retail: Option<retail_case::RetailCaseObservation>,
     news: Option<news_case::NewsCaseObservation>,
+    collaboration: Option<collaboration_case::CollaborationCaseObservation>,
+    travel: Option<travel_case::TravelCaseObservation>,
+    housing: Option<housing_case::HousingCaseObservation>,
     business_facts: Vec<FamilyBusinessFact>,
     blocked: Vec<FamilyBlockedGate>,
 }
@@ -192,22 +225,42 @@ impl FamilyObservation {
         // closes and the strict first.finished < reopened.opened boundary.
         self.permissions.require_pair(first, reopened)?;
         let row = family(&first.engine().application().package)?;
-        let (complete, basis) = match (&self.retail, &self.news) {
-            (Some(value), None) => {
+        let (complete, basis) = match (&self.retail, &self.news, &self.collaboration, &self.travel, &self.housing) {
+            (Some(value), None, None, None, None) => {
                 require(retail_case::supports(row.package),
                     "retail history selected a different family contract")?;
                 value.require_subject(&first.engine().facts().main, first.engine().application())?;
                 self.permissions.require_continuation(value.permissions())?;
                 (value.completed_gates().to_vec(), value.comparison()?)
             }
-            (None, Some(value)) => {
+            (None, Some(value), None, None, None) => {
                 require(news_case::supports(row.package), "news history selected another family contract")?;
                 value.require_subject(&first.engine().facts().main, first.engine().application())?;
                 self.permissions.require_continuation(value.permissions())?;
                 (value.completed_gates(), value.comparison()?)
             }
-            (None, None) => {
-                require(!retail_case::supports(row.package) && !news_case::supports(row.package),
+            (None, None, Some(value), None, None) => {
+                require(collaboration_case::supports(row.package), "collaboration history selected another family contract")?;
+                value.require_subject(&first.engine().facts().main, first.engine().application())?;
+                self.permissions.require_continuation(value.permissions())?;
+                (value.completed_gates(), value.comparison()?)
+            }
+            (None, None, None, Some(value), None) => {
+                require(travel_case::supports(row.package), "travel history selected another family contract")?;
+                value.require_subject(&first.engine().facts().main, first.engine().application())?;
+                self.permissions.require_continuation(value.permissions())?;
+                (value.completed_gates(), value.comparison()?)
+            }
+            (None, None, None, None, Some(value)) => {
+                require(housing_case::supports(row.package), "housing history selected another family contract")?;
+                value.require_subject(&first.engine().facts().main, first.engine().application())?;
+                self.permissions.require_continuation(value.permissions())?;
+                (value.completed_gates(), value.comparison()?)
+            }
+            (None, None, None, None, None) => {
+                require(!retail_case::supports(row.package) && !news_case::supports(row.package)
+                    && !collaboration_case::supports(row.package) && !travel_case::supports(row.package)
+                    && !housing_case::supports(row.package),
                     "a compiled business execution cannot be silently skipped")?;
                 (Vec::new(), Value::Null)
             }
@@ -237,9 +290,12 @@ impl FamilyObservation {
             "pm_permission_preservation":self.permissions.comparison()?,
             "retail_business":self.retail.as_ref().map(|value|value.comparison()).transpose()?,
             "news_business":self.news.as_ref().map(|value|value.comparison()).transpose()?,
+            "collaboration_business":self.collaboration.as_ref().map(|value|value.comparison()).transpose()?,
+            "travel_business":self.travel.as_ref().map(|value|value.comparison()).transpose()?,
+            "housing_business":self.housing.as_ref().map(|value|value.comparison()).transpose()?,
             "business_facts":self.business_facts,"blocked":self.blocked,
             "decoded_pixels_retained_in_history":false,
-            "business_execution_attempted":self.retail.is_some() || self.news.is_some(),
+            "business_execution_attempted":self.retail.is_some() || self.news.is_some() || self.collaboration.is_some() || self.travel.is_some() || self.housing.is_some(),
             "complete_data_permissions_or_account_acceptance_inferred":false,
             "source_window_seconds":window_seconds_for(row.package),
             "source_maximum_retained_journal_members":retained_journal_members_bound_for(row.package),
@@ -254,6 +310,7 @@ impl FamilyObservation {
 pub(super) fn run_family_case(
     inspector: &mut NativeApplicationInspector,
     baseline: &mut NativeLeafBaselineObservation<'_>,
+    feishu_fixture: Option<&droidloom_supervisor::working_qualification::FeishuReadonlyFixture>,
     original_end: Instant,
 ) -> Result<FamilyObservation, String> {
     let application = baseline.application().clone();
@@ -287,10 +344,28 @@ pub(super) fn run_family_case(
         let end = (Instant::now() + Duration::from_secs(news_case::window_seconds())).min(original_end);
         Some(news_case::run(inspector, baseline, end)?)
     } else { None };
+    let collaboration = if collaboration_case::supports(&application.package) {
+        let end=(Instant::now()+Duration::from_secs(collaboration_case::window_seconds())).min(original_end);
+        Some(collaboration_case::run(inspector,baseline,feishu_fixture,end)?)
+    } else {None};
+    let travel = if travel_case::supports(&application.package) {
+        let end = (Instant::now() + Duration::from_secs(travel_case::window_seconds(&application.package))).min(original_end);
+        Some(travel_case::run(inspector, baseline, end)?)
+    } else { None };
+    let housing = if housing_case::supports(&application.package) {
+        let end=(Instant::now()+Duration::from_secs(housing_case::window_seconds())).min(original_end);
+        Some(housing_case::run(inspector,baseline,end)?)
+    } else {None};
     let (complete, basis) = if let Some(value) = &retail {
         (value.completed_gates().to_vec(), Some(value.comparison()?))
     } else if let Some(value) = &news {
         (value.completed_gates(), Some(value.comparison()?))
+    } else if let Some(value)=&collaboration {
+        (value.completed_gates(),Some(value.comparison()?))
+    } else if let Some(value) = &travel {
+        (value.completed_gates(), Some(value.comparison()?))
+    } else if let Some(value)=&housing {
+        (value.completed_gates(),Some(value.comparison()?))
     } else { (Vec::new(), None) };
     let ordered = ordered_completed(row, &complete)?;
     let business_facts = ordered.into_iter().map(|id| FamilyBusinessFact {
@@ -298,7 +373,7 @@ pub(super) fn run_family_case(
         application:application.clone(), basis:basis.clone().unwrap_or(Value::Null),
     }).collect();
     let blocked = remaining(row, &complete);
-    let observation = FamilyObservation { ui, permissions, retail, news, business_facts, blocked };
+    let observation = FamilyObservation { ui, permissions, retail, news, collaboration, travel, housing, business_facts, blocked };
     observation.guard_immutable()?;
     require(Instant::now() < original_end,
         "Family custody sealing exceeded the original case deadline")?;
@@ -398,9 +473,13 @@ mod tests {
         let retained = rows.iter().map(|row|retained_journal_members_bound_for(row.package)).sum::<usize>();
         assert_eq!(retained, FAMILY_COUNT * retained_journal_members_bound()
             + 5 * retail_case::retained_journal_members_bound()
-            + news_case::retained_journal_members_bound());
-        assert_eq!(retained, 31_518);
-        assert!(retained < 32_768);
+            + news_case::retained_journal_members_bound()
+            + collaboration_case::retained_journal_members_bound()
+            + rows.iter().filter(|row|travel_case::supports(row.package)).map(|row|travel_case::retained_journal_members_bound(row.package)).sum::<usize>()
+
+            + 2 * housing_case::retained_journal_members_bound());
+        assert_eq!(retained, droidloom_supervisor::control::physical_qualification_channel::budget::resources::FAMILY_JOURNAL_DESCRIPTORS);
+        assert!(retained > 32_768); // the old family-only limit was insufficient
         let now = Instant::now();
         let end = now + Duration::from_secs(15_000);
         require_window("com.amazon.mShop.android.shopping", now, end, end).unwrap();
@@ -423,4 +502,54 @@ mod tests {
         require_window(row.package,now,end,end).unwrap();
         assert!(require_window(row.package,now,end+Duration::from_nanos(1),end+Duration::from_nanos(1)).is_err());
     }
+    #[test]
+    fn collaboration_contract_never_relabels_login_as_document_draft_or_recovery_success() {
+        let row=family("com.ss.android.lark").unwrap();
+        assert_eq!(window_seconds_for(row.package),17_230);
+        assert_eq!(retained_journal_members_bound_for(row.package),2_058);
+        assert!(ordered_completed(row,&["news.search"]).is_err());
+        assert_eq!(remaining(row,&["collaboration.account","collaboration.navigation"])
+            .iter().map(|g|g.id).collect::<std::collections::BTreeSet<_>>(),
+            std::collections::BTreeSet::from(["collaboration.compose","collaboration.documents","collaboration.recovery","collaboration.search"]));
+        assert_eq!(blocked(row).iter().filter(|g|matches!(g.code,FamilyBlockCode::DeclaredReadonlyDocumentCasePending)).count(),2);
+    }
+
+    #[test]
+    fn travel_public_business_keeps_account_paths_blocked_and_reserves_full_route_budget() {
+        let rows:Vec<_>=roster::PACKAGES.iter().filter(|r|travel_case::supports(r.package)).collect();
+        assert_eq!(rows.len(),12);
+        assert_eq!(rows.iter().map(|r|business_window_seconds(r.package)).sum::<u64>(),243_240);
+        assert_eq!(rows.iter().map(|r|travel_case::retained_journal_members_bound(r.package)).sum::<usize>(),30_288);
+        for row in rows {
+            let allowed:Vec<_>=row.business.iter().copied().filter(|id|!id.ends_with(".account")).collect();
+            let pending=remaining(row,&allowed);
+            assert_eq!(pending.len(),1);assert!(pending[0].id.ends_with(".account"));
+            assert_eq!(window_seconds_for(row.package),window_seconds()+travel_case::window_seconds(row.package));
+        }
+        assert_eq!(window_seconds_for("ctrip.android.view"),48_520);
+        assert_eq!(retained_journal_members_bound_for("ctrip.android.view"),6_072);
+        let budget=droidloom_supervisor::control::physical_qualification_channel::budget::TRAVEL_ADDITIONAL_SECONDS;
+        assert_eq!(budget,travel_case::window_seconds("com.united.mobile.android"));
+        assert_eq!(droidloom_supervisor::control::physical_qualification_channel::budget::CTRIP_ADDITIONAL_SECONDS,
+            travel_case::window_seconds("ctrip.android.view"));
+    }
+
+    #[test]
+    fn housing_public_query_detail_partition_preserves_authenticated_navigation_gate() {
+        for package in ["com.lianjia.beike","com.zillow.android.streeteasy"]{
+            let row=family(package).unwrap();
+            let pending=remaining(row,&["housing.query","housing.details"]);
+            assert_eq!(pending.len(),1);
+            assert_eq!(pending[0].id(),"housing.navigation");
+            assert_eq!(pending[0].code(),&FamilyBlockCode::AuthenticatedHousingRouteCasePending);
+            assert_eq!(window_seconds_for(package),19_080);
+            assert_eq!(retained_journal_members_bound_for(package),2_232);
+            assert!(ordered_completed(row,&["retail.navigation"]).is_err());
+            let now=Instant::now();let end=now+Duration::from_secs(19_080);
+            require_window(package,now,end,end).unwrap();
+            assert!(require_window(package,now,end+Duration::from_nanos(1),end+Duration::from_nanos(1)).is_err());
+        }
+        assert_eq!(roster::PACKAGES.iter().filter(|r|housing_case::supports(r.package)).count(),2);
+    }
+
 }

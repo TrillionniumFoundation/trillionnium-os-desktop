@@ -1,0 +1,43 @@
+[Unit]
+Description=Verify the same accepted Android candidate on its ordinary production boot
+Wants=droidloom-production.service droidloom-early-observer.service
+After=local-fs.target systemd-journald.service droidloom-production.service droidloom-early-observer.service
+OnFailure=droidloom-production-verify-return.service
+OnFailureJobMode=replace
+Conflicts=shutdown.target
+Before=shutdown.target
+
+[Service]
+Type=exec
+ExecStart=/usr/bin/droidloom-applications --production-observe-normal-boot
+User=root
+Group=root
+WorkingDirectory=/
+UMask=0077
+CapabilityBoundingSet=CAP_SYS_PTRACE
+AmbientCapabilities=
+# The fixed entry admits its real role and ELF before sealing NNP and dumpability.
+NoNewPrivileges=no
+PrivateMounts=no
+SELinuxContext=u:system_r:p4_linux_production_verify_t:s0
+AppArmorProfile=droidloom-production-verify
+StandardInput=null
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=droidloom-production-verify
+KillMode=control-group
+SendSIGKILL=yes
+TimeoutStartSec=30s
+TimeoutStopSec=30s
+# 705s actual Main readiness + 180s historical evidence + 180s selection;
+# 30s remains for a terminal receipt and bounded exit.
+RuntimeMaxSec=1095s
+Restart=no
+CPUAccounting=yes
+MemoryAccounting=yes
+TasksAccounting=yes
+CPUQuota=100%
+MemoryMax=2147483648
+MemorySwapMax=0
+TasksMax=64
+LimitNOFILE=32768

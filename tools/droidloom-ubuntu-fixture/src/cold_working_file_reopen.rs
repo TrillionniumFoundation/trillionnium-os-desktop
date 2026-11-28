@@ -175,7 +175,7 @@ impl Transaction {
                     name.len() == 8
                         && name[5..].bytes().all(|b| b.is_ascii_digit())
                         && names.insert(name.to_owned())
-                        && names.len() <= 17,
+                        && names.len() <= 22,
                     "returned publication has an invalid or excessive actual item directory",
                 )?;
             }
@@ -443,7 +443,7 @@ mod tests {
     }
     #[test]
     #[ignore = "root/ext4 only; actual full seventeen-item producer, nonempty evidence and fresh inverse"]
-    fn actual_returned_seventeen_member_roster_preserves_evidence_and_rejects_foreign_inode()
+    fn actual_returned_twenty_two_member_roster_preserves_evidence_and_rejects_foreign_inode()
     -> Result<()> {
         ensure(
             rustix::process::geteuid().is_root(),
@@ -474,8 +474,11 @@ mod tests {
                 optional.insert(p.clone());
                 transaction.stage_directory(&p)?;
             }
-            let retained =
-                BTreeSet::from([public.join("candidate"), public.join("candidate/evidence")]);
+            let retained = BTreeSet::from([
+                public.join("candidate"),
+                public.join("candidate/evidence"),
+                public.join("production"),
+            ]);
             for path in &retained {
                 required.insert(path.clone(), Payload::Absent);
                 transaction.stage_private_directory(path)?;
@@ -484,7 +487,7 @@ mod tests {
             files::write_new(&original, b"actual original retained", 0o644)?;
             let original_before = observe_kind(&original, false)?.unwrap();
             let mut file_paths = Vec::new();
-            for n in 0..12 {
+            for n in 0..16 {
                 let target = if n == 0 {
                     original.clone()
                 } else {
@@ -500,7 +503,7 @@ mod tests {
                 transaction.stage_file(&target, &source, 0o644)?;
                 file_paths.push(target);
             }
-            assert_eq!(transaction.len(), 17);
+            assert_eq!(transaction.len(), 22);
             assert!(
                 transaction
                     .stage_file(&public.join("outside"), &source, 0o644)
@@ -518,6 +521,23 @@ mod tests {
                 files::write_new(
                     &evidence.join(format!("record-{n}.json")),
                     b"actual retained runtime record",
+                    0o600,
+                )?;
+            }
+            let production = public.join("production");
+            for name in [
+                "PLAN.json",
+                "SUMMARY.json",
+                "MAIN.json",
+                "STDERR.log",
+                "COMMIT.json",
+                "TRIAL.json",
+                "REQUEST.json",
+                "ACTIVE.json",
+            ] {
+                files::write_new(
+                    &production.join(name),
+                    b"actual retained production runtime record",
                     0o600,
                 )?;
             }
@@ -569,6 +589,7 @@ mod tests {
                 &observe_kind(&original, false)?.unwrap()
             ));
             assert_eq!(std::fs::read_dir(&evidence)?.count(), 6);
+            assert_eq!(std::fs::read_dir(&production)?.count(), 8);
             for p in &optional {
                 assert!(!p.exists());
             }
@@ -589,6 +610,7 @@ mod tests {
             assert!(reopened.all_restored_except(&retained));
             reopened.guard()?;
             assert_eq!(std::fs::read_dir(&evidence)?.count(), 6);
+            assert_eq!(std::fs::read_dir(&production)?.count(), 8);
         }
         Ok(())
     }

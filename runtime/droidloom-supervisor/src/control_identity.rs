@@ -7,22 +7,24 @@ use std::os::fd::{FromRawFd, RawFd};
 use std::os::unix::fs::OpenOptionsExt;
 #[path = "control_identity_empty_meituan.rs"]
 mod empty_meituan;
-pub use empty_meituan::{run_empty_meituan_diagnostic,run_empty_meituan_payload_birth_worker};
+pub use empty_meituan::{run_empty_meituan_diagnostic, run_empty_meituan_payload_birth_worker};
 
 #[path = "control_identity_gallery.rs"]
 mod gallery;
 pub use gallery::ActualImageApplicationObservation;
-#[path = "control_identity_native_ui.rs"]
-mod native_ui;
 #[path = "control_identity_native_leaf_package.rs"]
 mod native_leaf_package;
+#[path = "control_identity_native_ui.rs"]
+mod native_ui;
 pub(crate) use native_leaf_package::{NativeLeafPackageReadKind, NativeLeafPackageReadObservation};
 #[path = "control_identity_native_calendar_counts.rs"]
 mod native_calendar_counts;
 pub(crate) use native_calendar_counts::NativeLeafCalendarCountsObservation;
 #[path = "control_identity_native_leaf_apk.rs"]
 mod native_leaf_apk;
-pub(crate) use native_leaf_apk::{FinishedNativeLeafApkCustody,NativeLeafApkCopy,NativeLeafApkCustody};
+pub(crate) use native_leaf_apk::{
+    FinishedNativeLeafApkCustody, NativeLeafApkCopy, NativeLeafApkCustody,
+};
 
 const PROGRAM: &str = "/usr/lib/droidloom/production/current/droidloomd";
 const SO_PEERPIDFD: i32 = 77;
@@ -1008,6 +1010,55 @@ impl NativeApplicationInspector {
         })
     }
 
+    /// Source-owned normal activation may repeat only the existing explicit
+    /// boot-completion-pending read. Every success is the actual held peer's
+    /// opaque Main observation; errors/unknown responses are never retried.
+    pub(crate) fn observe_production_main_if_ready_until(
+        &mut self,
+        deadline: Instant,
+    ) -> Result<Option<MainCustodyObservation>, ControlError> {
+        check_deadline(Some(deadline))?;
+        self.revalidate()?;
+        let request = ControlRequest::ObserveCurrentRuntimeMain {};
+        if deadline.saturating_duration_since(Instant::now()) < progress::response_timeout(&request)
+        {
+            return Err(ControlError::Invalid(
+                "original normal activation window cannot fit a Main read".into(),
+            ));
+        }
+        let response = self.request_fixed_until(&request, Some(deadline))?;
+        if !response.ok
+            && response.state == CellState::Starting
+            && response.host_pid.is_some_and(|v| v > 1)
+            && response.diagnostics.is_none()
+            && response.runtime_vintf.is_none()
+            && response.message
+                == crate::production_namespace::NamespaceError::Rejected(
+                    "early application operation requires current Android boot completion",
+                )
+                .to_string()
+        {
+            self.revalidate()?;
+            check_deadline(Some(deadline))?;
+            return Ok(None);
+        }
+        let facts = current_main_response(response, &self.boot_id)?;
+        let peer = self.observation()?;
+        let pidfd = self
+            .pidfd
+            .try_clone()
+            .map_err(|e| io_error("retain actual normal activation Main peer", e))?;
+        live(&pidfd).map_err(|e| io_error("check actual normal activation Main peer", e))?;
+        self.revalidate()?;
+        check_deadline(Some(deadline))?;
+        Ok(Some(MainCustodyObservation {
+            facts,
+            peer,
+            pidfd,
+            observed_at: Instant::now(),
+        }))
+    }
+
     /// Observe only the original normal owner's current process, namespace,
     /// writable backing and retained mount resources. Expected PIDs compare a
     /// live epoch; they never select a process or authorize a saved receipt.
@@ -1935,5 +1986,5 @@ mod native_fixture;
 pub(crate) use native_fixture::NativeFixtureObservation;
 #[path = "control_identity_working_install.rs"]
 mod working_install;
-pub use working_install::WorkingOriginalInstallObservation;
 pub(crate) use ihg_helper::{IhgInstallObservation, IhgStateObservation};
+pub use working_install::WorkingOriginalInstallObservation;

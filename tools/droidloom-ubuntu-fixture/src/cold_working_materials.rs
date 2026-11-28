@@ -16,6 +16,7 @@ use crate::{
     boot_runtime::LabelTools,
     cold_original_data::labels::OriginalLabelSources,
     cold_original_once_recovery::contract as c,
+    cold_working_recovery::contract::feishu::FeishuReadonlyFixture,
     ensure, fs,
     model::Identity,
 };
@@ -45,8 +46,11 @@ struct Plan {
     public_materials: PublicMaterialInputs,
     original_ext4_metadata: FilePin,
     label_tools: LabelTools,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    feishu_readonly_fixture: Option<FeishuReadonlyFixture>,
 }
 fn validate_plan(plan: &Plan) -> Result<()> {
+    if let Some(fixture) = &plan.feishu_readonly_fixture { fixture.validate()?; }
     ensure(
         plan.schema == "droidloom.working-qualification-material-plan.v1"
             && fs::valid_digest(&plan.first_once_candidate)
@@ -87,6 +91,7 @@ fn same_work(before: &Identity, actual: &Identity) -> bool {
 /// Serialized receipts describe these facts but cannot construct this type.
 pub(super) struct WorkingQualificationMaterials {
     returned: PreparedWorkingCopyObservation,
+    feishu_readonly_fixture: Option<FeishuReadonlyFixture>,
     public_materials: CurrentPublicMaterials,
     apks: RefCell<PublishedApks>,
     runtime_inputs: runtime_inputs::RuntimeInputs,
@@ -284,6 +289,7 @@ impl WorkingQualificationMaterials {
         }
         guards.push(cold_guard);
         let value = Self {
+            feishu_readonly_fixture: plan.feishu_readonly_fixture,
             returned,
             public_materials,
             apks: RefCell::new(apks),
@@ -378,6 +384,10 @@ impl WorkingQualificationMaterials {
     pub(super) fn selection(&self) -> Result<FilePin> {
         self.fixed_record("SELECTION.json")
     }
+    pub(super) fn normal_service_programs(&self) -> Result<(FilePin, FilePin)> {
+        self.revalidate()?;
+        self.sources.normal_service_programs()
+    }
     pub(super) fn original_grub_inputs(&self) -> Result<(FilePin, FilePin)> {
         self.revalidate()?;
         self.grub.current_inputs()
@@ -391,6 +401,10 @@ impl WorkingQualificationMaterials {
         let receipt = self.returned.prepare_recovery(&self.candidate, input)?;
         self.revalidate()?;
         Ok(receipt)
+    }
+    pub(super) fn feishu_readonly_fixture(&self) -> Result<Option<&FeishuReadonlyFixture>> {
+        self.revalidate()?;
+        Ok(self.feishu_readonly_fixture.as_ref())
     }
     pub(super) fn candidate(&self) -> &str {
         &self.candidate
@@ -535,6 +549,7 @@ impl WorkingQualificationMaterials {
     )> {
         self.revalidate()?;
         let Self {
+            feishu_readonly_fixture: _,
             returned,
             public_materials,
             apks,

@@ -65,6 +65,7 @@ pub(super) struct PreparedWorkingBoot {
     producer_plan: SealedInput,
     normal_prepared: SealedInput,
     initrd: Guard,
+    ordinary_initrd: Guard,
     retained_sources: Vec<Guard>,
     report: SealedInput,
 }
@@ -136,7 +137,22 @@ impl PreparedWorkingBoot {
         retained_sources.push(Guard::open(&material_input)?);
         let original_prepared = pin(&read(&material_input)?["prepared_initramfs"])?;
         retained_sources.push(Guard::open(&original_prepared)?);
-        let initial = pin(&read(&original_prepared)?["input"])?;
+        let original_value = read(&original_prepared)?;
+        ensure(
+            original_value["schema"] == "droidloom.original-host-initramfs-prepared.v1"
+                && original_value["recovery_recipe_input"].is_null()
+                && original_value["kernel_release"] == c::KERNEL
+                && original_value["kernel_sha256"] == c::KERNEL_SHA,
+            "ordinary production initrd must be the actual normal base without recovery",
+        )?;
+        let ordinary_initrd = Guard::open(&pin(&original_value["initrd"])?)?;
+        let ordinary_materials = pin(&original_value["normal_materials"])?;
+        retained_sources.push(Guard::open(&ordinary_materials)?);
+        ensure(
+            read(&ordinary_materials)? == admitted["normal_initramfs"]["normal_materials"],
+            "ordinary initrd changed the actual normal material family",
+        )?;
+        let initial = pin(&original_value["input"])?;
         retained_sources.push(Guard::open(&initial)?);
         let base_plan = read(&initial)?;
         let directory = materials.recovery_directory()?;
@@ -182,6 +198,7 @@ impl PreparedWorkingBoot {
                 "boot_intent":intent.pin(),"early_configuration":early.pin(),"recovery_recipe":recipe.pin(),
                 "normal_base_plan":initial,"normal_producer_plan":producer_plan.pin(),
                 "normal_prepared":normal,"initrd":initrd_pin,"recovery":recovery,
+                "ordinary_normal_prepared":original_prepared,"ordinary_initrd":ordinary_initrd.pin(),
                 "same_four_backing_ofds_retained":true,"cold_parent_stage_completed":true,
                 "runtime_parent_freeze":false,"data_exchanged":false,"labels_applied":false,
                 "boot_armed":false,"application_business_accepted":false,"production_ready":false
@@ -196,6 +213,7 @@ impl PreparedWorkingBoot {
             producer_plan,
             normal_prepared,
             initrd,
+            ordinary_initrd,
             retained_sources,
             report,
         };
@@ -216,6 +234,7 @@ impl PreparedWorkingBoot {
             value.revalidate()?;
         }
         self.initrd.revalidate()?;
+        self.ordinary_initrd.revalidate()?;
         for guard in &self.retained_sources {
             guard.revalidate()?;
         }
@@ -232,6 +251,9 @@ impl PreparedWorkingBoot {
     }
     pub(super) fn early(&self) -> &FilePin {
         self.early.pin()
+    }
+    pub(super) fn ordinary_initrd(&self) -> &FilePin {
+        self.ordinary_initrd.pin()
     }
     pub(super) fn recovery(&self) -> &WorkingBootSpec {
         &self.contract
@@ -280,6 +302,7 @@ pub(super) struct WorkingBootSources {
     producer_plan: SealedInput,
     normal_prepared: SealedInput,
     initrd: Guard,
+    ordinary_initrd: Guard,
     retained_sources: Vec<Guard>,
     report: SealedInput,
 }
@@ -297,6 +320,7 @@ impl WorkingBootSources {
             value.revalidate_custody()?;
         }
         self.initrd.revalidate_custody()?;
+        self.ordinary_initrd.revalidate_custody()?;
         for guard in &self.retained_sources {
             guard.revalidate_custody()?;
         }
@@ -316,10 +340,14 @@ impl WorkingBootSources {
             value.revalidate()?;
         }
         self.initrd.revalidate()?;
+        self.ordinary_initrd.revalidate()?;
         for guard in &self.retained_sources {
             guard.revalidate()?;
         }
         Ok(())
+    }
+    pub(super) fn ordinary_initrd(&self) -> &FilePin {
+        self.ordinary_initrd.pin()
     }
     pub(super) fn recovery(&self) -> &WorkingBootSpec {
         &self.contract
@@ -345,6 +373,7 @@ impl PreparedWorkingBoot {
             producer_plan,
             normal_prepared,
             initrd,
+            ordinary_initrd,
             retained_sources,
             report,
         } = self;
@@ -357,6 +386,7 @@ impl PreparedWorkingBoot {
                 producer_plan,
                 normal_prepared,
                 initrd,
+                ordinary_initrd,
                 retained_sources,
                 report,
             },

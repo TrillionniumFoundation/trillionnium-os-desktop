@@ -28,7 +28,7 @@ OWNED = SUBJECTS | {COPY, SOURCE}
 GROUPS = {"p4_native_apk_children": SUBJECTS}
 ANCESTOR_PAIR = (BROKER, "p4_linux_native_leaf_source_t")
 MAX_MATRIX_ROWS = 250000
-CONTRACT_SHA256 = 'a955ca4df07374d01b3fe2148e8306af8f26173dab608de2e27f5b51d0fffea5'
+CONTRACT_SHA256 = 'efb5ddc23b3ab7dd3d7583cbdb474b414344af50dd8803a211e4dd3bfd8beb53'
 PROFILE = "droidloom-native-leaf-apk-reader"
 
 # Reviewed operations of the two fixed children. This literal is deliberately

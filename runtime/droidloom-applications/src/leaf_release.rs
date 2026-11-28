@@ -373,6 +373,15 @@ impl Inputs {
             current: Vec::new(),
         }
     }
+    pub(super) fn retained_descriptor_count(&self) -> usize {
+        self.directories.len() + self.files.len()
+            + self.current.len() * NativeCurrent::retained_descriptor_bound()
+    }
+    fn reserve_descriptors(&self, additional: usize) -> Result<(), String> {
+        require(self.retained_descriptor_count().checked_add(additional).is_some_and(|count|
+            count <= droidloom_supervisor::control::physical_qualification_channel::budget::resources::SOURCE_INPUT_DESCRIPTORS),
+            "native source input descriptor capacity exhausted")
+    }
     pub(super) fn anchored(&self, path: &Path) -> Result<PathBuf, String> {
         if path == Path::new("/") {
             return Ok(path.into());
@@ -425,6 +434,7 @@ impl Inputs {
         if let Some(parent) = path.parent() {
             self.directory(parent, root)?;
         }
+        self.reserve_descriptors(1)?;
         let anchored = self.anchored(path)?;
         let file = OpenOptions::new()
             .read(true)
@@ -476,6 +486,7 @@ impl Inputs {
                 pin(reference, maximum)?;
                 require(reference.path == path, "CURRENT pin path differs")?;
             }
+            self.reserve_descriptors(NativeCurrent::retained_descriptor_bound())?;
             let held = NativeCurrent::capture().map_err(|e| e.to_string())?;
             let raw = held.bytes().to_vec();
             let actual = FilePin {
@@ -500,6 +511,7 @@ impl Inputs {
             require(reference.path == path, "release pin path differs")?;
         }
         self.directory(path.parent().ok_or("release file has no parent")?, root)?;
+        self.reserve_descriptors(1)?;
         let anchored = self.anchored(path)?;
         let file = OpenOptions::new()
             .read(true)
@@ -785,6 +797,19 @@ impl NativeRelease {
         Ok(result)
     }
 
+    pub(super) fn require_feishu_readonly_fixture(
+        &self,
+        expected: Option<&droidloom_supervisor::working_qualification::FeishuReadonlyFixture>,
+    ) -> Result<(), String> {
+        self.guard()?;
+        let actual = self.working.as_ref()
+            .map(WorkingSourceWitness::feishu_readonly_fixture).transpose()?.flatten();
+        require(actual == expected,
+            "physical Feishu comparison input differs from the actual held working boot configuration")?;
+        if let Some(fixture) = actual { fixture.validate().map_err(|e|e.to_string())?; }
+        self.guard()
+    }
+
     pub(super) fn compare_working_main(
         &self,
         main: &droidloom_supervisor::control::MainCustodyObservation,
@@ -972,5 +997,30 @@ mod tests {
         assert!(moved.join("only-owned-new-file").is_file());
         assert!(!intended.exists());
         drop(file);
+    }
+}
+
+
+#[cfg(test)]
+mod descriptor_budget_tests {
+    use super::*;
+    #[test]
+    fn real_source_ofds_remain_held_when_next_input_exceeds_capacity() {
+        let root=std::env::temp_dir().join(format!("droidloom-source-fds-{}-{}",
+            std::process::id(),SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_nanos()));
+        fs::create_dir(&root).unwrap();
+        let path=root.join("source.json");
+        fs::write(&path,b"{}").unwrap();
+        let mut held=Inputs::new();
+        let cap=droidloom_supervisor::control::physical_qualification_channel::budget::resources::SOURCE_INPUT_DESCRIPTORS;
+        while held.retained_descriptor_count()<cap {
+            assert_eq!(held.read(&path,None,16,false,false).unwrap(),b"{}");
+        }
+        let before=held.retained_descriptor_count();
+        assert!(held.read(&path,None,16,false,false).unwrap_err().contains("capacity"));
+        assert_eq!(held.retained_descriptor_count(),before);
+        held.guard().unwrap();
+        drop(held);
+        fs::remove_file(&path).unwrap();fs::remove_dir(root).unwrap();
     }
 }

@@ -86,8 +86,8 @@ impl WorkingReturnedFiles {
                     );
                 }
                 ensure(
-                    required.len() == 12,
-                    "returned runtime lost its exact twelve source files",
+                    required.len() == 16,
+                    "returned runtime lost its exact sixteen source files",
                 )?;
                 for name in [
                     "/etc/droidloom/qualification",
@@ -101,7 +101,9 @@ impl WorkingReturnedFiles {
                     .parent()
                     .ok_or("returned evidence parent")?
                     .to_owned();
-                for path in [parent, evidence] {
+                let production = Path::new("/var/lib/droidloom/qualification")
+                    .join(format!("production-commit-{}", sources.candidate()));
+                for path in [parent, evidence, production] {
                     required.insert(path.clone(), Payload::Absent);
                     retained.insert(path);
                 }
@@ -153,6 +155,35 @@ impl WorkingReturnedFiles {
                         mode: 0o644,
                     },
                 );
+                let ordinary_pin: FilePin =
+                    serde_json::from_value(body["ordinary_normal_prepared"].clone())?;
+                let ordinary = SealedInput::open(&ordinary_pin)?;
+                let ordinary_body: Value = serde_json::from_slice(&ordinary.read()?)?;
+                let ordinary_initrd: FilePin =
+                    serde_json::from_value(body["ordinary_initrd"].clone())?;
+                ensure(
+                    ordinary_body["schema"] == "droidloom.original-host-initramfs-prepared.v1"
+                        && ordinary_body["initrd"] == serde_json::to_value(&ordinary_initrd)?
+                        && ordinary_body["recovery_recipe_input"].is_null()
+                        && ordinary_body["kernel_release"]
+                            == crate::cold_working_recovery::contract::KERNEL
+                        && ordinary_body["kernel_sha256"]
+                            == crate::cold_working_recovery::contract::KERNEL_SHA,
+                    "ordinary initrd reverse lost the actual normal image lineage",
+                )?;
+                guards.push(Guard::open(&ordinary_initrd)?);
+                let production_base = Path::new("/boot/droidloom/production");
+                optional.insert(production_base.to_owned());
+                let production = production_base.join(sources.candidate());
+                required.insert(production.clone(), Payload::Absent);
+                required.insert(
+                    production.join("initrd.img"),
+                    Payload::Regular {
+                        source: ordinary_initrd,
+                        mode: 0o400,
+                    },
+                );
+                inputs.push(ordinary);
                 inputs.push(prepared);
                 inputs.push(normal);
                 "working-grub-files"

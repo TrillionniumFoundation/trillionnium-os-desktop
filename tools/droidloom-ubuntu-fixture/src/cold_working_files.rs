@@ -9,7 +9,7 @@ use crate::{
     boot_files::{self as files, FilePin},
     cold_original_data::labels::WorkingLabelBatch,
     cold_working_recovery::contract as c,
-    ensure, fs,
+    ensure, fs, production_commit_contract as permanent,
 };
 use std::{
     collections::BTreeMap,
@@ -33,6 +33,8 @@ pub(crate) fn roster() -> BTreeMap<PathBuf, u32> {
         (PathBuf::from(c::INSTALLATION), 0o400),
         (PathBuf::from(c::EARLY_CONFIG), 0o400),
         (PathBuf::from(c::RETURN_CONFIG), 0o400),
+        (PathBuf::from(permanent::CONFIG), 0o400),
+        (PathBuf::from(permanent::PREFIX), 0o400),
     ]);
     for name in [
         "contract.json",
@@ -43,7 +45,12 @@ pub(crate) fn roster() -> BTreeMap<PathBuf, u32> {
     ] {
         result.insert(Path::new("/etc/droidloom/host-mac").join(name), 0o400);
     }
-    for name in [c::PARENT_UNIT, c::RETURN_UNIT] {
+    for name in [
+        c::PARENT_UNIT,
+        c::RETURN_UNIT,
+        permanent::VERIFY_UNIT,
+        permanent::RETURN_UNIT,
+    ] {
         result.insert(Path::new("/usr/lib/systemd/system").join(name), 0o444);
     }
     result
@@ -57,8 +64,8 @@ fn verify_roster<'a>(entries: impl IntoIterator<Item = (&'a Path, u32)>) -> Resu
         )?;
     }
     ensure(
-        actual.len() == 12 && actual == roster(),
-        "working runtime differs from the fixed twelve normal target/mode pairs",
+        actual.len() == 16 && actual == roster(),
+        "working runtime differs from the fixed sixteen normal target/mode pairs",
     )
 }
 
@@ -98,7 +105,8 @@ impl Publication {
         let evidence = self.source.configuration().runtime_evidence_directory();
         let candidate = evidence.parent().ok_or("working evidence parent absent")?;
         fs::Tree::open("/", 0)?.dir("/var/lib/droidloom/qualification")?;
-        for path in [candidate, evidence.as_path()] {
+        let production = self.source.production_directory()?;
+        for path in [candidate, evidence.as_path(), production.as_path()] {
             ensure(
                 std::fs::symlink_metadata(path)
                     .err()
@@ -138,7 +146,7 @@ impl Publication {
                     .require_original(index, self.cell.identity(), self.cell.pin())?;
             }
             let target = self.transaction.target(index);
-            if target == candidate || target == evidence {
+            if target == candidate || target == evidence || target == production {
                 self.transaction.publish_captured(index, None)?;
             } else {
                 self.transaction.publish(index)?;
@@ -357,7 +365,7 @@ mod tests {
     #[test]
     fn fixed_working_roster_rejects_missing_duplicate_foreign_and_wrong_mode() {
         let expected = roster();
-        assert_eq!(expected.len(), 12);
+        assert_eq!(expected.len(), 16);
         assert_eq!(
             expected.get(&Path::new("/usr/lib/systemd/system").join(c::PARENT_UNIT)),
             Some(&0o444)
@@ -390,7 +398,7 @@ mod tests {
                 .keys()
                 .filter(|p| p.starts_with("/usr/lib/systemd/system"))
                 .count()
-                == 2
+                == 4
         );
         assert!(
             !expected

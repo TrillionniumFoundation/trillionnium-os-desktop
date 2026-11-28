@@ -1,0 +1,39 @@
+[Unit]
+Description=Return a failed ordinary Android production boot to the preserved original entry
+DefaultDependencies=no
+After=droidloom-production-verify.service
+Conflicts=shutdown.target
+Before=shutdown.target
+
+[Service]
+Type=exec
+ExecStart=/usr/bin/droidloom-applications --production-return-original
+User=root
+Group=root
+WorkingDirectory=/
+UMask=0077
+CapabilityBoundingSet=CAP_SYS_PTRACE
+AmbientCapabilities=
+NoNewPrivileges=no
+PrivateMounts=no
+SELinuxContext=u:system_r:p4_linux_production_verify_t:s0
+AppArmorProfile=droidloom-production-verify
+StandardInput=null
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=droidloom-production-verify-return
+KillMode=control-group
+SendSIGKILL=yes
+TimeoutStartSec=30s
+TimeoutStopSec=30s
+# One 180s source-bound reconcile/return attempt plus 30s for a terminal exit.
+RuntimeMaxSec=210s
+Restart=no
+CPUAccounting=yes
+MemoryAccounting=yes
+TasksAccounting=yes
+CPUQuota=100%
+MemoryMax=2147483648
+MemorySwapMax=0
+TasksMax=64
+LimitNOFILE=32768

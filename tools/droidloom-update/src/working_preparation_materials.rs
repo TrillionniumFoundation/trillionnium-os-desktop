@@ -38,7 +38,7 @@ impl PreparationMaterial {
             Self::Selection=>(592108,"4abd5c5d0a8ac89e739b2ba6dd508435a1d355b9ce975ba5ceacb50c1ee4a4a0"),
             Self::SignatureReceipt=>(309985,"1d44a6f5cb247de704bd64a0973226612672619545ecd328e4536bdda0236731"),
             Self::ImportReceipt=>(1005,"1f06db0be3a790bad7a4ba61507b06024289b145cfe3de8f27cea3ca890b091d"),
-            Self::NormalVerification=>(129848,"26d54f559e30291af178fd113c53761d23b2f1294f134987a82411ba30651cc8"),
+            Self::NormalVerification=>(129840,"78a512d9cf3465613b2f4ccd79de656a4280dee37311e8c6958a6136f2bf2513"),
             Self::GateRegistry=>(32688,"f99217aa675c23b8cb671e36af7b3c1d8aa068eeba719a4b985f47d1539c5bb5"),
         }
     }

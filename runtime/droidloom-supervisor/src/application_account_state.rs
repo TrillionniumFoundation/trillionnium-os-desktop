@@ -96,6 +96,17 @@ impl PackageAccountState {
     pub fn package(&self) -> &str { &self.target.package }
     pub fn uid(&self) -> u32 { self.target.uid }
     pub fn account_count(&self) -> usize { self.accounts.len() }
+    /// Count only accounts whose authenticator is the exact actual target APK
+    /// and UID. Other visible accounts never establish this package's scope.
+    /// Registration is not a login/credential assertion (sync SDKs can register
+    /// before login); the signed application must separately show a real workspace.
+    pub fn target_owned_account_count(&self, actual: &ApplicationInspection) -> Result<usize, String> {
+        self.validate()?;
+        self.target.require_application(actual)?;
+        Ok(self.accounts.values().filter(|account| self.authenticators
+            .get(&account.type_token)
+            .is_some_and(|auth| auth.provider.require_application(actual).is_ok())).count())
+    }
     pub fn authenticator_count(&self) -> usize { self.authenticators.len() }
     fn validate(&self) -> Result<(), String> {
         self.target.validate()?;
@@ -309,4 +320,26 @@ mod tests {
         let mut v=base.clone();v["authenticators"][0]["provider"]["source_paths"]=json!(["/a/../b"]);
         assert!(read(&v).is_err());
     }
+    #[test]
+    fn target_account_scope_uses_exact_provider_uid_version_and_complete_code_paths_not_global_count() {
+        use crate::control::application_probe::{ApplicationInspection,InstalledApk};
+        let actual=ApplicationInspection{package:"com.android.settings".into(),user:0,uid:1000,version_code:36,
+            epoch:crate::main_custody::tests::sample().epoch,
+            apks:vec![InstalledApk{name:"base.apk".into(),path:"/system/priv-app/Settings/Settings.apk".into(),bytes:4,sha256:"a".repeat(64)}]};
+        let mut raw=wire();let other=read(&raw).unwrap();
+        assert_eq!(other.account_count(),1);
+        assert_eq!(other.target_owned_account_count(&actual).unwrap(),0);
+        raw["authenticators"][0]["provider"]=raw["target"].clone();
+        assert_eq!(read(&raw).unwrap().target_owned_account_count(&actual).unwrap(),1);
+        for (key,value) in [("uid",json!(1001)),("version_code",json!(37)),
+            ("package",json!("com.example.other")),("source_paths",json!(["/system/priv-app/Settings/other.apk"]))] {
+            let mut changed=raw.clone();changed["authenticators"][0]["provider"][key]=value;
+            assert_eq!(read(&changed).unwrap().target_owned_account_count(&actual).unwrap(),0);
+        }
+        let mut wrong=actual.clone();wrong.uid=1001;
+        assert!(read(&raw).unwrap().target_owned_account_count(&wrong).is_err());
+        raw["accounts"]=json!([]);
+        assert_eq!(read(&raw).unwrap().target_owned_account_count(&actual).unwrap(),0);
+    }
+
 }

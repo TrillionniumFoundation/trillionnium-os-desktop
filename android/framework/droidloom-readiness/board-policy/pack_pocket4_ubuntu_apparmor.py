@@ -52,10 +52,10 @@ def main():
         if result.stat().st_size != expected["ubuntu_size"] or digest(result) != expected["ubuntu_sha256"]:
             raise ValueError("The original Ubuntu AppArmor archive differs from the admitted distro inputs")
         roles = expected["board_profiles"]
-        names = ("droidloom-ubuntu-journald", "droidloom-policy-loader", "droidloom-production-android", "droidloom-production-broker", "droidloom-instance-launcher", "droidloom-instance-factory", "droidloom-native-hardware-label", "droidloom-camera-capture", "droidloom-native-uevent-label", "droidloom-original-once-return", "droidloom-working-qualification", "droidloom-working-privateprep", "droidloom-working-application", "droidloom-working-qualification-return", "droidloom-native-leaf-apk-reader")
+        names = ("droidloom-ubuntu-journald", "droidloom-policy-loader", "droidloom-production-android", "droidloom-production-broker", "droidloom-instance-launcher", "droidloom-instance-factory", "droidloom-native-hardware-label", "droidloom-camera-capture", "droidloom-native-uevent-label", "droidloom-original-once-return", "droidloom-working-qualification", "droidloom-working-privateprep", "droidloom-working-application", "droidloom-working-qualification-return", "droidloom-native-leaf-apk-reader", "droidloom-production-commit", "droidloom-production-verify")
         ordered = tuple(expected["board_profile_order"])
         if ordered != names or set(roles) != set(ordered):
-            raise ValueError("The board must select exactly the fifteen ordered service roles")
+            raise ValueError("The board must select exactly the seventeen ordered service roles")
         names = ordered
         with result.open("r+b") as target:
             target.seek(8)

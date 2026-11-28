@@ -48,6 +48,8 @@ mod model;
 #[path = "../../../runtime/droidloom-supervisor/src/normal_host_release.rs"]
 mod normal_host_release;
 mod paths;
+#[path = "../../../runtime/droidloom-supervisor/src/production_commit_contract.rs"]
+mod production_commit_contract;
 #[cfg(test)]
 mod tests;
 

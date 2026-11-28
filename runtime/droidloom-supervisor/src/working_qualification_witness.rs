@@ -88,6 +88,15 @@ impl WorkingSourceWitness {
     pub(crate) fn comparison(&self) -> &WorkingSourceOrigin {
         &self.inner.origin
     }
+    /// Bounded comparison data from the actual held root boot configuration.
+    /// The return-config whole SHA is committed by this exact fresh boot. This
+    /// value alone never proves an authenticated account or successful UI.
+    pub fn feishu_readonly_fixture(
+        &self,
+    ) -> Result<Option<&super::FeishuReadonlyFixture>, String> {
+        self.guard()?;
+        Ok(self.inner.boot.config().feishu_readonly_fixture.as_ref())
+    }
     pub fn guard(&self) -> Result<(), String> {
         self.inner.boot.guard().map_err(|e| e.to_string())?;
         self.inner.parent.guard()?;

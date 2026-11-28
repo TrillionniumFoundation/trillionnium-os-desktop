@@ -18,11 +18,10 @@ pub mod application_permission_state;
 pub mod control;
 pub use control::physical_qualification_channel;
 pub use control::working_qualification;
-#[cfg(target_os = "linux")]
-pub mod prebuilt_native_helpers;
 mod cpu_placement;
 pub mod development;
 mod development_network;
+pub mod empty_meituan_contract;
 pub mod engine_custody;
 pub mod gapps;
 mod image_layout;
@@ -33,17 +32,12 @@ mod native_application_ui_gateway;
 #[cfg(target_os = "linux")]
 mod native_application_ui_protocol;
 mod native_calendar_counts;
+pub mod native_empty_meituan_install;
 #[cfg(target_os = "linux")]
 pub mod native_hardware_label;
-pub mod native_ihg_preparation;
 #[cfg(target_os = "linux")]
 pub mod native_ihg_helper;
-#[cfg(target_os = "linux")]
-pub mod native_leaf_fixture;
-#[cfg(target_os = "linux")]
-pub mod native_working_install;
-pub mod empty_meituan_contract;
-pub mod native_empty_meituan_install;
+pub mod native_ihg_preparation;
 #[cfg(target_os = "linux")]
 pub mod native_leaf_baseline;
 #[cfg(target_os = "linux")]
@@ -55,6 +49,8 @@ mod native_leaf_baseline_programs;
 #[cfg(target_os = "linux")]
 mod native_leaf_engine;
 #[cfg(target_os = "linux")]
+pub mod native_leaf_fixture;
+#[cfg(target_os = "linux")]
 mod native_leaf_fixture_material;
 #[cfg(target_os = "linux")]
 mod native_once_capabilities;
@@ -63,17 +59,22 @@ mod native_once_contract;
 #[cfg(target_os = "linux")]
 pub mod native_once_return;
 #[cfg(target_os = "linux")]
+pub mod native_package_help;
+#[cfg(target_os = "linux")]
 mod native_preparation_channel;
 #[cfg(target_os = "linux")]
 mod native_preparation_json;
 #[cfg(target_os = "linux")]
 pub mod native_preparation_read;
-#[cfg(target_os = "linux")]
-pub mod native_package_help;
 pub mod native_source_files;
 #[cfg(target_os = "linux")]
 pub mod native_uevent_label;
 mod native_working_contract;
+#[cfg(target_os = "linux")]
+pub mod native_working_install;
+#[cfg(target_os = "linux")]
+pub mod prebuilt_native_helpers;
+pub(crate) mod production_commit_contract;
 pub use native_working_contract::preparation as working_preparation_budget;
 pub mod normal_host_release;
 mod package_cache;

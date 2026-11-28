@@ -1,0 +1,12 @@
+# Source-owned production activation: immutable inputs, two fixed units, and
+# eight named records. No original Android image path is relabeled.
+/etc/droidloom/production-commit\.json -- u:object_r:p4_linux_production_config_t:s0
+/etc/droidloom/production-grub-prefix\.cfg -- u:object_r:p4_linux_production_config_t:s0
+/boot/grub/custom\.cfg -- u:object_r:p4_linux_production_config_t:s0
+/boot/droidloom/production/[0-9a-f]{64}/initrd\.img -- u:object_r:p4_linux_production_config_t:s0
+/usr/lib/systemd/system/droidloom-production-verify(-return)?\.service -- u:object_r:p4_linux_production_verify_unit_t:s0
+/usr/share/droidloom/production/droidloom-production-verify(-return)?\.service -- u:object_r:p4_linux_production_verify_unit_t:s0
+/var/lib/droidloom/qualification/production-commit-[0-9a-f]{64} -d u:object_r:p4_linux_production_record_dir_t:s0
+/var/lib/droidloom/qualification/production-commit-[0-9a-f]{64}/(PLAN|SUMMARY|MAIN|COMMIT|TRIAL|REQUEST)\.json -- u:object_r:p4_linux_production_record_t:s0
+/var/lib/droidloom/qualification/production-commit-[0-9a-f]{64}/STDERR\.log -- u:object_r:p4_linux_production_record_t:s0
+/var/lib/droidloom/qualification/production-commit-[0-9a-f]{64}/ACTIVE\.json -- u:object_r:p4_linux_production_activation_t:s0

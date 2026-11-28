@@ -37,6 +37,8 @@ struct PhysicalPlan {
     schema: String,
     runtime_plan: FilePin,
     applications: Vec<PhysicalApplicationPlan>,
+    #[serde(default)]
+    feishu_readonly_fixture: Option<droidloom_supervisor::working_qualification::FeishuReadonlyFixture>,
 }
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -284,6 +286,19 @@ struct PlanInputs {
     documents: Vec<ClockResultCustody>,
 }
 impl PlanInputs {
+    fn reserve_document(&self) -> Result<(),String> {
+        require(self.documents.len() <
+            control::physical_qualification_channel::budget::resources::PLAN_DOCUMENTS,
+            "physical input document count exceeds the whole-suite descriptor capacity")
+    }
+    fn retain(&mut self, held:ClockResultCustody) -> Result<(),String> {
+        self.reserve_document()?;
+        require(held.retained_descriptor_count() <=
+            control::physical_qualification_channel::budget::resources::PLAN_DOCUMENT_DESCRIPTORS,
+            "physical input parent chain exceeds its finite descriptor capacity")?;
+        self.documents.push(held);
+        Ok(())
+    }
     fn new() -> Self {
         Self {
             documents: Vec::new(),
@@ -301,8 +316,9 @@ impl PlanInputs {
             )?;
             return held.read();
         }
+        self.reserve_document()?;
         let (held, value) = ClockResultCustody::capture(pin)?;
-        self.documents.push(held);
+        self.retain(held)?;
         Ok(value)
     }
     fn initial(&mut self, path: &Path, sha256: &str) -> Result<(FilePin, Value), String> {
@@ -310,13 +326,14 @@ impl PlanInputs {
             crate::release::valid_sha(sha256),
             "physical plan requires its complete external SHA",
         )?;
+        self.reserve_document()?;
         let (held, value) = ClockResultCustody::capture_path(path)?;
         require(
             held.reference().sha256 == sha256,
             "physical plan differs from its explicit whole-file commitment",
         )?;
         let pin = held.reference().clone();
-        self.documents.push(held);
+        self.retain(held)?;
         Ok((pin, value))
     }
     fn guard(&self) -> Result<(), String> {
@@ -1255,6 +1272,7 @@ pub(super) fn validate_prepared_working_plan(
     value: &Value, runtime: &RuntimePlan, gates: &GateRegistry,
 ) -> Result<(), String> {
     let plan: PhysicalPlan=serde_json::from_value(value.clone()).map_err(|e|e.to_string())?;
+    if let Some(fixture) = &plan.feishu_readonly_fixture { fixture.validate().map_err(|e|e.to_string())?; }
     validate(runtime,gates,roster::PACKAGE_COUNT)?;
     require_compiled_roster(&plan,runtime,gates)?;
     require_channel_roster()
@@ -1322,6 +1340,7 @@ pub fn run_physical_files(
         "complete physical qualification requires the source-admitted current normal batch",
     )?;
     let source_owner = leaf_routes::qualification_release(&selection)?;
+    source_owner.require_feishu_readonly_fixture(plan.feishu_readonly_fixture.as_ref())?;
     source_owner.cover_window(
         end.checked_duration_since(Instant::now())
             .ok_or("physical source preflight consumed its original window")?
@@ -1387,7 +1406,9 @@ pub fn run_physical_files(
                         droidloom_supervisor::native_leaf_baseline::NativeLeafBaselineObservation::capture_from_observed(
                             &inspector, &main, &before, work_end,
                         ).map_err(|e|e.to_string())?;
-                    family_observation::run_family_case(&mut inspector, &mut baseline, work_end)?
+                    source_owner.require_feishu_readonly_fixture(plan.feishu_readonly_fixture.as_ref())?;
+                    family_observation::run_family_case(&mut inspector, &mut baseline,
+                        plan.feishu_readonly_fixture.as_ref(), work_end)?
                 };
                 let completed = HistoricalFamilyCase::from_observed(
                     observation, identity, before, &main, case_end,
@@ -1816,6 +1837,7 @@ mod tests {
             }),
         };
         let plan = PhysicalPlan {
+            feishu_readonly_fixture: None,
             schema: SCHEMA.into(),
             runtime_plan: pin.clone(),
             applications: roster::PACKAGES
@@ -1877,7 +1899,12 @@ mod tests {
     #[test]
     fn physical_channel_uses_exact_source_order_windows_and_no_legacy_single_case() {
         require_channel_roster().unwrap();
-        assert_eq!(physical_qualification_window_seconds(), 342_457);
+        assert_eq!(physical_qualification_window_seconds(), 620_357);
+        assert_eq!(family_window_seconds("com.ss.android.lark"), 17_480);
+        assert_eq!(family_window_seconds("com.united.mobile.android"),25_490);
+        assert_eq!(family_window_seconds("ctrip.android.view"),48_770);
+        assert_eq!(family_window_seconds("com.lianjia.beike"), 19_330);
+        assert_eq!(family_window_seconds("com.zillow.android.streeteasy"), 19_330);
         assert_eq!(camera_photo_window_seconds(), 5_185);
         assert_eq!(QualificationCase::CameraPhotoCaptureReopen as usize, 47);
         assert_eq!(case_window_seconds(Route::CameraPhoto), 1_810);
@@ -2070,3 +2097,27 @@ mod tests {
     }
 }
 
+
+
+#[cfg(test)]
+mod descriptor_budget_tests {
+    use super::*;
+    #[test]
+    fn physical_plan_rejects_deep_parent_fd_amplification_before_retaining_document() {
+        let root=std::env::temp_dir().join(format!("droidloom-plan-fds-{}-{}",
+            std::process::id(),std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos()));
+        std::fs::create_dir(&root).unwrap();
+        let mut deep=root.clone();
+        for _ in 0..32 {deep=deep.join("d");std::fs::create_dir(&deep).unwrap();}
+        let file=deep.join("plan.json");std::fs::write(&file,b"{}").unwrap();
+        let (held,_)=ClockResultCustody::capture_path(&file).unwrap();
+        assert!(held.retained_descriptor_count()>control::physical_qualification_channel::budget::resources::PLAN_DOCUMENT_DESCRIPTORS);
+        let mut inputs=PlanInputs::new();
+        assert!(inputs.retain(held).unwrap_err().contains("capacity"));
+        assert!(inputs.documents.is_empty());
+        std::fs::remove_file(file).unwrap();
+        for _ in 0..32 {std::fs::remove_dir(&deep).unwrap();deep.pop();}
+        std::fs::remove_dir(root).unwrap();
+    }
+}

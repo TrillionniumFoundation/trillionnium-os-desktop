@@ -19,17 +19,39 @@ mod cli_tests {
 
     #[test]
     fn working_entries_have_no_external_input_or_action_selectors() {
-        for mode in ["--owned-working-qualification", "--working-qualification-prepare"] {
+        for mode in [
+            "--owned-working-qualification",
+            "--working-qualification-prepare",
+        ] {
             assert!(Cli::try_parse_from(["apps", mode]).is_ok());
-            for args in [vec!["--socket", "/other"], vec!["--user", "0"],
-                vec!["--once"], vec!["--remove-managed"],
+            for args in [
+                vec!["--socket", "/other"],
+                vec!["--user", "0"],
+                vec!["--once"],
+                vec!["--remove-managed"],
                 vec!["--owned-physical-plan-sha256", "a"],
-                vec!["--prepare-runtime-plan", "/input", "--expect-preparation-sha256", "a", "--expect-app-count", "39"]] {
-                let mut combined=vec!["apps",mode];combined.extend(args);
+                vec![
+                    "--prepare-runtime-plan",
+                    "/input",
+                    "--expect-preparation-sha256",
+                    "a",
+                    "--expect-app-count",
+                    "39",
+                ],
+            ] {
+                let mut combined = vec!["apps", mode];
+                combined.extend(args);
                 assert!(Cli::try_parse_from(combined).is_err());
             }
         }
-        assert!(Cli::try_parse_from(["apps","--owned-working-qualification","--working-qualification-prepare"]).is_err());
+        assert!(
+            Cli::try_parse_from([
+                "apps",
+                "--owned-working-qualification",
+                "--working-qualification-prepare"
+            ])
+            .is_err()
+        );
     }
 
     #[test]
@@ -38,11 +60,31 @@ mod cli_tests {
         assert!(Cli::try_parse_from(args).is_ok());
         assert!(Cli::try_parse_from(["apps", "--owned-physical-plan-sha256"]).is_err());
         for extra in [
-            vec!["--physical-application-plan", "/other", "--expect-physical-plan-sha256", "sha"],
-            vec!["--socket", "/other"], vec!["--user", "1"], vec!["--once"],
-            vec!["--remove-managed"], vec!["--expect-app-count", "39"],
-            vec!["--owned-leaf-profile", "gallery", "--owned-leaf-plan-sha256", "sha"],
-            vec!["--runtime-plan", "/other", "--expect-runtime-plan-sha256", "sha", "--expect-app-count", "39"],
+            vec![
+                "--physical-application-plan",
+                "/other",
+                "--expect-physical-plan-sha256",
+                "sha",
+            ],
+            vec!["--socket", "/other"],
+            vec!["--user", "1"],
+            vec!["--once"],
+            vec!["--remove-managed"],
+            vec!["--expect-app-count", "39"],
+            vec![
+                "--owned-leaf-profile",
+                "gallery",
+                "--owned-leaf-plan-sha256",
+                "sha",
+            ],
+            vec![
+                "--runtime-plan",
+                "/other",
+                "--expect-runtime-plan-sha256",
+                "sha",
+                "--expect-app-count",
+                "39",
+            ],
             vec!["--release-check", "/other"],
         ] {
             let mut combined = args.to_vec();
@@ -53,15 +95,34 @@ mod cli_tests {
 
     #[test]
     fn physical_case_execution_uses_only_its_complete_source_owned_plan() {
-        assert!(Cli::try_parse_from(["apps","--physical-application-plan","/plan"]).is_err());
-        assert!(Cli::try_parse_from(["apps","--expect-physical-plan-sha256","sha"]).is_err());
-        let args=["apps","--physical-application-plan","/plan","--expect-physical-plan-sha256","sha"];
+        assert!(Cli::try_parse_from(["apps", "--physical-application-plan", "/plan"]).is_err());
+        assert!(Cli::try_parse_from(["apps", "--expect-physical-plan-sha256", "sha"]).is_err());
+        let args = [
+            "apps",
+            "--physical-application-plan",
+            "/plan",
+            "--expect-physical-plan-sha256",
+            "sha",
+        ];
         assert!(Cli::try_parse_from(args).is_ok());
-        for extra in [vec!["--expect-app-count","38"],vec!["--socket","/other"],
-            vec!["--user","1"],vec!["--once"],vec!["--remove-managed"],
-            vec!["--runtime-plan","/other","--expect-runtime-plan-sha256","sha","--expect-app-count","39"],
-            vec!["--release-check","/manifest"]] {
-            let mut combined=args.to_vec();combined.extend(extra);
+        for extra in [
+            vec!["--expect-app-count", "38"],
+            vec!["--socket", "/other"],
+            vec!["--user", "1"],
+            vec!["--once"],
+            vec!["--remove-managed"],
+            vec![
+                "--runtime-plan",
+                "/other",
+                "--expect-runtime-plan-sha256",
+                "sha",
+                "--expect-app-count",
+                "39",
+            ],
+            vec!["--release-check", "/manifest"],
+        ] {
+            let mut combined = args.to_vec();
+            combined.extend(extra);
             assert!(Cli::try_parse_from(combined).is_err());
         }
     }
@@ -70,43 +131,106 @@ mod cli_tests {
     fn preparation_requires_external_intent_and_count_and_cannot_execute_other_actions() {
         assert!(Cli::try_parse_from(["apps", "--prepare-runtime-plan", "/intent"]).is_err());
         assert!(Cli::try_parse_from(["apps", "--expect-preparation-sha256", "pin"]).is_err());
-        let args = ["apps", "--prepare-runtime-plan", "/intent", "--expect-preparation-sha256", "pin", "--expect-app-count", "39"];
+        let args = [
+            "apps",
+            "--prepare-runtime-plan",
+            "/intent",
+            "--expect-preparation-sha256",
+            "pin",
+            "--expect-app-count",
+            "39",
+        ];
         assert!(Cli::try_parse_from(args).is_ok());
-        let mut socket = args.to_vec(); socket.extend(["--socket", "/socket"]);
+        let mut socket = args.to_vec();
+        socket.extend(["--socket", "/socket"]);
         assert!(Cli::try_parse_from(socket).is_ok());
-        for extra in [vec!["--once"], vec!["--user", "0"], vec!["--refresh-seconds", "30"],
-            vec!["--remove-managed"], vec!["--inspect-package", "org.mozilla.firefox"],
+        for extra in [
+            vec!["--once"],
+            vec!["--user", "0"],
+            vec!["--refresh-seconds", "30"],
+            vec!["--remove-managed"],
+            vec!["--inspect-package", "org.mozilla.firefox"],
             vec!["--inspect-contacts-fixture"],
-            vec!["--runtime-plan", "/plan", "--expect-runtime-plan-sha256", "pin"],
-            vec!["--owned-leaf-profile", "gallery", "--owned-leaf-plan-sha256", "pin"],
-            vec!["--adopt-native-leaf-release", "/adoption", "--expect-native-adoption-sha256", "pin"]]
-        {
-            let mut combined = args.to_vec(); combined.extend(extra);
+            vec![
+                "--runtime-plan",
+                "/plan",
+                "--expect-runtime-plan-sha256",
+                "pin",
+            ],
+            vec![
+                "--owned-leaf-profile",
+                "gallery",
+                "--owned-leaf-plan-sha256",
+                "pin",
+            ],
+            vec![
+                "--adopt-native-leaf-release",
+                "/adoption",
+                "--expect-native-adoption-sha256",
+                "pin",
+            ],
+        ] {
+            let mut combined = args.to_vec();
+            combined.extend(extra);
             assert!(Cli::try_parse_from(combined).is_err());
         }
     }
 
     #[test]
     fn owned_unit_entry_requires_both_fixed_profile_and_content_pin_without_other_actions() {
-        assert!(Cli::try_parse_from(["apps","--owned-leaf-profile","gallery"]).is_err());
-        assert!(Cli::try_parse_from(["apps","--owned-leaf-plan-sha256","pin"]).is_err());
-        let args=["apps","--owned-leaf-profile","gallery","--owned-leaf-plan-sha256","pin"];
+        assert!(Cli::try_parse_from(["apps", "--owned-leaf-profile", "gallery"]).is_err());
+        assert!(Cli::try_parse_from(["apps", "--owned-leaf-plan-sha256", "pin"]).is_err());
+        let args = [
+            "apps",
+            "--owned-leaf-profile",
+            "gallery",
+            "--owned-leaf-plan-sha256",
+            "pin",
+        ];
         assert!(Cli::try_parse_from(args).is_ok());
-        for extra in [vec!["--once"],vec!["--socket","/other"],vec!["--expect-app-count","1"],
-            vec!["--inspect-package","com.android.gallery3d"],vec!["--remove-managed"]] {
-            let mut changed=args.to_vec();changed.extend(extra);assert!(Cli::try_parse_from(changed).is_err());
+        for extra in [
+            vec!["--once"],
+            vec!["--socket", "/other"],
+            vec!["--expect-app-count", "1"],
+            vec!["--inspect-package", "com.android.gallery3d"],
+            vec!["--remove-managed"],
+        ] {
+            let mut changed = args.to_vec();
+            changed.extend(extra);
+            assert!(Cli::try_parse_from(changed).is_err());
         }
-        assert!(Cli::try_parse_from(["apps","--owned-leaf-profile","arbitrary","--owned-leaf-plan-sha256","pin"]).is_err());
+        assert!(
+            Cli::try_parse_from([
+                "apps",
+                "--owned-leaf-profile",
+                "arbitrary",
+                "--owned-leaf-plan-sha256",
+                "pin"
+            ])
+            .is_err()
+        );
     }
 
     #[test]
     fn native_adoption_requires_an_explicit_intent_pin_and_excludes_runtime_actions() {
-        assert!(Cli::try_parse_from(["apps","--adopt-native-leaf-release","/intent"]).is_err());
-        let args=["apps","--adopt-native-leaf-release","/intent","--expect-native-adoption-sha256","pin"];
+        assert!(Cli::try_parse_from(["apps", "--adopt-native-leaf-release", "/intent"]).is_err());
+        let args = [
+            "apps",
+            "--adopt-native-leaf-release",
+            "/intent",
+            "--expect-native-adoption-sha256",
+            "pin",
+        ];
         assert!(Cli::try_parse_from(args).is_ok());
-        for extra in [vec!["--once"],vec!["--socket","/other"],vec!["--inspect-contacts-fixture"],
-            vec!["--user","0"],vec!["--remove-managed"]] {
-            let mut combined=args.to_vec(); combined.extend(extra);
+        for extra in [
+            vec!["--once"],
+            vec!["--socket", "/other"],
+            vec!["--inspect-contacts-fixture"],
+            vec!["--user", "0"],
+            vec!["--remove-managed"],
+        ] {
+            let mut combined = args.to_vec();
+            combined.extend(extra);
             assert!(Cli::try_parse_from(combined).is_err());
         }
     }
@@ -335,6 +459,9 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         droidloom_supervisor::production_application::run_working_original_payload_birth()?;
         return Ok(());
     }
+    if droidloom_supervisor::control::physical_qualification_channel::dispatch_fixed_production_entry()? {
+        return Ok(());
+    }
     droidloom_supervisor::control::working_qualification::seal_initial_child_entry()?;
     let cli = Cli::parse();
     if cli.owned_working_qualification {
@@ -351,31 +478,43 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             capture_installed_physical_run(sha)?;
         captured.guard()?;
         let receipt = captured.write_receipt()?;
-        println!("{}", serde_json::to_string_pretty(&serde_json::json!({
-            "schema":"droidloom.physical-application-parent-completed.v1",
-            "receipt":receipt, "actual_capture":captured.observation(),
-            "parent_unit_retirement_pending":true, "production_ready":false,
-        }))?);
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&serde_json::json!({
+                "schema":"droidloom.physical-application-parent-completed.v1",
+                "receipt":receipt, "actual_capture":captured.observation(),
+                "parent_unit_retirement_pending":true, "production_ready":false,
+            }))?
+        );
         captured.guard()?;
         return Ok(());
     }
-    if let Some(path)=&cli.physical_application_plan {
-        let outcome=droidloom_applications::runtime_plan::run_physical_files(path,
-            cli.expect_physical_plan_sha256.as_deref().ok_or("physical input pin missing")?)?;
+    if let Some(path) = &cli.physical_application_plan {
+        let outcome = droidloom_applications::runtime_plan::run_physical_files(
+            path,
+            cli.expect_physical_plan_sha256
+                .as_deref()
+                .ok_or("physical input pin missing")?,
+        )?;
         return match outcome.into_complete() {
-            Ok(mut complete)=>{
+            Ok(mut complete) => {
                 complete.write_owned_completion()?;
                 Ok(())
             }
-            Err(partial)=>{
-                println!("{}",serde_json::to_string_pretty(partial.summary())?);
-                Err("complete physical application qualification retains pending or failed gates".into())
+            Err(partial) => {
+                println!("{}", serde_json::to_string_pretty(partial.summary())?);
+                Err(
+                    "complete physical application qualification retains pending or failed gates"
+                        .into(),
+                )
             }
         };
     }
     if let Some(path) = &cli.prepare_material_admission {
         let candidate = droidloom_applications::runtime_plan::prepare_identity_material_admission(
-            path, cli.expect_material_admission_sha256.as_deref()
+            path,
+            cli.expect_material_admission_sha256
+                .as_deref()
                 .ok_or("missing normal material admission candidate pin")?,
         )?;
         println!("{}", serde_json::to_string_pretty(&candidate)?);
@@ -383,32 +522,50 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
     }
     if let Some(path) = &cli.verify_material_identity {
         let report = droidloom_applications::runtime_plan::verify_material_identity_files(
-            &cli.socket, path, cli.expect_identity_plan_sha256.as_deref()
+            &cli.socket,
+            path,
+            cli.expect_identity_plan_sha256
+                .as_deref()
                 .ok_or("missing complete identity plan pin")?,
-            cli.expect_app_count.ok_or("missing complete selected count")?,
+            cli.expect_app_count
+                .ok_or("missing complete selected count")?,
         )?;
         println!("{}", serde_json::to_string_pretty(&report)?);
         return Err("complete identity, business and activation acceptance remain incomplete; inspect every selected row".into());
     }
     if let Some(profile) = &cli.owned_leaf_profile {
-        droidloom_applications::runtime_plan::run_owned_leaf_plan(profile,
-            cli.owned_leaf_plan_sha256.as_deref().ok_or("missing owned root plan pin")?)?;
+        droidloom_applications::runtime_plan::run_owned_leaf_plan(
+            profile,
+            cli.owned_leaf_plan_sha256
+                .as_deref()
+                .ok_or("missing owned root plan pin")?,
+        )?;
         return Err("application acceptance remains incomplete".into());
     }
     if let Some(path) = &cli.adopt_native_leaf_release {
-        let result = droidloom_applications::runtime_plan::adopt_native_leaf_release(path,
-            cli.expect_native_adoption_sha256.as_deref().ok_or("missing explicit native adoption intent pin")?)?;
-        println!("{}",serde_json::to_string_pretty(&result)?);
+        let result = droidloom_applications::runtime_plan::adopt_native_leaf_release(
+            path,
+            cli.expect_native_adoption_sha256
+                .as_deref()
+                .ok_or("missing explicit native adoption intent pin")?,
+        )?;
+        println!("{}", serde_json::to_string_pretty(&result)?);
         return Ok(());
     }
     if let Some(path) = &cli.prepare_runtime_plan {
         let report = droidloom_applications::runtime_plan::prepare_files(
-            &cli.socket, path,
-            cli.expect_preparation_sha256.as_deref().ok_or("missing preparation intent pin")?,
-            cli.expect_app_count.ok_or("missing complete selected count")?,
+            &cli.socket,
+            path,
+            cli.expect_preparation_sha256
+                .as_deref()
+                .ok_or("missing preparation intent pin")?,
+            cli.expect_app_count
+                .ok_or("missing complete selected count")?,
         )?;
         println!("{}", serde_json::to_string_pretty(&report)?);
-        return if report.bindings_complete { Ok(()) } else {
+        return if report.bindings_complete {
+            Ok(())
+        } else {
             Err("runtime plan preparation retains blocked bindings; inspect every selected application in the JSON report".into())
         };
     }
@@ -450,7 +607,11 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
     }
     if let Some(package) = &cli.inspect_package {
         let (observed, image_custody) =
-            droidloom_applications::runtime_plan::inspect_package_with_custody(&cli.socket, package, cli.user)?;
+            droidloom_applications::runtime_plan::inspect_package_with_custody(
+                &cli.socket,
+                package,
+                cli.user,
+            )?;
         println!(
             "{}",
             serde_json::to_string_pretty(&serde_json::json!({
@@ -536,11 +697,38 @@ mod identity_admission_cli_tests {
     fn preparation_requires_its_pin_and_never_combines_with_runtime_operations() {
         assert!(Cli::try_parse_from(["apps", "--prepare-material-admission", "/input"]).is_err());
         let hash = "a".repeat(64);
-        assert!(Cli::try_parse_from(["apps", "--prepare-material-admission", "/input",
-            "--expect-material-admission-sha256", &hash]).is_ok());
-        assert!(Cli::try_parse_from(["apps", "--prepare-material-admission", "/input",
-            "--expect-material-admission-sha256", &hash, "--inspect-package", "org.example.app"]).is_err());
-        assert!(Cli::try_parse_from(["apps", "--prepare-material-admission", "/input",
-            "--expect-material-admission-sha256", &hash, "--remove-managed"]).is_err());
+        assert!(
+            Cli::try_parse_from([
+                "apps",
+                "--prepare-material-admission",
+                "/input",
+                "--expect-material-admission-sha256",
+                &hash
+            ])
+            .is_ok()
+        );
+        assert!(
+            Cli::try_parse_from([
+                "apps",
+                "--prepare-material-admission",
+                "/input",
+                "--expect-material-admission-sha256",
+                &hash,
+                "--inspect-package",
+                "org.example.app"
+            ])
+            .is_err()
+        );
+        assert!(
+            Cli::try_parse_from([
+                "apps",
+                "--prepare-material-admission",
+                "/input",
+                "--expect-material-admission-sha256",
+                &hash,
+                "--remove-managed"
+            ])
+            .is_err()
+        );
     }
 }

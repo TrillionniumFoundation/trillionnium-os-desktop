@@ -8,12 +8,15 @@ use std::io::{Read, Write};
 use std::os::fd::{AsFd, FromRawFd, OwnedFd};
 use std::os::unix::process::CommandExt;
 use std::process::{Child, Command, ExitStatus, Stdio};
-#[path = "physical_qualification_roster.rs"]
-mod roster;
 #[path = "working_qualification_preparation_capture.rs"]
 mod preparation_capture;
+#[path = "physical_qualification_roster.rs"]
+mod roster;
 pub use preparation_capture::capture_prepared_working_run;
+#[path = "production_commit.rs"]
+mod production_commit;
 pub(crate) use preparation_capture::PreparationHistory;
+pub use production_commit::dispatch_fixed_production_entry;
 
 // The working variant owns the original singleton/watchdog throughout this
 // capture. It never reacquires a template owner or starts another authority clock.
@@ -23,50 +26,81 @@ enum RunOwner {
 }
 impl RunOwner {
     fn unit(&self) -> &UnitOwner {
-        match self { Self::Template(v)=>v, Self::Working(v)=>v.unit() }
-    }
-    fn unit_mut(&mut self) -> &mut UnitOwner {
-        match self { Self::Template(v)=>v, Self::Working(v)=>v.unit_mut() }
-    }
-    fn boundary(&self, child:Option<&BoundProcess>, end:Instant)->Result<(),String> {
-        if let Self::Working(v)=self { v.guard_local(child,end)?; }
-        self.unit().boundary(child,end)
-    }
-    fn child_guard(&self, child:&BoundProcess)->Result<(),String> { self.unit().child_guard(child) }
-    fn switch(&mut self, profile:KernelProfile, child:&BoundProcess,end:Instant)->Result<(),String> {
-        self.unit_mut().switch(profile,child,end)
-    }
-    fn pump(&mut self, child:&BoundProcess,end:Instant)->Result<(),String> {
-        if let Self::Working(v)=self { v.pump(Some(child),end)?; }
-        Ok(())
-    }
-    fn child_transition(&self)->Option<libc::c_int> {
-        match self { Self::Template(_)=>None,Self::Working(v)=>Some(v.close_in_child()) }
-    }
-    fn compare_epoch(&self, epoch:&RuntimeEpoch)->Result<(),String> {
-        if let Self::Working(v)=self { v.compare_physical_epoch(epoch)?; }
-        Ok(())
-    }
-    fn compare_binding(&self, binding:&RuntimeMainCustody)->Result<(),String> {
-        if let Self::Working(v)=self { v.compare_physical_binding(binding)?; }
-        Ok(())
-    }
-    fn begin(&mut self,end:Instant)->Result<(),String> {
-        if let Self::Working(v)=self { v.begin_physical(end)?; }
-        Ok(())
-    }
-    fn finish(&mut self,end:Instant)->Result<(),String> {
-        if let Self::Working(v)=self { v.finish_physical(end)?; }
-        Ok(())
-    }
-    fn record_failure(&mut self,reason:&str)->Result<Value,String> {
         match self {
-            Self::Template(_)=>Ok(json!({"working_singleton":false})),
-            Self::Working(v)=>v.record_failure(reason),
+            Self::Template(v) => v,
+            Self::Working(v) => v.unit(),
         }
     }
-    fn observation(&self)->Value {
-        match self {Self::Template(v)=>v.observation(),Self::Working(v)=>v.observation()}
+    fn unit_mut(&mut self) -> &mut UnitOwner {
+        match self {
+            Self::Template(v) => v,
+            Self::Working(v) => v.unit_mut(),
+        }
+    }
+    fn boundary(&self, child: Option<&BoundProcess>, end: Instant) -> Result<(), String> {
+        if let Self::Working(v) = self {
+            v.guard_local(child, end)?;
+        }
+        self.unit().boundary(child, end)
+    }
+    fn child_guard(&self, child: &BoundProcess) -> Result<(), String> {
+        self.unit().child_guard(child)
+    }
+    fn switch(
+        &mut self,
+        profile: KernelProfile,
+        child: &BoundProcess,
+        end: Instant,
+    ) -> Result<(), String> {
+        self.unit_mut().switch(profile, child, end)
+    }
+    fn pump(&mut self, child: &BoundProcess, end: Instant) -> Result<(), String> {
+        if let Self::Working(v) = self {
+            v.pump(Some(child), end)?;
+        }
+        Ok(())
+    }
+    fn child_transition(&self) -> Option<libc::c_int> {
+        match self {
+            Self::Template(_) => None,
+            Self::Working(v) => Some(v.close_in_child()),
+        }
+    }
+    fn compare_epoch(&self, epoch: &RuntimeEpoch) -> Result<(), String> {
+        if let Self::Working(v) = self {
+            v.compare_physical_epoch(epoch)?;
+        }
+        Ok(())
+    }
+    fn compare_binding(&self, binding: &RuntimeMainCustody) -> Result<(), String> {
+        if let Self::Working(v) = self {
+            v.compare_physical_binding(binding)?;
+        }
+        Ok(())
+    }
+    fn begin(&mut self, end: Instant) -> Result<(), String> {
+        if let Self::Working(v) = self {
+            v.begin_physical(end)?;
+        }
+        Ok(())
+    }
+    fn finish(&mut self, end: Instant) -> Result<(), String> {
+        if let Self::Working(v) = self {
+            v.finish_physical(end)?;
+        }
+        Ok(())
+    }
+    fn record_failure(&mut self, reason: &str) -> Result<Value, String> {
+        match self {
+            Self::Template(_) => Ok(json!({"working_singleton":false})),
+            Self::Working(v) => v.record_failure(reason),
+        }
+    }
+    fn observation(&self) -> Value {
+        match self {
+            Self::Template(v) => v.observation(),
+            Self::Working(v) => v.observation(),
+        }
     }
 }
 
@@ -286,31 +320,49 @@ fn validate_case_summaries(package: &str, row: &Value, epoch: &RuntimeEpoch) -> 
     let expected = (0..CASE_COUNT)
         .map(|ordinal| QualificationCase::from_ordinal(ordinal as u8))
         .collect::<io::Result<Vec<_>>>()?
-        .into_iter().filter(|case| case.package() == package).collect::<Vec<_>>();
-    let actual = row.get("cases").and_then(Value::as_array)
+        .into_iter()
+        .filter(|case| case.package() == package)
+        .collect::<Vec<_>>();
+    let actual = row
+        .get("cases")
+        .and_then(Value::as_array)
         .ok_or_else(|| error("complete row omitted its actual case histories"))?;
     if expected.is_empty() || actual.len() != expected.len() {
-        return Err(error("complete row does not have its exact source-owned case histories"));
+        return Err(error(
+            "complete row does not have its exact source-owned case histories",
+        ));
     }
     let epoch = serde_json::to_value(epoch)?;
     for (case, history) in expected.iter().zip(actual) {
         let kind_matches = match (case.native_route(), *case) {
-            (Some(route), _) => history.get("route") == Some(&json!(route)) && history.get("kind").is_none(),
-            (None, QualificationCase::CameraPhotoCaptureReopen) =>
-                history.get("kind") == Some(&json!("camera_photo_capture_reopen")) && history.get("route").is_none(),
-            (None, QualificationCase::SettingsPermissionInterfaces) =>
-                history.get("kind") == Some(&json!("settings_permission_interfaces")) && history.get("route").is_none(),
-            (None, _) => history.get("kind") == Some(&json!("family_observation")) && history.get("route").is_none(),
+            (Some(route), _) => {
+                history.get("route") == Some(&json!(route)) && history.get("kind").is_none()
+            }
+            (None, QualificationCase::CameraPhotoCaptureReopen) => {
+                history.get("kind") == Some(&json!("camera_photo_capture_reopen"))
+                    && history.get("route").is_none()
+            }
+            (None, QualificationCase::SettingsPermissionInterfaces) => {
+                history.get("kind") == Some(&json!("settings_permission_interfaces"))
+                    && history.get("route").is_none()
+            }
+            (None, _) => {
+                history.get("kind") == Some(&json!("family_observation"))
+                    && history.get("route").is_none()
+            }
         };
         if !kind_matches
             || history.get("sealed_inside_original_case_window") != Some(&json!(true))
             || history.get("historical_observation") != Some(&json!(true))
-            || history.get("continuous_app_or_target_directory_custody_after_case_claimed") != Some(&json!(false))
+            || history.get("continuous_app_or_target_directory_custody_after_case_claimed")
+                != Some(&json!(false))
             || history.get("actual").and_then(|v| v.get("package")) != Some(&json!(package))
             || history.get("actual").and_then(|v| v.get("user")) != Some(&json!(0))
             || history.get("actual").and_then(|v| v.get("epoch")) != Some(&epoch)
         {
-            return Err(error("complete historical case order, subject or original window differs"));
+            return Err(error(
+                "complete historical case order, subject or original window differs",
+            ));
         }
     }
     Ok(actual.len())
@@ -481,22 +533,27 @@ pub fn capture_installed_physical_run(
     let initial_end = Instant::now() + Duration::from_secs(SUITE_SECONDS);
     let plan = Plan::open(plan_sha).map_err(|e| e.to_string())?;
     let owner = RunOwner::Template(UnitOwner::capture(plan_sha, initial_end)?);
-    capture_actual(plan,owner,initial_end)
+    capture_actual(plan, owner, initial_end)
 }
 /// Crate-private continuation. The normal preparation owner supplies its retained
 /// Plan; no public saved-report or replacement-owner constructor is added.
 pub(crate) fn capture_working_physical_run(
     plan: Plan,
     mut owner: crate::working_qualification::WorkingQualificationOwner,
-) -> Result<CapturedCompleteApplicationRun,String> {
-    let end=owner.deadline().min(Instant::now()+Duration::from_secs(SUITE_SECONDS));
-    plan.guard().map_err(|e|e.to_string())?;
-    owner.bind_physical_plan(&plan.digest,end)?;
-    capture_actual(plan,RunOwner::Working(owner),end)
+) -> Result<CapturedCompleteApplicationRun, String> {
+    let end = owner
+        .deadline()
+        .min(Instant::now() + Duration::from_secs(SUITE_SECONDS));
+    plan.guard().map_err(|e| e.to_string())?;
+    owner.bind_physical_plan(&plan.digest, end)?;
+    capture_actual(plan, RunOwner::Working(owner), end)
 }
-fn capture_actual(plan:Plan, mut owner:RunOwner, initial_end:Instant)
-    -> Result<CapturedCompleteApplicationRun,String> {
-    let plan_sha=plan.digest.clone();
+fn capture_actual(
+    plan: Plan,
+    mut owner: RunOwner,
+    initial_end: Instant,
+) -> Result<CapturedCompleteApplicationRun, String> {
+    let plan_sha = plan.digest.clone();
     let parent_end_ns = owner.unit().manager_deadline_ns()?;
     let mut end = instant_until(parent_end_ns, initial_end).map_err(|e| e.to_string())?;
     let mut stdout = Output::create(&plan, "applications.stdout", SUMMARY_LIMIT as u64)
@@ -512,7 +569,10 @@ fn capture_actual(plan:Plan, mut owner:RunOwner, initial_end:Instant)
     }
     let inherited = unsafe { OwnedFd::from_raw_fd(inherited) };
     let parent_pid = std::process::id();
-    let mut command = Command::new(format!("/proc/self/fd/{}", owner.unit().executable().as_raw_fd()));
+    let mut command = Command::new(format!(
+        "/proc/self/fd/{}",
+        owner.unit().executable().as_raw_fd()
+    ));
     command.arg0(EXE).args(
         child_argv(&plan_sha)
             .map_err(|e| e.to_string())?
@@ -540,7 +600,9 @@ fn capture_actual(plan:Plan, mut owner:RunOwner, initial_end:Instant)
             }
             if let Some(fd) = working_watchdog {
                 crate::working_qualification::child_exec::prepare(
-                    crate::working_qualification::child_exec::Kind::Physical, fd)?;
+                    crate::working_qualification::child_exec::Kind::Physical,
+                    fd,
+                )?;
             }
             if libc::dup2(channel_fd, 3) < 0 || libc::fcntl(3, libc::F_SETFD, 0) < 0 {
                 return Err(io::Error::last_os_error());
@@ -599,12 +661,14 @@ fn capture_actual(plan:Plan, mut owner:RunOwner, initial_end:Instant)
             }
             stdout.drain(&mut output_pipe).map_err(|e| e.to_string())?;
             stderr.drain(&mut error_pipe).map_err(|e| e.to_string())?;
-            if phase != Phase::Complete && child.try_wait().map_err(|e|e.to_string())?.is_none() {
-                owner.pump(&bound,until)?;
+            if phase != Phase::Complete && child.try_wait().map_err(|e| e.to_string())?.is_none() {
+                owner.pump(&bound, until)?;
             }
             if pending.is_none() && phase != Phase::Complete {
                 if let Some(packet) = socket.try_receive(pid).map_err(|e| e.to_string())? {
-                    packet.require_sequence(sequence).map_err(|e| e.to_string())?;
+                    packet
+                        .require_sequence(sequence)
+                        .map_err(|e| e.to_string())?;
                     owner.child_guard(&bound)?;
                     let mut ack_end = packet.end_ns;
                     match (&phase,packet.kind) {
@@ -791,10 +855,13 @@ fn capture_actual(plan:Plan, mut owner:RunOwner, initial_end:Instant)
             let _ = stderr.drain(&mut error_pipe);
             let _ = stdout.file.sync_all();
             let _ = stderr.file.sync_all();
-            let reason=format!(
-                "{original}; direct-child-retirement={retirement:?}; retain private outputs; parent-unit external retirement remains required");
-            let recorded=owner.record_failure(&reason);
-            return Err(format!("{reason}; normal-owner-failure-record={recorded:?}"));
+            let reason = format!(
+                "{original}; direct-child-retirement={retirement:?}; retain private outputs; parent-unit external retirement remains required"
+            );
+            let recorded = owner.record_failure(&reason);
+            return Err(format!(
+                "{reason}; normal-owner-failure-record={recorded:?}"
+            ));
         }
     };
     let stdout = stdout.seal().map_err(|e| e.to_string())?;
@@ -826,26 +893,30 @@ mod tests {
             framework_start_ticks: 43,
         };
         let make = |package: &str| -> Value {
-            let cases = (0..CASE_COUNT).filter_map(|ordinal| {
-                let case = QualificationCase::from_ordinal(ordinal as u8).unwrap();
-                if case.package() != package { return None; }
-                let mut history = json!({
-                    "actual":{"package":package,"user":0,"epoch":epoch},
-                    "sealed_inside_original_case_window":true,
-                    "historical_observation":true,
-                    "continuous_app_or_target_directory_custody_after_case_claimed":false,
-                });
-                if let Some(route) = case.native_route() {
-                    history["route"] = json!(route);
-                } else if case == QualificationCase::CameraPhotoCaptureReopen {
-                    history["kind"] = json!("camera_photo_capture_reopen");
-                } else if case == QualificationCase::SettingsPermissionInterfaces {
-                    history["kind"] = json!("settings_permission_interfaces");
-                } else {
-                    history["kind"] = json!("family_observation");
-                }
-                Some(history)
-            }).collect::<Vec<_>>();
+            let cases = (0..CASE_COUNT)
+                .filter_map(|ordinal| {
+                    let case = QualificationCase::from_ordinal(ordinal as u8).unwrap();
+                    if case.package() != package {
+                        return None;
+                    }
+                    let mut history = json!({
+                        "actual":{"package":package,"user":0,"epoch":epoch},
+                        "sealed_inside_original_case_window":true,
+                        "historical_observation":true,
+                        "continuous_app_or_target_directory_custody_after_case_claimed":false,
+                    });
+                    if let Some(route) = case.native_route() {
+                        history["route"] = json!(route);
+                    } else if case == QualificationCase::CameraPhotoCaptureReopen {
+                        history["kind"] = json!("camera_photo_capture_reopen");
+                    } else if case == QualificationCase::SettingsPermissionInterfaces {
+                        history["kind"] = json!("settings_permission_interfaces");
+                    } else {
+                        history["kind"] = json!("family_observation");
+                    }
+                    Some(history)
+                })
+                .collect::<Vec<_>>();
             json!({"cases":cases})
         };
         let mut total = 0;
@@ -875,14 +946,26 @@ mod tests {
         let settings = make("com.android.settings");
         assert_eq!(settings["cases"].as_array().unwrap().len(), 2);
         assert_eq!(settings["cases"][0]["route"], "settings_supported_pages");
-        assert_eq!(settings["cases"][1]["kind"], "settings_permission_interfaces");
+        assert_eq!(
+            settings["cases"][1]["kind"],
+            "settings_permission_interfaces"
+        );
         for changed in 0..4 {
             let mut wrong = settings.clone();
             match changed {
-                0 => { wrong["cases"].as_array_mut().unwrap().pop(); }
-                1 => { wrong["cases"].as_array_mut().unwrap().swap(0, 1); }
-                2 => { wrong["cases"][1]["kind"] = json!("family_observation"); }
-                _ => { wrong["cases"][1]["actual"]["package"] = json!("com.android.permissioncontroller"); }
+                0 => {
+                    wrong["cases"].as_array_mut().unwrap().pop();
+                }
+                1 => {
+                    wrong["cases"].as_array_mut().unwrap().swap(0, 1);
+                }
+                2 => {
+                    wrong["cases"][1]["kind"] = json!("family_observation");
+                }
+                _ => {
+                    wrong["cases"][1]["actual"]["package"] =
+                        json!("com.android.permissioncontroller");
+                }
             }
             assert!(validate_case_summaries("com.android.settings", &wrong, &epoch).is_err());
         }
@@ -897,7 +980,7 @@ mod tests {
         wrong["cases"][0]["actual"]["epoch"]["framework_start_ticks"] = json!(44);
         assert!(validate_case_summaries("org.mozilla.firefox", &wrong, &epoch).is_err());
         let mut wrong = make("com.android.calendar");
-        wrong["cases"].as_array_mut().unwrap().swap(0,1);
+        wrong["cases"].as_array_mut().unwrap().swap(0, 1);
         assert!(validate_case_summaries("com.android.calendar", &wrong, &epoch).is_err());
         assert!(validate_case_summaries("caller.package", &json!({"cases":[]}), &epoch).is_err());
     }

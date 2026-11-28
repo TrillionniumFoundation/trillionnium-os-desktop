@@ -72,7 +72,7 @@ fn source() -> Result<Value> {
         (SELECTION, SELECTION_SHA256),
         (SIGNATURES, "1d44a6f5cb247de704bd64a0973226612672619545ecd328e4536bdda0236731"),
         (IMPORT, "1f06db0be3a790bad7a4ba61507b06024289b145cfe3de8f27cea3ca890b091d"),
-        (VERIFICATION, "26d54f559e30291af178fd113c53761d23b2f1294f134987a82411ba30651cc8"),
+        (VERIFICATION, "78a512d9cf3465613b2f4ccd79de656a4280dee37311e8c6958a6136f2bf2513"),
     ] { need(hash(raw) == expected, "compiled normal apps41 source admission changed")?; }
     let value: Value = serde_json::from_slice(SELECTION).map_err(|e| e.to_string())?;
     need(value["schema"] == "p4-selected41-static-launch-inputs-v1"

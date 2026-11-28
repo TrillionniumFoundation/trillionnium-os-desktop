@@ -3,8 +3,8 @@
 //! PID1 bus and held executable/namespace machinery, not a second trust model.
 use super::super::physical_qualification_channel as protocol;
 use super::*;
-use std::io::{Read, Write};
 use crate::native_working_contract as working;
+use std::io::{Read, Write};
 #[path = "working_qualification_peer.rs"]
 pub(crate) mod working_peer;
 
@@ -32,7 +32,9 @@ impl OwnerKind {
     fn source(self) -> &'static str {
         match self {
             Self::PhysicalTemplate => protocol::TEMPLATE,
-            Self::WorkingSingleton => include_str!("../../../packaging/systemd/system/droidloom-working-qualification.service"),
+            Self::WorkingSingleton => include_str!(
+                "../../../packaging/systemd/system/droidloom-working-qualification.service"
+            ),
         }
     }
     fn argv(self, digest: &str) -> Vec<String> {
@@ -57,7 +59,10 @@ impl OwnerKind {
 
 fn child_arguments(kind: OwnerKind, digest: &str) -> io::Result<Vec<String>> {
     if kind == OwnerKind::WorkingSingleton && digest.is_empty() {
-        return Ok(vec![protocol::EXE.into(), "--working-qualification-prepare".into()]);
+        return Ok(vec![
+            protocol::EXE.into(),
+            "--working-qualification-prepare".into(),
+        ]);
     }
     protocol::child_argv(digest)
 }
@@ -167,18 +172,24 @@ pub(crate) struct ChildPeer {
     digest: String,
     kind: OwnerKind,
     namespaces: Vec<(String, File, File)>,
+    production_commit: bool,
 }
 impl ChildPeer {
     pub(crate) fn capture(digest: &str) -> io::Result<Self> {
         if !protocol::digest_ok(digest) {
-            return Err(invalid("physical child requires the exact normal plan digest"));
+            return Err(invalid(
+                "physical child requires the exact normal plan digest",
+            ));
         }
-        Self::capture_actual(digest)
+        Self::capture_actual(digest, false)
     }
     pub(crate) fn capture_preparation() -> io::Result<Self> {
-        Self::capture_actual("")
+        Self::capture_actual("", false)
     }
-    fn capture_actual(digest: &str) -> io::Result<Self> {
+    pub(crate) fn capture_production_commit() -> io::Result<Self> {
+        Self::capture_actual("", true)
+    }
+    fn capture_actual(digest: &str, production_commit: bool) -> io::Result<Self> {
         root()?;
         // SAFETY: getppid returns the current actual parent, never a caller PID.
         let parent_pid = unsafe { libc::getppid() };
@@ -190,15 +201,25 @@ impl ChildPeer {
         let executable = Tool::open(protocol::EXE)?;
         let group = current_cgroup_parent()?;
         let working_group = PathBuf::from(format!(
-            "/sys/fs/cgroup/system.slice/{}", working::PARENT_UNIT));
+            "/sys/fs/cgroup/system.slice/{}",
+            working::PARENT_UNIT
+        ));
         let kind = if group == working_group {
             OwnerKind::WorkingSingleton
-        } else if !digest.is_empty() && group == PathBuf::from(format!(
-            "/sys/fs/cgroup/system.slice/{}", protocol::unit_name(digest)?)) {
+        } else if !digest.is_empty()
+            && group
+                == PathBuf::from(format!(
+                    "/sys/fs/cgroup/system.slice/{}",
+                    protocol::unit_name(digest)?
+                ))
+        {
             OwnerKind::PhysicalTemplate
         } else {
             return Err(invalid("child is outside its fixed actual normal owner"));
         };
+        if production_commit && kind != OwnerKind::WorkingSingleton {
+            return Err(invalid("production commit has no external template caller"));
+        }
         let mut namespaces = Vec::new();
         for name in [
             "ns/mnt",
@@ -223,6 +244,7 @@ impl ChildPeer {
             digest: digest.into(),
             kind,
             namespaces,
+            production_commit,
         };
         result.guard()?;
         Ok(result)
@@ -236,7 +258,15 @@ impl ChildPeer {
         self.parent.validate()?;
         if std::process::id() != self.current.identity.pid
             || unsafe { libc::getppid() } as u32 != self.parent.identity.pid
-            || cmdline(&self.current)? != child_arguments(self.kind, &self.digest)?
+            || cmdline(&self.current)?
+                != (if self.production_commit {
+                    vec![
+                        protocol::EXE.into(),
+                        crate::production_commit_contract::COMMIT_MODE.into(),
+                    ]
+                } else {
+                    child_arguments(self.kind, &self.digest)?
+                })
             || cmdline(&self.parent)? != self.kind.argv(&self.digest)
         {
             return Err(invalid(
@@ -340,6 +370,8 @@ pub(crate) struct UnitOwner {
     digest: String,
     kind: OwnerKind,
     end: Instant,
+    original_end: Instant,
+    production_commit: bool,
 }
 impl UnitOwner {
     pub(crate) fn capture(digest: &str, end: Instant) -> Result<Self, String> {
@@ -464,6 +496,8 @@ impl UnitOwner {
             digest: digest.into(),
             kind,
             end,
+            original_end: end,
+            production_commit: false,
         };
         value.properties = value.query(end)?;
         value.boundary(None, end)?;
@@ -483,8 +517,7 @@ impl UnitOwner {
             || identity(&self.current.open("exe", false).map_err(|e| e.to_string())?)
                 .map_err(|e| e.to_string())?
                 != self.executable.identity
-            || cmdline(&self.current).map_err(|e| e.to_string())?
-                != self.kind.argv(&self.digest)
+            || cmdline(&self.current).map_err(|e| e.to_string())? != self.kind.argv(&self.digest)
         {
             return Err("physical qualifier or PID1 actual executable/argv changed".into());
         }
@@ -511,10 +544,7 @@ impl UnitOwner {
         let named = OpenOptions::new()
             .read(true)
             .custom_flags(libc::O_NOFOLLOW | libc::O_CLOEXEC)
-            .open(format!(
-                "/usr/lib/systemd/system/{}",
-                self.kind.fragment()
-            ))
+            .open(format!("/usr/lib/systemd/system/{}", self.kind.fragment()))
             .map_err(|e| e.to_string())?;
         if bytes != self.kind.source().as_bytes()
             || identity(&self.template).map_err(|e| e.to_string())? != self.template_pin
@@ -581,27 +611,46 @@ impl UnitOwner {
     /// Local held-resource check for the working owner's short event-loop
     /// iterations. The full actual PID1 observation remains mandatory before
     /// feeding the watchdog, switching profiles or accepting a boundary.
-    pub(crate) fn local_guard(&self, child: Option<&BoundProcess>, deadline: Instant) -> Result<(), String> {
+    pub(crate) fn local_guard(
+        &self,
+        child: Option<&BoundProcess>,
+        deadline: Instant,
+    ) -> Result<(), String> {
         self.source_guard()?;
         self.kernel_owner_guard()?;
-        if let Some(child) = child { self.child_guard(child)?; }
+        if let Some(child) = child {
+            self.child_guard(child)?;
+        }
         if Instant::now() >= self.end.min(deadline) {
             return Err("working local owner exhausted its original end".into());
         }
         Ok(())
     }
-    pub(crate) fn working_identity(&self) -> Result<super::super::working_qualification::WorkingUnitIdentity, String> {
+    pub(crate) fn working_identity(
+        &self,
+    ) -> Result<super::super::working_qualification::WorkingUnitIdentity, String> {
         if self.kind != OwnerKind::WorkingSingleton {
             return Err("working source identity requires the actual singleton".into());
         }
         self.source_guard()?;
         Ok(super::super::working_qualification::WorkingUnitIdentity {
             unit: self.invocation.unit.clone(),
-            invocation: self.invocation.id.iter().map(|b| format!("{b:02x}")).collect(),
+            invocation: self
+                .invocation
+                .id
+                .iter()
+                .map(|b| format!("{b:02x}"))
+                .collect(),
             parent_pid: self.current.identity.pid,
             parent_start_ticks: self.current.identity.start_ticks,
-            cgroup: self.group_path.to_str().ok_or("working cgroup is not UTF-8")?.into(),
-            cgroup_identity: self.group_pin[..5].try_into().map_err(|_| "working cgroup identity")?,
+            cgroup: self
+                .group_path
+                .to_str()
+                .ok_or("working cgroup is not UTF-8")?
+                .into(),
+            cgroup_identity: self.group_pin[..5]
+                .try_into()
+                .map_err(|_| "working cgroup identity")?,
             owner_start_monotonic_ns: self.manager_start_ns()?,
         })
     }
@@ -631,8 +680,11 @@ impl UnitOwner {
             .ok_or_else(|| "manager deadline overflow".into())
     }
     pub(crate) fn bind_working_plan(&mut self, digest: &str, end: Instant) -> Result<(), String> {
-        if self.kind != OwnerKind::WorkingSingleton || !self.digest.is_empty()
-            || !protocol::digest_ok(digest) || end > self.end {
+        if self.kind != OwnerKind::WorkingSingleton
+            || !self.digest.is_empty()
+            || !protocol::digest_ok(digest)
+            || end > self.end
+        {
             return Err("working plan may bind once inside its original actual owner end".into());
         }
         self.boundary(None, end)?;
@@ -640,18 +692,39 @@ impl UnitOwner {
         self.end = end;
         Ok(())
     }
-    pub(crate) fn live_guard(&self, child: Option<&BoundProcess>, deadline: Instant) -> Result<(), String> {
+    pub(crate) fn live_guard(
+        &self,
+        child: Option<&BoundProcess>,
+        deadline: Instant,
+    ) -> Result<(), String> {
         if self.query(deadline)? != self.properties {
             return Err("working live owner manager properties changed".into());
         }
         self.kernel_owner_guard()?;
-        if let Some(child) = child { self.child_guard(child)?; }
+        if let Some(child) = child {
+            self.child_guard(child)?;
+        }
         if Instant::now() >= self.end.min(deadline) {
             return Err("working live owner exhausted its original end".into());
         }
         // This deliberately does not claim nested children retired. Only the
         // unchanged strict boundary() can authorize the next case or Complete.
         Ok(())
+    }
+    /// Enter the pre-reserved tail after the actual working owner consumed Complete.
+    pub(crate) fn begin_production_commit(&mut self, end: Instant) -> Result<(), String> {
+        if self.kind != OwnerKind::WorkingSingleton
+            || self.digest.is_empty()
+            || self.production_commit
+            || end > self.original_end
+            || Instant::now() >= end
+        {
+            return Err("production commit cannot create or renew unit authorization".into());
+        }
+        self.boundary(None, self.end)?;
+        self.production_commit = true;
+        self.end = end;
+        self.boundary(None, end)
     }
     pub(crate) fn executable(&self) -> &File {
         &self.executable.file
@@ -660,8 +733,15 @@ impl UnitOwner {
         child.validate().map_err(|e| e.to_string())?;
         process_root(child).map_err(|e| e.to_string())?;
         process_group(child, &self.group_path).map_err(|e| e.to_string())?;
-        if cmdline(child).map_err(|e| e.to_string())?
-            != child_arguments(self.kind, &self.digest).map_err(|e| e.to_string())?
+        let expected = if self.production_commit {
+            vec![
+                protocol::EXE.into(),
+                crate::production_commit_contract::COMMIT_MODE.into(),
+            ]
+        } else {
+            child_arguments(self.kind, &self.digest).map_err(|e| e.to_string())?
+        };
+        if cmdline(child).map_err(|e| e.to_string())? != expected
             || identity(&child.open("exe", false).map_err(|e| e.to_string())?)
                 .map_err(|e| e.to_string())?
                 != self.executable.identity
@@ -809,7 +889,14 @@ fn qualification_properties(
     pid: u32,
     digest: &str,
 ) -> Result<BTreeMap<String, String>, String> {
-    owner_properties(unit, service, invocation, pid, digest, OwnerKind::PhysicalTemplate)
+    owner_properties(
+        unit,
+        service,
+        invocation,
+        pid,
+        digest,
+        OwnerKind::PhysicalTemplate,
+    )
 }
 fn owner_properties(
     unit: &bus::Properties,
@@ -836,10 +923,7 @@ fn owner_properties(
         ("LoadState", "loaded"),
         ("ActiveState", "active"),
         ("SubState", "running"),
-        (
-            "FragmentPath",
-            fragment_path.as_str(),
-        ),
+        ("FragmentPath", fragment_path.as_str()),
     ] {
         if unit.get(key) != Some(&V::Text(want.into())) {
             return Err(format!("physical unit {key} differs"));
@@ -878,10 +962,7 @@ fn owner_properties(
         ("LimitCORE", 0),
         ("CPUQuotaPerSecUSec", 2_000_000),
         ("CPUQuotaPeriodUSec", 100_000),
-        (
-            "RuntimeMaxUSec",
-            kind.service_seconds() * 1_000_000,
-        ),
+        ("RuntimeMaxUSec", kind.service_seconds() * 1_000_000),
         ("TimeoutStopUSec", protocol::RETIREMENT_SECONDS * 1_000_000),
     ] {
         if service.get(key) != Some(&V::U64(want)) {
@@ -999,10 +1080,7 @@ mod tests {
             ("LimitCORE", 0),
             ("CPUQuotaPerSecUSec", 2_000_000),
             ("CPUQuotaPeriodUSec", 100_000),
-            (
-                "RuntimeMaxUSec",
-                protocol::SERVICE_SECONDS * 1_000_000,
-            ),
+            ("RuntimeMaxUSec", protocol::SERVICE_SECONDS * 1_000_000),
             ("TimeoutStopUSec", protocol::RETIREMENT_SECONDS * 1_000_000),
             ("ExecMainStartTimestampMonotonic", 100),
         ] {
@@ -1084,25 +1162,68 @@ mod tests {
     fn working_singleton_cannot_reuse_a_template_or_caller_plan_argv() {
         use bus::Value as V;
         let (mut unit, mut service, mut invocation, digest) = fixture();
-        assert!(owner_properties(&unit, &service, &invocation, 1234, "", OwnerKind::WorkingSingleton).is_err());
+        assert!(
+            owner_properties(
+                &unit,
+                &service,
+                &invocation,
+                1234,
+                "",
+                OwnerKind::WorkingSingleton
+            )
+            .is_err()
+        );
         invocation.unit = working::PARENT_UNIT.into();
         unit.insert("Id".into(), V::Text(invocation.unit.clone()));
-        unit.insert("FragmentPath".into(), V::Text(format!("/usr/lib/systemd/system/{}", working::PARENT_UNIT)));
-        service.insert("ControlGroup".into(), V::Text(format!("/system.slice/{}", working::PARENT_UNIT)));
-        let V::Commands(commands) = service.get_mut("ExecStartEx").unwrap() else { panic!() };
+        unit.insert(
+            "FragmentPath".into(),
+            V::Text(format!("/usr/lib/systemd/system/{}", working::PARENT_UNIT)),
+        );
+        service.insert(
+            "ControlGroup".into(),
+            V::Text(format!("/system.slice/{}", working::PARENT_UNIT)),
+        );
+        let V::Commands(commands) = service.get_mut("ExecStartEx").unwrap() else {
+            panic!()
+        };
         commands[0].arguments = OwnerKind::WorkingSingleton.argv("");
-        service.insert("RuntimeMaxUSec".into(), V::U64(OwnerKind::WorkingSingleton.service_seconds() * 1_000_000));
-        assert!(owner_properties(&unit, &service, &invocation, 1234, "", OwnerKind::WorkingSingleton).is_ok());
+        service.insert(
+            "RuntimeMaxUSec".into(),
+            V::U64(OwnerKind::WorkingSingleton.service_seconds() * 1_000_000),
+        );
+        assert!(
+            owner_properties(
+                &unit,
+                &service,
+                &invocation,
+                1234,
+                "",
+                OwnerKind::WorkingSingleton
+            )
+            .is_ok()
+        );
         assert!(qualification_properties(&unit, &service, &invocation, 1234, &digest).is_err());
         let mut wrong = service.clone();
-        let V::Commands(commands) = wrong.get_mut("ExecStartEx").unwrap() else { panic!() };
+        let V::Commands(commands) = wrong.get_mut("ExecStartEx").unwrap() else {
+            panic!()
+        };
         commands[0].arguments.push(digest.clone());
-        assert!(owner_properties(&unit, &wrong, &invocation, 1234, "", OwnerKind::WorkingSingleton).is_err());
+        assert!(
+            owner_properties(
+                &unit,
+                &wrong,
+                &invocation,
+                1234,
+                "",
+                OwnerKind::WorkingSingleton
+            )
+            .is_err()
+        );
         let mut wrong = unit.clone();
         wrong.insert("FragmentPath".into(), V::Text(format!("/usr/lib/systemd/system/{}", protocol::TEMPLATE_NAME)));
         assert!(owner_properties(&wrong, &service, &invocation, 1234, "", OwnerKind::WorkingSingleton).is_err());
         assert!(OwnerKind::WorkingSingleton.source().contains(&format!("RuntimeMaxSec={}s\n", OwnerKind::WorkingSingleton.service_seconds())));
-        assert!(OwnerKind::WorkingSingleton.source().contains("LimitNOFILE=32768\n"));
+        assert!(OwnerKind::WorkingSingleton.source().contains(&format!("LimitNOFILE={}\n", protocol::NOFILE_LIMIT)));
     }
     #[test]
     fn physical_qualification_profiles_preserve_original_exact_memory_and_quota() {
@@ -1118,17 +1239,33 @@ mod tests {
     #[test]
     fn working_preparation_child_is_a_closed_preplan_entry() {
         let digest = "a".repeat(64);
-        assert_eq!(child_arguments(OwnerKind::WorkingSingleton, "").unwrap(),
-            vec![protocol::EXE.to_string(), "--working-qualification-prepare".into()]);
+        assert_eq!(
+            child_arguments(OwnerKind::WorkingSingleton, "").unwrap(),
+            vec![
+                protocol::EXE.to_string(),
+                "--working-qualification-prepare".into()
+            ]
+        );
         assert!(child_arguments(OwnerKind::PhysicalTemplate, "").is_err());
         let physical = protocol::child_argv(&digest).unwrap();
-        assert_eq!(child_arguments(OwnerKind::WorkingSingleton, &digest).unwrap(), physical);
-        assert_eq!(child_arguments(OwnerKind::PhysicalTemplate, &digest).unwrap(), physical);
+        assert_eq!(
+            child_arguments(OwnerKind::WorkingSingleton, &digest).unwrap(),
+            physical
+        );
+        assert_eq!(
+            child_arguments(OwnerKind::PhysicalTemplate, &digest).unwrap(),
+            physical
+        );
         assert!(child_arguments(OwnerKind::WorkingSingleton, "../caller").is_err());
         let mut caller = child_arguments(OwnerKind::WorkingSingleton, "").unwrap();
         caller.push("/caller/plan.json".into());
-        assert_ne!(caller, child_arguments(OwnerKind::WorkingSingleton, "").unwrap());
-        assert_ne!(physical, child_arguments(OwnerKind::WorkingSingleton, "").unwrap());
+        assert_ne!(
+            caller,
+            child_arguments(OwnerKind::WorkingSingleton, "").unwrap()
+        );
+        assert_ne!(
+            physical,
+            child_arguments(OwnerKind::WorkingSingleton, "").unwrap()
+        );
     }
-
 }

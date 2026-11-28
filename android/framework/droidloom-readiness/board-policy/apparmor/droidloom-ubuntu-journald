@@ -60,4 +60,12 @@ profile droidloom-ubuntu-journald /usr/lib/systemd/systemd-journald {
   deny unix (bind, listen, accept) addr="@**",
   deny unix (connect, send, receive) peer=(addr="@**"),
   signal (receive) peer=unconfined,
+  # BEGIN fixed production commit journal (closed by verify_production_commit.py)
+  # Trusted unit/credentials come from proc metadata and kernel SCM_SECURITY.
+  # No executable read, ptrace capability, cmdline, environ, mem or maps.
+  /proc/[0-9]*/{cgroup,status,comm,loginuid,sessionid} r,
+  unix (receive) type=dgram peer=(label=droidloom-production-commit),
+  unix (send, receive) type=stream peer=(label=droidloom-production-commit),
+  unix (send, receive) type=stream peer=(label=droidloom-production-verify),
+  # END fixed production commit journal
 }

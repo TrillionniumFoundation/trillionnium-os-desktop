@@ -39,6 +39,15 @@ NEW_TYPES=frozenset({
  "p4_linux_working_cgroup_t",
  "p4_linux_working_limits_t",
  "p4_linux_working_watchdog_t",
+ # The seven permanent continuation endpoints are independently closed by
+ # verify_production_commit; no original concrete authority is redefined.
+ "p4_linux_production_commit_t",
+ "p4_linux_production_verify_t",
+ "p4_linux_production_config_t",
+ "p4_linux_production_record_dir_t",
+ "p4_linux_production_record_t",
+ "p4_linux_production_activation_t",
+ "p4_linux_production_verify_unit_t",
  # The fixed 67-APK source objects are independently closed by
  # verify_working_qualification; they are not part of the frozen R13 policy.
  "p4_linux_working_apk_dir_t", "p4_linux_working_apk_input_t",

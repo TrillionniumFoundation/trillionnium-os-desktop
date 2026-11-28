@@ -37,6 +37,7 @@ pub use source::{
     WorkingSourceFilePin, WorkingSourceOrigin, WorkingUnitIdentity,
 };
 pub use witness::WorkingSourceWitness;
+pub use crate::native_working_contract::feishu::FeishuReadonlyFixture;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 enum Phase {
@@ -48,6 +49,7 @@ enum Phase {
     PlanBound,
     Running,
     Complete,
+    Committing,
     Failed,
 }
 
@@ -177,7 +179,9 @@ impl WorkingQualificationOwner {
         if let Some(publication) = &self.publication {
             publication.guard()?;
         }
-        if let Some(history)=&self.preparation { history.guard()?; }
+        if let Some(history) = &self.preparation {
+            history.guard()?;
+        }
         c::WorkingSchedule::selected()
             .check_keepalive_time(
                 self.original_end_ns,
@@ -275,57 +279,80 @@ impl WorkingQualificationOwner {
         self.local_guard(child, end)
     }
 
-    pub(crate) fn preparation_output(&self, name: &str) -> Result<(std::fs::File, std::path::PathBuf), String> {
-        require(self.phase == Phase::PreparingCases, "preparation output requires its live fixed phase")?;
+    pub(crate) fn preparation_output(
+        &self,
+        name: &str,
+    ) -> Result<(std::fs::File, std::path::PathBuf), String> {
+        require(
+            self.phase == Phase::PreparingCases,
+            "preparation output requires its live fixed phase",
+        )?;
         if !matches!(name, "PREPARATION.stdout" | "PREPARATION.stderr") {
             return Err("unreviewed preparation output name".into());
         }
         self.local_guard(None, self.end)?;
-        let file=self.evidence.create(name).map_err(|e|e.to_string())?;
-        Ok((file,self.evidence.root().join(name)))
+        let file = self.evidence.create(name).map_err(|e| e.to_string())?;
+        Ok((file, self.evidence.root().join(name)))
     }
     pub(crate) fn record_preparation(&self, value: &Value) -> Result<Value, String> {
-        self.evidence.record("PREPARATION-OWNER-RESULT.json",value).map_err(|e|e.to_string())
+        self.evidence
+            .record("PREPARATION-OWNER-RESULT.json", value)
+            .map_err(|e| e.to_string())
     }
     pub(crate) fn begin_preparation(&mut self) -> Result<(Instant, u64), String> {
-        require(self.phase==Phase::SourcePublished && self.preparation.is_none(),
-            "preparation requires the actual one-shot source publication")?;
-        let wire=self.original_start_ns.checked_add(
-            c::PREPARATION_WORK_SECONDS.checked_mul(1_000_000_000)
-                .ok_or("preparation source window overflow")?)
+        require(
+            self.phase == Phase::SourcePublished && self.preparation.is_none(),
+            "preparation requires the actual one-shot source publication",
+        )?;
+        let wire = self
+            .original_start_ns
+            .checked_add(
+                c::PREPARATION_WORK_SECONDS
+                    .checked_mul(1_000_000_000)
+                    .ok_or("preparation source window overflow")?,
+            )
             .ok_or("preparation original end overflow")?;
-        let end=super::physical_qualification_channel::instant_until(wire,self.end)
-            .map_err(|e|e.to_string())?;
-        self.pump(None,end)?;
-        self.unit.boundary(None,end)?;
-        self.phase=Phase::PreparingCases;
-        Ok((end,wire))
+        let end = super::physical_qualification_channel::instant_until(wire, self.end)
+            .map_err(|e| e.to_string())?;
+        self.pump(None, end)?;
+        self.unit.boundary(None, end)?;
+        self.phase = Phase::PreparingCases;
+        Ok((end, wire))
     }
     pub(crate) fn preparation_retirement_end(&self) -> Result<Instant, String> {
-        let wire=self.original_start_ns.checked_add(
-            c::PREPARATION_SECONDS.checked_mul(1_000_000_000)
-                .ok_or("preparation retirement source window overflow")?)
+        let wire = self
+            .original_start_ns
+            .checked_add(
+                c::PREPARATION_SECONDS
+                    .checked_mul(1_000_000_000)
+                    .ok_or("preparation retirement source window overflow")?,
+            )
             .ok_or("preparation retirement end overflow")?;
-        super::physical_qualification_channel::instant_until(wire,self.end).map_err(|e|e.to_string())
+        super::physical_qualification_channel::instant_until(wire, self.end)
+            .map_err(|e| e.to_string())
     }
     pub(crate) fn finish_preparation(
         &mut self,
         history: super::physical_qualification_channel::PreparationHistory,
         end: Instant,
     ) -> Result<(), String> {
-        require(self.phase==Phase::PreparingCases && self.preparation.is_none(),
-            "preparation completion is out of order")?;
+        require(
+            self.phase == Phase::PreparingCases && self.preparation.is_none(),
+            "preparation completion is out of order",
+        )?;
         history.guard()?;
-        self.pump(None,end)?;
-        self.unit.boundary(None,end)?;
-        self.preparation=Some(history);
-        self.phase=Phase::Prepared;
+        self.pump(None, end)?;
+        self.unit.boundary(None, end)?;
+        self.preparation = Some(history);
+        self.phase = Phase::Prepared;
         Ok(())
     }
 
     pub(crate) fn bind_physical_plan(&mut self, digest: &str, end: Instant) -> Result<(), String> {
         require(
-            self.phase == Phase::Prepared && self.publication.is_some() && self.preparation.is_some(),
+            self.phase == Phase::Prepared
+                && self.publication.is_some()
+                && self.preparation.is_some(),
             "physical stage requires this owner's actual completed and retired preparation",
         )?;
         self.pump(None, end)?;
@@ -370,6 +397,47 @@ impl WorkingQualificationOwner {
         self.unit.boundary(None, end)?;
         self.phase = Phase::Complete;
         Ok(())
+    }
+    pub(crate) fn begin_production_commit(
+        &mut self,
+        binding: &crate::main_custody::RuntimeMainCustody,
+    ) -> Result<(crate::production_commit_contract::BytesPin, Instant), String> {
+        require(
+            self.phase == Phase::Complete,
+            "production requires this owner's actual completed capture",
+        )?;
+        self.compare_physical_binding(binding)?;
+        let selected = self
+            .boot
+            .config()
+            .production_commit
+            .as_ref()
+            .ok_or("this actual working boot has no source-prepared production continuation")?;
+        let selected = crate::production_commit_contract::BytesPin {
+            bytes: selected.bytes,
+            sha256: selected.sha256.clone(),
+        };
+        require(
+            c::PRODUCTION_COMMIT_SECONDS == crate::production_commit_contract::COMMIT_SECONDS,
+            "working and production tail budgets differ",
+        )?;
+        let end = self
+            .end
+            .min(Instant::now() + Duration::from_secs(c::PRODUCTION_COMMIT_SECONDS));
+        self.unit.begin_production_commit(end)?;
+        self.phase = Phase::Committing;
+        let after = self
+            .inspector
+            .refresh_main_until(&self.main, end)
+            .map_err(|e| e.to_string())?;
+        self.boot.compare_main(&after).map_err(|e| e.to_string())?;
+        require(
+            after.facts() == binding,
+            "Main changed before production commit",
+        )?;
+        self.main = after;
+        self.local_guard(None, end)?;
+        Ok((selected, end))
     }
     /// Preserve the actual publication phase even when later preparation or
     /// execution fails. Existing evidence is never overwritten or retried.

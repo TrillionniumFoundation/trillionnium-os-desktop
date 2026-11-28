@@ -12,7 +12,7 @@ use std::time::{Duration, Instant};
 
 // Reuse the existing whole-channel check limit. No per-route maximum is guessed
 // and no descriptors or observations are preallocated for unexecuted requests.
-pub(crate) const MAX_CHECKS: usize = 4096;
+pub(crate) const MAX_CHECKS: usize = crate::control::physical_qualification_channel::budget::resources::NATIVE_ENGINE_OBSERVATIONS;
 const ENGINE_REQUEST_WINDOW: Duration = Duration::from_secs(70);
 
 pub struct NativeLeafExecution {

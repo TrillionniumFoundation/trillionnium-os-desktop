@@ -17,7 +17,7 @@ const EXIT_CAP: Duration = Duration::from_secs(70);
 const ENGINE_CAP: Duration = Duration::from_secs(70);
 const STACK_CAP: Duration = Duration::from_secs(15);
 const MAX_JOURNAL_BYTES: u64 = 128 * 1024 * 1024;
-const MAX_JOURNAL_FILES: usize = 4096;
+const MAX_JOURNAL_FILES: usize = crate::control::physical_qualification_channel::budget::resources::UI_JOURNAL_MEMBERS;
 // These three binary name forms are emitted only by the fixed source-owned
 // image producers. Retention does not decode pixels or mint media authority.
 const MAX_FIXED_IMAGE_BYTES: u64 = 32 * 1024 * 1024;

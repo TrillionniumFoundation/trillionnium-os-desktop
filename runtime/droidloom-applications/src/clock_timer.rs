@@ -96,6 +96,14 @@ impl CaseInputs {
             sources: Inputs::new(),
         }
     }
+    fn retained_descriptor_count(&self) -> usize {
+        self.parents.len() + self.files.len() + self.sources.retained_descriptor_count()
+    }
+    fn reserve_descriptors(&self, additional: usize) -> Result<(), String> {
+        require(self.retained_descriptor_count().checked_add(additional).is_some_and(|count|
+            count <= droidloom_supervisor::control::physical_qualification_channel::budget::resources::CASE_INPUT_DESCRIPTORS),
+            "native case input descriptor capacity exhausted")
+    }
     fn anchored(&self, path: &Path) -> Result<PathBuf, String> {
         if path == Path::new("/") {
             return Ok(path.into());
@@ -116,6 +124,7 @@ impl CaseInputs {
         if let Some(parent) = path.parent() {
             self.parent(parent)?;
         }
+        self.reserve_descriptors(1)?;
         let anchored = self.anchored(path)?;
         let file = OpenOptions::new()
             .read(true)
@@ -152,6 +161,7 @@ impl CaseInputs {
         maximum: u64,
     ) -> Result<Vec<u8>, String> {
         if path == Path::new(leaf_release::CURRENT) {
+            self.reserve_descriptors(droidloom_supervisor::control::physical_qualification_channel::budget::resources::SOURCE_CHAIN_DESCRIPTORS)?;
             return self.sources.read(path, expected, maximum, false, false);
         }
         require(
@@ -159,6 +169,7 @@ impl CaseInputs {
             "Clock input path must be canonical",
         )?;
         self.parent(path.parent().ok_or("Clock input has no parent")?)?;
+        self.reserve_descriptors(1)?;
         let anchored = self.anchored(path)?;
         let file = OpenOptions::new()
             .read(true)
@@ -261,6 +272,9 @@ pub(super) struct ClockResultCustody {
     inputs: CaseInputs,
 }
 impl ClockResultCustody {
+    pub(super) fn retained_descriptor_count(&self) -> usize {
+        self.inputs.retained_descriptor_count()
+    }
     pub(super) fn capture_path(path: &Path) -> Result<(Self, Value), String> {
         let mut inputs = CaseInputs::new();
         let raw = inputs.read(path, None, super::INPUT_LIMIT)?;

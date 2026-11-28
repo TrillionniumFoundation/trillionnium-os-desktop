@@ -9,13 +9,17 @@ use crate::{
     ensure, fs,
 };
 use serde_json::{Value, json};
+#[path = "cold_working_production.rs"]
+mod production;
+use crate::production_commit_contract as permanent;
+use production::PreparedProduction;
 use std::{
     collections::BTreeSet,
     fs::File,
     path::{Path, PathBuf},
 };
 
-const UNIT_SOURCES: [(&str, &[u8]); 2] = [
+const UNIT_SOURCES: [(&str, &[u8]); 4] = [
     (
         c::PARENT_UNIT,
         include_bytes!("../../../packaging/systemd/system/droidloom-working-qualification.service"),
@@ -24,6 +28,16 @@ const UNIT_SOURCES: [(&str, &[u8]); 2] = [
         c::RETURN_UNIT,
         include_bytes!(
             "../../../packaging/systemd/system/droidloom-working-qualification-return.service"
+        ),
+    ),
+    (
+        permanent::VERIFY_UNIT,
+        include_bytes!("../../../packaging/systemd/system/droidloom-production-verify.service"),
+    ),
+    (
+        permanent::RETURN_UNIT,
+        include_bytes!(
+            "../../../packaging/systemd/system/droidloom-production-verify-return.service"
         ),
     ),
 ];
@@ -179,6 +193,7 @@ pub(super) struct WorkingRuntimeFile {
 pub(super) struct PreparedWorkingRuntime {
     boot: PreparedWorkingBoot,
     configuration: WorkingReturnConfiguration,
+    production: PreparedProduction,
     returned: SealedInput,
     installation: SealedInput,
     launcher: SealedInput,
@@ -245,7 +260,7 @@ impl PreparedWorkingRuntime {
             policies.len() == 1,
             "one actual normal joint policy required",
         )?;
-        let configuration = WorkingReturnConfiguration {
+        let mut configuration = WorkingReturnConfiguration {
             schema: "droidloom.working-qualification-return.v1".into(),
             intent_sha256: boot.intent().sha256.clone(),
             candidate_id: materials.candidate().into(),
@@ -266,7 +281,12 @@ impl PreparedWorkingRuntime {
             installation: payload(installation.pin()),
             cell: payload(&cell),
             selection: payload(&selection),
+            production_commit: None,
+            feishu_readonly_fixture: materials.feishu_readonly_fixture()?.cloned(),
         };
+        configuration.validate()?;
+        let production = PreparedProduction::prepare(&boot, &configuration, &grub_cfg)?;
+        configuration.production_commit = Some(payload(production.configuration()));
         configuration.validate()?;
         let returned = source(
             &materials.work().join("WORKING-RETURN.json"),
@@ -309,6 +329,16 @@ impl PreparedWorkingRuntime {
                 source: returned.pin().clone(),
                 mode: 0o400,
             },
+            WorkingRuntimeFile {
+                destination: PathBuf::from(permanent::CONFIG),
+                source: production.configuration().clone(),
+                mode: 0o400,
+            },
+            WorkingRuntimeFile {
+                destination: PathBuf::from(permanent::PREFIX),
+                source: production.prefix().clone(),
+                mode: 0o400,
+            },
         ];
         for pin in mac_files {
             entries.push(WorkingRuntimeFile {
@@ -338,7 +368,7 @@ impl PreparedWorkingRuntime {
         }
         let mut destinations = BTreeSet::new();
         ensure(
-            entries.len() == 12
+            entries.len() == 16
                 && entries
                     .iter()
                     .all(|e| destinations.insert(e.destination.clone())),
@@ -350,7 +380,7 @@ impl PreparedWorkingRuntime {
             &json!({"schema":"droidloom.working-qualification-runtime-prepared.v1",
                 "candidate_id":materials.candidate(), "boot_prepared":boot.report(),
                 "boot_intent":boot.intent(), "early_configuration":boot.early(),
-                "return_configuration":returned.pin(), "installation":installation.pin(),
+                "return_configuration":returned.pin(), "production_transition":production.observation(), "installation":installation.pin(),
                 "container_launcher":launcher.pin(), "selection":selection,
                 "normal_arguments":arguments, "normal_arguments_sha256":fs::digest(arguments.as_bytes()),
                 "runtime_files":entries.iter().map(|e| json!({"destination":e.destination,
@@ -364,6 +394,7 @@ impl PreparedWorkingRuntime {
         let value = Self {
             boot,
             configuration,
+            production,
             returned,
             installation,
             launcher,
@@ -379,6 +410,7 @@ impl PreparedWorkingRuntime {
     pub(super) fn revalidate(&self) -> Result<()> {
         self.boot.revalidate()?;
         self.configuration.validate()?;
+        self.production.revalidate()?;
         no_unit_overrides()?;
         for source in [
             &self.returned,
@@ -406,7 +438,7 @@ impl PreparedWorkingRuntime {
             "working command line left its actual held configuration",
         )?;
         ensure(
-            self.entries.len() == 12,
+            self.entries.len() == 16,
             "fixed working runtime source roster changed",
         )?;
         self.boot.revalidate()
@@ -498,6 +530,7 @@ mod tests {
 pub(crate) struct WorkingRuntimeSources {
     custody: std::rc::Rc<super::working_custody::WorkingColdCustody>,
     configuration: WorkingReturnConfiguration,
+    production: PreparedProduction,
     returned: SealedInput,
     installation: SealedInput,
     launcher: SealedInput,
@@ -537,6 +570,7 @@ impl PreparedWorkingRuntime {
         let Self {
             boot,
             configuration,
+            production,
             returned,
             installation,
             launcher,
@@ -561,6 +595,7 @@ impl PreparedWorkingRuntime {
         let value = WorkingRuntimeSources {
             custody,
             configuration,
+            production,
             returned,
             installation,
             launcher,
@@ -592,6 +627,7 @@ impl WorkingRuntimeSources {
     pub(crate) fn revalidate_label_custody(&self) -> Result<()> {
         self.custody.revalidate_label_custody()?;
         self.configuration.validate()?;
+        self.production.revalidate_custody()?;
         no_unit_overrides()?;
         for source in [
             &self.returned,
@@ -619,7 +655,7 @@ impl WorkingRuntimeSources {
             "working command line left its actual held configuration",
         )?;
         ensure(
-            self.entries.len() == 12,
+            self.entries.len() == 16,
             "fixed working runtime source roster changed",
         )?;
         self.custody.revalidate_label_custody()
@@ -628,6 +664,7 @@ impl WorkingRuntimeSources {
     pub(crate) fn revalidate(&self) -> Result<()> {
         self.custody.revalidate()?;
         self.configuration.validate()?;
+        self.production.revalidate()?;
         no_unit_overrides()?;
         for source in [
             &self.returned,
@@ -655,7 +692,7 @@ impl WorkingRuntimeSources {
             "working command line left its actual held configuration",
         )?;
         ensure(
-            self.entries.len() == 12,
+            self.entries.len() == 16,
             "fixed working runtime source roster changed",
         )?;
         self.custody.revalidate()
@@ -697,6 +734,18 @@ impl WorkingRuntimeSources {
     }
     pub(crate) fn boot_intent(&self) -> &FilePin {
         self.custody.boot().intent()
+    }
+    pub(super) fn production_configuration(&self) -> &FilePin {
+        self.production.configuration()
+    }
+    pub(super) fn production_prefix(&self) -> &FilePin {
+        self.production.prefix()
+    }
+    pub(super) fn ordinary_initrd(&self) -> &FilePin {
+        self.custody.boot().ordinary_initrd()
+    }
+    pub(crate) fn production_directory(&self) -> Result<PathBuf> {
+        Ok(self.production.document()?.directory()?)
     }
     pub(super) fn recovery_initrd(&self) -> &FilePin {
         self.custody.boot().initrd()

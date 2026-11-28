@@ -18,19 +18,25 @@ use std::time::{Duration, Instant};
 
 #[path = "physical_qualification_capture.rs"]
 mod capture;
-#[path = "physical_qualification_socket.rs"]
-mod socket;
 #[path = "working_qualification_preparation_channel.rs"]
 mod preparation;
-pub use preparation::{WorkingPreparationChannel, WorkingPreparationDocument, PreparedWorkingPlan};
+#[path = "physical_qualification_socket.rs"]
+mod socket;
 use super::application_leaf_unit::qualification::{ChildPeer, KernelProfile};
-pub use capture::{CapturedCompleteApplicationRun, capture_installed_physical_run, capture_prepared_working_run};
 pub(crate) use capture::PreparationHistory;
 pub(crate) use capture::capture_working_physical_run;
+pub use capture::dispatch_fixed_production_entry;
+pub use capture::{
+    CapturedCompleteApplicationRun, capture_installed_physical_run, capture_prepared_working_run,
+};
+pub use preparation::{PreparedWorkingPlan, WorkingPreparationChannel, WorkingPreparationDocument};
 
 #[path = "physical_qualification_budget.rs"]
 pub mod budget;
-pub use budget::{CASE_COUNT, FAMILY_CASE_COUNT, NATIVE_CASE_COUNT, PHOTO_CASE_COUNT, SETTINGS_CASE_COUNT, NOFILE_LIMIT, RETIREMENT_SECONDS, SERVICE_SECONDS, SUITE_SECONDS};
+pub use budget::{
+    CASE_COUNT, FAMILY_CASE_COUNT, NATIVE_CASE_COUNT, NOFILE_LIMIT, PHOTO_CASE_COUNT,
+    RETIREMENT_SECONDS, SERVICE_SECONDS, SETTINGS_CASE_COUNT, SUITE_SECONDS,
+};
 pub const SUMMARY_LIMIT: usize = 16 * 1024 * 1024;
 pub const BINDING_LIMIT: usize = 128 * 1024;
 pub(super) const EXE: &str = "/usr/bin/droidloom-applications";
@@ -234,14 +240,28 @@ impl QualificationCase {
             budget::CAMERA_PHOTO_CASE_SECONDS
         } else if self == Self::SettingsPermissionInterfaces {
             budget::SETTINGS_PERMISSION_CASE_SECONDS
+        } else if self == Self::FamilyCtrip {
+            budget::CTRIP_CASE_SECONDS
+        } else if matches!(self,
+            Self::FamilyHyatt | Self::FamilyMobileTicket | Self::FamilyNational
+            | Self::FamilyHertz | Self::FamilyHilton | Self::FamilyMarriott
+            | Self::FamilyAirChina | Self::FamilyChinaEastern | Self::FamilySzzc
+            | Self::FamilyUnited | Self::FamilyAna) {
+            budget::TRAVEL_CASE_SECONDS
+        } else if self == Self::FamilyFeishu {
+            budget::COLLABORATION_CASE_SECONDS
         } else if self == Self::FamilyToutiao {
             budget::NEWS_CASE_SECONDS
+        } else if matches!(self, Self::FamilyBeike | Self::FamilyStreetEasy) {
+            budget::HOUSING_CASE_SECONDS
         } else if matches!(self, Self::FamilyAmazon | Self::FamilyBestBuy
             | Self::FamilyJingdong | Self::FamilyTaobao | Self::FamilyPinduoduo) {
             budget::RETAIL_CASE_SECONDS
         } else {
-            budget::NATIVE_CASE_WINDOWS.get(self as usize)
-                .copied().unwrap_or(budget::FAMILY_CASE_SECONDS)
+            budget::NATIVE_CASE_WINDOWS
+                .get(self as usize)
+                .copied()
+                .unwrap_or(budget::FAMILY_CASE_SECONDS)
         }
     }
     /// Only these compiled selected packages have a family case. No caller
@@ -298,7 +318,9 @@ impl QualificationCase {
             Self::GalleryVideo => "com.android.gallery3d",
             Self::GallerySeek => "com.android.gallery3d",
             Self::GalleryAlbum => "com.android.gallery3d",
-            Self::SettingsSupportedPages | Self::SettingsPermissionInterfaces => "com.android.settings",
+            Self::SettingsSupportedPages | Self::SettingsPermissionInterfaces => {
+                "com.android.settings"
+            }
             Self::IhgLondon => "com.ihg.apps.android",
             Self::FamilyHyatt => "com.Hyatt.hyt",
             Self::FamilyMobileTicket => "com.MobileTicket",
@@ -573,10 +595,7 @@ impl ChildChannel {
         socket.send(&packet, end)?;
         let ack = socket.receive(self.peer.parent_pid(), end)?;
         ack.require_sequence(self.sequence)?;
-        if ack.kind != 5
-            || ack.case != case
-            || !ack.payload.is_empty()
-        {
+        if ack.kind != 5 || ack.case != case || !ack.payload.is_empty() {
             self.socket.take();
             return Err(error(
                 "qualification acknowledgement differs from this exact request",
@@ -722,13 +741,26 @@ mod tests {
         assert_eq!(total + budget::FAMILY_SECONDS
             + budget::CAMERA_PHOTO_CASE_SECONDS + budget::SETTINGS_PERMISSION_CASE_SECONDS
             + 140 + 120, SUITE_SECONDS);
-        assert_eq!(SUITE_SECONDS, 342_457);
+        assert_eq!(SUITE_SECONDS, 620_357);
+        assert_eq!(budget::TRAVEL_CASE_COUNT,11);
+        assert_eq!(budget::CTRIP_CASE_COUNT,1);
+        assert_eq!(budget::TRAVEL_ADDITIONAL_SECONDS,18_330);
+        assert_eq!(budget::CTRIP_ADDITIONAL_SECONDS,41_610);
+        assert_eq!(QualificationCase::FamilyUnited.window_seconds(),25_490);
+        assert_eq!(QualificationCase::FamilyCtrip.window_seconds(),48_770);
         assert_eq!(CASE_COUNT, 49);
         assert_eq!(budget::RETAIL_CASE_COUNT, 5);
         assert_eq!(budget::RETAIL_ADDITIONAL_SECONDS, 8_090);
+        assert_eq!(budget::COLLABORATION_CASE_COUNT, 1);
+        assert_eq!(budget::COLLABORATION_ADDITIONAL_SECONDS, 10_320);
+        assert_eq!(QualificationCase::FamilyFeishu.window_seconds(),17_480);
         assert_eq!(budget::NEWS_CASE_COUNT, 1);
         assert_eq!(budget::NEWS_ADDITIONAL_SECONDS, 10_540);
         assert_eq!(QualificationCase::FamilyToutiao.window_seconds(), 17_700);
+        assert_eq!(budget::HOUSING_CASE_COUNT,2);
+        assert_eq!(budget::HOUSING_ADDITIONAL_SECONDS,12_170);
+        assert_eq!(QualificationCase::FamilyBeike.window_seconds(),19_330);
+        assert_eq!(QualificationCase::FamilyStreetEasy.window_seconds(),19_330);
         assert_eq!(QualificationCase::FamilyAmazon.window_seconds(), 15_250);
         assert_eq!(QualificationCase::FamilyQuickSearch.window_seconds(), 7_160);
         assert_eq!(SETTINGS_CASE_COUNT, 1);
@@ -761,16 +793,44 @@ mod tests {
             assert_eq!(case.ordinal() as usize, ordinal);
             assert_eq!(QualificationCase::for_family(case.package()).unwrap(), case);
             assert!(case.native_route().is_none());
-            assert_eq!(case.window_seconds(),
-                if matches!(case, QualificationCase::FamilyAmazon
-                    | QualificationCase::FamilyBestBuy | QualificationCase::FamilyJingdong
-                    | QualificationCase::FamilyTaobao | QualificationCase::FamilyPinduoduo) {
+            assert_eq!(
+                case.window_seconds(),
+                if matches!(
+                    case,
+                    QualificationCase::FamilyAmazon
+                        | QualificationCase::FamilyBestBuy
+                        | QualificationCase::FamilyJingdong
+                        | QualificationCase::FamilyTaobao
+                        | QualificationCase::FamilyPinduoduo
+                ) {
                     15_250
+                } else if case == QualificationCase::FamilyCtrip {
+                    48_770
+                } else if matches!(
+                    case,
+                    QualificationCase::FamilyHyatt
+                        | QualificationCase::FamilyMobileTicket
+                        | QualificationCase::FamilyNational
+                        | QualificationCase::FamilyHertz
+                        | QualificationCase::FamilyHilton
+                        | QualificationCase::FamilyMarriott
+                        | QualificationCase::FamilyAirChina
+                        | QualificationCase::FamilyChinaEastern
+                        | QualificationCase::FamilySzzc
+                        | QualificationCase::FamilyUnited
+                        | QualificationCase::FamilyAna
+                ) {
+                    25_490
+                } else if case == QualificationCase::FamilyFeishu {
+                    17_480
                 } else if case == QualificationCase::FamilyToutiao {
                     17_700
+                } else if matches!(case, QualificationCase::FamilyBeike | QualificationCase::FamilyStreetEasy) {
+                    19_330
                 } else {
                     7_160
-                });
+                }
+            );
             assert_eq!(case.profile(), KernelProfile::Standard);
             assert!(selected.insert(case.package()));
         }
@@ -780,8 +840,15 @@ mod tests {
             assert!(QualificationCase::for_family(case.package()).is_err());
             assert!(case.native_route().is_some());
         }
-        for package in ["", "../caller", "com.android.permissioncontroller", "org.droidloom.qa.editorcontract",
-            "com.Hyatt.hyt ", "com.hyatt.hyt", "caller.package"] {
+        for package in [
+            "",
+            "../caller",
+            "com.android.permissioncontroller",
+            "org.droidloom.qa.editorcontract",
+            "com.Hyatt.hyt ",
+            "com.hyatt.hyt",
+            "caller.package",
+        ] {
             assert!(QualificationCase::for_family(package).is_err(), "{package}");
         }
         assert_eq!(QualificationCase::FamilyHyatt.ordinal(), 14);
@@ -800,8 +867,8 @@ mod tests {
         ] {
             assert!(lines.contains(line.as_str()), "{line}");
         }
-        assert_eq!(NOFILE_LIMIT, 32_768);
-        assert_eq!(SERVICE_SECONDS, 342_637);
+        assert_eq!(NOFILE_LIMIT, 262_144);
+        assert_eq!(SERVICE_SECONDS, 620_537);
         assert!(lines.contains("MemoryMax=2147483648"));
         assert!(lines.contains("MemorySwapMax=0"));
         assert!(lines.contains("CPUQuota=200%"));

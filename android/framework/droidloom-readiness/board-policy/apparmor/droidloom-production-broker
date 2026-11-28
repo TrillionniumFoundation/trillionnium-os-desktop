@@ -287,4 +287,8 @@ profile droidloom-production-broker flags=(attach_disconnected.path=/.droidloom-
   /usr/libexec/droidloom/native-application-leaves/prebuilt-state-fixtures/20261128-r1/video/signer.der r,
   /usr/libexec/droidloom/native-application-leaves/prebuilt-state-fixtures/20261128-r1/video/state/FixedStateProvider.java r,
   # END fixed native helper sources
+  # BEGIN fixed production verifier peer (closed by verify_production_commit.py)
+  ptrace (readby) peer=droidloom-production-verify,
+  unix (send, receive) type=stream peer=(label=droidloom-production-verify),
+  # END fixed production verifier peer
 }

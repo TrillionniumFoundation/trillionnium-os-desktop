@@ -119,4 +119,12 @@ profile droidloom-working-qualification flags=(attach_disconnected.path=/.droidl
   signal (send, receive) peer=droidloom-working-qualification,
   signal (send) peer=droidloom-working-privateprep,
   signal (send) peer=droidloom-working-application,
+  # BEGIN fixed production Complete handoff (closed by verify_production_commit.py)
+  /etc/droidloom/production-commit.json r,
+  change_profile /usr/bin/droidloom-applications -> droidloom-production-commit,
+  ptrace (read, readby) peer=droidloom-production-commit,
+  unix (send, receive) type=seqpacket peer=(label=droidloom-production-commit),
+  signal (send, receive) peer=droidloom-production-commit,
+  /var/lib/droidloom-qualification/physical-[0-9a-f]*/{applications.stdout,applications.stderr,MAIN-BINDING.json} rw,
+  # END fixed production Complete handoff
 }
