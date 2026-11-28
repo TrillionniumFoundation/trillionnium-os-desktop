@@ -1,0 +1,11 @@
+[Unit]
+Description=Droidloom authenticated guest lifecycle channel
+PartOf=droidloom-container-services.target
+
+[Socket]
+ListenStream=/run/droidloom-container-link/guest.sock
+FileDescriptorName=android_guest
+Service=droidloom-container-entry.service
+DirectoryMode=0700
+SocketMode=0666
+RemoveOnStop=yes

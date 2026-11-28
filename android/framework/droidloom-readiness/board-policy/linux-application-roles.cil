@@ -1,0 +1,177 @@
+; Closed business commands selected by production_application_operation.rs.
+; Each role has a fixed original ELF, fixed argv grammar, and factory-owned
+; PIDFD/TRACEEXEC/waitid lifetime. No executable, label or shell text comes from
+; a control client. These are Android core domains, not ordinary Linux services.
+
+(type droidloom_browser)
+(type droidloom_contacts_read)
+(type droidloom_launch_read)
+(type droidloom_launch_start)
+(roletype r droidloom_browser)
+(roletype r droidloom_contacts_read)
+(roletype r droidloom_launch_read)
+(roletype r droidloom_launch_start)
+(typeattribute p4_closed_business_queries)
+(typeattributeset p4_closed_business_queries
+ (droidloom_browser droidloom_contacts_read droidloom_launch_read droidloom_launch_start))
+(typeattribute p4_closed_runtime_queries)
+(typeattributeset p4_closed_runtime_queries (p4_closed_business_queries))
+(typeattribute p4_closed_cmd_queries)
+(typeattributeset p4_closed_cmd_queries
+ (droidloom_browser droidloom_launch_read droidloom_launch_start))
+(typeattributeset domain (p4_closed_business_queries))
+(typeattributeset coredomain (p4_closed_business_queries))
+(typeattributeset p4_fixed_query_processes (p4_closed_business_queries))
+
+; The raw factory child sets one source-defined pending exec context. The
+; default cmd transition stays droidloom_query for the original read API.
+(allow droidloom_query_birth p4_closed_runtime_queries (process (transition)))
+(allow droidloom_query_birth p4_closed_runtime_queries (process2 (nnp_transition nosuid_transition)))
+(allow droidloom_query_birth droidloom_provider_exec (file (getattr open read execute map)))
+(allow droidloom_query_birth droidloom_provider_jar (file (getattr read)))
+(allow kernel p4_closed_runtime_queries (process (getattr ptrace sigkill sigstop)))
+(allow kernel droidloom_provider_exec (file (getattr open read execute map)))
+(allow kernel droidloom_provider_jar (file (getattr open read)))
+(allow p4_closed_cmd_queries droidloom_query_exec (file (getattr open read map execute entrypoint)))
+(allow droidloom_contacts_read droidloom_provider_exec (file (getattr open read map execute entrypoint)))
+(allow droidloom_contacts_read droidloom_provider_jar (file (getattr open read map)))
+
+; Reopened factory-origin namespaces, root and executable survive the fixed
+; exec. Stdio always originates in the cap-zero query_io creator.
+(allow p4_closed_runtime_queries kernel (fd (use)))
+(allow p4_closed_runtime_queries kernel (process (sigchld)))
+(allow p4_closed_runtime_queries droidloom_query_io (fd (use)))
+(allow p4_closed_runtime_queries droidloom_query_io (fifo_file (getattr write)))
+(allow p4_closed_runtime_queries null_device (chr_file (getattr read)))
+(allow p4_closed_runtime_queries self (process (fork sigchld getcap)))
+(allow p4_closed_runtime_queries self (dir (getattr search)))
+(allow p4_closed_runtime_queries self (file (getattr open read)))
+(allow p4_closed_runtime_queries self (lnk_file (getattr read)))
+(allow p4_closed_runtime_queries proc (dir (getattr search)))
+(allow p4_closed_runtime_queries proc (lnk_file (getattr read)))
+(allow p4_closed_runtime_queries device (dir (getattr search)))
+(allow p4_closed_runtime_queries p4_linux_query_mount_t (dir (getattr search)))
+(allow p4_closed_runtime_queries droidloom_query_tmpfs_t (dir (getattr search)))
+(allow p4_closed_runtime_queries droidloom_query_tmpfs_t (filesystem (getattr)))
+(allow p4_closed_runtime_queries labeledfs (filesystem (getattr)))
+
+; Original readonly linker, ART, package resources and exact property inputs.
+; APK bytes may be inspected, but application-private data is not opened.
+(allow p4_closed_runtime_queries p4_query_original_dirs (dir (getattr search)))
+(allow p4_closed_runtime_queries rootfs (lnk_file (getattr read)))
+(allow p4_closed_runtime_queries system_file (lnk_file (getattr read)))
+(allow p4_closed_runtime_queries apex_mnt_dir (lnk_file (getattr read)))
+(allow p4_closed_runtime_queries system_file (file (getattr open read map execute)))
+(allow p4_closed_runtime_queries system_lib_file (file (getattr open read map execute)))
+(allow p4_closed_runtime_queries system_linker_exec (file (getattr open read map execute)))
+(allow p4_closed_runtime_queries linkerconfig_file (file (getattr open read map)))
+(allow p4_closed_runtime_queries apex_info_file (file (getattr open read)))
+(allow p4_closed_runtime_queries apk_data_file (file (getattr open read)))
+(allow p4_closed_runtime_queries properties_device (dir (getattr search)))
+(allow p4_closed_runtime_queries properties_serial (file (getattr open read map)))
+(allow p4_closed_runtime_queries default_prop (file (getattr open read map)))
+(allow p4_closed_runtime_queries exported_default_prop (file (getattr open read map)))
+(allow p4_closed_runtime_queries servicemanager_prop (file (getattr open read map)))
+(allow droidloom_contacts_read dalvik_prop (file (getattr open read map)))
+
+(allow p4_closed_runtime_queries binder_device (chr_file (getattr open read write map ioctl)))
+(allow p4_closed_runtime_queries servicemanager (binder (call transfer)))
+(allow servicemanager p4_closed_runtime_queries (binder (transfer)))
+(allow p4_closed_runtime_queries system_server (binder (call transfer)))
+(allow system_server p4_closed_runtime_queries (binder (call transfer)))
+(allow p4_closed_business_queries activity_service (service_manager (find)))
+(allow droidloom_launch_read package_service (service_manager (find)))
+(allow droidloom_contacts_read package_service (service_manager (find)))
+(neverallow p4_closed_runtime_queries service_manager_type (service_manager (add)))
+(neverallow p4_closed_runtime_queries property_type (property_service (set)))
+
+; CP3A's stock ContactsProvider is a privileged target-SDK-37 shared-UID APK
+; with its original shared signer, not the platform signer. The fixed content
+; query obtains only com.android.contacts through ActivityManager. It receives
+; the provider's readonly CursorWindow through Binder, never its database path.
+(allow droidloom_contacts_read priv_app (binder (call transfer)))
+(allow priv_app droidloom_contacts_read (binder (call transfer)))
+(allow droidloom_contacts_read priv_app (fd (use)))
+(typeattributeset mlstrustedsubject (droidloom_contacts_read))
+(allow droidloom_contacts_read appdomain_tmpfs (file (getattr read map)))
+(neverallow droidloom_contacts_read appdomain_tmpfs (file (open write append execute execute_no_trans entrypoint create setattr relabelfrom relabelto)))
+(neverallow p4_closed_runtime_queries app_data_file (file (open read write append map)))
+(neverallow p4_closed_runtime_queries privapp_data_file (file (open read write append map)))
+(neverallow p4_closed_runtime_queries system_app_data_file (file (open read write append map)))
+
+; The original ART interpreter is fixed by -Xint/-Xusejit:false in argv.
+; Its own anonymous bookkeeping memory is distinct and never executable.
+(type droidloom_contacts_tmpfs)
+(roletype object_r droidloom_contacts_tmpfs)
+(typeattributeset file_type (droidloom_contacts_tmpfs))
+(typeattributeset p4_all_board_owned (droidloom_contacts_tmpfs))
+(allow droidloom_contacts_tmpfs tmpfs (filesystem (associate)))
+(typetransition droidloom_contacts_read tmpfs file droidloom_contacts_tmpfs)
+(typetransition droidloom_contacts_read tmpfs memfd_file droidloom_contacts_tmpfs)
+(allow droidloom_contacts_read droidloom_contacts_tmpfs (file (create getattr open read write map)))
+(allow droidloom_contacts_read droidloom_contacts_tmpfs (memfd_file (create getattr open read write map)))
+(neverallow droidloom_contacts_read self (process (execmem)))
+(neverallow droidloom_contacts_read droidloom_contacts_tmpfs (file (execute execute_no_trans entrypoint)))
+(neverallow droidloom_contacts_read droidloom_contacts_tmpfs (memfd_file (execute)))
+(neverallow droidloom_broker p4_closed_runtime_queries (process (transition dyntransition ptrace signal sigkill sigstop setexec setcurrent)))
+(neverallow p4_closed_runtime_queries p4_linux_data (file (entrypoint execute)))
+(neverallow p4_closed_runtime_queries droidloom_query_tmpfs_t (dir (open read write add_name remove_name mounton setattr relabelfrom relabelto)))
+
+; Closed native UI commands borrow only the original factory and the same
+; selected query inputs. The two roles differ by fixed Android identity:
+; NativeUi is shell UID 2000; NativeUiRead is UID 0 with zero capabilities.
+(type droidloom_native_ui)
+(type droidloom_native_ui_read)
+(roletype r droidloom_native_ui)
+(roletype r droidloom_native_ui_read)
+(typeattribute p4_native_ui_queries)
+(typeattributeset p4_native_ui_queries (droidloom_native_ui droidloom_native_ui_read))
+(typeattributeset p4_closed_business_queries (p4_native_ui_queries))
+(typeattributeset p4_closed_cmd_queries (p4_native_ui_queries))
+(allow p4_native_ui_queries droidloom_provider_exec (file (getattr open read map execute entrypoint)))
+(allow p4_native_ui_queries droidloom_provider_jar (file (getattr open read map)))
+(allow p4_native_ui_queries dalvik_prop (file (getattr open read map)))
+(allow p4_native_ui_queries package_service (service_manager (find)))
+(allow droidloom_native_ui input_service (service_manager (find)))
+(allow droidloom_native_ui_read window_service (service_manager (find)))
+(allow droidloom_native_ui_read display_service (service_manager (find)))
+(allow droidloom_native_ui_read surfaceflinger_service (service_manager (find)))
+(allow droidloom_native_ui_read surfaceflinger (binder (call transfer)))
+(allow surfaceflinger droidloom_native_ui_read (binder (call transfer)))
+(allow droidloom_native_ui_read surfaceflinger (fd (use)))
+
+; The Camera read-only content command receives actual MediaProvider rows
+; through Binder. No app-private preferences, database, or arbitrary file path
+; can be read, and the common private-data neverallows remain in force.
+(allow droidloom_native_ui_read mediaprovider (binder (call transfer)))
+(allow mediaprovider droidloom_native_ui_read (binder (call transfer)))
+(allow droidloom_native_ui_read mediaprovider_app (binder (call transfer)))
+(allow mediaprovider_app droidloom_native_ui_read (binder (call transfer)))
+(allow droidloom_native_ui_read mediaprovider (fd (use)))
+(allow droidloom_native_ui_read mediaprovider_app (fd (use)))
+(typeattributeset mlstrustedsubject (droidloom_native_ui_read))
+(allow droidloom_native_ui_read appdomain_tmpfs (file (getattr read map)))
+(neverallow p4_native_ui_queries appdomain_tmpfs (file (open write append execute execute_no_trans entrypoint create setattr relabelfrom relabelto)))
+
+; Each fixed ART interpreter role owns separate nonexecutable bookkeeping.
+(type droidloom_native_ui_tmpfs)
+(type droidloom_native_ui_read_tmpfs)
+(roletype object_r droidloom_native_ui_tmpfs)
+(roletype object_r droidloom_native_ui_read_tmpfs)
+(typeattributeset file_type (droidloom_native_ui_tmpfs droidloom_native_ui_read_tmpfs))
+(typeattributeset p4_all_board_owned (droidloom_native_ui_tmpfs droidloom_native_ui_read_tmpfs))
+(allow droidloom_native_ui_tmpfs tmpfs (filesystem (associate)))
+(allow droidloom_native_ui_read_tmpfs tmpfs (filesystem (associate)))
+(typetransition droidloom_native_ui tmpfs file droidloom_native_ui_tmpfs)
+(typetransition droidloom_native_ui tmpfs memfd_file droidloom_native_ui_tmpfs)
+(typetransition droidloom_native_ui_read tmpfs file droidloom_native_ui_read_tmpfs)
+(typetransition droidloom_native_ui_read tmpfs memfd_file droidloom_native_ui_read_tmpfs)
+(allow droidloom_native_ui droidloom_native_ui_tmpfs (file (create getattr open read write map)))
+(allow droidloom_native_ui droidloom_native_ui_tmpfs (memfd_file (create getattr open read write map)))
+(allow droidloom_native_ui_read droidloom_native_ui_read_tmpfs (file (create getattr open read write map)))
+(allow droidloom_native_ui_read droidloom_native_ui_read_tmpfs (memfd_file (create getattr open read write map)))
+(neverallow p4_native_ui_queries self (process (execmem)))
+(neverallow p4_native_ui_queries droidloom_native_ui_tmpfs (file (execute execute_no_trans entrypoint)))
+(neverallow p4_native_ui_queries droidloom_native_ui_read_tmpfs (file (execute execute_no_trans entrypoint)))
+(neverallow p4_native_ui_queries droidloom_native_ui_tmpfs (memfd_file (execute)))
+(neverallow p4_native_ui_queries droidloom_native_ui_read_tmpfs (memfd_file (execute)))

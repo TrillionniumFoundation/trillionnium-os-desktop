@@ -1,0 +1,7 @@
+[Unit]
+Description=Droidloom controlled original-machine qualification
+ConditionKernelCommandLine=droidloom.once
+Wants=graphical.target droidloom-production.service droidloom-early-observer.service
+Wants=droidloom-original-once-return.service droidloom-original-once-return.timer
+After=graphical.target
+AllowIsolate=yes

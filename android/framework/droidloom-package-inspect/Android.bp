@@ -1,0 +1,7 @@
+cc_binary {
+    name: "droidloom-package-inspect",
+    system_ext_specific: true,
+    srcs: ["package_inspect.cpp"],
+    shared_libs: ["libbinder", "libutils", "packagemanager_aidl-cpp"],
+    cflags: ["-Wall", "-Wextra", "-Werror"],
+}

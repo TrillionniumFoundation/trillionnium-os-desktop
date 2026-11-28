@@ -1,0 +1,1046 @@
+//! Fixed package inspection, owned Firefox entry and fixed Contacts provider reads.
+//!
+//! The public worker entry has no command-line parameters. The normal broker
+//! lends a ReadyTreeWitness; neither a saved receipt nor a process number can
+//! select an execution target. The explicit Firefox adapter adds two closed
+//! commands; Contacts has a separate read-only Java role and no UI acceptance.
+//! The original four-read API remains unchanged.
+use std::ffi::{CStr, CString};
+use std::fs::File;
+use std::io;
+use std::os::unix::fs::MetadataExt;
+
+use crate::control::application_probe::{AndroidProbe, ApplicationInspection, RuntimeEpoch};
+use crate::production_namespace::{ApplicationAuthority, FrameworkObservation, ReadyTreeWitness};
+use serde::{Deserialize, Serialize};
+use thiserror::Error;
+
+#[path = "production_application_custody.rs"]
+mod custody;
+pub(crate) use custody::{ProductionInspection, inspect_with_custody, inspect_with_custody_early};
+
+#[path = "production_application_workflow.rs"]
+mod workflow;
+use workflow::{Workflow, WorkflowFramework};
+
+#[path = "production_application_business.rs"]
+mod business;
+#[path = "production_application_launch.rs"]
+mod launch;
+pub(crate) use launch::LaunchObservation;
+#[path = "production_application_task_control.rs"]
+mod task_control;
+pub(crate) use task_control::ApplicationTaskControl;
+#[path = "production_application_contacts.rs"]
+mod contacts;
+pub(crate) use contacts::{ContactsBaselineObservation, ContactsQuery};
+#[path = "production_application_install_command.rs"]
+mod install_command;
+#[path = "production_application_launch_command.rs"]
+mod launch_command;
+use install_command::InstallCommand;
+#[path = "production_application_install.rs"]
+mod install;
+#[path = "production_application_install_input.rs"]
+mod install_input;
+pub(crate) use install::{InstallObservation, install_create_only_early, install_early};
+#[path = "production_application_working_install.rs"]
+mod working_install;
+pub(crate) use working_install::install_working_originals;
+#[path = "production_application_empty_meituan.rs"]
+mod empty_meituan;
+pub(crate) use empty_meituan::install_empty_meituan;
+
+#[path = "production_application_catalog.rs"]
+mod catalog;
+use catalog::CatalogRequest;
+pub(crate) use catalog::{CatalogCommand, catalog_early};
+
+#[path = "production_application_ihg_helper.rs"]
+mod ihg_helper;
+pub(crate) use ihg_helper::{ihg_helper_execution_profile, install_ihg_helper, observe_ihg_helper_state};
+#[path = "production_native_leaf_fixture.rs"]
+mod native_fixture;
+pub(crate) use native_fixture::{begin_native_fixture, fixture_state_execution_profile, NativeFixtureLease};
+
+#[path = "production_application_package_help.rs"]
+mod package_help;
+pub(crate) use package_help::{
+    PackageHelpObservation, execute_package_help, package_help_execution_profile,
+};
+
+#[path = "production_application_preparation_read.rs"]
+mod preparation_read;
+pub(crate) use preparation_read::{
+    PreparationReadExecutionProfile, PreparationReadObservation, execute_preparation_read, preparation_read_execution_profile,
+};
+
+#[path = "production_application_vintf.rs"]
+mod vintf;
+pub(crate) use vintf::{RuntimeVintfBudget, observe_runtime_vintf};
+
+#[path = "runtime_abi.rs"]
+pub(crate) mod runtime_abi;
+#[path = "production_application_runtime_abi.rs"]
+mod runtime_abi_query;
+pub(crate) use runtime_abi_query::{RuntimeAbiObservation, read_runtime_abi};
+
+#[path = "production_application_exit_state.rs"]
+mod application_exit_state_query;
+#[path = "user_zero_package_inventory.rs"]
+mod package_inventory;
+pub(crate) use application_exit_state_query::{
+    ApplicationExitStateObservation, read_application_exit_state,
+};
+
+#[path = "production_application_account_state.rs"]
+mod application_account_state_query;
+pub(crate) use application_account_state_query::{
+    ApplicationAccountStateObservation, read_application_account_state,
+};
+#[path = "production_application_account_secret.rs"]
+mod account_secret;
+pub(crate) use account_secret::AccountAnonymityKey;
+
+#[path = "production_application_appops_state.rs"]
+mod application_appops_state_query;
+pub(crate) use application_appops_state_query::{
+    ApplicationAppOpsStateObservation, read_application_appops_state,
+};
+
+#[path = "production_application_permission_state.rs"]
+mod application_permission_state_query;
+pub(crate) use application_permission_state_query::{
+    ApplicationPermissionStateObservation, read_application_permission_state,
+};
+
+#[path = "production_application_package_inventory.rs"]
+mod package_inventory_query;
+pub(crate) use package_inventory_query::{
+    UserZeroPackageInventoryObservation, read_user_zero_package_inventory,
+};
+
+#[path = "production_application_display.rs"]
+mod display;
+use display::DisplayCommand;
+pub(crate) use display::set_density_early;
+
+#[path = "production_application_calendar_counts.rs"]
+mod calendar_counts;
+
+#[path = "production_application_native_ui.rs"]
+mod native_ui;
+pub(crate) use native_ui::{NativeUiExecutionProfile, NativeUiObservation, execute_native_ui, native_ui_execution_profile};
+
+#[path = "production_application_art_profile.rs"]
+mod art_profile;
+#[path = "production_application_operation.rs"]
+mod operation;
+pub(crate) use launch_command::LaunchCommand;
+use operation::ApplicationOperation;
+pub(crate) use operation::{BrowserCommand, OperationDomain};
+
+#[path = "native_leaf_apk_scope.rs"]
+pub(crate) mod apk_scope;
+#[path = "native_leaf_apk_protocol.rs"]
+pub(crate) mod apk_protocol;
+#[path = "production_native_leaf_apk_files.rs"]
+mod apk_files;
+#[path = "production_native_leaf_apk_io.rs"]
+mod apk_io;
+#[path = "production_native_leaf_apk_reader.rs"]
+pub(crate) mod apk_reader;
+#[path = "production_working_apk_payload.rs"]
+pub(crate) mod working_payload;
+#[path = "production_working_payload_birth.rs"]
+pub(crate) mod working_payload_birth;
+#[path = "production_native_leaf_apk.rs"]
+pub(crate) mod apk_session_owner;
+#[path = "native_leaf_apk_transport.rs"]
+pub(crate) mod apk_transport;
+
+#[path = "production_metadata_observer.rs"]
+mod metadata_observer;
+pub(crate) use metadata_observer::{
+    MetadataObservation, MetadataRole, observe as observe_metadata,
+};
+
+#[path = "production_engine_observer.rs"]
+mod engine_observer;
+pub(crate) use engine_observer::{EngineSample, EngineTarget, observe as observe_engine};
+pub(crate) fn metadata_retirement_failed() -> bool {
+    metadata_observer::retirement_failed() || engine_observer::retirement_failed() || apk_reader::retirement_failed()
+        || working_payload::retirement_failed() || working_payload_birth::retirement_failed()
+}
+#[path = "production_application_engine.rs"]
+mod engine;
+pub(crate) use engine::observe_running_engine;
+
+#[path = "production_application_camera.rs"]
+pub(crate) mod camera;
+
+#[path = "production_application_query_io.rs"]
+pub(crate) mod query_io;
+
+#[path = "production_application_calendar_factory.rs"]
+mod calendar_factory;
+#[path = "production_application_factory_query.rs"]
+pub(crate) mod factory_query;
+#[path = "production_application_process.rs"]
+mod process;
+#[path = "production_application_protocol.rs"]
+mod protocol;
+#[path = "production_application_worker.rs"]
+mod worker;
+pub(crate) use worker::{CloneArgs as FrontendCloneArgs, SignalMask as FrontendSignalMask};
+
+/// Borrowed execution authority. Implementations retain their actual original
+/// owner; no request, PID, receipt, or serialized Ready state implements this.
+/// The same closed worker and actual waitid/cgroup retirement path serve both
+/// the legacy namespace owner and the boot-created early owner.
+/// Only two source-owned fixed locations exist. This is sent on the private
+/// parent-authenticated worker channel, never accepted as a public path.
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Deserialize, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub(crate) enum QueryProjection {
+    LegacyRoot,
+    EarlyDev,
+}
+impl QueryProjection {
+    fn am_classpath(self) -> &'static CStr {
+        match self {
+            Self::LegacyRoot => c"CLASSPATH=/.droidloom-query/am.jar",
+            Self::EarlyDev => c"CLASSPATH=/dev/droidloom-query/am.jar",
+        }
+    }
+    fn content_classpath(self) -> &'static CStr {
+        match self {
+            Self::LegacyRoot => c"CLASSPATH=/.droidloom-query/content.jar",
+            Self::EarlyDev => c"CLASSPATH=/dev/droidloom-query/content.jar",
+        }
+    }
+}
+
+pub(crate) trait ApplicationWorkerAuthority {
+    fn query_projection(&self) -> QueryProjection;
+    fn observer_proc(
+        &self,
+    ) -> std::result::Result<
+        crate::production_mac::ObserverProcSource<'_>,
+        crate::production_namespace::NamespaceError,
+    > {
+        Err(
+            crate::production_namespace::NamespaceError::RuntimeResource(
+                "selected process observation requires the original early board owner".into(),
+            ),
+        )
+    }
+    fn revalidate(&self) -> std::result::Result<(), crate::production_namespace::NamespaceError>;
+    fn descriptors(
+        &self,
+        binary: &CStr,
+    ) -> std::result::Result<Vec<File>, crate::production_namespace::NamespaceError>;
+    fn contacts_content_descriptors(
+        &self,
+    ) -> std::result::Result<[File; 2], crate::production_namespace::NamespaceError>;
+    fn instrumentation_descriptors(
+        &self,
+    ) -> std::result::Result<[File; 2], crate::production_namespace::NamespaceError> {
+        Err(
+            crate::production_namespace::NamespaceError::RuntimeResource(
+                "native UI instrumentation requires the original kernel-first owner".into(),
+            ),
+        )
+    }
+    fn mapped_root(
+        &self,
+    ) -> std::result::Result<(u32, u32), crate::production_namespace::NamespaceError>;
+    fn leaf(
+        &self,
+    ) -> std::result::Result<
+        crate::production_cgroup::ApplicationLeaf<'_>,
+        crate::production_namespace::NamespaceError,
+    >;
+    fn bind_created_process(
+        &self,
+        pidfd: &std::os::fd::OwnedFd,
+        query: bool,
+    ) -> std::result::Result<(File, u32), crate::production_namespace::NamespaceError>;
+    fn progress_inherited_native(
+        &self,
+        deadline: std::time::Instant,
+    ) -> std::result::Result<(), crate::production_namespace::NamespaceError>;
+}
+
+pub(crate) const WORKER_ARGUMENT: &str = "__production-application-read";
+const OUTPUT_LIMIT: usize = 65536;
+const QUERY_LIMIT: std::time::Duration = std::time::Duration::from_secs(30);
+const RETIRE_LIMIT: std::time::Duration = std::time::Duration::from_secs(3);
+
+/// A rejected query, changed capability, or actual process lifecycle failure.
+#[derive(Debug, Error)]
+pub enum ApplicationError {
+    /// Inputs or current kernel observations did not satisfy the fixed contract.
+    #[error("production application read rejected: {0}")]
+    Rejected(String),
+    /// Actual owned children were not all reaped; the original lease is retained.
+    #[error("production application retirement unproven; original ownership quarantined")]
+    RetirementUnproven,
+    /// A required syscall failed. No numeric process fallback is used.
+    #[error(transparent)]
+    Io(#[from] io::Error),
+}
+type Result<T> = std::result::Result<T, ApplicationError>;
+fn reject(text: impl Into<String>) -> ApplicationError {
+    ApplicationError::Rejected(text.into())
+}
+fn require(value: bool, message: &'static str) -> Result<()> {
+    if value { Ok(()) } else { Err(reject(message)) }
+}
+fn external(error: impl std::fmt::Display) -> ApplicationError {
+    reject(error.to_string())
+}
+/// Preserve a private observation deadline through original authority checks.
+/// Arbitrary timed-out I/O and rejected strings remain ordinary failures.
+fn observation_authority_error(
+    error: crate::production_namespace::NamespaceError,
+) -> ApplicationError {
+    if matches!(
+        error,
+        crate::production_namespace::NamespaceError::RetirementUnproven
+    ) {
+        ApplicationError::RetirementUnproven
+    } else if let Some(end) = crate::production_host_admission::observation_expiry(&error) {
+        ApplicationError::Io(crate::production_host_admission::observation_expired_error(
+            end,
+        ))
+    } else {
+        external(error)
+    }
+}
+
+/// Deliberately finite. There is no shell, general argv, user-selected binary,
+/// arbitrary file read, activity launch, account operation, or install command.
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(tag = "query", deny_unknown_fields)]
+pub(crate) enum ApplicationRead {
+    PackageIdentity { package: String, user: u32 },
+    PackagePaths { package: String, user: u32 },
+    ApkStat { path: String },
+    ApkSha256 { path: String },
+}
+
+fn package_valid(package: &str) -> bool {
+    package.len() <= 255
+        && package.contains('.')
+        && package.split('.').all(|part| {
+            !part.is_empty()
+                && part
+                    .bytes()
+                    .all(|byte| byte.is_ascii_alphanumeric() || byte == b'_')
+        })
+}
+fn apk_valid(path: &str) -> bool {
+    path.len() <= 512
+        && path.is_ascii()
+        && path.ends_with(".apk")
+        && [
+            "/data/app/",
+            "/system/",
+            "/system_ext/",
+            "/product/",
+            "/vendor/",
+            "/odm/",
+            "/oem/",
+            "/apex/",
+        ]
+        .iter()
+        .any(|prefix| path.starts_with(prefix))
+        && !path
+            .split('/')
+            .skip(1)
+            .any(|part| part.is_empty() || part == "." || part == "..")
+        && !path
+            .bytes()
+            .any(|byte| byte.is_ascii_control() || byte.is_ascii_whitespace())
+}
+
+impl ApplicationRead {
+    fn validate(&self) -> Result<()> {
+        match self {
+            Self::PackageIdentity { package, user } | Self::PackagePaths { package, user } => {
+                require(
+                    package_valid(package) && *user <= 21_474,
+                    "invalid package or Android user",
+                )
+            }
+            Self::ApkStat { path } | Self::ApkSha256 { path } => {
+                require(apk_valid(path), "not a bounded public installed APK path")
+            }
+        }
+    }
+
+    fn from_command(args: &[String]) -> Result<Self> {
+        let text: Vec<&str> = args.iter().map(String::as_str).collect();
+        let result = match text.as_slice() {
+            [
+                "/system/bin/cmd",
+                "package",
+                "list",
+                "packages",
+                "--user",
+                user,
+                "-U",
+                "--show-versioncode",
+                package,
+            ] => Self::PackageIdentity {
+                package: (*package).into(),
+                user: canonical_user(user)?,
+            },
+            [
+                "/system/bin/cmd",
+                "package",
+                "path",
+                "--user",
+                user,
+                package,
+            ] => Self::PackagePaths {
+                package: (*package).into(),
+                user: canonical_user(user)?,
+            },
+            ["/system/bin/toybox", "stat", "-c", "%d:%i:%s:%y:%z", path] => Self::ApkStat {
+                path: (*path).into(),
+            },
+            ["/system/bin/toybox", "sha256sum", path] => Self::ApkSha256 {
+                path: (*path).into(),
+            },
+            _ => return Err(reject("command is outside the fixed production read set")),
+        };
+        result.validate()?;
+        Ok(result)
+    }
+
+    pub(crate) fn binary(&self) -> &'static CStr {
+        match self {
+            Self::PackageIdentity { .. } | Self::PackagePaths { .. } => c"cmd",
+            _ => c"toybox",
+        }
+    }
+
+    fn arguments(&self) -> Result<Vec<CString>> {
+        self.validate()?;
+        let values: Vec<String> = match self {
+            Self::PackageIdentity { package, user } => vec![
+                "/system/bin/cmd".into(),
+                "package".into(),
+                "list".into(),
+                "packages".into(),
+                "--user".into(),
+                user.to_string(),
+                "-U".into(),
+                "--show-versioncode".into(),
+                package.clone(),
+            ],
+            Self::PackagePaths { package, user } => vec![
+                "/system/bin/cmd".into(),
+                "package".into(),
+                "path".into(),
+                "--user".into(),
+                user.to_string(),
+                package.clone(),
+            ],
+            Self::ApkStat { path } => vec![
+                "/system/bin/toybox".into(),
+                "stat".into(),
+                "-c".into(),
+                "%d:%i:%s:%y:%z".into(),
+                path.clone(),
+            ],
+            Self::ApkSha256 { path } => vec![
+                "/system/bin/toybox".into(),
+                "sha256sum".into(),
+                path.clone(),
+            ],
+        };
+        values
+            .into_iter()
+            .map(|value| CString::new(value).map_err(|_| reject("NUL in fixed query")))
+            .collect()
+    }
+}
+fn canonical_user(text: &str) -> Result<u32> {
+    let user: u32 = text.parse().map_err(|_| reject("invalid Android user"))?;
+    require(text == user.to_string(), "Android user is not canonical")?;
+    Ok(user)
+}
+
+/// Real output plus exact syscall retirement evidence. No deserializer or
+/// caller-supplied success boolean can create this value.
+pub(crate) struct ApplicationReadResult {
+    output: String,
+    receipt: ReadReceipt,
+}
+pub(crate) struct BrowserCommandResult {
+    output: String,
+    receipt: ReadReceipt,
+}
+pub(crate) struct ContactsReadResult {
+    output: String,
+    receipt: ReadReceipt,
+}
+pub(crate) struct LaunchCommandResult {
+    output: std::process::Output,
+    receipt: ReadReceipt,
+    stderr_bytes: usize,
+    stderr_sha256: String,
+    operation_deadline: std::time::Instant,
+}
+#[derive(Debug, Serialize)]
+pub(crate) struct BridgeReceipt {
+    worker_pid: u32,
+    worker_waitid_code: i32,
+    worker_waitid_status: i32,
+    elapsed_millis: u64,
+    cgroup_removed: bool,
+}
+pub(crate) struct BridgeConnection {
+    socket: File,
+    receipt: BridgeReceipt,
+}
+struct OperationResult {
+    output: String,
+    receipt: ReadReceipt,
+}
+/// Version two distinguishes the actual query creator/wait owner from the
+/// independent short-lived stdio creator. Neither branch is deserializable.
+#[derive(Debug, Serialize)]
+#[serde(tag = "owner", rename_all = "snake_case")]
+pub(crate) enum ReadLifecycle {
+    LegacyBroker {
+        worker_pid: u32,
+        worker_waitid_code: i32,
+        worker_waitid_status: i32,
+    },
+    InstanceFactory {
+        factory_pid: u32,
+        factory_tid: u32,
+        factory_pidfd_device: u64,
+        factory_pidfd_inode: u64,
+        query_pidfd_device: u64,
+        query_pidfd_inode: u64,
+        stdio_creator: query_io::CreatorReceipt,
+        release_acknowledged: bool,
+    },
+}
+#[derive(Debug, Serialize)]
+pub(crate) struct ReadReceipt {
+    schema: u32,
+    lifecycle: ReadLifecycle,
+    query_pid: u32,
+    query_waitid_code: i32,
+    query_waitid_status: i32,
+    exec: process::ExecReceipt,
+    output_bytes: usize,
+    output_sha256: String,
+    elapsed_millis: u64,
+    cgroup_removed: bool,
+}
+impl ReadReceipt {
+    fn successful_retirement(&self) -> bool {
+        self.retired_with_exit(0)
+    }
+    fn retired_with_exit(&self, expected_exit: i32) -> bool {
+        self.schema == 2
+            && self.cgroup_removed
+            && self.query_pid > 1
+            && self.query_waitid_code == libc::CLD_EXITED
+            && self.query_waitid_status == expected_exit
+            && match &self.lifecycle {
+                ReadLifecycle::LegacyBroker {
+                    worker_pid,
+                    worker_waitid_code,
+                    worker_waitid_status,
+                } => {
+                    *worker_pid > 1
+                        && *worker_pid != self.query_pid
+                        && *worker_waitid_code == libc::CLD_EXITED
+                        && *worker_waitid_status == 0
+                }
+                ReadLifecycle::InstanceFactory {
+                    factory_pid,
+                    factory_tid,
+                    factory_pidfd_device,
+                    factory_pidfd_inode,
+                    query_pidfd_device,
+                    query_pidfd_inode,
+                    stdio_creator,
+                    release_acknowledged,
+                } => {
+                    *factory_pid > 1
+                        && *factory_pid == *factory_tid
+                        && *factory_pid != self.query_pid
+                        && *factory_pidfd_device > 0
+                        && *factory_pidfd_inode > 0
+                        && *query_pidfd_device > 0
+                        && *query_pidfd_inode > 0
+                        && stdio_creator.successful_retirement()
+                        && stdio_creator.pid() != self.query_pid
+                        && stdio_creator.pid() != *factory_pid
+                        && *release_acknowledged
+                }
+            }
+    }
+}
+pub(crate) enum ApplicationRetired<'a> {
+    Legacy {
+        children: &'a process::Children,
+    },
+    Factory {
+        query: &'a factory_query::RetiredQuery<'a>,
+    },
+}
+impl ApplicationRetired<'_> {
+    pub(crate) fn verify_cgroup(&self, file: &File) -> Result<()> {
+        match self {
+            Self::Legacy { children } => {
+                children.verify_retirement()?;
+                let m = file.metadata()?;
+                require(
+                    (m.dev(), m.ino()) == children.cgroup_identity,
+                    "retirement proof belongs to a different leaf",
+                )
+            }
+            Self::Factory { query } => query.verify_cgroup(file),
+        }
+    }
+}
+
+pub(crate) fn run(
+    authority: &dyn ApplicationWorkerAuthority,
+    query: &ApplicationRead,
+) -> Result<ApplicationReadResult> {
+    run_read_before(authority, query, std::time::Instant::now() + QUERY_LIMIT)
+}
+
+pub(crate) fn run_read_before(
+    authority: &dyn ApplicationWorkerAuthority,
+    query: &ApplicationRead,
+    deadline: std::time::Instant,
+) -> Result<ApplicationReadResult> {
+    query.validate()?;
+    let result = process::run(
+        authority,
+        &ApplicationOperation::Read {
+            value: query.clone(),
+        },
+        deadline,
+    )?;
+    Ok(ApplicationReadResult {
+        output: result.output,
+        receipt: result.receipt,
+    })
+}
+
+pub(crate) fn run_launch_command(
+    authority: &dyn ApplicationWorkerAuthority,
+    command: &LaunchCommand,
+    deadline: std::time::Instant,
+) -> Result<LaunchCommandResult> {
+    command.validate()?;
+    process::run_launch(authority, command, deadline)
+}
+
+pub(crate) fn run_browser_command(
+    authority: &dyn ApplicationWorkerAuthority,
+    command: &BrowserCommand,
+    deadline: std::time::Instant,
+) -> Result<BrowserCommandResult> {
+    command.validate()?;
+    let result = process::run(
+        authority,
+        &ApplicationOperation::Browser {
+            value: command.clone(),
+        },
+        deadline,
+    )?;
+    Ok(BrowserCommandResult {
+        output: result.output,
+        receipt: result.receipt,
+    })
+}
+
+pub(crate) fn run_contacts_read(
+    authority: &dyn ApplicationWorkerAuthority,
+    query: &ContactsQuery,
+    deadline: std::time::Instant,
+) -> Result<ContactsReadResult> {
+    query.validate()?;
+    let result = process::run(
+        authority,
+        &ApplicationOperation::ContactsRead {
+            value: query.clone(),
+        },
+        deadline,
+    )?;
+    Ok(ContactsReadResult {
+        output: result.output,
+        receipt: result.receipt,
+    })
+}
+
+pub(crate) fn inspect_contacts_baseline(
+    ready: ReadyTreeWitness<'_>,
+    contacts: &ApplicationInspection,
+    provider: &ApplicationInspection,
+) -> Result<ContactsBaselineObservation> {
+    contacts::baseline(Workflow::Legacy(ready), contacts, provider)
+}
+
+pub(crate) fn launch_application(
+    ready: ReadyTreeWitness<'_>,
+    request: &droidloom_task_launcher::LaunchRequest,
+    deadline: std::time::Instant,
+) -> Result<LaunchObservation> {
+    launch::launch(Workflow::Legacy(ready), request, deadline)
+}
+
+pub(crate) fn observe_application_tasks(
+    ready: ReadyTreeWitness<'_>,
+    expected: &ApplicationInspection,
+    deadline: std::time::Instant,
+) -> Result<crate::control::application_tasks::ApplicationTaskSnapshot> {
+    launch::observe_tasks(Workflow::Legacy(ready), expected, deadline)
+}
+
+pub(crate) fn observe_application_tasks_early(
+    authority: &crate::production_selection::early_generation::EarlyApplicationAuthority<'_>,
+    expected: &ApplicationInspection,
+    deadline: std::time::Instant,
+) -> Result<crate::control::application_tasks::ApplicationTaskSnapshot> {
+    launch::observe_tasks(Workflow::Early(authority), expected, deadline)
+}
+
+pub(crate) fn connect_task_control(
+    authority: &ApplicationAuthority<'_>,
+    package: &str,
+    deadline: std::time::Instant,
+) -> Result<ApplicationTaskControl> {
+    task_control::connect(authority, package, deadline)
+}
+
+pub(crate) fn open_browser(
+    ready: ReadyTreeWitness<'_>,
+    expected: &ApplicationInspection,
+    url: &str,
+) -> Result<(ApplicationInspection, String)> {
+    business::open(Workflow::Legacy(ready), expected, url)
+}
+
+pub(crate) fn open_browser_early(
+    authority: &crate::production_selection::early_generation::EarlyApplicationAuthority<'_>,
+    expected: &ApplicationInspection,
+    url: &str,
+) -> Result<(ApplicationInspection, String)> {
+    business::open(Workflow::Early(authority), expected, url)
+}
+
+pub(crate) fn inspect_contacts_baseline_early(
+    authority: &crate::production_selection::early_generation::EarlyApplicationAuthority<'_>,
+    contacts: &ApplicationInspection,
+    provider: &ApplicationInspection,
+) -> Result<ContactsBaselineObservation> {
+    contacts::baseline(Workflow::Early(authority), contacts, provider)
+}
+
+pub(crate) fn launch_application_early(
+    authority: &crate::production_selection::early_generation::EarlyApplicationAuthority<'_>,
+    request: &droidloom_task_launcher::LaunchRequest,
+    deadline: std::time::Instant,
+) -> Result<LaunchObservation> {
+    launch::launch(Workflow::Early(authority), request, deadline)
+}
+
+struct ProductionProbe<'a> {
+    ready: ReadyTreeWitness<'a>,
+    framework: FrameworkObservation,
+    reads: Vec<ReadReceipt>,
+    deadline: std::time::Instant,
+}
+impl AndroidProbe for ProductionProbe<'_> {
+    fn epoch(&mut self) -> std::result::Result<RuntimeEpoch, String> {
+        if std::time::Instant::now() >= self.deadline {
+            return Err("production inspection deadline".into());
+        }
+        self.ready
+            .application_epoch(&self.framework)
+            .map_err(|error| error.to_string())
+    }
+    fn command(&mut self, args: &[String]) -> std::result::Result<String, String> {
+        if std::time::Instant::now() >= self.deadline || self.reads.len() >= 200 {
+            return Err("production inspection query bound".into());
+        }
+        let query = ApplicationRead::from_command(args).map_err(|error| error.to_string())?;
+        let result = self
+            .ready
+            .run_application_read(&query)
+            .map_err(|error| error.to_string())?;
+        self.reads.push(result.receipt);
+        Ok(result.output)
+    }
+}
+
+pub(crate) fn inspect(
+    mut ready: ReadyTreeWitness<'_>,
+    package: &str,
+    user: u32,
+) -> Result<ApplicationInspection> {
+    require(
+        package_valid(package) && user <= 21_474,
+        "invalid package inspection",
+    )?;
+    let deadline = std::time::Instant::now() + std::time::Duration::from_secs(300);
+    let framework = ready.observe_application_framework().map_err(external)?;
+    let mut probe = ProductionProbe {
+        ready,
+        framework,
+        reads: Vec::new(),
+        deadline,
+    };
+    let inspection =
+        crate::control::application_probe::inspect(&mut probe, package, user).map_err(external)?;
+    require(
+        !probe.reads.is_empty()
+            && probe.reads.iter().all(|row| {
+                row.cgroup_removed
+                    && row.successful_retirement()
+                    && row.query_waitid_code == libc::CLD_EXITED
+                    && row.query_waitid_status == 0
+            }),
+        "inspection has incomplete real read retirement",
+    )?;
+    Ok(inspection)
+}
+
+/// The same four finite reads, current framework identity and real retirement
+/// checks are available to the kernel-first owner without a legacy ReadyTree.
+pub(crate) fn inspect_early(
+    authority: &crate::production_selection::early_generation::EarlyApplicationAuthority<'_>,
+    package: &str,
+    user: u32,
+) -> Result<ApplicationInspection> {
+    inspect_early_before(authority, package, user,
+        std::time::Instant::now() + std::time::Duration::from_secs(240))
+}
+
+/// Same complete normal PM/APK inspection, bounded by an already admitted
+/// source operation. This does not renew the lease's original request end.
+pub(crate) fn inspect_early_before(
+    authority: &crate::production_selection::early_generation::EarlyApplicationAuthority<'_>,
+    package: &str,
+    user: u32,
+    end: std::time::Instant,
+) -> Result<ApplicationInspection> {
+    require(
+        package_valid(package) && user <= 21_474,
+        "invalid package inspection",
+    )?;
+    struct Probe<'a, 'owner> {
+        authority:
+            &'a crate::production_selection::early_generation::EarlyApplicationAuthority<'owner>,
+        framework: crate::production_selection::early_generation::EarlyFrameworkObservation,
+        reads: Vec<ReadReceipt>,
+        deadline: std::time::Instant,
+    }
+    impl AndroidProbe for Probe<'_, '_> {
+        fn epoch(&mut self) -> std::result::Result<RuntimeEpoch, String> {
+            if std::time::Instant::now() >= self.deadline {
+                return Err("early application inspection deadline".into());
+            }
+            self.authority
+                .progress_inherited_native(self.deadline)
+                .map_err(|e| e.to_string())?;
+            self.authority
+                .epoch(&self.framework)
+                .map_err(|e| e.to_string())
+        }
+        fn command(&mut self, args: &[String]) -> std::result::Result<String, String> {
+            if std::time::Instant::now() >= self.deadline || self.reads.len() >= 200 {
+                return Err("early application inspection query bound".into());
+            }
+            self.authority
+                .progress_inherited_native(self.deadline)
+                .map_err(|e| e.to_string())?;
+            self.authority
+                .epoch(&self.framework)
+                .map_err(|e| e.to_string())?;
+            let query = ApplicationRead::from_command(args).map_err(|e| e.to_string())?;
+            let result = run_read_before(self.authority, &query, self.deadline)
+                .map_err(|e| e.to_string())?;
+            self.authority
+                .epoch(&self.framework)
+                .map_err(|e| e.to_string())?;
+            self.reads.push(result.receipt);
+            Ok(result.output)
+        }
+    }
+    let deadline = end.min(std::time::Instant::now() + std::time::Duration::from_secs(240));
+    let framework = authority.observe_framework().map_err(external)?;
+    let mut probe = Probe {
+        authority,
+        framework,
+        reads: Vec::new(),
+        deadline,
+    };
+    let inspection =
+        crate::control::application_probe::inspect(&mut probe, package, user).map_err(external);
+    // Includes the same application leaf quarantine, even on a rejected read.
+    authority.revalidate().map_err(external)?;
+    let inspection = inspection?;
+    require(
+        !probe.reads.is_empty()
+            && probe.reads.iter().all(|row| {
+                row.cgroup_removed
+                    && row.successful_retirement()
+                    && row.query_waitid_code == libc::CLD_EXITED
+                    && row.query_waitid_status == 0
+            }),
+        "early inspection has incomplete real read retirement",
+    )?;
+    authority.epoch(&probe.framework).map_err(external)?;
+    require(
+        std::time::Instant::now() < deadline,
+        "early inspection workflow deadline",
+    )?;
+    Ok(inspection)
+}
+
+/// Fixed camera entry. An already transitioned camera role cannot select any other mode.
+pub fn dispatch_camera(arguments: &[std::ffi::OsString]) -> Result<bool> {
+    camera::dispatch(arguments)
+}
+
+/// Fixed private query I/O creator entry; no command-line authority is accepted.
+///
+/// # Errors
+/// Rejects a changed MAC role, nonzero capability, unauthenticated original
+/// parent, altered fixed descriptors, or an expired creation deadline.
+pub fn run_query_io_creator() -> Result<()> {
+    query_io::entry()
+}
+
+/// Internal fresh-image dispatch. It accepts only authenticated inherited
+/// descriptor custody from the original broker, never command-line inputs.
+///
+/// # Errors
+/// Rejects an ordinary caller, missing original descriptors, a changed owner,
+/// or any failed namespace, clone, or fixed-query preparation operation.
+pub fn run_metadata_observer() -> Result<()> {
+    metadata_observer::entry()
+}
+
+/// Fixed private original-APK reader; accepts no arguments or pathname authority.
+pub fn run_native_leaf_apk_reader() -> Result<()> {
+    apk_reader::entry()
+}
+
+/// Fixed same-image private creator; inputs arrive from its held original broker.
+pub fn run_working_apk_payload_creator() -> Result<()> {
+    working_payload::entry()
+}
+/// Fixed same-ELF preparation child: creates one empty payload, never APK bytes.
+pub fn run_working_original_payload_birth() -> Result<()> {
+    working_payload_birth::entry()
+}
+/// A missed original retirement window cannot authorize subsequent preparation.
+pub fn require_working_original_payload_retired() -> Result<()> {
+    working_payload_birth::require_retired()
+}
+
+/// Fixed internal engine observer; accepts only the authenticated inherited channel.
+pub fn run_engine_observer() -> Result<()> {
+    engine_observer::entry()
+}
+
+/// Runs the fixed original application worker after private entry admission.
+pub fn run_application_read_worker() -> Result<()> {
+    worker::entry()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    fn args(values: &[&str]) -> Vec<String> {
+        values.iter().map(|value| (*value).into()).collect()
+    }
+    #[test]
+    fn production_application_read_has_four_exact_real_commands() {
+        for query in [
+            ApplicationRead::PackageIdentity {
+                package: "org.mozilla.firefox".into(),
+                user: 0,
+            },
+            ApplicationRead::PackagePaths {
+                package: "org.mozilla.firefox".into(),
+                user: 10,
+            },
+            ApplicationRead::ApkStat {
+                path: "/data/app/abc/base.apk".into(),
+            },
+            ApplicationRead::ApkSha256 {
+                path: "/product/app/Clock/Clock.apk".into(),
+            },
+        ] {
+            let roundtrip = query
+                .arguments()
+                .unwrap()
+                .into_iter()
+                .map(|value| value.into_string().unwrap())
+                .collect::<Vec<_>>();
+            assert_eq!(ApplicationRead::from_command(&roundtrip).unwrap(), query);
+        }
+    }
+    #[test]
+    fn production_application_read_rejects_mutation_and_non_apk_reads() {
+        for command in [
+            args(&["/system/bin/cmd", "package", "clear", "org.mozilla.firefox"]),
+            args(&["/system/bin/sh", "-c", "id"]),
+            args(&[
+                "/system/bin/toybox",
+                "sha256sum",
+                "/data/user/0/org.example/prefs.apk",
+            ]),
+            args(&[
+                "/system/bin/toybox",
+                "sha256sum",
+                "/data/app/../user/secret.apk",
+            ]),
+            args(&[
+                "/system/bin/cmd",
+                "package",
+                "path",
+                "--user",
+                "00",
+                "org.example.app",
+            ]),
+        ] {
+            assert!(ApplicationRead::from_command(&command).is_err());
+        }
+    }
+    #[test]
+    fn production_application_read_wire_cannot_add_authority() {
+        assert!(
+            serde_json::from_str::<ApplicationRead>(
+                r#"{"query":"PackagePaths","package":"org.example.app","user":0,"pid":123}"#
+            )
+            .is_err()
+        );
+        assert!(
+            serde_json::from_str::<ApplicationRead>(r#"{"query":"Command","argv":["true"]}"#)
+                .is_err()
+        );
+        assert!(!apk_valid("/data/app/a\nb.apk"));
+        assert!(!apk_valid("/data/app/a/./base.apk"));
+        assert!(!apk_valid("/data/app//base.apk"));
+        assert!(!package_valid("org.example;id"));
+    }
+}

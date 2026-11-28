@@ -1,0 +1,28 @@
+diff --git a/services/devicepolicy/java/com/android/server/devicepolicy/DevicePolicyManagerService.java b/services/devicepolicy/java/com/android/server/devicepolicy/DevicePolicyManagerService.java
+index 879948d..76d568e 100644
+--- a/services/devicepolicy/java/com/android/server/devicepolicy/DevicePolicyManagerService.java
++++ b/services/devicepolicy/java/com/android/server/devicepolicy/DevicePolicyManagerService.java
+@@ -2071,6 +2071,7 @@
+ 
+             mDeviceAdmins.removeUserData(userHandle);
+ 
++            deleteUserTransferOwnershipMetadataFileLocked(userHandle);
+             File policyFile =
+                     new File(mPathProvider.getUserSystemDirectory(userHandle), DEVICE_POLICIES_XML);
+             policyFile.delete();
+@@ -19702,6 +19703,15 @@
+         return deviceOwner.endUserSessionMessage;
+     }
+ 
++    private void deleteUserTransferOwnershipMetadataFileLocked(int userHandle) {
++        if (mTransferOwnershipMetadataManager.metadataFileExists()) {
++            final var metadata = mTransferOwnershipMetadataManager.loadMetadataFile();
++            if (metadata != null && metadata.userId == userHandle) {
++                deleteTransferOwnershipMetadataFileLocked();
++            }
++        }
++    }
++
+     private void deleteTransferOwnershipMetadataFileLocked() {
+         mTransferOwnershipMetadataManager.deleteMetadataFile();
+     }

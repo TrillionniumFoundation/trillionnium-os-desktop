@@ -1,0 +1,867 @@
+//! Compile one portable package payload without activating a local installation.
+use crate::{android, assemble, licenses, python, util::*};
+use serde_json::{Value, json};
+use std::{fs, os::unix::fs::symlink, path::Path, process::Command};
+
+#[path = "early_boot_package.rs"]
+mod early_boot_package;
+
+// Exercise the actual native publisher through the normal archive in tests,
+// without exporting any additional production entry point.
+#[cfg(test)]
+pub(crate) fn stage_native_configuration_for_archive_test(destination: &Path) -> Result<()> {
+    early_boot_package::stage_native_configuration(destination)
+}
+
+const CONTAINER_HOST_PACKAGES: &[&str] = &[
+    "droidloom-supervisor",
+    "droidloom-package-support",
+    "droidloom-wayland",
+    "droidloom-applications",
+    "droidloom-doctor",
+];
+const DESKTOP_CLIENT_BINARIES: &[&str] = &[
+    "droidloomctl",
+    "droidloom-wayland",
+    "droidloom-applications",
+    "droidloom-doctor",
+];
+
+fn validate_builder(jobs: usize) -> Result<()> {
+    if unsafe { libc::geteuid() } == 0 {
+        return fail("package compilation must run as an ordinary build user, without sudo");
+    }
+    let available = std::thread::available_parallelism()?.get();
+    let reserved = std::env::var("DROIDLOOM_COMPILER_CPUS_RESERVED").as_deref() == Ok("1");
+    let capacity = if reserved {
+        available
+    } else {
+        available.saturating_sub(2)
+    };
+    if jobs == 0 || jobs > capacity {
+        return fail("package jobs must leave two logical CPUs available");
+    }
+    Ok(())
+}
+
+pub fn stage_container_host(
+    repo: &Path,
+    work: &Path,
+    jobs: usize,
+    board_policy_inputs: Option<&Path>,
+) -> Result<std::path::PathBuf> {
+    validate_builder(jobs)?;
+    fs::create_dir_all(work)?;
+    let work = work.canonicalize()?;
+    let _lock = Lock::acquire(&work.join("container-host-build.lock"))?;
+    let target = std::env::var_os("CARGO_TARGET_DIR")
+        .map(std::path::PathBuf::from)
+        .filter(|p| p.is_absolute())
+        .unwrap_or_else(|| work.join("cargo"));
+    let mut build = Command::new("cargo");
+    build
+        .current_dir(repo)
+        .env("CARGO_TARGET_DIR", &target)
+        .args(["build", "--locked", "--release", "--jobs"])
+        .arg(jobs.to_string());
+    for package in CONTAINER_HOST_PACKAGES {
+        build.arg("-p").arg(package);
+    }
+    build.arg("--bins");
+    run_build(&mut build)?;
+    run_build(&mut crate::container_entry_build::command(
+        repo, &target, jobs,
+    ))?;
+    let stage = tempfile::Builder::new()
+        .prefix("container-host-stage-")
+        .tempdir_in(&work)?;
+    production_host_payload(repo, &target.join("release"), stage.path())?;
+    if let Some(inputs) = board_policy_inputs {
+        early_boot_package::stage_board_policy(inputs, stage.path())?;
+    }
+    Ok(stage.keep())
+}
+
+pub fn stage(repo: &Path, work: &Path, destination: &Path, clean: bool, jobs: usize) -> Result<()> {
+    validate_builder(jobs)?;
+    fs::create_dir_all(work)?;
+    let work = work.canonicalize()?;
+    if !destination.is_absolute()
+        || !destination.starts_with(&work)
+        || destination == work
+        || destination
+            .components()
+            .any(|c| matches!(c, std::path::Component::ParentDir))
+    {
+        return fail("package destination must be a child of its private work directory");
+    }
+    let _lock = Lock::acquire(&work.join("package-build.lock"))?;
+    let source = work.join("aosp-source");
+    let out = work.join("android-out");
+    let cargo = work.join("cargo");
+    if work.join("source-projection.json").exists() {
+        android::recover(&work.join("source-projection.json"), &source)?;
+    }
+    let source_ready = work.join("package-source-ready");
+    if source.exists() && !source_ready.exists() {
+        normalize_source_cache(&source)?;
+        write(
+            &source_ready,
+            b"Private package source cache initialized.\n",
+        )?;
+    }
+    if clean {
+        for path in [&out, &cargo, &work.join("mesa-tools"), &work.join("ccache")] {
+            if path.exists() {
+                fs::remove_dir_all(path)?;
+            }
+        }
+    }
+    let mut host = Command::new("cargo");
+    host.current_dir(repo)
+        .env("CARGO_TARGET_DIR", &cargo)
+        .args(["build", "--locked", "--release", "--jobs"])
+        .arg(jobs.to_string());
+    for package in assemble::HOST_PACKAGES {
+        host.arg("-p").arg(package);
+    }
+    run_build(&mut host)?;
+    run_build(&mut crate::container_entry_build::command(
+        repo, &cargo, jobs,
+    ))?;
+    assemble::prepare_complete_inputs(repo, &work, "x86_64")?;
+    python::prepare(repo, &work)?;
+    assemble::mesa_tools(&work, jobs)?;
+    android::build(repo, &source, &out, &work, "droidloom_x86_64", jobs)?;
+    if !source_ready.exists() {
+        write(
+            &source_ready,
+            b"Private package source cache initialized.\n",
+        )?;
+    }
+    let stage = tempfile::Builder::new()
+        .prefix("package-stage-")
+        .tempdir_in(&work)?;
+    assemble::assemble_artifacts(
+        repo,
+        &work,
+        &out.join("target/product/droidloom_x86_64"),
+        &cargo.join("release"),
+        stage.path(),
+    )?;
+    package_layout(repo, &cargo.join("release"), stage.path())?;
+    crate::coherent_images::verify_portable_package(stage.path())?;
+    package_notices(repo, &work, stage.path())?;
+    if destination.exists() {
+        fs::remove_dir_all(destination)?;
+    }
+    fs::create_dir_all(
+        destination
+            .parent()
+            .ok_or("package destination has no parent")?,
+    )?;
+    fs::rename(stage.path(), destination)?;
+    println!("Portable package payload: {}", destination.display());
+    Ok(())
+}
+
+fn normalize_source_cache(source: &Path) -> Result<()> {
+    // Seeding reuses Git objects, not prior developer modifications. Only the
+    // package workflow's private copy is changed; the seed checkout is untouched.
+    eprintln!("Restoring pinned worktrees in the private package source cache.");
+    let manifest: Value =
+        serde_json::from_slice(&fs::read(source.join(".droidloom-source-manifest.json"))?)?;
+    for project in manifest["plan"]["projects"]
+        .as_array()
+        .ok_or("source manifest has no projects")?
+    {
+        let path = source
+            .join(
+                project["path"]
+                    .as_str()
+                    .ok_or("source project has no path")?,
+            )
+            .canonicalize()?;
+        if !path.starts_with(source) {
+            return fail("source project escapes the private package cache");
+        }
+        run(Command::new("git")
+            .arg("-C")
+            .arg(&path)
+            .args(["reset", "--hard", "HEAD"]))?;
+        run(Command::new("git")
+            .arg("-C")
+            .arg(&path)
+            .args(["clean", "-fd"]))?;
+    }
+    Ok(())
+}
+
+fn package_layout(repo: &Path, host: &Path, stage: &Path) -> Result<()> {
+    let runtime = stage.join("runtime");
+    let image = stage.join("image");
+    fs::create_dir_all(image.join("usr/lib/droidloom"))?;
+    fs::rename(
+        stage.join("usr/lib/droidloom/runtime"),
+        image.join("usr/lib/droidloom/runtime"),
+    )?;
+    fs::rename(
+        stage.join("usr/lib/droidloom/storage"),
+        image.join("usr/lib/droidloom/storage"),
+    )?;
+    fs::rename(
+        stage.join("var/lib/droidloom/images"),
+        image.join("usr/lib/droidloom/images"),
+    )?;
+    symlink("runtime", image.join("usr/lib/droidloom/current"))?;
+    fs::remove_dir_all(stage.join("var"))?;
+    fs::create_dir_all(&runtime)?;
+    fs::rename(stage.join("usr"), runtime.join("usr"))?;
+    // A package installation is maintained through pacman. The source updater remains
+    // available in the checkout but is not installed as a second system-file owner.
+    fs::remove_file(runtime.join("usr/bin/droidloom-update"))?;
+    copy(
+        &host.join("droidloom-package-helper"),
+        &runtime.join("usr/lib/droidloom/droidloom-package-helper"),
+    )?;
+    mode(
+        &runtime.join("usr/lib/droidloom/droidloom-package-helper"),
+        0o755,
+    )?;
+    production_host_payload(repo, host, &runtime)?;
+    let mut template: Value = serde_json::from_slice(&fs::read(
+        repo.join("packaging/cell-spec-x86_64-u1000.json"),
+    )?)?;
+    portable_template(&mut template);
+    write(
+        &runtime.join("usr/share/droidloom/cell-template.json"),
+        serde_json::to_vec_pretty(&template)?,
+    )?;
+    copy(
+        &repo.join("packaging/arch/version.json"),
+        &runtime.join("usr/share/droidloom/package.json"),
+    )?;
+    for (from, to) in [
+        (
+            "droidloom.service",
+            "usr/lib/systemd/user/droidloom.service",
+        ),
+        (
+            "org.droidloom.setup.policy",
+            "usr/share/polkit-1/actions/org.droidloom.setup.policy",
+        ),
+        (
+            "60-droidloom-upgrade.hook",
+            "usr/share/libalpm/hooks/60-droidloom-upgrade.hook",
+        ),
+        (
+            "60-droidloom-remove.hook",
+            "usr/share/libalpm/hooks/60-droidloom-remove.hook",
+        ),
+        (
+            "90-droidloom-installed.hook",
+            "usr/share/libalpm/hooks/90-droidloom-installed.hook",
+        ),
+        ("README.md", "usr/share/doc/droidloom/README.md"),
+    ] {
+        copy(&repo.join("packaging/arch").join(from), &runtime.join(to))?;
+    }
+    Ok(())
+}
+
+fn production_host_payload(repo: &Path, host: &Path, runtime: &Path) -> Result<()> {
+    // The fixed production executable paths are ordinary package files. Keep
+    // them in the same build as the desktop protocol peers; the unit templates
+    // remain data until a separately qualified installation selects the cell.
+    for binary in [
+        "droidloom-supervisor",
+        "droidloomctl",
+        "droidloomd",
+        "droidloom-host-mac",
+        "droidloom-container-entry",
+    ] {
+        let source = host.join(binary);
+        if !fs::symlink_metadata(&source)?.is_file() {
+            return fail("production package binaries must be regular build outputs");
+        }
+        let target = runtime
+            .join("usr/lib/droidloom/production/current")
+            .join(binary);
+        copy(&source, &target)?;
+        mode(&target, 0o755)?;
+    }
+    // A distinct ordinary file selects the coldplug MAC entry without changing
+    // the daemon or factory attachments. It is copied from this same build.
+    let uevent = runtime.join("usr/lib/droidloom/production/current/droidloom-native-uevent-label");
+    copy(&host.join("droidloomd"), &uevent)?;
+    mode(&uevent, 0o755)?;
+    // This same normal droidloomd build has a separate, fixed original-return
+    // attachment. Independent bytes/inode avoid relabeling a live daemon alias.
+    let once = runtime.join("usr/lib/droidloom/production/current/droidloom-original-once-return");
+    copy(&host.join("droidloomd"), &once)?;
+    mode(&once, 0o755)?;
+    // The same release must contain its fixed maintenance peer; an older
+    // independently installed helper cannot retire this generation's resources.
+    let helper = host.join("droidloom-package-helper");
+    if !fs::symlink_metadata(&helper)?.is_file() {
+        return fail("production package helper must be a regular build output");
+    }
+    let target = runtime.join("usr/lib/droidloom/droidloom-package-helper");
+    copy(&helper, &target)?;
+    mode(&target, 0o755)?;
+    // tmpfiles owns this directory across individual service lifetimes. The
+    // broker owns only its original socket inode, never the shared parent.
+    let tmpfiles = runtime.join("usr/lib/tmpfiles.d/droidloom-production.conf");
+    write(
+        &tmpfiles,
+        include_bytes!("../../../packaging/tmpfiles/droidloom-production.conf"),
+    )?;
+    mode(&tmpfiles, 0o644)?;
+    // Existing XDG launchers and the native presenter resolve these public
+    // paths. Publish independent copies from this same normal build so a
+    // complete host release cannot silently keep using an older desktop peer.
+    // User service activation is qualified separately; the legacy cell-owning
+    // droidloom.service is deliberately not part of this host payload.
+    for binary in DESKTOP_CLIENT_BINARIES {
+        let source = host.join(binary);
+        if !fs::symlink_metadata(&source)?.is_file() {
+            return fail("desktop package binaries must be regular build outputs");
+        }
+        let target = runtime.join("usr/bin").join(binary);
+        copy(&source, &target)?;
+        mode(&target, 0o755)?;
+    }
+    for unit in [
+        "droidloom-production.service",
+        "droidloom-instance-launcher.service",
+        "droidloom-instance-factory.service",
+        "droidloom-manager-label.service",
+        "droidloom-mac-calibration.service",
+        "droidloom-container-services.target",
+        "droidloom-container-entry.service",
+        "droidloom-container-guest.socket",
+        "droidloom-early-observer.service",
+    ] {
+        let source = repo.join("runtime/droidloom-supervisor/src").join(unit);
+        if !fs::symlink_metadata(&source)?.is_file() {
+            return fail("production unit templates must be regular source files");
+        }
+        let target = runtime.join("usr/share/droidloom/production").join(unit);
+        copy(&source, &target)?;
+        mode(&target, 0o644)?;
+    }
+    // These source templates remain inactive package data. The original-once
+    // authority publishes them transactionally; package installation does not
+    // enable, select, arm or reboot the original machine.
+    for (name, body) in [
+        ("droidloom-original-once.target", include_bytes!("../../../packaging/systemd/droidloom-original-once.target").as_slice()),
+        ("droidloom-original-once-return.service", include_bytes!("../../../packaging/systemd/droidloom-original-once-return.service").as_slice()),
+        ("droidloom-original-once-return.timer", include_bytes!("../../../packaging/systemd/droidloom-original-once-return.timer").as_slice()),
+    ] {
+        let target = runtime.join("usr/share/droidloom/production").join(name);
+        write(&target, body)?;
+        mode(&target, 0o644)?;
+    }
+    // The desktop only joins its original early owner's listener. It never
+    // starts the legacy daemon or waits for the Android observer's READY.
+    let desktop_unit = runtime.join("usr/lib/systemd/user/droidloom-production-desktop.service");
+    write(
+        &desktop_unit,
+        include_bytes!("../../../packaging/systemd/user/droidloom-production-desktop.service"),
+    )?;
+    mode(&desktop_unit, 0o644)?;
+    let host_contexts = runtime.join("usr/share/droidloom/production/linux-service-file_contexts");
+    write(
+        &host_contexts,
+        include_bytes!(
+            "../../../android/framework/droidloom-readiness/board-policy/linux-service-file_contexts"
+        ),
+    )?;
+    mode(&host_contexts, 0o444)?;
+    let calibration_contexts =
+        runtime.join("usr/share/droidloom/production/linux-initial-calibration-file_contexts");
+    write(
+        &calibration_contexts,
+        include_bytes!(
+            "../../../android/framework/droidloom-readiness/board-policy/linux-initial-calibration-file_contexts"
+        ),
+    )?;
+    mode(&calibration_contexts, 0o444)?;
+    let calibration_unit = "droidloom-mac-calibration.service";
+    let system_unit = runtime
+        .join("usr/lib/systemd/system")
+        .join(calibration_unit);
+    copy(
+        &runtime
+            .join("usr/share/droidloom/production")
+            .join(calibration_unit),
+        &system_unit,
+    )?;
+    mode(&system_unit, 0o644)?;
+    let calibration = runtime.join("var/lib/droidloom-mac-calibration");
+    fs::create_dir_all(&calibration)?;
+    mode(&calibration, 0o700)?;
+    // Preinstall the typed empty root so tmpfiles never gains generic /var/lib
+    // creation permission. The fixed u1000 child is created by stock tmpfiles.
+    let public_apks = runtime.join("var/lib/droidloom-public-apks");
+    fs::create_dir_all(&public_apks)?;
+    mode(&public_apks, 0o755)?;
+    early_boot_package::stage(runtime)
+}
+
+fn portable_template(template: &mut Value) {
+    template["image_dir"] = json!("/usr/lib/droidloom/images");
+    template["vendor_image"] = json!("/usr/lib/droidloom/images/images/vendor.raw.img");
+    for key in [
+        "host_uid",
+        "render_node",
+        "data_dir",
+        "runtime_dir",
+        "denial_socket",
+    ] {
+        template.as_object_mut().unwrap().remove(key);
+    }
+    template["shared_storage_directories"] = json!([]);
+}
+
+fn package_notices(repo: &Path, work: &Path, stage: &Path) -> Result<()> {
+    let runtime_notices = stage.join("runtime/usr/share/licenses/droidloom-runtime");
+    licenses::project(repo, &runtime_notices)?;
+    licenses::rust(repo, &runtime_notices.join("rust"))?;
+    let notices = stage.join("image/usr/share/licenses/droidloom-image");
+    licenses::project(repo, &notices)?;
+    copy(
+        &work.join("android-out/target/product/droidloom_x86_64/system/etc/NOTICE.xml.gz"),
+        &notices.join("Android-NOTICE.xml.gz"),
+    )?;
+    copy(
+        &work.join("mesa-source/docs/license.rst"),
+        &notices.join("Mesa-license.rst"),
+    )?;
+    let mesa_licenses = work.join("mesa-source/licenses");
+    for path in files(&mesa_licenses)? {
+        copy(
+            &path,
+            &notices
+                .join("mesa")
+                .join(path.strip_prefix(&mesa_licenses)?),
+        )?;
+    }
+    Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::os::unix::fs::{MetadataExt, PermissionsExt};
+
+    #[test]
+    fn production_unit_commands_resolve_to_complete_staged_host_payload() {
+        let directory = tempfile::tempdir().unwrap();
+        let repo = directory.path().join("source");
+        let host = directory.path().join("release");
+        let runtime = directory.path().join("runtime");
+        let templates = repo.join("runtime/droidloom-supervisor/src");
+        fs::create_dir_all(&templates).unwrap();
+        fs::create_dir(&host).unwrap();
+        for (name, body) in [
+            (
+                "droidloom-instance-launcher.service",
+                include_str!(
+                    "../../../runtime/droidloom-supervisor/src/droidloom-instance-launcher.service"
+                ),
+            ),
+            (
+                "droidloom-instance-factory.service",
+                include_str!(
+                    "../../../runtime/droidloom-supervisor/src/droidloom-instance-factory.service"
+                ),
+            ),
+            (
+                "droidloom-mac-calibration.service",
+                include_str!(
+                    "../../../runtime/droidloom-supervisor/src/droidloom-mac-calibration.service"
+                ),
+            ),
+            (
+                "droidloom-early-observer.service",
+                include_str!(
+                    "../../../runtime/droidloom-supervisor/src/droidloom-early-observer.service"
+                ),
+            ),
+            (
+                "droidloom-container-guest.socket",
+                include_str!(
+                    "../../../runtime/droidloom-supervisor/src/droidloom-container-guest.socket"
+                ),
+            ),
+            (
+                "droidloom-container-entry.service",
+                include_str!(
+                    "../../../runtime/droidloom-supervisor/src/droidloom-container-entry.service"
+                ),
+            ),
+            (
+                "droidloom-container-services.target",
+                include_str!(
+                    "../../../runtime/droidloom-supervisor/src/droidloom-container-services.target"
+                ),
+            ),
+            (
+                "droidloom-production.service",
+                include_str!(
+                    "../../../runtime/droidloom-supervisor/src/droidloom-production.service"
+                ),
+            ),
+            (
+                "droidloom-manager-label.service",
+                include_str!(
+                    "../../../runtime/droidloom-supervisor/src/droidloom-manager-label.service"
+                ),
+            ),
+        ] {
+            fs::write(templates.join(name), body).unwrap();
+        }
+        for binary in ["droidloom-supervisor", "droidloomctl", "droidloomd"] {
+            fs::write(host.join(binary), format!("package-copy fixture: {binary}")).unwrap();
+        }
+        // A three-binary legacy build must not produce a complete new payload.
+        assert!(production_host_payload(&repo, &host, &runtime).is_err());
+        fs::write(
+            host.join("droidloom-host-mac"),
+            b"package-copy fixture: host-mac",
+        )
+        .unwrap();
+        assert!(production_host_payload(&repo, &host, &runtime).is_err());
+        fs::write(
+            host.join("droidloom-container-entry"),
+            b"package-copy fixture: container-entry",
+        )
+        .unwrap();
+        // A core-only host build is still incomplete for the native desktop.
+        assert!(production_host_payload(&repo, &host, &runtime).is_err());
+        for binary in DESKTOP_CLIENT_BINARIES {
+            if !host.join(binary).exists() {
+                fs::write(host.join(binary), format!("normal desktop peer: {binary}")).unwrap();
+            }
+        }
+        assert!(production_host_payload(&repo, &host, &runtime).is_err());
+        fs::write(
+            host.join("droidloom-package-helper"),
+            b"normal fixed maintenance peer",
+        )
+        .unwrap();
+        production_host_payload(&repo, &host, &runtime).unwrap();
+        let uevent = runtime.join("usr/lib/droidloom/production/current/droidloom-native-uevent-label");
+        let uevent_metadata = fs::symlink_metadata(&uevent).unwrap();
+        assert!(uevent_metadata.is_file());
+        assert_eq!(uevent_metadata.mode() & 0o7777, 0o755);
+        assert_eq!(uevent_metadata.nlink(), 1);
+        assert_ne!(uevent_metadata.ino(), fs::metadata(host.join("droidloomd")).unwrap().ino());
+        assert_ne!(uevent_metadata.ino(), fs::metadata(runtime.join("usr/lib/droidloom/production/current/droidloomd")).unwrap().ino());
+        assert_eq!(fs::read(&uevent).unwrap(), fs::read(host.join("droidloomd")).unwrap());
+        let helper = runtime.join("usr/lib/droidloom/droidloom-package-helper");
+        assert_eq!(
+            fs::read(&helper).unwrap(),
+            fs::read(host.join("droidloom-package-helper")).unwrap()
+        );
+        assert_eq!(fs::metadata(&helper).unwrap().mode() & 0o7777, 0o755);
+        assert_ne!(
+            fs::metadata(&helper).unwrap().ino(),
+            fs::metadata(host.join("droidloom-package-helper"))
+                .unwrap()
+                .ino()
+        );
+        let tmpfiles = runtime.join("usr/lib/tmpfiles.d/droidloom-production.conf");
+        assert_eq!(
+            fs::read(&tmpfiles).unwrap(),
+            include_bytes!("../../../packaging/tmpfiles/droidloom-production.conf")
+        );
+        let metadata = fs::symlink_metadata(tmpfiles).unwrap();
+        assert!(metadata.is_file());
+        assert_eq!(metadata.nlink(), 1);
+        assert_eq!(metadata.mode() & 0o7777, 0o644);
+        for binary in DESKTOP_CLIENT_BINARIES {
+            let source = host.join(binary);
+            let staged = runtime.join("usr/bin").join(binary);
+            let metadata = fs::symlink_metadata(&staged).unwrap();
+            assert!(metadata.is_file());
+            assert_eq!(metadata.mode() & 0o7777, 0o755);
+            assert_eq!(metadata.nlink(), 1);
+            assert_ne!(metadata.ino(), fs::metadata(&source).unwrap().ino());
+            assert_eq!(fs::read(&staged).unwrap(), fs::read(&source).unwrap());
+        }
+        assert_eq!(
+            fs::read(runtime.join("usr/bin/droidloomctl")).unwrap(),
+            fs::read(runtime.join("usr/lib/droidloom/production/current/droidloomctl")).unwrap(),
+        );
+        assert!(
+            !runtime
+                .join("usr/lib/systemd/user/droidloom.service")
+                .exists()
+        );
+        let user_unit = runtime.join("usr/lib/systemd/user/droidloom-production-desktop.service");
+        let metadata = fs::symlink_metadata(&user_unit).unwrap();
+        assert!(metadata.is_file());
+        assert_eq!(metadata.mode() & 0o7777, 0o644);
+        assert_eq!(metadata.nlink(), 1);
+        let body = fs::read_to_string(user_unit).unwrap();
+        assert_eq!(
+            body,
+            include_str!("../../../packaging/systemd/user/droidloom-production-desktop.service")
+        );
+        let start = body
+            .lines()
+            .find_map(|line| line.strip_prefix("ExecStart="))
+            .unwrap();
+        assert_eq!(start, "/usr/bin/droidloom-wayland --production");
+        assert!(runtime.join("usr/bin/droidloom-wayland").is_file());
+        // These dependencies would wait for the Binder service whose Denial
+        // handshake needs this presenter, or accidentally restart the old owner.
+        assert!(!body.contains("droidloom-early-observer.service"));
+        assert!(!body.contains("droidloom-production.service"));
+        assert!(!body.contains("droidloomd.service"));
+        assert!(!body.contains("--cell"));
+        assert!(
+            body.lines()
+                .any(|line| line == "WantedBy=graphical-session.target")
+        );
+
+        for (name, expected) in [
+            ("ubuntu-native-file_contexts", include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-native-file_contexts").as_slice()),
+            ("ubuntu-real-root-devices", include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-real-root-devices").as_slice()),
+            ("ubuntu-real-root-file_contexts", include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-real-root-file_contexts").as_slice()),
+        ] {
+            let declaration = runtime.join("usr/share/droidloom/board").join(name);
+            assert_eq!(fs::read(&declaration).unwrap(), expected);
+            assert_eq!(fs::metadata(declaration).unwrap().mode() & 0o777, 0o444);
+        }
+        for unit in fs::read_dir(runtime.join("usr/share/droidloom/production")).unwrap() {
+            let unit = unit.unwrap().path();
+            if unit.file_name().unwrap() == "linux-initial-calibration-file_contexts" {
+                assert_eq!(
+                    fs::metadata(&unit).unwrap().permissions().mode() & 0o777,
+                    0o444
+                );
+                assert_eq!(
+                    fs::read(&unit).unwrap(),
+                    include_bytes!(
+                        "../../../android/framework/droidloom-readiness/board-policy/linux-initial-calibration-file_contexts"
+                    )
+                );
+                continue;
+            }
+            if unit.file_name().unwrap() == "linux-service-file_contexts" {
+                assert_eq!(
+                    fs::metadata(&unit).unwrap().permissions().mode() & 0o777,
+                    0o444
+                );
+                assert_eq!(
+                    fs::read(&unit).unwrap().as_slice(),
+                    include_bytes!(
+                        "../../../android/framework/droidloom-readiness/board-policy/linux-service-file_contexts"
+                    )
+                );
+                continue;
+            }
+            let body = fs::read_to_string(&unit).unwrap();
+            let name = unit.file_name().unwrap().to_str().unwrap();
+            let expected = match name {
+                "droidloom-original-once.target" =>
+                    include_str!("../../../packaging/systemd/droidloom-original-once.target").to_owned(),
+                "droidloom-original-once-return.service" =>
+                    include_str!("../../../packaging/systemd/droidloom-original-once-return.service").to_owned(),
+                "droidloom-original-once-return.timer" =>
+                    include_str!("../../../packaging/systemd/droidloom-original-once-return.timer").to_owned(),
+                _ => fs::read_to_string(templates.join(name)).unwrap(),
+            };
+            assert_eq!(body, expected);
+            assert_eq!(
+                fs::metadata(&unit).unwrap().permissions().mode() & 0o777,
+                0o644
+            );
+            if matches!(name, "droidloom-original-once.target"
+                | "droidloom-original-once-return.service"
+                | "droidloom-original-once-return.timer")
+            {
+                assert!(body.lines().any(|line| line == "ConditionKernelCommandLine=droidloom.once"));
+                assert!(!body.lines().any(|line| line == "[Install]"));
+                assert!(!runtime.join("etc/systemd/system").join(name).exists());
+                assert!(!runtime.join("usr/lib/systemd/system").join(name).exists());
+                if unit.extension().is_some_and(|ext| ext == "target" || ext == "timer") {
+                    continue;
+                }
+            }
+            if unit.extension().is_some_and(|ext| ext == "socket") {
+                assert!(
+                    body.lines()
+                        .any(|line| line == "Service=droidloom-container-entry.service")
+                );
+                assert!(body.lines().any(|line| line == "DirectoryMode=0700"));
+                continue;
+            }
+            if unit.extension().is_some_and(|ext| ext == "target") {
+                assert!(
+                    body.lines()
+                        .any(|line| line == "BindsTo=droidloom-container-entry.service")
+                );
+                assert!(
+                    body.lines()
+                        .any(|line| line == "After=droidloom-container-entry.service")
+                );
+                assert!(
+                    body.lines()
+                        .any(|line| line == "PropagatesStopTo=droidloom-container-entry.service")
+                );
+                continue;
+            }
+            let command = body
+                .lines()
+                .find_map(|line| line.strip_prefix("ExecStart="))
+                .unwrap();
+            let executable = command.split_whitespace().next().unwrap();
+            let target = runtime.join(executable.strip_prefix('/').unwrap());
+            let original_name = target.file_name().unwrap().to_str().unwrap();
+            let original = host.join(if original_name == "droidloom-original-once-return" {
+                "droidloomd"
+            } else {
+                original_name
+            });
+            let metadata = fs::symlink_metadata(&target).unwrap();
+            assert!(metadata.is_file());
+            assert_eq!(metadata.permissions().mode() & 0o777, 0o755);
+            assert_eq!(metadata.nlink(), 1);
+            assert_ne!(metadata.ino(), fs::metadata(&original).unwrap().ino());
+            assert_eq!(fs::read(&target).unwrap(), fs::read(original).unwrap());
+        }
+        // The boot factory is shipped as a template and pulled in by the launcher.
+        let factory =
+            runtime.join("usr/share/droidloom/production/droidloom-instance-factory.service");
+        assert!(factory.is_file());
+        let factory_body = fs::read_to_string(factory).unwrap();
+        assert!(factory_body.lines().any(|line| line
+            == "ExecStart=/usr/lib/droidloom/production/current/droidloomd --adopt-early-factory"));
+        assert!(
+            !factory_body
+                .lines()
+                .any(|line| line == "[Install]" || line.starts_with("WantedBy="))
+        );
+        assert!(
+            !runtime
+                .join("usr/lib/systemd/system/droidloom-instance-factory.service")
+                .exists()
+        );
+        // Staging the public files cannot install a unit or select a cell.
+        assert!(!runtime.join("etc").exists());
+        assert!(
+            !runtime
+                .join("usr/lib/systemd/system/droidloom-production.service")
+                .exists()
+        );
+        // The normal publisher supplies stock D-Bus discovery and the fixed
+        // account/caller context maps consumed by unmodified pam_selinux.
+        early_boot_package::stage_native_configuration(&runtime).unwrap();
+        for (relative, expected) in [
+            (
+                "etc/selinux/droidloom/contexts/dbus_contexts",
+                include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-dbus_contexts").as_slice(),
+            ),
+            (
+                "etc/selinux/droidloom/seusers",
+                include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-seusers").as_slice(),
+            ),
+            (
+                "etc/selinux/droidloom/contexts/default_contexts",
+                include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-default_contexts").as_slice(),
+            ),
+            (
+                "etc/systemd/system/user-runtime-dir@.service.d/50-droidloom-native-session.conf",
+                include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-user-runtime-dir.conf").as_slice(),
+            ),
+            (
+                "usr/lib/udev/rules.d/00-droidloom-native-hardware.rules",
+                include_bytes!("../../../android/framework/droidloom-readiness/board-policy/00-droidloom-native-hardware.rules").as_slice(),
+            ),
+            (
+                "usr/lib/systemd/system/systemd-udevd.service.d/50-droidloom-hardware-label.conf",
+                include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-udev-hardware-label.conf").as_slice(),
+            ),
+            (
+                "usr/lib/systemd/system/systemd-udev-trigger.service.d/50-droidloom-uevent-label.conf",
+                include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-udev-trigger-label.conf").as_slice(),
+            ),
+            (
+                "usr/lib/systemd/system/netplan-configure.service.d/50-droidloom-uevent-order.conf",
+                include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-netplan-trigger-order.conf").as_slice(),
+            ),
+            (
+                "usr/lib/systemd/system/mount.d/50-droidloom-private-keyring.conf",
+                include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-mount-private-keyring.conf").as_slice(),
+            ),
+            (
+                "usr/lib/systemd/system/kmod-static-nodes.service.d/50-droidloom-runtime-directory.conf",
+                include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-kmod-static-nodes-runtime.conf").as_slice(),
+            ),
+            (
+                "usr/lib/systemd/system/droidloom-physical-qualification@.service",
+                include_bytes!("../../../packaging/systemd/system/droidloom-physical-qualification@.service").as_slice(),
+            ),
+            (
+                "usr/lib/systemd/system/droidloom-working-qualification.service",
+                include_bytes!("../../../packaging/systemd/system/droidloom-working-qualification.service").as_slice(),
+            ),
+            (
+                "usr/lib/systemd/system/droidloom-empty-meituan-diagnostic.service",
+                include_bytes!("../../../packaging/systemd/system/droidloom-empty-meituan-diagnostic.service").as_slice(),
+            ),
+            (
+                "usr/lib/systemd/system/droidloom-working-qualification-return.service",
+                include_bytes!("../../../packaging/systemd/system/droidloom-working-qualification-return.service").as_slice(),
+            ),
+            (
+                "usr/share/droidloom/production/droidloom-working-qualification.service",
+                include_bytes!("../../../packaging/systemd/system/droidloom-working-qualification.service").as_slice(),
+            ),
+            (
+                "usr/share/droidloom/production/droidloom-working-qualification-return.service",
+                include_bytes!("../../../packaging/systemd/system/droidloom-working-qualification-return.service").as_slice(),
+            ),
+        ]
+        .into_iter()
+        .chain(super::early_boot_package::native_leaf_layout::FILES.iter().copied())
+        {
+            let path = runtime.join(relative);
+            let metadata = fs::symlink_metadata(&path).unwrap();
+            assert!(metadata.is_file());
+            assert_eq!(metadata.permissions().mode() & 0o7777, 0o444);
+            assert_eq!(metadata.nlink(), 1);
+            assert_eq!(fs::read(path).unwrap(), expected);
+        }
+    }
+
+    #[test]
+    fn portable_recipe_has_no_builder_identity_or_local_storage() {
+        let mut template: Value = serde_json::from_str(include_str!(
+            "../../../packaging/cell-spec-x86_64-u1000.json"
+        ))
+        .unwrap();
+        portable_template(&mut template);
+        for key in [
+            "host_uid",
+            "render_node",
+            "data_dir",
+            "runtime_dir",
+            "denial_socket",
+        ] {
+            assert!(template.get(key).is_none());
+        }
+        assert_eq!(template["image_dir"], "/usr/lib/droidloom/images");
+        assert_eq!(template["shared_storage_directories"], json!([]));
+        assert!(
+            !template["android_file_overrides"]
+                .as_array()
+                .unwrap()
+                .is_empty()
+        );
+    }
+}

@@ -1,0 +1,66 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+abi <abi/4.0>,
+#include <tunables/global>
+# Factory-owned queries enter this exact profile before no-new-privileges.
+# The legacy application worker retains its existing broker stack.
+# Kernel-created Android init keeps its original Android SELinux transition.
+profile droidloom-production-android {
+  /{,system/,system/bin/,system/lib64/,apex/} r,
+  /system/bin/{linker64,app_process64} mrix,
+  /apex/com.android.runtime/bin/linker64 mrix,
+  /system/lib64/**.so mr,
+  /apex/*/lib64/**.so mr,
+  /dev/{null,zero,urandom} r,
+  /dev/null w,
+  /dev/{binder,hwbinder,vndbinder} rw,
+  @{PROC}/[0-9]*/{status,attr/current,attr/apparmor/current,attr/selinux/current} r,
+  signal (receive) peer=droidloom-production-broker,
+  ptrace (readby, tracedby) peer=droidloom-production-broker,
+  ptrace (readby, tracedby) peer=droidloom-instance-factory,
+  signal (receive) set=(kill) peer=droidloom-instance-factory,
+  /dev/socket/droidloom/shutdown-request r,
+  # The eight kernel-first immutable roles and their ordinary Android loader inputs.
+  /{dev/droidloom-query,.droidloom-query}/ r,
+  /{dev/droidloom-query,.droidloom-query}/{cmd,toybox,toolbox,app_process64,dumpsys,screencap} mrix,
+  /{dev/droidloom-query,.droidloom-query}/{content,am}.jar r,
+  /system/bin/{cmd,toybox,toolbox,app_process64,dumpsys,screencap} r,
+  /system/framework/{content,am}.jar r,
+  # Original ART interpreter/boot classpath inputs, without writable code.
+  /system/framework/{,**} r,
+  /apex/*/javalib/{,**} r,
+  /system/framework/**.{oat,odex} mr,
+  /apex/*/javalib/**.{oat,odex} mr,
+  /system/system_ext/framework/droidloom-input-bridge.jar r,
+  /system/{product,system_ext}/{app,priv-app}/**.apk r,
+  /system/bin/linker64 mrix,
+  /apex/com.android.runtime/bin/linker64 mrix,
+  /system/lib64/**.so mr,
+  /apex/*/lib64/**.so mr,
+  /linkerconfig/{,ld.config.txt,apex.libraries.config.txt} r,
+  /system/etc/{,ld.config.txt,ld.config.*.txt,public.libraries.txt} r,
+  /apex/{,apex-info-list.xml} r,
+  # Finite public VINTF metadata. The Rust query contract bounds module/SKU
+  # components, complete rosters and byte counts in the held Ready namespace.
+  # SELinux's existing query domain still rejects unrelated vendor/APEX bodies.
+  /system/{etc/vintf,product/etc/vintf,system_ext/etc/vintf}/{,**} r,
+  /{product,system_ext,vendor,odm}/etc/vintf/{,**} r,
+  /vendor/odm/etc/vintf/{,**} r,
+  /{system,vendor}/{manifest,compatibility_matrix}.xml r,
+  /{odm,vendor/odm}/etc/manifest{,_*}.xml r,
+  /{odm,odm/etc,vendor/odm,vendor/odm/etc} r,
+  /apex/*/etc/vintf/{,**} r,
+  /dev/__properties__/{,**} r,
+  /dev/{binder,hwbinder,vndbinder} rw,
+  /data/app/**.apk r,
+  /{system,product,system_ext,vendor}/{app,priv-app}/**.apk r,
+  # Fixed Main metadata readers; no host attach or guest execution grant.
+  ptrace (readby) peer=droidloom-working-qualification,
+  ptrace (readby) peer=droidloom-working-privateprep,
+  ptrace (readby) peer=droidloom-working-application,
+
+  # The label is read through the duplicate of the original held DB FD.
+  owner @{PROC}/[0-9]*/fd/[0-9]* r,
+  # Calendar's fixed UID and SELinux role alone can open this private database.
+  # The host actors and every other query role retain their private-data deny.
+  /data/{user/0,data}/com.android.providers.calendar/databases/calendar.db{,-wal,-shm} rk,
+}

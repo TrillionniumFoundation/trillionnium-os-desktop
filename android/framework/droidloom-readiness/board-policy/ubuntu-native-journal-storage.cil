@@ -1,0 +1,57 @@
+; Original systemd 259.9 creates persistent user-<uid>.journal through
+; openat_report_new(), then renames an existing inode for rotation or corrupt
+; file isolation. SELinux named transitions cannot encode the decimal UID.
+; Only journald can create regular files in this already-typed machine store;
+; its mandatory path-attached AppArmor profile restricts the exact names.
+(typetransition p4_linux_journald_t p4_linux_journal_machine_t file p4_linux_journal_database_t)
+
+; Normal persistent rotation and bounded retention operate inside that store.
+; Neither the persistent machine directory nor its parent can be removed.
+(allow p4_linux_journald_t p4_linux_journal_machine_t (dir (remove_name)))
+(allow p4_linux_journald_t p4_linux_journal_database_t (file (rename unlink)))
+(auditallow p4_linux_journald_t p4_linux_journal_database_t (file (rename unlink)))
+
+; Read-only maintenance roles can inspect a journal without acquiring any
+; journal body or namespace write authority. Original Android guards remain.
+(typeattribute p4_linux_journal_nonwriters)
+(typeattributeset p4_linux_journal_nonwriters (and (p4_linux_procs) (not (p4_linux_journald_t))))
+(neverallow p4_linux_journal_nonwriters p4_linux_journal_database_t (file (create write append link unlink rename)))
+(neverallow p4_linux_journal_nonwriters p4_linux_volatile_journal_database_t (file (create write append link unlink rename)))
+; Normal systemd.conf z/a+ and recursive Z/A+ rules let only the fixed
+; tmpfiles role update journal metadata. Its complete file vectors and the
+; four database/machine metadata exceptions are checked by
+; verify_native_journal_storage.py; normal rules and tmpfiles.c are pinned
+; by native-tmpfiles-source.json. Content and lifecycle guards above apply
+; to tmpfiles unchanged, as do the original Android assertions.
+(typeattribute p4_linux_journal_nonmetadata)
+(expandtypeattribute (p4_linux_journal_nonmetadata) true)
+(typeattributeset p4_linux_journal_nonmetadata (and (p4_linux_journal_nonwriters) (not (p4_linux_tmpfiles_t))))
+(neverallow p4_linux_journal_nonmetadata p4_linux_journal_database_t (file (setattr)))
+(neverallow p4_linux_journal_nonmetadata p4_linux_volatile_journal_database_t (file (setattr)))
+(neverallow p4_linux_journald_t p4_linux_journal_database_t (file (link)))
+(neverallow p4_linux_journald_t p4_linux_journal_machine_t (dir (rmdir rename reparent mounton relabelfrom relabelto)))
+
+; stdout_stream_save keeps each inherited journal stream's restart state in
+; /run/systemd/journal/streams/<decimal dev>:<decimal ino>. fopen_temporary
+; writes .#<dev>:<ino><16 hex>, then rename publishes the same regular inode.
+; The mandatory journald AppArmor profile restricts this two-type subtree to
+; those names. No nested directory, generic runtime file or executable is added.
+(type p4_linux_journal_stream_dir_t)
+(type p4_linux_journal_stream_file_t)
+(roletype object_r p4_linux_journal_stream_dir_t)
+(roletype object_r p4_linux_journal_stream_file_t)
+(typeattributeset p4_linux_data (p4_linux_journal_stream_dir_t p4_linux_journal_stream_file_t))
+(allow p4_linux_journal_stream_dir_t tmpfs (filesystem (associate)))
+(allow p4_linux_journal_stream_file_t tmpfs (filesystem (associate)))
+(typetransition p4_linux_journald_t p4_linux_journal_runtime_t dir "streams" p4_linux_journal_stream_dir_t)
+(typetransition p4_linux_journald_t p4_linux_journal_stream_dir_t file p4_linux_journal_stream_file_t)
+(allow p4_linux_journald_t p4_linux_journal_stream_dir_t (dir (create getattr search open read write add_name remove_name)))
+(allow p4_linux_journald_t p4_linux_journal_stream_file_t (file (create getattr open read write rename unlink)))
+(neverallow p4_linux_journald_t p4_linux_journal_stream_dir_t (dir (not (create getattr search open read write add_name remove_name))))
+(neverallow p4_linux_journald_t p4_linux_journal_stream_file_t (file (not (create getattr open read write rename unlink))))
+(typeattribute p4_journal_stream_nonwriters)
+(typeattributeset p4_journal_stream_nonwriters (not (p4_linux_journald_t)))
+(neverallow p4_journal_stream_nonwriters p4_linux_journal_stream_file_t (file (all)))
+(neverallow p4_journal_stream_nonwriters p4_linux_journal_stream_dir_t (dir (not (getattr search))))
+(neverallow p4_linux_procs p4_linux_journal_stream_dir_t (file (all)))
+(neverallow p4_linux_procs p4_linux_journal_stream_file_t (lnk_file (all)))

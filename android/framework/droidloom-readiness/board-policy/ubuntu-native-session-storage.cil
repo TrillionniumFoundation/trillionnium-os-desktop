@@ -1,0 +1,95 @@
+; Ordinary native user data stays separate from Droidloom control, Android,
+; credentials and immutable Linux entrypoints. Numeric DAC ownership still
+; separates users; none of these data types is executable.
+(typeattribute p4_native_home_writers)
+(typeattributeset p4_native_home_writers (p4_linux_user_session_t p4_linux_compositor_t p4_linux_audio_t p4_linux_desktop_portal_t))
+(typeattribute p4_native_home_readers)
+(typeattributeset p4_native_home_readers (p4_native_home_writers p4_linux_user_manager_t p4_linux_user_executor_t p4_linux_user_dbus_t))
+(typeattribute p4_native_session_storage_actors)
+(typeattributeset p4_native_session_storage_actors (p4_native_home_readers))
+(typeattribute p4_native_login_home_readers)
+(typeattributeset p4_native_login_home_readers (p4_linux_gdm_worker_t p4_linux_sshd_t))
+(typeattribute p4_native_session_volatile_data)
+(typeattributeset p4_native_session_volatile_data (p4_linux_user_run_t p4_linux_tmp_t))
+
+(allow p4_linux_user_home_t labeledfs (filesystem (associate)))
+(allow p4_linux_user_run_t tmpfs (filesystem (associate)))
+(allow p4_linux_tmp_t labeledfs (filesystem (associate)))
+(allow p4_linux_tmp_t tmpfs (filesystem (associate)))
+(allow p4_native_home_readers p4_linux_user_home_t (dir (getattr search open read)))
+(allow p4_native_home_readers p4_linux_user_home_t (file (getattr open read map lock)))
+(allow p4_native_home_readers p4_linux_user_home_t (lnk_file (getattr read)))
+; Native login code reads .dmrc and authorized_keys before the fixed shell
+; transition. It receives no home write, execution or capability grant.
+(allow p4_native_login_home_readers p4_linux_user_home_t (dir (getattr search)))
+(allow p4_native_login_home_readers p4_linux_user_home_t (file (getattr open read)))
+(allow p4_native_login_home_readers p4_linux_user_home_t (lnk_file (getattr read)))
+(allow p4_linux_service_executor_t p4_linux_user_home_t (dir (getattr search)))
+
+(macro p4_native_user_data ((type actors) (type data))
+    (allow actors data (dir (getattr search open read create write add_name remove_name setattr rename reparent rmdir)))
+    (allow actors data (file (getattr open read write append create setattr lock map link rename unlink)))
+    (allow actors data (lnk_file (getattr read create write setattr link rename unlink)))
+    (allow actors data (sock_file (getattr create setattr write unlink)))
+    (allow actors data (fifo_file (getattr create open read write append setattr lock unlink)))
+    (typetransition actors data dir data)
+    (typetransition actors data file data)
+    (typetransition actors data lnk_file data)
+    (typetransition actors data sock_file data)
+    (typetransition actors data fifo_file data))
+(call p4_native_user_data (p4_native_home_writers p4_linux_user_home_t))
+(call p4_native_user_data (p4_native_session_storage_actors p4_linux_user_run_t))
+(call p4_native_user_data (p4_native_session_storage_actors p4_linux_tmp_t))
+; The existing exact "bus" name transitions remain authoritative over the
+; ordinary user-runtime socket default. No cross-domain socket grant is added.
+(allow p4_linux_user_session_t self (unix_stream_socket (connectto)))
+; Stock non-PTY SSH passes pipes/socketpairs created before the shell exec.
+; These are byte streams only, not access to an sshd task's proc files.
+(allow p4_linux_user_session_t p4_linux_sshd_t (fifo_file (getattr read write)))
+(allow p4_linux_user_session_t p4_linux_sshd_t (unix_stream_socket (getattr read write)))
+
+; The original user-runtime-dir unit and the normal systemd executor prepare
+; and retire only this typed runtime subtree. They never consume its file data.
+(typeattribute p4_native_runtime_directory_maintainers)
+(typeattributeset p4_native_runtime_directory_maintainers (p4_linux_setup_t p4_linux_service_executor_t))
+(allow p4_native_runtime_directory_maintainers p4_linux_user_run_t (dir (getattr search open read create write add_name remove_name setattr rmdir)))
+(allow p4_native_runtime_directory_maintainers p4_linux_user_run_t (file (getattr unlink)))
+(allow p4_native_runtime_directory_maintainers p4_linux_user_run_t (lnk_file (getattr read unlink)))
+(allow p4_native_runtime_directory_maintainers p4_linux_user_run_t (sock_file (getattr unlink)))
+(allow p4_native_runtime_directory_maintainers p4_linux_user_run_t (fifo_file (getattr unlink)))
+(allow p4_native_runtime_directory_maintainers p4_linux_session_bus_socket_t (sock_file (getattr unlink)))
+; mount(2) checks this path before may_mount(). The fixed unit retains only
+; CHOWN/FOWNER for stock directory fallback; actual mounting stays forbidden.
+(allow p4_linux_setup_t p4_linux_user_run_t (dir (mounton)))
+; RuntimeDirectory preparation happens in the original service executor.
+; setfscreate selects only a future inode context; normal create/associate
+; checks below and the existing immutable-store guards still apply.
+(allow p4_linux_service_executor_t self (process (setfscreate)))
+; The original Android DAC-override assertion remains intact for PID 1.
+; The stock executor applies User=/Group= and declared directory ownership
+; before its fixed executable transition. Ordinary session/helper roles gain
+; no credential-changing capabilities from these two manager-only rules.
+(allow p4_linux_service_executor_t self (capability (chown fowner setuid setgid)))
+
+; Stock PID 1 synchronously retires the declared runtime subtree. It only
+; enumerates directories and unlinks entries, never reads regular-file data.
+(allow init_t p4_linux_user_run_t (dir (getattr search open read write remove_name rmdir)))
+(allow init_t p4_linux_user_run_t (file (getattr unlink)))
+(allow init_t p4_linux_user_run_t (lnk_file (getattr read unlink)))
+(allow init_t p4_linux_user_run_t (sock_file (getattr unlink)))
+(allow init_t p4_linux_user_run_t (fifo_file (getattr unlink)))
+(allow init_t p4_linux_session_bus_socket_t (sock_file (getattr unlink)))
+
+(neverallow p4_linux_setup_t self (capability (sys_admin)))
+(neverallow p4_linux_setup_t self (cap_userns (sys_admin)))
+(neverallow p4_linux_setup_t tmpfs (filesystem (mount remount unmount)))
+
+(typeattribute p4_native_private_storage)
+(typeattributeset p4_native_private_storage (p4_linux_user_home_t p4_linux_tmp_t))
+(typeattribute p4_native_storage_control_denied)
+(typeattributeset p4_native_storage_control_denied (droidloom_broker droidloom_public_control_client p4_android_userspace))
+(neverallow p4_native_storage_control_denied p4_native_private_storage (dir (getattr search open read create write add_name remove_name setattr rename reparent rmdir mounton relabelto relabelfrom)))
+(neverallow p4_native_storage_control_denied p4_native_private_storage (file (getattr open read write append create setattr lock map link rename unlink execute execute_no_trans entrypoint relabelto relabelfrom)))
+(neverallow p4_native_storage_control_denied p4_native_private_storage (lnk_file (getattr read create write setattr link rename unlink relabelto relabelfrom)))
+(neverallow p4_linux_procs p4_native_private_storage (file (execute execute_no_trans entrypoint relabelto relabelfrom)))
+(neverallow p4_linux_procs p4_linux_user_run_t (file (execute execute_no_trans entrypoint relabelto relabelfrom)))

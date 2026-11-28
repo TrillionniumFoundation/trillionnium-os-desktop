@@ -1,0 +1,20 @@
+; Exact stock OpenSSH, Linux-PAM and pam_selinux user-record transport.
+; The selected 6.18 kernel and linked policy use netlink_xperm, not the legacy relay bit.
+; The three actors can send their own lifecycle records and read their ACKs.
+; No audit status/rule/daemon control or multicast audit-stream subscription is permitted.
+(typeattribute p4_native_login_audit_roles)
+(typeattributeset p4_native_login_audit_roles (p4_linux_sshd_t p4_linux_gdm_worker_t p4_linux_service_executor_t))
+(allow p4_native_login_audit_roles self (capability (audit_write)))
+(neverallow p4_native_login_audit_roles self (capability (audit_control)))
+(neverallow p4_native_login_audit_roles self (capability2 (audit_read)))
+(allow p4_native_login_audit_roles self (netlink_audit_socket (create read write nlmsg)))
+(neverallow p4_native_login_audit_roles self (netlink_audit_socket (not (create read write nlmsg))))
+(allowx p4_linux_sshd_t self (nlmsg netlink_audit_socket (0x44c 0x44d 0x44f 0x450 0x451 0x452 0x454 0x455 0x456 0x458 0x8fc)))
+(neverallowx p4_linux_sshd_t self (nlmsg netlink_audit_socket (not (0x44c 0x44d 0x44f 0x450 0x451 0x452 0x454 0x455 0x456 0x458 0x8fc))))
+(allowx p4_linux_gdm_worker_t self (nlmsg netlink_audit_socket (0x44c 0x44d 0x44f 0x450 0x451 0x452 0x454 0x455 0x456 0x8fc)))
+(neverallowx p4_linux_gdm_worker_t self (nlmsg netlink_audit_socket (not (0x44c 0x44d 0x44f 0x450 0x451 0x452 0x454 0x455 0x456 0x8fc))))
+(allowx p4_linux_service_executor_t self (nlmsg netlink_audit_socket (0x44c 0x44d 0x44f 0x450 0x451 0x452 0x454 0x455 0x456)))
+(neverallowx p4_linux_service_executor_t self (nlmsg netlink_audit_socket (not (0x44c 0x44d 0x44f 0x450 0x451 0x452 0x454 0x455 0x456))))
+(neverallow droidloom_broker self (netlink_audit_socket (all)))
+(neverallow droidloom_public_control_client self (netlink_audit_socket (all)))
+(neverallow p4_linux_user_session_t self (netlink_audit_socket (all)))

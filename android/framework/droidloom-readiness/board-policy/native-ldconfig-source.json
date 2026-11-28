@@ -1,0 +1,220 @@
+{
+  "schema": "droidloom.native-ldconfig-source.v1",
+  "packages": {
+    "libc-bin:amd64": "2.43-2ubuntu2.7",
+    "systemd:amd64": "259.9-0ubuntu0.1+p4gentmp2"
+  },
+  "aliases": [
+    {
+      "source": "p4_linux_setup_exec_t",
+      "target": "p4_linux_ldconfig_exec_t",
+      "class": "file"
+    },
+    {
+      "source": "p4_linux_native_config_t",
+      "target": "p4_linux_ldconfig_config_t",
+      "class": "file"
+    },
+    {
+      "source": "p4_linux_rootdir_t",
+      "target": "p4_linux_ldconfig_config_dir_t",
+      "class": "dir"
+    },
+    {
+      "source": "p4_linux_rootdir_t",
+      "target": "p4_linux_ldconfig_aux_dir_t",
+      "class": "dir"
+    },
+    {
+      "source": "p4_linux_native_data_t",
+      "target": "p4_linux_ldconfig_aux_t",
+      "class": "file"
+    }
+  ],
+  "source_documents": [
+    {
+      "bytes": 36055,
+      "path": "elf/ldconfig.c",
+      "sha256": "2be9b8687cd3c17d77399b15454914aebfbd22a1affe94e4b75c2144a0e47749",
+      "package": "glibc",
+      "version": "2.43-2ubuntu2.7",
+      "admission": "normal-dsc-roundtrip"
+    },
+    {
+      "bytes": 33233,
+      "path": "elf/cache.c",
+      "sha256": "4d8950977fbba59b0ccd479027811c6b82a31c3700d4478d04e8a4147c87bca8",
+      "package": "glibc",
+      "version": "2.43-2ubuntu2.7",
+      "admission": "normal-dsc-roundtrip"
+    },
+    {
+      "bytes": 5101,
+      "path": "elf/readlib.c",
+      "sha256": "edf9e9cbc9a2db01be7434a7b7b6b7805413ac04ebbaabca0b888d47e2acfa81",
+      "package": "glibc",
+      "version": "2.43-2ubuntu2.7",
+      "admission": "normal-dsc-roundtrip"
+    },
+    {
+      "bytes": 6944,
+      "path": "elf/readelflib.c",
+      "sha256": "34bbc5ec5947ab65908debdc4f7d45b004057415ce3d1eea16f756a704a0d135",
+      "package": "glibc",
+      "version": "2.43-2ubuntu2.7",
+      "admission": "normal-dsc-roundtrip"
+    },
+    {
+      "bytes": 1393,
+      "path": "elf/dl-is_dso.h",
+      "sha256": "8f23fb231fd88cbd30aeea3a9268b59b9ca7040bf04960219bb1c97468e104a9",
+      "package": "glibc",
+      "version": "2.43-2ubuntu2.7",
+      "admission": "normal-dsc-roundtrip"
+    },
+    {
+      "bytes": 3910,
+      "path": "sysdeps/generic/ldconfig.h",
+      "sha256": "fd259eebc671fb6c67db65dc011569182c68668cf33c1d97d10a5e9c526a81ed",
+      "package": "glibc",
+      "version": "2.43-2ubuntu2.7",
+      "admission": "normal-dsc-roundtrip"
+    },
+    {
+      "bytes": 212133,
+      "path": "security/selinux/hooks.c",
+      "sha256": "4fa2a20bff2788fffc1f6bc95d49af3e1145e6a679f69ff5aa2d5a1bd85272a0",
+      "package": "linux",
+      "version": "6.18.64-p4ctx6181-fusectl-aafs-peer-r1",
+      "admission": "selected-kernel-source"
+    }
+  ],
+  "normal_files": [
+    {
+      "path": "/usr/sbin/ldconfig",
+      "bytes": 1083728,
+      "sha256": "8d653c315308213dfdd179e473b154491c244fc64ec44e0ca5c42ac92f8585c2",
+      "mode": 493,
+      "uid": 0,
+      "gid": 0,
+      "nlink": 1,
+      "source_type": "p4_linux_setup_exec_t",
+      "target_type": "p4_linux_ldconfig_exec_t"
+    },
+    {
+      "path": "/usr/lib/systemd/system/ldconfig.service",
+      "bytes": 946,
+      "sha256": "8f84fde0c695fa061222114f56c651dcba7e2976dc9278f3660d13f90f1f12c4",
+      "mode": 420,
+      "uid": 0,
+      "gid": 0,
+      "nlink": 1,
+      "source_type": "p4_linux_unit_file_t",
+      "target_type": "p4_linux_unit_file_t"
+    },
+    {
+      "path": "/etc/ld.so.conf",
+      "bytes": 34,
+      "sha256": "d4b198c463418b493208485def26a6f4c57279467b9dfa491b70433cedb602e8",
+      "mode": 420,
+      "uid": 0,
+      "gid": 0,
+      "nlink": 1,
+      "source_type": "p4_linux_native_config_t",
+      "target_type": "p4_linux_ldconfig_config_t"
+    },
+    {
+      "path": "/etc/ld.so.conf.d/libc.conf",
+      "bytes": 44,
+      "sha256": "90d4c7e43e7661cd116010eb9f50ad5817e43162df344bd1ad10898851b15d41",
+      "mode": 420,
+      "uid": 0,
+      "gid": 0,
+      "nlink": 1,
+      "source_type": "p4_linux_native_config_t",
+      "target_type": "p4_linux_ldconfig_config_t"
+    },
+    {
+      "path": "/etc/ld.so.conf.d/x86_64-linux-gnu.conf",
+      "bytes": 78,
+      "sha256": "a1e651b43981e758869c3efef5822b60df6afc198a4c14b2552e3fb436819bfa",
+      "mode": 420,
+      "uid": 0,
+      "gid": 0,
+      "nlink": 1,
+      "source_type": "p4_linux_native_config_t",
+      "target_type": "p4_linux_ldconfig_config_t"
+    }
+  ],
+  "elf": {
+    "class": 64,
+    "dt_needed": [],
+    "machine": 62,
+    "pt_interp": false,
+    "static_pie": true,
+    "type": "ET_DYN"
+  },
+  "command": [
+    "/usr/sbin/ldconfig",
+    "-X"
+  ],
+  "configuration_members": [
+    "/etc/ld.so.conf",
+    "/etc/ld.so.conf.d/libc.conf",
+    "/etc/ld.so.conf.d/x86_64-linux-gnu.conf"
+  ],
+  "mutable_outputs": [
+    {
+      "path": "/etc/ld.so.cache",
+      "temporary": "/etc/ld.so.cache~",
+      "type": "p4_linux_console_ld_cache_native_config_t",
+      "temporary_mode": 384,
+      "published_mode": 420,
+      "publication": "fsync-close-rename",
+      "fatal": true
+    },
+    {
+      "path": "/var/cache/ldconfig/aux-cache",
+      "temporary": "/var/cache/ldconfig/aux-cache~",
+      "type": "p4_linux_ldconfig_aux_t",
+      "temporary_mode": 384,
+      "published_mode": 384,
+      "publication": "fdatasync-close-rename-or-unlink",
+      "fatal": false
+    }
+  ],
+  "existing_directories": [
+    {
+      "path": "/etc",
+      "mode": 493,
+      "uid": 0,
+      "gid": 0,
+      "type": "p4_linux_sysusers_etc_root_t"
+    },
+    {
+      "path": "/etc/ld.so.conf.d",
+      "mode": 493,
+      "uid": 0,
+      "gid": 0,
+      "type": "p4_linux_ldconfig_config_dir_t"
+    },
+    {
+      "path": "/var/cache",
+      "mode": 493,
+      "uid": 0,
+      "gid": 0,
+      "type": "p4_linux_var_cache_t"
+    },
+    {
+      "path": "/var/cache/ldconfig",
+      "mode": 448,
+      "uid": 0,
+      "gid": 0,
+      "type": "p4_linux_ldconfig_aux_dir_t"
+    }
+  ],
+  "library_symlink_mutation": false,
+  "helper_execution": false,
+  "source_bound_readback_required": true,
+  "runtime_qualified": false
+}

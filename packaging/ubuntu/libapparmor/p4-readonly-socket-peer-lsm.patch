@@ -1,0 +1,91 @@
+--- a/libraries/libapparmor/src/kernel.c
++++ b/libraries/libapparmor/src/kernel.c
+@@ -1287,6 +1287,79 @@
+ #define SO_PEERSEC 31
+ #endif
+ 
++/*
++ * Source-defined Pocket4 read-only peer-label ABI. This getsockopt selects
++ * one provider for this call without changing shared socket state. The
++ * original kernel peer hook still supplies the actual socket peer label.
++ */
++#define P4_SO_PEERSEC_LSM 0x50340001
++#define P4_LSM_PEERSEC_ABI 1U
++
++struct p4_lsm_peersec {
++	uint32_t size;
++	uint32_t version;
++	uint64_t lsm_id;
++	uint32_t flags;
++	uint32_t reserved;
++	uint32_t context_len;
++	uint32_t reserved2;
++	unsigned char context[];
++};
++
++_Static_assert(sizeof(struct p4_lsm_peersec) == 32, "peer LSM ABI header");
++
++static int getpeercon_lsm(int fd, char *buf, socklen_t *len)
++{
++	struct p4_lsm_peersec *request;
++	socklen_t capacity = *len, optlen;
++	int rc, saved;
++
++	if (capacity > INT_MAX - sizeof(*request)) {
++		errno = EOVERFLOW;
++		return -1;
++	}
++	optlen = sizeof(*request) + capacity;
++	request = calloc(1, optlen);
++	if (!request)
++		return -1;
++	request->size = sizeof(*request);
++	request->version = P4_LSM_PEERSEC_ABI;
++	request->lsm_id = LSM_ID_APPARMOR;
++
++	rc = getsockopt(fd, SOL_SOCKET, P4_SO_PEERSEC_LSM, request, &optlen);
++	saved = errno;
++	if (rc == -1 && saved == ENOPROTOOPT) {
++		/* Only a missing option on an older kernel permits fallback. */
++		free(request);
++		return getsockopt(fd, SOL_SOCKET, SO_PEERSEC, buf, len);
++	}
++	if (rc == -1 && saved != ERANGE) {
++		free(request);
++		errno = saved;
++		return -1;
++	}
++	if ((rc != 0 && rc != -1) ||
++	    request->size != sizeof(*request) ||
++	    request->version != P4_LSM_PEERSEC_ABI ||
++	    request->lsm_id != LSM_ID_APPARMOR ||
++	    request->flags || request->reserved || request->reserved2 ||
++	    !request->context_len ||
++	    request->context_len > INT_MAX - sizeof(*request) ||
++	    optlen != sizeof(*request) + request->context_len ||
++	    (rc == 0 && request->context_len > capacity) ||
++	    (rc == -1 && request->context_len <= capacity)) {
++		free(request);
++		errno = EPROTO;
++		return -1;
++	}
++	*len = request->context_len;
++	if (rc == 0)
++		memcpy(buf, request->context, request->context_len);
++	free(request);
++	errno = saved;
++	return rc;
++}
++
+ /**
+  * aa_getpeercon_raw - get the confinement context of the socket's peer (other end)
+  * @fd: socket to get peer confinement context for
+@@ -1315,7 +1388,7 @@
+ 	/* TODO: add check for private_enabled when alternate interface
+ 	 * is approved
+ 	 */
+-	rc = getsockopt(fd, SOL_SOCKET, SO_PEERSEC, buf, &optlen);
++	rc = getpeercon_lsm(fd, buf, &optlen);
+ 	if (rc == -1 || optlen <= 0)
+ 		goto out;
+ 

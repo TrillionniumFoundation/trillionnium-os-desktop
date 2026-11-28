@@ -1,0 +1,12 @@
+[Unit]
+Description=Start the fixed controlled-boot return owner
+DefaultDependencies=no
+ConditionKernelCommandLine=droidloom.once
+Conflicts=shutdown.target
+Before=shutdown.target
+
+[Timer]
+OnBootSec=15
+AccuracySec=1
+Unit=droidloom-original-once-return.service
+RemainAfterElapse=yes

@@ -1,0 +1,442 @@
+{
+  "apk": {
+    "bytes": 24838,
+    "sha256": "d53ba35fdb2252126fef94ce7da2d43bff78560cc90111206b0c2c9e766777d3"
+  },
+  "certificate_sha256": "f122e9201c86a547b8cbaa37cbe2cd7962bb96eabe3c07365204d392b580244f",
+  "commands": [
+    {
+      "argv": [
+        "/home/qq/work/p4-apps41-live-runtime-20261128-2ab09bea-r1/fixed-state-helper-tools-r1/OpenJDK21-0-2/jdk-21.0.2/bin/javac",
+        "-J-XX:ActiveProcessorCount=1",
+        "-J-XX:+UseSerialGC",
+        "-J-Xmx256m",
+        "-proc:none",
+        "-encoding",
+        "UTF-8",
+        "-source",
+        "8",
+        "-target",
+        "8",
+        "-bootclasspath",
+        "/home/qq/work/p4-apps41-live-runtime-20261128-2ab09bea-r1/fixed-state-helper-tools-r1/platforms-android-31/android-12/android.jar",
+        "-d",
+        "/home/qq/work/p4-apps41-live-runtime-20261128-2ab09bea-r1/fixed-state-helper-generation-r1/build-r6/products/provider/classes",
+        "/home/qq/work/p4-apps41-live-runtime-20261128-2ab09bea-r1/fixed-state-helper-generation-r1/build-r6/products/provider/FixedStateProvider.java"
+      ],
+      "host_retirement_proved": true,
+      "kind": "provider",
+      "name": "javac",
+      "pid": 3731191,
+      "returncode": 0,
+      "seconds": 1.3408514675684273,
+      "stderr": {
+        "bytes": 268,
+        "sha256": "312e9bd919c699a2f8409f70240177012720c94095f0f4374d44152defc50f7e"
+      },
+      "stdout": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timed_out": false,
+      "waitid_code": 1,
+      "waitid_status": 0
+    },
+    {
+      "argv": [
+        "/home/qq/work/p4-apps41-live-runtime-20261128-2ab09bea-r1/fixed-state-helper-tools-r1/OpenJDK21-0-2/jdk-21.0.2/bin/java",
+        "-XX:ActiveProcessorCount=1",
+        "-XX:+UseSerialGC",
+        "-Xmx256m",
+        "-cp",
+        "/home/qq/work/p4-apps41-live-runtime-20261128-2ab09bea-r1/fixed-state-helper-tools-r1/build-tools-37-0-0/android-37.0/lib/d8.jar",
+        "com.android.tools.r8.D8",
+        "--lib",
+        "/home/qq/work/p4-apps41-live-runtime-20261128-2ab09bea-r1/fixed-state-helper-tools-r1/platforms-android-31/android-12/android.jar",
+        "--min-api",
+        "31",
+        "--output",
+        "/home/qq/work/p4-apps41-live-runtime-20261128-2ab09bea-r1/fixed-state-helper-generation-r1/build-r6/products/provider/dex",
+        "/home/qq/work/p4-apps41-live-runtime-20261128-2ab09bea-r1/fixed-state-helper-generation-r1/build-r6/products/provider/classes/org/droidloom/qa/state/FixedStateProvider.class"
+      ],
+      "host_retirement_proved": true,
+      "kind": "provider",
+      "name": "d8",
+      "pid": 3731290,
+      "returncode": 0,
+      "seconds": 1.9142720298841596,
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timed_out": false,
+      "waitid_code": 1,
+      "waitid_status": 0
+    },
+    {
+      "argv": [
+        "/home/qq/work/p4-apps41-live-runtime-20261128-2ab09bea-r1/fixed-state-helper-tools-r1/OpenJDK21-0-2/jdk-21.0.2/bin/java",
+        "-XX:ActiveProcessorCount=1",
+        "-XX:+UseSerialGC",
+        "-Xmx256m",
+        "-jar",
+        "/home/qq/work/p4-apps41-live-runtime-20261128-2ab09bea-r1/fixed-state-helper-tools-r1/build-tools-37-0-0/android-37.0/lib/apksigner.jar",
+        "verify",
+        "--verbose",
+        "--print-certs",
+        "/home/qq/work/p4-apps41-live-runtime-20261128-2ab09bea-r1/fixed-state-helper-generation-r1/build-r6/products/rotation/original.apk"
+      ],
+      "host_retirement_proved": true,
+      "kind": "rotation",
+      "name": "original-signature",
+      "pid": 3731647,
+      "returncode": 0,
+      "seconds": 0.26624703500419855,
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 1073,
+        "sha256": "5bf1e31a142fcd9a0c39d210647672c0f9fd927c82e9c7b00b625e61dc0993c4"
+      },
+      "timed_out": false,
+      "waitid_code": 1,
+      "waitid_status": 0
+    },
+    {
+      "argv": [
+        "/home/qq/work/p4-apps41-live-runtime-20261128-2ab09bea-r1/fixed-state-helper-tools-r1/build-tools-37-0-0/android-37.0/aapt2",
+        "dump",
+        "xmltree",
+        "/home/qq/work/p4-apps41-live-runtime-20261128-2ab09bea-r1/fixed-state-helper-generation-r1/build-r6/products/rotation/original.apk",
+        "--file",
+        "AndroidManifest.xml"
+      ],
+      "host_retirement_proved": true,
+      "kind": "rotation",
+      "name": "original-manifest",
+      "pid": 3731707,
+      "returncode": 0,
+      "seconds": 0.03913979511708021,
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 2402,
+        "sha256": "dca097c5b1b80a1f577df7429c7cee4cf5cff9fc97eb5ecf4eb345ed9417ecdb"
+      },
+      "timed_out": false,
+      "waitid_code": 1,
+      "waitid_status": 0
+    },
+    {
+      "argv": [
+        "/home/qq/work/p4-apps41-live-runtime-20261128-2ab09bea-r1/fixed-state-helper-tools-r1/build-tools-37-0-0/android-37.0/zipalign",
+        "-f",
+        "4",
+        "/home/qq/work/p4-apps41-live-runtime-20261128-2ab09bea-r1/fixed-state-helper-generation-r1/build-r6/products/rotation/unsigned.apk",
+        "/home/qq/work/p4-apps41-live-runtime-20261128-2ab09bea-r1/fixed-state-helper-generation-r1/build-r6/products/rotation/aligned.apk"
+      ],
+      "host_retirement_proved": true,
+      "kind": "rotation",
+      "name": "align",
+      "pid": 3731710,
+      "returncode": 0,
+      "seconds": 0.0022722012363374233,
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timed_out": false,
+      "waitid_code": 1,
+      "waitid_status": 0
+    },
+    {
+      "argv": [
+        "/home/qq/work/p4-apps41-live-runtime-20261128-2ab09bea-r1/fixed-state-helper-tools-r1/OpenJDK21-0-2/jdk-21.0.2/bin/java",
+        "-XX:ActiveProcessorCount=1",
+        "-XX:+UseSerialGC",
+        "-Xmx256m",
+        "-m",
+        "java.base/sun.security.tools.keytool.Main",
+        "-genkeypair",
+        "-noprompt",
+        "-storetype",
+        "PKCS12",
+        "-keystore",
+        "/home/qq/work/p4-apps41-live-runtime-20261128-2ab09bea-r1/fixed-state-helper-generation-r1/build-r6/products/rotation/private-signing/owned.p12",
+        "-storepass:file",
+        "/home/qq/work/p4-apps41-live-runtime-20261128-2ab09bea-r1/fixed-state-helper-generation-r1/build-r6/products/rotation/private-signing/password.txt",
+        "-alias",
+        "fixed-state-fixture",
+        "-keyalg",
+        "RSA",
+        "-keysize",
+        "3072",
+        "-validity",
+        "3650",
+        "-dname",
+        "CN=Droidloom Owned State Fixture,O=Owned Test,C=US"
+      ],
+      "host_retirement_proved": true,
+      "kind": "rotation",
+      "name": "create-owned-key",
+      "pid": 3731711,
+      "returncode": 0,
+      "seconds": 2.0366119532845914,
+      "stderr": {
+        "bytes": 167,
+        "sha256": "f421ced26779efa37774e7a19e20bb8e70be5180ab01a685eba149fbaca96205"
+      },
+      "stdout": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timed_out": false,
+      "waitid_code": 1,
+      "waitid_status": 0
+    },
+    {
+      "argv": [
+        "/home/qq/work/p4-apps41-live-runtime-20261128-2ab09bea-r1/fixed-state-helper-tools-r1/OpenJDK21-0-2/jdk-21.0.2/bin/java",
+        "-XX:ActiveProcessorCount=1",
+        "-XX:+UseSerialGC",
+        "-Xmx256m",
+        "-jar",
+        "/home/qq/work/p4-apps41-live-runtime-20261128-2ab09bea-r1/fixed-state-helper-tools-r1/build-tools-37-0-0/android-37.0/lib/apksigner.jar",
+        "sign",
+        "--ks",
+        "/home/qq/work/p4-apps41-live-runtime-20261128-2ab09bea-r1/fixed-state-helper-generation-r1/build-r6/products/rotation/private-signing/owned.p12",
+        "--ks-pass",
+        "file:/home/qq/work/p4-apps41-live-runtime-20261128-2ab09bea-r1/fixed-state-helper-generation-r1/build-r6/products/rotation/private-signing/password.txt",
+        "--ks-key-alias",
+        "fixed-state-fixture",
+        "--min-sdk-version",
+        "31",
+        "--v1-signing-enabled",
+        "false",
+        "--v2-signing-enabled",
+        "true",
+        "--v3-signing-enabled",
+        "true",
+        "--out",
+        "/home/qq/work/p4-apps41-live-runtime-20261128-2ab09bea-r1/fixed-state-helper-generation-r1/build-r6/products/rotation/helper.apk",
+        "/home/qq/work/p4-apps41-live-runtime-20261128-2ab09bea-r1/fixed-state-helper-generation-r1/build-r6/products/rotation/aligned.apk"
+      ],
+      "host_retirement_proved": true,
+      "kind": "rotation",
+      "name": "sign",
+      "pid": 3731913,
+      "returncode": 0,
+      "seconds": 1.088065193966031,
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timed_out": false,
+      "waitid_code": 1,
+      "waitid_status": 0
+    },
+    {
+      "argv": [
+        "/home/qq/work/p4-apps41-live-runtime-20261128-2ab09bea-r1/fixed-state-helper-tools-r1/OpenJDK21-0-2/jdk-21.0.2/bin/java",
+        "-XX:ActiveProcessorCount=1",
+        "-XX:+UseSerialGC",
+        "-Xmx256m",
+        "-jar",
+        "/home/qq/work/p4-apps41-live-runtime-20261128-2ab09bea-r1/fixed-state-helper-tools-r1/build-tools-37-0-0/android-37.0/lib/apksigner.jar",
+        "verify",
+        "--verbose",
+        "--print-certs",
+        "/home/qq/work/p4-apps41-live-runtime-20261128-2ab09bea-r1/fixed-state-helper-generation-r1/build-r6/products/rotation/helper.apk"
+      ],
+      "host_retirement_proved": true,
+      "kind": "rotation",
+      "name": "signature",
+      "pid": 3731956,
+      "returncode": 0,
+      "seconds": 0.2996576800942421,
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 1063,
+        "sha256": "8435f9e801fcfbe2253614a2e1ab471e3769684f6cb52969947801f85c309568"
+      },
+      "timed_out": false,
+      "waitid_code": 1,
+      "waitid_status": 0
+    },
+    {
+      "argv": [
+        "/home/qq/work/p4-apps41-live-runtime-20261128-2ab09bea-r1/fixed-state-helper-tools-r1/build-tools-37-0-0/android-37.0/zipalign",
+        "-c",
+        "4",
+        "/home/qq/work/p4-apps41-live-runtime-20261128-2ab09bea-r1/fixed-state-helper-generation-r1/build-r6/products/rotation/helper.apk"
+      ],
+      "host_retirement_proved": true,
+      "kind": "rotation",
+      "name": "alignment",
+      "pid": 3731975,
+      "returncode": 0,
+      "seconds": 0.0027283448725938797,
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timed_out": false,
+      "waitid_code": 1,
+      "waitid_status": 0
+    },
+    {
+      "argv": [
+        "/home/qq/work/p4-apps41-live-runtime-20261128-2ab09bea-r1/fixed-state-helper-tools-r1/build-tools-37-0-0/android-37.0/aapt2",
+        "dump",
+        "badging",
+        "/home/qq/work/p4-apps41-live-runtime-20261128-2ab09bea-r1/fixed-state-helper-generation-r1/build-r6/products/rotation/helper.apk"
+      ],
+      "host_retirement_proved": true,
+      "kind": "rotation",
+      "name": "badging",
+      "pid": 3731976,
+      "returncode": 0,
+      "seconds": 0.002741833683103323,
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 687,
+        "sha256": "0ad73b1f0676f7c515d6b45bb8b0d48a4aef975dc01982a375968bab2638b57c"
+      },
+      "timed_out": false,
+      "waitid_code": 1,
+      "waitid_status": 0
+    },
+    {
+      "argv": [
+        "/home/qq/work/p4-apps41-live-runtime-20261128-2ab09bea-r1/fixed-state-helper-tools-r1/build-tools-37-0-0/android-37.0/aapt2",
+        "dump",
+        "permissions",
+        "/home/qq/work/p4-apps41-live-runtime-20261128-2ab09bea-r1/fixed-state-helper-generation-r1/build-r6/products/rotation/helper.apk"
+      ],
+      "host_retirement_proved": true,
+      "kind": "rotation",
+      "name": "permissions",
+      "pid": 3731977,
+      "returncode": 0,
+      "seconds": 0.003203338012099266,
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 64,
+        "sha256": "eb5138367ddd426febfc0680d6db5bf4ed452bd384fe14e14454631dbc8f0ef6"
+      },
+      "timed_out": false,
+      "waitid_code": 1,
+      "waitid_status": 0
+    },
+    {
+      "argv": [
+        "/home/qq/work/p4-apps41-live-runtime-20261128-2ab09bea-r1/fixed-state-helper-tools-r1/build-tools-37-0-0/android-37.0/aapt2",
+        "dump",
+        "xmltree",
+        "/home/qq/work/p4-apps41-live-runtime-20261128-2ab09bea-r1/fixed-state-helper-generation-r1/build-r6/products/rotation/helper.apk",
+        "--file",
+        "AndroidManifest.xml"
+      ],
+      "host_retirement_proved": true,
+      "kind": "rotation",
+      "name": "manifest",
+      "pid": 3731978,
+      "returncode": 0,
+      "seconds": 0.002578890882432461,
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 3138,
+        "sha256": "a7056787d472dff7bc73639205823d12d636ea809612b3982c7ff3342aa76458"
+      },
+      "timed_out": false,
+      "waitid_code": 1,
+      "waitid_status": 0
+    }
+  ],
+  "installed": false,
+  "kind": "rotation",
+  "new_members": {
+    "AndroidManifest.xml": {
+      "bytes": 2904,
+      "sha256": "4982199918160241ca6f08a61af546966b10d30abae3259654b221cd78d87ae1"
+    },
+    "classes.dex": {
+      "bytes": 23840,
+      "sha256": "792578f6bb57d0a921ba86f68dc790d817914420a310898e5f688d1aac7834cd"
+    },
+    "classes2.dex": {
+      "bytes": 10012,
+      "sha256": "bdf6671abf56cd4320851e0327d04fe56f95ed8c8fd58652b966022aceb373b9"
+    },
+    "resources.arsc": {
+      "bytes": 808,
+      "sha256": "023882a097a3c8b465d782e326651795855c7a159424aea774e8def5ad465ebf"
+    }
+  },
+  "normal_static_build_verified": true,
+  "original_apk": {
+    "bytes": 24780,
+    "sha256": "d68bbcc45df268ab97866a9477d86e69cf01aa3efb5be6666c8fa607daeb5b6a"
+  },
+  "original_business_dex_resources_assets_preserved": true,
+  "original_certificate_sha256": "78cab56e8c667fc1a1252a161d1dbd2a51b5dacb3bf97240b15b3b7d46ec218e",
+  "original_manifest_semantics_preserved": true,
+  "original_members": {
+    "AndroidManifest.xml": {
+      "bytes": 2328,
+      "sha256": "7acbc2ae92af6f0c9e9195be48f6d4114fe84315ab63aab88906950dae69019a"
+    },
+    "classes.dex": {
+      "bytes": 23840,
+      "sha256": "792578f6bb57d0a921ba86f68dc790d817914420a310898e5f688d1aac7834cd"
+    },
+    "resources.arsc": {
+      "bytes": 808,
+      "sha256": "023882a097a3c8b465d782e326651795855c7a159424aea774e8def5ad465ebf"
+    }
+  },
+  "original_sources_recompiled": false,
+  "package": "org.droidloom.qa.galleryrotation.r12.nd24b61ed8f7c9a03",
+  "provider_dex": {
+    "bytes": 10012,
+    "sha256": "bdf6671abf56cd4320851e0327d04fe56f95ed8c8fd58652b966022aceb373b9"
+  },
+  "provider_source": {
+    "bytes": 11630,
+    "sha256": "f64e47dd052a3dd60e912c69d79ce075fbd88baea1d4db29a3dab3ad02dd3545"
+  },
+  "run_id": "d24b61ed8f7c9a03",
+  "whole_app_business_accepted": false
+}

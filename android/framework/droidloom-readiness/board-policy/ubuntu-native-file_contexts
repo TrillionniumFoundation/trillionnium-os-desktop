@@ -1,0 +1,510 @@
+# Complete defaults for the Linux real root. More specific, original board and
+# service rules remain authoritative. Android image contents are not relabeled.
+# Unknown files are data, not service entrypoints.
+/.* -d u:object_r:p4_linux_rootdir_t:s0
+/.* -- u:object_r:p4_linux_native_data_t:s0
+/.* -l u:object_r:p4_linux_usrmerge_link_t:s0
+/? -d u:object_r:p4_linux_rootdir_t:s0
+/etc(/.*)? -- u:object_r:p4_linux_native_config_t:s0
+/etc(/.*)? -l u:object_r:p4_linux_usrmerge_link_t:s0
+/usr/lib(/.*)? -- u:object_r:p4_linux_runtime_lib_t:s0
+/usr/libexec(/.*)? -- u:object_r:p4_linux_native_bin_t:s0
+# Ubuntu's Rust coreutils aliases are hard links to /usr/bin/coreutils.
+# Every path to that original inode must carry the same executable type.
+/usr/lib/cargo/bin/coreutils/[^/]+ -- u:object_r:p4_linux_native_bin_t:s0
+/usr/(s?bin)(/.*)? -- u:object_r:p4_linux_native_bin_t:s0
+/usr/share(/.*)? -- u:object_r:p4_linux_native_data_t:s0
+/usr/src(/.*)? -- u:object_r:p4_linux_native_data_t:s0
+/usr/lib/modules(/.*)? -- u:object_r:p4_linux_kernel_modules_t:s0
+/var/cache -d u:object_r:p4_linux_var_cache_t:s0
+/var/spool -d u:object_r:p4_linux_var_spool_t:s0
+/tmp(/.*)? u:object_r:p4_linux_tmp_t:s0
+/var/tmp(/.*)? u:object_r:p4_linux_tmp_t:s0
+/home(/.*)? u:object_r:p4_linux_user_home_t:s0
+/root(/.*)? u:object_r:p4_linux_user_home_t:s0
+/run/user(/.*)? u:object_r:p4_linux_user_run_t:s0
+/etc/(shadow|gshadow|shadow-|gshadow-|subuid|subgid) -- u:object_r:p4_linux_auth_data_t:s0
+/etc/ssh/ssh_host_[^/]+_key -- u:object_r:p4_linux_auth_data_t:s0
+/etc/ssl/private(/.*)? u:object_r:p4_linux_auth_data_t:s0
+/etc/sssd(/.*)? u:object_r:p4_linux_auth_data_t:s0
+/etc/security/opasswd -- u:object_r:p4_linux_auth_data_t:s0
+/var/lib/droidloom(/.*)? u:object_r:p4_linux_product_store_t:s0
+/run/droidloom[^/]*(/.*)? u:object_r:p4_linux_product_store_t:s0
+
+# Original helper entrypoints from the selected Ubuntu system and user units.
+/usr/lib/systemd/(system|user)-generators/[^/]+ -- u:object_r:p4_linux_generator_exec_t:s0
+/usr/lib/systemd/systemd-(battery-check|binfmt|bsod|factory-reset|hibernate-resume|pcrextend|tpm2-setup|user-sessions|user-runtime-dir) -- u:object_r:p4_linux_setup_exec_t:s0
+/usr/bin/systemd-(firstboot|hwdb|machine-id-setup|sysusers|sysext|confext) -- u:object_r:p4_linux_setup_exec_t:s0
+/usr/sbin/ldconfig -- u:object_r:p4_linux_ldconfig_exec_t:s0
+/usr/lib/systemd/systemd-modules-load -- u:object_r:p4_linux_module_loader_exec_t:s0
+/usr/bin/kmod -- u:object_r:p4_linux_module_loader_exec_t:s0
+/usr/lib/systemd/systemd-sysctl -- u:object_r:p4_linux_sysctl_exec_t:s0
+/usr/sbin/sysctl -- u:object_r:p4_linux_sysctl_exec_t:s0
+/usr/bin/dbus-daemon -- u:object_r:p4_linux_dbus_exec_t:s0
+/usr/sbin/NetworkManager -- u:object_r:p4_linux_network_manager_exec_t:s0
+/usr/libexec/nm-dispatcher -- u:object_r:p4_linux_network_manager_exec_t:s0
+/usr/bin/nm-online -- u:object_r:p4_linux_network_manager_exec_t:s0
+/usr/sbin/wpa_supplicant -- u:object_r:p4_linux_wpa_exec_t:s0
+/usr/lib/systemd/systemd-resolved -- u:object_r:p4_linux_resolved_exec_t:s0
+/usr/lib/systemd/systemd-logind -- u:object_r:p4_linux_logind_exec_t:s0
+/usr/libexec/accounts-daemon -- u:object_r:p4_linux_accounts_exec_t:s0
+/usr/lib/polkit-1/polkitd -- u:object_r:p4_linux_polkit_exec_t:s0
+/usr/libexec/rtkit-daemon -- u:object_r:p4_linux_rtkit_exec_t:s0
+/usr/libexec/bluetooth/bluetoothd -- u:object_r:p4_linux_bluetooth_exec_t:s0
+/usr/sbin/gdm3 -- u:object_r:p4_linux_gdm_exec_t:s0
+/usr/share/gdm/generate-config -- u:object_r:p4_linux_gdm_exec_t:s0
+/usr/libexec/gdm-session-worker -- u:object_r:p4_linux_gdm_worker_exec_t:s0
+/usr/libexec/gdm-wayland-session -- u:object_r:p4_linux_native_bin_t:s0
+/usr/sbin/sshd -- u:object_r:p4_linux_sshd_exec_t:s0
+/usr/lib/openssh/sshd-session -- u:object_r:p4_linux_sshd_exec_t:s0
+/usr/lib/openssh/sshd-auth -- u:object_r:p4_linux_sshd_exec_t:s0
+/usr/lib/snapd/snapd -- u:object_r:p4_linux_snapd_exec_t:s0
+/snap/snapd/[0-9]+/usr/lib/snapd/snapd -- u:object_r:p4_linux_snapd_exec_t:s0
+/usr/lib/snapd/snapd-apparmor -- u:object_r:p4_linux_apparmor_updater_exec_t:s0
+/snap/snapd/[0-9]+/usr/lib/snapd/snapd-apparmor -- u:object_r:p4_linux_apparmor_updater_exec_t:s0
+/usr/lib/apparmor/apparmor.systemd -- u:object_r:p4_linux_apparmor_updater_exec_t:s0
+/usr/sbin/apparmor_parser -- u:object_r:p4_linux_apparmor_updater_exec_t:s0
+/usr/bin/droidloom-wayland -- u:object_r:droidloom_presenter_exec:s0
+/usr/bin/gnome-shell -- u:object_r:p4_linux_compositor_exec_t:s0
+/usr/bin/(pipewire|pipewire-pulse|wireplumber) -- u:object_r:p4_linux_audio_exec_t:s0
+/usr/libexec/xdg-(desktop-portal[^/]*|document-portal|permission-store) -- u:object_r:p4_linux_desktop_portal_exec_t:s0
+
+# Per-service state and runtime paths. Newly created children inherit these
+# dedicated types; ordinary service executors prepare only named directories.
+/var/lib/NetworkManager(/.*)? u:object_r:p4_linux_network_manager_state_t:s0
+/etc/NetworkManager/system-connections(/.*)? u:object_r:p4_linux_network_manager_state_t:s0
+/run/NetworkManager(/.*)? u:object_r:p4_linux_network_manager_run_t:s0
+/run/wpa_supplicant(/.*)? u:object_r:p4_linux_wpa_run_t:s0
+/run/systemd/resolve(/.*)? u:object_r:p4_linux_resolved_run_t:s0
+/var/lib/systemd -d u:object_r:p4_linux_systemd_state_parent_t:s0
+/var/lib/systemd/linger(/.*)? u:object_r:p4_linux_logind_state_t:s0
+/run/systemd/(sessions|seats|users|inhibit|shutdown)(/.*)? u:object_r:p4_linux_logind_run_t:s0
+/var/lib/AccountsService(/.*)? u:object_r:p4_linux_accounts_state_t:s0
+/var/lib/polkit-1(/.*)? u:object_r:p4_linux_polkit_state_t:s0
+/var/lib/bluetooth(/.*)? u:object_r:p4_linux_bluetooth_state_t:s0
+/var/lib/gdm3(/.*)? u:object_r:p4_linux_gdm_state_t:s0
+/run/gdm3(/.*)? u:object_r:p4_linux_gdm_run_t:s0
+/run/sshd(/.*)? u:object_r:p4_linux_sshd_run_t:s0
+/run/dbus(/.*)? u:object_r:p4_linux_dbus_run_t:s0
+/var/lib/snapd(/.*)? u:object_r:p4_linux_snapd_state_t:s0
+/run/snapd(/.*)? u:object_r:p4_linux_snapd_run_t:s0
+/var/cache/apparmor(/.*)? u:object_r:p4_linux_apparmor_updater_state_t:s0
+
+# Fixed native DBus endpoints; clients do not write arbitrary runtime files.
+/run/dbus/system_bus_socket -s u:object_r:p4_linux_system_bus_socket_t:s0
+/run/user/[0-9]+/bus -s u:object_r:p4_linux_session_bus_socket_t:s0
+
+# Fixed native display/audio socket leaves; other user runtime entries keep their data type.
+/run/user/[0-9]+/wayland-([0-9]|[12][0-9]|3[0-2]) -s u:object_r:p4_linux_wayland_socket_t:s0
+/run/user/[0-9]+/pipewire-0 -s u:object_r:p4_linux_pipewire_socket_t:s0
+/run/user/[0-9]+/pipewire-0-manager -s u:object_r:p4_linux_pipewire_manager_socket_t:s0
+
+# The normal presenter unit alone owns this native per-session runtime subtree.
+/run/user/[0-9]+/droidloom-presenter(/.*)? u:object_r:droidloom_presenter_runtime:s0
+
+# The stock metadata-only runtime retirement command has a fixed entrypoint.
+/usr/bin/setfacl -- u:object_r:p4_linux_runtime_acl_exec_t:s0
+
+# Only original native PID 1 executes the stock final shutdown program.
+/usr/lib/systemd/systemd-shutdown -- u:object_r:p4_linux_systemd_shutdown_exec_t:s0
+
+# Only the admitted shared-kernel module leaves are public module inputs.
+/usr/lib/modules/6\.18\.64-p4ctx6181-fusectl-aafs-peer-r1/kernel/.*\.ko -- u:object_r:p4_shared_kernel_module_t:s0
+
+# Stock systemd namespace workspaces, inert mount sources, and common native /dev.
+/run/systemd/mount-rootfs -d u:object_r:p4_linux_sandbox_dir_t:s0
+/run/systemd/namespace-[^/]+(/.*)? u:object_r:p4_linux_sandbox_dir_t:s0
+/run/systemd/inaccessible(/.*)? u:object_r:p4_linux_inaccessible_t:s0
+/dev -d u:object_r:p4_linux_native_dev_root_t:s0
+# The complete normal root retains these eight original bootstrap character nodes.
+# Keep the selected platform types except the fixed Linux VT; /dev/full uses the existing native
+# standard-I/O type also assigned to the board's fixed full backing node.
+/dev/console -c u:object_r:console_device:s0
+/dev/full -c u:object_r:p4_linux_standardio_t:s0
+/dev/kmsg -c u:object_r:kmsg_device:s0
+/dev/null -c u:object_r:null_device:s0
+/dev/ptmx -c u:object_r:ptmx_device:s0
+/dev/random -c u:object_r:random_device:s0
+/dev/tty -c u:object_r:p4_linux_console_vt_t:s0
+/dev/urandom -c u:object_r:random_device:s0
+/dev/zero -c u:object_r:zero_device:s0
+
+/run/snapd(-snap)?\.socket -s u:object_r:p4_linux_snapd_run_t:s0
+/run/systemd/io\.systemd\.Login -s u:object_r:p4_linux_logind_run_t:s0
+
+# Original auxiliary socket units: fixed listener inodes, no generic run permission.
+/run/systemd/io\.systemd\.AskPassword -s u:object_r:p4_linux_ask_password_socket_t:s0
+/run/systemd/io\.systemd\.Credentials -s u:object_r:p4_linux_credentials_socket_t:s0
+/run/systemd/io\.systemd\.FactoryReset -s u:object_r:p4_linux_factory_reset_socket_t:s0
+/run/systemd/io\.systemd\.Hostname -s u:object_r:p4_linux_hostnamed_socket_t:s0
+/run/systemd/io\.systemd\.MuteConsole -s u:object_r:p4_linux_mute_console_socket_t:s0
+/run/systemd/io\.systemd\.sysext -s u:object_r:p4_linux_sysext_socket_t:s0
+
+# Native seat hardware, distinct from Android original device types.
+/dev/dri(/.*)? -d u:object_r:p4_linux_drm_dir_t:s0
+/dev/dri/by-path/[^/]+ -l u:object_r:p4_linux_drm_dir_t:s0
+/dev/dri/card[0-9]+ -c u:object_r:p4_linux_drm_card_t:s0
+/dev/dri/renderD[0-9]+ -c u:object_r:p4_linux_drm_render_t:s0
+/dev/input(/.*)? -d u:object_r:p4_linux_input_dir_t:s0
+/dev/input/by-(path|id)/[^/]+ -l u:object_r:p4_linux_input_dir_t:s0
+/dev/input/event[0-9]+ -c u:object_r:p4_linux_input_event_t:s0
+
+# Dynamic GDM homes are private per-UID data, not general daemon runtime.
+/run/gdm3/home                                      u:object_r:p4_linux_greeter_home_parent_t:s0
+/run/gdm3/home/gdm-greeter(-([2-9]|[1-9][0-9]|1[01][0-9]|12[0-8]))?(/.*)? u:object_r:p4_linux_greeter_home_t:s0
+/run/gdm3/home/gdm-greeter(-([2-9]|[1-9][0-9]|1[01][0-9]|12[0-8]))?/\.config/environment\.d(/.*)? u:object_r:p4_linux_greeter_environment_t:s0
+/var/lib/gdm3/seat0                                 u:object_r:p4_linux_greeter_seat_parent_t:s0
+/var/lib/gdm3/seat0/(config|state|\.(config|state)-handoff)(/.*)?              u:object_r:p4_linux_greeter_seat_data_t:s0
+
+# Fixed authenticated maintenance. No user-controlled path is an entrypoint.
+/usr/lib/cargo/bin/sudo -- u:object_r:p4_linux_sudo_exec_t:s0
+/usr/lib/droidloom/production/current/droidloom-maintenance -- u:object_r:p4_linux_maintenance_exec_t:s0
+/usr/lib/droidloom/production/current/droidloom-maintenance\.py -- u:object_r:p4_linux_maintenance_script_t:s0
+/run/sudo-rs(/.*)? u:object_r:p4_linux_sudo_run_t:s0
+/etc/droidloom-maintenance(/.*)? u:object_r:p4_linux_maintenance_config_t:s0
+/var/lib/droidloom-maintenance(/.*)? u:object_r:p4_linux_maintenance_state_t:s0
+/var/lib/droidloom-maintenance/releases/[0-9a-f]{64}(/.*)? u:object_r:p4_linux_maintenance_release_t:s0
+/boot/grub/grubenv -- u:object_r:p4_linux_maintenance_grubenv_t:s0
+/boot/grub/grub\.cfg -- u:object_r:p4_linux_maintenance_grubcfg_t:s0
+/usr/lib/systemd/system/reboot\.target -- u:object_r:p4_linux_maintenance_reboot_unit_t:s0
+
+# Exact normal console source inodes; every hardlink alias is present.
+/etc/console\-setup/cached_UTF\-8_del\.kmap\.gz -- u:object_r:p4_linux_console_cache_native_config_t:s0
+/etc/console\-setup/cached_Uni2\-Fixed16\.psf\.gz -- u:object_r:p4_linux_console_cache_native_config_t:s0
+/etc/console\-setup/cached_setup_font\.sh -- u:object_r:p4_linux_console_cache_exec_native_config_t:s0
+/etc/console\-setup/cached_setup_keyboard\.sh -- u:object_r:p4_linux_console_cache_exec_native_config_t:s0
+/etc/console\-setup/cached_setup_terminal\.sh -- u:object_r:p4_linux_console_cache_exec_native_config_t:s0
+/etc/console\-setup/compose\.ISO\-8859\-1\.inc -- u:object_r:p4_linux_console_public_native_config_t:s0
+/etc/console\-setup/remap\.inc -- u:object_r:p4_linux_console_public_native_config_t:s0
+/etc/console\-setup/vtrgb -- u:object_r:p4_linux_console_public_native_config_t:s0
+/etc/default/console\-setup -- u:object_r:p4_linux_console_config_native_config_t:s0
+/etc/default/keyboard -- u:object_r:p4_linux_console_config_native_config_t:s0
+/etc/ld\.so\.cache -- u:object_r:p4_linux_console_ld_cache_native_config_t:s0
+/etc/locale\.conf -- u:object_r:p4_linux_console_config_native_config_t:s0
+/usr/bin/ckbcomp -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/bin/coreutils -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/\[ -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/arch -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/b2sum -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/b3sum -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/base32 -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/base64 -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/basename -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/basenc -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/cat -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/chcon -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/chgrp -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/chmod -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/chown -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/chroot -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/cksum -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/comm -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/cp -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/csplit -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/cut -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/date -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/dd -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/df -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/dir -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/dircolors -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/dirname -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/du -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/echo -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/env -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/expand -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/expr -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/factor -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/false -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/fmt -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/fold -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/groups -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/hashsum -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/head -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/hostid -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/id -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/install -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/join -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/link -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/ln -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/logname -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/ls -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/md5sum -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/mkdir -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/mkfifo -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/mknod -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/mktemp -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/mv -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/nice -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/nl -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/nohup -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/nproc -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/numfmt -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/od -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/paste -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/pathchk -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/pinky -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/pr -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/printenv -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/printf -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/ptx -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/pwd -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/readlink -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/realpath -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/relpath -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/rm -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/rmdir -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/runcon -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/seq -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/sha1sum -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/sha224sum -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/sha256sum -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/sha3\-224sum -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/sha3\-256sum -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/sha3\-384sum -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/sha3\-512sum -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/sha384sum -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/sha3sum -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/sha512sum -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/shake128sum -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/shake256sum -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/shred -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/shuf -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/sleep -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/sort -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/split -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/stat -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/stdbuf -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/stty -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/sum -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/sync -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/tac -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/tail -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/tee -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/test -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/timeout -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/touch -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/tr -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/true -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/truncate -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/tsort -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/tty -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/uname -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/unexpand -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/uniq -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/unlink -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/users -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/vdir -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/wc -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/who -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/whoami -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/cargo/bin/coreutils/yes -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/bin/dash -- u:object_r:p4_linux_console_interpreter_native_bin_t:s0
+/usr/bin/gnurm -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/bin/gzip -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/bin/kbd_mode -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/bin/loadkeys -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/bin/perl -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/bin/perl5\.40\.1 -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/bin/sed -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/bin/setfont -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/bin/setupcon -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/console\-setup/console\-setup\.sh -- u:object_r:p4_linux_console_entry_runtime_lib_t:s0
+/usr/lib/console\-setup/keyboard\-setup\.sh -- u:object_r:p4_linux_console_entry_runtime_lib_t:s0
+/usr/lib/x86_64\-linux\-gnu/libacl\.so\.1\.1\.2302 -- u:object_r:p4_linux_console_library_runtime_lib_t:s0
+/usr/lib/x86_64\-linux\-gnu/libc\.so\.6 -- u:object_r:p4_linux_console_library_runtime_lib_t:s0
+/usr/lib/x86_64\-linux\-gnu/libcrypt\.so\.1\.1\.0 -- u:object_r:p4_linux_console_library_runtime_lib_t:s0
+/usr/lib/x86_64\-linux\-gnu/libgcc_s\.so\.1 -- u:object_r:p4_linux_console_library_runtime_lib_t:s0
+/usr/lib/x86_64\-linux\-gnu/libm\.so\.6 -- u:object_r:p4_linux_console_library_runtime_lib_t:s0
+/usr/lib/x86_64\-linux\-gnu/libpcre2\-8\.so\.0\.14\.0 -- u:object_r:p4_linux_console_library_runtime_lib_t:s0
+/usr/lib/x86_64\-linux\-gnu/libselinux\.so\.1 -- u:object_r:p4_linux_console_library_runtime_lib_t:s0
+/usr/lib/x86_64\-linux\-gnu/libsystemd\.so\.0\.42\.0 -- u:object_r:p4_linux_console_library_runtime_lib_t:s0
+/usr/lib/x86_64\-linux\-gnu/perl\-base/strict\.pm -- u:object_r:p4_linux_console_public_runtime_lib_t:s0
+/usr/lib/x86_64\-linux\-gnu/perl\-base/warnings\.pm -- u:object_r:p4_linux_console_public_runtime_lib_t:s0
+/usr/sbin/setvtrgb -- u:object_r:p4_linux_console_vtrgb_native_bin_t:s0
+/usr/share/consolefonts/Uni2\-Fixed16\.psf\.gz -- u:object_r:p4_linux_console_public_native_data_t:s0
+/usr/share/coreutils/locales/uucore/en\-US\.ftl -- u:object_r:p4_linux_console_public_native_data_t:s0
+/usr/share/xkeyboard\-config\-2/keycodes/aliases -- u:object_r:p4_linux_console_public_native_data_t:s0
+/usr/share/xkeyboard\-config\-2/keycodes/xfree86 -- u:object_r:p4_linux_console_public_native_data_t:s0
+/usr/share/xkeyboard\-config\-2/rules/base -- u:object_r:p4_linux_console_public_native_data_t:s0
+/usr/share/xkeyboard\-config\-2/symbols/inet -- u:object_r:p4_linux_console_public_native_data_t:s0
+/usr/share/xkeyboard\-config\-2/symbols/keypad -- u:object_r:p4_linux_console_public_native_data_t:s0
+/usr/share/xkeyboard\-config\-2/symbols/pc -- u:object_r:p4_linux_console_public_native_data_t:s0
+/usr/share/xkeyboard\-config\-2/symbols/srvr_ctrl -- u:object_r:p4_linux_console_public_native_data_t:s0
+/usr/share/xkeyboard\-config\-2/symbols/us -- u:object_r:p4_linux_console_public_native_data_t:s0
+/etc/console-setup -d u:object_r:p4_linux_console_cache_dir_t:s0
+/run/console-setup -d u:object_r:p4_linux_console_run_t:s0
+/run/console-setup/(boot_completed|font-loaded|keymap_loaded) -- u:object_r:p4_linux_console_run_t:s0
+/usr/bin/gnucp -- u:object_r:p4_linux_console_helper_native_bin_t:s0
+/usr/lib/x86_64\-linux\-gnu/libattr\.so\.1\.1\.2502 -- u:object_r:p4_linux_console_library_runtime_lib_t:s0
+/usr/lib/locale/C\.utf8/LC_ADDRESS -- u:object_r:p4_linux_console_locale_runtime_lib_t:s0
+/usr/lib/locale/C\.utf8/LC_COLLATE -- u:object_r:p4_linux_console_locale_runtime_lib_t:s0
+/usr/lib/locale/C\.utf8/LC_CTYPE -- u:object_r:p4_linux_console_locale_runtime_lib_t:s0
+/usr/lib/locale/C\.utf8/LC_IDENTIFICATION -- u:object_r:p4_linux_console_locale_runtime_lib_t:s0
+/usr/lib/locale/C\.utf8/LC_MEASUREMENT -- u:object_r:p4_linux_console_locale_runtime_lib_t:s0
+/usr/lib/locale/C\.utf8/LC_MESSAGES/SYS_LC_MESSAGES -- u:object_r:p4_linux_console_locale_runtime_lib_t:s0
+/usr/lib/locale/C\.utf8/LC_MONETARY -- u:object_r:p4_linux_console_locale_runtime_lib_t:s0
+/usr/lib/locale/C\.utf8/LC_NAME -- u:object_r:p4_linux_console_locale_runtime_lib_t:s0
+/usr/lib/locale/C\.utf8/LC_NUMERIC -- u:object_r:p4_linux_console_locale_runtime_lib_t:s0
+/usr/lib/locale/C\.utf8/LC_PAPER -- u:object_r:p4_linux_console_locale_runtime_lib_t:s0
+/usr/lib/locale/C\.utf8/LC_TELEPHONE -- u:object_r:p4_linux_console_locale_runtime_lib_t:s0
+/usr/lib/locale/C\.utf8/LC_TIME -- u:object_r:p4_linux_console_locale_runtime_lib_t:s0
+/usr/lib/locale/locale\-archive -- u:object_r:p4_linux_console_locale_runtime_lib_t:s0
+
+# Only the 65 kernel-created Linux VT character inodes, not serial or PTY nodes.
+/dev/tty([0-9]|[1-5][0-9]|6[0-3]) -c u:object_r:p4_linux_console_vt_t:s0
+
+# Two exact normal package inodes for the stock root remount service.
+/usr/lib/systemd/systemd-remount-fs -- u:object_r:p4_linux_remount_exec_t:s0
+/usr/bin/mount -- u:object_r:p4_linux_remount_mount_exec_t:s0
+
+# Fixed root-fstab input for post-policy metadata custody; never an executable.
+/etc/fstab -- u:object_r:p4_linux_remount_fstab_native_config_t:s0
+
+# Only the already-created normal sysusers OFD lock; no account database write.
+/etc/\.pwd\.lock -- u:object_r:p4_linux_sysusers_passwd_lock_t:s0
+
+# Fixed normal netplan configure inputs; other YAML profiles are not admitted.
+/usr/lib/netplan/00\-network\-manager\-all\.yaml -- u:object_r:p4_linux_netplan_yaml_t:s0
+/usr/lib/x86_64\-linux\-gnu/libatomic\.so\.1\.2\.0 -- u:object_r:p4_linux_netplan_library_t:s0
+/usr/lib/x86_64\-linux\-gnu/libblkid\.so\.1\.1\.0 -- u:object_r:p4_linux_netplan_library_t:s0
+/usr/lib/x86_64\-linux\-gnu/libffi\.so\.8\.2\.0 -- u:object_r:p4_linux_netplan_library_t:s0
+/usr/lib/x86_64\-linux\-gnu/libgio\-2\.0\.so\.0\.8800\.0 -- u:object_r:p4_linux_netplan_library_t:s0
+/usr/lib/x86_64\-linux\-gnu/libglib\-2\.0\.so\.0\.8800\.0 -- u:object_r:p4_linux_netplan_library_t:s0
+/usr/lib/x86_64\-linux\-gnu/libgmodule\-2\.0\.so\.0\.8800\.0 -- u:object_r:p4_linux_netplan_library_t:s0
+/usr/lib/x86_64\-linux\-gnu/libgobject\-2\.0\.so\.0\.8800\.0 -- u:object_r:p4_linux_netplan_library_t:s0
+/usr/lib/x86_64\-linux\-gnu/libmount\.so\.1\.1\.0 -- u:object_r:p4_linux_netplan_library_t:s0
+/usr/lib/x86_64\-linux\-gnu/libnetplan\.so\.1 -- u:object_r:p4_linux_netplan_library_t:s0
+/usr/lib/x86_64\-linux\-gnu/libuuid\.so\.1\.3\.0 -- u:object_r:p4_linux_netplan_library_t:s0
+/usr/lib/x86_64\-linux\-gnu/libyaml\-0\.so\.2\.0\.9 -- u:object_r:p4_linux_netplan_library_t:s0
+/usr/lib/x86_64\-linux\-gnu/libz\.so\.1\.3\.1 -- u:object_r:p4_linux_netplan_library_t:s0
+/usr/libexec/netplan/configure -- u:object_r:p4_linux_netplan_exec_t:s0
+/usr/lib/netplan -d u:object_r:p4_linux_netplan_input_dir_t:s0
+/etc/netplan -d u:object_r:p4_linux_netplan_input_dir_t:s0
+/run/netplan -d u:object_r:p4_linux_netplan_input_dir_t:s0
+/run/NetworkManager/conf\.d/10\-globally\-managed\-devices\.conf(\.[A-Za-z0-9]{6})? -- u:object_r:p4_linux_netplan_output_t:s0
+
+# Separately admitted existing Pocket4 profile inputs; private bytes are not shipped.
+/etc/netplan/50\-cloud\-init\.yaml -- u:object_r:p4_linux_netplan_private_config_t:s0
+/etc/netplan/90\-NM\-3c797701\-51cb\-45c5\-a632\-00f213232095\.yaml -- u:object_r:p4_linux_netplan_private_config_t:s0
+/etc/netplan/90\-NM\-899dbbd2\-d128\-4d5b\-8001\-5d3cad80b503\.yaml -- u:object_r:p4_linux_netplan_private_config_t:s0
+/etc/netplan/90\-NM\-c61cd9fc\-00ef\-49aa\-8ed2\-7bfd641c7097\.yaml -- u:object_r:p4_linux_netplan_private_config_t:s0
+/etc/netplan/90\-NM\-d732669d\-d34a\-4baa\-b97e\-bd2563bdd648\.yaml -- u:object_r:p4_linux_netplan_private_config_t:s0
+/etc/netplan/90\-NM\-e80414a4\-1077\-49d3\-953e\-aaccddb3bf21\.yaml -- u:object_r:p4_linux_netplan_private_config_t:s0
+/etc/netplan/90\-NM\-f84d0c1a\-dcde\-4634\-bf39\-13ace1617de3\.yaml -- u:object_r:p4_linux_netplan_private_config_t:s0
+/etc/nsswitch\.conf -- u:object_r:p4_linux_timesyncd_nsswitch_t:s0
+/run/NetworkManager/system\-connections -d u:object_r:p4_linux_netplan_profiles_dir_t:s0
+/run/systemd/network -d u:object_r:p4_linux_netplan_link_dir_t:s0
+/run/udev/rules\.d -d u:object_r:p4_linux_netplan_rule_dir_t:s0
+/run/NetworkManager/conf\.d/netplan\.conf(\.[A-Za-z0-9]{6})? -- u:object_r:p4_linux_netplan_output_t:s0
+/run/NetworkManager/system\-connections/netplan\-[^/]+\.nmconnection(\.[A-Za-z0-9]{6})? -- u:object_r:p4_linux_netplan_output_t:s0
+/run/systemd/network/10\-netplan\-[^/]+\.link(\.[A-Za-z0-9]{6})? -- u:object_r:p4_linux_netplan_link_rule_t:s0
+/run/udev/rules\.d/90\-netplan\.rules(\.[A-Za-z0-9]{6})? -- u:object_r:p4_linux_netplan_link_rule_t:s0
+
+# Unmodified normal timesyncd: one entry, two files it owns, and fixed public inputs.
+/usr/lib/systemd/systemd-timesyncd -- u:object_r:p4_linux_timesyncd_exec_t:s0
+/run/systemd/timesync -d u:object_r:p4_linux_timesyncd_run_t:s0
+/run/systemd/timesync/synchronized -- u:object_r:p4_linux_timesyncd_run_t:s0
+/var/lib/systemd/timesync -d u:object_r:p4_linux_timesyncd_state_t:s0
+/var/lib/systemd/timesync/clock -- u:object_r:p4_linux_timesyncd_state_t:s0
+/etc/(hosts|host\.conf|gai\.conf|adjtime) -- u:object_r:p4_linux_timesyncd_config_t:s0
+/etc/systemd/timesyncd\.conf -- u:object_r:p4_linux_timesyncd_config_t:s0
+/etc/systemd/timesyncd\.conf\.d/[^/]+\.conf -- u:object_r:p4_linux_timesyncd_config_t:s0
+/run/systemd/netif(/links)? -d u:object_r:p4_linux_timesyncd_netif_t:s0
+/run/systemd/netif/(state|links/[0-9]+) -- u:object_r:p4_linux_timesyncd_netif_t:s0
+
+# Fixed normal random-seed entry and its single persistent file.
+/usr/lib/systemd/systemd-random-seed -- u:object_r:p4_linux_random_seed_exec_t:s0
+/var/lib/systemd/random-seed -- u:object_r:p4_linux_random_seed_file_t:s0
+
+# Exact normal ldconfig configuration and cache publication inodes.
+/etc/ld\.so\.conf -- u:object_r:p4_linux_ldconfig_config_t:s0
+/etc/ld\.so\.conf\.d -d u:object_r:p4_linux_ldconfig_config_dir_t:s0
+/etc/ld\.so\.conf\.d/libc\.conf -- u:object_r:p4_linux_ldconfig_config_t:s0
+/etc/ld\.so\.conf\.d/x86_64-linux-gnu\.conf -- u:object_r:p4_linux_ldconfig_config_t:s0
+/etc/ld\.so\.cache~ -- u:object_r:p4_linux_console_ld_cache_native_config_t:s0
+/var/cache/ldconfig -d u:object_r:p4_linux_ldconfig_aux_dir_t:s0
+/var/cache/ldconfig/aux-cache -- u:object_r:p4_linux_ldconfig_aux_t:s0
+/var/cache/ldconfig/aux-cache~ -- u:object_r:p4_linux_ldconfig_aux_t:s0
+
+# Exact normal catalog directory and atomic temporary/database regular files.
+/var/lib/systemd/catalog -d u:object_r:p4_linux_journal_catalog_dir_t:s0
+/var/lib/systemd/catalog/database -- u:object_r:p4_linux_journal_catalog_file_t:s0
+/var/lib/systemd/catalog/\.#database[0-9a-f]{16} -- u:object_r:p4_linux_journal_catalog_file_t:s0
+
+# Fixed generated static-node configuration; all adjacent names keep their old labels.
+/run/tmpfiles\.d -d u:object_r:p4_linux_kmod_tmpfiles_dir_t:s0
+/run/tmpfiles\.d/static-nodes\.conf -- u:object_r:p4_linux_kmod_static_nodes_t:s0
+
+# Unchanged normal update-done, isolated from the broad setup role.
+/usr/lib/systemd/systemd-update-done -- u:object_r:p4_linux_update_done_exec_t:s0
+
+# Fixed normal tmpfiles inputs and typed outputs; no path-level security claim.
+/usr/lib/tmpfiles\.d/20\-systemd\-osc\-context\.conf -- u:object_r:p4_linux_tmpfiles_usr_config_t:s0
+/usr/lib/tmpfiles\.d/20\-systemd\-shell\-extra\.conf -- u:object_r:p4_linux_tmpfiles_usr_config_t:s0
+/usr/lib/tmpfiles\.d/20\-systemd\-ssh\-generator\.conf -- u:object_r:p4_linux_tmpfiles_usr_config_t:s0
+/usr/lib/tmpfiles\.d/20\-systemd\-stub\.conf -- u:object_r:p4_linux_tmpfiles_usr_config_t:s0
+/usr/lib/tmpfiles\.d/colord\.conf -- u:object_r:p4_linux_tmpfiles_usr_config_t:s0
+/usr/lib/tmpfiles\.d/credstore\.conf -- u:object_r:p4_linux_tmpfiles_usr_config_t:s0
+/usr/lib/tmpfiles\.d/cron\-daemon\-common\.conf -- u:object_r:p4_linux_tmpfiles_usr_config_t:s0
+/usr/lib/tmpfiles\.d/dbus\.conf -- u:object_r:p4_linux_tmpfiles_usr_config_t:s0
+/usr/lib/tmpfiles\.d/debian\.conf -- u:object_r:p4_linux_tmpfiles_usr_config_t:s0
+/usr/lib/tmpfiles\.d/gvfsd\-fuse\-tmpfiles\.conf -- u:object_r:p4_linux_tmpfiles_usr_config_t:s0
+/usr/lib/tmpfiles\.d/home\.conf -- u:object_r:p4_linux_tmpfiles_usr_config_t:s0
+/usr/lib/tmpfiles\.d/journal\-nocow\.conf -- u:object_r:p4_linux_tmpfiles_usr_config_t:s0
+/run/systemd/journal/streams -d u:object_r:p4_linux_journal_stream_dir_t:s0
+/run/systemd/journal/streams/([0-9]{1,20}:[0-9]{1,20}|\.#[0-9]{1,20}:[0-9]{1,20}[0-9a-f]{16}) -- u:object_r:p4_linux_journal_stream_file_t:s0
+/usr/lib/tmpfiles\.d/legacy\.conf -- u:object_r:p4_linux_tmpfiles_usr_config_t:s0
+/usr/lib/tmpfiles\.d/libselinux1\.conf -- u:object_r:p4_linux_tmpfiles_usr_config_t:s0
+/usr/lib/tmpfiles\.d/man\-db\.conf -- u:object_r:p4_linux_tmpfiles_usr_config_t:s0
+/usr/lib/tmpfiles\.d/openssh\-client\.conf -- u:object_r:p4_linux_tmpfiles_usr_config_t:s0
+/usr/lib/tmpfiles\.d/openssh\-server\.conf -- u:object_r:p4_linux_tmpfiles_usr_config_t:s0
+/usr/lib/tmpfiles\.d/passwd\.conf -- u:object_r:p4_linux_tmpfiles_usr_config_t:s0
+/usr/lib/tmpfiles\.d/polkit\-tmpfiles\.conf -- u:object_r:p4_linux_tmpfiles_usr_config_t:s0
+/usr/lib/tmpfiles\.d/provision\.conf -- u:object_r:p4_linux_tmpfiles_usr_config_t:s0
+/usr/lib/tmpfiles\.d/screen\-cleanup\.conf -- u:object_r:p4_linux_tmpfiles_usr_config_t:s0
+/usr/lib/tmpfiles\.d/snapd\.conf -- u:object_r:p4_linux_tmpfiles_usr_config_t:s0
+/usr/lib/tmpfiles\.d/spice\-vdagentd\.conf -- u:object_r:p4_linux_tmpfiles_usr_config_t:s0
+/usr/lib/tmpfiles\.d/static\-nodes\-permissions\.conf -- u:object_r:p4_linux_tmpfiles_usr_config_t:s0
+/usr/lib/tmpfiles\.d/sudo\.conf -- u:object_r:p4_linux_tmpfiles_usr_config_t:s0
+/usr/lib/tmpfiles\.d/systemd\-network\.conf -- u:object_r:p4_linux_tmpfiles_usr_config_t:s0
+/usr/lib/tmpfiles\.d/systemd\-nologin\.conf -- u:object_r:p4_linux_tmpfiles_usr_config_t:s0
+/usr/lib/tmpfiles\.d/systemd\-pstore\.conf -- u:object_r:p4_linux_tmpfiles_usr_config_t:s0
+/usr/lib/tmpfiles\.d/systemd\-resolve\.conf -- u:object_r:p4_linux_tmpfiles_usr_config_t:s0
+/usr/lib/tmpfiles\.d/systemd\-tmp\.conf -- u:object_r:p4_linux_tmpfiles_usr_config_t:s0
+/usr/lib/tmpfiles\.d/systemd\.conf -- u:object_r:p4_linux_tmpfiles_usr_config_t:s0
+/usr/lib/tmpfiles\.d/tmp\.conf -- u:object_r:p4_linux_tmpfiles_usr_config_t:s0
+/usr/lib/tmpfiles\.d/udisks2\.conf -- u:object_r:p4_linux_tmpfiles_usr_config_t:s0
+/usr/lib/tmpfiles\.d/var\.conf -- u:object_r:p4_linux_tmpfiles_usr_config_t:s0
+/usr/lib/tmpfiles\.d/x11\.conf -- u:object_r:p4_linux_tmpfiles_usr_config_t:s0
+/etc/tmpfiles\.d/screen-cleanup\.conf -- u:object_r:p4_linux_tmpfiles_etc_config_t:s0
+/usr/bin/systemd-tmpfiles -- u:object_r:p4_linux_tmpfiles_exec_t:s0
+/run/nologin -- u:object_r:p4_linux_tmpfiles_nologin_t:s0
+/run/shm -l u:object_r:p4_linux_tmpfiles_shm_link_t:s0
+/etc/tmpfiles\.d -d u:object_r:p4_linux_tmpfiles_config_dir_t:s0
+/usr/lib/tmpfiles\.d -d u:object_r:p4_linux_tmpfiles_config_dir_t:s0
+/usr/local/lib/tmpfiles\.d -d u:object_r:p4_linux_tmpfiles_config_dir_t:s0
+/run/lock -d u:object_r:p4_linux_tmpfiles_runtime_dir_t:s0
+/run/lock/subsys -d u:object_r:p4_linux_tmpfiles_runtime_dir_t:s0
+/run/sendsigs\.omit\.d -d u:object_r:p4_linux_tmpfiles_runtime_dir_t:s0
+/run/setrans -d u:object_r:p4_linux_tmpfiles_runtime_dir_t:s0
+/run/screen -d u:object_r:p4_linux_tmpfiles_runtime_dir_t:s0
+/run/spice\-vdagentd -d u:object_r:p4_linux_tmpfiles_runtime_dir_t:s0
+/run/sudo -d u:object_r:p4_linux_tmpfiles_runtime_dir_t:s0
+/run/media -d u:object_r:p4_linux_tmpfiles_runtime_dir_t:s0
+/run/systemd/machines -d u:object_r:p4_linux_tmpfiles_runtime_dir_t:s0
+/run/systemd/netif/leases -d u:object_r:p4_linux_tmpfiles_runtime_dir_t:s0
+/dev/snd -d u:object_r:p4_linux_tmpfiles_static_dir_t:s0
+/dev/vfio -d u:object_r:p4_linux_tmpfiles_static_dir_t:s0
+/dev/cuse -c u:object_r:p4_linux_tmpfiles_static_node_t:s0
+/dev/autofs -c u:object_r:p4_linux_tmpfiles_static_node_t:s0
+/dev/btrfs\-control -c u:object_r:p4_linux_tmpfiles_static_node_t:s0
+/dev/nvram -c u:object_r:p4_linux_tmpfiles_static_node_t:s0
+/dev/userio -c u:object_r:p4_linux_tmpfiles_static_node_t:s0
+/dev/uhid -c u:object_r:p4_linux_tmpfiles_static_node_t:s0
+/dev/vfio/vfio -c u:object_r:p4_linux_tmpfiles_static_node_t:s0
+/dev/vhci -c u:object_r:p4_linux_tmpfiles_static_node_t:s0
+/dev/vhost\-net -c u:object_r:p4_linux_tmpfiles_static_node_t:s0
+/dev/vhost\-vsock -c u:object_r:p4_linux_tmpfiles_static_node_t:s0
+/dev/snd/timer -c u:object_r:p4_linux_tmpfiles_static_node_t:s0
+/dev/snd/seq -c u:object_r:p4_linux_tmpfiles_static_node_t:s0
+/usr/lib/tmpfiles\.d/droidloom-production\.conf -- u:object_r:p4_linux_tmpfiles_usr_config_t:s0

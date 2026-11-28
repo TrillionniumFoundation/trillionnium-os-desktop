@@ -1,0 +1,252 @@
+; Fixed kernel-first query roles. Only the actual cmd/toybox runner is an
+; Android core domain, as required by the original Binder assertions. The
+; stdio creator stays a separate board role with no Android domain inheritance.
+(type droidloom_query)
+(type droidloom_query_io)
+(roletype r droidloom_query)
+(roletype r droidloom_query_io)
+; The original policy forbids all Binder traffic to or from non-domain types.
+(typeattributeset domain (droidloom_query))
+(typeattributeset coredomain (droidloom_query))
+(typeattribute p4_fixed_query_processes)
+(typeattributeset p4_fixed_query_processes (droidloom_query droidloom_query_io))
+(typeattributeset p4_all_board_owned (p4_fixed_query_processes))
+
+; fscontext/rootcontext are literal production constants on a newly created,
+; still detached fsopen("tmpfs") instance. No original Android inode is relabelled.
+(type droidloom_query_tmpfs_t)
+(type droidloom_query_exec)
+(type droidloom_provider_exec)
+(type droidloom_provider_jar)
+(roletype object_r droidloom_query_tmpfs_t)
+(roletype object_r droidloom_query_exec)
+(typeattributeset file_type (droidloom_query_exec))
+(typeattributeset exec_type (droidloom_query_exec))
+(typeattributeset system_file_type (droidloom_query_exec))
+(roletype object_r droidloom_provider_exec)
+(roletype object_r droidloom_provider_jar)
+(typeattributeset file_type (droidloom_provider_exec droidloom_provider_jar))
+(typeattributeset exec_type (droidloom_provider_exec))
+(typeattributeset system_file_type (droidloom_provider_exec droidloom_provider_jar))
+(typeattribute p4_fixed_query_copies)
+(typeattributeset p4_fixed_query_copies (droidloom_query_exec droidloom_provider_exec droidloom_provider_jar))
+; The cmd/toybox copies are public original Android executable bytes, with the
+; original exec_type/system_file_type expectations. Only their containing
+; filesystem is private Linux data; all fixed copies are public Android inputs.
+(typeattributeset p4_linux_data (droidloom_query_tmpfs_t))
+(typeattributeset p4_all_board_owned (p4_fixed_query_copies))
+(allow droidloom_broker tmpfs (filesystem (relabelfrom)))
+(allow droidloom_broker droidloom_query_tmpfs_t (filesystem (getattr mount remount unmount relabelto)))
+(allow droidloom_query_tmpfs_t droidloom_query_tmpfs_t (filesystem (associate)))
+(allow p4_fixed_query_copies droidloom_query_tmpfs_t (filesystem (associate)))
+(allow droidloom_broker droidloom_query_tmpfs_t (dir (getattr open read search write add_name setattr relabelfrom relabelto)))
+(allow droidloom_broker droidloom_query_tmpfs_t (file (create getattr open read write setattr relabelfrom)))
+(allow droidloom_broker p4_fixed_query_copies (file (getattr open read relabelto setattr)))
+(neverallow droidloom_broker p4_fixed_query_copies (file (write append create unlink link rename relabelfrom)))
+
+; The complete original-role pins and the AppArmor fixed-basename rules constrain
+; the four query originals, original init, and the single pinned Composer ELF.
+; The broker cannot map/execute or mutate those public original bytes.
+(typeattribute p4_broker_query_original_files)
+(typeattributeset p4_broker_query_original_files (init_exec system_file toolbox_exec zygote_exec hal_graphics_composer_default_exec droidloom_input_bridge_jar))
+(typeattribute p4_broker_query_read_files)
+(typeattributeset p4_broker_query_read_files (p4_broker_query_original_files p4_fixed_query_copies))
+(allow droidloom_broker p4_broker_query_original_files (file (getattr open read)))
+(neverallow droidloom_broker p4_broker_query_original_files (file (map execute entrypoint execute_no_trans write append create link unlink rename setattr relabelfrom relabelto)))
+(allow droidloom_broker device (dir (getattr search)))
+
+; Fixed factory query transport. The original broker sends only its sealed
+; generation/query handles to the authenticated boot factory. The factory
+; reopens each selected description before the one-way query birth; neither
+; query nor query_birth inherits a broker-origin file description.
+(allow droidloom_broker p4_instance_factory_socket_t (sock_file (getattr write)))
+(allow droidloom_broker kernel (unix_stream_socket (connectto)))
+(allow kernel droidloom_broker (fd (use)))
+; Factory verification reads the same literal CP3A toybox input and retained
+; private query root as the broker. It gains no original-input entrypoint,
+; mutation or relabel permission. The exact paths are also fixed by AppArmor.
+(allow kernel toolbox_exec (file (getattr open read)))
+(allow kernel droidloom_query_tmpfs_t (filesystem (getattr)))
+(allow kernel droidloom_query_tmpfs_t (dir (getattr open read search)))
+
+; Preserve every other subject/object in the board guards. Only the original
+; broker may read the fixed stock-role types or assign its new fs context.
+(typeattribute p4_linux_without_query_owner)
+(typeattributeset p4_linux_without_query_owner (and (p4_linux_procs) (not (droidloom_broker))))
+(typeattribute p4_android_files_without_query_originals)
+(typeattributeset p4_android_files_without_query_originals (and (p4_android_only_files) (not (p4_broker_query_read_files))))
+(typeattribute p4_android_files_without_query_copy)
+(typeattributeset p4_android_files_without_query_copy (and (p4_android_only_files) (not (p4_fixed_query_copies))))
+(typeattribute p4_nonboard_except_broker_query_read)
+(typeattributeset p4_nonboard_except_broker_query_read (and (p4_nonboard_except_broker_frontend_read) (not (p4_broker_query_original_files))))
+(typeattribute p4_nonboard_except_query_fs_source)
+(typeattributeset p4_nonboard_except_query_fs_source (and (p4_all_nonboard) (not (tmpfs))))
+(typeattribute p4_broker_frontend_image_files_without_query)
+(typeattributeset p4_broker_frontend_image_files_without_query (and (p4_broker_frontend_image_files) (not (p4_broker_query_original_files))))
+(typeattribute p4_android_dirs_without_query_traversal)
+(typeattributeset p4_android_dirs_without_query_traversal (and (p4_android_dirs_without_frontend_metadata) (not (device))))
+(typeattribute p4_nonboard_except_broker_query_directories)
+(typeattributeset p4_nonboard_except_broker_query_directories (and (p4_nonboard_except_broker_frontend_directories) (not (device))))
+
+; Only the original boot-lineage factory can create this Android query domain.
+; Its direct child remains in the host credential view until the factory owns
+; the ptrace relation. The same factory owns TRACEEXEC and final waitid.
+; The factory reopens the fixed copy, preserving a kernel-origin executable FD.
+; The ordinary broker gains neither an Android-domain transition nor ptrace.
+; The additional closed business entrypoints live in linux-application-roles.cil.
+(typetransition kernel droidloom_query_exec process droidloom_query)
+; The original kernel.te forbids every subject from ptracing kernel SID.
+; Any pre-exec gate must first leave that SID through a legitimate fixed entry.
+(allow kernel droidloom_query_tmpfs_t (dir (getattr search)))
+(allow kernel droidloom_query_exec (file (getattr open read execute map)))
+(allow kernel droidloom_query (process (transition getattr ptrace sigkill sigstop)))
+(allow kernel droidloom_query (process2 (nnp_transition nosuid_transition)))
+(allow droidloom_query droidloom_query_exec (file (getattr open read map execute entrypoint)))
+(allow droidloom_query droidloom_query_tmpfs_t (dir (getattr search)))
+(allow droidloom_query kernel (fd (use)))
+(allow droidloom_query kernel (process (sigchld)))
+(allow droidloom_query self (process (fork sigchld getcap)))
+(allow droidloom_query self (dir (getattr search)))
+(allow droidloom_query self (file (getattr open read)))
+(allow droidloom_query self (lnk_file (getattr read)))
+(allow droidloom_query droidloom_query_tmpfs_t (filesystem (getattr)))
+(allow droidloom_query labeledfs (filesystem (getattr)))
+(allow droidloom_query proc (dir (getattr search)))
+(allow droidloom_query proc (lnk_file (getattr read)))
+(allow droidloom_query device (dir (getattr search)))
+(allow droidloom_query p4_linux_query_mount_t (dir (getattr search)))
+
+; Read-only original linker closure and installed APK material. No app-private
+; data type, APK mutation, original ELF entrypoint or arbitrary re-exec is granted.
+(typeattribute p4_query_original_dirs)
+(typeattributeset p4_query_original_dirs (rootfs system_file system_lib_file system_linker_exec apex_mnt_dir linkerconfig_file system_data_root_file system_data_file apk_data_file))
+(allow droidloom_query p4_query_original_dirs (dir (getattr search)))
+(allow droidloom_query rootfs (lnk_file (getattr read)))
+(allow droidloom_query system_file (lnk_file (getattr read)))
+(allow droidloom_query apex_mnt_dir (lnk_file (getattr read)))
+(allow droidloom_query system_file (file (getattr open read map execute)))
+(allow droidloom_query system_lib_file (file (getattr open read map execute)))
+(allow droidloom_query system_linker_exec (file (getattr open read map execute)))
+(allow droidloom_query linkerconfig_file (file (getattr open read map)))
+(allow droidloom_query apex_info_file (file (getattr open read)))
+(allow droidloom_query apk_data_file (file (getattr open read)))
+(allow droidloom_query properties_device (dir (getattr search)))
+(allow droidloom_query properties_serial (file (getattr open read map)))
+(allow droidloom_query default_prop (file (getattr open read map)))
+(allow droidloom_query exported_default_prop (file (getattr open read map)))
+(allow droidloom_query servicemanager_prop (file (getattr open read map)))
+
+; The only Binder service lookup is package. The fixed cmd argv is selected by
+; ApplicationRead. Other closed business commands use their separate roles.
+(allow droidloom_query binder_device (chr_file (getattr open read write map ioctl)))
+(allow droidloom_query servicemanager (binder (call transfer)))
+(allow servicemanager droidloom_query (binder (transfer)))
+(allow droidloom_query system_server (binder (call transfer)))
+(allow system_server droidloom_query (binder (call transfer)))
+(allow droidloom_query package_service (service_manager (find)))
+(allow droidloom_query null_device (chr_file (getattr read)))
+(neverallow droidloom_query service_manager_type (service_manager (add)))
+(neverallow droidloom_query property_type (property_service (set)))
+
+; The original broker invokes one fixed same-ELF stdio creator with an explicit
+; exec context. There is deliberately no automatic transition on the shared ELF.
+; Nonce/parent-PIDFD authentication and waitid retirement are checked by the code.
+(allow droidloom_broker self (process (setexec)))
+(allow droidloom_broker droidloom_query_io (process (transition getattr sigkill)))
+(allow droidloom_broker droidloom_query_io (process2 (nnp_transition nosuid_transition)))
+(allow droidloom_query_io droidloom_container_entry_exec_t (file (getattr open read map execute entrypoint)))
+(allow droidloom_query_io p4_linux_runtime_lib_t (file (getattr open read map execute)))
+(allow droidloom_query_io p4_linux_host_config_t (file (getattr open read)))
+(allow droidloom_query_io p4_linux_data (dir (getattr search)))
+(allow droidloom_query_io proc (dir (getattr search)))
+(allow droidloom_query_io proc (lnk_file (getattr read)))
+(allow droidloom_query_io self (process (getcap)))
+(allow droidloom_query_io self (dir (getattr search)))
+(allow droidloom_query_io self (file (getattr open read)))
+(allow droidloom_query_io self (lnk_file (getattr read)))
+(allow droidloom_query_io droidloom_broker (process (getattr sigchld)))
+(allow droidloom_query_io droidloom_broker (fd (use)))
+(allow droidloom_query_io droidloom_broker (file (getattr open read)))
+(allow droidloom_query_io droidloom_broker (lnk_file (getattr read)))
+(allow droidloom_query_io droidloom_broker (unix_stream_socket (getattr getopt read write)))
+; Bootstrap stdin/out/err are the same fixed anonymous EOF pipe read end.
+(allow droidloom_query_io droidloom_broker (fifo_file (getattr read)))
+(allow droidloom_query_io rootfs (dir (getattr search)))
+(allow droidloom_query_io device (dir (getattr search)))
+(allow droidloom_query_io null_device (chr_file (getattr open read)))
+(allow droidloom_query_io self (fifo_file (create getattr read write)))
+(allow droidloom_broker droidloom_query_io (fd (use)))
+(allow droidloom_broker droidloom_query_io (fifo_file (getattr read write)))
+(allow droidloom_broker null_device (chr_file (getattr read)))
+(allow kernel droidloom_query_io (fd (use)))
+(allow kernel droidloom_query_io (fifo_file (getattr read write)))
+(allow kernel null_device (chr_file (getattr read)))
+(allow droidloom_query droidloom_query_io (fd (use)))
+(allow droidloom_query droidloom_query_io (fifo_file (getattr write)))
+(allow system_server droidloom_query_io (fd (use)))
+(allow system_server droidloom_query_io (fifo_file (getattr read write)))
+; Android still has no FD use to the broker. The dedicated creator makes only
+; guest-null and two pipes; it cannot create a child, namespace or PIDFD.
+(neverallow droidloom_query_io self (process (fork setexec setfscreate setsockcreate setcurrent dyntransition)))
+(neverallow p4_fixed_query_processes self (capability (all)))
+(neverallow p4_fixed_query_processes self (capability2 (all)))
+(neverallow p4_fixed_query_processes self (cap_userns (all)))
+(neverallow p4_fixed_query_processes self (cap2_userns (all)))
+(neverallow p4_fixed_query_processes p4_linux_procs (process (transition dyntransition ptrace signal sigkill sigstop setexec setcurrent)))
+(neverallow p4_fixed_query_processes kernel (security (load_policy setenforce setbool setsecparam)))
+(neverallow p4_fixed_query_processes p4_linux_data (file (write append create unlink link rename setattr relabelfrom relabelto)))
+(neverallow p4_fixed_query_processes p4_linux_data (dir (write add_name remove_name create relabelfrom relabelto mounton)))
+(neverallow p4_fixed_query_processes p4_all_board_owned (binder (call transfer impersonate set_context_mgr)))
+(neverallow p4_fixed_query_processes p4_fixed_query_copies (file (execute_no_trans write append create unlink link rename setattr relabelfrom relabelto)))
+(neverallow droidloom_query p4_linux_data (file (entrypoint execute)))
+(neverallow droidloom_query droidloom_query_tmpfs_t (dir (open read write add_name remove_name mounton setattr relabelfrom relabelto)))
+(neverallow droidloom_broker droidloom_query (process (transition dyntransition ptrace signal sigkill sigstop setexec setcurrent)))
+(neverallow droidloom_broker kernel (process (transition dyntransition ptrace signal sigkill sigstop setexec setcurrent)))
+
+; Fixed raw child of the boot-lineage factory. It is not a service/dispatcher.
+; All inherited descriptions are reopened by the factory before this one-way
+; context change, retaining kernel or query_io origin instead of broker origin.
+(type droidloom_query_birth)
+(roletype r droidloom_query_birth)
+(typeattributeset domain (droidloom_query_birth))
+(typeattributeset coredomain (droidloom_query_birth))
+(typeattributeset p4_all_board_owned (droidloom_query_birth))
+(allow kernel self (process (setcurrent)))
+(allow kernel droidloom_query_birth (process (dyntransition ptrace getattr sigkill sigstop)))
+(allow droidloom_query_birth kernel (process (sigchld)))
+(allow droidloom_query_birth kernel (fd (use)))
+(allow droidloom_query_birth kernel (fifo_file (getattr read write)))
+(allow droidloom_query_birth kernel (unix_stream_socket (getattr getopt read write)))
+(allow droidloom_query_birth droidloom_query_io (fd (use)))
+(allow droidloom_query_birth droidloom_query_io (fifo_file (getattr read write)))
+(allow droidloom_query_birth null_device (chr_file (getattr read)))
+(allow droidloom_query_birth p4_kernel_ns_handle_t (file (getattr)))
+(allow droidloom_query_birth p4_kernel_pid_handle_t (file (getattr)))
+(allow droidloom_query_birth rootfs (dir (getattr search)))
+(allow droidloom_query_birth self (process (getcap setcap setexec)))
+(allow droidloom_query_birth self (cap_userns (sys_admin setuid setgid sys_chroot)))
+(allow droidloom_query_birth droidloom_query_tmpfs_t (dir (getattr search)))
+(allow droidloom_query_birth droidloom_query_exec (file (getattr open read execute map)))
+(typetransition droidloom_query_birth droidloom_query_exec process droidloom_query)
+(allow droidloom_query_birth droidloom_query (process (transition)))
+(allow droidloom_query_birth droidloom_query (process2 (nnp_transition nosuid_transition)))
+(neverallow droidloom_query_birth self (capability (all)))
+(neverallow droidloom_query_birth self (capability2 (all)))
+(neverallow droidloom_query_birth self (cap_userns (not (sys_admin setuid setgid sys_chroot))))
+(neverallow droidloom_query_birth self (cap2_userns (all)))
+(neverallow droidloom_query_birth self (process (setcurrent dyntransition setfscreate setsockcreate)))
+(neverallow droidloom_query_birth p4_fixed_metadata_all_types (process (ptrace dyntransition setcurrent)))
+; Android domain defaults retain self fork/signals and system_server error
+; reporting Binder call. No Binder description is inherited by this fixed stub,
+; and the factory AppArmor profile retains the pre-exec path boundary.
+(typeattribute p4_query_birth_other_tasks)
+(typeattributeset p4_query_birth_other_tasks (and (p4_fixed_metadata_all_types) (not (droidloom_query_birth))))
+(typeattribute p4_query_birth_no_binder_call)
+(typeattributeset p4_query_birth_no_binder_call (and (p4_fixed_metadata_all_types) (not (system_server))))
+(neverallow droidloom_query_birth p4_query_birth_other_tasks (process (signal sigkill sigstop)))
+(neverallow droidloom_query_birth p4_query_birth_no_binder_call (binder (call)))
+(neverallow droidloom_query_birth p4_fixed_metadata_all_types (binder (transfer impersonate set_context_mgr)))
+; The original domain rules also grant binder_device access. This fixed raw
+; stage retains the factory AppArmor profile, which has no Binder path access,
+; and receives no Binder FD. The later fixed exec switches that AA stage.
+(neverallow droidloom_query_birth kernel (security (load_policy setenforce setbool setsecparam)))

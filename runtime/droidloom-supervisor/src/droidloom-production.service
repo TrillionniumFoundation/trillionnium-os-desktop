@@ -1,0 +1,40 @@
+[Unit]
+Description=Droidloom production cell broker
+Requires=systemd-tmpfiles-setup.service droidloom-manager-label.service droidloom-instance-launcher.service
+Conflicts=droidloomd.service
+BindsTo=droidloom-instance-launcher.service
+After=local-fs.target systemd-tmpfiles-setup.service droidloomd.service droidloom-manager-label.service droidloom-instance-launcher.service
+
+[Service]
+Type=exec
+User=root
+Group=root
+ExecStart=/usr/lib/droidloom/production/current/droidloomd --socket /run/droidloom/control.sock
+WorkingDirectory=/
+UMask=0077
+Restart=no
+# Let the broker request Android shutdown and retire the writable volumes first.
+KillMode=mixed
+TimeoutStopSec=150s
+SendSIGKILL=yes
+Delegate=cpu cpuset io memory pids
+DelegateSubgroup=broker
+CPUAccounting=yes
+MemoryAccounting=yes
+TasksAccounting=yes
+CPUQuota=600%
+CPUQuotaPeriodSec=100ms
+CPUAffinity=2-23
+AllowedCPUs=2-23
+MemoryHigh=6442450944
+MemoryMax=8589934592
+MemorySwapMax=0
+TasksMax=32768
+SELinuxContext=u:r:droidloom_broker:s0
+AppArmorProfile=droidloom-production-broker
+PrivateMounts=yes
+AmbientCapabilities=CAP_SETUID
+NoNewPrivileges=yes
+
+[Install]
+WantedBy=multi-user.target

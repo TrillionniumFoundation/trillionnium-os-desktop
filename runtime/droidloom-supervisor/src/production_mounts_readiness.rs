@@ -1,0 +1,293 @@
+use super::*;
+use droidloom_contracts::system_ext::{self as contract, ReadinessDeclaration};
+use std::fs;
+
+fn directory_names(fd: &File) -> Result<BTreeSet<String>> {
+    fs::read_dir(format!("/proc/self/fd/{}", fd.as_raw_fd()))?
+        .map(|row| {
+            row?.file_name()
+                .into_string()
+                .map_err(|_| MountError::Rejected("invalid readiness tree filename"))
+        })
+        .collect()
+}
+
+fn compare_original(
+    src: &File,
+    dst: &File,
+    level: usize,
+    count: &mut usize,
+    extras: &[&str],
+) -> Result<()> {
+    require(level < 8 && *count < 128, "bounded factory system_ext tree")?;
+    *count += 1;
+    same_attributes(src, dst)?;
+    if src.metadata()?.is_file() {
+        require(
+            src.metadata()?.len() == dst.metadata()?.len()
+                && src.metadata()?.len() <= 8 * 1024 * 1024
+                && digest(src)? == digest(dst)?,
+            "original system_ext file differs",
+        )?;
+        return Ok(());
+    }
+    require(
+        src.metadata()?.is_dir() && dst.metadata()?.is_dir(),
+        "original system_ext directory",
+    )?;
+    let original = directory_names(src)?;
+    let mut selected = directory_names(dst)?;
+    for &new in extras {
+        require(
+            !original.contains(new) && selected.remove(new),
+            "new readiness member would shadow factory content",
+        )?;
+    }
+    require(
+        original == selected,
+        "system_ext directory membership changed",
+    )?;
+    for name in original {
+        let component = text_name(&name)?;
+        let left = open_leaf(src, &component, libc::O_RDONLY | libc::O_NONBLOCK)?;
+        let right = open_leaf(dst, &component, libc::O_RDONLY | libc::O_NONBLOCK)?;
+        compare_original(&left, &right, level + 1, count, &[])?;
+    }
+    Ok(())
+}
+
+fn target(root: &File, index: usize) -> Result<File> {
+    match index {
+        0 => directory(root, "bin"),
+        1 => directory(&directory(root, "etc")?, "init"),
+        2 => directory(root, "framework"),
+        3 => regular(
+            &directory(&directory(root, "etc")?, "selinux")?,
+            "system_ext_property_contexts",
+        ),
+        _ => Err(MountError::Rejected("unknown readiness mount target")),
+    }
+}
+
+pub(in crate::production_mounts) fn verify(
+    original_ext: &File,
+    carrier: &File,
+    decl: &ReadinessDeclaration,
+) -> Result<()> {
+    let shutdown = decl.shutdown_property_contexts_sha256.is_some();
+    require(decl.frontend.valid(), "complete normal frontend member digests")?;
+    fixed_children(carrier, &["bin", "etc", "framework"])?;
+    let etc = directory(carrier, "etc")?;
+    if let Some(selected_contexts) = decl.shutdown_property_contexts_sha256.as_deref() {
+        require(
+            contract::shutdown_property_for_rc(&decl.init_rc_sha256) == Some(selected_contexts),
+            "unpaired Android init and property declarations",
+        )?;
+        fixed_children(&etc, &["init", "selinux"])?;
+        fixed_children(
+            &directory(&etc, "selinux")?,
+            &["system_ext_property_contexts"],
+        )?;
+        let original = target(original_ext, 3)?;
+        let selected = target(carrier, 3)?;
+        same_attributes(&original, &selected)?;
+        let meta = original.metadata()?;
+        let factory_owner = original_ext.metadata()?;
+        let attrs = image_attrs(&selected)?;
+        let label = attrs.get(std::ffi::OsStr::new("security.selinux"));
+        require(
+            (meta.uid(), meta.gid(), meta.mode() & 0o7777)
+                == (factory_owner.uid(), factory_owner.gid(), 0o644)
+                && label.is_some_and(|value| {
+                    value.strip_suffix(&[0]).unwrap_or(value)
+                        == b"u:object_r:property_contexts_file:s0"
+                })
+                && meta.len() == 181
+                && selected.metadata()?.len() < 512
+                && digest(&original)? == contract::FACTORY_PROPERTY_CONTEXTS_SHA256
+                && digest(&selected)? == selected_contexts,
+            "unrecognized factory or selected Android property contexts",
+        )?;
+    } else {
+        fixed_children(&etc, &["init"])?;
+    }
+    let bins = target(carrier, 0)?;
+    let factory_bins = target(original_ext, 0)?;
+    let init = target(carrier, 1)?;
+    let factory_init = target(original_ext, 1)?;
+    let framework = target(carrier, 2)?;
+    let factory_framework = target(original_ext, 2)?;
+    let additions: &[&str] = if shutdown {
+        &["droidloom-readiness", "droidloom-shutdown", "droidloom-input-bridge", "droidloom-task-launcher"]
+    } else {
+        &["droidloom-readiness", "droidloom-input-bridge", "droidloom-task-launcher"]
+    };
+    compare_original(&factory_bins, &bins, 0, &mut 0, additions)?;
+    compare_original(&factory_init, &init, 0, &mut 0, &["droidloom-readiness.rc", "droidloom-input-bridge.rc"])?;
+    compare_original(&factory_framework, &framework, 0, &mut 0, &["droidloom-input-bridge.jar"])?;
+    let elf_reference = regular(&factory_bins, "hwservicemanager")?.metadata()?;
+    let rc_reference = regular(&factory_init, "wificond.rc")?.metadata()?;
+    let mut additions = vec![
+        (
+            &bins,
+            "droidloom-readiness",
+            &elf_reference,
+            &decl.observer_sha256,
+            0o755,
+            b"u:object_r:droidloom_readiness_exec:s0".as_slice(),
+            8 * 1024 * 1024,
+        ),
+        (
+            &init,
+            "droidloom-readiness.rc",
+            &rc_reference,
+            &decl.init_rc_sha256,
+            0o644,
+            b"u:object_r:system_file:s0".as_slice(),
+            4096,
+        ),
+    ];
+    if shutdown {
+        additions.push((
+            &bins,
+            "droidloom-shutdown",
+            &elf_reference,
+            &decl.observer_sha256,
+            0o755,
+            b"u:object_r:droidloom_shutdown_exec:s0".as_slice(),
+            8 * 1024 * 1024,
+        ));
+    }
+    additions.extend([
+        (
+            &bins, "droidloom-input-bridge", &rc_reference,
+            &decl.frontend.input_bridge_wrapper_sha256, 0o755,
+            b"u:object_r:droidloom_input_bridge_exec:s0".as_slice(), 4096,
+        ),
+        (
+            &bins, "droidloom-task-launcher", &rc_reference,
+            &decl.frontend.task_launcher_sha256, 0o755,
+            b"u:object_r:droidloom_task_launcher_exec:s0".as_slice(), 8 * 1024 * 1024,
+        ),
+        (
+            &framework, "droidloom-input-bridge.jar", &rc_reference,
+            &decl.frontend.input_bridge_jar_sha256, 0o644,
+            b"u:object_r:droidloom_input_bridge_jar:s0".as_slice(), 8 * 1024 * 1024,
+        ),
+        (
+            &init, "droidloom-input-bridge.rc", &rc_reference,
+            &decl.frontend.input_bridge_init_rc_sha256, 0o644,
+            b"u:object_r:system_file:s0".as_slice(), 4096,
+        ),
+    ]);
+    let mut inodes = BTreeSet::new();
+    for (dir, name, reference, expected, mode, label, limit) in additions {
+        let added = regular(dir, name)?;
+        let meta = added.metadata()?;
+        let attrs = image_attrs(&added)?;
+        let actual =
+            attrs
+                .get(std::ffi::OsStr::new("security.selinux"))
+                .ok_or(MountError::Rejected(
+                    "missing selected Android service file label",
+                ))?;
+        require(
+            attrs.len() == 1
+                && actual.strip_suffix(&[0]).unwrap_or(actual) == label
+                && (meta.uid(), meta.gid(), meta.mode() & 0o7777)
+                    == (reference.uid(), reference.gid(), mode)
+                && meta.len() > 0 && meta.len() <= limit
+                && digest(&added)? == *expected,
+            "wrong selected Android service body, owner, label or mode",
+        )?;
+        require(
+            inodes.insert((meta.dev(), meta.ino())),
+            "normal installed Android roles must have independent inodes",
+        )?;
+    }
+    Ok(())
+}
+
+pub(in crate::production_mounts) fn compose(
+    system: &File,
+    carrier: &File,
+    decl: &ReadinessDeclaration,
+) -> Result<()> {
+    let platform = directory(&directory(system, "system")?, "system_ext")?;
+    verify(&platform, carrier, decl)?;
+    let shutdown = decl.shutdown_property_contexts_sha256.is_some();
+    for index in 0..(contract::READINESS_TARGETS.len() + usize::from(shutdown)) {
+        let (_, noexec) = contract::readiness_mount_source(index, shutdown)
+            .ok_or(MountError::Rejected("unknown selected service mount"))?;
+        let original = target(&platform, index)?;
+        require(
+            mount_id(&original)? == mount_id(system)?,
+            "readiness target was already mounted",
+        )?;
+        let source = target(carrier, index)?;
+        let raw = unsafe {
+            libc::syscall(
+                libc::SYS_open_tree,
+                source.as_raw_fd(),
+                c"".as_ptr(),
+                1u32 | libc::O_CLOEXEC as u32 | libc::AT_EMPTY_PATH as u32,
+            )
+        };
+        if raw < 0 {
+            return Err(io::Error::last_os_error().into());
+        }
+        let cloned = unsafe { File::from_raw_fd(raw as i32) };
+        require_detached(&cloned)?;
+        if noexec {
+            let flags = MountAttr {
+                attr_set: libc::MOUNT_ATTR_NOEXEC as u64,
+                attr_clr: 0,
+                propagation: 0,
+                userns_fd: 0,
+            };
+            zero_rc(unsafe {
+                libc::syscall(
+                    libc::SYS_mount_setattr,
+                    cloned.as_raw_fd(),
+                    c"".as_ptr(),
+                    AT_EMPTY_PATH,
+                    &flags,
+                    std::mem::size_of::<MountAttr>(),
+                )
+            } as i32)?;
+        }
+        let rc = unsafe {
+            libc::syscall(
+                libc::SYS_move_mount,
+                cloned.as_raw_fd(),
+                c"".as_ptr(),
+                original.as_raw_fd(),
+                c"".as_ptr(),
+                libc::MOVE_MOUNT_F_EMPTY_PATH | libc::MOVE_MOUNT_T_EMPTY_PATH,
+            )
+        };
+        if rc != 0 {
+            return Err(io::Error::last_os_error().into());
+        }
+        let actual = target(&platform, index)?;
+        let mut mounted_flags: libc::statvfs = unsafe { std::mem::zeroed() };
+        zero_rc(unsafe { libc::fstatvfs(actual.as_raw_fd(), &mut mounted_flags) })?;
+        let expected = READONLY_FLAGS
+            | if noexec {
+                libc::ST_NOEXEC as u64
+            } else {
+                0
+            };
+        require(
+            mounted_flags.f_flag as u64 & (READONLY_FLAGS | libc::ST_NOEXEC as u64) == expected,
+            "selected service mount is missing its exact kernel restrictions",
+        )?;
+        let (a, b) = (actual.metadata()?, source.metadata()?);
+        require(
+            (a.dev(), a.ino()) == (b.dev(), b.ino()) && mount_id(&actual)? == mount_id(&cloned)?,
+            "readiness subtree did not land at the fixed original target",
+        )?;
+    }
+    require_detached(system)?;
+    Ok(())
+}

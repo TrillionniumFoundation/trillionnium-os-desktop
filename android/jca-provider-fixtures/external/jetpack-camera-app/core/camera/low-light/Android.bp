@@ -1,0 +1,21 @@
+package {
+    default_applicable_licenses: [
+        "Android-Apache-2.0",
+    ],
+}
+
+android_library {
+    name: "jetpack-camera-app_core_camera_low-light",
+    srcs: ["src/main/**/*.kt"],
+    static_libs: [
+        "hilt_android",
+        "androidx.camera_camera-core",
+    ],
+    sdk_version: "35",
+    min_sdk_version: "23",
+    manifest: "src/main/AndroidManifest.xml",
+    apex_available: [
+        "com.android.mediaprovider",
+    ],
+
+}

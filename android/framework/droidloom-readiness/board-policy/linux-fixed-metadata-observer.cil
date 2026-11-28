@@ -1,0 +1,94 @@
+; One-shot fixed metadata observer for the original held task/USERNS capability.
+; It is not an Android domain or an ordinary Linux service and never becomes an
+; execution owner. The original broker retains all lifetime/resource authority.
+(type droidloom_metadata_observer)
+(roletype r droidloom_metadata_observer)
+(typeattributeset p4_all_board_owned (droidloom_metadata_observer))
+(allow droidloom_broker self (process (setexec)))
+(allow droidloom_broker droidloom_metadata_observer (process (transition getattr sigkill)))
+(allow droidloom_broker droidloom_metadata_observer (process2 (nnp_transition nosuid_transition)))
+(allow droidloom_metadata_observer droidloom_container_entry_exec_t (file (getattr open read map execute entrypoint)))
+(allow droidloom_metadata_observer p4_linux_runtime_lib_t (file (getattr open read map execute)))
+(allow droidloom_metadata_observer p4_linux_host_config_t (file (getattr open read)))
+(allow droidloom_metadata_observer p4_linux_data (dir (getattr search)))
+(allow droidloom_metadata_observer droidloom_broker (process (getattr sigchld)))
+(allow droidloom_metadata_observer droidloom_broker (fd (use)))
+; The held target USERNS/PIDFD originates in the boot factory. The one-shot
+; observer returns fresh read-only executable/root/NS descriptions to its broker;
+; the factory receives those same final namespaces only for fixed query birth.
+(allow droidloom_metadata_observer kernel (fd (use)))
+(allow droidloom_broker droidloom_metadata_observer (fd (use)))
+(allow kernel droidloom_metadata_observer (fd (use)))
+(allow droidloom_metadata_observer droidloom_broker (file (getattr open read)))
+(allow droidloom_metadata_observer droidloom_broker (lnk_file (getattr read)))
+; Fresh same-ELF bootstrap receives only the broker-created EOF pipe read end.
+(allow droidloom_metadata_observer droidloom_broker (fifo_file (getattr read)))
+(allow droidloom_metadata_observer droidloom_broker (unix_stream_socket (getattr getopt read write)))
+
+; Enter only the borrowed target USERNS, then drop every capability except its
+; SYS_PTRACE READ_FSCREDS check. The fixed raw syscall/seccomp path has no ptrace,
+; signals, process creation, exec or caller-selected path operation.
+(allow droidloom_metadata_observer self (cap_userns (sys_admin sys_ptrace)))
+(allow droidloom_metadata_observer self (process (getcap setcap)))
+(neverallow droidloom_metadata_observer self (capability (all)))
+(neverallow droidloom_metadata_observer self (capability2 (all)))
+(neverallow droidloom_metadata_observer self (cap_userns (not (sys_admin sys_ptrace))))
+(neverallow droidloom_metadata_observer self (cap2_userns (all)))
+(neverallow droidloom_metadata_observer self (process (fork setexec setfscreate setsockcreate setcurrent dyntransition)))
+
+(typeattribute p4_fixed_metadata_tasks)
+(typeattributeset p4_fixed_metadata_tasks (kernel init zygote system_server droidloom_query p4_closed_runtime_queries hal_graphics_composer_default))
+(allow droidloom_metadata_observer p4_fixed_metadata_tasks (process (getattr)))
+(allow droidloom_metadata_observer p4_fixed_metadata_tasks (dir (getattr search open read)))
+(allow droidloom_metadata_observer p4_fixed_metadata_tasks (file (getattr open read)))
+(allow droidloom_metadata_observer p4_fixed_metadata_tasks (lnk_file (getattr read)))
+(allow droidloom_metadata_observer proc (dir (getattr search)))
+(allow droidloom_metadata_observer proc (lnk_file (getattr read)))
+(allow droidloom_metadata_observer self (dir (getattr search)))
+(allow droidloom_metadata_observer self (file (getattr open read)))
+(allow droidloom_metadata_observer self (lnk_file (getattr read)))
+
+; SCM_RIGHTS carries real read-only descriptions, not O_PATH handles whose
+; receive permission is ioctl in the selected kernel. Only fixed public ELFs
+; and the original held task root are opened. The fixed helper seccomp has no
+; getdents, mutation, executable mapping or exec after metadata admission.
+(typeattribute p4_fixed_metadata_executables)
+(typeattributeset p4_fixed_metadata_executables (init_exec zygote_exec droidloom_query_exec droidloom_provider_exec hal_graphics_composer_default_exec))
+(allow droidloom_metadata_observer p4_fixed_metadata_executables (file (getattr open read)))
+(allow droidloom_metadata_observer rootfs (dir (getattr open read)))
+(allow droidloom_metadata_observer system_file (dir (getattr)))
+; In the selected 6.18 source, NSFS uses new_inode_pseudo without S_PRIVATE.
+; It therefore needs the real read/open permission and exact NS_GET_NSTYPE
+; xperm. PIDFS does set S_PRIVATE; its PIDFD_GET_INFO still checks FD__USE.
+(allow droidloom_metadata_observer p4_kernel_ns_handle_t (file (getattr open read ioctl)))
+(allowx droidloom_metadata_observer p4_kernel_ns_handle_t (ioctl file (0xb703)))
+(neverallowx droidloom_metadata_observer p4_kernel_ns_handle_t (ioctl file (not (0xb703))))
+(allow droidloom_metadata_observer p4_kernel_ns_handle_t (filesystem (getattr)))
+(allow droidloom_metadata_observer proc (filesystem (getattr)))
+(allow droidloom_metadata_observer p4_kernel_pid_handle_t (file (getattr)))
+(allow droidloom_metadata_observer labeledfs (filesystem (getattr)))
+(allow droidloom_metadata_observer tmpfs (filesystem (getattr)))
+(allow droidloom_metadata_observer droidloom_query_tmpfs_t (filesystem (getattr)))
+(typeattribute p4_fixed_metadata_all_types)
+(typeattributeset p4_fixed_metadata_all_types (or (p4_all_board_owned) (p4_all_nonboard)))
+(neverallow droidloom_metadata_observer p4_fixed_metadata_all_types (process (ptrace signal sigkill sigstop transition dyntransition setexec setcurrent)))
+(neverallow droidloom_metadata_observer p4_fixed_metadata_all_types (filesystem (mount remount unmount relabelfrom relabelto)))
+(neverallow droidloom_metadata_observer p4_fixed_metadata_all_types (security (load_policy setenforce setbool setsecparam)))
+(neverallow droidloom_metadata_observer p4_fixed_metadata_all_types (binder (call transfer impersonate set_context_mgr)))
+(neverallow droidloom_metadata_observer p4_fixed_metadata_executables (file (map write append execute entrypoint execute_no_trans setattr relabelfrom relabelto)))
+(neverallow droidloom_metadata_observer p4_fixed_metadata_tasks (dir (write add_name remove_name mounton)))
+(neverallow droidloom_metadata_observer p4_fixed_metadata_tasks (file (write append map execute entrypoint setattr)))
+(neverallow droidloom_metadata_observer p4_linux_data (file (write append create unlink link rename setattr relabelfrom relabelto)))
+(neverallow droidloom_metadata_observer p4_linux_data (dir (write add_name remove_name create relabelfrom relabelto mounton)))
+
+; The broker consumes the original held root as a read-only description. It
+; neither receives ioctl authority nor reads unrelated Android directories.
+; The creator borrows this same root only to open the fixed guest dev/null.
+(allow droidloom_broker rootfs (dir (getattr open read search)))
+(allow droidloom_query_io rootfs (dir (getattr open read search)))
+(typeattribute p4_android_dirs_without_metadata_root)
+(typeattributeset p4_android_dirs_without_metadata_root (and (p4_android_only_files) (not (rootfs))))
+(typeattribute p4_nonboard_except_broker_metadata_root)
+(typeattributeset p4_nonboard_except_broker_metadata_root (and (p4_nonboard_except_mac_api) (not (rootfs))))
+(typeattribute p4_broker_frontend_dirs_without_metadata_root)
+(typeattributeset p4_broker_frontend_dirs_without_metadata_root (and (p4_broker_frontend_image_dirs) (not (rootfs))))

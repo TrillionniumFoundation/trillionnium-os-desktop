@@ -1,0 +1,103 @@
+diff --git a/libs/androidfw/Android.bp b/libs/androidfw/Android.bp
+index 664ca38..32c0d0f 100644
+--- a/libs/androidfw/Android.bp
++++ b/libs/androidfw/Android.bp
+@@ -249,6 +249,7 @@
+         "tests/StringPool_test.cpp",
+         "tests/Theme_test.cpp",
+         "tests/TypeWrappers_test.cpp",
++        "tests/ZipFileRO_test.cpp",
+         "tests/ZipUtils_test.cpp",
+     ],
+     static_libs: [
+diff --git a/libs/androidfw/ZipFileRO.cpp b/libs/androidfw/ZipFileRO.cpp
+index 10651cd..9ed61c6 100644
+--- a/libs/androidfw/ZipFileRO.cpp
++++ b/libs/androidfw/ZipFileRO.cpp
+@@ -217,10 +217,10 @@
+     const
+ {
+     const _ZipEntryRO* zipEntry = reinterpret_cast<_ZipEntryRO*>(entry);
+-    const uint16_t requiredSize = zipEntry->name.length() + 1;
++    const size_t requiredSize = zipEntry->name.length() + 1;
+ 
+     if (bufLen < requiredSize) {
+-        ALOGW("Buffer too short, requires %d bytes for entry name", requiredSize);
++        ALOGW("Buffer too short, requires %zu bytes for entry name", requiredSize);
+         return requiredSize;
+     }
+ 
+diff --git a/libs/androidfw/include/androidfw/ZipFileRO.h b/libs/androidfw/include/androidfw/ZipFileRO.h
+index 0f3f19c..181cdd9 100644
+--- a/libs/androidfw/include/androidfw/ZipFileRO.h
++++ b/libs/androidfw/include/androidfw/ZipFileRO.h
+@@ -196,6 +196,8 @@
+     ZipFileRO(const ZipFileRO& src);
+     ZipFileRO& operator=(const ZipFileRO& src);
+ 
++    friend class ZipFileROTest_GetEntryFileName_MaxLengthOverflow_Test;
++
+     ZipFileRO(ZipArchiveHandle handle, char* fileName) : mHandle(handle),
+         mFileName(fileName)
+     {
+diff --git a/libs/androidfw/tests/ZipFileRO_test.cpp b/libs/androidfw/tests/ZipFileRO_test.cpp
+new file mode 100644
+index 0000000..f77c2ad
+--- /dev/null
++++ b/libs/androidfw/tests/ZipFileRO_test.cpp
+@@ -0,0 +1,55 @@
++/*
++ * Copyright (C) 2026 The Android Open Source Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++#include "androidfw/ZipFileRO.h"
++
++#include <string>
++#include <string_view>
++#include <ziparchive/zip_archive.h>
++
++#include "gtest/gtest.h"
++
++namespace android {
++
++// This is a copy of a private internal struct defined in the .cpp file.
++struct _ZipEntryRO {
++    ZipEntry entry;
++    std::string_view name;
++};
++
++TEST(ZipFileROTest, GetEntryFileName_MaxLengthOverflow) {
++    constexpr size_t kMaxZipFileNameLen = 65535;
++    std::string long_filename(kMaxZipFileNameLen, 'a');
++
++    _ZipEntryRO dummy_entry{};
++    dummy_entry.name = long_filename;
++
++    ZipEntryRO entry = reinterpret_cast<ZipEntryRO>(&dummy_entry);
++
++    char buffer[4096] = {};
++    constexpr size_t buf_len = sizeof(buffer);
++
++    ZipFileRO zip_file(nullptr, nullptr);
++
++    int result = zip_file.getEntryFileName(entry, buffer, buf_len);
++
++    // Verify that requiredSize is 65536 and getEntryFileName returns 65536
++    // without getting any overflows or touching a buffer that's too small.
++    EXPECT_EQ(result, static_cast<int>(kMaxZipFileNameLen + 1));
++    EXPECT_EQ('\0', buffer[0]);
++}
++
++}  // namespace android

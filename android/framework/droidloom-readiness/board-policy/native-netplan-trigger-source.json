@@ -1,0 +1,585 @@
+{
+  "dropin": {
+    "bytes": 232,
+    "mode": 292,
+    "path": "usr/lib/systemd/system/netplan-configure.service.d/50-droidloom-uevent-order.conf",
+    "sha256": "75b1a73bb5243aeca88a3348a7bc776618bf6fc2b61e72d674b77f7e9c40b237",
+    "source": "ubuntu-netplan-trigger-order.conf"
+  },
+  "fixed_udev_views": [
+    {
+      "allowed": [
+        "read",
+        "getattr",
+        "open",
+        "search"
+      ],
+      "class": "dir",
+      "kind": "source",
+      "mask": 268697618,
+      "target": "sysfs"
+    },
+    {
+      "allowed": [
+        "read",
+        "getattr",
+        "open"
+      ],
+      "class": "file",
+      "kind": "source",
+      "mask": 262162,
+      "target": "sysfs"
+    },
+    {
+      "allowed": [
+        "read",
+        "getattr"
+      ],
+      "class": "lnk_file",
+      "kind": "source",
+      "mask": 18,
+      "target": "sysfs"
+    },
+    {
+      "allowed": [],
+      "class": "dir",
+      "kind": "target",
+      "mask": 0,
+      "target": "p4_native_uevent_sysfs"
+    },
+    {
+      "allowed": [
+        "read",
+        "write",
+        "getattr",
+        "open"
+      ],
+      "class": "file",
+      "kind": "target",
+      "mask": 262166,
+      "target": "p4_native_uevent_sysfs"
+    },
+    {
+      "allowed": [],
+      "class": "lnk_file",
+      "kind": "target",
+      "mask": 0,
+      "target": "p4_native_uevent_sysfs"
+    },
+    {
+      "allowed": [
+        "read",
+        "getattr",
+        "open",
+        "search"
+      ],
+      "class": "dir",
+      "kind": "source",
+      "mask": 268697618,
+      "target": "sysfs_devices_system_cpu"
+    },
+    {
+      "allowed": [
+        "read",
+        "getattr",
+        "open"
+      ],
+      "class": "file",
+      "kind": "source",
+      "mask": 262162,
+      "target": "sysfs_devices_system_cpu"
+    },
+    {
+      "allowed": [
+        "read",
+        "getattr"
+      ],
+      "class": "lnk_file",
+      "kind": "source",
+      "mask": 18,
+      "target": "sysfs_devices_system_cpu"
+    },
+    {
+      "allowed": [],
+      "class": "dir",
+      "kind": "target",
+      "mask": 0,
+      "target": "p4_native_uevent_sysfs_devices_system_cpu"
+    },
+    {
+      "allowed": [
+        "read",
+        "write",
+        "getattr",
+        "open"
+      ],
+      "class": "file",
+      "kind": "target",
+      "mask": 262166,
+      "target": "p4_native_uevent_sysfs_devices_system_cpu"
+    },
+    {
+      "allowed": [],
+      "class": "lnk_file",
+      "kind": "target",
+      "mask": 0,
+      "target": "p4_native_uevent_sysfs_devices_system_cpu"
+    },
+    {
+      "allowed": [
+        "read",
+        "getattr",
+        "open",
+        "search"
+      ],
+      "class": "dir",
+      "kind": "source",
+      "mask": 268697618,
+      "target": "sysfs_hwrandom"
+    },
+    {
+      "allowed": [
+        "read",
+        "getattr",
+        "open"
+      ],
+      "class": "file",
+      "kind": "source",
+      "mask": 262162,
+      "target": "sysfs_hwrandom"
+    },
+    {
+      "allowed": [
+        "read",
+        "getattr"
+      ],
+      "class": "lnk_file",
+      "kind": "source",
+      "mask": 18,
+      "target": "sysfs_hwrandom"
+    },
+    {
+      "allowed": [],
+      "class": "dir",
+      "kind": "target",
+      "mask": 0,
+      "target": "p4_native_uevent_sysfs_hwrandom"
+    },
+    {
+      "allowed": [
+        "read",
+        "write",
+        "getattr",
+        "open"
+      ],
+      "class": "file",
+      "kind": "target",
+      "mask": 262166,
+      "target": "p4_native_uevent_sysfs_hwrandom"
+    },
+    {
+      "allowed": [],
+      "class": "lnk_file",
+      "kind": "target",
+      "mask": 0,
+      "target": "p4_native_uevent_sysfs_hwrandom"
+    },
+    {
+      "allowed": [
+        "read",
+        "getattr",
+        "open",
+        "search"
+      ],
+      "class": "dir",
+      "kind": "source",
+      "mask": 268697618,
+      "target": "sysfs_loop"
+    },
+    {
+      "allowed": [
+        "read",
+        "getattr",
+        "open"
+      ],
+      "class": "file",
+      "kind": "source",
+      "mask": 262162,
+      "target": "sysfs_loop"
+    },
+    {
+      "allowed": [
+        "read",
+        "getattr"
+      ],
+      "class": "lnk_file",
+      "kind": "source",
+      "mask": 18,
+      "target": "sysfs_loop"
+    },
+    {
+      "allowed": [],
+      "class": "dir",
+      "kind": "target",
+      "mask": 0,
+      "target": "p4_native_uevent_sysfs_loop"
+    },
+    {
+      "allowed": [
+        "read",
+        "write",
+        "getattr",
+        "open"
+      ],
+      "class": "file",
+      "kind": "target",
+      "mask": 262166,
+      "target": "p4_native_uevent_sysfs_loop"
+    },
+    {
+      "allowed": [],
+      "class": "lnk_file",
+      "kind": "target",
+      "mask": 0,
+      "target": "p4_native_uevent_sysfs_loop"
+    },
+    {
+      "allowed": [
+        "read",
+        "getattr",
+        "open",
+        "search"
+      ],
+      "class": "dir",
+      "kind": "source",
+      "mask": 268697618,
+      "target": "sysfs_net"
+    },
+    {
+      "allowed": [
+        "read",
+        "getattr",
+        "open"
+      ],
+      "class": "file",
+      "kind": "source",
+      "mask": 262162,
+      "target": "sysfs_net"
+    },
+    {
+      "allowed": [
+        "read",
+        "getattr"
+      ],
+      "class": "lnk_file",
+      "kind": "source",
+      "mask": 18,
+      "target": "sysfs_net"
+    },
+    {
+      "allowed": [],
+      "class": "dir",
+      "kind": "target",
+      "mask": 0,
+      "target": "p4_native_uevent_sysfs_net"
+    },
+    {
+      "allowed": [
+        "read",
+        "write",
+        "getattr",
+        "open"
+      ],
+      "class": "file",
+      "kind": "target",
+      "mask": 262166,
+      "target": "p4_native_uevent_sysfs_net"
+    },
+    {
+      "allowed": [],
+      "class": "lnk_file",
+      "kind": "target",
+      "mask": 0,
+      "target": "p4_native_uevent_sysfs_net"
+    },
+    {
+      "allowed": [
+        "read",
+        "getattr",
+        "open",
+        "search"
+      ],
+      "class": "dir",
+      "kind": "source",
+      "mask": 268697618,
+      "target": "sysfs_uprobe"
+    },
+    {
+      "allowed": [
+        "read",
+        "getattr",
+        "open"
+      ],
+      "class": "file",
+      "kind": "source",
+      "mask": 262162,
+      "target": "sysfs_uprobe"
+    },
+    {
+      "allowed": [
+        "read",
+        "getattr"
+      ],
+      "class": "lnk_file",
+      "kind": "source",
+      "mask": 18,
+      "target": "sysfs_uprobe"
+    },
+    {
+      "allowed": [],
+      "class": "dir",
+      "kind": "target",
+      "mask": 0,
+      "target": "p4_native_uevent_sysfs_uprobe"
+    },
+    {
+      "allowed": [
+        "read",
+        "write",
+        "getattr",
+        "open"
+      ],
+      "class": "file",
+      "kind": "target",
+      "mask": 262166,
+      "target": "p4_native_uevent_sysfs_uprobe"
+    },
+    {
+      "allowed": [],
+      "class": "lnk_file",
+      "kind": "target",
+      "mask": 0,
+      "target": "p4_native_uevent_sysfs_uprobe"
+    }
+  ],
+  "git_sources": {
+    "android/framework/droidloom-readiness/board-policy/native-netplan-source.json": {
+      "bytes": 28592,
+      "sha256": "990b08faac8e856606c39957eb06e4cf2b2170388591a442833ec3002929cd5c"
+    },
+    "android/framework/droidloom-readiness/board-policy/native-uevent-labels.json": {
+      "bytes": 635,
+      "sha256": "8755d58643caaee0f995e4b3143a0888500413c85fc7c15017cfa2a9a9958c05"
+    },
+    "android/framework/droidloom-readiness/board-policy/ubuntu-native-uevent.cil": {
+      "bytes": 8148,
+      "sha256": "fcf8109c07c6d57b5636d60f73dd5fd4cb4254d2cf62169d00edcec2445d864e"
+    },
+    "android/framework/droidloom-readiness/board-policy/ubuntu-udev-trigger-label.conf": {
+      "bytes": 314,
+      "sha256": "2825f2659d792cfd19e4c88ae3510bc313c300237818a99cd73fd489c3003c17"
+    },
+    "runtime/droidloom-supervisor/src/native_hardware_label.rs": {
+      "bytes": 29489,
+      "sha256": "2a4a266032fd61b87b71729dcc1005b97c60da35d2b2876d4729434920876736"
+    },
+    "runtime/droidloom-supervisor/src/native_uevent_label.rs": {
+      "bytes": 13963,
+      "sha256": "b456741cf27d5193422c0a09412cf0b2120f88c9078dbfb901fd6970d9e7e211"
+    }
+  },
+  "normal_commands": {
+    "ExecStart": [
+      "/usr/libexec/netplan/configure"
+    ],
+    "ExecStartPost": [
+      "udevadm control --reload",
+      "udevadm trigger --action=add --subsystem-match=net"
+    ]
+  },
+  "normal_files": {
+    "usr/bin/udevadm": {
+      "bytes": 765648,
+      "sha256": "44b319969bb6a5ba77ce714e0ae9a59a649f625ff1ac7f50650c16fc762bf763"
+    },
+    "usr/lib/systemd/system/netplan-configure.service": {
+      "bytes": 879,
+      "sha256": "6893fca2c14d53951c73f396f7528b0b1baa9f570ca9cf099dc1c71df1aa2724"
+    },
+    "usr/lib/systemd/system/systemd-udev-trigger.service": {
+      "bytes": 787,
+      "sha256": "42e585c2859b76e4106b64b915dc900f1e5390bf32686a9181acd95eea1c7064"
+    },
+    "usr/libexec/netplan/configure": {
+      "bytes": 23176,
+      "sha256": "02cfa8694559572d38b6c516ab6f103ab55b129cbfac5b3140d9108358bdb12d"
+    }
+  },
+  "normal_unit_bodies": {
+    "netplan-configure.service": "[Unit]\nDescription=Netplan Backend Configuration\nDocumentation=man:netplan(8)\nDocumentation=https://netplan.readthedocs.io/en/stable/netplan-yaml/\n\nDefaultDependencies=no\nWants=systemd-udevd.service\nConflicts=shutdown.target\nBefore=shutdown.target network-pre.target\nBefore=systemd-networkd.service NetworkManager.service\n# Run After=systemd-sysusers.service, to allow lookup of the \"systemd-network\" GID\n# (LP: #2071747)\nAfter=local-fs.target systemd-sysusers.service systemd-udevd-control.socket\n\n[Service]\nType=oneshot\nRemainAfterExit=true\nEnvironment=NETPLAN_PARSER_IGNORE_ERRORS=1\nExecStart=/usr/libexec/netplan/configure\n# 'udevadm trigger' is needed to rename interfaces at boot time:\n# https://github.com/canonical/netplan/pull/479\nExecStartPost=udevadm control --reload\nExecStartPost=udevadm trigger --action=add --subsystem-match=net\n\n[Install]\nWantedBy=sysinit.target\n",
+    "systemd-udev-trigger.service": "#  SPDX-License-Identifier: LGPL-2.1-or-later\n#\n#  This file is part of systemd.\n#\n#  systemd is free software; you can redistribute it and/or modify it\n#  under the terms of the GNU Lesser General Public License as published by\n#  the Free Software Foundation; either version 2.1 of the License, or\n#  (at your option) any later version.\n\n[Unit]\nDescription=Coldplug All udev Devices\nDocumentation=man:udev(7) man:systemd-udevd.service(8)\nDefaultDependencies=no\nWants=systemd-udevd.service\nAfter=systemd-udevd-kernel.socket systemd-udevd-control.socket systemd-udevd-varlink.socket\nBefore=sysinit.target\nConditionPathIsReadWrite=/sys\n\n[Service]\nType=oneshot\nRemainAfterExit=yes\nExecStart=-udevadm trigger --type=all --action=add --prioritized-subsystem=module,block,tpmrm,net,tty,input\n"
+  },
+  "old_policy": {
+    "bytes": 1378147,
+    "export_bytes": 11026119,
+    "export_sha256": "87199686510833e1f2424e12faa9510b900646adf3ad89628ebc68899be50e39",
+    "sha256": "334f85991aa8b821efbd8ee793083d0031ff1ffbb9bddac7e928c5fa2092d42c"
+  },
+  "permission_layout": {
+    "dir": [
+      "ioctl",
+      "read",
+      "write",
+      "create",
+      "getattr",
+      "setattr",
+      "lock",
+      "relabelfrom",
+      "relabelto",
+      "append",
+      "map",
+      "unlink",
+      "link",
+      "rename",
+      "execute",
+      "quotaon",
+      "mounton",
+      "audit_access",
+      "open",
+      "execmod",
+      "watch",
+      "watch_mount",
+      "watch_sb",
+      "watch_with_perm",
+      "watch_reads",
+      "add_name",
+      "remove_name",
+      "reparent",
+      "search",
+      "rmdir"
+    ],
+    "file": [
+      "ioctl",
+      "read",
+      "write",
+      "create",
+      "getattr",
+      "setattr",
+      "lock",
+      "relabelfrom",
+      "relabelto",
+      "append",
+      "map",
+      "unlink",
+      "link",
+      "rename",
+      "execute",
+      "quotaon",
+      "mounton",
+      "audit_access",
+      "open",
+      "execmod",
+      "watch",
+      "watch_mount",
+      "watch_sb",
+      "watch_with_perm",
+      "watch_reads",
+      "execute_no_trans",
+      "entrypoint"
+    ],
+    "lnk_file": [
+      "ioctl",
+      "read",
+      "write",
+      "create",
+      "getattr",
+      "setattr",
+      "lock",
+      "relabelfrom",
+      "relabelto",
+      "append",
+      "map",
+      "unlink",
+      "link",
+      "rename",
+      "execute",
+      "quotaon",
+      "mounton",
+      "audit_access",
+      "open",
+      "execmod",
+      "watch",
+      "watch_mount",
+      "watch_sb",
+      "watch_with_perm",
+      "watch_reads"
+    ]
+  },
+  "required_unit": "systemd-udev-trigger.service",
+  "schema": "droidloom.native-netplan-trigger-source.v1",
+  "scope": {
+    "later_hotplug_qualified": false,
+    "new_host_files": 1,
+    "new_roles": 0,
+    "new_types": 0,
+    "normal_command_order_preserved": true,
+    "policy_changes": false,
+    "service_execution_proven": false
+  },
+  "source_documents": {
+    "src/analyze/analyze-verify-util.c": {
+      "bytes": 12043,
+      "sha256": "5a54f91a16abe3bb998e17ee56a6ca203c6c55a82f4bb9a6504b3cef2d8eb5e8"
+    },
+    "src/core/load-fragment.c": {
+      "bytes": 235363,
+      "sha256": "9985bb9569789696c80e0132ddd5abfdde2deef6f8be0dd2baddde67b5bf27b5"
+    },
+    "src/core/service.c": {
+      "bytes": 245395,
+      "sha256": "203fbab879b9a8641e47af58087cc4cfb93541cfc916447f7a0ffe608b9a2b0e"
+    },
+    "src/core/transaction.c": {
+      "bytes": 52140,
+      "sha256": "2b8ad73d0b34a10175530544e88d98343114fcbe50fa7047fb3224facc2b9ffa"
+    },
+    "src/libsystemd/sd-device/sd-device.c": {
+      "bytes": 93446,
+      "sha256": "06f16105f9d252b15f9f5a95e867ab144618f28a021aaaf021e0278475147821"
+    },
+    "src/udev/udevadm-trigger.c": {
+      "bytes": 25154,
+      "sha256": "bf0e8d0084415f9d6a48d84b229e2d320ebbb65fd524287984086e9faecb3f6f"
+    }
+  },
+  "systemd_version": "259.9-0ubuntu0.1+p4gentmp2",
+  "uevent_map": {
+    "labels": [
+      {
+        "source": "sysfs",
+        "target": "p4_native_uevent_sysfs"
+      },
+      {
+        "source": "sysfs_devices_system_cpu",
+        "target": "p4_native_uevent_sysfs_devices_system_cpu"
+      },
+      {
+        "source": "sysfs_hwrandom",
+        "target": "p4_native_uevent_sysfs_hwrandom"
+      },
+      {
+        "source": "sysfs_loop",
+        "target": "p4_native_uevent_sysfs_loop"
+      },
+      {
+        "source": "sysfs_net",
+        "target": "p4_native_uevent_sysfs_net"
+      },
+      {
+        "source": "sysfs_uprobe",
+        "target": "p4_native_uevent_sysfs_uprobe"
+      }
+    ],
+    "schema": "droidloom.native-uevent-label-map.v1"
+  }
+}

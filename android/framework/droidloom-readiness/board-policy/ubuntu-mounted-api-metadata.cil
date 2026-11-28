@@ -1,0 +1,660 @@
+; The real Ubuntu manager identifies kernel mounts prepared by the board.
+(allow init_t cgroup_v2 (dir (getattr)))
+(allow init_t devpts (dir (getattr)))
+(allow init_t securityfs (dir (getattr)))
+(allow init_t sysfs (filesystem (getattr)))
+; Fixed native terminal ioctl filters are proved in ubuntu-native-console.cil.
+
+; The original Ubuntu shared-memory mount is created before global policy load.
+; The manager can identify this Linux-only root without modifying its contents.
+(type p4_linux_shm_root_t)
+(roletype object_r p4_linux_shm_root_t)
+(typeattributeset p4_linux_data (p4_linux_shm_root_t))
+(allow kernel p4_linux_shm_root_t (dir (getattr relabelto)))
+(allow p4_linux_shm_root_t tmpfs (filesystem (associate)))
+(allow init_t p4_linux_shm_root_t (dir (getattr)))
+(neverallow p4_linux_procs p4_linux_shm_root_t (dir (relabelfrom relabelto mounton)))
+
+; PID 1 gathers its own file descriptors and reads its immutable distro configuration.
+(allow init_t self (dir (open read)))
+(type p4_linux_systemd_config_t)
+(roletype object_r p4_linux_systemd_config_t)
+(typeattributeset p4_linux_data (p4_linux_systemd_config_t))
+(allow init_t p4_linux_systemd_config_t (file (getattr open read)))
+(neverallow p4_linux_procs p4_linux_systemd_config_t (file (write append setattr relabelto relabelfrom create execute entrypoint)))
+; fstatfs on the original, already mounted Linux unified hierarchy.
+(allow init_t cgroup_v2 (filesystem (getattr)))
+
+; The timezone event source observes entries directly under the host /etc.
+(type p4_linux_etc_dir_t)
+(roletype object_r p4_linux_etc_dir_t)
+(typeattributeset p4_linux_data (p4_linux_etc_dir_t))
+(allow p4_linux_procs p4_linux_etc_dir_t (dir (getattr search)))
+(allow kernel p4_linux_etc_dir_t (dir (getattr search)))
+(allow init_t p4_linux_etc_dir_t (dir (read watch)))
+(neverallow p4_linux_procs p4_linux_etc_dir_t (dir (write add_name remove_name relabelfrom relabelto)))
+
+; Only the distribution manager executes the original immutable systemd helper.
+(type p4_linux_systemd_executor_t)
+(roletype object_r p4_linux_systemd_executor_t)
+(typeattributeset p4_linux_data (p4_linux_systemd_executor_t))
+(allow init_t p4_linux_systemd_executor_t (file (getattr open read execute map)))
+(neverallow p4_linux_procs p4_linux_systemd_executor_t (file (write append setattr create relabelto relabelfrom)))
+(neverallow p4_linux_other_than_executor p4_linux_systemd_executor_t (file (entrypoint)))
+
+; The original system manager searches only its distribution and local unit directories.
+(type p4_linux_unit_directory_t)
+(type p4_linux_unit_file_t)
+(roletype object_r p4_linux_unit_directory_t)
+(roletype object_r p4_linux_unit_file_t)
+(typeattributeset p4_linux_data (p4_linux_unit_directory_t p4_linux_unit_file_t))
+(allow init_t p4_linux_unit_directory_t (dir (getattr search open read watch)))
+(allow init_t p4_linux_unit_file_t (file (getattr open read map)))
+(allow init_t p4_linux_unit_file_t (lnk_file (getattr read)))
+(neverallow p4_linux_procs p4_linux_unit_directory_t (dir (write create add_name remove_name relabelto relabelfrom)))
+(neverallow p4_linux_procs p4_linux_unit_file_t (file (write append setattr create relabelto relabelfrom entrypoint)))
+
+; PID 1 owns its notification endpoint. Only the selected early observer uses sd_notify.
+(type p4_linux_systemd_notify_t)
+(roletype object_r p4_linux_systemd_notify_t)
+(typeattributeset p4_linux_data (p4_linux_systemd_notify_t))
+(typetransition init_t p4_linux_systemd_run_t sock_file "notify" p4_linux_systemd_notify_t)
+(allow p4_linux_systemd_notify_t tmpfs (filesystem (associate)))
+(allow init_t self (unix_dgram_socket (create bind read getattr getopt setopt shutdown)))
+(allow init_t p4_linux_systemd_notify_t (sock_file (create getattr setattr unlink)))
+(allow droidloom_container_entry_t self (unix_dgram_socket (create write getattr getopt setopt)))
+(allow droidloom_container_entry_t p4_linux_systemd_notify_t (sock_file (write)))
+(allow droidloom_container_entry_t init_t (unix_dgram_socket (sendto)))
+(neverallow p4_android_userspace p4_linux_systemd_notify_t (sock_file (open read write create setattr unlink relabelto relabelfrom)))
+
+; Ubuntu initializes its machine-id once, and owns no associated Android identity.
+(type p4_linux_machine_id_t)
+(roletype object_r p4_linux_machine_id_t)
+(typeattributeset p4_linux_data (p4_linux_machine_id_t))
+(allow init_t p4_linux_machine_id_t (file (getattr open read write lock)))
+(neverallow p4_linux_procs p4_linux_machine_id_t (file (create unlink rename relabelfrom relabelto entrypoint execute)))
+
+; The distribution's service manager forks its own helper before that helper
+; execs a unit with the policy-configured Linux service identity.
+(allow init_t self (process (fork sigchld)))
+
+; The original Ubuntu systemd-executor is a short-lived trusted process. It
+; consumes a sealed invocation from Ubuntu PID 1, places its own PID into an
+; ordinary unit cgroup, and switches to the selected service's own domain.
+(type p4_linux_service_executor_t)
+(roletype system_r p4_linux_service_executor_t)
+(typeattributeset p4_linux_procs (p4_linux_service_executor_t))
+(typeattribute p4_linux_other_than_executor)
+(typeattributeset p4_linux_other_than_executor (and (p4_linux_procs) (not (or (p4_linux_service_executor_t) (p4_linux_user_executor_t)))))
+(typetransition init_t p4_linux_systemd_executor_t process p4_linux_service_executor_t)
+(allow init_t p4_linux_service_executor_t (process (transition getattr signull signal sigkill)))
+(allow p4_linux_service_executor_t p4_linux_systemd_executor_t (file (entrypoint open read getattr execute map)))
+(allow p4_linux_service_executor_t init_t (process (sigchld)))
+(allow p4_linux_service_executor_t init_t (fd (use)))
+(allow p4_linux_service_executor_t p4_linux_rootdir_t (dir (getattr search)))
+(allow p4_linux_service_executor_t p4_linux_runtime_lib_t (file (getattr open read execute map)))
+(allow p4_linux_service_executor_t p4_linux_host_config_t (file (getattr open read map)))
+(allow p4_linux_service_executor_t p4_linux_systemd_memfd_t (file (getattr open read write)))
+; Ubuntu finalizes sd-executor-state with memfd_set_sealed() but passes the
+; original O_RDWR description. SELinux checks its mode on the exec transition;
+; VFS seals still prohibit modifying the finalized contents.
+(allow p4_linux_service_executor_t init_t (unix_dgram_socket (read write)))
+(allow p4_linux_service_executor_t device (dir (getattr search)))
+(allow init_t p4_linux_service_executor_t (dir (getattr search)))
+(allow init_t p4_linux_service_executor_t (process (siginh rlimitinh)))
+(allow p4_linux_service_executor_t self (process (signal)))
+(allow p4_linux_service_executor_t p4_linux_standardio_t (chr_file (ioctl)))
+(allowx p4_linux_service_executor_t p4_linux_standardio_t (ioctl chr_file (0x542a)))
+(neverallow p4_linux_service_executor_t device (chr_file (open read write ioctl map)))
+(allow p4_linux_service_executor_t p4_linux_elf_interpreter_t (file (getattr map read open execute)))
+(allow p4_linux_service_executor_t p4_linux_cgroup_root_t (dir (search getattr)))
+(allow p4_linux_service_executor_t p4_linux_system_slice_t (dir (search getattr)))
+(allow p4_linux_service_executor_t p4_linux_unit_cgroup_t (dir (search getattr open)))
+(allow p4_linux_service_executor_t p4_linux_unit_cgroup_t (file (getattr open write)))
+(allow p4_linux_service_executor_t sysfs (dir (getattr search)))
+(allow p4_linux_service_executor_t proc (dir (getattr search)))
+(allow p4_linux_service_executor_t proc (lnk_file (getattr read)))
+(allow p4_linux_service_executor_t self (dir (getattr open read search)))
+(allow p4_linux_service_executor_t self (file (open read getattr)))
+(allow p4_linux_service_executor_t self (lnk_file (getattr read)))
+(allow p4_linux_service_executor_t p4_linux_standardio_t (chr_file (getattr open read write)))
+(allow p4_linux_service_executor_t self (process (setexec getcap)))
+(allow p4_linux_service_executor_t droidloom_broker (process (transition)))
+(allow p4_linux_service_executor_t droidloom_policy_loader (process (transition)))
+(allow p4_linux_service_executor_t droidloom_container_entry_t (process (transition)))
+(allow p4_linux_service_executor_t droidloom_broker (process2 (nnp_transition)))
+(allow p4_linux_service_executor_t droidloom_policy_loader (process2 (nnp_transition)))
+(allow p4_linux_service_executor_t droidloom_container_entry_t (process2 (nnp_transition)))
+(allow p4_linux_service_executor_t droidloom_container_entry_exec_t (file (getattr open read execute map)))
+(allow p4_linux_service_executor_t droidloom_policy_loader_exec (file (getattr open read execute map)))
+(typetransition p4_linux_service_executor_t droidloom_container_entry_exec_t process droidloom_container_entry_t)
+(typetransition p4_linux_service_executor_t droidloom_policy_loader_exec process droidloom_policy_loader)
+(auditallow init_t p4_linux_service_executor_t (process (transition)))
+(auditallow p4_linux_service_executor_t droidloom_broker (process (transition)))
+(neverallow p4_linux_service_executor_t cgroup_v2 (file (write append create unlink relabelfrom relabelto)))
+(neverallow p4_linux_service_executor_t cgroup_app (file (write append create unlink relabelfrom relabelto)))
+
+; Host traversal is limited to the original proc and sysfs directories, and
+; only the selected parent can enter the executor. Invoked service binaries
+; must receive a distinct, allowed domain before the kernel will execute them.
+(typeattribute p4_nonboard_except_executor_abi_dirs)
+(typeattributeset p4_nonboard_except_executor_abi_dirs (and (p4_all_nonboard) (not (or (proc) (or (sysfs) (device))))))
+; The executor's public mountpoint traversal is defined by the atomic
+; native sandbox component, independently of inode body access.
+(typeattribute p4_not_ubuntu_pid1)
+(typeattributeset p4_not_ubuntu_pid1 (not (init_t)))
+(neverallow p4_not_ubuntu_pid1 p4_linux_service_executor_t (process (transition dyntransition)))
+(neverallow p4_linux_service_executor_t p4_all_board_owned (file (execute_no_trans)))
+(allow p4_linux_service_executor_t p4_linux_systemd_memfd_t (file (ioctl)))
+(allowx p4_linux_service_executor_t p4_linux_systemd_memfd_t (ioctl file (0x542a)))
+(allow p4_linux_service_executor_t p4_linux_console_t (chr_file (getattr open write)))
+
+; Original Ubuntu systemd passes the execution time over its preconnected
+; AF_UNIX socketpair. Both socket endpoint labels belong to PID 1.
+(allow init_t self (unix_dgram_socket (sendto)))
+
+; systemd consults these kernel interfaces before it applies SELinuxContext=
+; and AppArmorProfile= from an authenticated unit. Confine the sysfs read to
+; AppArmor's single, immutable enabled parameter.
+(type p4_linux_apparmor_enabled_t)
+(roletype object_r p4_linux_apparmor_enabled_t)
+(typeattributeset p4_linux_data (p4_linux_apparmor_enabled_t))
+(genfscon sysfs "/module/apparmor/parameters/enabled" (u object_r p4_linux_apparmor_enabled_t ((s0) (s0))))
+(allow init_t p4_linux_apparmor_enabled_t (file (getattr open read)))
+(allow p4_linux_service_executor_t p4_linux_apparmor_enabled_t (file (getattr open read)))
+(allow p4_linux_mac_roles p4_linux_apparmor_enabled_t (file (getattr open read)))
+(neverallow p4_linux_procs p4_linux_apparmor_enabled_t (file (write append setattr relabelfrom relabelto)))
+(neverallow p4_linux_mac_roles p4_linux_apparmor_enabled_t (file (execute map)))
+(allow p4_linux_service_executor_t selinuxfs (filesystem (getattr)))
+; The production libselinux exec-context implementation uses the native LSM
+; attribute syscall. No procattr/self-memory file write is required or allowed.
+(neverallow p4_linux_service_executor_t self (file (write append)))
+
+; Ubuntu's libselinux checks its native release configuration before honoring
+; SELinuxContext=. Its canonical policy-version file contains the exact same
+; authenticated binary that board PID 1 already installed.
+(type p4_linux_board_selinux_config_t)
+(type p4_linux_board_policy_image_t)
+(roletype object_r p4_linux_board_selinux_config_t)
+(roletype object_r p4_linux_board_policy_image_t)
+(typeattributeset p4_linux_data (p4_linux_board_selinux_config_t p4_linux_board_policy_image_t))
+(allow init_t p4_linux_board_selinux_config_t (file (getattr open read map)))
+(allow p4_linux_service_executor_t p4_linux_board_selinux_config_t (file (getattr open read)))
+(allow init_t p4_linux_board_policy_image_t (file (getattr open read map)))
+(neverallow p4_linux_procs p4_linux_board_selinux_config_t (file (write append setattr create relabelto relabelfrom execute entrypoint)))
+(neverallow p4_linux_procs p4_linux_board_policy_image_t (file (write append setattr create relabelto relabelfrom execute entrypoint)))
+(neverallow init_t kernel (security (load_policy setenforce)))
+
+; A broker with the explicitly selected label inherits ordinary standard I/O
+; set up by its immutable executor, then loads its trusted Linux runtime.
+(allow droidloom_broker p4_linux_service_executor_t (fd (use)))
+(allow droidloom_broker p4_linux_standardio_t (chr_file (getattr read write)))
+(allow droidloom_broker p4_linux_host_config_t (file (getattr open read map)))
+(allow p4_linux_service_executor_t droidloom_broker (process (siginh rlimitinh)))
+
+; The genuine broker reads the immutable kernel LSM list during its normal
+; startup. Keep all other securityfs files outside this read grant.
+(type p4_linux_registered_lsms_t)
+(roletype object_r p4_linux_registered_lsms_t)
+(typeattributeset p4_linux_data (p4_linux_registered_lsms_t))
+(genfscon securityfs "/lsm" (u object_r p4_linux_registered_lsms_t ((s0) (s0))))
+(allow p4_linux_mac_roles securityfs (dir (getattr search)))
+(allow p4_linux_mac_roles securityfs (filesystem (getattr)))
+(allow p4_linux_mac_roles p4_linux_registered_lsms_t (file (getattr open read)))
+(neverallow p4_linux_procs p4_linux_registered_lsms_t (file (write append setattr relabelfrom relabelto mounton)))
+(neverallow p4_linux_mac_roles securityfs (file (getattr open read map write append setattr)))
+; Validate the mount type holding the already selected AppArmor enabled bit.
+(allow p4_linux_mac_roles sysfs (filesystem (getattr)))
+(auditallow p4_linux_mac_roles p4_linux_registered_lsms_t (file (read)))
+(auditallow p4_linux_mac_roles p4_linux_apparmor_enabled_t (file (read)))
+
+; Ubuntu PID 1 socket-activates journald. Only the original named directory
+; and three endpoints receive these labels. The manager's private control
+; socket and the Android observer endpoint each keep their distinct type.
+(type p4_linux_journal_runtime_t)
+(type p4_linux_journal_socket_t)
+(roletype object_r p4_linux_journal_runtime_t)
+(roletype object_r p4_linux_journal_socket_t)
+(typeattributeset p4_linux_data (p4_linux_journal_runtime_t p4_linux_journal_socket_t))
+(typetransition init_t p4_linux_systemd_run_t dir "journal" p4_linux_journal_runtime_t)
+(typetransition init_t p4_linux_journal_runtime_t sock_file "socket" p4_linux_journal_native_socket_t)
+(typetransition init_t p4_linux_journal_runtime_t sock_file "stdout" p4_linux_journal_socket_t)
+(typetransition init_t p4_linux_journal_runtime_t sock_file "dev-log" p4_linux_journal_socket_t)
+(allow p4_linux_journal_runtime_t tmpfs (filesystem (associate)))
+(allow p4_linux_journal_socket_t tmpfs (filesystem (associate)))
+(allow init_t p4_linux_journal_runtime_t (dir (create getattr search open read write add_name remove_name setattr)))
+(allow init_t p4_linux_journal_socket_t (sock_file (create getattr setattr unlink)))
+(neverallow p4_android_userspace p4_linux_journal_socket_t (sock_file (read write create setattr unlink relabelfrom relabelto)))
+(neverallow p4_linux_procs p4_linux_journal_runtime_t (dir (relabelto relabelfrom mounton)))
+(neverallow p4_linux_procs p4_linux_journal_socket_t (sock_file (relabelto relabelfrom)))
+
+; Ubuntu activates the unmodified systemd-journald binary with its normal
+; socket units. The journal runs in a separate Linux subject whose immutable
+; executable is unreachable as an entrypoint to the Android or product roles.
+(type p4_linux_journald_t)
+(type p4_linux_journald_exec_t)
+(roletype system_r p4_linux_journald_t)
+(roletype object_r p4_linux_journald_exec_t)
+(typeattributeset p4_linux_procs (p4_linux_journald_t))
+(typeattributeset p4_linux_data (p4_linux_journald_exec_t))
+(typetransition p4_linux_service_executor_t p4_linux_journald_exec_t process p4_linux_journald_t)
+(allow init_t p4_linux_journald_exec_t (file (getattr open read execute)))
+(allow p4_linux_service_executor_t p4_linux_journald_exec_t (file (getattr open read execute)))
+(allow p4_linux_service_executor_t p4_linux_journald_t (process (transition siginh rlimitinh)))
+(allow p4_linux_service_executor_t p4_linux_journald_t (process2 (nnp_transition)))
+(allow p4_linux_journald_t p4_linux_journald_exec_t (file (getattr open read execute map entrypoint)))
+(allow p4_linux_journald_t init_t (process (sigchld)))
+(allow init_t p4_linux_journald_t (process (getattr signull signal sigkill sigstop)))
+(allow p4_linux_journald_t init_t (fd (use)))
+(allow p4_linux_journald_t p4_linux_service_executor_t (fd (use)))
+(allow p4_linux_journald_t p4_linux_standardio_t (chr_file (getattr read write)))
+(allow p4_linux_journald_t p4_linux_rootdir_t (dir (search getattr)))
+(allow p4_linux_journald_t p4_linux_runtime_lib_t (file (getattr open read execute map)))
+(allow p4_linux_journald_t p4_linux_host_config_t (file (getattr open read map)))
+(allow p4_linux_journald_t p4_linux_run_t (dir (search getattr)))
+(allow p4_linux_journald_t p4_linux_systemd_run_t (dir (getattr search)))
+(allow p4_linux_journald_t p4_linux_journal_runtime_t (dir (getattr search)))
+(allow p4_linux_journald_t init_t (unix_dgram_socket (read getattr getopt setopt)))
+(allow p4_linux_journald_t init_t (unix_stream_socket (read write accept getopt setopt getattr shutdown)))
+(auditallow p4_linux_service_executor_t p4_linux_journald_t (process (transition)))
+(neverallow p4_linux_procs p4_linux_journald_exec_t (file (write append setattr create relabelto relabelfrom execute_no_trans)))
+(neverallow p4_linux_journald_t p4_all_board_owned (file (execute_no_trans)))
+(neverallow p4_linux_journald_t droidloom_broker (process (transition dyntransition ptrace)))
+(neverallow p4_linux_journald_t droidloom_policy_loader (process (transition dyntransition ptrace)))
+
+; The original socket units have already created RuntimeDirectory=systemd/journal.
+; The executor may validate that directory and retain the already-open stream
+; socket activation descriptors. It cannot bind or connect to manager sockets.
+(allow p4_linux_service_executor_t p4_linux_run_t (dir (getattr search)))
+(allow p4_linux_service_executor_t p4_linux_systemd_run_t (dir (getattr search)))
+(allow p4_linux_service_executor_t p4_linux_journal_runtime_t (dir (getattr search open read setattr)))
+(allow p4_linux_service_executor_t init_t (unix_stream_socket (read write)))
+(neverallow p4_linux_service_executor_t p4_linux_run_t (dir (write add_name remove_name setattr)))
+
+; The board holds only the root-owned /run/credentials directory before the
+; policy is installed. Each service's private inputs keep their own ownership.
+; The executor can prepare journald's own exact unit directory without gaining
+; the ability to create anything in the root of /run.
+(type p4_linux_credentials_root_t)
+(type p4_linux_journal_credentials_t)
+(roletype object_r p4_linux_credentials_root_t)
+(roletype object_r p4_linux_journal_credentials_t)
+(typeattributeset p4_linux_data (p4_linux_credentials_root_t p4_linux_journal_credentials_t))
+(allow kernel p4_linux_credentials_root_t (dir (getattr relabelto)))
+(allow p4_linux_credentials_root_t tmpfs (filesystem (associate)))
+(allow p4_linux_journal_credentials_t tmpfs (filesystem (associate)))
+(typetransition p4_linux_service_executor_t p4_linux_credentials_root_t dir "systemd-journald.service" p4_linux_journal_credentials_t)
+(allow p4_linux_service_executor_t p4_linux_credentials_root_t (dir (getattr search write add_name remove_name)))
+(allow p4_linux_service_executor_t p4_linux_journal_credentials_t (dir (create getattr search open read setattr rmdir)))
+(allow p4_linux_journald_t p4_linux_credentials_root_t (dir (getattr search)))
+(allow p4_linux_journald_t p4_linux_journal_credentials_t (dir (getattr search open read)))
+(neverallow p4_linux_procs p4_linux_credentials_root_t (dir (create rmdir rename relabelfrom)))
+; Preserve the original kernel first-load label operation as well as the
+; stock executor's fresh namespace root. No other actor can target this SID.
+(typeattribute p4_credentials_root_nonrelabelers)
+(typeattributeset p4_credentials_root_nonrelabelers (not (or (kernel) (p4_linux_service_executor_t))))
+(neverallow p4_credentials_root_nonrelabelers p4_linux_credentials_root_t (dir (relabelto)))
+; Stock namespace setup hides the already-held credential root only in the
+; sealed executor's private namespace. No other process gains this mountpoint.
+(allow p4_linux_service_executor_t p4_linux_credentials_root_t (dir (mounton)))
+(neverallow p4_not_service_executor p4_linux_credentials_root_t (dir (mounton)))
+(neverallow p4_linux_journald_t p4_linux_journal_credentials_t (dir (create setattr write add_name remove_name rmdir rename relabelfrom relabelto mounton)))
+
+; Original Ubuntu setup_credentials_plain_dir moves the private journal unit
+; workspace into /run/credentials atomically. Its parent remains root-only.
+(type p4_linux_credential_staging_t)
+(roletype object_r p4_linux_credential_staging_t)
+(typeattributeset p4_linux_data (p4_linux_credential_staging_t))
+(allow kernel p4_linux_systemd_run_t (dir (getattr relabelto)))
+(allow kernel p4_linux_credential_staging_t (dir (getattr relabelto)))
+(allow p4_linux_credential_staging_t tmpfs (filesystem (associate)))
+(typetransition p4_linux_service_executor_t p4_linux_credential_staging_t dir "systemd-journald.service" p4_linux_journal_credentials_t)
+(allow p4_linux_service_executor_t p4_linux_credential_staging_t (dir (getattr search write add_name remove_name)))
+; The VFS checks MAY_WRITE on the directory being reparented by rename().
+(allow p4_linux_service_executor_t p4_linux_journal_credentials_t (dir (write rename reparent)))
+(neverallow p4_linux_procs p4_linux_credential_staging_t (dir (create rmdir rename relabelfrom relabelto mounton)))
+(neverallow p4_linux_journald_t p4_linux_credential_staging_t (dir (open read search write add_name remove_name)))
+
+; Ubuntu dispatches its device manager through the immutable systemd-udevd
+; symlink to the original multicall udevadm ELF. Give it a separate process
+; domain so no other host service inherits device-manager authority.
+(type p4_linux_udev_exec_t)
+(type p4_linux_udev_alias_t)
+(type p4_linux_udev_t)
+(roletype object_r p4_linux_udev_exec_t)
+(roletype object_r p4_linux_udev_alias_t)
+(roletype system_r p4_linux_udev_t)
+(typeattributeset p4_linux_data (p4_linux_udev_exec_t p4_linux_udev_alias_t))
+(typeattributeset p4_linux_procs (p4_linux_udev_t))
+(allow init_t p4_linux_udev_alias_t (lnk_file (getattr read)))
+(allow p4_linux_service_executor_t p4_linux_udev_alias_t (lnk_file (getattr read)))
+(allow init_t p4_linux_udev_exec_t (file (getattr open read execute)))
+(allow p4_linux_service_executor_t p4_linux_udev_exec_t (file (getattr open read execute)))
+(typetransition p4_linux_service_executor_t p4_linux_udev_exec_t process p4_linux_udev_t)
+(allow p4_linux_service_executor_t p4_linux_udev_t (process (transition siginh rlimitinh)))
+(allow p4_linux_service_executor_t p4_linux_udev_t (process2 (nnp_transition)))
+(allow p4_linux_udev_t p4_linux_udev_exec_t (file (getattr open read execute map entrypoint)))
+(allow p4_linux_udev_t init_t (process (sigchld)))
+(allow init_t p4_linux_udev_t (process (getattr signull signal sigkill sigstop)))
+(allow p4_linux_udev_t init_t (fd (use)))
+(allow p4_linux_udev_t p4_linux_service_executor_t (fd (use)))
+(allow p4_linux_udev_t p4_linux_standardio_t (chr_file (getattr read write)))
+(allow p4_linux_udev_t p4_linux_rootdir_t (dir (getattr search)))
+(allow p4_linux_udev_t p4_linux_runtime_lib_t (file (getattr open read execute map)))
+(allow p4_linux_udev_t p4_linux_host_config_t (file (getattr open read map)))
+(auditallow p4_linux_service_executor_t p4_linux_udev_t (process (transition)))
+(neverallow p4_linux_procs p4_linux_udev_exec_t (file (create write append setattr relabelto relabelfrom execute_no_trans)))
+(neverallow p4_linux_procs p4_linux_udev_alias_t (lnk_file (create write unlink rename setattr relabelto relabelfrom)))
+(neverallow p4_linux_udev_t p4_all_board_owned (file (execute_no_trans)))
+(neverallow p4_linux_udev_t droidloom_broker (process (transition dyntransition ptrace)))
+(neverallow p4_linux_udev_t droidloom_policy_loader (process (transition dyntransition ptrace)))
+
+; The original Ubuntu executor narrows its own inherited capability bounding set
+; before exec. The stock journal's NoNewPrivileges and CapabilityBoundingSet
+; remain in the original service configuration.
+(allow p4_linux_service_executor_t self (capability (setpcap)))
+(allow p4_linux_service_executor_t self (process (setcap)))
+(auditallow p4_linux_service_executor_t self (capability (setpcap)))
+(neverallow p4_linux_service_executor_t p4_android_userspace (process (setcap)))
+(neverallow p4_linux_journald_t p4_linux_service_executor_t (process (setcap)))
+
+; The real initramfs already made /run/udev before policy load. The board pins
+; just that root-owned directory on the same /run mount, without walking its children.
+(type p4_linux_udev_run_t)
+(type p4_linux_udev_listener_t)
+(type p4_linux_udev_rules_t)
+(type p4_linux_udev_state_t)
+(roletype object_r p4_linux_udev_run_t)
+(roletype object_r p4_linux_udev_listener_t)
+(roletype object_r p4_linux_udev_rules_t)
+(roletype object_r p4_linux_udev_state_t)
+(typeattributeset p4_linux_data (p4_linux_udev_run_t p4_linux_udev_listener_t p4_linux_udev_rules_t p4_linux_udev_state_t))
+(allow kernel p4_linux_udev_run_t (dir (getattr relabelto)))
+(allow kernel p4_linux_udev_state_t (dir (getattr relabelto)))
+(allow p4_linux_udev_run_t tmpfs (filesystem (associate)))
+(allow p4_linux_udev_listener_t tmpfs (filesystem (associate)))
+(allow p4_linux_udev_state_t tmpfs (filesystem (associate)))
+(allow init_t p4_linux_udev_run_t (dir (getattr search open write add_name remove_name)))
+(typetransition init_t p4_linux_udev_run_t sock_file "control" p4_linux_udev_listener_t)
+(typetransition init_t p4_linux_udev_run_t sock_file "io.systemd.Udev" p4_linux_udev_listener_t)
+(allow init_t p4_linux_udev_listener_t (sock_file (create getattr setattr unlink)))
+; Linux checks both access modes when passing an O_RDWR netlink socket across exec.
+; Tag the original manager's kobject socket, leaving other netlink socket classes untouched.
+(type p4_linux_udev_netlink_t)
+(roletype object_r p4_linux_udev_netlink_t)
+(roletype system_r p4_linux_udev_netlink_t)
+(typeattributeset p4_linux_data (p4_linux_udev_netlink_t))
+(typetransition init_t init_t netlink_kobject_uevent_socket p4_linux_udev_netlink_t)
+(allow init_t p4_linux_udev_netlink_t (netlink_kobject_uevent_socket (create bind getattr getopt setopt read write)))
+(allow p4_linux_service_executor_t p4_linux_udev_netlink_t (netlink_kobject_uevent_socket (getattr read write)))
+(allow p4_linux_service_executor_t init_t (unix_stream_socket (getattr read write)))
+(neverallow p4_linux_service_executor_t init_t (unix_stream_socket (connectto accept)))
+(allow p4_linux_udev_t p4_linux_udev_netlink_t (netlink_kobject_uevent_socket (getattr getopt setopt read write)))
+(neverallow p4_android_userspace p4_linux_udev_netlink_t (netlink_kobject_uevent_socket (create bind read write sendto)))
+(neverallow p4_linux_service_executor_t p4_linux_udev_netlink_t (netlink_kobject_uevent_socket (create bind sendto)))
+(neverallow p4_linux_udev_t self (capability (sys_admin)))
+; Stock worker_spawn creates its own MONITOR_GROUP_NONE endpoint before forking.
+(type p4_linux_udev_worker_netlink_t)
+(roletype object_r p4_linux_udev_worker_netlink_t)
+(roletype system_r p4_linux_udev_worker_netlink_t)
+(typeattributeset p4_linux_data (p4_linux_udev_worker_netlink_t))
+(typetransition p4_linux_udev_t p4_linux_udev_t netlink_kobject_uevent_socket p4_linux_udev_worker_netlink_t)
+(allow p4_linux_udev_t p4_linux_udev_worker_netlink_t (netlink_kobject_uevent_socket (create bind getattr getopt setopt read write)))
+(allow p4_linux_udev_t self (process (fork sigchld getcap)))
+(allow p4_linux_udev_t self (unix_dgram_socket (sendto)))
+(allow p4_linux_udev_t sysfs (filesystem (getattr)))
+(allow p4_linux_udev_t sysfs (file (getattr)))
+; Public hardware metadata is read through the native module-input partition.
+(neverallow p4_linux_udev_t sysfs (file (write append map execute)))
+(neverallow p4_android_userspace p4_linux_udev_worker_netlink_t (netlink_kobject_uevent_socket (create bind read write sendto)))
+(allow p4_linux_udev_t init_t (unix_stream_socket (getattr getopt setopt read write accept listen)))
+; Original udev workers register their own abstract notification endpoint.
+(allow p4_linux_udev_t self (unix_dgram_socket (create bind connect write read getattr getopt setopt)))
+(allow p4_linux_udev_t init_t (unix_dgram_socket (sendto)))
+(allow p4_linux_udev_t p4_linux_systemd_notify_t (sock_file (write)))
+(allow p4_linux_udev_t p4_linux_systemd_run_t (dir (getattr search)))
+(allow p4_linux_udev_t p4_linux_run_t (dir (getattr search)))
+(allow p4_linux_udev_t p4_linux_udev_run_t (dir (getattr search open read write add_name remove_name)))
+(typetransition p4_linux_udev_t p4_linux_udev_run_t dir p4_linux_udev_state_t)
+(typetransition p4_linux_udev_t p4_linux_udev_run_t file p4_linux_udev_state_t)
+(allow p4_linux_udev_t p4_linux_udev_state_t (dir (create getattr open read search write add_name remove_name rmdir)))
+(allow p4_linux_udev_t p4_linux_udev_state_t (file (create getattr open read write rename unlink)))
+(allow p4_linux_udev_t p4_linux_udev_rules_t (dir (getattr search open read)))
+; Stock distribution rules resolve static OWNER and GROUP names with glibc NSS.
+(type p4_linux_public_accounts_t)
+(roletype object_r p4_linux_public_accounts_t)
+(typeattributeset p4_linux_data (p4_linux_public_accounts_t))
+(allow p4_linux_udev_t p4_linux_public_accounts_t (file (getattr open read)))
+; Normal systemd 259.9 exec-invoke::get_fixed_user resolves User= through
+; get_user_creds/getpwnam before dropping credentials or entering the daemon.
+; The normal files NSS backend reads /etc/passwd and /etc/group; these are
+; public identities, separate from shadow/gshadow and the sysusers lock.
+(allow p4_linux_service_executor_t p4_linux_public_accounts_t (file (getattr open read)))
+(neverallow p4_linux_service_executor_t p4_linux_public_accounts_t (file (not (getattr open read))))
+(neverallow p4_linux_udev_t p4_linux_public_accounts_t (file (execute write append create unlink setattr relabelfrom relabelto)))
+(neverallow p4_android_userspace p4_linux_public_accounts_t (file (open read map write append)))
+; Original PID 1 uses the same read_line_full routine for installed systemd unit files.
+(allow init_t p4_linux_unit_file_t (file (ioctl)))
+(allowx init_t p4_linux_unit_file_t (ioctl file (0x542a)))
+; Ubuntu read_line_full checks whether each input line belongs to a terminal.
+; Only the termios getter may reach the immutable, regular distribution rule files.
+(allow p4_linux_udev_t p4_linux_udev_rules_t (file (getattr open read map ioctl)))
+(allowx p4_linux_udev_t p4_linux_udev_rules_t (ioctl file (0x542a)))
+(allow p4_linux_udev_t proc (dir (getattr search)))
+; udev_rules_parse_file reopens each original distribution rule via /proc/self/fd/N.
+(allow p4_linux_udev_t proc (lnk_file (getattr read)))
+(allow p4_linux_udev_t self (dir (getattr search)))
+(allow p4_linux_udev_t self (lnk_file (getattr read)))
+(neverallow p4_linux_udev_t init_t (lnk_file (getattr read write)))
+(neverallow p4_linux_udev_t p4_android_userspace (lnk_file (read write)))
+(allow p4_linux_udev_t sysfs (dir (getattr search)))
+(allow p4_linux_udev_t device (dir (getattr search)))
+(allow p4_linux_udev_t self (process (getsched)))
+(neverallow p4_linux_udev_t p4_linux_udev_listener_t (sock_file (create relabelto relabelfrom unlink setattr)))
+(neverallow p4_linux_udev_t p4_linux_udev_rules_t (file (write append execute create unlink)))
+(neverallow p4_linux_udev_t init_t (netlink_kobject_uevent_socket (write sendto)))
+(neverallow p4_android_userspace p4_linux_udev_listener_t (sock_file (open read write create setattr unlink relabelto relabelfrom)))
+
+; journald receives the two native datagrams and stdout from Ubuntu PID 1.
+; Each socket-activated datagram is handed off O_RDWR by sd_listen_fds().
+(allow p4_linux_journald_t init_t (unix_dgram_socket (write)))
+(allow p4_linux_journald_t self (unix_dgram_socket (create getattr read write getopt setopt connect)))
+(allow p4_linux_journald_t init_t (unix_dgram_socket (sendto)))
+(allow p4_linux_journald_t p4_linux_systemd_notify_t (sock_file (write)))
+(allow p4_linux_journald_t p4_linux_machine_id_t (file (getattr open read)))
+(type p4_linux_journal_config_t)
+(type p4_linux_journal_varlink_t)
+(type p4_linux_journal_seqnum_t)
+(roletype object_r p4_linux_journal_config_t)
+(roletype object_r p4_linux_journal_varlink_t)
+(roletype object_r p4_linux_journal_seqnum_t)
+(typeattributeset p4_linux_data (p4_linux_journal_config_t p4_linux_journal_varlink_t p4_linux_journal_seqnum_t))
+(allow p4_linux_journald_t p4_linux_journal_config_t (file (getattr open read map)))
+(neverallow p4_linux_procs p4_linux_journal_config_t (file (write append create unlink setattr relabelfrom relabelto mounton)))
+(allow p4_linux_journald_t p4_linux_journal_runtime_t (dir (getattr search open read write add_name remove_name)))
+(typetransition p4_linux_journald_t p4_linux_journal_runtime_t sock_file "io.systemd.journal" p4_linux_journal_varlink_t)
+(typetransition p4_linux_journald_t p4_linux_journal_runtime_t file "seqnum" p4_linux_journal_seqnum_t)
+(typetransition p4_linux_journald_t p4_linux_journal_runtime_t file "kernel-seqnum" p4_linux_journal_seqnum_t)
+(allow p4_linux_journal_varlink_t tmpfs (filesystem (associate)))
+(allow p4_linux_journal_seqnum_t tmpfs (filesystem (associate)))
+(allow p4_linux_journald_t p4_linux_journal_varlink_t (sock_file (getattr create setattr unlink)))
+(allow p4_linux_journald_t self (unix_stream_socket (create getattr read write getopt setopt bind listen accept shutdown)))
+(allow p4_linux_journald_t p4_linux_journal_seqnum_t (file (create getattr open read write setattr map)))
+(neverallow p4_android_userspace p4_linux_journal_varlink_t (sock_file (open read write create setattr unlink)))
+(neverallow p4_android_userspace p4_linux_journal_seqnum_t (file (open read write create setattr unlink map)))
+(neverallow p4_linux_journald_t p4_linux_run_t (dir (write add_name remove_name mounton)))
+
+; Linux derives every /proc/1 pid inode SID from PID 1. The mandatory
+; path-attached journal profile permits /proc/1/cgroup and explicitly denies
+; environment, memory, maps, descriptor access and command-line reads.
+; The board admits that profile with the original Ubuntu/Android policy pair.
+(allow p4_linux_journald_t init_t (dir (getattr search)))
+(allow p4_linux_journald_t init_t (file (getattr open read)))
+(auditallow p4_linux_journald_t init_t (file (open read)))
+(neverallow p4_linux_journald_t init_t (dir (open read write add_name remove_name create setattr mounton relabelfrom relabelto)))
+(neverallow p4_linux_journald_t init_t (file (map execute execute_no_trans entrypoint write append setattr create unlink link rename mounton relabelfrom relabelto)))
+(neverallow p4_linux_procs p4_linux_journald_exec_t (file (link unlink rename)))
+
+; /var/log is selected before policy activation. Journald may create its
+; normal per-machine journal store only within this typed subtree.
+(type p4_linux_log_root_t)
+(type p4_linux_journal_store_t)
+(type p4_linux_journal_machine_t)
+(type p4_linux_journal_database_t)
+(roletype object_r p4_linux_log_root_t)
+(roletype object_r p4_linux_journal_store_t)
+(roletype object_r p4_linux_journal_machine_t)
+(roletype object_r p4_linux_journal_database_t)
+(typeattributeset p4_linux_data (p4_linux_log_root_t p4_linux_journal_store_t p4_linux_journal_machine_t p4_linux_journal_database_t))
+(allow kernel p4_linux_log_root_t (dir (getattr relabelto)))
+(allow kernel p4_linux_journal_store_t (dir (getattr relabelto)))
+(allow p4_linux_log_root_t tmpfs (filesystem (associate)))
+(allow p4_linux_journal_store_t tmpfs (filesystem (associate)))
+(allow p4_linux_journal_machine_t tmpfs (filesystem (associate)))
+(allow p4_linux_journal_database_t tmpfs (filesystem (associate)))
+(typetransition p4_linux_journald_t p4_linux_log_root_t dir "journal" p4_linux_journal_store_t)
+(typetransition p4_linux_journald_t p4_linux_journal_store_t dir p4_linux_journal_machine_t)
+(typetransition p4_linux_journald_t p4_linux_journal_machine_t file "system.journal" p4_linux_journal_database_t)
+(allow p4_linux_journald_t p4_linux_log_root_t (dir (getattr search write add_name)))
+(allow p4_linux_journald_t p4_linux_journal_store_t (dir (create getattr open read search write add_name)))
+(allow p4_linux_journald_t p4_linux_journal_machine_t (dir (create getattr open read search write add_name)))
+(allow p4_linux_journald_t p4_linux_journal_database_t (file (create getattr read write append open lock map setattr)))
+(allow p4_linux_journald_t tmpfs (filesystem (getattr)))
+(auditallow p4_linux_journald_t p4_linux_journal_database_t (file (create open)))
+(neverallow p4_linux_journald_t p4_linux_log_root_t (dir (create rmdir remove_name setattr rename mounton relabelfrom relabelto)))
+(neverallow p4_linux_procs p4_linux_journal_database_t (file (execute execute_no_trans entrypoint mounton relabelfrom relabelto)))
+
+; Ubuntu journals authenticate their own open file path and the current
+; kernel boot ID. The journal's path profile permits only boot_id under
+; this original Android proc_random type. Other process fd symlinks stay closed.
+(allow p4_linux_journald_t proc (lnk_file (getattr read)))
+(allow p4_linux_journald_t self (dir (getattr search)))
+(allow p4_linux_journald_t self (lnk_file (getattr read)))
+(neverallow p4_linux_journald_t init_t (lnk_file (getattr read)))
+(neverallow p4_linux_journald_t domain (lnk_file (getattr read)))
+(allow p4_linux_journald_t proc_random (dir (getattr search)))
+(allow p4_linux_journald_t proc_random (file (getattr open read)))
+(neverallow p4_linux_journald_t proc_random (file (write append setattr map execute entrypoint mounton)))
+
+; Ubuntu's distribution journalctl uses the journal's local Varlink endpoint
+; to request FlushToVar. Only the authenticated daemon opens and writes the
+; journal databases. The client does not acquire any store or manager access.
+(type p4_linux_journalctl_exec_t)
+(type p4_linux_journalctl_t)
+(type p4_linux_journal_flushed_t)
+(roletype object_r p4_linux_journalctl_exec_t)
+(roletype system_r p4_linux_journalctl_t)
+(roletype object_r p4_linux_journal_flushed_t)
+(typeattributeset p4_linux_data (p4_linux_journalctl_exec_t p4_linux_journal_flushed_t))
+(typeattributeset p4_linux_procs (p4_linux_journalctl_t))
+(typetransition p4_linux_service_executor_t p4_linux_journalctl_exec_t process p4_linux_journalctl_t)
+(allow init_t p4_linux_journalctl_exec_t (file (getattr open read execute)))
+(allow p4_linux_service_executor_t p4_linux_journalctl_exec_t (file (getattr open read execute)))
+(allow p4_linux_service_executor_t p4_linux_journalctl_t (process (transition siginh rlimitinh)))
+(allow p4_linux_journalctl_t p4_linux_journalctl_exec_t (file (getattr open read execute map entrypoint)))
+(allow p4_linux_journalctl_t init_t (process (sigchld)))
+(allow init_t p4_linux_journalctl_t (process (getattr signull signal sigkill sigstop)))
+(allow p4_linux_journalctl_t init_t (fd (use)))
+(allow p4_linux_journalctl_t p4_linux_service_executor_t (fd (use)))
+; The normal --flush client must retain its inherited journal stdio at exec.
+(allow p4_linux_journalctl_t p4_linux_standardio_t (chr_file (getattr read write)))
+(neverallow p4_linux_journalctl_t p4_linux_standardio_t (chr_file (not (getattr read write))))
+(allow p4_linux_journalctl_t p4_linux_service_executor_t (unix_stream_socket (getattr read write)))
+(neverallow p4_linux_journalctl_t p4_linux_service_executor_t (unix_stream_socket (not (getattr read write))))
+(neverallow p4_linux_journalctl_t null_device (chr_file (getattr open read write ioctl map)))
+(allow p4_linux_journalctl_t p4_linux_console_t (chr_file (getattr read write)))
+(allow p4_linux_journalctl_t p4_linux_rootdir_t (dir (getattr search)))
+(allow p4_linux_journalctl_t p4_linux_runtime_lib_t (file (getattr open read execute map)))
+(allow p4_linux_journalctl_t p4_linux_run_t (dir (getattr search)))
+(allow p4_linux_journalctl_t p4_linux_systemd_run_t (dir (getattr search)))
+(allow p4_linux_journalctl_t p4_linux_journal_runtime_t (dir (getattr search)))
+(allow p4_linux_journalctl_t p4_linux_journal_varlink_t (sock_file (write)))
+(allow p4_linux_journalctl_t self (unix_stream_socket (create getattr getopt setopt connect read write shutdown)))
+(allow p4_linux_journalctl_t p4_linux_journald_t (unix_stream_socket (connectto)))
+(allow p4_linux_journalctl_t p4_linux_journal_flushed_t (file (getattr)))
+(typetransition p4_linux_journald_t p4_linux_journal_runtime_t file "flushed" p4_linux_journal_flushed_t)
+(allow p4_linux_journal_flushed_t tmpfs (filesystem (associate)))
+(allow p4_linux_journald_t p4_linux_journal_flushed_t (file (getattr create open write setattr unlink)))
+(allow p4_linux_journald_t p4_linux_journal_config_t (dir (getattr search open read)))
+(auditallow p4_linux_service_executor_t p4_linux_journalctl_t (process (transition)))
+(auditallow p4_linux_journalctl_t p4_linux_journald_t (unix_stream_socket (connectto)))
+(auditallow p4_linux_journald_t p4_linux_journal_flushed_t (file (create)))
+(neverallow p4_linux_procs p4_linux_journalctl_exec_t (file (write create append link rename unlink setattr relabelto relabelfrom execute_no_trans)))
+(neverallow p4_linux_journalctl_t p4_linux_journal_database_t (file (create open read write append link rename unlink map)))
+(neverallow p4_linux_journalctl_t p4_linux_journal_flushed_t (file (create open read write unlink setattr)))
+(neverallow p4_linux_journalctl_t p4_all_board_owned (file (execute_no_trans)))
+(neverallow p4_linux_journalctl_t droidloom_broker (process (transition dyntransition ptrace)))
+(neverallow p4_linux_journalctl_t droidloom_policy_loader (process (transition dyntransition ptrace)))
+
+; The persistent store is on the real Ubuntu ext4. Only the journal machine
+; directory and database types associate with this store.
+(allow p4_linux_journal_machine_t labeledfs (filesystem (associate)))
+(allow p4_linux_journal_database_t labeledfs (filesystem (associate)))
+(allow p4_linux_journald_t labeledfs (filesystem (getattr)))
+(neverallow p4_linux_journald_t labeledfs (filesystem (mount remount unmount relabelto relabelfrom)))
+
+; Ubuntu PID 1 emits the structured UNIT and INVOCATION_ID entries through
+; /run/systemd/journal/socket. Its private notify and service control endpoints
+; remain independently typed and Android domains cannot access this socket.
+(type p4_linux_journal_native_socket_t)
+(roletype object_r p4_linux_journal_native_socket_t)
+(typeattributeset p4_linux_data (p4_linux_journal_native_socket_t))
+(allow p4_linux_journal_native_socket_t tmpfs (filesystem (associate)))
+(allow init_t p4_linux_journal_native_socket_t (sock_file (create getattr write setattr unlink)))
+(allow init_t self (unix_dgram_socket (connect sendto write)))
+(auditallow init_t p4_linux_journal_native_socket_t (sock_file (write)))
+(neverallow p4_android_userspace p4_linux_journal_native_socket_t (sock_file (create open read write setattr unlink relabelto relabelfrom)))
+(neverallow p4_linux_procs p4_linux_journal_native_socket_t (sock_file (relabelto relabelfrom)))
+
+; journal_file_set_offline() starts a worker thread that inherits the daemon's
+; limits and both of its security contexts to synchronize the existing file.
+(allow p4_linux_journald_t self (process (fork)))
+(auditallow p4_linux_journald_t self (process (fork)))
+
+; The early board labels /run/log on tmpfs independently of the distro's
+; persistent /var/log. After FlushToVar the journal removes the old runtime
+; database and empty runtime machine directory. Persistent directories remain;
+; database rotation and retention are reviewed in ubuntu-native-journal-storage.cil.
+(type p4_linux_volatile_log_root_t)
+(type p4_linux_volatile_journal_store_t)
+(type p4_linux_volatile_journal_machine_t)
+(type p4_linux_volatile_journal_database_t)
+(type p4_linux_journal_synced_t)
+(roletype object_r p4_linux_volatile_log_root_t)
+(roletype object_r p4_linux_volatile_journal_store_t)
+(roletype object_r p4_linux_volatile_journal_machine_t)
+(roletype object_r p4_linux_volatile_journal_database_t)
+(roletype object_r p4_linux_journal_synced_t)
+(typeattributeset p4_linux_data (p4_linux_volatile_log_root_t p4_linux_volatile_journal_store_t p4_linux_volatile_journal_machine_t p4_linux_volatile_journal_database_t p4_linux_journal_synced_t))
+(allow kernel p4_linux_volatile_log_root_t (dir (getattr relabelto)))
+(allow kernel p4_linux_volatile_journal_store_t (dir (getattr relabelto)))
+(allow p4_linux_volatile_log_root_t tmpfs (filesystem (associate)))
+(allow p4_linux_volatile_journal_store_t tmpfs (filesystem (associate)))
+(allow p4_linux_volatile_journal_machine_t tmpfs (filesystem (associate)))
+(allow p4_linux_volatile_journal_database_t tmpfs (filesystem (associate)))
+(allow p4_linux_journal_synced_t tmpfs (filesystem (associate)))
+(typetransition p4_linux_journald_t p4_linux_volatile_log_root_t dir "journal" p4_linux_volatile_journal_store_t)
+(typetransition p4_linux_journald_t p4_linux_volatile_journal_store_t dir p4_linux_volatile_journal_machine_t)
+(typetransition p4_linux_journald_t p4_linux_volatile_journal_machine_t file "system.journal" p4_linux_volatile_journal_database_t)
+(allow p4_linux_journald_t p4_linux_volatile_log_root_t (dir (getattr search write add_name)))
+(allow p4_linux_journald_t p4_linux_volatile_journal_store_t (dir (getattr search open read create write add_name remove_name)))
+(allow p4_linux_journald_t p4_linux_volatile_journal_machine_t (dir (getattr search open read create write add_name remove_name rmdir)))
+(allow p4_linux_journald_t p4_linux_volatile_journal_database_t (file (create getattr open read write append map lock setattr rename unlink)))
+(auditallow p4_linux_journald_t p4_linux_volatile_journal_database_t (file (unlink)))
+(auditallow p4_linux_journald_t p4_linux_volatile_journal_machine_t (dir (rmdir)))
+(neverallow p4_linux_volatile_journal_database_t labeledfs (filesystem (associate)))
+(neverallow p4_linux_journalctl_t p4_linux_volatile_journal_database_t (file (create open read write append map unlink rename)))
+; Persistent file rotation/retention is restricted to journald in its storage component.
+(neverallow p4_linux_journald_t p4_linux_journal_store_t (dir (rmdir remove_name)))
+(neverallow p4_linux_journald_t p4_linux_volatile_log_root_t (dir (remove_name rmdir mounton relabelto relabelfrom)))
+(neverallow p4_linux_procs p4_linux_volatile_journal_database_t (file (execute execute_no_trans entrypoint mounton relabelfrom relabelto)))
+
+; manager_synchronize() publishes its timestamp through the actual random
+; .#synced<16hex> temporary followed by a rename to "synced". The attached
+; journal AppArmor profile admits these two names. The existing named CIL
+; transitions for "seqnum", "kernel-seqnum" and "flushed" take precedence.
+(typetransition p4_linux_journald_t p4_linux_journal_runtime_t file p4_linux_journal_synced_t)
+(allow p4_linux_journald_t p4_linux_journal_synced_t (file (create getattr open read write setattr rename unlink)))
+(auditallow p4_linux_journald_t p4_linux_journal_synced_t (file (rename)))
+(neverallow p4_android_userspace p4_linux_journal_synced_t (file (open read write create unlink rename)))
+(neverallow p4_linux_journalctl_t p4_linux_journal_synced_t (file (create write unlink rename setattr)))

@@ -1,0 +1,33 @@
+license {
+    name: "unbundled_google_libraries",
+    visibility: [":__subpackages__"],
+    license_kinds: [
+        "legacy_notice",
+        "legacy_proprietary",
+    ],
+}
+
+package {
+    // See: http://go/android-license-faq
+    // Added 'default_applicable_licenses' to import
+    // all of the 'license_kinds' from "unbundled_google_libraries"
+    // to get the below license kinds:
+    //   legacy_notice
+    //   legacy_proprietary
+    default_applicable_licenses: ["unbundled_google_libraries"],
+}
+
+java_import_host {
+    name: "libandroid_build_v2beta1_java",
+    jars: ["libandroid_build_v2beta1_java.jar"],
+}
+
+java_import_host {
+    name: "libandroid_build_v3_java",
+    jars: ["libandroid_build_v3_java.jar"],
+}
+
+java_import_host {
+    name: "libandroid_build_v4_java",
+    jars: ["gapic-google-cloud-ci-build-v4-java-0.0.0-SNAPSHOT-all.jar"],
+}

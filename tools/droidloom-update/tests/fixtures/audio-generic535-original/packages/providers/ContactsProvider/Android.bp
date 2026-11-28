@@ -1,0 +1,87 @@
+package {
+    // See: http://go/android-license-faq
+    default_applicable_licenses: ["Android-Apache-2.0"],
+}
+
+android_app {
+    name: "ContactsProvider",
+    defaults: ["platform_app_defaults"],
+    // Only compile source java files in this apk.
+    srcs: [
+        "src/**/*.java",
+        "src/com/android/providers/contacts/EventLogTags.logtags",
+    ],
+    libs: [
+        "ext",
+    ],
+    static_libs: [
+        "ContactsProvider-change-ids",
+        "contactsprovider_statslog_java_lib",
+        "android-common",
+        "com.android.vcard",
+        "contactsprovider_flags_java_lib",
+        "guava",
+        "android.content.pm.flags-aconfig-java",
+        "android.provider.flags-aconfig-java",
+        "android.app.privatecompute.flags-aconfig-java",
+    ],
+
+    // The Jacoco tool analyzes code coverage when running unit tests on the
+    // application. This configuration line selects which packages will be analyzed,
+    // leaving out code which is tested by other means (e.g. static libraries) that
+    // would dilute the coverage results. These options do not affect regular
+    // production builds.
+    jacoco: {
+        include_filter: ["com.android.providers.contacts.*"],
+    },
+    platform_apis: true,
+    certificate: "shared",
+    privileged: true,
+    optimize: {
+        proguard_flags_files: ["proguard.flags"],
+        d8_on_eng: true,
+    },
+    flags_packages: [
+        "android.content.flags-aconfig",
+        "contactsprovider_flags",
+    ],
+}
+
+java_library {
+    name: "ContactsProvider-change-ids",
+    srcs: ["src/com/android/providers/contacts/ChangeIds.java"],
+    libs: [
+        "app-compat-annotations",
+    ],
+}
+
+platform_compat_config {
+    name: "contacts-provider-platform-compat-config",
+    src: ":ContactsProvider-change-ids",
+}
+
+aconfig_declarations {
+    name: "contactsprovider_flags",
+    package: "com.android.providers.contacts.flags",
+    container: "system",
+    srcs: ["contactsprovider_flags.aconfig"],
+}
+
+java_aconfig_library {
+    name: "contactsprovider_flags_java_lib",
+    aconfig_declarations: "contactsprovider_flags",
+}
+
+java_library {
+    name: "contactsprovider_statslog_java_lib",
+    srcs: [":statslog-contactsprovider-java-gen"],
+}
+
+genrule {
+    name: "statslog-contactsprovider-java-gen",
+    tools: ["stats-log-api-gen"],
+    cmd: "$(location stats-log-api-gen) --java $(out) --module contactsprovider " +
+        "--javaPackage com.android.providers.contacts.util --javaClass ContactsProviderStatsLog " +
+        "--nonStatic",
+    out: ["com/android/providers/contacts/util/ContactsProviderStatsLog.java"],
+}

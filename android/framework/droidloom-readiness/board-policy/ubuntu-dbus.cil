@@ -1,0 +1,85 @@
+; Native DBus userspace mediation. Appended classes preserve every original
+; Android class number. Names remain subject to the stock DBus XML rules.
+(class dbus (acquire_svc send_msg))
+(classorder (service dbus))
+(typeattribute p4_native_dbus_all_types)
+(typeattributeset p4_native_dbus_all_types (all))
+
+(typeattribute p4_native_dbus_daemons)
+(typeattributeset p4_native_dbus_daemons (p4_linux_dbus_t p4_linux_user_dbus_t))
+(typeattribute p4_native_system_bus_clients)
+(typeattributeset p4_native_system_bus_clients
+ (init_t p4_linux_native_system_services p4_linux_native_session_processes))
+(typeattribute p4_native_session_bus_clients)
+(typeattributeset p4_native_session_bus_clients (p4_linux_native_session_processes))
+
+; No associate override is published. The native daemon's own SID is the
+; acquire_svc target; send_msg uses the actual receiving connection's SID.
+; A bus-driver response has no sending connection and is not checked as a
+; daemon -> client send_msg edge by the original DBus implementation.
+(allow p4_native_system_bus_clients p4_linux_dbus_t (dbus (acquire_svc send_msg)))
+(allow p4_native_system_bus_clients p4_native_system_bus_clients (dbus (send_msg)))
+(allow p4_native_session_bus_clients p4_linux_user_dbus_t (dbus (acquire_svc send_msg)))
+(allow p4_native_session_bus_clients p4_native_session_bus_clients (dbus (send_msg)))
+
+; The broker's actual system-bus API is the original manager's PIDFD/unit
+; status lookup. It cannot acquire names or message arbitrary native peers.
+(allow droidloom_broker p4_linux_dbus_t (dbus (send_msg)))
+(allow droidloom_broker init_t (dbus (send_msg)))
+(allow init_t droidloom_broker (dbus (send_msg)))
+(neverallow droidloom_broker p4_native_dbus_all_types (dbus (acquire_svc)))
+(typeattribute p4_nonbroker_system_bus_targets)
+(typeattributeset p4_nonbroker_system_bus_targets (not (or (init_t) (p4_linux_dbus_t))))
+(neverallow droidloom_broker p4_nonbroker_system_bus_targets (dbus (send_msg)))
+(typeattribute p4_nonmanager_broker_senders)
+(typeattributeset p4_nonmanager_broker_senders (not (init_t)))
+(neverallow p4_nonmanager_broker_senders droidloom_broker (dbus (send_msg)))
+(neverallow domain p4_linux_procs (dbus (acquire_svc send_msg)))
+(neverallow p4_linux_procs domain (dbus (acquire_svc send_msg)))
+(typeattribute p4_closed_helpers_without_native_bus)
+(typeattributeset p4_closed_helpers_without_native_bus
+ (droidloom_query_io droidloom_metadata_observer droidloom_instance_launcher droidloom_policy_loader))
+(neverallow p4_closed_helpers_without_native_bus p4_native_dbus_all_types (dbus (acquire_svc send_msg)))
+(neverallow p4_native_dbus_all_types p4_closed_helpers_without_native_bus (dbus (acquire_svc send_msg)))
+
+; The normal socket-activated system bus has a dedicated named inode.
+; Session buses keep a distinct inode under their existing per-user runtime.
+(type p4_linux_system_bus_socket_t)
+(type p4_linux_session_bus_socket_t)
+(roletype object_r p4_linux_system_bus_socket_t)
+(roletype object_r p4_linux_session_bus_socket_t)
+(typeattributeset p4_linux_data (p4_linux_system_bus_socket_t p4_linux_session_bus_socket_t))
+(allow p4_linux_system_bus_socket_t tmpfs (filesystem (associate)))
+(allow p4_linux_session_bus_socket_t tmpfs (filesystem (associate)))
+(typetransition init_t p4_linux_dbus_run_t sock_file "system_bus_socket" p4_linux_system_bus_socket_t)
+(typetransition p4_linux_dbus_t p4_linux_dbus_run_t sock_file "system_bus_socket" p4_linux_system_bus_socket_t)
+(typetransition p4_linux_user_manager_t p4_linux_user_run_t sock_file "bus" p4_linux_session_bus_socket_t)
+(typetransition p4_linux_user_dbus_t p4_linux_user_run_t sock_file "bus" p4_linux_session_bus_socket_t)
+(allow init_t p4_linux_system_bus_socket_t (sock_file (create getattr setattr write unlink)))
+(allow p4_linux_dbus_t p4_linux_system_bus_socket_t (sock_file (create getattr setattr write unlink)))
+(allow p4_linux_user_manager_t p4_linux_session_bus_socket_t (sock_file (create getattr setattr write unlink)))
+(allow p4_linux_user_dbus_t p4_linux_session_bus_socket_t (sock_file (create getattr setattr write unlink)))
+(allow p4_native_system_bus_clients p4_linux_dbus_run_t (dir (getattr search)))
+(allow p4_native_system_bus_clients p4_linux_system_bus_socket_t (sock_file (getattr write)))
+(allow p4_native_system_bus_clients p4_linux_dbus_t (unix_stream_socket (connectto)))
+; The listening socket inherited from the original manager retains its SID.
+(allow p4_native_system_bus_clients init_t (unix_stream_socket (connectto)))
+(allow p4_linux_dbus_t init_t (unix_stream_socket (getattr read write listen accept getopt setopt)))
+(allow p4_native_session_bus_clients p4_linux_user_run_t (dir (getattr search)))
+(allow p4_native_session_bus_clients p4_linux_session_bus_socket_t (sock_file (getattr write)))
+(allow p4_native_session_bus_clients p4_linux_user_dbus_t (unix_stream_socket (connectto)))
+(allow p4_native_session_bus_clients p4_linux_user_manager_t (unix_stream_socket (connectto)))
+(allow p4_linux_user_dbus_t p4_linux_user_manager_t (unix_stream_socket (getattr read write listen accept getopt setopt)))
+(allow p4_linux_user_dbus_t p4_linux_user_manager_t (fd (use)))
+; The daemon relays the original fixed PIDFD for GetUnitByPIDFD.
+(allow p4_linux_dbus_t p4_native_system_bus_clients (fd (use)))
+(allow p4_linux_dbus_t droidloom_broker (fd (use)))
+; GetConnectionCredentials includes a real DBus-origin ProcessFD.
+(allow droidloom_broker p4_linux_dbus_t (fd (use)))
+(allow droidloom_broker p4_linux_dbus_run_t (dir (getattr search)))
+(allow droidloom_broker p4_linux_system_bus_socket_t (sock_file (getattr write)))
+(allow droidloom_broker p4_linux_dbus_t (unix_stream_socket (connectto)))
+(neverallow droidloom_broker p4_linux_system_bus_socket_t (sock_file (create setattr unlink rename relabelto relabelfrom)))
+(neverallow droidloom_broker p4_linux_session_bus_socket_t (sock_file (getattr read write create setattr unlink)))
+(neverallow domain p4_linux_system_bus_socket_t (sock_file (getattr read write create setattr unlink)))
+(neverallow domain p4_linux_session_bus_socket_t (sock_file (getattr read write create setattr unlink)))

@@ -1,0 +1,20 @@
+// The only new core/vendor boundary is a frozen VINTF-stable Binder extension.
+// It carries owned descriptors for the existing bounded record protocols.
+aidl_interface {
+    name: "org.droidloom.frontend",
+    vendor_available: true,
+    frozen: true,
+    stability: "vintf",
+    srcs: ["aidl/org/droidloom/frontend/*.aidl"],
+    local_include_dir: "aidl",
+    backend: {
+        cpp: { enabled: false },
+        ndk: { enabled: false },
+        // Binder and ParcelFileDescriptor belong to Android's framework.
+        // core_platform supplies only the Java core system modules and leaves
+        // this generated Binder interface with an empty Android classpath.
+        java: { platform_apis: true },
+        rust: { enabled: true },
+    },
+    versions_with_info: [{ version: "1", imports: [] }],
+}

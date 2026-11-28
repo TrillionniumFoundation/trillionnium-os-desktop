@@ -1,0 +1,168 @@
+// Copyright (C) 2016 The Android Open Source Project
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package {
+    default_team: "trendy_team_android_rubidium",
+    default_applicable_licenses: ["packages_modules_ExtServices_license"],
+}
+
+// Added automatically by a large-scale-change
+// See: http://go/android-license-faq
+license {
+    name: "packages_modules_ExtServices_license",
+    visibility: [":__subpackages__"],
+    license_kinds: [
+        "SPDX-license-identifier-Apache-2.0",
+    ],
+    license_text: [
+        "NOTICE",
+    ],
+}
+
+genrule {
+    name: "statslog-extservices-java-gen",
+    tools: ["stats-log-api-gen"],
+    cmd: "$(location stats-log-api-gen) --java $(out) --module extservices --javaPackage android.ext.services --javaClass ExtServicesStatsLog",
+    out: ["android/ext/services/ExtServicesStatsLog.java"],
+}
+
+android_library {
+    name: "ExtServices-core",
+    srcs: [
+        "java/src/**/*.java",
+        ":statslog-extservices-java-gen",
+    ],
+
+    sdk_version: "module_current",
+    min_sdk_version: "30",
+    resource_dirs: [
+        "java/res",
+    ],
+
+    manifest: "EmptyManifest.xml",
+
+    static_libs: [
+        "androidx.annotation_annotation",
+        "androidx.autofill_autofill",
+        "TextClassifierServiceLibNoManifest",
+        "TextClassifierNotificationLibNoManifest",
+        "androidx.work_work-runtime",
+        "modules-utils-build",
+        "androidx.appsearch_appsearch",
+        "androidx.appsearch_appsearch-platform-storage",
+        "android.service.notification.flags-aconfig-export-java",
+        "extservices-mainline-aconfig-java-lib",
+        "telephony_flags_core_java_exported_lib",
+        "android.permission.flags-aconfig-java-export",
+    ],
+
+    libs: [
+        "framework-crashrecovery.stubs.module_lib",
+        "framework-configinfrastructure.stubs.module_lib",
+        "framework-connectivity.stubs.module_lib",
+        "framework-statsd.stubs.module_lib",
+    ],
+
+    lint: {
+        error_checks: ["Recycle"],
+        baseline_filename: "lint-baseline.xml",
+    },
+    apex_available: [
+        "//apex_available:platform",
+        "com.android.extservices",
+    ],
+}
+
+android_app {
+    name: "ExtServices-tplus",
+    sdk_version: "module_current",
+    min_sdk_version: select(release_flag("RELEASE_DEPRECATE_MAINLINE_R_SUPPORT"), {
+        true: "31",
+        default: "30",
+    }),
+    manifest: "AndroidManifest.xml",
+    optimize: {
+        optimize: true,
+        shrink_resources: true,
+        proguard_flags_files: ["proguard.proguard"],
+        keep_runtime_invisible_annotations: true,
+        ignore_warnings: false,
+    },
+    privileged: true,
+    privapp_allowlist: ":privapp_allowlist_android.ext_tplus.services.xml",
+    static_libs: [
+        "ExtServices-core",
+    ],
+    jarjar_rules: "jarjar-rules.txt",
+    jni_libs: [
+        "libtextclassifier",
+        "libextservices_jni",
+    ],
+    libs: [
+        "framework-connectivity-t.stubs.module_lib",
+    ],
+    use_embedded_native_libs: true,
+    apex_available: [
+        "//apex_available:platform",
+        "com.android.extservices",
+        "test_com.android.extservices",
+    ],
+    updatable: true,
+    licenses: [
+        "packages_modules_ExtServices_license",
+        "opensourcerequest",
+    ],
+}
+
+android_app {
+    name: "ExtServices-sminus",
+    sdk_version: "module_current",
+    min_sdk_version: select(release_flag("RELEASE_DEPRECATE_MAINLINE_R_SUPPORT"), {
+        true: "31",
+        default: "30",
+    }),
+    manifest: "AndroidManifest.xml",
+    optimize: {
+        optimize: true,
+        shrink_resources: true,
+        proguard_flags_files: ["proguard.proguard"],
+        keep_runtime_invisible_annotations: true,
+        ignore_warnings: false,
+    },
+    privileged: true,
+    privapp_allowlist: ":privapp_allowlist_android.ext_sminus.services.xml",
+    static_libs: [
+        "ExtServices-core",
+        "AdServices-core",
+    ],
+    jarjar_rules: "jarjar-rules.txt",
+    jni_libs: [
+        "libtextclassifier",
+        "libextservices_jni",
+        "libhpke_jni",
+    ],
+    libs: ["android.ext.adservices"],
+    optional_uses_libs: ["android.ext.adservices"],
+    use_embedded_native_libs: true,
+    apex_available: [
+        "//apex_available:platform",
+        "com.android.extservices",
+        "test_com.android.extservices",
+    ],
+    updatable: true,
+    licenses: [
+        "packages_modules_ExtServices_license",
+        "opensourcerequest",
+    ],
+}

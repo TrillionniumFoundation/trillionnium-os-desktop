@@ -1,0 +1,66 @@
+{
+  "APK_built": false,
+  "Android_UI_actions": 0,
+  "activity": "org.droidloom.qa.documents.r12.n98116f3fbefcfc95/.FeaturesActivity",
+  "business": [
+    "GET_CONTENT cancel without URI/grant",
+    "OPEN_DOCUMENT_TREE cancel without URI/grant",
+    "exact non-root owned tree selection/persist",
+    "Files UI New folder",
+    "two-file multiselect Copy to owned copies directory",
+    "two-file Move from source into owned root",
+    "Files UI Delete both copies",
+    "owned-folder search and visible sort verification in controller",
+    "tree grant release and normal task close/reopen",
+    "SecurityException opening still-present owned beta after grant revocation",
+    "GET_CONTENT alpha result/read without persisted tree grant",
+    "Files UI delete remaining exact four owned entries and true absence"
+  ],
+  "cleanup": "All expected business deletions through real Files UI. On a known halted phase, controller may separately remove only exact known bytes/names/births after no pending UI/provider/file-operation work; cleanup never earns business credit. Unknown install/pending write preserves inputs.",
+  "current_main_bound": false,
+  "files": {
+    "alpha-98116f3fbefcfc95.txt": {
+      "bytes": 59,
+      "sha256": "1e43da30c0b2fb0e36e68af9c961d2d55a7c9314e8221fa7972e1cb9d76946bf"
+    },
+    "beta-98116f3fbefcfc95.txt": {
+      "bytes": 118,
+      "sha256": "871cd7074acfc79665c35798305c1c23f71364d50ad95dc4cbd27abca8620dcd"
+    }
+  },
+  "fixture_provider_delete_calls": 0,
+  "historical_contract_qualification": "BUILD03_CANDIDATE; original01 SDK lambda failure and02 compiled-success/class-count observer failure retained; no install/UI",
+  "installed": false,
+  "launcher": false,
+  "lease_clock": "elapsedRealtime, never reset; fixed Main epoch required by controller",
+  "lease_ms": 1200000,
+  "network": false,
+  "original_business_semantics_preserved": true,
+  "original_contract": {
+    "bytes": 2659,
+    "path": "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261126-apps-r2/source/templates/documents-search/contract.json",
+    "sha256": "58e40f5888ad31c210e7d93c722d48fba0e4f1a55b3bced1576872f2f731c7ef"
+  },
+  "original_flow_deferred_supported_features": [
+    "search",
+    "sort"
+  ],
+  "package": "org.droidloom.qa.documents.r12.n98116f3fbefcfc95",
+  "permissions": [],
+  "provider_mutations_in_fixture": [
+    "take/release only exact owned tree grant",
+    "create sole source directory",
+    "create/write alpha once",
+    "create/write beta once"
+  ],
+  "qualification": "SOURCE_RENDERED_ONLY_UNBUILT_UNINSTALLED_NO_MAIN_AUTHORITY",
+  "root": "Pocket4_DocFeatures_r12_98116f3fbefcfc95",
+  "run_id": "98116f3fbefcfc95",
+  "schema": "pocket4-documents-remaining-features-v1",
+  "setup_credit": "host creates only exclusive empty root; App tree API seeds source directory and two files; neither counts as Files UI creation",
+  "source_directory": "source-98116f3fbefcfc95",
+  "supported_scope": "primary ExternalStorageProvider, two generated text files, no user document/account access",
+  "ui_created_directory": "copies-98116f3fbefcfc95",
+  "unknown_policy": "persist phase+step before each mutation; no automatic retry/reset; controller preserves partial fixture until exact read-only reconciliation",
+  "whole_app_business_accepted": false
+}

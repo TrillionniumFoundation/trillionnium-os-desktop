@@ -1,0 +1,25 @@
+package {
+    default_applicable_licenses: [
+        "Android-Apache-2.0",
+    ],
+}
+
+android_library {
+    name: "jetpack-camera-app_ui_uistate_postcapture",
+    srcs: ["src/main/**/*.kt"],
+    static_libs: [
+        "androidx.compose.runtime_runtime",
+        "androidx.compose.material3_material3",
+        "jetpack-camera-app_ui_uistate",
+        "androidx.media3.media3-exoplayer",
+        "androidx.core_core-ktx",
+        "androidx.appcompat_appcompat",
+        "com.google.android.material_material",
+    ],
+    sdk_version: "34",
+    min_sdk_version: "23",
+    manifest: "src/main/AndroidManifest.xml",
+    apex_available: [
+        "com.android.mediaprovider",
+    ],
+}

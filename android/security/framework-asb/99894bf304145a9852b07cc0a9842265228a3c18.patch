@@ -1,0 +1,80 @@
+diff --git a/core/java/android/app/admin/PackageSetPolicyValue.java b/core/java/android/app/admin/PackageSetPolicyValue.java
+index bf8f6df..74668fc 100644
+--- a/core/java/android/app/admin/PackageSetPolicyValue.java
++++ b/core/java/android/app/admin/PackageSetPolicyValue.java
+@@ -52,6 +52,9 @@
+         super(value);
+         for (String packageName : value) {
+             PolicySizeVerifier.enforceMaxPackageNameLength(packageName);
++            if (packageName.contains(";")) {
++                throw new IllegalArgumentException("Package name cannot contain ';'");
++            }
+         }
+     }
+ 
+diff --git a/services/devicepolicy/java/com/android/server/devicepolicy/DevicePolicyEngine.java b/services/devicepolicy/java/com/android/server/devicepolicy/DevicePolicyEngine.java
+index 28384fc..e67c814 100644
+--- a/services/devicepolicy/java/com/android/server/devicepolicy/DevicePolicyEngine.java
++++ b/services/devicepolicy/java/com/android/server/devicepolicy/DevicePolicyEngine.java
+@@ -2585,7 +2585,8 @@
+ 
+                 readInnerLocked(parser);
+ 
+-            } catch (XmlPullParserException | IOException | ClassNotFoundException e) {
++            } catch (XmlPullParserException | IOException | ClassNotFoundException
++                    | IllegalArgumentException e) {
+                 Slogf.wtf(TAG, "Error parsing resources file", e);
+             } finally {
+                 IoUtils.closeQuietly(input);
+diff --git a/services/devicepolicy/java/com/android/server/devicepolicy/LockTaskPolicySerializer.java b/services/devicepolicy/java/com/android/server/devicepolicy/LockTaskPolicySerializer.java
+index 13412d0..891614a 100644
+--- a/services/devicepolicy/java/com/android/server/devicepolicy/LockTaskPolicySerializer.java
++++ b/services/devicepolicy/java/com/android/server/devicepolicy/LockTaskPolicySerializer.java
+@@ -26,6 +26,8 @@
+ import org.xmlpull.v1.XmlPullParserException;
+ 
+ import java.io.IOException;
++import java.util.Arrays;
++import java.util.HashSet;
+ import java.util.Objects;
+ import java.util.Set;
+ 
+@@ -60,7 +62,11 @@
+             Log.e(TAG, "Error parsing LockTask policy value.");
+             return null;
+         }
+-        Set<String> packages = Set.of(packagesStr.split(ATTR_PACKAGES_SEPARATOR));
++        String[] packagesArray = packagesStr.split(ATTR_PACKAGES_SEPARATOR);
++        Set<String> packages = new HashSet<>(Arrays.asList(packagesArray));
++        if (packages.size() != packagesArray.length) {
++            Log.e(TAG, "Duplicate packages found in LockTask policy");
++        }
+         try {
+             int flags = parser.getAttributeInt(
+                     /* namespace= */ null,
+diff --git a/services/devicepolicy/java/com/android/server/devicepolicy/PackageSetPolicySerializer.java b/services/devicepolicy/java/com/android/server/devicepolicy/PackageSetPolicySerializer.java
+index c4da029..151ee4c 100644
+--- a/services/devicepolicy/java/com/android/server/devicepolicy/PackageSetPolicySerializer.java
++++ b/services/devicepolicy/java/com/android/server/devicepolicy/PackageSetPolicySerializer.java
+@@ -26,6 +26,8 @@
+ import com.android.modules.utils.TypedXmlSerializer;
+ 
+ import java.io.IOException;
++import java.util.Arrays;
++import java.util.HashSet;
+ import java.util.Objects;
+ import java.util.Set;
+ 
+@@ -48,7 +50,11 @@
+             Log.e(DevicePolicyEngine.TAG, "Error parsing PackageSet policy value.");
+             return null;
+         }
+-        Set<String> values = Set.of(valuesStr.split(ATTR_VALUES_SEPARATOR));
++        String[] valuesArray = valuesStr.split(ATTR_VALUES_SEPARATOR);
++        Set<String> values = new HashSet<>(Arrays.asList(valuesArray));
++        if (values.size() != valuesArray.length) {
++            Log.e(DevicePolicyEngine.TAG, "Duplicate values found in PackageSet policy");
++        }
+         return new PackageSetPolicyValue(values);
+     }
+ }

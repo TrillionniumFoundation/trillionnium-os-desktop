@@ -1,0 +1,46 @@
+[Unit]
+Description=Droidloom returned working-copy qualification owner
+Requires=droidloom-production.service
+BindsTo=droidloom-production.service
+After=droidloom-production.service droidloom-container-entry.service
+ConditionKernelCommandLine=droidloom.working
+OnSuccess=droidloom-working-qualification-return.service
+OnFailure=droidloom-working-qualification-return.service
+
+[Service]
+Type=exec
+User=root
+Group=root
+CapabilityBoundingSet=CAP_SETUID CAP_SETGID CAP_SYS_PTRACE
+AmbientCapabilities=
+NoNewPrivileges=no
+ExecStart=/usr/bin/droidloom-applications --owned-working-qualification
+Restart=no
+KillMode=control-group
+KillSignal=SIGTERM
+FinalKillSignal=SIGKILL
+SendSIGKILL=yes
+TimeoutStopFailureMode=terminate
+TimeoutStopSec=180s
+RuntimeMaxSec=482487s
+CPUQuota=200%
+CPUQuotaPeriodSec=100ms
+CPUAffinity=20 21
+MemoryAccounting=yes
+MemoryMax=2147483648
+MemorySwapMax=0
+TasksAccounting=yes
+TasksMax=64
+LimitCORE=0
+LimitNOFILE=32768
+UMask=0077
+WorkingDirectory=/
+Environment=PATH=/usr/sbin:/usr/bin:/sbin:/bin
+Environment=LANG=C.UTF-8
+StandardOutput=journal
+StandardError=journal
+SELinuxContext=u:system_r:p4_linux_working_qualification_t:s0
+AppArmorProfile=droidloom-working-qualification
+
+[Install]
+WantedBy=multi-user.target

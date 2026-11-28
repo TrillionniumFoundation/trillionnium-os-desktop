@@ -1,0 +1,118 @@
+package {
+    default_applicable_licenses: ["Android-Apache-2.0"],
+}
+
+cc_library {
+    name: "liburingutils",
+
+    srcs: [
+        "src/IOUringSocketHandler.cpp",
+    ],
+
+    cflags: [
+        "-Wall",
+        "-Werror",
+    ],
+
+    export_include_dirs: ["include"],
+
+    static_libs: [
+        "liburing",
+    ],
+    shared_libs: [
+        "libbase",
+        "liblog",
+    ],
+
+    tidy: true,
+    tidy_checks: [
+        "-*",
+        "cert-*",
+        "clang-analyzer-security*",
+        "android-*",
+    ],
+    tidy_checks_as_errors: [
+        "cert-*",
+        "clang-analyzer-security*",
+        "android-*",
+    ],
+
+    min_sdk_version: "30",
+
+    apex_available: [
+        "//apex_available:platform",
+        "com.android.os.statsd",
+    ],
+}
+
+cc_test {
+    name: "IOUringSocketHandler_tests",
+    test_suites: ["device-tests"],
+    require_root: true,
+    srcs: [
+        "src/IOUringSocketHandler_test.cpp",
+    ],
+    cflags: [
+        "-Wall",
+        "-Werror",
+    ],
+    shared_libs: [
+        "libbase",
+        "liblog",
+    ],
+    static_libs: [
+        "liburing",
+        "liburingutils",
+    ],
+}
+
+cc_benchmark {
+    name: "IOUringSocketHandler_benchmark",
+    srcs: ["src/IOUringSocketHandlerBenchmark.cpp"],
+    shared_libs: [
+        "libbase",
+        "liblog",
+    ],
+    static_libs: [
+        "liburing",
+        "liburingutils",
+    ],
+    cflags: [
+        "-Wall",
+        "-Werror",
+    ],
+}
+
+cc_benchmark {
+    name: "IOUringSocketHandlerReceiver",
+    srcs: ["src/IOUringSocketHandlerReceiver.cpp"],
+    shared_libs: [
+        "libbase",
+        "liblog",
+    ],
+    static_libs: [
+        "liburing",
+        "liburingutils",
+    ],
+    cflags: [
+        "-Wall",
+        "-Werror",
+    ],
+}
+
+cc_benchmark {
+    name: "IOUringSocketHandlerSender",
+    srcs: ["src/IOUringSocketHandlerSender.cpp"],
+    shared_libs: [
+        "libbase",
+        "liblog",
+    ],
+    static_libs: [
+        "liburing",
+        "liburingutils",
+    ],
+    cflags: [
+        "-Wall",
+        "-Werror",
+    ],
+}

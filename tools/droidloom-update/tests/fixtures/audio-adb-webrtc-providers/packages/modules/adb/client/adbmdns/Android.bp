@@ -1,0 +1,54 @@
+rust_defaults {
+    name: "libadbmdns_defaults",
+    edition: "2024",
+    srcs: [
+        "adbmdns_bridge.rs",
+    ],
+    rustlibs: [
+        "liblibc",
+        "liblog_rust",
+        "libsocket2",
+        "libanyhow",
+        "libsimple_dns",
+        "libmio",
+        "libif_addrs",
+    ],
+    // Define export_include_dirs so cc_binary knows where the headers are.
+    export_include_dirs: ["."],
+    host_supported: true,
+    device_supported: false,
+    target: {
+        windows: {
+            enabled: true,
+            rustlibs: [
+                "libwindows_sys",
+            ],
+        },
+        darwin: {
+            sanitize: {
+                address: false,
+            },
+            rustlibs: [
+                "libzerocopy",
+            ],
+        },
+        linux: {
+            rustlibs: [
+                "libnix",
+                "libzerocopy",
+            ],
+        },
+    },
+}
+
+rust_test_host {
+    name: "libadbmdns_tests",
+    defaults: ["libadbmdns_defaults"],
+    test_suites: ["general-tests"],
+}
+
+rust_library_rlib {
+    name: "libadbmdns_bridge",
+    crate_name: "adbmdns_bridge",
+    defaults: ["libadbmdns_defaults"],
+}

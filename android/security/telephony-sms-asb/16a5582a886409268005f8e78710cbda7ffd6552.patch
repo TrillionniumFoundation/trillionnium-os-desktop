@@ -1,0 +1,30 @@
+diff --git a/src/java/com/android/internal/telephony/SmsUsageMonitor.java b/src/java/com/android/internal/telephony/SmsUsageMonitor.java
+index 4e7677e..5b1b83d 100644
+--- a/src/java/com/android/internal/telephony/SmsUsageMonitor.java
++++ b/src/java/com/android/internal/telephony/SmsUsageMonitor.java
+@@ -407,6 +407,9 @@
+      */
+     public int checkDestination(String destAddress, String countryIso) {
+         synchronized (mSettingsObserverHandler) {
++            if (destAddress != null && destAddress.startsWith("+")) {
++                destAddress = destAddress.substring(1);
++            }
+             TelephonyManager tm = mContext.getSystemService(TelephonyManager.class);
+             // always allow emergency numbers
+             if (TelephonyCapabilities.supportsTelephonyCalling(mFeatureFlags, mContext)
+diff --git a/tests/telephonytests/src/com/android/internal/telephony/SmsUsageMonitorShortCodeTest.java b/tests/telephonytests/src/com/android/internal/telephony/SmsUsageMonitorShortCodeTest.java
+index 1e1e43f..56a9cba 100644
+--- a/tests/telephonytests/src/com/android/internal/telephony/SmsUsageMonitorShortCodeTest.java
++++ b/tests/telephonytests/src/com/android/internal/telephony/SmsUsageMonitorShortCodeTest.java
+@@ -446,6 +446,11 @@
+             new ShortCodeTest("us", "21472", SMS_CATEGORY_PREMIUM_SHORT_CODE),
+             new ShortCodeTest("us", "23333", SMS_CATEGORY_PREMIUM_SHORT_CODE),
+             new ShortCodeTest("us", "99807", SMS_CATEGORY_PREMIUM_SHORT_CODE),
++            new ShortCodeTest("us", "+20433", SMS_CATEGORY_PREMIUM_SHORT_CODE),
++            new ShortCodeTest("us", "+20000", SMS_CATEGORY_POSSIBLE_PREMIUM_SHORT_CODE),
++            new ShortCodeTest("al", "+15191", SMS_CATEGORY_PREMIUM_SHORT_CODE),
++            new ShortCodeTest("am", "+101", SMS_CATEGORY_FREE_SHORT_CODE),
++            new ShortCodeTest("sg", "+74688", SMS_CATEGORY_STANDARD_SHORT_CODE),
+ 
+             // generic rules for other countries: 5 digits or less considered potential short code
+             new ShortCodeTest("zz", "2000000", SMS_CATEGORY_NOT_SHORT_CODE),

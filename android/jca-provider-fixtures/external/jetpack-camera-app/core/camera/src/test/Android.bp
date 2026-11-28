@@ -1,0 +1,18 @@
+package {
+    default_applicable_licenses: ["Android-Apache-2.0"],
+}
+
+android_robolectric_test {
+    name: "jetpack-camera-app_core_camera-tests",
+    team: "trendy_team_android_camera_innovation_team",
+    srcs: ["java/**/*.kt"],
+    static_libs: [
+        "androidx.test.core",
+        "androidx.test.runner",
+        "kotlinx_coroutines_test",
+        "androidx.test.ext.junit",
+        "androidx.test.ext.truth",
+        "jetpack-camera-app_core_camera",
+    ],
+    instrumentation_for: "jetpack-camera-app",
+}

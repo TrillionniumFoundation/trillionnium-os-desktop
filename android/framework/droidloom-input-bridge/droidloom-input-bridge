@@ -1,0 +1,4 @@
+#!/system/bin/sh
+# The selected normal platform installation is the sole Java code source.
+export CLASSPATH=/system_ext/framework/droidloom-input-bridge.jar
+exec /system/bin/app_process64 /system/bin com.android.droidloom.input.InputBridge "$@"

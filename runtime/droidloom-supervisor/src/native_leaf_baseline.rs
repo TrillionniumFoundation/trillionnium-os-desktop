@@ -1,0 +1,403 @@
+//! Live normal Main plus one actual target package's working-copy directories.
+//!
+//! Only the source-owned normal inspector mints the two borrowed observations.
+//! Saved JSON is comparison data. This component grants no UI, engine, account
+//! content, application business or deployment qualification.
+use crate::control::application_probe::{ApplicationInspection, RuntimeEpoch};
+use crate::control::{
+    ActualApplicationObservation, ActualUserZeroPackageInventoryObservation, ControlError,
+    NativeApplicationInspector,
+};
+use crate::main_custody::{MainCustodyObservation, RuntimeMainCustody};
+use crate::native_leaf_baseline_data::{HeldLeafData, LeafDataFacts};
+use crate::native_leaf_baseline_programs::NormalHostPrograms;
+use serde::Serialize;
+use std::time::Instant;
+
+#[path = "native_leaf_apk_baseline.rs"]
+mod apk;
+pub use apk::NativeLeafApkHistory;
+
+pub const SCHEMA: &str = "droidloom.native-leaf-baseline.v1";
+
+fn before(end: Instant) -> Result<(), ControlError> {
+    if Instant::now() >= end {
+        Err(ControlError::Invalid(
+            "original native leaf budget expired".into(),
+        ))
+    } else {
+        Ok(())
+    }
+}
+
+/// Serialize-only comparison projection borrowed from actual live observations.
+#[derive(Serialize)]
+pub struct NativeLeafBaselineFacts<'a> {
+    pub schema: &'static str,
+    pub application: &'a ApplicationInspection,
+    pub main: &'a RuntimeMainCustody,
+    pub data: &'a LeafDataFacts,
+    pub peer: &'a crate::control::NativeInspectionPeer,
+    pub comparison_only: bool,
+    pub account_contents_read: bool,
+    pub business_acceptance_evaluated: bool,
+}
+
+/// One row/pair's held target metadata. The original inspector remains outside
+/// this borrow so its normal before/between/after operations can be reused.
+/// No Clone, Deserialize, public fields or unchecked constructor exist.
+pub struct NativeLeafBaselineObservation<'a> {
+    main: &'a MainCustodyObservation,
+    application: &'a ActualApplicationObservation,
+    data: HeldLeafData,
+    programs: NormalHostPrograms,
+    deadline: Instant,
+    full_bookend_after: Instant,
+    inventory: Option<ActualUserZeroPackageInventoryObservation>,
+    inventory_bookend: Option<ActualUserZeroPackageInventoryObservation>,
+    preparation_reads: Vec<crate::control::PreparationReadObservation>,
+    working_source: Option<crate::working_qualification::WorkingSourceWitness>,
+    apk: std::cell::RefCell<apk::ApkState>,
+}
+impl<'a> NativeLeafBaselineObservation<'a> {
+    pub(crate) fn fixture_absent(&self,kind:crate::native_leaf_fixture_material::NativeLeafFixtureKind)
+        ->Result<serde_json::Value,ControlError>
+    {
+        before(self.deadline)?;
+        self.data.fixture_absent(kind).map_err(|e|ControlError::Invalid(format!("actual fixed helper data absence: {e}")))
+    }
+    /// Consume the caller's existing actual PM and Main observations. This
+    /// captures fixed target metadata and issues no additional PM/Main RPC.
+    pub fn capture_from_observed(
+        inspector: &NativeApplicationInspector,
+        main: &'a MainCustodyObservation,
+        application: &'a ActualApplicationObservation,
+        deadline: Instant,
+    ) -> Result<Self, ControlError> {
+        before(deadline)?;
+        crate::native_leaf_baseline_data::package_paths(
+            &application.facts().package,
+            application.facts().user,
+        )
+        .map_err(|e| ControlError::Invalid(e.to_string()))?;
+        inspector.require_observations_local(main, application, deadline)?;
+        let programs = NormalHostPrograms::capture(main, deadline).map_err(|e| {
+            ControlError::Invalid(format!("native leaf normal program custody: {e}"))
+        })?;
+        let data = HeldLeafData::capture(main.facts(), application.facts())
+            .map_err(|e| ControlError::Invalid(format!("native leaf actual data metadata: {e}")))?;
+        inspector.require_observations_local(main, application, deadline)?;
+        data.verify()
+            .map_err(|e| ControlError::Invalid(format!("native leaf data bookend: {e}")))?;
+        let working_source =
+            crate::working_qualification::WorkingSourceWitness::retained_for_main(main)
+                .map_err(ControlError::Invalid)?;
+        before(deadline)?;
+        Ok(Self {
+            main,
+            application,
+            data,
+            programs,
+            deadline,
+            full_bookend_after: Instant::now(),
+            inventory: None,
+            inventory_bookend: None,
+            preparation_reads: Vec::new(),
+            working_source,
+            apk: apk::empty(),
+        })
+    }
+    pub fn facts(&self) -> NativeLeafBaselineFacts<'_> {
+        NativeLeafBaselineFacts {
+            schema: SCHEMA,
+            application: self.application.facts(),
+            main: self.main.facts(),
+            data: self.data.facts(),
+            peer: self.main.peer(),
+            comparison_only: true,
+            account_contents_read: false,
+            business_acceptance_evaluated: false,
+        }
+    }
+    pub fn application(&self) -> &ApplicationInspection {
+        self.application.facts()
+    }
+    pub(crate) fn actual_application(&self) -> &ActualApplicationObservation {
+        self.application
+    }
+    pub fn main(&self) -> &MainCustodyObservation {
+        self.main
+    }
+    pub(crate) fn working_source_owner(
+        &self,
+    ) -> Option<&crate::working_qualification::WorkingSourceOrigin> {
+        self.working_source
+            .as_ref()
+            .map(|source| source.comparison())
+    }
+    pub fn deadline(&self) -> Instant {
+        self.deadline
+    }
+
+    /// Only the same source-owned BaselineCapture invocation can retain these
+    /// actual three observations. No caller record constructs the opaque set.
+    pub(crate) fn record_preparation_reads(
+        &mut self,
+        inspector: &NativeApplicationInspector,
+        reads: Vec<crate::control::PreparationReadObservation>,
+        until: Instant,
+    ) -> Result<(), ControlError> {
+        self.verify_local(inspector, until)?;
+        use crate::native_preparation_read::PreparationReadKind as K;
+        let kinds = [K::GuestUid, K::GuestGid, K::BootCompleted];
+        if !self.preparation_reads.is_empty()
+            || reads.len() != kinds.len()
+            || !reads.iter().zip(kinds).all(|(read, kind)| {
+                read.matches_original(self.main.facts(), self.application.facts(), kind)
+            })
+        {
+            return Err(ControlError::Invalid(
+                "same actual three preparation diagnostics required once".into(),
+            ));
+        }
+        self.preparation_reads = reads;
+        self.verify_local(inspector, until)
+    }
+
+    /// Compare freshly captured files with this invocation's retained opaque
+    /// observations. Serialized reports cannot populate or replace the set.
+    pub fn compare_preparation_read(
+        &self,
+        index: usize,
+        value: &serde_json::Value,
+    ) -> Result<(), ControlError> {
+        if self.preparation_reads.len() != 3 || index >= 3 {
+            return Err(ControlError::Invalid(
+                "actual preparation read set is absent".into(),
+            ));
+        }
+        let expected = self.preparation_reads[index]
+            .comparison()
+            .map_err(ControlError::Invalid)?;
+        if expected != *value {
+            return Err(ControlError::Invalid(
+                "preparation record differs from the actual owned observation".into(),
+            ));
+        }
+        Ok(())
+    }
+
+    /// Attach the fixed complete user-0 observation for IHG's original helper
+    /// UID collision precondition. Target CE/DE directory custody is unchanged.
+    pub fn attach_user_zero_inventory(
+        &mut self,
+        inspector: &NativeApplicationInspector,
+        inventory: ActualUserZeroPackageInventoryObservation,
+    ) -> Result<(), ControlError> {
+        self.verify_local(inspector, self.deadline)?;
+        if self.application.facts().package != "com.ihg.apps.android"
+            || self.inventory.is_some()
+            || inventory.observed_at() <= self.full_bookend_after
+        {
+            return Err(ControlError::Invalid(
+                "fresh complete IHG inventory is required exactly once".into(),
+            ));
+        }
+        inspector.require_inventory_local(
+            self.main,
+            self.application,
+            &inventory,
+            self.deadline,
+        )?;
+        self.inventory = Some(inventory);
+        self.inventory_bookend = None;
+        Ok(())
+    }
+    pub fn inventory_facts(
+        &self,
+    ) -> Option<&crate::package_inventory_observation::UserZeroPackageInventoryFacts> {
+        self.inventory.as_ref().map(|i| i.facts())
+    }
+    pub fn requires_inventory_bookend(&self) -> bool {
+        self.inventory.is_some()
+    }
+    /// Reuse one actual post query. No receipt or caller map can create it.
+    /// Ordinary leaf execution must preserve the entire original table.
+    pub fn record_inventory_bookend(
+        &mut self,
+        inspector: &NativeApplicationInspector,
+        after: ActualUserZeroPackageInventoryObservation,
+        until: Instant,
+    ) -> Result<(), ControlError> {
+        let end = until.min(self.deadline);
+        self.verify_local(inspector, end)?;
+        inspector.require_inventory_local(self.main, self.application, &after, end)?;
+        let before = self.inventory.as_ref().ok_or_else(|| {
+            ControlError::Invalid(
+                "complete inventory was not observed before the invocation".into(),
+            )
+        })?;
+        if after.observed_at() <= self.full_bookend_after
+            || !before.facts().same_table(after.facts())
+        {
+            return Err(ControlError::Invalid(
+                "complete user-0 table changed or post observation is stale".into(),
+            ));
+        }
+        self.inventory_bookend = Some(after);
+        Ok(())
+    }
+
+    /// The one source-owned IHG preparation factory calls this only after its
+    /// actual fixed child, thirteen original commands, signed APK equality and
+    /// fresh helper PM prove the exact singleton installation difference.
+    pub(crate) fn record_fixed_ihg_install_bookend(
+        &mut self,
+        inspector: &NativeApplicationInspector,
+        after: ActualUserZeroPackageInventoryObservation,
+        until: Instant,
+    ) -> Result<(), ControlError> {
+        let end = until.min(self.deadline);
+        self.verify_local(inspector, end)?;
+        inspector.require_inventory_local(self.main, self.application, &after, end)?;
+        if self.application.facts().package != crate::native_ihg_preparation::TARGET
+            || self.inventory.is_none()
+            || after.observed_at() <= self.full_bookend_after
+        {
+            return Err(ControlError::Invalid(
+                "fixed IHG installation lacks a fresh actual post inventory".into(),
+            ));
+        }
+        self.inventory_bookend = Some(after);
+        Ok(())
+    }
+
+    /// G is local custody, not a new full Main/PM observation: all held/named
+    /// proc, PIDFD, namespaces, mappings and target directories are checked, as
+    /// are the normal peer and the two original opaque tokens. No RPC is sent.
+    pub fn verify_local(
+        &self,
+        inspector: &NativeApplicationInspector,
+        until: Instant,
+    ) -> Result<(), ControlError> {
+        let end = until.min(self.deadline);
+        before(end)?;
+        inspector.require_observations_local(self.main, self.application, end)?;
+        for inventory in [&self.inventory, &self.inventory_bookend]
+            .into_iter()
+            .flatten()
+        {
+            inspector.require_inventory_local(self.main, self.application, inventory, end)?;
+        }
+        if let Some(source) = &self.working_source {
+            source
+                .compare_main(self.main)
+                .map_err(ControlError::Invalid)?;
+        }
+        self.programs
+            .verify(end)
+            .map_err(|e| ControlError::Invalid(e.to_string()))?;
+        self.data
+            .verify()
+            .map_err(|e| ControlError::Invalid(e.to_string()))?;
+        inspector.require_observations_local(self.main, self.application, end)?;
+        before(end)
+    }
+
+    /// Use the already-required actual post/between PM and full Main results.
+    /// Both tokens must be newly observed after this context's last complete
+    /// bookend. Saved JSON and a reused pre-leaf token cannot satisfy this gate.
+    /// An active original APK reader is finalized only after these actual
+    /// tokens match. Its fixed PM/FD bookends borrow the same original end;
+    /// contexts that did not request APK custody issue no additional RPC.
+    pub fn finish_from_observed(
+        &mut self,
+        inspector: &NativeApplicationInspector,
+        after_main: &MainCustodyObservation,
+        after_application: &ActualApplicationObservation,
+        until: Instant,
+    ) -> Result<(), ControlError> {
+        let end = until.min(self.deadline);
+        self.verify_local(inspector, end)?;
+        inspector.require_observations_local(after_main, after_application, end)?;
+        if self.inventory.is_some()
+            && self
+                .inventory_bookend
+                .as_ref()
+                .is_none_or(|i| i.observed_at() <= self.full_bookend_after)
+        {
+            return Err(ControlError::Invalid(
+                "complete IHG user-0 inventory lacks a fresh actual post query".into(),
+            ));
+        }
+        require_new_bookend(
+            self.full_bookend_after,
+            after_main.observed_at(),
+            after_application.observed_at(),
+        )?;
+        if after_main.facts() != self.main.facts()
+            || after_main.peer() != self.main.peer()
+            || after_application.facts() != self.application.facts()
+            || after_application.peer() != self.application.peer()
+        {
+            return Err(ControlError::Invalid(
+                "actual Main or complete installed identity changed across native leaf".into(),
+            ));
+        }
+        self.verify_local(inspector, end)?;
+        self.programs
+            .verify_contents(end)
+            .map_err(|e| ControlError::Invalid(e.to_string()))?;
+        self.verify_local(inspector, end)?;
+        self.finish_apk_from_observed(inspector,after_main,after_application,end)?;
+        self.full_bookend_after = Instant::now();
+        Ok(())
+    }
+    pub(crate) fn require_epoch(&self, epoch: &RuntimeEpoch) -> Result<(), String> {
+        if &self.application.facts().epoch == epoch {
+            Ok(())
+        } else {
+            Err("native leaf baseline belongs to another actual Main epoch".into())
+        }
+    }
+    /// Comparison only, after the live factory exists. No document selects an
+    /// owner, process, UID, mount or metadata path for this factory.
+    pub fn compare(&self, value: &serde_json::Value) -> Result<(), ControlError> {
+        if serde_json::to_value(self.facts())? != *value {
+            Err(ControlError::Invalid(
+                "saved native leaf facts differ from the live owner".into(),
+            ))
+        } else {
+            Ok(())
+        }
+    }
+}
+fn require_new_bookend(
+    previous: Instant,
+    main: Instant,
+    application: Instant,
+) -> Result<(), ControlError> {
+    if main <= previous || application <= previous {
+        Err(ControlError::Invalid(
+            "native leaf final observations predate its held context".into(),
+        ))
+    } else {
+        Ok(())
+    }
+}
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::time::Duration;
+    #[test]
+    fn native_leaf_bookend_cannot_reuse_earlier_or_between_tokens() {
+        let before = Instant::now();
+        let after = before + Duration::from_millis(1);
+        let latest = after + Duration::from_millis(1);
+        require_new_bookend(before, after, after).unwrap();
+        assert!(require_new_bookend(before, before, after).is_err());
+        assert!(require_new_bookend(before, after, before).is_err());
+        assert!(require_new_bookend(after, after, latest).is_err());
+        require_new_bookend(after, latest, latest).unwrap();
+    }
+}

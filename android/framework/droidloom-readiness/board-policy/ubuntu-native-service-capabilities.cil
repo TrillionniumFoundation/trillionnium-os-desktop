@@ -1,0 +1,51 @@
+; Source-owned minimum capabilities for the selected stock Ubuntu services.
+; No unit BoundingSet is copied. See ubuntu-native-service-capabilities.md.
+; All original Android assertions remain enabled by the normal compiler.
+
+(typeattribute p4_native_service_cap_subjects)
+(typeattributeset p4_native_service_cap_subjects (p4_linux_sshd_t p4_linux_gdm_t p4_linux_gdm_worker_t p4_linux_network_manager_t p4_linux_wpa_t p4_linux_resolved_t p4_linux_logind_t))
+(typeattribute p4_native_service_cap_targets)
+(typeattributeset p4_native_service_cap_targets (all))
+
+(allow p4_linux_sshd_t self (capability (chown fowner kill setgid setuid net_bind_service sys_chroot audit_write)))
+(neverallow p4_linux_sshd_t self (capability (not (chown fowner kill setgid setuid net_bind_service sys_chroot audit_write))))
+
+; The maintained normal GDM writer scopes only fsuid/fsgid to its held dynamic user.
+; Root tests retain exactly CHOWN/FOWNER/SETUID/SETGID, with no DAC override.
+(allow p4_linux_gdm_t self (capability (chown fowner setgid setuid)))
+(neverallow p4_linux_gdm_t self (capability (not (chown fowner setgid setuid))))
+
+(allow p4_linux_gdm_worker_t self (capability (kill setgid setuid sys_tty_config audit_write)))
+(neverallow p4_linux_gdm_worker_t self (capability (not (kill setgid setuid sys_tty_config audit_write))))
+
+(allow p4_linux_network_manager_t self (capability (net_bind_service net_admin net_raw)))
+(neverallow p4_linux_network_manager_t self (capability (not (net_bind_service net_admin net_raw))))
+
+(allow p4_linux_wpa_t self (capability (net_admin net_raw)))
+(neverallow p4_linux_wpa_t self (capability (not (net_admin net_raw))))
+
+(allow p4_linux_resolved_t self (capability (net_bind_service net_raw)))
+(neverallow p4_linux_resolved_t self (capability (not (net_bind_service net_raw))))
+
+(allow p4_linux_logind_t self (capability (chown sys_admin sys_tty_config)))
+(neverallow p4_linux_logind_t self (capability (not (chown sys_admin sys_tty_config))))
+
+(neverallow p4_native_service_cap_subjects self (capability2 (all)))
+(neverallow p4_native_service_cap_subjects self (cap_userns (all)))
+(neverallow p4_native_service_cap_subjects self (cap2_userns (all)))
+(neverallow p4_native_service_cap_subjects kernel (security (load_policy setenforce setbool)))
+(neverallow p4_native_service_cap_subjects p4_native_service_cap_targets (file (relabelfrom relabelto)))
+(neverallow p4_native_service_cap_subjects p4_native_service_cap_targets (dir (relabelfrom relabelto)))
+(neverallow p4_native_service_cap_subjects p4_native_service_cap_targets (lnk_file (relabelfrom relabelto)))
+(neverallow p4_native_service_cap_subjects p4_native_service_cap_targets (sock_file (relabelfrom relabelto)))
+(neverallow p4_native_service_cap_subjects p4_native_service_cap_targets (fifo_file (relabelfrom relabelto)))
+; Preserve only the already-reviewed stock PAM tty relabel contract.
+; This component adds no relabel permission, including to these tty types.
+(typeattribute p4_native_service_cap_non_pam_targets)
+(typeattributeset p4_native_service_cap_non_pam_targets (and (p4_native_service_cap_targets) (not (p4_native_pam_tty_types))))
+(typeattribute p4_native_service_cap_non_pam_subjects)
+(typeattributeset p4_native_service_cap_non_pam_subjects (and (p4_native_service_cap_subjects) (not (p4_native_pam_roles))))
+(neverallow p4_native_service_cap_subjects p4_native_service_cap_non_pam_targets (chr_file (relabelfrom relabelto)))
+(neverallow p4_native_service_cap_non_pam_subjects p4_native_pam_tty_types (chr_file (relabelfrom relabelto)))
+(neverallow p4_native_service_cap_subjects p4_native_service_cap_targets (blk_file (relabelfrom relabelto)))
+(neverallow p4_native_service_cap_subjects p4_native_service_cap_targets (memfd_file (relabelfrom relabelto)))

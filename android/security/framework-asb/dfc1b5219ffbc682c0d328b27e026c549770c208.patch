@@ -1,0 +1,17 @@
+diff --git a/services/core/java/com/android/server/wm/WindowState.java b/services/core/java/com/android/server/wm/WindowState.java
+index dc2f6c9..b3dbfd1 100644
+--- a/services/core/java/com/android/server/wm/WindowState.java
++++ b/services/core/java/com/android/server/wm/WindowState.java
+@@ -2895,8 +2895,10 @@
+             boolean allowTheaterMode = mWmService.mAllowTheaterModeWakeFromLayout
+                     || Settings.Global.getInt(mWmService.mContext.getContentResolver(),
+                             Settings.Global.THEATER_MODE_ON, 0) == 0;
+-            boolean canTurnScreenOn = mActivityRecord == null || mActivityRecord.currentLaunchCanTurnScreenOn();
+-
++            final boolean canTurnScreenOn =
++                    getDisplayContent() != null && getDisplayContent().isTrusted()
++                            && (mActivityRecord == null
++                                    || mActivityRecord.currentLaunchCanTurnScreenOn());
+             if (allowTheaterMode && canTurnScreenOn
+                     && (mWmService.mAtmService.isDreaming()
+                             || !mWmService.mPowerManager.isInteractive(getDisplayId()))) {

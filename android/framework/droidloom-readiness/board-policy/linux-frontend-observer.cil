@@ -1,0 +1,81 @@
+; The original broker owns a short-lived metadata reader in its own domain.
+; clone3 returns its PIDFD atomically; the original parent consumes evidence only
+; after waitid proves retirement. These permissions do not authorize ptrace.
+(allow droidloom_broker self (process (fork sigchld getcap setcap sigkill)))
+(allow droidloom_broker self (fd (use)))
+; Native presenter reads change only the fresh child's filesystem IDs.
+(allow droidloom_broker self (capability (setuid setgid)))
+; The Android observer enters only the original held child user namespace.
+; It drops the resulting namespace capabilities before reading peer evidence.
+(allow droidloom_broker self (cap_userns (sys_admin setuid setgid)))
+(neverallow droidloom_broker self (capability (sys_ptrace)))
+(neverallow droidloom_broker self (cap_userns (sys_ptrace)))
+
+; proc task inodes use the task SID. Only these three selected peers are read.
+; The fixed reader validates the original proc filesystem, PIDFD, credentials,
+; namespace and executable objects. Its bounded paths are additionally confined
+; by AppArmor and its post-credential seccomp filter.
+(typeattribute p4_broker_frontend_proc_peers)
+(typeattributeset p4_broker_frontend_proc_peers (hal_graphics_composer_default droidloom_input_bridge droidloom_presenter))
+(allow droidloom_broker p4_broker_frontend_proc_peers (dir (getattr search)))
+(allow droidloom_broker p4_broker_frontend_proc_peers (file (getattr open read)))
+(allow droidloom_broker p4_broker_frontend_proc_peers (lnk_file (getattr read)))
+(neverallow droidloom_broker p4_broker_frontend_proc_peers (process (transition dyntransition ptrace signal sigkill sigstop setexec setcurrent)))
+(neverallow droidloom_broker p4_broker_frontend_proc_peers (dir (open read write add_name remove_name mounton relabelto relabelfrom)))
+(neverallow droidloom_broker p4_broker_frontend_proc_peers (file (write append map execute execute_no_trans entrypoint setattr relabelto relabelfrom)))
+
+; image_file walks only the held read-only image root with O_PATH. The original
+; system labels are rootfs/system_file and the original vendor directories are
+; vendor_file. Only the original held root can now be received read-only by
+; the fixed metadata protocol; other image directory enumeration stays denied.
+(typeattribute p4_broker_frontend_image_dirs)
+(typeattributeset p4_broker_frontend_image_dirs (rootfs system_file vendor_file))
+(typeattribute p4_broker_frontend_image_files)
+(typeattributeset p4_broker_frontend_image_files (hal_graphics_composer_default_exec zygote_exec droidloom_input_bridge_jar))
+(allow droidloom_broker p4_broker_frontend_image_dirs (dir (getattr search)))
+(allow droidloom_broker p4_broker_frontend_image_files (file (getattr)))
+(allow droidloom_broker labeledfs (filesystem (getattr)))
+(neverallow droidloom_broker p4_broker_frontend_image_dirs (dir (write add_name remove_name mounton relabelto relabelfrom)))
+(neverallow droidloom_broker p4_broker_frontend_dirs_without_metadata_root (dir (open read)))
+(neverallow droidloom_broker p4_broker_frontend_image_files (file (write append map execute execute_no_trans entrypoint create link unlink rename setattr relabelto relabelfrom)))
+(neverallow droidloom_broker p4_broker_frontend_image_files_without_query (file (open read)))
+; The independently installed native presenter is already a Linux executable.
+(allow droidloom_broker droidloom_presenter_exec (file (getattr open read)))
+
+; The ordinary-user presenter reaches only the original owner's four fixed
+; control names. Socket and PIDFD descriptions received with SCM_RIGHTS were
+; created by that broker; SO_PEERSEC describes the remote Android peer, not the
+; SID of the accepted local socket description.
+(allow droidloom_presenter droidloom_frontend_dir (dir (getattr search)))
+(allow droidloom_presenter droidloom_frontend_control_socket (sock_file (getattr write)))
+(allow droidloom_presenter droidloom_broker (unix_stream_socket (connectto getattr read write getopt shutdown)))
+(allow droidloom_presenter droidloom_broker (fd (use)))
+(neverallow droidloom_presenter droidloom_frontend_dir (dir (open read write create add_name remove_name mounton setattr relabelfrom relabelto)))
+(neverallow droidloom_presenter droidloom_frontend_control_socket (sock_file (create unlink link rename setattr relabelfrom relabelto)))
+(neverallow droidloom_presenter droidloom_broker (process (transition dyntransition ptrace signal sigkill sigstop setexec setcurrent)))
+; /proc/self/attr/selinux/current and the held-parent /proc/self/fd connect path
+; require traversal of proc and the current task's existing self permissions.
+; This does not authorize reading another task's attributes or namespace files.
+(allow droidloom_presenter proc (dir (getattr search)))
+(allow droidloom_presenter proc (lnk_file (getattr read)))
+; The selected 6.18 kernel marks PIDFD inodes S_PRIVATE. It still checks FD__USE
+; on transferred descriptions but skips inode and ioctl xperm checks. No PIDFD
+; read/write/ioctl or namespace-owner grant is added here: the maintained
+; presenter requests only PIDFD_GET_INFO, validates the original held objects,
+; and does not offer a caller-selected ioctl API.
+
+; Preserve all other subjects and types in the original board guards.
+(typeattribute p4_linux_nontraversing_except_presenter)
+(typeattributeset p4_linux_nontraversing_except_presenter (and (p4_linux_other_nontraversing_services) (not (droidloom_presenter))))
+(typeattribute p4_nonboard_except_presenter_proc)
+(typeattributeset p4_nonboard_except_presenter_proc (and (p4_all_nonboard) (not (proc))))
+(typeattribute p4_linux_without_frontend_metadata)
+(typeattributeset p4_linux_without_frontend_metadata (and (p4_linux_procs) (not (droidloom_broker))))
+(typeattribute p4_android_dirs_without_frontend_metadata)
+(typeattributeset p4_android_dirs_without_frontend_metadata (and (p4_android_only_files) (not (p4_broker_frontend_image_dirs))))
+(typeattribute p4_mac_roles_without_frontend_metadata)
+(typeattributeset p4_mac_roles_without_frontend_metadata (and (p4_linux_mac_roles) (not (droidloom_broker))))
+(typeattribute p4_nonboard_except_broker_frontend_read)
+(typeattributeset p4_nonboard_except_broker_frontend_read (and (p4_nonboard_except_mac_read) (not (p4_broker_frontend_proc_peers))))
+(typeattribute p4_nonboard_except_broker_frontend_directories)
+(typeattributeset p4_nonboard_except_broker_frontend_directories (and (p4_nonboard_except_mac_directories) (not (or (p4_broker_frontend_proc_peers) (p4_broker_frontend_image_dirs)))))

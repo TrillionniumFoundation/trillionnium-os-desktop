@@ -1,0 +1,671 @@
+; Fixed returned-working-copy qualification actors. They remain Linux subjects,
+; outside both Android's domain and the broad native-process IPC groups.
+; Runtime admission still requires the actual source-owned Main, PIDFD, cgroup,
+; original deadline, selected bytes and complete per-case observations.
+(type p4_linux_working_qualification_t)
+(type p4_linux_working_privateprep_t)
+(type p4_linux_working_application_t)
+(type p4_linux_working_return_t)
+(roletype system_r p4_linux_working_qualification_t)
+(roletype system_r p4_linux_working_privateprep_t)
+(roletype system_r p4_linux_working_application_t)
+(roletype system_r p4_linux_working_return_t)
+(typeattribute p4_working_actors)
+(typeattribute p4_working_clients)
+(typeattribute p4_working_children)
+(typeattributeset p4_working_clients
+ (p4_linux_working_qualification_t p4_linux_working_privateprep_t p4_linux_working_application_t))
+(typeattributeset p4_working_children
+ (p4_linux_working_privateprep_t p4_linux_working_application_t))
+(typeattributeset p4_working_actors (p4_working_clients p4_linux_working_return_t))
+(typeattributeset p4_linux_procs (p4_working_actors))
+
+(type p4_linux_working_config_t)
+(type p4_linux_working_unit_t)
+(type p4_linux_working_parent_t)
+(type p4_linux_working_evidence_t)
+(type p4_linux_working_output_root_t)
+(type p4_linux_working_plan_t)
+(type p4_linux_working_journal_t)
+(type p4_linux_working_comparison_t)
+(type p4_linux_working_current_dir_t)
+(type p4_linux_working_current_t)
+(type p4_linux_working_current_lock_t)
+(type p4_linux_native_leaf_source_t)
+(type p4_linux_native_leaf_layout_t)
+(type p4_linux_native_leaf_release_t)
+(type p4_linux_working_cgroup_t)
+(type p4_linux_working_limits_t)
+(type p4_linux_working_watchdog_t)
+(type p4_linux_working_apk_dir_t)
+(type p4_linux_working_apk_input_t)
+(typeattribute p4_working_disk_types)
+(typeattributeset p4_working_disk_types
+ (p4_linux_working_config_t p4_linux_working_unit_t p4_linux_working_parent_t
+  p4_linux_working_evidence_t p4_linux_working_output_root_t
+  p4_linux_working_plan_t p4_linux_working_journal_t
+  p4_linux_working_current_dir_t p4_linux_working_current_t p4_linux_working_current_lock_t
+  p4_linux_native_leaf_source_t p4_linux_native_leaf_layout_t p4_linux_native_leaf_release_t
+  p4_linux_working_apk_dir_t p4_linux_working_apk_input_t))
+(typeattribute p4_working_data)
+(typeattributeset p4_working_data
+ (p4_working_disk_types p4_linux_working_comparison_t p4_linux_working_cgroup_t
+  p4_linux_working_limits_t p4_linux_working_watchdog_t))
+(roletype object_r p4_linux_working_config_t)
+(roletype object_r p4_linux_working_unit_t)
+(roletype object_r p4_linux_working_parent_t)
+(roletype object_r p4_linux_working_evidence_t)
+(roletype object_r p4_linux_working_output_root_t)
+(roletype object_r p4_linux_working_plan_t)
+(roletype object_r p4_linux_working_journal_t)
+(roletype object_r p4_linux_working_comparison_t)
+(roletype object_r p4_linux_working_current_dir_t)
+(roletype object_r p4_linux_working_current_t)
+(roletype object_r p4_linux_working_current_lock_t)
+(roletype object_r p4_linux_native_leaf_source_t)
+(roletype object_r p4_linux_native_leaf_layout_t)
+(roletype object_r p4_linux_native_leaf_release_t)
+(roletype object_r p4_linux_working_cgroup_t)
+(roletype object_r p4_linux_working_limits_t)
+(roletype object_r p4_linux_working_watchdog_t)
+(roletype object_r p4_linux_working_apk_dir_t)
+(roletype object_r p4_linux_working_apk_input_t)
+(typeattributeset p4_linux_data (p4_working_data))
+(allow p4_working_disk_types labeledfs (filesystem (associate)))
+(allow p4_linux_working_comparison_t tmpfs (filesystem (associate)))
+(allow p4_linux_working_watchdog_t device (filesystem (associate)))
+
+; The independent EMPTY diagnostic has one exact root-private APK. These two
+; objects are not ordinary working inputs and inherit no generic Linux data
+; readers. The normal manager only tests existence; the fixed preparation
+; client holds and hashes the complete original file without writing it.
+(type p4_linux_empty_meituan_dir_t)
+(type p4_linux_empty_meituan_apk_t)
+(roletype object_r p4_linux_empty_meituan_dir_t)
+(roletype object_r p4_linux_empty_meituan_apk_t)
+(typeattributeset p4_all_board_owned (p4_linux_empty_meituan_dir_t p4_linux_empty_meituan_apk_t))
+(allow p4_linux_empty_meituan_dir_t labeledfs (filesystem (associate)))
+(allow p4_linux_empty_meituan_apk_t labeledfs (filesystem (associate)))
+(allow init_t p4_linux_working_output_root_t (dir (getattr search)))
+(allow init_t p4_linux_empty_meituan_dir_t (dir (getattr search)))
+(allow init_t p4_linux_empty_meituan_apk_t (file (getattr)))
+(allow p4_linux_working_privateprep_t p4_linux_empty_meituan_dir_t (dir (getattr search)))
+(allow p4_linux_working_privateprep_t p4_linux_empty_meituan_apk_t (file (getattr open read)))
+
+; Both programs are existing release ELFs. Explicit unit SELinuxContext chooses
+; the new parent/return roles. Do not add competing default type transitions
+; to either the public applications ELF or the old original-return ELF.
+(allow init_t p4_linux_working_unit_t (file (getattr open read map)))
+(allow p4_linux_service_executor_t p4_linux_working_unit_t (file (getattr open read)))
+(allow p4_linux_service_executor_t droidloom_public_control_client_exec (file (getattr open read execute map)))
+(allow p4_linux_service_executor_t p4_linux_working_qualification_t (process (transition siginh rlimitinh)))
+(allow p4_linux_service_executor_t p4_linux_working_return_t (process (transition siginh rlimitinh)))
+; Only a source-owned explicit unit context selects the diagnostic client.
+; The public CLI keeps its old default transition. Runtime identity checks
+; additionally require the exact unit, argv and installed original ELF.
+(allow p4_linux_service_executor_t p4_linux_working_privateprep_t (process (transition siginh rlimitinh)))
+(allow p4_linux_working_qualification_t droidloom_public_control_client_exec (file (getattr open read execute map entrypoint)))
+(allow p4_linux_working_return_t p4_linux_once_return_exec_t (file (getattr open read execute map entrypoint)))
+(auditallow p4_linux_service_executor_t p4_linux_working_qualification_t (process (transition)))
+(auditallow p4_linux_service_executor_t p4_linux_working_return_t (process (transition)))
+(auditallow p4_linux_service_executor_t p4_linux_working_privateprep_t (process (transition)))
+
+; The fixed parent closes its only watchdog FD before either onexec transition.
+; The exact argv, same installed ELF and two pending LSM attributes are checked
+; again by the child. No caller-selectable domain or immediate dyntransition.
+(allow p4_linux_working_qualification_t self (process (setexec)))
+(allow p4_linux_working_qualification_t self (file (write)))
+(allow p4_linux_working_qualification_t p4_working_children (process (transition siginh rlimitinh)))
+(allow p4_working_children droidloom_public_control_client_exec (file (getattr open read execute map entrypoint execute_no_trans)))
+(allow p4_working_children p4_linux_working_qualification_t (process (sigchld)))
+(allow p4_linux_working_qualification_t p4_working_children (process (getattr signull signal sigkill)))
+(auditallow p4_linux_working_qualification_t p4_working_children (process (transition)))
+
+; The ordinary selected 6.18 shmem transition uses the creating task, not the
+; memfd name. A separately execed, empty-capability child therefore creates
+; only the empty non-executable APK inode. It inherits the preparation AA
+; profile, one original seqpacket description and the already-EOF read pipe.
+; The parent reaps this child before copying any APK bytes. No original APK,
+; comparison inode, namespace handle or public broker socket enters the child.
+(type p4_linux_working_payload_birth_t)
+(roletype system_r p4_linux_working_payload_birth_t)
+(typeattributeset p4_all_board_owned (p4_linux_working_payload_birth_t))
+(allow p4_linux_working_privateprep_t self (process (setexec)))
+(allow p4_linux_working_privateprep_t p4_linux_working_payload_birth_t (process (transition siginh rlimitinh getattr sigkill)))
+(allow p4_linux_working_privateprep_t p4_linux_working_payload_birth_t (process2 (nnp_transition)))
+(auditallow p4_linux_working_privateprep_t p4_linux_working_payload_birth_t (process (transition)))
+(allow p4_linux_working_payload_birth_t p4_linux_working_privateprep_t (process (sigchld)))
+(allow p4_linux_working_payload_birth_t self (process (getattr getcap)))
+(allow p4_linux_working_payload_birth_t p4_linux_working_privateprep_t (fd (use)))
+(allow p4_linux_working_payload_birth_t p4_linux_working_privateprep_t (fifo_file (getattr read)))
+(allow p4_linux_working_payload_birth_t p4_linux_working_privateprep_t (unix_stream_socket (getattr getopt read write)))
+(allow p4_linux_working_payload_birth_t droidloom_public_control_client_exec (file (getattr open read execute map entrypoint)))
+(allow p4_linux_working_payload_birth_t p4_linux_elf_interpreter_t (file (getattr open read execute map)))
+(allow p4_linux_working_payload_birth_t p4_linux_runtime_lib_t (file (getattr open read execute map)))
+(allow p4_linux_working_payload_birth_t p4_linux_console_ld_cache_native_config_t (file (getattr open read map)))
+(allow p4_linux_working_payload_birth_t p4_linux_rootdir_t (dir (getattr search)))
+(allow p4_linux_working_payload_birth_t p4_linux_etc_dir_t (dir (getattr search)))
+(allow p4_linux_working_payload_birth_t p4_linux_usrmerge_link_t (lnk_file (getattr read)))
+(allow p4_linux_working_payload_birth_t proc (dir (getattr search)))
+(allow p4_linux_working_payload_birth_t proc (lnk_file (getattr read)))
+(allow p4_linux_working_payload_birth_t proc (filesystem (getattr)))
+(allow p4_linux_working_payload_birth_t self (dir (getattr search)))
+(allow p4_linux_working_payload_birth_t self (file (getattr open read)))
+(allow p4_linux_working_payload_birth_t self (lnk_file (getattr read)))
+(allow p4_linux_working_payload_birth_t tmpfs (filesystem (getattr)))
+; PIDFD_GET_INFO is the fixed mask-3 identity query, not a namespace ioctl.
+(allow p4_linux_working_privateprep_t p4_kernel_pid_handle_t (file (getattr ioctl)))
+(allowx p4_linux_working_privateprep_t p4_kernel_pid_handle_t (ioctl file (0xff0b)))
+(neverallowx p4_linux_working_privateprep_t p4_kernel_pid_handle_t (ioctl file (not (0xff0b))))
+(allow p4_linux_working_payload_birth_t p4_kernel_pid_handle_t (file (getattr ioctl)))
+(allowx p4_linux_working_payload_birth_t p4_kernel_pid_handle_t (ioctl file (0xff0b)))
+(neverallowx p4_linux_working_payload_birth_t p4_kernel_pid_handle_t (ioctl file (not (0xff0b))))
+; memfd_create reaches shmem_file_setup/alloc_file without a normal open or
+; create hook. Only the actual empty-inode metadata is read by this child.
+(typetransition p4_linux_working_payload_birth_t tmpfs file droidloom_apk_payload)
+(typetransition p4_linux_working_payload_birth_t tmpfs memfd_file droidloom_apk_payload)
+(allow p4_linux_working_payload_birth_t droidloom_apk_payload (file (getattr)))
+(allow p4_linux_working_payload_birth_t droidloom_apk_payload (memfd_file (getattr)))
+; SCM_RIGHTS checks the RW description even while empty. After actual reap,
+; preparation copies and reads back the original bytes, seals the inode and
+; reopens only its held numeric descriptor read-only for the normal receiver.
+(allow p4_linux_working_privateprep_t p4_linux_working_payload_birth_t (fd (use)))
+(allow p4_linux_working_privateprep_t droidloom_apk_payload (file (getattr open read write)))
+(allow p4_linux_working_privateprep_t droidloom_apk_payload (memfd_file (getattr open read write)))
+
+; This role is intentionally outside p4_linux_procs, p4_working_actors and
+; p4_handle_owner. The normal verifier checks every incoming/outgoing vector,
+; including the exact independently reviewed normal loader/rootdir aliases.
+(typeattribute p4_working_payload_not_prep)
+(typeattributeset p4_working_payload_not_prep (not (p4_linux_working_privateprep_t)))
+(typeattribute p4_working_payload_not_birth)
+(typeattributeset p4_working_payload_not_birth (not (p4_linux_working_payload_birth_t)))
+(typeattribute p4_working_payload_other_entries)
+(typeattributeset p4_working_payload_other_entries (not (or (droidloom_public_control_client_exec) (p4_linux_observed_client_exec_t))))
+(typeattribute p4_working_payload_other_handles)
+(typeattributeset p4_working_payload_other_handles (not (p4_kernel_pid_handle_t)))
+(typeattribute p4_working_payload_other_memfds)
+(typeattributeset p4_working_payload_other_memfds (not (droidloom_apk_payload)))
+(neverallow p4_working_payload_not_prep p4_linux_working_payload_birth_t (process (transition dyntransition)))
+(neverallow p4_linux_working_payload_birth_t p4_working_all_types (process (not (getattr getcap sigchld))))
+(neverallow p4_linux_working_payload_birth_t p4_working_all_types (process2 (all)))
+(neverallow p4_linux_working_payload_birth_t self (capability (all)))
+(neverallow p4_linux_working_payload_birth_t self (capability2 (all)))
+(neverallow p4_linux_working_payload_birth_t self (cap_userns (all)))
+(neverallow p4_linux_working_payload_birth_t self (cap2_userns (all)))
+(neverallow p4_linux_working_payload_birth_t p4_working_all_types (file (not (getattr open read execute map entrypoint ioctl))))
+(neverallow p4_linux_working_payload_birth_t p4_working_payload_other_entries (file (entrypoint)))
+(neverallow p4_linux_working_payload_birth_t p4_working_payload_other_handles (file (ioctl)))
+(neverallowx p4_linux_working_payload_birth_t p4_working_payload_other_handles (ioctl file (range 0x0000 0xffff)))
+(neverallow p4_linux_working_payload_birth_t p4_working_all_types (memfd_file (not (getattr))))
+(neverallow p4_linux_working_payload_birth_t p4_working_payload_other_memfds (memfd_file (all)))
+(neverallow p4_linux_working_payload_birth_t droidloom_apk_payload (file (not (getattr))))
+(neverallow p4_linux_working_payload_birth_t p4_linux_working_comparison_t (file (all)))
+(neverallow p4_linux_working_payload_birth_t p4_linux_working_apk_input_t (file (all)))
+(neverallow p4_linux_working_payload_birth_t p4_kernel_ns_handle_t (file (all)))
+(neverallow p4_linux_working_payload_birth_t p4_working_all_types (dir (not (getattr search))))
+(neverallow p4_linux_working_payload_birth_t p4_working_all_types (lnk_file (not (getattr read))))
+(neverallow p4_linux_working_payload_birth_t p4_working_all_types (filesystem (not (getattr))))
+(neverallow p4_linux_working_payload_birth_t p4_working_payload_not_prep (fd (all)))
+(neverallow p4_linux_working_payload_birth_t p4_working_all_types (fifo_file (not (getattr read))))
+(neverallow p4_linux_working_payload_birth_t p4_working_payload_not_prep (fifo_file (all)))
+(neverallow p4_linux_working_payload_birth_t p4_working_all_types (unix_stream_socket (not (getattr getopt read write))))
+(neverallow p4_linux_working_payload_birth_t p4_working_payload_not_prep (unix_stream_socket (all)))
+(neverallow p4_linux_working_payload_birth_t p4_working_all_types (unix_dgram_socket (all)))
+(neverallow p4_linux_working_payload_birth_t p4_working_all_types (chr_file (all)))
+(neverallow p4_linux_working_payload_birth_t p4_working_all_types (blk_file (all)))
+(neverallow p4_linux_working_payload_birth_t p4_working_all_types (sock_file (all)))
+(neverallow p4_linux_working_payload_birth_t p4_working_all_types (binder (all)))
+(neverallow p4_linux_working_payload_birth_t p4_working_all_types (security (all)))
+(neverallow p4_linux_working_payload_birth_t p4_working_all_types (service (all)))
+(neverallow p4_linux_working_payload_birth_t p4_working_all_types (dbus (all)))
+(neverallow p4_working_all_types p4_linux_working_payload_birth_t (dbus (all)))
+(neverallow p4_linux_working_payload_birth_t p4_working_all_types (tcp_socket (all)))
+(neverallow p4_linux_working_payload_birth_t p4_working_all_types (udp_socket (all)))
+(neverallow p4_linux_working_payload_birth_t p4_working_all_types (rawip_socket (all)))
+(neverallow p4_linux_working_payload_birth_t p4_working_all_types (packet_socket (all)))
+(neverallow p4_linux_working_payload_birth_t p4_working_all_types (netlink_route_socket (all)))
+(neverallow p4_linux_working_payload_birth_t p4_working_all_types (netlink_kobject_uevent_socket (all)))
+
+(macro p4_working_base ((type subject))
+ (allow subject self (process (fork getattr getcap setcap getpgid setpgid getsession getsched sigchld)))
+ (allow subject self (dir (getattr search open read)))
+ (allow subject self (file (getattr open read)))
+ (allow subject self (lnk_file (getattr read)))
+ (allow subject self (fd (use)))
+ (allow subject self (fifo_file (getattr read write)))
+ (allow subject p4_linux_rootdir_t (dir (getattr search)))
+ (allow subject p4_linux_etc_dir_t (dir (getattr search)))
+ (allow subject p4_linux_product_store_t (dir (getattr search)))
+ (allow subject p4_linux_var_lib_t (dir (getattr search)))
+ (allow subject p4_linux_run_t (dir (getattr search)))
+ (allow subject p4_linux_runtime_lib_t (file (getattr open read execute map)))
+ (allow subject p4_linux_elf_interpreter_t (file (getattr open read execute map)))
+ (allow subject p4_linux_usrmerge_link_t (lnk_file (getattr read)))
+ (allow subject p4_linux_standardio_t (chr_file (getattr open read write)))
+ (allow subject null_device (chr_file (getattr open read write)))
+ (allow subject p4_linux_working_config_t (dir (getattr search)))
+ (allow subject p4_linux_working_config_t (file (getattr open read)))
+ (allow subject p4_linux_working_unit_t (file (getattr open read)))
+ (allow subject p4_linux_once_config_t (dir (getattr search)))
+ (allow subject p4_linux_once_parent_t (dir (getattr search)))
+ (allow subject p4_linux_working_parent_t (dir (getattr search)))
+ (allow subject droidloom_package_config_parents (dir (getattr search)))
+ (allow subject p4_linux_mac_release_input_t (file (getattr open read)))
+ (allow subject p4_linux_early_handoff_dir_t (dir (getattr search)))
+ (allow subject p4_linux_host_mount_identity_t (file (getattr open read)))
+ (allow subject p4_linux_native_dev_root_t (dir (getattr search)))
+ (allow subject p4_linux_root_uuid_link_t (lnk_file (getattr read)))
+ (allow subject p4_linux_root_block_t (blk_file (getattr)))
+ (allow subject labeledfs (filesystem (getattr)))
+ (allow subject tmpfs (filesystem (getattr)))
+ (allow subject proc (filesystem (getattr)))
+ (allow subject sysfs (filesystem (getattr)))
+ (allow subject proc (dir (getattr search)))
+ (allow subject proc (lnk_file (getattr read)))
+ (allow subject proc (file (getattr open read)))
+ (allow subject proc_random (dir (getattr search)))
+ (allow subject proc_random (file (getattr open read)))
+ (allow subject proc_cmdline (file (getattr open read)))
+ (allow subject selinuxfs (dir (getattr search)))
+ (allow subject selinuxfs (file (getattr open read)))
+ (allow subject sysfs (dir (getattr search open read)))
+ (allow subject sysfs (file (getattr open read)))
+ (allow subject device (dir (getattr search)))
+ (typeattributeset p4_handle_owner (subject))
+ (allowx subject p4_kernel_ns_handle_t (ioctl file (0xb703)))
+ (neverallowx subject p4_kernel_ns_handle_t (ioctl file (not (0xb703))))
+)
+(call p4_working_base (p4_linux_working_qualification_t))
+(call p4_working_base (p4_linux_working_privateprep_t))
+(call p4_working_base (p4_linux_working_application_t))
+(call p4_working_base (p4_linux_working_return_t))
+(typeattributeset p4_native_boot_commandline_readers (p4_working_actors))
+(typeattributeset p4_native_public_directory_traversers (p4_working_actors))
+
+; Read-mode proc checks are not ptrace attach. The selected kernel tests
+; FILE__READ / AA_PTRACE_READ for these exact peers; attach tests PROCESS__PTRACE
+; and remains forbidden. The initial-namespace peer and nested Main user
+; namespace require the corresponding two capability classes.
+(typeattribute p4_working_main_proc_peers)
+(typeattributeset p4_working_main_proc_peers (droidloom_broker init system_server))
+(typeattribute p4_working_proc_peers)
+(typeattributeset p4_working_proc_peers (p4_working_main_proc_peers init_t p4_working_clients))
+(allow p4_working_clients p4_working_proc_peers (dir (getattr search)))
+(allow p4_working_clients p4_working_proc_peers (file (getattr open read)))
+(allow p4_working_clients p4_working_proc_peers (lnk_file (getattr read)))
+; The normal broker authenticates only the actual physical NativeUi caller.
+; SO_PEERSEC is AppArmor on this route; both named current attributes and the
+; fixed installed applications ELF are separately read through the held peer.
+(allow droidloom_broker p4_linux_working_application_t (dir (getattr search)))
+(allow droidloom_broker p4_linux_working_application_t (file (getattr open read)))
+(allow droidloom_broker p4_linux_working_application_t (lnk_file (getattr read)))
+(neverallow droidloom_broker p4_linux_working_application_t (process (ptrace signal sigkill sigstop)))
+; Normal installation authenticates the independent preparation caller as
+; well. Read-mode proc observations and the fixed public-client ELF body do
+; not permit ptrace attach, mutation or executing the client's program.
+(allow droidloom_broker p4_linux_working_privateprep_t (dir (getattr search)))
+(allow droidloom_broker p4_linux_working_privateprep_t (file (getattr open read)))
+(allow droidloom_broker p4_linux_working_privateprep_t (lnk_file (getattr read)))
+(neverallow droidloom_broker p4_linux_working_privateprep_t (process (ptrace signal sigkill sigstop)))
+
+; Fixed CURRENT/lock I/O uses a joined thread-local fsuid/fsgid scope.
+; No DAC bypass or ownership change: new CURRENT is born as its exact owner.
+(allow p4_linux_working_qualification_t self (capability (setuid setgid sys_ptrace)))
+(allow p4_working_children self (capability (setuid setgid sys_ptrace)))
+(allow p4_working_clients self (cap_userns (sys_ptrace)))
+(neverallow p4_linux_working_qualification_t self (capability (not (setuid setgid sys_ptrace))))
+(neverallow p4_working_children self (capability (not (setuid setgid sys_ptrace))))
+(neverallow p4_working_clients self (cap_userns (not (sys_ptrace))))
+
+; Actual held root and the four CE/DE directories are metadata, not private
+; file bodies. The final package directories have O_PATH only, not read/search.
+(typeattribute p4_working_android_traversal)
+(typeattributeset p4_working_android_traversal
+ (rootfs system_file system_data_root_file system_data_file))
+(allow p4_working_clients p4_working_android_traversal (dir (getattr search)))
+(allow p4_working_clients app_data_file (dir (getattr)))
+(allow p4_working_clients zygote_exec (file (getattr)))
+(allow p4_working_clients init_exec (file (getattr)))
+; No app_data_file body or mlstrustedsubject grant: Camera mode/private-body
+; observations need their separate real factory, not this metadata role.
+
+; Public control preserves the original authenticated broker and socket owner.
+; No host subject executes an Android command, calls Binder, creates a listener
+; at the control name, or receives arbitrary guest descriptions.
+(typeattributeset droidloom_public_control_peers (p4_working_clients))
+(allow p4_working_clients self (unix_stream_socket (create connect getattr read write getopt setopt shutdown)))
+(allow p4_working_clients self (unix_dgram_socket (create connect getattr read write sendto getopt setopt shutdown)))
+(allow p4_working_clients droidloom_broker (fd (use)))
+(allow p4_working_clients droidloom_broker (unix_stream_socket (getattr read write getopt shutdown)))
+(allow p4_working_clients p4_working_clients (fd (use)))
+(allow p4_working_clients p4_working_clients (unix_stream_socket (getattr read write getopt setopt shutdown)))
+(allow p4_working_clients p4_working_clients (unix_dgram_socket (getattr read write sendto getopt setopt shutdown)))
+(allow p4_working_clients p4_working_clients (fifo_file (getattr read write)))
+(allow p4_working_children self (process (signull signal sigkill)))
+
+; Normal native public code and comparison sources, independently pinned by
+; the normal application factories. AppArmor restricts executable paths to
+; the fixed installed clients and host Python, never arbitrary host programs.
+(allow p4_working_clients droidloom_public_control_client_exec (file (getattr open read map)))
+(allow p4_working_clients droidloom_container_entry_exec_t (file (getattr open read)))
+(allow p4_working_clients droidloom_presenter_exec (file (getattr open read)))
+(allow p4_working_clients init_exec_t (file (getattr open read)))
+(allow p4_working_clients p4_linux_native_public_files (dir (getattr search)))
+(allow p4_working_clients p4_linux_native_public_files (file (getattr open read)))
+(allow p4_working_clients p4_linux_native_public_files (lnk_file (getattr read)))
+(allow p4_working_clients p4_linux_public_accounts_t (file (getattr open read)))
+(allow p4_working_clients p4_linux_machine_id_t (file (getattr open read)))
+(allow p4_working_clients p4_linux_distribution_info_t (file (getattr open read)))
+(allow p4_working_clients p4_linux_native_leaf_source_t (dir (getattr search open read)))
+(allow p4_working_clients p4_linux_native_leaf_source_t (file (getattr open read)))
+(allow p4_working_clients droidloom_public_apk_root (dir (getattr search)))
+(allow p4_working_clients droidloom_public_apk_dir (dir (getattr search)))
+(allow p4_working_clients droidloom_public_apk_input (file (getattr open read)))
+; The closed root-owned 67-file source cohort is distinct from the public
+; user's installer inbox. Only the fixed preparation child reads its bodies.
+; Parent custody uses O_PATH; only this exact cohort is enumerated.
+(allow p4_linux_working_privateprep_t p4_linux_working_apk_dir_t (dir (getattr search open read)))
+(allow p4_linux_working_privateprep_t p4_linux_working_apk_input_t (file (getattr open read)))
+(neverallow p4_linux_working_privateprep_t p4_linux_working_apk_dir_t (dir (not (getattr search open read))))
+(neverallow p4_linux_working_privateprep_t p4_linux_working_apk_input_t (file (not (getattr open read))))
+(typeattribute p4_working_without_privateprep)
+(typeattributeset p4_working_without_privateprep (and (p4_working_actors) (not (p4_linux_working_privateprep_t))))
+(neverallow p4_working_without_privateprep p4_linux_working_apk_input_t (file (all)))
+(neverallow p4_working_without_privateprep p4_linux_working_apk_dir_t (dir (all)))
+(allow p4_working_children p4_linux_native_bin_t (file (getattr open read execute execute_no_trans map)))
+; Source-owned sealed comparison memfds and inherited unnamed channels.
+; MAC denies mapping/execute independently of the memfd flags.
+(typetransition p4_working_clients tmpfs file p4_linux_working_comparison_t)
+(typetransition p4_working_clients tmpfs memfd_file p4_linux_working_comparison_t)
+(allow p4_working_clients p4_linux_working_comparison_t (file (getattr create open read write setattr)))
+(allow p4_working_clients p4_linux_working_comparison_t (memfd_file (getattr create open read write setattr)))
+(neverallow p4_working_actors p4_linux_working_comparison_t (file (map execute execute_no_trans entrypoint link rename relabelto relabelfrom)))
+(neverallow p4_working_actors p4_linux_working_comparison_t (memfd_file (map execute execute_no_trans entrypoint relabelto relabelfrom)))
+
+; Immutable source units and normal manager connections. The parent reads its
+; own unit. Two fixed child systemctl commands read production system/desktop
+; status through their respective private manager sockets; the user command
+; runs as UID 1000 with no capabilities. No manager mutation is granted.
+(allow p4_linux_working_qualification_t p4_linux_systemd_run_t (dir (getattr search)))
+(allow p4_linux_working_qualification_t droidloom_manager_private_socket (sock_file (getattr write)))
+(allow p4_linux_working_qualification_t init_t (unix_stream_socket (connectto)))
+(allow init_t p4_linux_working_qualification_t (unix_stream_socket (getattr read write)))
+(allow p4_linux_working_qualification_t p4_linux_working_unit_t (service (status)))
+(allow p4_working_children p4_linux_systemd_run_t (dir (getattr search)))
+(allow p4_working_children droidloom_manager_private_socket (sock_file (getattr write)))
+(allow p4_working_children init_t (unix_stream_socket (connectto)))
+(allow init_t p4_working_children (unix_stream_socket (getattr read write)))
+(allow p4_working_children p4_linux_user_run_t (dir (getattr search)))
+(allow p4_working_children p4_linux_user_run_t (sock_file (getattr write)))
+(allow p4_working_children p4_linux_user_manager_t (unix_stream_socket (connectto)))
+(allow p4_linux_user_manager_t p4_working_children (unix_stream_socket (getattr read write)))
+(allow p4_working_children p4_linux_production_unit_file_t (service (status)))
+(allow p4_working_actors p4_linux_service_executor_t (fd (use)))
+(allow p4_working_actors p4_linux_service_executor_t (unix_stream_socket (read write)))
+(allow p4_working_actors init_t (process (sigchld)))
+(allow init_t p4_working_actors (process (getattr signull signal sigkill sigstop)))
+(allow p4_working_actors p4_linux_apparmor_enabled_t (file (getattr open read)))
+
+; The manager creates only these fixed unit cgroups. Generated controls retain
+; genfs labels; no qualification process can relabel, migrate or create tasks.
+(typeattributeset p4_linux_init_cgroup_inodes (p4_linux_working_cgroup_t p4_linux_working_limits_t))
+(genfscon cgroup2 "/system.slice/droidloom-working-qualification.service" (u object_r p4_linux_working_cgroup_t ((s0) (s0))))
+(genfscon cgroup2 "/system.slice/droidloom-working-qualification.service/" (u object_r p4_linux_working_cgroup_t ((s0) (s0))))
+(genfscon cgroup2 "/system.slice/droidloom-working-qualification.service/cpu.max" (u object_r p4_linux_working_limits_t ((s0) (s0))))
+(genfscon cgroup2 "/system.slice/droidloom-working-qualification.service/memory.max" (u object_r p4_linux_working_limits_t ((s0) (s0))))
+(genfscon cgroup2 "/system.slice/droidloom-working-qualification-return.service" (u object_r p4_linux_working_cgroup_t ((s0) (s0))))
+(genfscon cgroup2 "/system.slice/droidloom-working-qualification-return.service/" (u object_r p4_linux_working_cgroup_t ((s0) (s0))))
+(typetransition init_t p4_linux_system_slice_t dir "droidloom-working-qualification.service" p4_linux_working_cgroup_t)
+(typetransition init_t p4_linux_system_slice_t dir "droidloom-working-qualification-return.service" p4_linux_working_cgroup_t)
+(allow init_t p4_linux_working_cgroup_t (dir (getattr search open read create write add_name remove_name rmdir setattr)))
+(allow init_t p4_linux_working_cgroup_t (file (getattr open read write create watch)))
+(allow init_t p4_linux_working_limits_t (file (getattr open read write create watch)))
+(allow p4_working_actors p4_linux_cgroup_root_t (dir (getattr search)))
+(allow p4_working_actors p4_linux_system_slice_t (dir (getattr search)))
+(allow p4_working_actors p4_linux_working_cgroup_t (dir (getattr search open read)))
+(allow p4_working_actors p4_linux_working_cgroup_t (file (getattr open read)))
+(allow p4_working_clients p4_linux_working_limits_t (file (getattr open read)))
+(allow p4_linux_working_qualification_t p4_linux_working_limits_t (file (write)))
+(neverallow p4_working_actors p4_linux_working_cgroup_t (file (write append)))
+(neverallow p4_working_children p4_linux_working_limits_t (file (write append)))
+(neverallow p4_working_actors p4_linux_init_cgroup_inodes (dir (create write add_name remove_name rmdir setattr mounton relabelto relabelfrom)))
+
+; A cold admitted root owns these directories before the working service.
+; Parent stage records and returned observations are ordinary fresh files.
+(allow p4_working_actors p4_linux_working_evidence_t (dir (getattr search open read)))
+(allow p4_working_actors p4_linux_working_evidence_t (file (getattr open read)))
+(allow p4_linux_working_qualification_t p4_linux_working_evidence_t (dir (write add_name)))
+(allow p4_linux_working_return_t p4_linux_working_evidence_t (dir (write add_name)))
+(typetransition p4_linux_working_qualification_t p4_linux_working_evidence_t file p4_linux_working_evidence_t)
+(typetransition p4_linux_working_return_t p4_linux_working_evidence_t file p4_linux_working_evidence_t)
+(allow p4_linux_working_qualification_t p4_linux_working_evidence_t (file (create write setattr lock)))
+(allow p4_linux_working_return_t p4_linux_working_evidence_t (file (create write setattr lock)))
+
+; Source-owned parent PLAN/capture and application journals have distinct
+; creator types. A child cannot replace the parent PLAN or native CURRENT.
+(allow p4_working_clients p4_linux_working_output_root_t (dir (getattr search)))
+(allow p4_working_clients p4_linux_working_output_root_t (dir (write add_name)))
+(typetransition p4_linux_working_qualification_t p4_linux_working_output_root_t dir p4_linux_working_plan_t)
+(typetransition p4_working_children p4_linux_working_output_root_t dir p4_linux_working_journal_t)
+(allow p4_working_clients p4_linux_working_plan_t (dir (getattr search open read)))
+(allow p4_working_clients p4_linux_working_plan_t (file (getattr open read)))
+(allow p4_linux_working_qualification_t p4_linux_working_plan_t (dir (create write add_name)))
+(typetransition p4_linux_working_qualification_t p4_linux_working_plan_t file p4_linux_working_plan_t)
+(allow p4_linux_working_qualification_t p4_linux_working_plan_t (file (getattr create open read write setattr lock)))
+(allow p4_working_clients p4_linux_working_journal_t (dir (getattr search open read)))
+(allow p4_working_clients p4_linux_working_journal_t (file (getattr open read)))
+(allow p4_working_children p4_linux_working_journal_t (dir (create write add_name)))
+(typetransition p4_working_children p4_linux_working_journal_t file p4_linux_working_journal_t)
+(allow p4_working_children p4_linux_working_journal_t (file (getattr create open read write setattr lock)))
+; The normal UI action lock is a separate existing fixed object, never a
+; generic /run/lock write grant. Its normal producer is bound separately.
+
+; Parent-only initial source publication. Three fixed root-installed .layout
+; markers stay immutable. New complete-hash JSON files have a distinct type.
+(allow p4_working_clients p4_linux_user_home_t (dir (getattr search)))
+(allow p4_working_clients p4_linux_working_current_dir_t (dir (getattr search)))
+(allow p4_working_clients p4_linux_working_current_t (file (getattr open read)))
+(allow p4_linux_working_qualification_t p4_linux_working_current_lock_t (file (getattr open read lock)))
+(allow p4_linux_working_qualification_t p4_linux_working_current_dir_t (dir (write add_name remove_name)))
+(typetransition p4_linux_working_qualification_t p4_linux_working_current_dir_t file p4_linux_working_current_t)
+(allow p4_linux_working_qualification_t p4_linux_working_current_t (file (getattr open read create write setattr rename unlink)))
+(allow p4_working_clients p4_linux_native_leaf_layout_t (dir (getattr search)))
+(allow p4_working_clients p4_linux_native_leaf_layout_t (file (getattr open read)))
+(allow p4_working_clients p4_linux_native_leaf_release_t (file (getattr open read)))
+(allow p4_linux_working_qualification_t p4_linux_native_leaf_layout_t (dir (write add_name)))
+(typetransition p4_linux_working_qualification_t p4_linux_native_leaf_layout_t file p4_linux_native_leaf_release_t)
+(allow p4_linux_working_qualification_t p4_linux_native_leaf_release_t (file (getattr open read create write setattr)))
+(neverallow p4_working_actors p4_linux_native_leaf_layout_t (file (write append create setattr unlink rename link)))
+
+; Only the parent's held, source-identified Software watchdog may be opened.
+; O_WRONLY needs chr write permission; the trusted source issues no write and
+; only this ioctl. This is not a claim that MAC can distinguish write(2).
+(allow p4_linux_working_qualification_t p4_linux_working_watchdog_t (chr_file (getattr open write ioctl)))
+(allowx p4_linux_working_qualification_t p4_linux_working_watchdog_t (ioctl chr_file (0x5705)))
+(neverallowx p4_linux_working_qualification_t p4_linux_working_watchdog_t (ioctl chr_file (not (0x5705))))
+(neverallow p4_working_children p4_linux_working_watchdog_t (chr_file (all)))
+(neverallow p4_linux_working_return_t p4_linux_working_watchdog_t (chr_file (all)))
+
+; Working return reuses only the original source-pinned three-command
+; maintenance transition, with already-open output descriptions. It has no
+; watchdog, direct GRUB write, bus connection or maintenance capability.
+(allow p4_linux_working_return_t p4_linux_maintenance_config_t (dir (getattr search)))
+(allow p4_linux_working_return_t p4_linux_maintenance_config_t (file (getattr open read)))
+(typetransition p4_linux_working_return_t p4_linux_maintenance_exec_t process p4_linux_maintenance_t)
+(allow p4_linux_working_return_t p4_linux_maintenance_exec_t (file (getattr open read execute map)))
+(allow p4_linux_working_return_t p4_linux_maintenance_t (process (transition siginh rlimitinh)))
+(allow p4_linux_working_return_t p4_linux_maintenance_t (process2 (nnp_transition)))
+(allow p4_linux_maintenance_t p4_linux_working_return_t (process (sigchld)))
+(allow p4_linux_maintenance_t p4_linux_working_return_t (fd (use)))
+(allow p4_linux_maintenance_t p4_linux_working_return_t (fifo_file (getattr read write)))
+(allow p4_linux_maintenance_t p4_linux_working_evidence_t (file (getattr read write)))
+
+; Preserve existing global guards for all prior actors. Only the four new
+; subjects get their independently closed public/read-only nonboard partition.
+(typeattribute p4_native_nonjournal_without_early_or_working_reads)
+(typeattributeset p4_native_nonjournal_without_early_or_working_reads
+ (and (p4_native_nonjournal_without_early_reads) (not (p4_working_actors))))
+(typeattribute p4_native_nonmac_without_module_or_working_dirs)
+(typeattributeset p4_native_nonmac_without_module_or_working_dirs
+ (and (p4_native_nonmac_without_module_dirs) (not (p4_working_actors))))
+(typeattribute p4_native_nonmac_without_executor_or_working_open)
+(typeattributeset p4_native_nonmac_without_executor_or_working_open
+ (and (p4_native_nonmac_without_executor_directory_open) (not (p4_working_actors))))
+(typeattribute p4_linux_without_frontend_or_working_metadata)
+(typeattributeset p4_linux_without_frontend_or_working_metadata
+ (and (p4_linux_without_frontend_metadata) (not (p4_working_clients))))
+
+; Exact complements keep the original Linux/Android boundary for every other
+; subject. These new actors cannot consume arbitrary nonboard bodies or dirs.
+(typeattribute p4_working_public_nonboard_files)
+(typeattributeset p4_working_public_nonboard_files
+ (proc proc_random proc_cmdline sysfs selinuxfs p4_kernel_ns_handle_t))
+(typeattribute p4_working_public_nonboard_dirs)
+(typeattributeset p4_working_public_nonboard_dirs
+ (proc proc_random sysfs selinuxfs device))
+(typeattribute p4_working_client_nonboard_files)
+(typeattributeset p4_working_client_nonboard_files
+ (p4_working_public_nonboard_files p4_working_main_proc_peers))
+(typeattribute p4_working_client_nonboard_dirs)
+(typeattributeset p4_working_client_nonboard_dirs
+ (p4_working_public_nonboard_dirs p4_working_main_proc_peers p4_working_android_traversal))
+(typeattribute p4_working_other_public_files)
+(typeattributeset p4_working_other_public_files (and (p4_all_nonboard) (not (p4_working_public_nonboard_files))))
+(typeattribute p4_working_other_public_dirs)
+(typeattributeset p4_working_other_public_dirs (and (p4_all_nonboard) (not (p4_working_public_nonboard_dirs))))
+(typeattribute p4_working_other_client_files)
+(typeattributeset p4_working_other_client_files (and (p4_all_nonboard) (not (p4_working_client_nonboard_files))))
+(typeattribute p4_working_other_client_dirs)
+(typeattributeset p4_working_other_client_dirs (and (p4_all_nonboard) (not (p4_working_client_nonboard_dirs))))
+(typeattribute p4_working_android_nontraversed_dirs)
+(typeattributeset p4_working_android_nontraversed_dirs (and (p4_android_only_files) (not (p4_working_android_traversal))))
+(neverallow p4_working_clients p4_working_other_client_files (file (open read)))
+(neverallow p4_working_clients p4_working_other_client_dirs (dir (search open read)))
+(neverallow p4_working_clients p4_android_only_files (dir (open read)))
+(neverallow p4_working_clients p4_working_android_nontraversed_dirs (dir (search)))
+(neverallow p4_linux_working_return_t p4_working_other_public_files (file (open read)))
+(neverallow p4_linux_working_return_t p4_working_other_public_dirs (dir (search open read)))
+
+(typeattribute p4_working_all_types)
+(typeattributeset p4_working_all_types (all))
+(typeattribute p4_working_not_executor)
+(typeattributeset p4_working_not_executor (not (p4_linux_service_executor_t)))
+(typeattribute p4_working_not_parent)
+(typeattributeset p4_working_not_parent (not (p4_linux_working_qualification_t)))
+(typeattribute p4_working_not_parent_or_executor)
+(typeattributeset p4_working_not_parent_or_executor (not (p4_linux_working_qualification_t p4_linux_service_executor_t)))
+(typeattribute p4_working_not_children)
+(typeattributeset p4_working_not_children (not (p4_working_children)))
+(typeattribute p4_working_not_maintenance)
+(typeattributeset p4_working_not_maintenance (not (p4_linux_maintenance_t)))
+(typeattribute p4_working_not_stdio)
+(typeattributeset p4_working_not_stdio (not (or (p4_linux_standardio_t) (null_device))))
+(neverallow p4_working_not_executor p4_linux_working_qualification_t (process (transition dyntransition)))
+(neverallow p4_working_not_executor p4_linux_working_return_t (process (transition dyntransition)))
+(neverallow p4_working_not_parent p4_linux_working_application_t (process (transition dyntransition)))
+(neverallow p4_working_not_parent_or_executor p4_linux_working_privateprep_t (process (transition)))
+(neverallow p4_working_all_types p4_linux_working_privateprep_t (process (dyntransition)))
+(neverallow p4_linux_working_qualification_t p4_working_not_children (process (transition)))
+(neverallow p4_linux_working_application_t p4_working_all_types (process (transition dyntransition setexec)))
+(neverallow p4_linux_working_privateprep_t p4_working_payload_not_birth (process (transition)))
+(neverallow p4_linux_working_privateprep_t p4_working_all_types (process (dyntransition)))
+(neverallow p4_linux_working_privateprep_t p4_working_payload_not_prep (process (setexec)))
+(neverallow p4_linux_working_return_t p4_working_not_maintenance (process (transition)))
+(neverallow p4_working_actors p4_working_all_types (process (ptrace dyntransition setcurrent setfscreate setkeycreate setsockcreate)))
+(neverallow p4_working_actors self (capability2 (all)))
+(neverallow p4_working_actors self (cap2_userns (all)))
+(neverallow p4_linux_working_return_t self (capability (all)))
+(neverallow p4_linux_working_return_t self (cap_userns (all)))
+(neverallow p4_working_actors kernel (security (all)))
+; The fixed original APK never becomes a comparison, writable payload, map or
+; entrypoint. Other working roles and the broker cannot read its body.
+(neverallow p4_linux_working_privateprep_t p4_linux_empty_meituan_dir_t (dir (not (getattr search))))
+(neverallow p4_linux_working_privateprep_t p4_linux_empty_meituan_apk_t (file (not (getattr open read))))
+(neverallow p4_working_payload_not_prep p4_linux_empty_meituan_apk_t (file (open read write append create setattr unlink link rename map execute execute_no_trans entrypoint)))
+(neverallow p4_working_actors p4_working_all_types (binder (all)))
+(neverallow p4_working_actors p4_working_all_types (blk_file (open read write append ioctl map)))
+(neverallow p4_working_children p4_working_not_stdio (chr_file (open read write append ioctl map)))
+(neverallow p4_linux_working_return_t p4_working_not_stdio (chr_file (open read write append ioctl map)))
+(neverallow p4_working_actors p4_working_all_types (file (append link relabelto relabelfrom mounton)))
+(neverallow p4_working_actors p4_working_all_types (dir (rmdir reparent mounton relabelfrom relabelto)))
+(neverallow p4_working_actors p4_working_all_types (filesystem (mount remount unmount relabelto relabelfrom)))
+(neverallow p4_working_clients p4_working_all_types (service (start stop reload kill load enable disable)))
+(neverallow p4_linux_working_return_t p4_working_all_types (unix_stream_socket (create connect connectto bind listen accept)))
+(neverallow p4_working_actors p4_working_all_types (unix_stream_socket (bind listen accept)))
+(neverallow p4_working_actors p4_working_all_types (unix_dgram_socket (bind)))
+(neverallow p4_working_actors p4_working_all_types (tcp_socket (all)))
+(neverallow p4_working_actors p4_working_all_types (udp_socket (all)))
+(neverallow p4_working_actors p4_working_all_types (rawip_socket (all)))
+
+; Private first-load label child, not a service, public executable or Android
+; actor. Global PID 1 already has setcurrent for the existing normal query
+; factory. Only this new one-way target is added; the old kernel/device AV is
+; unchanged. The child keeps two source-owned O_PATH/proc-label descriptors,
+; seals empty P/E/I/A and NNP, does no exec, and is reaped through its PIDFD.
+(type p4_linux_working_watchdog_label_t)
+(roletype r p4_linux_working_watchdog_label_t)
+(allow kernel p4_linux_working_watchdog_label_t (process (dyntransition getattr sigkill)))
+(allow p4_linux_working_watchdog_label_t kernel (process (sigchld)))
+(allow p4_linux_working_watchdog_label_t kernel (fd (use)))
+(allow p4_linux_working_watchdog_label_t self (process (getattr getcap)))
+(allow p4_linux_working_watchdog_label_t self (fd (use)))
+(allow p4_linux_working_watchdog_label_t self (dir (getattr search)))
+(allow p4_linux_working_watchdog_label_t self (file (getattr open read)))
+(allow p4_linux_working_watchdog_label_t self (lnk_file (getattr read)))
+(allow p4_linux_working_watchdog_label_t kernel (dir (getattr search)))
+(allow p4_linux_working_watchdog_label_t kernel (file (getattr open read)))
+(allow p4_linux_working_watchdog_label_t kernel (lnk_file (getattr read)))
+(allow p4_linux_working_watchdog_label_t proc (dir (getattr search)))
+(allow p4_linux_working_watchdog_label_t p4_linux_rootdir_t (dir (getattr search)))
+(allow p4_linux_working_watchdog_label_t proc (filesystem (getattr)))
+(allow p4_linux_working_watchdog_label_t device (filesystem (getattr)))
+(allow p4_linux_working_watchdog_label_t device (chr_file (getattr relabelfrom)))
+(allow p4_linux_working_watchdog_label_t p4_linux_working_watchdog_t (chr_file (getattr relabelto)))
+(allow kernel p4_linux_working_watchdog_t (chr_file (getattr)))
+(auditallow kernel p4_linux_working_watchdog_label_t (process (dyntransition)))
+(auditallow p4_linux_working_watchdog_label_t p4_linux_working_watchdog_t (chr_file (relabelto)))
+(typeattribute p4_working_birth_all_types)
+(typeattributeset p4_working_birth_all_types (all))
+(typeattribute p4_working_birth_other_files)
+(typeattributeset p4_working_birth_other_files
+ (not (kernel p4_linux_working_watchdog_label_t)))
+(typeattribute p4_working_birth_other_devices)
+(typeattributeset p4_working_birth_other_devices
+ (not (device p4_linux_working_watchdog_t)))
+; The fixed normal alias producers preserve rootdir traversal for every
+; actor. This private child receives only that same getattr/search vector.
+(typeattribute p4_working_birth_root_aliases)
+(typeattributeset p4_working_birth_root_aliases
+ (p4_linux_tmpfiles_config_dir_t p4_linux_tmpfiles_runtime_dir_t p4_linux_kmod_tmpfiles_dir_t p4_linux_journal_catalog_dir_t p4_linux_timesyncd_run_t p4_linux_timesyncd_state_t p4_linux_timesyncd_netif_t p4_linux_ldconfig_config_dir_t p4_linux_ldconfig_aux_dir_t p4_linux_update_done_var_dir_t p4_linux_systemd_state_parent_t p4_linux_netplan_input_dir_t p4_linux_netplan_link_dir_t p4_linux_netplan_rule_dir_t p4_linux_console_cache_dir_t))
+(typeattribute p4_working_birth_other_directories)
+(typeattributeset p4_working_birth_other_directories
+ (not (kernel p4_linux_working_watchdog_label_t proc p4_linux_rootdir_t p4_working_birth_root_aliases)))
+(neverallow p4_linux_working_watchdog_label_t self (capability (all)))
+(neverallow p4_linux_working_watchdog_label_t self (capability2 (all)))
+(neverallow p4_linux_working_watchdog_label_t self (cap_userns (all)))
+(neverallow p4_linux_working_watchdog_label_t self (cap2_userns (all)))
+(neverallow p4_linux_working_watchdog_label_t p4_working_birth_all_types
+ (process (transition dyntransition fork ptrace signal sigkill sigstop setexec setcurrent setfscreate setsockcreate setcap)))
+(neverallow p4_linux_working_watchdog_label_t p4_working_birth_all_types
+ (file (write append create setattr unlink link rename relabelfrom relabelto map execute execute_no_trans entrypoint execmod ioctl)))
+(neverallow p4_linux_working_watchdog_label_t p4_working_birth_other_files (file (all)))
+(neverallow p4_linux_working_watchdog_label_t p4_working_birth_all_types
+ (dir (open read write add_name remove_name create rmdir reparent rename setattr relabelfrom relabelto mounton)))
+(neverallow p4_linux_working_watchdog_label_t p4_working_birth_other_directories (dir (all)))
+(neverallow p4_linux_working_watchdog_label_t p4_working_birth_all_types
+ (lnk_file (write create setattr unlink link rename relabelfrom relabelto)))
+(neverallow p4_linux_working_watchdog_label_t p4_working_birth_other_files (lnk_file (all)))
+(neverallow p4_linux_working_watchdog_label_t p4_working_birth_all_types
+ (chr_file (open read write append ioctl map create setattr unlink link rename execute execute_no_trans entrypoint)))
+(neverallow p4_linux_working_watchdog_label_t device (chr_file (not (getattr relabelfrom))))
+(neverallow p4_linux_working_watchdog_label_t p4_linux_working_watchdog_t (chr_file (not (getattr relabelto))))
+(neverallow p4_linux_working_watchdog_label_t p4_working_birth_other_devices (chr_file (all)))
+(neverallow p4_linux_working_watchdog_label_t p4_working_birth_all_types (blk_file (all)))
+(neverallow p4_linux_working_watchdog_label_t p4_working_birth_all_types (binder (all)))
+(neverallow p4_linux_working_watchdog_label_t p4_working_birth_all_types (unix_stream_socket (all)))
+(neverallow p4_linux_working_watchdog_label_t p4_working_birth_all_types (unix_dgram_socket (all)))
+(neverallow p4_linux_working_watchdog_label_t p4_working_birth_all_types (tcp_socket (all)))
+(neverallow p4_linux_working_watchdog_label_t p4_working_birth_all_types (udp_socket (all)))
+(neverallow p4_linux_working_watchdog_label_t p4_working_birth_all_types (netlink_route_socket (all)))
+(neverallow p4_linux_working_watchdog_label_t kernel (security (all)))

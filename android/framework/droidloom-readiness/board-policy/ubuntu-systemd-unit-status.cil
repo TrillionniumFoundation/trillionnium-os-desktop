@@ -1,0 +1,30 @@
+; systemd's native userspace authorization class, appended after the stock
+; Android classes. Unit access checks continue through enforcing SELinux.
+(class service (start stop status reload kill load enable disable))
+(classorder (tee_service service))
+
+(type p4_linux_factory_unit_file_t)
+(type p4_linux_production_unit_file_t)
+(roletype object_r p4_linux_factory_unit_file_t)
+(roletype object_r p4_linux_production_unit_file_t)
+(typeattribute p4_linux_fixed_runtime_units)
+(typeattributeset p4_linux_fixed_runtime_units (p4_linux_factory_unit_file_t p4_linux_production_unit_file_t))
+(typeattributeset p4_linux_data (p4_linux_fixed_runtime_units))
+(allow p4_linux_fixed_runtime_units labeledfs (filesystem (associate)))
+
+; The units are immutable normal package inputs. The original manager loads
+; them; the fixed owner/adopter validate their exact bytes and object identity.
+(allow init_t p4_linux_fixed_runtime_units (file (getattr open read)))
+; The same immutable production-unit type labels the one normal desktop unit.
+; Its user manager can load those bytes; the working callers only ask status.
+(allow p4_linux_user_manager_t p4_linux_production_unit_file_t (file (getattr open read)))
+(allow p4_linux_service_executor_t p4_linux_fixed_runtime_units (file (getattr open read)))
+(allow p4_instance_host_readers p4_linux_unit_directory_t (dir (getattr search open read)))
+(allow p4_instance_host_readers p4_linux_fixed_runtime_units (file (getattr open read)))
+(allow droidloom_broker p4_linux_fixed_runtime_units (file (getattr open read)))
+(allow p4_instance_host_readers p4_linux_fixed_runtime_units (service (status)))
+(allow droidloom_broker p4_linux_fixed_runtime_units (service (status)))
+(neverallow p4_instance_host_readers p4_linux_fixed_runtime_units (file (write append create setattr unlink rename relabelfrom relabelto mounton)))
+(neverallow droidloom_broker p4_linux_fixed_runtime_units (file (write append create setattr unlink rename relabelfrom relabelto mounton)))
+(neverallow p4_instance_host_readers p4_linux_fixed_runtime_units (service (start stop reload kill load enable disable)))
+(neverallow droidloom_broker p4_linux_fixed_runtime_units (service (start stop reload kill load enable disable)))

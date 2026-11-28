@@ -1,0 +1,54 @@
+{
+  "after": {
+    "bytes": 28511,
+    "file": "service.after.rs",
+    "sha256": "9d15e2098f6961aedda78ea8e4fc31fdb14c75858a8d853c76533695cb48beaf"
+  },
+  "before": {
+    "bytes": 18704,
+    "file": "service.before.rs",
+    "sha256": "6e7109516b0ba7502caf174ab32bc7e96091bad45068c12f9a2630015bb0f944"
+  },
+  "profile": {
+    "actual_hal_security_level": "SOFTWARE",
+    "change": "Returned Authorization.securityLevel only: TRUSTED_ENVIRONMENT -> SOFTWARE",
+    "keymint_name": "Droidloom software KeyMint (KMR legacy v1)",
+    "route": "TRUSTED_ENVIRONMENT"
+  },
+  "schema": "droidloom-keymint-software-metadata-fixture-v1",
+  "scope": {
+    "certificate_bytes_changed": false,
+    "database_writes_added": false,
+    "key_uuid_or_route_changed": false,
+    "permission_checks_changed": false,
+    "private_key_operations_added": false,
+    "pure_certificate_queries_use_hal": false
+  },
+  "source": {
+    "commit": "cbb2ef1617a94d6cdf2dc2ccb7a545575dbb20cb",
+    "path": "keystore2/src/service.rs",
+    "project": "platform/system/security",
+    "sha256": "6e7109516b0ba7502caf174ab32bc7e96091bad45068c12f9a2630015bb0f944",
+    "url": "https://android.googlesource.com/platform/system/security/+/cbb2ef1617a94d6cdf2dc2ccb7a545575dbb20cb/keystore2/src/service.rs"
+  },
+  "tests": {
+    "execution": "Not run; requires Keystore2/AIDL build environment",
+    "module": "legacy_software_metadata_tests",
+    "names": [
+      "legacy_software_report_only_changes_tee_levels",
+      "legacy_software_report_requires_exact_profile_and_route",
+      "legacy_software_report_without_hal_preserves_pure_certificate_metadata",
+      "legacy_software_report_preserves_values_count_route_and_certificates",
+      "legacy_software_report_is_idempotent"
+    ],
+    "soong_module": "keystore2_test"
+  },
+  "validation": {
+    "rustfmt_version": "rustfmt 1.9.0-stable (59807616e1 2026-04-14)",
+    "rustfmt_config": "edition=2021;skip_children=true;use_small_heuristics=Max",
+    "syntax_and_format": "passed",
+    "pinned_before_already_matches_format": true,
+    "unit_test_execution": "not run; needs matched Soong/AIDL environment",
+    "production_userdata_accessed": false
+  }
+}

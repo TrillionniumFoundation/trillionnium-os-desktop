@@ -1,0 +1,144 @@
+diff --git a/core/java/android/companion/CompanionDeviceManager.java b/core/java/android/companion/CompanionDeviceManager.java
+index 2b0e941..3f3672c 100644
+--- a/core/java/android/companion/CompanionDeviceManager.java
++++ b/core/java/android/companion/CompanionDeviceManager.java
+@@ -1672,8 +1672,6 @@
+ 
+         try {
+             PendingIntent pendingIntent = mService.buildPermissionTransferUserConsentIntent(
+-                    mContext.getOpPackageName(),
+-                    mContext.getUserId(),
+                     associationId);
+             if (pendingIntent == null) {
+                 return null;
+@@ -1712,8 +1710,7 @@
+         }
+ 
+         try {
+-            return mService.isPermissionTransferUserConsented(mContext.getOpPackageName(),
+-                    mContext.getUserId(), associationId);
++            return mService.isPermissionTransferUserConsented(associationId);
+         } catch (RemoteException e) {
+             ExceptionUtils.propagateIfInstanceOf(e.getCause(), DeviceNotAssociatedException.class);
+             throw e.rethrowFromSystemServer();
+@@ -1743,8 +1740,7 @@
+         }
+ 
+         try {
+-            mService.startSystemDataTransfer(mContext.getOpPackageName(), mContext.getUserId(),
+-                    associationId, null);
++            mService.startSystemDataTransfer(associationId, null);
+         } catch (RemoteException e) {
+             ExceptionUtils.propagateIfInstanceOf(e.getCause(), DeviceNotAssociatedException.class);
+             throw e.rethrowFromSystemServer();
+@@ -1780,7 +1776,7 @@
+         }
+ 
+         try {
+-            mService.startSystemDataTransfer(mContext.getOpPackageName(), mContext.getUserId(),
++            mService.startSystemDataTransfer(
+                     associationId, new SystemDataTransferCallbackProxy(executor, result));
+         } catch (RemoteException e) {
+             ExceptionUtils.propagateIfInstanceOf(e.getCause(), DeviceNotAssociatedException.class);
+diff --git a/core/java/android/companion/ICompanionDeviceManager.aidl b/core/java/android/companion/ICompanionDeviceManager.aidl
+index 787e8b6..dcc09b4 100644
+--- a/core/java/android/companion/ICompanionDeviceManager.aidl
++++ b/core/java/android/companion/ICompanionDeviceManager.aidl
+@@ -104,12 +104,11 @@
+     @EnforcePermission("REQUEST_COMPANION_SELF_MANAGED")
+     void notifySelfManagedDeviceDisappeared(int associationId);
+ 
+-    PendingIntent buildPermissionTransferUserConsentIntent(String callingPackage, int userId,
+-        int associationId);
++    PendingIntent buildPermissionTransferUserConsentIntent(int associationId);
+ 
+-    boolean isPermissionTransferUserConsented(String callingPackage, int userId, int associationId);
++    boolean isPermissionTransferUserConsented(int associationId);
+ 
+-    void startSystemDataTransfer(String packageName, int userId, int associationId,
++    void startSystemDataTransfer(int associationId,
+         in ISystemDataTransferCallback callback);
+ 
+     @EnforcePermission("DELIVER_COMPANION_MESSAGES")
+diff --git a/services/companion/java/com/android/server/companion/CompanionDeviceManagerService.java b/services/companion/java/com/android/server/companion/CompanionDeviceManagerService.java
+index 7cdf0f2..ef25d9a 100644
+--- a/services/companion/java/com/android/server/companion/CompanionDeviceManagerService.java
++++ b/services/companion/java/com/android/server/companion/CompanionDeviceManagerService.java
+@@ -592,23 +592,19 @@
+         }
+ 
+         @Override
+-        public PendingIntent buildPermissionTransferUserConsentIntent(String packageName,
+-                int userId, int associationId) {
+-            return mSystemDataTransferProcessor.buildPermissionTransferUserConsentIntent(
+-                    packageName, userId, associationId);
++        public PendingIntent buildPermissionTransferUserConsentIntent(int associationId) {
++            return mSystemDataTransferProcessor.buildPermissionTransferUserConsentIntent(associationId);
+         }
+ 
+         @Override
+-        public boolean isPermissionTransferUserConsented(String packageName, int userId,
+-                int associationId) {
++        public boolean isPermissionTransferUserConsented(int associationId) {
+             return mSystemDataTransferProcessor.isPermissionTransferUserConsented(associationId);
+         }
+ 
+         @Override
+-        public void startSystemDataTransfer(String packageName, int userId, int associationId,
++        public void startSystemDataTransfer(int associationId,
+                 ISystemDataTransferCallback callback) {
+-            mSystemDataTransferProcessor.startSystemDataTransfer(packageName, userId,
+-                    associationId, callback);
++            mSystemDataTransferProcessor.startSystemDataTransfer(associationId, callback);
+         }
+ 
+         @Override
+diff --git a/services/companion/java/com/android/server/companion/datatransfer/SystemDataTransferProcessor.java b/services/companion/java/com/android/server/companion/datatransfer/SystemDataTransferProcessor.java
+index 00e049c..a5d2265 100644
+--- a/services/companion/java/com/android/server/companion/datatransfer/SystemDataTransferProcessor.java
++++ b/services/companion/java/com/android/server/companion/datatransfer/SystemDataTransferProcessor.java
+@@ -132,8 +132,12 @@
+     /**
+      * Build a PendingIntent of permission sync user consent dialog
+      */
+-    public PendingIntent buildPermissionTransferUserConsentIntent(String packageName,
+-            @UserIdInt int userId, int associationId) {
++    public PendingIntent buildPermissionTransferUserConsentIntent(int associationId) {
++        final AssociationInfo association = mAssociationStore.getAssociationWithCallerChecks(
++                associationId);
++        final int userId = association.getUserId();
++        final String packageName = association.getPackageName();
++
+         if (PackageUtils.isPermSyncAutoEnabled(mContext, mPackageManager, packageName)) {
+             Slog.i(LOG_TAG, "User consent Intent should be skipped. Returning null.");
+             // Auto enable perm sync for the allowlisted packages, but don't override user decision
+@@ -149,9 +153,6 @@
+         Slog.i(LOG_TAG, "Creating permission sync intent for userId [" + userId
+                 + "] associationId [" + associationId + "]");
+ 
+-        final AssociationInfo association = mAssociationStore.getAssociationWithCallerChecks(
+-                associationId);
+-
+         // Create an internal intent to launch the user consent dialog
+         final Bundle extras = new Bundle();
+         PermissionSyncRequest request = new PermissionSyncRequest(associationId);
+@@ -182,13 +183,16 @@
+      *
+      * TODO: execute callback when the transfer finishes successfully or with errors.
+      */
+-    public void startSystemDataTransfer(String packageName, int userId, int associationId,
++    public void startSystemDataTransfer(int associationId,
+             ISystemDataTransferCallback callback) {
++        final AssociationInfo association = mAssociationStore.getAssociationWithCallerChecks(
++                associationId);
++        final int userId = association.getUserId();
++        final String packageName = association.getPackageName();
++
+         Slog.i(LOG_TAG, "Start system data transfer for package [" + packageName
+                 + "] userId [" + userId + "] associationId [" + associationId + "]");
+ 
+-        mAssociationStore.getAssociationWithCallerChecks(associationId);
+-
+         // Check if the request has been consented by the user.
+         PermissionSyncRequest request = getPermissionSyncRequest(associationId);
+         if (request == null || !request.isUserConsented()) {

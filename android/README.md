@@ -1,0 +1,129 @@
+# Android source boundary
+
+Droidloom uses a thin AOSP product. The full upstream checkout and generated
+images are not stored in this repository.
+
+`manifest/source-lock.json` pins ARM64 base inputs;
+`manifest/source-lock-x86_64.json` pins x86_64 inputs. The sparse AOSP project
+closure is recorded separately in `manifest/m2-sparse-source-lock.json`.
+
+The [Rust package workflow](../packaging/arch/README.md) prepares the pinned
+upstream base partitions, materializes required sources, applies Droidloom patches,
+builds modified platform components and the vendor image, and assembles packages.
+Mesa is prepared from its pinned upstream release. It does not rebuild all of AOSP.
+
+The x86_64 product also builds the experimental Teto ARM64 NativeBridge,
+derived from Digitalis/AOSP Berberis. `manifest/native-bridge-lock.json` pins its separate open-source
+checkout; the Android guest linker and API stubs come from the pinned AOSP
+`frameworks/libs/native_bridge_support` project. `native-bridge/product.mk`
+selects the translator and ARM64 guest library closure. The image assembler
+derives `system.img` from the verified base, adds the compiled bridge and guest
+libraries, and updates ABI/ART properties before zygote starts. It verifies the
+rebuilt image's contents and metadata after extraction and records translator
+provenance in `/system/etc/droidloom-native-bridge.json`.
+
+Translator fixes are developed directly in a separate Teto Git checkout.
+`droidloom-package build --native-bridge-source /absolute/path/to/teto`
+builds its current working files and records their hashes in that provenance.
+The pinned Android-overcommit change uses `MAP_NORESERVE` for private anonymous
+guest mappings when `ro.berberis.flags=android-mmap-noreserve` is enabled. This
+handles Unreal's large virtual arenas while leaving the host sysctl unchanged.
+
+The bridge's host API dependencies link against libraries extracted from the
+checksum-pinned base image (including the ART and NNAPI APEXes). These are build references,
+not additional installed providers. This keeps the sparse build from rebuilding
+unmodified platform services. The guest libraries and translator are compiled
+from their pinned sources; build projections adapt Android 17 header locations.
+
+Native x86_64 libraries remain preferred. ARM64 JNI libraries use translation;
+Java/Kotlin code, Android services and Mesa stay native. The proxies call the
+native Android EGL/GLES/Vulkan libraries, with no emulator graphics driver.
+This first integration does not enable ARM32, RenderScript or transparent
+execution of standalone ARM ELF programs. It leaves host binfmt registrations
+untouched. Broad application compatibility and performance remain experimental.
+
+The initial workstation smoke test used TikTok 46.8.2 (ARM64, version code
+2024608020). Its APKM splits installed through a PackageManager session and its
+explicit catalog launcher activity opened a native Droidloom window. Android
+logs confirmed Digitalis JIT and optimizing-tier execution. This establishes
+installation and startup; sustained playback and broader compatibility are
+separate validation work.
+
+Cuttlefish vendor, ODM, boot and kernel images are excluded: their virtual-device
+graphics and KMS assumptions do not match Droidloom. The host retains its kernel.
+
+The SurfaceFlinger task path retains one headless bootstrap display for Android
+scheduling and layer-release accounting. Patch
+`surfaceflinger/0003-droidloom-headless-bootstrap.patch` can suppress that
+display's duplicate GPU composition with
+`persist.vendor.droidloom.elide_bootstrap=true` (enabled by default by patch 0007). It forwards the
+merged completion fences from actual task rendering through the existing HWC
+path, including across idle transitions. Only the explicit bootstrap display
+is selected; capture outputs keep rendering and task outputs retain their
+independent composition policy. Fence merge/export errors
+fall back to ordinary composition. The property is read each frame, allowing
+same-process performance comparisons and rollback without restarting Android.
+
+`surfaceflinger/0004-droidloom-opaque-content.patch` carries each task frame's
+opaque-coverage result through the private render-surface protocol. It uses
+CompositionEngine's existing `undefinedRegion` after composition, including
+its transform, clipping and layer-alpha rules. Composer forwards the result
+using the host protocol's existing `OPAQUE` content-state bit; the presenter
+sets or clears the ordinary Wayland opaque region on the matching commit.
+The ARGB buffer format and pixel contents are unchanged. Package IDs do not
+determine opacity. Deploy the patched SurfaceFlinger with the matching Composer
+service, Rust dependency closure and presenter; older private requests remain
+conservatively non-opaque.
+
+`surfaceflinger/0007-droidloom-wayland-layers.patch` exports supported task
+layer lists through synchronized Wayland subsurfaces. SurfaceFlinger still
+resolves transactions, visibility, output geometry and input; it skips the task
+GPU draw when the host accepts the complete scene. Original buffer/frame identities
+remain protected until the host confirms actual read completion. Droidloom uses
+asynchronous Android release callbacks even on source branches where their
+upstream feature flag defaults off. Unsupported scenes retain the task renderer.
+`surfaceflinger/0008-droidloom-release-fences.patch` forwards and merges real
+compositor release fences, defers only callbacks whose fences are unavailable,
+and preserves first-frame commit metadata. It avoids blocking SurfaceFlinger's
+shared callback worker on desktop buffer reads. The host release-queue regression
+runs with `cargo test --locked -j 1 -p droidloom-update --test release_queue`.
+The application-neutral policy defaults on and can be disabled with
+`persist.vendor.droidloom.direct_layers=false`. It requires the matching Composer
+broker, presenter and Denial surface-tree alpha/orientation support. Live visual
+and performance acceptance belongs to the user after activation.
+
+## Pinned factory WebView in the normal vendor build
+
+The `droidloom-update official-gsi-vendor-build` command accepts an optional
+`--webview-apk /absolute/path/to/webview.apk`. The input must match the compiled
+`manifest/webview-provider.json` profile. Admission keeps the canonical file
+open, checks its complete digest and identity, rejects aliases, and rechecks the
+same input before and after projection. This is a separate public input; it
+does not replace any of the 29 official GSI references or modify the selected
+system image.
+
+The normal vendor phase adds a `preprocessed` Google WebView
+`android_app_import` and a static resource overlay that selects the same package
+with its complete signing certificate. Soong's ordinary APK alignment, native
+library and uses-library checks remain enabled. The APK keeps its original
+signature and bytes. Assembly reads both installed APKs back from the actual
+vendor image and checks their complete digests and precise SELinux labels.
+
+Use a fresh output for this route. The existing failed-build resume interface
+does not restore the held WebView input and explicitly rejects prior receipts
+that selected one. Successful releases remain ineligible for that interface.
+
+The current profile pins the SDK-verified x86/x86_64 Google WebView
+158.0.8127.93, version code 812709308. Its actual manifest specifies minimum
+API 29, target API 36 and compile API 37. The unchanged Google-signed APK
+passed the normal presigned-import preflight. Newer 159.0.8154.33 material
+remains unqualified, so this integration input does not claim latest-version
+acceptance. Input verification and image readback also leave default-provider,
+rendering, runtime and production qualification false. Those checks require a
+normally completed build and acceptance on the resulting Android system.
+
+- [Manifest](manifest/README.md): source locks and sparse materialization.
+- [Device products](device/README.md): architecture configuration and image boundary.
+- [Framework](framework/README.md): Android adapters and minimal system apps.
+- [Hardware](hardware/README.md): Composer and allocator integration.
+- [Mesa](mesa/README.md): graphics source preparation.

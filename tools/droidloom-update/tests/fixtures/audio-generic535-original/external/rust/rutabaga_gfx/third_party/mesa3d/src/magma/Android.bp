@@ -1,0 +1,173 @@
+/*
+ * Copyright (C) 2025 Android Open Source Project
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+package {
+    // See: http://go/android-license-faq
+    default_applicable_licenses: ["external_rutabaga_gfx_license"],
+}
+
+rust_bindgen {
+    name: "libmesa3d_magma_drm_bindgen_rutabaga",
+    crate_name: "mesa3d_magma_drm_bindgen",
+    wrapper_src: "headers/drm.h",
+    source_stem: "drm_bindings",
+    bindgen_flags: [
+        "--with-derive-default",
+        "--allowlist-var",
+        "DRM_.+",
+        "--allowlist-var",
+        "drm_.+",
+        "--allowlist-type",
+        "drm_.+",
+        "--no-prepend-enum-name",
+        "--no-doc-comments",
+        "--no-layout-tests",
+    ],
+    host_supported: true,
+    vendor_available: true,
+    apex_available: ["com.android.virt"],
+}
+
+rust_bindgen {
+    name: "libmesa3d_magma_amdgpu_bindgen_rutabaga",
+    crate_name: "mesa3d_magma_amdgpu_bindgen",
+    wrapper_src: "headers/amdgpu_drm.h",
+    source_stem: "amdgpu_bindings",
+    bindgen_flags: [
+        "--with-derive-default",
+        "--allowlist-var",
+        "DRM_AMDGPU_.+",
+        "--allowlist-var",
+        "AMDGPU_.+",
+        "--allowlist-type",
+        "drm_amdgpu_.+",
+        "--no-prepend-enum-name",
+        "--no-doc-comments",
+        "--no-layout-tests",
+    ],
+    host_supported: true,
+    vendor_available: true,
+    apex_available: ["com.android.virt"],
+}
+
+rust_bindgen {
+    name: "libmesa3d_magma_msm_bindgen_rutabaga",
+    crate_name: "mesa3d_magma_msm_bindgen",
+    wrapper_src: "headers/msm_drm.h",
+    source_stem: "msm_bindings",
+    bindgen_flags: [
+        "--with-derive-default",
+        "--allowlist-var",
+        "DRM_MSM_.+",
+        "--allowlist-var",
+        "MSM_.+",
+        "--allowlist-type",
+        "drm_msm_.+",
+        "--no-prepend-enum-name",
+        "--no-doc-comments",
+        "--no-layout-tests",
+    ],
+    host_supported: true,
+    vendor_available: true,
+    apex_available: ["com.android.virt"],
+}
+
+rust_bindgen {
+    name: "libmesa3d_magma_virtgpu_bindgen_rutabaga",
+    crate_name: "mesa3d_magma_virtgpu_bindgen",
+    wrapper_src: "headers/virtgpu_drm.h",
+    source_stem: "virtgpu_bindings",
+    bindgen_flags: [
+        "--with-derive-default",
+        "--allowlist-var",
+        "DRM_VIRTPU.+",
+        "--allowlist-var",
+        "VIRTGPU_.+",
+        "--allowlist-type",
+        "drm_virtgpu_.+",
+        "--no-prepend-enum-name",
+        "--no-doc-comments",
+        "--no-layout-tests",
+    ],
+    host_supported: true,
+    vendor_available: true,
+    apex_available: ["com.android.virt"],
+}
+
+rust_bindgen {
+    name: "libmesa3d_magma_i915_bindgen_rutabaga",
+    crate_name: "mesa3d_magma_i915_bindgen",
+    wrapper_src: "headers/i915_drm.h",
+    source_stem: "i915_bindings",
+    bindgen_flags: [
+        "--with-derive-default",
+        "--allowlist-var",
+        "DRM_I915.+",
+        "--allowlist-var",
+        "I915_.+",
+        "--allowlist-type",
+        "drm_i915_.+",
+        "--no-prepend-enum-name",
+        "--no-doc-comments",
+        "--no-layout-tests",
+    ],
+    host_supported: true,
+    vendor_available: true,
+    apex_available: ["com.android.virt"],
+}
+
+rust_bindgen {
+    name: "libmesa3d_magma_xe_bindgen_rutabaga",
+    crate_name: "mesa3d_magma_xe_bindgen",
+    wrapper_src: "headers/xe_drm.h",
+    source_stem: "xe_bindings",
+    bindgen_flags: [
+        "--with-derive-default",
+        "--allowlist-var",
+        "DRM_XE.+",
+        "--allowlist-var",
+        "XE_.+",
+        "--allowlist-type",
+        "drm_xe_.+",
+        "--no-prepend-enum-name",
+        "--no-doc-comments",
+        "--no-layout-tests",
+    ],
+    host_supported: true,
+    vendor_available: true,
+    apex_available: ["com.android.virt"],
+}
+
+rust_library {
+    name: "libmesa3d_magma_android_rutabaga",
+    host_supported: true,
+    vendor_available: true,
+    crate_name: "mesa3d_magma",
+    cargo_env_compat: true,
+    cargo_pkg_version: "0.1.62",
+    crate_root: "lib.rs",
+    edition: "2021",
+    cfgs: ["avoid_cargo"],
+    rustlibs: [
+        "libcfg_if",
+        "liblog_rust",
+        "libmesa3d_util_rutabaga",
+        "libmesa3d_protocols_rutabaga",
+        "libvirtgpu_kumquat_rutabaga",
+        "libthiserror",
+        "libzerocopy",
+        "librustix",
+        "liblibc",
+        // Bindgen libraries
+        "libmesa3d_magma_amdgpu_bindgen_rutabaga",
+        "libmesa3d_magma_drm_bindgen_rutabaga",
+        "libmesa3d_magma_i915_bindgen_rutabaga",
+        "libmesa3d_magma_msm_bindgen_rutabaga",
+        "libmesa3d_magma_virtgpu_bindgen_rutabaga",
+        "libmesa3d_magma_xe_bindgen_rutabaga",
+    ],
+    proc_macros: ["libremain"],
+    apex_available: ["com.android.virt"],
+}

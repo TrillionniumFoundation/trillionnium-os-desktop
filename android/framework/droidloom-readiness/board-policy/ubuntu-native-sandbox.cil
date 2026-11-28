@@ -1,0 +1,181 @@
+; The original sealed systemd executor constructs the stock service mount
+; namespace before changing to the selected service SID. The two capabilities
+; are paired with inode and superblock permissions here: granting only SYS_ADMIN
+; would turn systemd's old ENOANO fallback into a fatal mount failure.
+(typeattribute p4_native_namespace_executors)
+(typeattributeset p4_native_namespace_executors (p4_linux_service_executor_t))
+(typeattribute p4_linux_without_namespace_executor)
+(typeattributeset p4_linux_without_namespace_executor (and (p4_linux_procs) (not (p4_native_namespace_executors))))
+(allow p4_linux_service_executor_t self (capability (sys_admin sys_chroot)))
+(allow p4_linux_service_executor_t self (process (setfscreate)))
+; SYS_ADMIN does not convey MAC administration, arbitrary inode writes, or a
+; transition to an Android domain. The original Android assertions are intact.
+(neverallow p4_linux_service_executor_t self (capability (dac_override dac_read_search sys_ptrace mknod)))
+(neverallow p4_linux_service_executor_t self (capability2 (mac_admin mac_override)))
+
+; Superblock labels already used by the native mounted APIs. Mounting a fresh
+; filesystem is allowed only for tmpfs; the other operations affect the cloned
+; namespace's existing mounts. Source/target inode guards remain independent.
+(typeattribute p4_native_sandbox_filesystems)
+(typeattributeset p4_native_sandbox_filesystems (labeledfs tmpfs device proc sysfs cgroup_v2 devpts mqueue selinuxfs securityfs debugfs debugfs_tracing_debug fusectlfs fs_bpf pstorefs binfmt_miscfs rootfs))
+(typeattribute p4_nonboard_without_sandbox_filesystems)
+(typeattributeset p4_nonboard_without_sandbox_filesystems (and (p4_all_nonboard) (not (p4_native_sandbox_filesystems))))
+(typeattribute p4_nonboard_without_fresh_sandbox_fs)
+(typeattributeset p4_nonboard_without_fresh_sandbox_fs (and (p4_all_nonboard) (not (tmpfs))))
+(allow p4_linux_service_executor_t p4_native_sandbox_filesystems (filesystem (getattr remount unmount)))
+(allow p4_linux_service_executor_t tmpfs (filesystem (mount)))
+(neverallow p4_linux_service_executor_t p4_nonboard_without_sandbox_filesystems (filesystem (remount unmount)))
+(neverallow p4_linux_service_executor_t p4_nonboard_without_fresh_sandbox_fs (filesystem (mount)))
+; The fixed credential-root source patch labels only a newly created tmpfs
+; root before its first readable open. Kernel ROOTCONTEXT_MNT checks
+; relabelfrom on the tmpfs superblock and associate for the selected root SID.
+; This is not a filesystem context= override and grants no inode relabel edge.
+(allow p4_linux_service_executor_t tmpfs (filesystem (relabelfrom)))
+(neverallow p4_linux_service_executor_t p4_nonboard_without_fresh_sandbox_fs (filesystem (relabelfrom)))
+(neverallow p4_linux_service_executor_t p4_all_nonboard (filesystem (relabelto)))
+
+; Only the original PID 1/shutdown executable makes / private and retires native
+; non-API mounts. systemd's umount.c explicitly skips /proc, /sys and /dev; its
+; original SELinux-filesystem no-mount/no-remount/no-unmount guard stays intact.
+(typeattribute p4_native_shutdown_filesystems)
+(typeattributeset p4_native_shutdown_filesystems (labeledfs tmpfs))
+(typeattribute p4_native_mount_actors)
+(typeattributeset p4_native_mount_actors (init_t p4_linux_service_executor_t))
+(typeattribute p4_linux_without_native_mount_actors)
+; A fixed root-remount service is not a namespace builder or cleanup writer.
+(typeattribute p4_native_root_remount_actors)
+(typeattribute p4_native_tmp_mount_actors)
+(typeattributeset p4_linux_without_native_mount_actors (and (p4_linux_procs) (not (or (p4_native_mount_actors) (or (p4_native_root_remount_actors) (p4_native_tmp_mount_actors))))))
+(typeattribute p4_nonboard_without_shutdown_filesystems)
+(typeattributeset p4_nonboard_without_shutdown_filesystems (and (p4_all_nonboard) (not (p4_native_shutdown_filesystems))))
+(allow init_t self (capability (sys_admin)))
+(allow init_t p4_linux_rootdir_t (dir (mounton)))
+(allow init_t p4_native_shutdown_filesystems (filesystem (getattr remount unmount)))
+(neverallow init_t p4_nonboard_without_shutdown_filesystems (filesystem (remount unmount)))
+(neverallow init_t p4_all_nonboard (filesystem (mount relabelto)))
+; The manager lifecycle component separately limits its new tmpfs label source.
+(neverallow init_t p4_nonboard_except_generator_tmpfs_source (filesystem (relabelfrom)))
+
+; Fixed mount-rootfs and private namespace staging directories. The dynamic
+; namespace-XXXXXX leaf comes only from the stock executor's mkdtemp call; it
+; cannot overwrite manager sockets or any protected existing inode.
+(type p4_linux_sandbox_dir_t)
+(type p4_linux_native_dev_root_t)
+(type p4_linux_sandbox_placeholder_t)
+(type p4_linux_inaccessible_t)
+(roletype object_r p4_linux_sandbox_dir_t)
+(roletype object_r p4_linux_native_dev_root_t)
+(roletype object_r p4_linux_sandbox_placeholder_t)
+(roletype object_r p4_linux_inaccessible_t)
+(typeattributeset p4_linux_data (p4_linux_sandbox_dir_t p4_linux_native_dev_root_t p4_linux_sandbox_placeholder_t p4_linux_inaccessible_t))
+(typeattribute p4_native_sandbox_staging_dirs)
+(typeattributeset p4_native_sandbox_staging_dirs (p4_linux_sandbox_dir_t p4_linux_native_dev_root_t))
+(allow p4_native_sandbox_staging_dirs tmpfs (filesystem (associate)))
+(allow p4_linux_sandbox_placeholder_t tmpfs (filesystem (associate)))
+(allow p4_linux_inaccessible_t tmpfs (filesystem (associate)))
+(allow p4_native_mount_actors p4_linux_systemd_run_t (dir (getattr search write add_name remove_name)))
+(typetransition init_t p4_linux_systemd_run_t dir "mount-rootfs" p4_linux_sandbox_dir_t)
+(typetransition init_t p4_linux_systemd_run_t dir "inaccessible" p4_linux_inaccessible_t)
+(typetransition p4_linux_service_executor_t p4_linux_systemd_run_t dir p4_linux_sandbox_dir_t)
+(typetransition p4_native_mount_actors p4_linux_sandbox_dir_t dir p4_linux_sandbox_dir_t)
+(typetransition p4_linux_service_executor_t p4_linux_native_dev_root_t dir p4_linux_native_dev_root_t)
+(typetransition p4_linux_service_executor_t p4_native_sandbox_staging_dirs file p4_linux_sandbox_placeholder_t)
+(typetransition p4_linux_service_executor_t p4_native_sandbox_staging_dirs lnk_file p4_linux_sandbox_dir_t)
+(allow p4_native_mount_actors p4_linux_sandbox_dir_t (dir (getattr search open read create write add_name remove_name setattr rmdir rename reparent mounton)))
+(allow p4_linux_service_executor_t p4_linux_native_dev_root_t (dir (getattr search open read create write add_name remove_name setattr rmdir rename reparent mounton relabelto)))
+(allow p4_linux_service_executor_t p4_linux_sandbox_dir_t (lnk_file (getattr read create write setattr unlink)))
+(allow p4_linux_service_executor_t p4_linux_sandbox_placeholder_t (file (getattr create open read write setattr unlink mounton)))
+(neverallow p4_linux_procs p4_linux_sandbox_placeholder_t (file (execute execute_no_trans entrypoint relabelto relabelfrom)))
+; PrivateDevices uses stock bind fallback after denied CAP_MKNOD. No new device
+; is fabricated: only the original fixed null/zero/full/random/urandom/tty nodes
+; are mounted onto the newly created regular placeholders.
+(allow p4_linux_service_executor_t device (chr_file (getattr)))
+(allow p4_linux_service_executor_t null_device (chr_file (getattr)))
+(allow p4_linux_service_executor_t zero_device (chr_file (getattr)))
+(allow p4_linux_service_executor_t random_device (chr_file (getattr)))
+(allow p4_linux_service_executor_t tty_device (chr_file (getattr)))
+
+; Stock disconnected /tmp receives its normal native tmp label immediately
+; after mounting. Relabel-from is confined to the fresh tmpfs root inode and
+; may not be used on any original Android private inode.
+(allow p4_linux_service_executor_t tmpfs (dir (getattr relabelfrom)))
+(allow p4_linux_service_executor_t p4_linux_tmp_t (dir (relabelto)))
+; ProtectSystem's credential tmpfs root is labelled before it is opened. The
+; source remains only the fresh tmpfs directory class; existing credential
+; roots still have no relabelfrom permission and cannot be retagged.
+(allow p4_linux_service_executor_t p4_linux_credentials_root_t (dir (relabelto)))
+(typeattribute p4_nonboard_without_sandbox_tmpfs)
+(typeattributeset p4_nonboard_without_sandbox_tmpfs (and (p4_all_nonboard) (not (tmpfs))))
+(neverallow p4_linux_service_executor_t p4_nonboard_without_sandbox_tmpfs (dir (relabelfrom)))
+(allow p4_native_mount_actors p4_linux_tmp_t (dir (getattr search open read create write add_name remove_name setattr rmdir rename)))
+(typetransition p4_native_mount_actors p4_linux_tmp_t dir p4_linux_tmp_t)
+(allow p4_native_mount_actors p4_linux_tmp_t (file (getattr unlink)))
+(allow p4_native_mount_actors p4_linux_tmp_t (lnk_file (getattr read unlink)))
+(allow p4_native_mount_actors p4_linux_tmp_t (sock_file (getattr unlink)))
+(allow p4_native_mount_actors p4_linux_tmp_t (fifo_file (getattr unlink)))
+
+; Public kernel API mountpoints used by ProtectKernel*, ProtectControlGroups
+; and ProtectHostname. These rules authorize metadata and hiding/remounting,
+; never reads of process bodies, device bodies or policy mutation interfaces.
+(typeattribute p4_native_sandbox_kernel_dirs)
+(typeattributeset p4_native_sandbox_kernel_dirs (proc_type sysfs_type device tmpfs devpts mqueue cgroup_v2 selinuxfs securityfs debugfs_type fusectlfs fs_bpf pstorefs binfmt_miscfs))
+(typeattribute p4_nonboard_without_sandbox_kernel_dirs)
+(typeattributeset p4_nonboard_without_sandbox_kernel_dirs (and (p4_all_nonboard) (not (p4_native_sandbox_kernel_dirs))))
+(allow p4_linux_service_executor_t p4_native_sandbox_kernel_dirs (dir (getattr search mounton)))
+(allow p4_linux_service_executor_t proc_type (file (getattr mounton)))
+(allow p4_linux_service_executor_t kmsg_device (chr_file (getattr mounton)))
+(allow p4_linux_service_executor_t p4_linux_rootdir_t (dir (mounton)))
+(allow p4_linux_service_executor_t p4_linux_etc_dir_t (dir (mounton)))
+(allow p4_linux_service_executor_t p4_linux_run_t (dir (mounton)))
+(allow p4_linux_service_executor_t p4_linux_tmp_t (dir (mounton)))
+(allow p4_linux_service_executor_t p4_linux_user_home_t (dir (mounton)))
+(allow p4_linux_service_executor_t p4_linux_user_run_t (dir (getattr search mounton)))
+(allow p4_linux_service_executor_t p4_linux_cgroup_root_t (dir (getattr search mounton)))
+(neverallow p4_linux_service_executor_t p4_nonboard_without_sandbox_kernel_dirs (dir (search mounton)))
+
+; /dev is a shared native directory, including the original devtmpfs view and
+; the stock PrivateDevices tmpfs root. The global file_contexts entry therefore
+; uses a directory type whose traversal contract is valid in both views.
+; Directory traversal does not authorize any device inode's body or ioctl.
+(typeattribute p4_native_dev_root_traversers)
+(typeattributeset p4_native_dev_root_traversers (p4_linux_native_processes p4_linux_udev_t p4_linux_journald_t))
+(allow p4_native_dev_root_traversers device (dir (getattr search)))
+(allow p4_native_dev_root_traversers p4_linux_native_dev_root_t (dir (getattr search)))
+(allow init_t p4_linux_native_dev_root_t (dir (getattr search)))
+(allow droidloom_broker p4_linux_native_dev_root_t (dir (getattr search)))
+(allow p4_linux_early_t p4_linux_native_dev_root_t (dir (search)))
+(allow kernel p4_linux_native_dev_root_t (dir (getattr open read search)))
+(allow p4_linux_native_dev_root_t device (filesystem (associate)))
+(allow p4_linux_native_dev_root_t labeledfs (filesystem (associate)))
+; Selected sandbox consumers also traverse the executor's staging ancestors.
+(typeattribute p4_native_private_dev_consumers)
+(typeattributeset p4_native_private_dev_consumers (p4_linux_native_system_services p4_linux_user_manager_t p4_linux_udev_t p4_linux_journald_t))
+(allow p4_native_private_dev_consumers p4_native_sandbox_staging_dirs (dir (getattr search)))
+(allow p4_native_private_dev_consumers p4_linux_sandbox_dir_t (lnk_file (getattr read)))
+
+; PID 1's stock inaccessible-node directory. Non-directory nodes are inert;
+; missing privileged device kinds use systemd's documented socket fallback.
+(allow init_t self (process (setfscreate)))
+(allow init_t p4_linux_inaccessible_t (dir (getattr search open read create write add_name remove_name setattr)))
+(allow init_t p4_linux_inaccessible_t (file (getattr create setattr)))
+(allow init_t p4_linux_inaccessible_t (sock_file (getattr create setattr)))
+(allow init_t p4_linux_inaccessible_t (fifo_file (getattr create setattr)))
+(typetransition init_t p4_linux_inaccessible_t dir p4_linux_inaccessible_t)
+(typetransition init_t p4_linux_inaccessible_t file p4_linux_inaccessible_t)
+(typetransition init_t p4_linux_inaccessible_t sock_file p4_linux_inaccessible_t)
+(typetransition init_t p4_linux_inaccessible_t fifo_file p4_linux_inaccessible_t)
+(allow p4_linux_service_executor_t p4_linux_inaccessible_t (dir (getattr search)))
+(allow p4_linux_service_executor_t p4_linux_inaccessible_t (file (getattr)))
+(allow p4_linux_service_executor_t p4_linux_inaccessible_t (sock_file (getattr)))
+(allow p4_linux_service_executor_t p4_linux_inaccessible_t (fifo_file (getattr)))
+
+; A dedicated stock metadata-label helper may be registered by the hardware
+; component. This interface is empty here: it does not grant a process or an
+; inode operation. Only the original generic device-directory source is split
+; from the global relabel-from guard; all other nonboard sources stay forbidden.
+(typeattribute p4_native_device_directory_relabelers)
+(typeattribute p4_native_directory_relabel_actors)
+(typeattributeset p4_native_directory_relabel_actors (p4_native_namespace_executors p4_native_device_directory_relabelers))
+(typeattribute p4_linux_without_native_directory_relabel_actors)
+(typeattributeset p4_linux_without_native_directory_relabel_actors (and (p4_linux_procs) (not (p4_native_directory_relabel_actors))))
+(neverallow p4_native_device_directory_relabelers p4_nonboard_except_device_directory (dir (relabelfrom)))

@@ -1,0 +1,193 @@
+//
+// Copyright (C) 2019 The Android Open Source Project
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+// ==========================================================
+// Native library to register a pull atom callback with statsd
+// ==========================================================
+package {
+    default_applicable_licenses: ["Android-Apache-2.0"],
+    default_team: "trendy_team_android_telemetry_client_infra",
+}
+
+cc_defaults {
+    name: "libstatspull_defaults",
+    srcs: [
+        "stats_subscription.cpp",
+        "stats_provider.cpp",
+        "stats_pull_atom_callback.cpp",
+        "utils.cpp",
+    ],
+    cflags: [
+        "-Wall",
+        "-Werror",
+        "-Wthread-safety",
+    ],
+    export_include_dirs: ["include"],
+    shared_libs: [
+        "libbinder_ndk",
+        "liblog",
+        "libstatssocket#impl",
+    ],
+    static_libs: [
+        "libutils",
+        "statsd-aidl-ndk",
+    ],
+}
+
+cc_library_shared {
+    name: "libstatspull",
+    defaults: [
+        "libstatspull_defaults",
+    ],
+    host_supported: true,
+    target: {
+        darwin: {
+            enabled: false,
+        },
+    },
+    // enumerate stable entry points for APEX use
+    version_script: "libstatspull.map.txt",
+    stubs: {
+        symbol_file: "libstatspull.map.txt",
+        versions: [
+            "30",
+        ],
+    },
+    apex_available: ["com.android.os.statsd"],
+    min_sdk_version: "30",
+    static_libs: [
+        "statsd_flags_c_lib",
+    ],
+    stl: "libc++_static",
+    // APIs are not ABI-stable, and this should only be used as an
+    // implementation detail of LL-NDK libraries
+    vendor_available: false,
+}
+
+cc_library_headers {
+    name: "libstatspull_headers",
+    export_include_dirs: ["include"],
+    apex_available: [
+        "com.android.uprobestats",
+        "//apex_available:platform",
+    ],
+    min_sdk_version: "30",
+    // APIs are not ABI-stable, and this should only be used as an
+    // implementation detail of LL-NDK libraries
+    vendor_available: false,
+    host_supported: true,
+    target: {
+        windows: {
+            enabled: true,
+        },
+    },
+}
+
+filegroup {
+    name: "libstatspull_test_default_map",
+    srcs: ["libstatspull_test_default.map"],
+}
+
+// Note: These unit tests only test PullAtomMetadata and subscriptions
+// For full E2E tests of pullers, use LibStatsPullTests
+cc_test {
+    name: "libstatspull_test",
+    srcs: [
+        ":libprotobuf-internal-descriptor-proto",
+        ":libstats_log_protos",
+        ":libstats_subscription_protos",
+        "tests/pull_atom_metadata_test.cpp",
+        "tests/stats_subscription_test.cpp",
+    ],
+    proto: {
+        type: "lite",
+        include_dirs: [
+            "external/protobuf/src",
+        ],
+        static: true,
+    },
+    shared_libs: [
+        "libstatspull",
+        "libstatssocket",
+        "libbinder",
+        "libutils",
+        "liblog",
+    ],
+    static_libs: [
+        "libbase",
+        "libgmock",
+        "libstatsgtestmatchers",
+        "libstatslog_statsdtest",
+        "libprotobuf-cpp-lite",
+    ],
+    test_suites: [
+        "general-tests",
+        "mts-statsd",
+    ],
+    test_config: "libstatspull_test.xml",
+
+    // This test runs on older platform versions, so many libraries (such as libbase and libc++)
+    // need to be linked statically. The test also needs to be linked with a version script to
+    // ensure that the statically-linked library isn't exported from the executable, where it
+    // would override the shared libraries that the platform itself uses.
+    // See http://b/333438055 for an example of what goes wrong when libc++ is partially exported
+    // from an executable.
+    version_script: ":libstatspull_test_default_map",
+    stl: "libc++_static",
+
+    //TODO(b/153588990): Remove when the build system properly separates
+    //32bit and 64bit architectures.
+    compile_multilib: "both",
+    multilib: {
+        lib64: {
+            suffix: "64",
+        },
+        lib32: {
+            suffix: "32",
+        },
+    },
+    cflags: [
+        "-Wall",
+        "-Werror",
+        "-Wno-missing-field-initializers",
+        "-Wno-unused-variable",
+        "-Wno-unused-function",
+        "-Wno-unused-parameter",
+        "-Wno-deprecated-declarations",
+        "-Wthread-safety",
+    ],
+    require_root: true,
+    min_sdk_version: "30",
+}
+
+cc_test_library {
+    name: "libstatspull-fake",
+    host_supported: true,
+    header_libs: [
+        "libstatspull_headers",
+    ],
+    export_header_lib_headers: [
+        "libstatspull_headers",
+    ],
+    srcs: [
+        "fake/libstatspull.c",
+    ],
+    target: {
+        windows: {
+            enabled: true,
+        },
+    },
+}

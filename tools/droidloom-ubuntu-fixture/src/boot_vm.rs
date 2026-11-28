@@ -1,0 +1,570 @@
+use crate::{
+    Result,
+    boot_files::{self, FilePin},
+    ensure, fs,
+};
+use serde::{Deserialize, Serialize};
+use serde_json::{Value, json};
+use std::{
+    io::{BufRead, BufReader, Read, Write},
+    os::unix::{net::UnixStream, process::ExitStatusExt},
+    path::{Path, PathBuf},
+    time::{Duration, Instant},
+};
+
+#[derive(Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct RunPlan {
+    pub schema: String,
+    pub prepared: FilePin,
+    pub run_name: String,
+    pub cpus: usize,
+    pub memory_mib: u64,
+    pub duration_seconds: u64,
+    pub network: bool,
+    pub ssh_port: Option<u16>,
+}
+
+fn qmp(path: &Path, command: &str) -> Result<Value> {
+    ensure(
+        ["system_powerdown", "query-status", "cont"].contains(&command)
+            || (cfg!(test) && ["query-cpus-fast", "query-kvm", "quit"].contains(&command)),
+        "unsupported monitor operation",
+    )?;
+    let stream = UnixStream::connect(path)?;
+    stream.set_read_timeout(Some(Duration::from_secs(3)))?;
+    stream.set_write_timeout(Some(Duration::from_secs(3)))?;
+    let mut reader = BufReader::new(stream);
+    let deadline = Instant::now() + Duration::from_secs(6);
+    let greeting = qmp_line(&mut reader, deadline)?;
+    ensure(
+        greeting.get("QMP").is_some(),
+        "invalid private QMP greeting",
+    )?;
+    for (index, op) in ["qmp_capabilities", command].iter().enumerate() {
+        let request = json!({"execute":op,"id":index});
+        reader
+            .get_mut()
+            .write_all(serde_json::to_string(&request)?.as_bytes())?;
+        reader.get_mut().write_all(b"\n")?;
+        let mut answered = false;
+        for _ in 0..32 {
+            let value = qmp_line(&mut reader, deadline)?;
+            if value["id"] == index {
+                ensure(
+                    value.get("error").is_none(),
+                    "QMP operation returned an error",
+                )?;
+                if index == 1 {
+                    return Ok(value);
+                }
+                answered = true;
+                break;
+            }
+        }
+        ensure(answered, "QMP exceeded its bounded event count")?;
+    }
+    Err("QMP result absent".into())
+}
+
+fn qmp_line(reader: &mut BufReader<UnixStream>, deadline: Instant) -> Result<Value> {
+    let remaining = deadline
+        .checked_duration_since(Instant::now())
+        .ok_or("QMP exceeded its complete operation deadline")?;
+    reader
+        .get_mut()
+        .set_read_timeout(Some(remaining.min(Duration::from_secs(3))))?;
+    let mut line = Vec::new();
+    Read::take(&mut *reader, 65537).read_until(b'\n', &mut line)?;
+    ensure(
+        line.len() <= 65536 && line.last() == Some(&b'\n'),
+        "QMP line is absent, incomplete or exceeds 64 KiB",
+    )?;
+    Ok(serde_json::from_slice(&line)?)
+}
+
+fn admit_paused_qemu(
+    child: &mut crate::boot_child::OwnedChild,
+    launch: &crate::boot_qemu::Launch,
+    monitor: &Path,
+) -> Result<Value> {
+    let deadline = Instant::now() + Duration::from_secs(30);
+    loop {
+        if let Some(status) = child.try_wait()? {
+            return Err(format!("QEMU exited before its paused launch admission: {status}").into());
+        }
+        if let Ok(status) = qmp(monitor, "query-status") {
+            ensure(
+                status["return"]["running"] == false
+                    && ["prelaunch", "paused"]
+                        .contains(&status["return"]["status"].as_str().unwrap_or("")),
+                "QEMU ran guest CPUs before privilege admission",
+            )?;
+            let process = launch.admit_process(child.id())?;
+            return Ok(json!({
+                "schema":"droidloom.qemu-paused-launch-admitted.v1",
+                "launcher":launch.receipt,"actual_process":process,"qmp":status,
+                "guest_cpus_started":false,"guest_qualified":false,"production_ready":false
+            }));
+        }
+        ensure(
+            Instant::now() < deadline,
+            "QEMU did not reach its bounded paused launch gate",
+        )?;
+        std::thread::sleep(Duration::from_millis(50));
+    }
+}
+
+fn known_host(root: &Path, run: &Path, port: u16) -> Result<FilePin> {
+    let source = boot_files::pin_file(&root.join("etc/ssh/ssh_host_ed25519_key.pub"))?;
+    let bytes = boot_files::read_pin(&source, 4096)?;
+    let public = std::str::from_utf8(&bytes)?;
+    let fields: Vec<_> = public.split_whitespace().collect();
+    ensure(
+        fields.len() == 3
+            && fields[0] == "ssh-ed25519"
+            && fields[1]
+                .bytes()
+                .all(|b| b.is_ascii_alphanumeric() || b"+/=".contains(&b)),
+        "fresh fixture host key is not one Ed25519 public key",
+    )?;
+    let path = run.join("known_hosts");
+    boot_files::write_new(
+        &path,
+        format!("[127.0.0.1]:{port} {} {}\n", fields[0], fields[1]).as_bytes(),
+        0o600,
+    )?;
+    boot_files::pin_file(&path)
+}
+
+fn cpu_budget_allowed(cpus: usize, available: usize) -> bool {
+    // The production guest has the same fixed 24-CPU geometry as the board.
+    // Qualification still leaves at least two actual host CPUs available.
+    (2..=24).contains(&cpus)
+        && cpus
+            .checked_add(2)
+            .is_some_and(|required| required <= available)
+}
+
+pub(super) fn kernel_command_line(uuid: &str, calibration: bool) -> Result<String> {
+    ensure(
+        uuid.len() == 36
+            && uuid.bytes().enumerate().all(|(i, b)| {
+                if [8, 13, 18, 23].contains(&i) {
+                    b == b'-'
+                } else {
+                    b.is_ascii_hexdigit()
+                }
+            }),
+        "invalid root UUID",
+    )?;
+    // The selected normal systemd log.c parses this documented switch.
+    // Calibration must retain the first failure while the journal is starting.
+    let (unit, manager_log_level, manager_kmsg_ratelimit) = if calibration {
+        ("droidloom-calibration-qualification.target", "debug", "0")
+    } else {
+        ("graphical.target", "info", "1")
+    };
+    // /dev/kmsg also has a kernel per-writer limiter. The manager cannot
+    // change its global sysctl after entering its enforcing Linux role.
+    // Preserve the actual first failure in the isolated calibration guest.
+    let kernel_diagnostics = if calibration {
+        " printk.devkmsg=on log_buf_len=16M"
+    } else {
+        ""
+    };
+    Ok(format!(
+        "console=ttyS0,115200 root=UUID={uuid} rootfstype=ext4 rw rootwait loglevel=7 enforcing=1 audit_backlog_limit=32768 sysctl.kernel.printk_ratelimit=0{kernel_diagnostics} lsm=lockdown,capability,landlock,yama,selinux,apparmor,bpf,ima,evm audit=1 init=/usr/lib/droidloom/production/current/droidloom-board-init systemd.unit={unit} systemd.log_target=journal-or-kmsg systemd.show_status=1 systemd.log_level={manager_log_level} systemd.log_ratelimit_kmsg={manager_kmsg_ratelimit}"
+    ))
+}
+
+pub fn run(config: &Path, expected: &str) -> Result<()> {
+    let plan: RunPlan = fs::read_json(&fs::absolute_string(config)?, expected)?;
+    ensure(
+        plan.schema == "droidloom.full-ubuntu-run-plan.v1",
+        "unsupported run plan",
+    )?;
+    ensure(
+        !plan.run_name.is_empty()
+            && plan.run_name.len() <= 64
+            && plan
+                .run_name
+                .bytes()
+                .all(|b| b.is_ascii_alphanumeric() || b"-_".contains(&b)),
+        "invalid private run name",
+    )?;
+    let available = std::thread::available_parallelism()?.get();
+    ensure(
+        cpu_budget_allowed(plan.cpus, available),
+        "VM must preserve at least two logical CPUs",
+    )?;
+    ensure(
+        (4096..=12288).contains(&plan.memory_mib) && (60..=3600).contains(&plan.duration_seconds),
+        "VM memory or duration is outside the explicit bounded range",
+    )?;
+    ensure(
+        plan.ssh_port
+            .is_none_or(|p| plan.network && (50000..=59999).contains(&p)),
+        "guest SSH forwarding must be explicit, high-port and loopback only",
+    )?;
+    let prepared: Value =
+        serde_json::from_slice(&boot_files::read_pin(&plan.prepared, 8 * 1024 * 1024)?)?;
+    ensure(
+        prepared["schema"] == "droidloom.full-ubuntu-boot-prepared.v1"
+            && prepared["guest_qualified"] == false
+            && prepared["production_ready"] == false,
+        "not an admitted unbooted image",
+    )?;
+    let diagnostic_budget = if prepared["android_release"]["empty_meituan_diagnostic"].is_object() {
+        let budget = crate::boot_empty_meituan::run_budget()?;
+        ensure(
+            plan.duration_seconds >= budget.observation_seconds,
+            "EMPTY run duration cannot truncate the fixed normal startup and diagnostic window",
+        )?;
+        Some(budget)
+    } else {
+        None
+    };
+    let shutdown_seconds = diagnostic_budget
+        .as_ref()
+        .map_or(45, |v| v.shutdown_seconds);
+    let work = PathBuf::from(prepared["work_directory"].as_str().ok_or("work missing")?);
+    let boot = PathBuf::from(
+        prepared["boot_directory"]
+            .as_str()
+            .ok_or("boot directory missing")?,
+    );
+    ensure(
+        work.parent() == Some(Path::new("/var/lib/droidloom-qualification"))
+            && boot == work.join("boot"),
+        "prepared image is outside the protected qualification root",
+    )?;
+    let owner = fs::Tree::open(&fs::absolute_string(&work)?, 0)?;
+    ensure(
+        fs::stat(&owner.root)?.mode & 0o777 == 0o700,
+        "qualification work is no longer private",
+    )?;
+    let kernel: FilePin = serde_json::from_value(prepared["kernel"].clone())?;
+    let initrd: FilePin = serde_json::from_value(prepared["initrd"].clone())?;
+    let source: FilePin = serde_json::from_value(prepared["root_image"].clone())?;
+    ensure(
+        [&kernel.path, &initrd.path, &source.path]
+            .iter()
+            .all(|p| p.parent() == Some(boot.as_path())),
+        "boot input paths differ from prepared private files",
+    )?;
+    let _kernel_fd = boot_files::checked_file(&kernel)?;
+    let _initrd_fd = boot_files::checked_file(&initrd)?;
+    let run = boot.join(&plan.run_name);
+    boot_files::private_dir(&run)?;
+    fs::write_json(
+        &fs::absolute_string(&run.join("RUN-INPUTS.json"))?,
+        &plan,
+        0,
+    )?;
+    let (source_guard, source_identity) = boot_files::open_pin(&source)?;
+    let disk = run.join("working.ext4");
+    boot_files::copy_pin(&source, &disk, 0o600)?;
+    let known = if let Some(port) = plan.ssh_port {
+        Some(known_host(&work.join("root"), &run, port)?)
+    } else {
+        None
+    };
+    let serial = run.join("serial.log");
+    let output = boot_files::new_file(&serial, 0o600)?;
+    let monitor = run.join("qmp.sock");
+    ensure(
+        monitor.as_os_str().len() < 104,
+        "private QMP pathname exceeds Unix socket limit",
+    )?;
+    let launch = crate::boot_qemu::Launch::prepare(&run, &disk, &kernel, &initrd, &monitor)?;
+    // Original PID 1 emits successful process-exit records only at DEBUG.
+    // Calibration collection requires those trusted fields; ordinary Android
+    // acceptance uses its native live lifecycle and keeps the normal log level.
+    let uuid = prepared["root_filesystem_uuid"]
+        .as_str()
+        .ok_or("root UUID missing")?;
+    let cmdline = kernel_command_line(uuid, prepared["calibration_requested"] == true)?;
+    let mut args = launch.fixed_args();
+    args.extend(vec![
+        "-S".into(),
+        "-machine".into(),
+        "q35".into(),
+        "-cpu".into(),
+        "host".into(),
+        "-m".into(),
+        plan.memory_mib.to_string(),
+        "-smp".into(),
+        plan.cpus.to_string(),
+        "-display".into(),
+        "none".into(),
+        "-vga".into(),
+        "virtio".into(),
+        "-serial".into(),
+        "stdio".into(),
+        "-no-reboot".into(),
+        "-monitor".into(),
+        "none".into(),
+        "-kernel".into(),
+        launch.kernel_path(),
+        "-initrd".into(),
+        launch.initrd_path(),
+        "-append".into(),
+        cmdline,
+        "-drive".into(),
+        "if=none,id=guest,format=raw,cache=writethrough,file=/dev/fdset/2".into(),
+        "-device".into(),
+        "virtio-blk-pci,drive=guest".into(),
+        "-device".into(),
+        "virtio-keyboard-pci".into(),
+        "-device".into(),
+        "virtio-mouse-pci".into(),
+        "-device".into(),
+        "intel-hda".into(),
+        "-device".into(),
+        "hda-duplex".into(),
+    ]);
+    let nic = if plan.network {
+        match plan.ssh_port {
+            Some(port) => format!("user,model=virtio-net-pci,hostfwd=tcp:127.0.0.1:{port}-:22"),
+            None => "user,model=virtio-net-pci".into(),
+        }
+    } else {
+        "none".into()
+    };
+    args.extend(["-nic".into(), nic]);
+    let qemu = launch.qemu.clone();
+    let mut child = launch.spawn(&args, &output)?;
+    let started = Instant::now();
+    let attempt = (|| -> Result<(std::process::ExitStatus, bool)> {
+        fs::write_json(
+            &fs::absolute_string(&run.join("RUNNING.json"))?,
+            &json!({
+        "pid":child.id(),"program":qemu,"args":args,"known_hosts":known,
+        "fixed_descriptor_launcher":launch.receipt,
+        "fresh_client_key":work.join("fixture-ssh-client-key"),
+        "private_qmp":monitor,"working_disk":disk,"original_userdata_opened":false,
+        "preserved_source_image":source,"source_identity":source_identity,
+        "guest_qualified":false,"production_ready":false}),
+            0,
+        )?;
+        println!(
+            "{}",
+            json!({"running_pid":child.id(),"run_directory":run,"private_qmp":monitor,
+        "ssh_port":plan.ssh_port,"guest_qualified":false})
+        );
+        std::io::stdout().flush()?;
+        let admission = admit_paused_qemu(&mut child, &launch, &monitor)?;
+        fs::write_json(
+            &fs::absolute_string(&run.join("QEMU-ADMITTED.json"))?,
+            &admission,
+            0,
+        )?;
+        // Guest CPUs remain stopped until the actual original executable,
+        // unprivileged credentials and the unchanged full sandbox are checked.
+        qmp(&monitor, "cont")?;
+        let mut power_attempt = None;
+        let mut forced = false;
+        let status = loop {
+            if let Some(s) = child.try_wait()? {
+                break s;
+            }
+            let elapsed = started.elapsed().as_secs();
+            if elapsed >= plan.duration_seconds && power_attempt.is_none() {
+                let result = qmp(&monitor, "system_powerdown")
+                    .map(|v| json!({"result":v}))
+                    .unwrap_or_else(|e| json!({"error":e.to_string()}));
+                fs::write_json(
+                    &fs::absolute_string(&run.join("POWER-DOWN.json"))?,
+                    &result,
+                    0,
+                )?;
+                power_attempt = Some(elapsed);
+            }
+            if power_attempt.is_some_and(|t| elapsed >= t + shutdown_seconds)
+                || std::fs::metadata(&serial)?.len() > 512 * 1024 * 1024
+            {
+                forced = true;
+                break child.stop_and_reap()?;
+            }
+            std::thread::sleep(Duration::from_millis(250));
+        };
+        Ok((status, forced))
+    })();
+    let (status, forced) = match attempt {
+        Ok(value) => value,
+        Err(error) => {
+            // Stop before attempting any further evidence I/O. Even if that
+            // I/O also fails, OwnedChild's Drop retries unreaped cleanup.
+            let stopped = child.stop_and_reap();
+            let source_preserved = fs::stat(&source_guard).is_ok_and(|id| id == source_identity)
+                && boot_files::open_pin(&source).is_ok_and(|(_, id)| id == source_identity);
+            let failure = json!({"schema":"droidloom.full-ubuntu-run-failed.v1",
+                "prepared":plan.prepared,"error":error.to_string(),"qemu":qemu,
+                "owned_pid":child.id(),"child_reaped":stopped.is_ok(),
+                "exit_code":stopped.as_ref().ok().and_then(|s|s.code()),
+                "signal":stopped.as_ref().ok().and_then(|s|s.signal()),
+                "stop_error":stopped.as_ref().err().map(ToString::to_string),
+                "preserved_source_image":source,"source_identity":source_identity,
+                "source_image_preserved":source_preserved,"working_disk":disk,
+                "serial_path":serial,"guest_qualified":false,"production_ready":false});
+            let saved = fs::write_json(
+                &fs::absolute_string(&run.join("RUN-FAILED.json"))?,
+                &failure,
+                0,
+            );
+            return Err(format!(
+                "guest runner failed: {error}; owned-child cleanup: {}; failure receipt: {}",
+                if stopped.is_ok() {
+                    "reaped"
+                } else {
+                    "failed; Drop will retry"
+                },
+                saved.map_or_else(|e| e.to_string(), |sha| sha)
+            )
+            .into());
+        }
+    };
+    ensure(
+        fs::stat(&source_guard)? == source_identity
+            && boot_files::open_pin(&source)?.1 == source_identity,
+        "prepared source image changed while isolated guest ran",
+    )?;
+    let receipt = json!({"schema":"droidloom.full-ubuntu-run-ended.v1","prepared":plan.prepared,
+        "run_directory":run,"qemu":qemu,"exit_code":status.code(),"forced_stop":forced,
+        "elapsed_seconds":started.elapsed().as_secs(),"serial":boot_files::pin_file(&serial)?,
+        "working_disk":boot_files::pin_file(&disk)?,"source_image_preserved":true,
+        "preserved_source_image":source,"source_identity":source_identity,
+        "signal":status.signal(),
+        "empty_meituan_run_budget":diagnostic_budget,
+        "guest_qualified":false,"production_ready":false,
+        "next_required":"Inspect the original persistent journal and complete the independent runtime and application gates."});
+    let receipt_path = run.join("RUN-ENDED.json");
+    let sha = fs::write_json(&fs::absolute_string(&receipt_path)?, &receipt, 0)?;
+    println!(
+        "{}",
+        json!({"receipt":receipt_path,"sha256":sha,"guest_qualified":false,"production_ready":false})
+    );
+    ensure(
+        status.success() && !forced,
+        "guest did not terminate normally; exact journal/serial remains for diagnosis",
+    )
+}
+
+#[cfg(test)]
+#[path = "boot_peer_mechanism.rs"]
+mod peer_mechanism;
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn cpu_budget_supports_the_production_geometry_and_preserves_host_reservation() {
+        for (cpus, available, allowed) in [
+            (2, 4, true),
+            (4, 6, true),
+            (16, 18, true),
+            (24, 26, true),
+            (24, 25, false),
+            (25, 64, false),
+            (1, 64, false),
+            (usize::MAX, usize::MAX, false),
+        ] {
+            assert_eq!(cpu_budget_allowed(cpus, available), allowed);
+        }
+    }
+    #[test]
+    fn private_qmp_line_bounds_and_deadline_are_enforced() -> Result<()> {
+        let (input, mut output) = UnixStream::pair()?;
+        output.write_all(b"{\"QMP\":{}}\n")?;
+        let mut reader = BufReader::new(input);
+        assert!(
+            qmp_line(&mut reader, Instant::now() + Duration::from_secs(1))?
+                .get("QMP")
+                .is_some()
+        );
+        assert!(qmp_line(&mut reader, Instant::now() - Duration::from_millis(1)).is_err());
+        output.write_all(&vec![b'x'; 65537])?;
+        assert!(qmp_line(&mut reader, Instant::now() + Duration::from_secs(1)).is_err());
+        Ok(())
+    }
+    #[test]
+    #[ignore = "requires explicit root/KVM execution; starts no vCPU or guest"]
+    fn actual_fixed_descriptor_qemu_launch_has_no_privileges_or_guest_cpus() -> Result<()> {
+        ensure(
+            rustix::process::geteuid().as_raw() == 0,
+            "explicit root probe required",
+        )?;
+        let run = tempfile::Builder::new()
+            .prefix("r126-qemu-fd-")
+            .tempdir_in("/var/lib/droidloom-qualification")?
+            .keep();
+        let material = run.join("public-input");
+        boot_files::write_new(&material, b"fixed public probe bytes\n", 0o400)?;
+        let pin = boot_files::pin_file(&material)?;
+        let disk = run.join("working.ext4");
+        let file = boot_files::new_file(&disk, 0o600)?;
+        file.set_len(2 * 1024 * 1024)?;
+        file.sync_all()?;
+        drop(file);
+        let output = boot_files::new_file(&run.join("stderr"), 0o600)?;
+        let monitor = run.join("qmp.sock");
+        let launch = crate::boot_qemu::Launch::prepare(&run, &disk, &pin, &pin, &monitor)?;
+        let mut args = launch.fixed_args();
+        args.extend([
+            "-machine".into(),
+            "none".into(),
+            "-nodefaults".into(),
+            "-S".into(),
+            "-display".into(),
+            "none".into(),
+            "-serial".into(),
+            "none".into(),
+            "-monitor".into(),
+            "none".into(),
+            "-nic".into(),
+            "none".into(),
+            "-drive".into(),
+            "if=none,id=guest,format=raw,cache=writethrough,file=/dev/fdset/2".into(),
+            "-blockdev".into(),
+            format!(
+                "driver=file,node-name=readonly-input,filename={},read-only=on",
+                launch.kernel_path()
+            ),
+        ]);
+        let mut child = launch.spawn(&args, &output)?;
+        let admission = admit_paused_qemu(&mut child, &launch, &monitor)?;
+        let cpus = qmp(&monitor, "query-cpus-fast")?;
+        ensure(
+            cpus["return"] == json!([]),
+            "mechanism probe unexpectedly created vCPUs",
+        )?;
+        let kvm = qmp(&monitor, "query-kvm")?;
+        ensure(
+            kvm["return"]["enabled"] == true,
+            "fixed KVM fdset did not initialize",
+        )?;
+        qmp(&monitor, "quit")?;
+        let deadline = Instant::now() + Duration::from_secs(5);
+        let exit = loop {
+            if let Some(status) = child.try_wait()? {
+                break status;
+            }
+            ensure(Instant::now() < deadline, "mechanism QEMU did not retire")?;
+            std::thread::sleep(Duration::from_millis(20));
+        };
+        ensure(exit.success(), "mechanism QEMU did not exit normally")?;
+        let receipt = run.join("RESULT.json");
+        let digest = fs::write_json(
+            &fs::absolute_string(&receipt)?,
+            &json!({
+                "admission":admission,"cpus":cpus,"kvm":kvm,
+                "exit_code":exit.code(),"guest_booted":false,"passed":true
+            }),
+            0,
+        )?;
+        println!("{}", json!({"receipt":receipt,"sha256":digest}));
+        Ok(())
+    }
+}

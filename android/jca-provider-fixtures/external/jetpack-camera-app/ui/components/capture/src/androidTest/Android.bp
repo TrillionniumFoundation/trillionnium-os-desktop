@@ -1,0 +1,29 @@
+package {
+    default_applicable_licenses: ["Android-Apache-2.0"],
+}
+
+android_test {
+    name: "jetpack-camera-app_ui_components_capture-tests",
+    team: "trendy_team_android_camera_innovation_team",
+    srcs: ["java/**/*.kt"],
+    static_libs: [
+        "androidx.test.runner",
+        "junit",
+        "androidx.test.ext.junit",
+        "androidx.test.ext.truth",
+        "kotlinx_coroutines_test",
+        "androidx.compose.runtime_runtime",
+        "androidx.compose.ui_ui-test-junit4",
+        "androidx.compose.ui_ui-test-manifest",
+        "jetpack-camera-app_core_model",
+        "jetpack-camera-app_ui_components_capture",
+    ],
+    instrumentation_for: "jetpack-camera-app_ui_components_capture",
+    sdk_version: "34",
+    test_suites: ["general-tests"],
+    optimize: {
+        enabled: false,
+    },
+
+}
+

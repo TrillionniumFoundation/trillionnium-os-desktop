@@ -1,0 +1,124 @@
+; Normal source-owned helper APKs and read-only installed APK custody.
+; Creator retains broker AA; Reader adds its fixed narrow AA intersection.
+; Neither child obtains Main, namespace, caller-path or mutation authority.
+; Only the actual broker parent can start these two fixed same-ELF entries.
+(type droidloom_working_apk_payload_creator)
+(type droidloom_native_leaf_apk_reader)
+(type droidloom_native_leaf_apk_copy)
+(type droidloom_native_helper_source)
+(roletype r droidloom_working_apk_payload_creator)
+(roletype r droidloom_native_leaf_apk_reader)
+(roletype object_r droidloom_native_leaf_apk_copy)
+(roletype object_r droidloom_native_helper_source)
+(typeattributeset p4_all_board_owned (droidloom_working_apk_payload_creator droidloom_native_leaf_apk_reader droidloom_native_leaf_apk_copy droidloom_native_helper_source))
+(typeattribute p4_native_apk_children)
+(expandtypeattribute (p4_native_apk_children) false)
+(typeattributeset p4_native_apk_children (droidloom_working_apk_payload_creator droidloom_native_leaf_apk_reader))
+(typeattribute p4_native_apk_all_types)
+(typeattributeset p4_native_apk_all_types (all))
+
+; SET_SELF_ATTR selects one of the maintained fixed exec enums. No default
+; process transition, shell entry, capabilities or Android domain is added.
+(allow droidloom_broker p4_native_apk_children (process (transition getattr sigkill)))
+(allow droidloom_broker p4_native_apk_children (process2 (nnp_transition nosuid_transition)))
+(allow p4_native_apk_children droidloom_container_entry_exec_t (file (getattr open read map execute entrypoint)))
+(allow p4_native_apk_children p4_linux_elf_interpreter_t (file (getattr open read map execute)))
+(allow p4_native_apk_children p4_linux_runtime_lib_t (file (getattr open read map execute)))
+; The normal later console derivation gives actual dynamic-loader clients its
+; fixed immutable ld cache. The final verifier checks those derived bits too.
+(allow p4_native_apk_children p4_linux_rootdir_t (dir (getattr search)))
+(allow p4_native_apk_children p4_linux_etc_dir_t (dir (getattr search)))
+(allow p4_native_apk_children p4_linux_usrmerge_link_t (lnk_file (getattr read)))
+(allow p4_native_apk_children self (process (getcap)))
+(allow p4_native_apk_children droidloom_broker (process (getattr sigchld)))
+(allow p4_native_apk_children droidloom_broker (fd (use)))
+(allow droidloom_broker p4_native_apk_children (fd (use)))
+(allow p4_native_apk_children droidloom_broker (fifo_file (getattr read)))
+(allow p4_native_apk_children droidloom_broker (unix_stream_socket (getattr getopt read write)))
+(allow p4_native_apk_children proc (dir (getattr search)))
+(allow p4_native_apk_children proc (lnk_file (getattr read)))
+(allow p4_native_apk_children proc (filesystem (getattr)))
+(allow p4_native_apk_children self (dir (getattr search)))
+(allow p4_native_apk_children self (file (getattr open read)))
+(allow p4_native_apk_children self (lnk_file (getattr read)))
+(allow p4_native_apk_children p4_kernel_pid_handle_t (file (getattr)))
+(allow p4_native_apk_children tmpfs (filesystem (getattr)))
+
+; Only 24 prebuilt bundle files and four fixed Gallery input files have this
+; independent disk type. Their full paths/bytes are fixed in the source contract.
+; The broker enumerates the prebuilt source trees; the child receives one RO FD.
+(allow droidloom_native_helper_source labeledfs (filesystem (associate)))
+(allow droidloom_broker droidloom_native_helper_source (dir (getattr search open read)))
+(allow droidloom_broker droidloom_native_helper_source (file (getattr open read)))
+(allow droidloom_broker p4_linux_native_leaf_source_t (dir (getattr search)))
+(allow droidloom_working_apk_payload_creator droidloom_native_helper_source (file (getattr read)))
+(allow p4_linux_working_privateprep_t droidloom_native_helper_source (dir (getattr search open read)))
+(allow p4_linux_working_privateprep_t droidloom_native_helper_source (file (getattr open read)))
+(allow p4_linux_working_application_t droidloom_native_helper_source (dir (getattr search open read)))
+(allow p4_linux_working_application_t droidloom_native_helper_source (file (getattr open read)))
+
+; This maintained creator fills the five fixed helper payloads. The different
+; empty original-APK birth role cannot read any of these files or fill a payload.
+; Selected 6.18 shmem birth is FS_USE_TRANS with a NULL name. Subsequent writing
+; and the child's own numeric-FD RO reopen need exactly these payload operations.
+(typetransition droidloom_working_apk_payload_creator tmpfs file droidloom_apk_payload)
+(typetransition droidloom_working_apk_payload_creator tmpfs memfd_file droidloom_apk_payload)
+(allow droidloom_working_apk_payload_creator droidloom_apk_payload (file (getattr open read write)))
+(allow droidloom_working_apk_payload_creator droidloom_apk_payload (memfd_file (getattr open read write)))
+
+; Actual Main lends its existing root and three PIDFDs. The selected PIDFS
+; S_PRIVATE inode bypasses body permissions; crossing its original opener still
+; needs FD__USE. No NSFS, setns, ptrace or process-memory access is granted.
+(allow droidloom_native_leaf_apk_reader kernel (fd (use)))
+(allow droidloom_native_leaf_apk_reader droidloom_metadata_observer (fd (use)))
+(allow droidloom_native_leaf_apk_reader rootfs (dir (getattr read search)))
+(allow droidloom_native_leaf_apk_reader system_file (dir (getattr search)))
+(allow droidloom_native_leaf_apk_reader system_data_root_file (dir (getattr search)))
+(allow droidloom_native_leaf_apk_reader system_data_file (dir (getattr search)))
+(allow droidloom_native_leaf_apk_reader apk_data_file (dir (getattr search)))
+(allow droidloom_native_leaf_apk_reader apex_mnt_dir (dir (getattr search)))
+(allow droidloom_native_leaf_apk_reader rootfs (lnk_file (getattr read)))
+(allow droidloom_native_leaf_apk_reader system_file (lnk_file (getattr read)))
+(allow droidloom_native_leaf_apk_reader apex_mnt_dir (lnk_file (getattr read)))
+(allow droidloom_native_leaf_apk_reader system_file (file (getattr open read)))
+(allow droidloom_native_leaf_apk_reader apk_data_file (file (getattr open read)))
+
+; Only public APK snapshots leave the reader, after full SHA/F9/EOF validation,
+; fchmod(0400), all four immutable seals, a RO reopen and original Main/PM checks.
+; The copy is neither an installation payload nor an evidence comparison memfd.
+(allow droidloom_native_leaf_apk_copy tmpfs (filesystem (associate)))
+(typetransition droidloom_native_leaf_apk_reader tmpfs file droidloom_native_leaf_apk_copy)
+(typetransition droidloom_native_leaf_apk_reader tmpfs memfd_file droidloom_native_leaf_apk_copy)
+(allow droidloom_native_leaf_apk_reader droidloom_native_leaf_apk_copy (file (getattr open read write setattr)))
+(allow droidloom_native_leaf_apk_reader droidloom_native_leaf_apk_copy (memfd_file (getattr open read write setattr)))
+(allow droidloom_broker droidloom_native_leaf_apk_copy (file (getattr read)))
+(allow droidloom_broker droidloom_native_leaf_apk_copy (memfd_file (getattr read)))
+(allow p4_linux_working_privateprep_t droidloom_native_leaf_apk_reader (fd (use)))
+(allow p4_linux_working_application_t droidloom_native_leaf_apk_reader (fd (use)))
+(allow p4_linux_working_privateprep_t droidloom_native_leaf_apk_copy (file (getattr read)))
+(allow p4_linux_working_privateprep_t droidloom_native_leaf_apk_copy (memfd_file (getattr read)))
+(allow p4_linux_working_application_t droidloom_native_leaf_apk_copy (file (getattr read)))
+(allow p4_linux_working_application_t droidloom_native_leaf_apk_copy (memfd_file (getattr read)))
+
+; Independent full raw/matrix verification additionally closes every unlisted
+; inbound/outbound class, ioctl, transition, role, context and category range.
+(neverallow p4_native_apk_children self (capability (all)))
+(neverallow p4_native_apk_children self (capability2 (all)))
+(neverallow p4_native_apk_children self (cap_userns (all)))
+(neverallow p4_native_apk_children self (cap2_userns (all)))
+(neverallow p4_native_apk_children p4_native_apk_all_types (process (not (getattr sigchld getcap))))
+(neverallow p4_native_apk_children p4_native_apk_all_types (process2 (all)))
+(neverallow p4_native_apk_children p4_native_apk_all_types (binder (all)))
+(neverallow p4_native_apk_children p4_native_apk_all_types (security (all)))
+(neverallow p4_native_apk_children p4_native_apk_all_types (dbus (all)))
+(neverallow p4_native_apk_children p4_native_apk_all_types (dir (not (getattr search open read))))
+(neverallow p4_native_apk_children p4_native_apk_all_types (lnk_file (not (getattr read))))
+(neverallow p4_native_apk_children p4_native_apk_all_types (filesystem (not (getattr))))
+(neverallow p4_native_apk_children p4_native_apk_all_types (file (ioctl relabelfrom relabelto execute_no_trans)))
+(neverallow p4_native_apk_children p4_native_apk_all_types (memfd_file (ioctl relabelfrom relabelto map execute execute_no_trans entrypoint)))
+(neverallowx p4_native_apk_children p4_native_apk_all_types (ioctl file (range 0x0000 0xffff)))
+(neverallowx p4_native_apk_children p4_native_apk_all_types (ioctl memfd_file (range 0x0000 0xffff)))
+(neverallow p4_native_apk_all_types droidloom_native_leaf_apk_copy (file (map execute execute_no_trans entrypoint relabelfrom relabelto)))
+(neverallow p4_native_apk_all_types droidloom_native_leaf_apk_copy (memfd_file (map execute execute_no_trans entrypoint relabelfrom relabelto)))
+(neverallow p4_native_apk_all_types droidloom_native_helper_source (file (write append create setattr unlink link rename relabelfrom relabelto map execute execute_no_trans entrypoint)))
+(neverallow p4_native_apk_all_types droidloom_native_helper_source (dir (write add_name remove_name create rmdir rename reparent relabelfrom relabelto mounton)))

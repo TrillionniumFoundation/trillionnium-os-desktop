@@ -1,0 +1,53 @@
+package {
+    default_applicable_licenses: [
+        "Android-Apache-2.0",
+    ],
+}
+
+android_library {
+    name: "jetpack-camera-app_data_settings",
+    srcs: [
+        "src/main/**/*.kt",
+    ],
+    static_libs: [
+        "hilt_android",
+        "kotlinx-coroutines-core",
+        "androidx.datastore_datastore",
+        "jetpack-camera-app-protos-java-gen_data_settings",
+        "libprotobuf-java-lite",
+        "jetpack-camera-app_core_model",
+        "jetpack-camera-app_core_common",
+    ],
+    sdk_version: "34",
+    min_sdk_version: "23",
+    manifest: "src/main/AndroidManifest.xml",
+    apex_available: [
+        "com.android.mediaprovider",
+    ],
+}
+
+java_library {
+    name: "jetpack-camera-app-protos-java-gen_data_settings",
+    installable: false,
+    proto: {
+        type: "lite",
+        canonical_path_from_root: false,
+        include_dirs: [
+            "external/jetpack-camera-app/core/model/src/main/proto",
+            "external/jetpack-camera-app/data/settings/src/main/proto",
+        ],
+    },
+    srcs: [
+        "src/main/proto/**/*.proto",
+    ],
+    sdk_version: "34",
+    min_sdk_version: "23",
+
+    static_libs: [
+        "libprotobuf-java-lite",
+        "jetpack-camera-app-protos-java-gen_core_model",
+    ],
+    apex_available: [
+        "com.android.mediaprovider",
+    ],
+}

@@ -1,0 +1,11 @@
+; Additive, offline-reviewed input only; never a standalone installable policy.
+; Original R9 host component source SHA-256:
+; 3e95142c899c2866ade2435b6984489aa7f26fd9d81010a8a9e7612226eee295
+; Original compiled component SHA-256 (not evidence it is currently loaded):
+; e30a63f7c4665a3a2a72495de18693cbcc4eca0c0e8c41e1ed1d0da244debf8b
+; The provider can relabel only its newly created detached tmpfs directories.
+; No original image/file label, host role, process transition or capability changes.
+(allow droidloom_broker apex_mnt_dir (dir (getattr search read open relabelto)))
+(allow droidloom_broker linkerconfig_file (dir (getattr search read open relabelto)))
+(allow apex_mnt_dir tmpfs (filesystem (associate)))
+(allow linkerconfig_file tmpfs (filesystem (associate)))

@@ -1,0 +1,145 @@
+diff --git a/packages/ExternalStorageProvider/src/com/android/externalstorage/ExternalStorageProvider.java b/packages/ExternalStorageProvider/src/com/android/externalstorage/ExternalStorageProvider.java
+index 93c08e8..4a09a17 100644
+--- a/packages/ExternalStorageProvider/src/com/android/externalstorage/ExternalStorageProvider.java
++++ b/packages/ExternalStorageProvider/src/com/android/externalstorage/ExternalStorageProvider.java
+@@ -30,6 +30,8 @@
+ import android.database.Cursor;
+ import android.database.MatrixCursor;
+ import android.database.MatrixCursor.RowBuilder;
++import android.icu.lang.UCharacter;
++import android.icu.lang.UProperty;
+ import android.net.Uri;
+ import android.os.Binder;
+ import android.os.Bundle;
+@@ -69,6 +71,7 @@
+ import java.io.PrintWriter;
+ import java.nio.file.Files;
+ import java.nio.file.Paths;
++import java.text.Normalizer;
+ import java.util.Arrays;
+ import java.util.Collections;
+ import java.util.List;
+@@ -453,14 +456,15 @@
+         // This the root's path will be just an empty string.
+         final String path = getPathFromDocId(documentId);
+ 
++        final String normalizedPath = normalizeAndFilterDefaultIgnorableCodepoints(path);
+         // Block the root of the storage
+-        if (path.isEmpty()) {
++        if (normalizedPath.isEmpty()) {
+             return true;
+         }
+ 
+         // Block /Download/ and /Android/ folders from the tree.
+-        if (equalIgnoringCase(path, Environment.DIRECTORY_DOWNLOADS) ||
+-                equalIgnoringCase(path, Environment.DIRECTORY_ANDROID)) {
++        if (equalIgnoringCase(normalizedPath, Environment.DIRECTORY_DOWNLOADS)
++                || equalIgnoringCase(normalizedPath, Environment.DIRECTORY_ANDROID)) {
+             return true;
+         }
+ 
+@@ -1048,4 +1052,47 @@
+         File trashDir = new File(rootInfo.visiblePath, DIRECTORY_TRASH_STORAGE);
+         return file.getAbsolutePath().startsWith(trashDir.getAbsolutePath());
+     }
++
++    /**
++     * Normalizes the given path to NFD form and removes all default ignorable Unicode characters.
++     * These include characters (e.g., invisible zero-width spaces) that are ignored by the lower
++     * file system, but can be exploited by malicious apps to bypass path-based regex checks.
++     *
++     * <p>Wholesale copied from MediaProvider at the path:
++     * //packages/providers/MediaProvider/src/com/android/providers/media/util/FileUtils.java
++     *
++     * @param path the input file path, possibly containing invisible Unicode characters
++     * @return a normalized path string with ignorable characters removed
++     */
++    @VisibleForTesting
++    static String normalizeAndFilterDefaultIgnorableCodepoints(String path) {
++        // Nothing to normalize.
++        if (path == null || path.isEmpty()) {
++            return path;
++        }
++
++        path = Normalizer.normalize(path, Normalizer.Form.NFD);
++        final int[] codePoints = path.codePoints().toArray();
++
++        boolean hasIgnorableCodepoints = false;
++        for (int codePoint : codePoints) {
++            if (UCharacter.hasBinaryProperty(codePoint, UProperty.DEFAULT_IGNORABLE_CODE_POINT)) {
++                hasIgnorableCodepoints = true;
++                break;
++            }
++        }
++        // Input is already normalized.
++        if (!hasIgnorableCodepoints) {
++            return path;
++        }
++
++        // Remove default ignorable code points.
++        StringBuilder normalizedPath = new StringBuilder(codePoints.length);
++        for (int codePoint : codePoints) {
++            if (!UCharacter.hasBinaryProperty(codePoint, UProperty.DEFAULT_IGNORABLE_CODE_POINT)) {
++                normalizedPath.appendCodePoint(codePoint);
++            }
++        }
++        return normalizedPath.toString();
++    }
+ }
+diff --git a/packages/ExternalStorageProvider/tests/src/com/android/externalstorage/ExternalStorageProviderTest.java b/packages/ExternalStorageProvider/tests/src/com/android/externalstorage/ExternalStorageProviderTest.java
+index 8664159..f06bc79 100644
+--- a/packages/ExternalStorageProvider/tests/src/com/android/externalstorage/ExternalStorageProviderTest.java
++++ b/packages/ExternalStorageProvider/tests/src/com/android/externalstorage/ExternalStorageProviderTest.java
+@@ -58,6 +58,7 @@
+ import org.junit.runner.RunWith;
+ 
+ import java.io.File;
++import java.io.FileNotFoundException;
+ import java.util.concurrent.CountDownLatch;
+ import java.util.concurrent.TimeUnit;
+ 
+@@ -343,6 +344,44 @@
+         }
+     }
+ 
++    @Test
++    public void test_shouldBlockDirectoryFromTree() throws Exception {
++        final String[] shouldBlock = {
++                "Android",
++                "Download",
++                "Android\u200B",
++                "Download\u200B",
++                "Android/\u200B",
++                "android",
++                "DOWNLOAD",
++        };
++        for (String path : shouldBlock) {
++            final String docId = buildDocId(path);
++            try {
++                assertTrue("ExternalStorageProvider should block \"" + docId + "\", but it didn't",
++                        mExternalStorageProvider.shouldBlockDirectoryFromTree(docId));
++            } catch (FileNotFoundException ignored) {
++                // If the file doesn't exist, ignored.
++            }
++        }
++
++        final String[] shouldNotBlock = {
++                "Android/datadir",
++                "Download/my_file",
++                "Documents",
++        };
++        for (String path : shouldNotBlock) {
++            final String docId = buildDocId(path);
++            try {
++                assertFalse(
++                        "ExternalStorageProvider should NOT block \"" + docId + "\", but it did",
++                        mExternalStorageProvider.shouldBlockDirectoryFromTree(docId));
++            } catch (FileNotFoundException ignored) {
++                // If the file doesn't exist, ignored.
++            }
++        }
++    }
++
+     @NonNull
+     private static String buildDocId(@NonNull String path) {
+         return buildDocId(EXTERNAL_STORAGE_PRIMARY_EMULATED_ROOT_ID, path);

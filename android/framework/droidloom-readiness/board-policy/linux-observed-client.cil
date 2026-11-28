@@ -1,0 +1,11 @@
+; The two fixed installed public clients retain every original access vector,
+; audit vector and automatic entry through the normal preserved-alias producer.
+; Keeping the old type and its policy intact avoids adding an old-to-old grant.
+(type p4_linux_observed_client_exec_t)
+(roletype object_r p4_linux_observed_client_exec_t)
+(typeattributeset p4_linux_native_executables (p4_linux_observed_client_exec_t))
+(typeattributeset p4_all_board_owned (p4_linux_observed_client_exec_t))
+; Actual socket-peer custody hashes only these two complete normal ELF files.
+; The broker cannot execute, map, modify, relabel or create this new object.
+(allow droidloom_broker p4_linux_observed_client_exec_t (file (getattr open read)))
+(neverallow droidloom_broker p4_linux_observed_client_exec_t (file (not (getattr open read))))

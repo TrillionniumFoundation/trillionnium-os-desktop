@@ -1,0 +1,32 @@
+; Normal systemd-sysusers takes its existing /etc/.pwd.lock with
+; O_WRONLY|O_CREAT|O_NOFOLLOW and F_OFD_SETLKW, including on an initialized root.
+; Only /etc itself and that regular inode receive these narrower aliases.
+; /etc/selinux and every other configuration directory keep their old types.
+(type p4_linux_sysusers_etc_root_t)
+(type p4_linux_sysusers_passwd_lock_t)
+(roletype object_r p4_linux_sysusers_etc_root_t)
+(roletype object_r p4_linux_sysusers_passwd_lock_t)
+(typeattributeset p4_linux_data (p4_linux_sysusers_etc_root_t p4_linux_sysusers_passwd_lock_t))
+(allow p4_linux_setup_t p4_linux_sysusers_etc_root_t (dir (getattr open read search write)))
+(allow p4_linux_setup_t p4_linux_sysusers_passwd_lock_t (file (getattr open read map write lock)))
+
+; The normal producer must already have created the empty root-owned lock.
+; An absent/replaced lock and any attempted account update remain failures.
+(neverallow p4_linux_setup_t p4_linux_sysusers_etc_root_t (dir (create add_name remove_name setattr rename reparent rmdir mounton relabelfrom relabelto)))
+(neverallow p4_linux_setup_t p4_linux_sysusers_passwd_lock_t (file (create append setattr unlink link rename execute execute_no_trans entrypoint execmod ioctl relabelfrom relabelto)))
+(neverallow p4_linux_setup_t p4_linux_public_accounts_t (file (write append create setattr unlink link rename relabelfrom relabelto)))
+(neverallow p4_linux_setup_t p4_linux_auth_data_t (file (write append create setattr unlink link rename relabelfrom relabelto)))
+
+; Existing class-specific relabel constraints guard only hardware/uevent
+; writers. Neither can relabel either source or alias here, so changing the
+; inode's narrower type cannot open a constrained relabel path.
+(neverallow p4_linux_hardware_label_t p4_linux_etc_dir_t (dir (relabelfrom relabelto)))
+(neverallow p4_linux_hardware_label_t p4_linux_sysusers_etc_root_t (dir (relabelfrom relabelto)))
+(neverallow p4_linux_uevent_label_t p4_linux_native_config_t (file (relabelfrom relabelto)))
+(neverallow p4_linux_uevent_label_t p4_linux_sysusers_passwd_lock_t (file (relabelfrom relabelto)))
+
+; The setup read sets above are its original source-type raw TE permissions,
+; independently checked across every object and source/target MLS sample.
+; All other original actor AVs, ioctl filters and transitions are materialized by
+; derive_native_sysusers_policy.py. Only the two explicit allow edges above
+; differ from the original source-type view; no service transition is added.

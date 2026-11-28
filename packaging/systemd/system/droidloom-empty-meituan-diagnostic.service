@@ -1,0 +1,39 @@
+[Unit]
+Description=Droidloom independent EMPTY official Meituan diagnostic
+Requires=droidloom-production.service droidloom-early-observer.service
+BindsTo=droidloom-production.service
+After=droidloom-production.service droidloom-container-entry.service droidloom-early-observer.service
+ConditionPathExists=/var/lib/droidloom-qualification/empty-meituan-diagnostic/official.apk
+
+[Service]
+Type=exec
+User=root
+Group=root
+CapabilityBoundingSet=CAP_SETUID CAP_SETGID CAP_SYS_PTRACE
+AmbientCapabilities=
+NoNewPrivileges=no
+ExecStart=/usr/bin/droidloomctl empty-meituan-diagnostic
+Restart=no
+KillMode=control-group
+KillSignal=SIGTERM
+FinalKillSignal=SIGKILL
+SendSIGKILL=yes
+TimeoutStopFailureMode=terminate
+TimeoutStopSec=30s
+RuntimeMaxSec=780s
+CPUQuota=200%
+MemoryAccounting=yes
+MemoryMax=2147483648
+MemorySwapMax=0
+TasksAccounting=yes
+TasksMax=64
+LimitCORE=0
+LimitNOFILE=32768
+UMask=0077
+WorkingDirectory=/
+Environment=PATH=/usr/sbin:/usr/bin:/sbin:/bin
+Environment=LANG=C.UTF-8
+StandardOutput=journal
+StandardError=journal
+SELinuxContext=u:system_r:p4_linux_working_privateprep_t:s0
+AppArmorProfile=droidloom-working-privateprep

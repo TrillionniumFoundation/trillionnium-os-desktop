@@ -1,0 +1,1983 @@
+//! One complete, verified Droidloom build and activation transaction.
+mod android;
+mod assemble;
+mod bundle;
+mod coherent_images;
+mod container_entry_build;
+mod dependencies;
+mod host_archive;
+mod image_policy;
+mod install;
+mod kernel_first_mac;
+mod licenses;
+mod native_bridge;
+mod native_engine;
+mod native_generation;
+mod native_generation_art;
+mod native_generation_pair_build;
+mod native_leaf_baseline;
+mod native_leaf_sources;
+mod working_preparation_materials;
+mod working_prebuilt_helpers;
+mod native_role_ingress;
+mod package;
+mod python;
+mod util;
+use clap::{Parser, Subcommand};
+use std::{fs, path::PathBuf, process::Command};
+use util::*;
+#[derive(Parser)]
+#[command(
+    version,
+    about = "Build, verify, install and restart all Droidloom components"
+)]
+struct Args {
+    /// Droidloom checkout (remembered automatically after installation).
+    #[arg(long, global = true)]
+    source: Option<PathBuf>,
+    /// Delete this updater's build outputs before compiling.
+    #[arg(long)]
+    clean: bool,
+    #[arg(long, hide = true)]
+    bootstrapped: bool,
+    /// Build and verify a complete bundle without installing it.
+    #[arg(long)]
+    build_only: bool,
+    /// Maximum parallel jobs, capped at available CPUs minus two.
+    #[arg(short = 'j', long)]
+    jobs: Option<usize>,
+    #[command(subcommand)]
+    command: Option<Action>,
+}
+#[derive(Subcommand)]
+enum Action {
+    /// Run one fixed IHG preparation mode under the current normal Main/data owner.
+    PrepareNativeIhg {
+        #[arg(long, value_parser=["target-identity","helper-source","helper-build","helper-install","helper-identity","plan"])]
+        mode: String,
+        #[arg(long)]
+        request: PathBuf,
+        #[arg(long)]
+        request_sha256: String,
+    },
+    /// Capture the current normal Main, target metadata and three fixed readonly helper observations.
+    CaptureNativeLeafBusinessBaseline {
+        #[arg(long)]
+        package: String,
+    },
+    /// Observe actual Main/working target metadata; no leaf execution or acceptance.
+    ObserveNativeLeafBaseline {
+        #[arg(long)]
+        package: String,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Compare a saved document to a freshly observed normal owner; no authority from JSON.
+    CompareNativeLeafBaseline {
+        #[arg(long)]
+        package: String,
+        #[arg(long)]
+        reference: PathBuf,
+        #[arg(long)]
+        reference_sha256: String,
+    },
+    /// Reproduce the fixed recovered leaf sources in fresh staging; never install or execute them.
+    MaterializeNativeLeafSources {
+        /// Exact recovered packet directory containing its original source manifest and bundle.
+        #[arg(long)]
+        input: PathBuf,
+        /// Fresh ordinary-user-owned staging directory; existing paths are rejected.
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Build the fixed complete successor leaf source cohort in fresh staging; no installation or execution.
+    MaterializeNativeLeafCohort {
+        #[arg(long)]
+        input: PathBuf,
+        #[arg(long)]
+        output: PathBuf,
+        #[arg(long)]
+        helper: PathBuf,
+    },
+    /// Publish the one compiled immutable leaf cohort; never activate it.
+    InstallNativeLeafCohort {
+        /// Already protected root-owned directory input.
+        #[arg(long, conflicts_with = "package", required_unless_present = "package")]
+        input: Option<PathBuf>,
+        /// Normal public package; authority comes only from the compiled recipe.
+        #[arg(long, conflicts_with = "input", required_unless_present = "input")]
+        package: Option<PathBuf>,
+    },
+    /// Materialize the five sealed files from a witnessed kernel-first board capture.
+    PackageKernelFirstMac {
+        #[arg(long)]
+        capture: PathBuf,
+        #[arg(long)]
+        capture_sha256: String,
+        #[arg(long)]
+        base_sha256: String,
+        #[arg(long)]
+        runtime_sha256: String,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Bind stock second-stage init to an existing selected four-image candidate.
+    BindKernelFirstRuntime {
+        #[arg(long)]
+        package: PathBuf,
+        #[arg(long)]
+        base_sha256: String,
+    },
+    /// Package the original GSI and the raw independent vendor from a completed normal build.
+    PackageOfficialBase {
+        #[arg(long)]
+        system_image: PathBuf,
+        #[arg(long)]
+        vendor_image: PathBuf,
+        #[arg(long)]
+        normal_vendor_result: PathBuf,
+        #[arg(long)]
+        normal_vendor_result_sha256: String,
+        #[arg(long)]
+        system_ext_lib64: Option<PathBuf>,
+        /// Read-only stock-init service from this same normal vendor build.
+        #[arg(long, requires = "system_ext_lib64")]
+        system_ext_readiness: Option<PathBuf>,
+        /// Fresh private output root with the image broker's generation-relative layout.
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Build and stage the host executables and system-manager templates for an independently selected Android image.
+    PackageContainerHostStage {
+        /// Locked Ubuntu AppArmor and SELinux inputs for a Pocket4 kernel-first release.
+        #[arg(long)]
+        board_policy_inputs: Option<PathBuf>,
+        /// Private ordinary-user workspace in which Cargo outputs and the staged payload are kept.
+        #[arg(long)]
+        work: PathBuf,
+        #[arg(long, default_value_t = 1)]
+        jobs: usize,
+        /// Export files and the protected empty StateDirectory to this fresh child of work.
+        #[arg(long, requires = "board_policy_inputs")]
+        archive_output: Option<PathBuf>,
+    },
+    /// Build a separate normal user vendor with exact official CP3A binary references.
+    /// Produces no replacement official system/APEX and grants no runtime qualification.
+    OfficialGsiVendorBuild {
+        #[arg(long)]
+        work: PathBuf,
+        #[arg(long)]
+        out: PathBuf,
+        #[arg(long)]
+        system_image: PathBuf,
+        #[arg(long)]
+        references: PathBuf,
+        /// Exact reviewed publisher APK, preinstalled unchanged with its factory provider overlay.
+        #[arg(long)]
+        webview_apk: Option<PathBuf>,
+    },
+    /// Continue normal vendor targets from a verified completed cache, then assemble fresh outputs.
+    OfficialGsiVendorResume {
+        #[arg(long)]
+        work: PathBuf,
+        #[arg(long)]
+        built_out: PathBuf,
+        #[arg(long)]
+        out: PathBuf,
+        #[arg(long)]
+        system_image: PathBuf,
+        #[arg(long)]
+        references: PathBuf,
+        #[arg(long)]
+        native_inputs_sha256: String,
+        #[arg(long)]
+        vendor_result_sha256: String,
+        #[arg(long)]
+        native_projection_sha256: String,
+        #[arg(long)]
+        native_source_sha256: String,
+        #[arg(long)]
+        native_producer_commit: String,
+        /// Validate the retained native inputs and restore source without compiling vendor.
+        #[arg(long)]
+        verify_native_only: bool,
+        /// Reuse the pinned preserved evidence of a retired failed resume.
+        #[arg(long, requires = "previous_attempt_sha256")]
+        previous_attempt: Option<PathBuf>,
+        #[arg(long, requires = "previous_attempt")]
+        previous_attempt_sha256: Option<String>,
+    },
+    /// Build the complete framework Java library and Android JNI runtime only.
+    /// Uses its independent exact source lock; does not install or enable roles.
+    NativeRoleIngressBuild {
+        /// Dedicated package workspace; its aosp-source must be absent or match this route's lock.
+        #[arg(long)]
+        work: PathBuf,
+        /// Required fresh absolute output directory, separate from aosp-source.
+        #[arg(long)]
+        out: PathBuf,
+        /// Explicit private staging from a retired attempt; never discovered by scanning.
+        #[arg(long)]
+        resume_source_staging: Option<PathBuf>,
+    },
+    /// Build only the paired ART libraries through the normal strict source projection.
+    /// Builds no image and does not install, activate, or enable a running component.
+    NativeGenerationArtBuild {
+        /// Existing package workspace containing aosp-source.
+        #[arg(long)]
+        work: PathBuf,
+        /// Required fresh absolute output directory, separate from aosp-source.
+        #[arg(long)]
+        out: PathBuf,
+        /// Compile the enabled ABI flavor only; runtime qualification remains separate.
+        #[arg(long)]
+        enabled_build_only: bool,
+    },
+    /// Build the complete ordinary-app engine and ART APEX with strict dependencies.
+    /// Uses fixed paired sources and a fresh output; does not install or grant runtime readiness.
+    NativeGenerationBuild {
+        #[arg(long)]
+        work: PathBuf,
+        #[arg(long)]
+        out: PathBuf,
+    },
+    /// Record the exact enabled ART/engine pair from existing product files.
+    /// Does not enable a feature, build, install, or activate any component.
+    NativeGenerationPair {
+        #[arg(long)]
+        product: PathBuf,
+    },
+
+    #[command(hide = true)]
+    NativeBridgeImage {
+        #[arg(long)]
+        image: PathBuf,
+        #[arg(long)]
+        destination: PathBuf,
+        #[arg(long)]
+        product: PathBuf,
+        #[arg(long)]
+        source_lock: PathBuf,
+    },
+    /// Rebuild the ARM64 translator in an already prepared Android workspace.
+    NativeBridgeBuild {
+        /// Use an existing package build workspace (containing aosp-source).
+        #[arg(long)]
+        work: Option<PathBuf>,
+        /// Also build Teto's ARM64 host regression suite.
+        #[arg(long)]
+        tests: bool,
+    },
+    /// Build only NativeBridge targets, deferring missing modules to Ninja errors.
+    TargetClosureBuild {
+        /// Use an existing package build workspace (containing aosp-source).
+        #[arg(long)]
+        work: Option<PathBuf>,
+        /// Also build ARM64 host regressions; this does not run those tests.
+        #[arg(long)]
+        tests: bool,
+    },
+    /// Build only the Android ARM64 translation engine; does not install it.
+    NativeEngineBuild {
+        /// Existing package workspace containing aosp-source.
+        #[arg(long)]
+        work: PathBuf,
+        /// Absolute output directory; defaults to WORK/android-native-engine-out.
+        /// Use a new directory to exclude objects from an older cache policy.
+        #[arg(long)]
+        out: Option<PathBuf>,
+        /// Also build the real x86_64 ARM64-guest host tests and their data.
+        /// This does not execute those tests.
+        #[arg(long)]
+        tests: bool,
+    },
+    /// Build the complete AIDL audio APEX with strict dependency validation.
+    /// Does not install artifacts or start services.
+    AudioApexBuild {
+        /// Existing package build workspace (containing aosp-source).
+        #[arg(long)]
+        work: PathBuf,
+    },
+    /// Build the original final vendor policy on the fixed Audio source profile.
+    /// Does not build an APEX, install a policy or load SELinux policy.
+    VendorPolicyBuild {
+        #[arg(long)]
+        work: PathBuf,
+    },
+    /// Build native vendor SELinux policy, contexts, version, VINTF declarations and checkvintf.
+    VendorPolicyBundleBuild {
+        #[arg(long)]
+        work: PathBuf,
+    },
+    /// Build the original IntentResolver module with its official caller-package security patch.
+    /// Does not install the APK or qualify production signing.
+    #[command(name = "intentresolver-security-build")]
+    IntentResolverSecurityBuild {
+        #[arg(long)]
+        work: PathBuf,
+    },
+    /// Build swcodec and the original AAC regression with the complete official security fix.
+    /// Does not install the APEX or qualify runtime and signing.
+    #[command(name = "aac-security-build")]
+    AacSecurityBuild {
+        #[arg(long)]
+        work: PathBuf,
+    },
+    /// Build original libpng and pngtest with the complete official ownership fix.
+    /// Does not install a library or execute the regression.
+    #[command(name = "libpng-security-build")]
+    LibpngSecurityBuild {
+        #[arg(long)]
+        work: PathBuf,
+    },
+    /// Build services and upstream WmTests on the complete fixed Audio/Native source union.
+    /// Does not install framework artifacts or execute device tests.
+    #[command(name = "wm-security-build")]
+    WmSecurityBuild {
+        #[arg(long)]
+        work: PathBuf,
+        #[arg(long)]
+        out: PathBuf,
+    },
+    /// Build services and the original framework/WM test modules with official fixes.
+    /// Does not install artifacts, execute device tests or qualify production signing.
+    #[command(name = "framework-security-build")]
+    FrameworkSecurityBuild {
+        #[arg(long)]
+        work: PathBuf,
+        #[arg(long)]
+        out: PathBuf,
+    },
+    /// Build the actual user vendor image and host secilc on the complete Audio/Native source union.
+    /// Does not install an image, alter MAC policy or qualify production signing.
+    #[command(name = "vendor-image-build")]
+    VendorImageBuild {
+        #[arg(long)]
+        work: PathBuf,
+        #[arg(long)]
+        out: PathBuf,
+    },
+    /// Restore an interrupted source projection under the normal two workspace locks.
+    /// Does not compile, install, bootstrap dependencies, or start services.
+    RecoverSource {
+        #[arg(long)]
+        work: PathBuf,
+    },
+    /// Build the native AMD allocator candidate without installing anything.
+    MinigbmBuild {
+        #[arg(long)]
+        work: PathBuf,
+    },
+    #[command(hide = true)]
+    PruneDesktopImage {
+        #[arg(long)]
+        image: PathBuf,
+        #[arg(long)]
+        destination: PathBuf,
+        #[arg(long)]
+        vendor_properties: PathBuf,
+    },
+    /// Compile and stage a portable pacman payload; does not install or start services.
+    PackageStage {
+        #[arg(long)]
+        work: PathBuf,
+        #[arg(long)]
+        destination: PathBuf,
+        #[arg(long)]
+        clean: bool,
+        #[arg(long)]
+        jobs: usize,
+    },
+    /// Show the complete build plan without changing anything.
+    Plan,
+    /// Verify an already built bundle.
+    Verify { payload: PathBuf },
+    /// Privileged activation worker; normally invoked automatically through polkit.
+    #[command(hide = true)]
+    Apply {
+        payload: PathBuf,
+        #[arg(long)]
+        uid: u32,
+    },
+    #[command(hide = true)]
+    Recover {
+        #[arg(long)]
+        uid: u32,
+    },
+}
+fn repository(explicit: Option<PathBuf>) -> Result<PathBuf> {
+    let path = if let Some(p) = explicit {
+        p
+    } else {
+        let current = std::env::current_dir()?;
+        if let Some(p) = current
+            .ancestors()
+            .find(|p| p.join("tools/droidloom-update/Cargo.toml").exists())
+        {
+            p.to_owned()
+        } else {
+            let config: serde_json::Value = serde_json::from_slice(
+                &fs::read("/usr/lib/droidloom/active/etc/droidloom/update.json")
+                    .map_err(|_| "run the initial update inside the Droidloom checkout")?,
+            )?;
+            PathBuf::from(
+                config["source"]
+                    .as_str()
+                    .ok_or("invalid updater configuration")?,
+            )
+        }
+    }
+    .canonicalize()?;
+    if !path.join("tools/droidloom-update/Cargo.toml").is_file() {
+        return fail("not a Droidloom checkout");
+    }
+    Ok(path)
+}
+fn native_pair_job_capacity(available: usize, pair: bool, reserved: bool) -> usize {
+    if pair && reserved {
+        available.max(1)
+    } else {
+        available.saturating_sub(2).max(1)
+    }
+}
+
+fn selected_build_out(command: Option<&Action>, work: &std::path::Path) -> Result<PathBuf> {
+    if let Some(
+        Action::WmSecurityBuild { out, .. }
+        | Action::FrameworkSecurityBuild { out, .. }
+        | Action::VendorImageBuild { out, .. }
+        | Action::OfficialGsiVendorBuild { out, .. },
+    ) = command
+    {
+        return native_generation_art::validated_output(work, out);
+    }
+    if let Some(Action::NativeRoleIngressBuild { out, .. }) = command {
+        return native_role_ingress::validated_output(work, out);
+    }
+    if let Some(Action::NativeGenerationBuild { out, .. }) = command {
+        return native_generation_art::validated_output(work, out);
+    }
+    if let Some(Action::NativeGenerationArtBuild { out, .. }) = command {
+        return native_generation_art::validated_output(work, out);
+    }
+
+    if matches!(
+        command,
+        Some(
+            Action::VendorPolicyBuild { .. }
+                | Action::VendorPolicyBundleBuild { .. }
+                | Action::IntentResolverSecurityBuild { .. }
+                | Action::AacSecurityBuild { .. }
+                | Action::LibpngSecurityBuild { .. }
+        )
+    ) {
+        let out = work.join(match command {
+            Some(Action::VendorPolicyBundleBuild { .. }) => "android-user-vendor-policy-bundle-out",
+            Some(Action::IntentResolverSecurityBuild { .. }) => {
+                "android-user-intentresolver-security-out"
+            }
+            Some(Action::AacSecurityBuild { .. }) => "android-user-aac-security-out",
+            Some(Action::LibpngSecurityBuild { .. }) => "android-user-libpng-security-out",
+            _ => "android-user-vendor-policy-out",
+        });
+        if !work.is_absolute() {
+            return fail("vendor policy workspace must be absolute");
+        }
+        for path in out.ancestors() {
+            match fs::symlink_metadata(path) {
+                Ok(meta) if !meta.is_dir() || meta.file_type().is_symlink() => {
+                    return fail("vendor policy output and parents must be real directories");
+                }
+                Ok(_) => {}
+                Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+                Err(error) => return Err(error.into()),
+            }
+        }
+        return Ok(out);
+    }
+    if let Some(Action::NativeEngineBuild { out: Some(out), .. }) = command {
+        let source = work.join("aosp-source");
+        if !out.is_absolute()
+            || out.components().any(|part| {
+                matches!(
+                    part,
+                    std::path::Component::ParentDir | std::path::Component::CurDir
+                )
+            })
+            || out.starts_with(&source)
+            || source.starts_with(out)
+        {
+            return fail(
+                "native-engine --out must be absolute and separate from the prepared source tree",
+            );
+        }
+        // Do not let an output alias redirect receipt cleanup or compilation
+        // into a source tree. Missing final directories are allowed.
+        for part in out.ancestors() {
+            match fs::symlink_metadata(part) {
+                Ok(metadata) if metadata.file_type().is_symlink() || !metadata.is_dir() => {
+                    return fail(
+                        "native-engine --out and its existing parents must be real directories",
+                    );
+                }
+                Ok(_) => {}
+                Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+                Err(error) => return Err(error.into()),
+            }
+        }
+        return Ok(out.clone());
+    }
+    Ok(work.join(match command {
+        Some(Action::TargetClosureBuild { .. }) => "android-target-closure-out",
+        Some(Action::AudioApexBuild { .. }) => "android-audio-closure-out",
+        Some(Action::NativeEngineBuild { .. }) => "android-native-engine-out",
+        Some(Action::MinigbmBuild { .. }) => "android-minigbm-out",
+        _ => "android-out",
+    }))
+}
+
+fn recover_source_workspace(work: &std::path::Path) -> Result<()> {
+    let work = work.canonicalize()?;
+    let source = work.join("aosp-source");
+    let meta = fs::symlink_metadata(&source)?;
+    if !meta.is_dir() || meta.file_type().is_symlink() {
+        return fail("recover-source requires a real prepared aosp-source directory");
+    }
+    let _lock = Lock::acquire(&work.join("package-build.lock"))?;
+    let _source_lock = Lock::acquire(&work.join("aosp-source-update.lock"))?;
+    let journal = work.join("source-projection.json");
+    if journal.exists() {
+        android::recover(&journal, &source)?;
+    }
+    Ok(())
+}
+
+fn execute(args: Args) -> Result<()> {
+    if matches!(
+        &args.command,
+        Some(
+            Action::VendorPolicyBuild { .. }
+                | Action::VendorPolicyBundleBuild { .. }
+                | Action::IntentResolverSecurityBuild { .. }
+                | Action::AacSecurityBuild { .. }
+                | Action::LibpngSecurityBuild { .. }
+                | Action::WmSecurityBuild { .. }
+                | Action::FrameworkSecurityBuild { .. }
+                | Action::VendorImageBuild { .. }
+                | Action::OfficialGsiVendorBuild { .. }
+        )
+    ) && (args.clean || args.build_only || args.bootstrapped)
+    {
+        return fail("fixed vendor policy does not accept cleanup, bundle or bootstrap options");
+    }
+    if let Some(Action::OfficialGsiVendorResume {
+        work,
+        built_out,
+        out,
+        system_image,
+        references,
+        native_inputs_sha256,
+        vendor_result_sha256,
+        native_projection_sha256,
+        native_source_sha256,
+        native_producer_commit,
+        verify_native_only,
+        previous_attempt,
+        previous_attempt_sha256,
+    }) = &args.command
+    {
+        if args.clean || args.build_only || args.bootstrapped {
+            return fail("vendor resume does not accept cleanup or bootstrap options");
+        }
+        let repo = repository(args.source.clone())?;
+        let capacity = std::thread::available_parallelism()
+            .map(|n| n.get())
+            .unwrap_or(1)
+            .saturating_sub(2)
+            .max(1);
+        let jobs = args.jobs.unwrap_or(6).min(capacity);
+        if jobs == 0 {
+            return fail("jobs must be positive");
+        }
+        return android::official_vendor::resume::run(
+            &repo,
+            work,
+            built_out,
+            out,
+            system_image,
+            references,
+            native_inputs_sha256,
+            vendor_result_sha256,
+            jobs,
+            native_projection_sha256,
+            native_source_sha256,
+            native_producer_commit,
+            *verify_native_only,
+            previous_attempt.as_deref(),
+            previous_attempt_sha256.as_deref(),
+        );
+    }
+    match &args.command {
+        Some(Action::PrepareNativeIhg { mode, request, request_sha256 }) => {
+            if args.clean || args.build_only || args.bootstrapped || args.jobs.is_some() || args.source.is_some() {
+                return fail("fixed IHG preparation accepts no build, source, cleanup or activation options");
+            }
+            println!("{}", serde_json::to_string_pretty(&native_leaf_baseline::prepare_ihg(mode, request, request_sha256)?)?);
+            return Ok(());
+        }
+        Some(Action::CaptureNativeLeafBusinessBaseline { package }) => {
+            if args.clean
+                || args.build_only
+                || args.bootstrapped
+                || args.jobs.is_some()
+                || args.source.is_some()
+            {
+                return fail(
+                    "normal business baseline capture accepts no build, cleanup or activation options",
+                );
+            }
+            println!(
+                "{}",
+                serde_json::to_string_pretty(&native_leaf_baseline::capture_business(package)?)?
+            );
+            return Ok(());
+        }
+        Some(Action::ObserveNativeLeafBaseline { package, output }) => {
+            if args.clean
+                || args.build_only
+                || args.bootstrapped
+                || args.jobs.is_some()
+                || args.source.is_some()
+            {
+                return fail(
+                    "native leaf baseline observation accepts no build, cleanup or activation options",
+                );
+            }
+            println!(
+                "{}",
+                serde_json::to_string_pretty(&native_leaf_baseline::capture(package, output)?)?
+            );
+            return Ok(());
+        }
+        Some(Action::CompareNativeLeafBaseline {
+            package,
+            reference,
+            reference_sha256,
+        }) => {
+            if args.clean
+                || args.build_only
+                || args.bootstrapped
+                || args.jobs.is_some()
+                || args.source.is_some()
+            {
+                return fail(
+                    "native leaf baseline comparison accepts no build, cleanup or activation options",
+                );
+            }
+            println!(
+                "{}",
+                serde_json::to_string_pretty(&native_leaf_baseline::compare(
+                    package,
+                    reference,
+                    reference_sha256
+                )?)?
+            );
+            return Ok(());
+        }
+        Some(Action::MaterializeNativeLeafSources { input, output }) => {
+            if args.clean
+                || args.build_only
+                || args.bootstrapped
+                || args.jobs.is_some()
+                || args.source.is_some()
+            {
+                return fail(
+                    "leaf source staging accepts no build, cleanup, repository or activation options",
+                );
+            }
+            let result = native_leaf_sources::materialize(input, output)?;
+            println!("{}", serde_json::to_string_pretty(&result)?);
+            return Ok(());
+        }
+        Some(Action::MaterializeNativeLeafCohort {
+            input,
+            helper,
+            output,
+        }) => {
+            if args.clean
+                || args.build_only
+                || args.bootstrapped
+                || args.jobs.is_some()
+                || args.source.is_some()
+            {
+                return fail(
+                    "leaf cohort staging accepts no build, cleanup, repository or activation options",
+                );
+            }
+            let result = native_leaf_sources::cohort::materialize(input, helper, output)?;
+            println!("{}", serde_json::to_string_pretty(&result)?);
+            return Ok(());
+        }
+        Some(Action::InstallNativeLeafCohort { input, package }) => {
+            if args.clean
+                || args.build_only
+                || args.bootstrapped
+                || args.jobs.is_some()
+                || args.source.is_some()
+            {
+                return fail("cohort installation cannot be combined with source/build options");
+            }
+            let result = match (input, package) {
+                (Some(input), None) => native_leaf_sources::install::install(input)?,
+                (None, Some(package)) => native_leaf_sources::install::install_package(package)?,
+                _ => return fail("exactly one protected directory or normal package is required"),
+            };
+            println!("{}", serde_json::to_string_pretty(&result)?);
+            return Ok(());
+        }
+        Some(Action::NativeGenerationPair { product }) => {
+            let pair = native_generation::create_product_contract(product)?;
+            println!("{}", serde_json::to_string_pretty(&pair)?);
+            return Ok(());
+        }
+        Some(Action::RecoverSource { work }) => {
+            if args.clean || args.build_only || args.jobs.is_some() {
+                return fail("recover-source does not accept build or cleanup options");
+            }
+            if unsafe { libc::getuid() } == 0 {
+                return fail("run source recovery as the desktop user");
+            }
+            return recover_source_workspace(work);
+        }
+        Some(Action::NativeBridgeImage {
+            image,
+            destination,
+            product,
+            source_lock,
+        }) => {
+            return native_bridge::derive_image(image, destination, product, source_lock);
+        }
+        Some(Action::PruneDesktopImage {
+            image,
+            destination,
+            vendor_properties,
+        }) => {
+            return image_policy::prune(image, destination, vendor_properties);
+        }
+        Some(Action::PackageKernelFirstMac {
+            capture,
+            capture_sha256,
+            base_sha256,
+            runtime_sha256,
+            output,
+        }) => {
+            let result = kernel_first_mac::stage(
+                capture,
+                &capture_sha256,
+                &base_sha256,
+                &runtime_sha256,
+                output,
+            )?;
+            println!("{}", serde_json::to_string_pretty(&result)?);
+            return Ok(());
+        }
+        Some(Action::BindKernelFirstRuntime {
+            package,
+            base_sha256,
+        }) => {
+            let result = coherent_images::kernel_first::bind_existing(package, base_sha256)?;
+            println!("{}", serde_json::to_string_pretty(&result)?);
+            return Ok(());
+        }
+        Some(Action::PackageOfficialBase {
+            system_image,
+            vendor_image,
+            normal_vendor_result,
+            normal_vendor_result_sha256,
+            system_ext_lib64,
+            system_ext_readiness,
+            output,
+        }) => {
+            let receipt = coherent_images::official_base::stage_existing(
+                system_image,
+                vendor_image,
+                normal_vendor_result,
+                normal_vendor_result_sha256,
+                system_ext_lib64.as_deref(),
+                system_ext_readiness.as_deref(),
+                output,
+            )?;
+            println!("{}", serde_json::to_string_pretty(&receipt)?);
+            return Ok(());
+        }
+        Some(Action::PackageContainerHostStage {
+            work,
+            jobs,
+            board_policy_inputs,
+            archive_output,
+        }) => {
+            let repo = repository(args.source.clone())?;
+            if let Some(destination) = archive_output {
+                let inputs = board_policy_inputs
+                    .as_deref()
+                    .ok_or("host archive requires board policy inputs")?;
+                let release = host_archive::stage(&repo, work, *jobs, inputs, destination)?;
+                println!("{}", serde_json::to_string_pretty(&release)?);
+            } else {
+                let stage = package::stage_container_host(
+                    &repo,
+                    work,
+                    *jobs,
+                    board_policy_inputs.as_deref(),
+                )?;
+                println!("{}", stage.display());
+            }
+            return Ok(());
+        }
+        Some(Action::PackageStage {
+            work,
+            destination,
+            clean,
+            jobs,
+        }) => {
+            return package::stage(
+                &repository(args.source.clone())?,
+                work,
+                destination,
+                *clean,
+                *jobs,
+            );
+        }
+        Some(Action::Recover { uid }) => return install::recover(*uid),
+        Some(Action::Apply { payload, uid }) => {
+            return install::apply(&payload.canonicalize()?, *uid);
+        }
+        Some(Action::Verify { payload }) => {
+            let m = bundle::verify(payload)?;
+            println!(
+                "Verified {} bundle, input ABI {}, source {}",
+                m.architecture, m.input_abi, m.source_identity
+            );
+            return Ok(());
+        }
+        _ => {}
+    }
+    if args.command.is_none()
+        && !args.build_only
+        && std::path::Path::new("/usr/share/droidloom/package.json").exists()
+    {
+        return fail(
+            "Droidloom is managed by pacman. Build packages with cargo run --locked -j 1 -p droidloom-package -- build, then install the printed package pair with sudo pacman -U. Sudo is needed to replace package-owned system files and update pacman's database.",
+        );
+    }
+    let repo = repository(args.source)?;
+    let arch = std::env::consts::ARCH;
+    if arch != "x86_64" {
+        return fail("the source builder currently requires an x86_64 Linux build host");
+    }
+    let product = "droidloom_x86_64";
+    let package_work = match &args.command {
+        Some(Action::NativeBridgeBuild {
+            work: Some(work), ..
+        })
+        | Some(Action::TargetClosureBuild {
+            work: Some(work), ..
+        })
+        | Some(Action::AudioApexBuild { work })
+        | Some(Action::VendorPolicyBuild { work })
+        | Some(Action::VendorPolicyBundleBuild { work })
+        | Some(Action::IntentResolverSecurityBuild { work })
+        | Some(Action::AacSecurityBuild { work })
+        | Some(Action::LibpngSecurityBuild { work })
+        | Some(Action::WmSecurityBuild { work, .. })
+        | Some(Action::FrameworkSecurityBuild { work, .. })
+        | Some(Action::VendorImageBuild { work, .. })
+        | Some(Action::OfficialGsiVendorBuild { work, .. })
+        | Some(Action::NativeEngineBuild { work, .. })
+        | Some(Action::NativeGenerationArtBuild { work, .. })
+        | Some(Action::NativeGenerationBuild { work, .. })
+        | Some(Action::NativeRoleIngressBuild { work, .. })
+        | Some(Action::MinigbmBuild { work }) => Some(work.canonicalize()?),
+        _ => None,
+    };
+    let work = package_work
+        .clone()
+        .unwrap_or_else(|| repo.join(".work/update"));
+    let source = if package_work.is_some() {
+        work.join("aosp-source")
+    } else {
+        repo.join(".work/aosp-m2-source")
+    };
+    let out = selected_build_out(args.command.as_ref(), &work)?;
+    let cargo = work.join("cargo");
+    if matches!(args.command, Some(Action::Plan)) {
+        println!(
+            "Source: {}\nCache: {}\nAndroid product: {product}\nHost: supervisor, ctl, daemon, Wayland, applications, doctor, updater\nAndroid: {}\nPinned inputs: system, system_ext, product, Mesa\nActivation: verify -> stage -> stop Droidloom -> switch complete release -> start -> check Android catalog\nFailure: restore previous release\nBoot autostart: disabled",
+            repo.display(),
+            work.display(),
+            android::TARGETS.join(", ")
+        );
+        return Ok(());
+    }
+    let uid = unsafe { libc::getuid() };
+    if uid == 0 {
+        return fail(
+            "run as the desktop user; administrator authentication is requested only for installation",
+        );
+    }
+    let pair = matches!(args.command, Some(Action::NativeGenerationBuild { .. }));
+    let reserved = std::env::var_os("DROIDLOOM_COMPILER_CPUS_RESERVED").as_deref()
+        == Some(std::ffi::OsStr::new("1"));
+    let capacity = native_pair_job_capacity(
+        std::thread::available_parallelism()
+            .map(|n| n.get())
+            .unwrap_or(1),
+        pair,
+        reserved,
+    );
+    let jobs = args.jobs.unwrap_or(capacity).min(capacity);
+    if jobs == 0 {
+        return fail("jobs must be positive");
+    }
+    let _lock = Lock::acquire(&work.join(if package_work.is_some() {
+        "package-build.lock"
+    } else {
+        "update.lock"
+    }))?;
+    let _source_lock = Lock::acquire(&if package_work.is_some() {
+        work.join("aosp-source-update.lock")
+    } else {
+        repo.join(".work/aosp-source-update.lock")
+    })?;
+    // A prepared package workspace runs inside the rootless builder, which
+    // supplies build tools and does not run host systemd or install services.
+    if package_work.is_none() {
+        dependencies::ensure()?;
+    }
+    // Verify actual official inputs before source recovery or projection can mutate work.
+    let official_vendor_inputs = match &args.command {
+        Some(Action::OfficialGsiVendorBuild {
+            system_image,
+            references,
+            ..
+        }) => Some(
+            droidloom_image::official_vendor_inputs::verify_vendor_inputs(
+                system_image,
+                references,
+            )?,
+        ),
+        _ => None,
+    };
+    let official_webview_input = match &args.command {
+        Some(Action::OfficialGsiVendorBuild {
+            webview_apk: Some(path),
+            ..
+        }) => Some(droidloom_image::webview_provider::verify_webview_provider(
+            path,
+        )?),
+        _ => None,
+    };
+    if work.join("source-projection.json").exists() {
+        android::recover(&work.join("source-projection.json"), &source)?;
+    }
+    if let Some(Action::NativeRoleIngressBuild {
+        resume_source_staging,
+        ..
+    }) = &args.command
+    {
+        return android::build_native_role_ingress(
+            &repo,
+            &source,
+            &out,
+            &work,
+            product,
+            jobs,
+            resume_source_staging.as_deref(),
+        );
+    }
+    if matches!(args.command, Some(Action::NativeGenerationBuild { .. })) {
+        return android::build_native_generation_pair(&repo, &source, &out, &work, product, jobs);
+    }
+    if let Some(Action::NativeGenerationArtBuild {
+        enabled_build_only, ..
+    }) = args.command
+    {
+        return android::build_native_generation_art(
+            &repo,
+            &source,
+            &out,
+            &work,
+            product,
+            jobs,
+            native_generation_art::Flavor::from_build_only_flag(enabled_build_only),
+        );
+    }
+    if let Some(Action::TargetClosureBuild { tests, .. }) = args.command {
+        eprintln!(
+            "Building only the NativeBridge target closure; full-product validation and runtime tests remain separate."
+        );
+        return android::build_native_bridge_target_closure(
+            &repo, &source, &out, &work, product, jobs, tests,
+        );
+    }
+    if matches!(args.command, Some(Action::VendorPolicyBundleBuild { .. })) {
+        eprintln!(
+            "Building native vendor policy, contexts, versions and VINTF declarations; compatibility qualification follows the actual artifacts."
+        );
+        return android::build_vendor_policy_bundle_on_audio_source(
+            &repo, &source, &out, &work, product, jobs,
+        );
+    }
+    if matches!(
+        args.command,
+        Some(Action::IntentResolverSecurityBuild { .. })
+    ) {
+        return android::build_intentresolver_security_on_audio_source(
+            &repo, &source, &out, &work, product, jobs,
+        );
+    }
+    if matches!(args.command, Some(Action::AacSecurityBuild { .. })) {
+        return android::build_aac_security_on_audio_source(
+            &repo, &source, &out, &work, product, jobs,
+        );
+    }
+    if matches!(args.command, Some(Action::LibpngSecurityBuild { .. })) {
+        return android::build_libpng_security_on_audio_source(
+            &repo, &source, &out, &work, product, jobs,
+        );
+    }
+    if matches!(args.command, Some(Action::WmSecurityBuild { .. })) {
+        return android::build_wm_security(&repo, &source, &out, &work, product, jobs);
+    }
+    if matches!(args.command, Some(Action::FrameworkSecurityBuild { .. })) {
+        return android::build_framework_security(&repo, &source, &out, &work, product, jobs);
+    }
+    if matches!(args.command, Some(Action::VendorImageBuild { .. })) {
+        return android::build_vendor_image(&repo, &source, &out, &work, product, jobs);
+    }
+    if let Some(inputs) = &official_vendor_inputs {
+        return android::build_official_vendor(
+            &repo,
+            &source,
+            &out,
+            &work,
+            product,
+            jobs,
+            inputs,
+            official_webview_input,
+        );
+    }
+    if matches!(args.command, Some(Action::VendorPolicyBuild { .. })) {
+        eprintln!(
+            "Building the original final vendor_sepolicy.cil with the exact Audio source profile; APEX, selected-cohort policy compatibility and runtime remain separate."
+        );
+        return android::build_vendor_policy_on_audio_source(
+            &repo, &source, &out, &work, product, jobs,
+        );
+    }
+    if matches!(args.command, Some(Action::AudioApexBuild { .. })) {
+        eprintln!(
+            "Building the AIDL audio APEX target closure with PCM bridge patches; runtime audio verification remains separate."
+        );
+        return android::build_audio_apex_target_closure(
+            &repo, &source, &out, &work, product, jobs,
+        );
+    }
+    if let Some(Action::NativeEngineBuild { tests, .. }) = args.command {
+        eprintln!(
+            "Building only the Android translation engine and optional host-test artifacts; installation and runtime qualification remain separate."
+        );
+        return android::build_native_engine_target_closure(
+            &repo, &source, &out, &work, product, jobs, tests,
+        );
+    }
+    if matches!(args.command, Some(Action::MinigbmBuild { .. })) {
+        return android::build_minigbm_target_closure(&repo, &source, &out, &work, product, jobs);
+    }
+    if let Some(Action::NativeBridgeBuild { tests, .. }) = args.command {
+        return android::build_targets(
+            &repo,
+            &source,
+            &out,
+            &work,
+            product,
+            jobs,
+            if tests {
+                &["droidloom-native-bridge", "berberis_arm64_host_tests"]
+            } else {
+                &["droidloom-native-bridge"]
+            },
+        );
+    }
+    if args.clean {
+        for path in [&out, &cargo, &work.join("mesa-tools"), &work.join("ccache")] {
+            if path.exists() {
+                fs::remove_dir_all(path)?;
+            }
+        }
+    }
+    let identity = bundle::source_identity(&repo)?;
+    eprintln!("Building complete Droidloom release from {identity}");
+    eprintln!("Compiler budget: {jobs} parallel jobs; two logical CPUs reserved");
+    let mut host_build = Command::new("cargo");
+    host_build
+        .current_dir(&repo)
+        .env("CARGO_TARGET_DIR", &cargo)
+        .args(["build", "--locked", "--release"])
+        .arg(format!("-j{jobs}"));
+    for package in assemble::HOST_PACKAGES {
+        host_build.arg("-p").arg(package);
+    }
+    run_build(&mut host_build)?;
+    run_build(&mut container_entry_build::command(&repo, &cargo, jobs))?;
+    let fresh = cargo.join("release/droidloom-update");
+    if !args.bootstrapped {
+        // The updater is part of the build too. Use its new orchestration in this update.
+        // Release locks before exec so the replacement can acquire them normally.
+        drop(_source_lock);
+        drop(_lock);
+        use std::os::unix::process::CommandExt;
+        let mut command = Command::new(fresh);
+        command
+            .arg("--bootstrapped")
+            .arg("--source")
+            .arg(&repo)
+            .arg("--jobs")
+            .arg(jobs.to_string());
+        if args.build_only {
+            command.arg("--build-only");
+        }
+        // --clean was already applied; repeating it would cause an endless bootstrap.
+        return Err(command.exec().into());
+    }
+    if !args.build_only && std::path::Path::new("/usr/lib/droidloom/transaction.json").exists() {
+        run(Command::new("pkexec")
+            .arg(&fresh)
+            .arg("recover")
+            .arg("--uid")
+            .arg(uid.to_string()))?;
+    }
+    assemble::prepare_complete_inputs(&repo, &work, arch)?;
+    python::prepare(&repo, &work)?;
+    assemble::mesa_tools(&work, jobs)?;
+    android::build(&repo, &source, &out, &work, product, jobs)?;
+    let staging = tempfile::Builder::new()
+        .prefix("bundle-")
+        .tempdir_in(&work)?;
+    assemble::assemble(
+        &repo,
+        &work,
+        &out.join("target/product").join(product),
+        &cargo.join("release"),
+        staging.path(),
+        uid,
+    )?;
+    let id = bundle::seal(staging.path(), identity)?;
+    bundle::verify(staging.path())?;
+    let payload = work.join(format!("release-{id}"));
+    if payload.exists() {
+        bundle::verify(&payload)?;
+    } else {
+        fs::rename(staging.path(), &payload)?;
+    }
+    println!("Verified bundle: {}", payload.display());
+    if !args.build_only {
+        run(Command::new("pkexec")
+            .arg(payload.join("usr/bin/droidloom-update"))
+            .arg("apply")
+            .arg(&payload)
+            .arg("--uid")
+            .arg(uid.to_string()))?;
+    }
+    Ok(())
+}
+fn main() {
+    if let Err(error) = execute(Args::parse()) {
+        eprintln!("Droidloom update failed: {error}");
+        std::process::exit(1);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn official_vendor_cli_requires_fixed_binary_inputs_and_fresh_output() {
+        let dir = tempfile::tempdir().unwrap();
+        let work = dir.path().join("work");
+        fs::create_dir(&work).unwrap();
+        let out = dir.path().join("out");
+        let argv = [
+            "droidloom-update",
+            "official-gsi-vendor-build",
+            "--work",
+            work.to_str().unwrap(),
+            "--out",
+            out.to_str().unwrap(),
+            "--system-image",
+            "/inputs/system.img",
+            "--references",
+            "/inputs/references",
+        ];
+        let args = Args::try_parse_from(argv).unwrap();
+        assert!(matches!(
+            args.command,
+            Some(Action::OfficialGsiVendorBuild { .. })
+        ));
+        assert_eq!(
+            selected_build_out(args.command.as_ref(), &work).unwrap(),
+            out
+        );
+        for extra in ["--variant", "--source-lock", "--allow-missing-dependencies"] {
+            let mut changed = argv.to_vec();
+            changed.extend([extra, "override"]);
+            assert!(Args::try_parse_from(changed).is_err());
+        }
+        for option in ["--clean", "--build-only", "--bootstrapped"] {
+            let mut changed = vec!["droidloom-update", option];
+            changed.extend_from_slice(&argv[1..]);
+            let args = Args::try_parse_from(changed).unwrap();
+            assert!(
+                execute(args)
+                    .unwrap_err()
+                    .to_string()
+                    .contains("does not accept")
+            );
+        }
+        fs::create_dir(&out).unwrap();
+        assert!(selected_build_out(args.command.as_ref(), &work).is_err());
+    }
+    #[test]
+    fn vendor_image_cli_keeps_fixed_targets_and_explicit_output() {
+        let d = tempfile::tempdir().unwrap();
+        let work = d.path().join("work");
+        fs::create_dir(&work).unwrap();
+        let out = d.path().join("vendor-out");
+        let valid = [
+            "droidloom-update",
+            "vendor-image-build",
+            "--work",
+            work.to_str().unwrap(),
+            "--out",
+            out.to_str().unwrap(),
+        ];
+        let args = Args::try_parse_from(valid).unwrap();
+        assert!(matches!(
+            args.command,
+            Some(Action::VendorImageBuild { .. })
+        ));
+        assert_eq!(
+            selected_build_out(args.command.as_ref(), &work).unwrap(),
+            out
+        );
+        assert!(
+            Args::try_parse_from([
+                "droidloom-update",
+                "vendor-image-build",
+                "--work",
+                work.to_str().unwrap()
+            ])
+            .is_err()
+        );
+        for extra in [
+            &["vendorimage"][..],
+            &["--variant", "userdebug"][..],
+            &["--source-lock", "/other"][..],
+        ] {
+            let mut argv = valid.to_vec();
+            argv.extend_from_slice(extra);
+            assert!(Args::try_parse_from(argv).is_err());
+        }
+        for option in ["--clean", "--build-only", "--bootstrapped"] {
+            let args = Args::try_parse_from([
+                "droidloom-update",
+                option,
+                "vendor-image-build",
+                "--work",
+                work.to_str().unwrap(),
+                "--out",
+                out.to_str().unwrap(),
+            ])
+            .unwrap();
+            assert!(
+                execute(args)
+                    .unwrap_err()
+                    .to_string()
+                    .contains("does not accept cleanup")
+            );
+        }
+        std::os::unix::fs::symlink(&work, &out).unwrap();
+        assert!(selected_build_out(args.command.as_ref(), &work).is_err());
+    }
+
+    #[test]
+    fn libpng_security_cli_rejects_widening_and_output_aliases() {
+        let d = tempfile::tempdir().unwrap();
+        let work = d.path();
+        let valid = [
+            "droidloom-update",
+            "libpng-security-build",
+            "--work",
+            work.to_str().unwrap(),
+        ];
+        let args = Args::try_parse_from(valid).unwrap();
+        assert!(matches!(
+            args.command,
+            Some(Action::LibpngSecurityBuild { .. })
+        ));
+        let out = work.join("android-user-libpng-security-out");
+        assert_eq!(
+            selected_build_out(args.command.as_ref(), work).unwrap(),
+            out
+        );
+        for extra in [
+            &["services"][..],
+            &["--out", "/another"][..],
+            &["--variant", "eng"][..],
+            &["--source-lock", "/other"][..],
+        ] {
+            let mut argv = valid.to_vec();
+            argv.extend_from_slice(extra);
+            assert!(Args::try_parse_from(argv).is_err());
+        }
+        for option in ["--clean", "--build-only", "--bootstrapped"] {
+            let args = Args::try_parse_from([
+                "droidloom-update",
+                option,
+                "libpng-security-build",
+                "--work",
+                work.to_str().unwrap(),
+            ])
+            .unwrap();
+            assert!(
+                execute(args)
+                    .unwrap_err()
+                    .to_string()
+                    .contains("does not accept cleanup")
+            );
+        }
+        std::os::unix::fs::symlink(work, out).unwrap();
+        assert!(selected_build_out(args.command.as_ref(), work).is_err());
+    }
+
+    #[test]
+    fn wm_security_cli_keeps_fixed_scope_and_explicit_output() {
+        let d = tempfile::tempdir().unwrap();
+        let work = d.path().join("work");
+        fs::create_dir(&work).unwrap();
+        let out = d.path().join("wm-out");
+        let valid = [
+            "droidloom-update",
+            "wm-security-build",
+            "--work",
+            work.to_str().unwrap(),
+            "--out",
+            out.to_str().unwrap(),
+        ];
+        let args = Args::try_parse_from(valid).unwrap();
+        assert!(matches!(args.command, Some(Action::WmSecurityBuild { .. })));
+        assert_eq!(
+            selected_build_out(args.command.as_ref(), &work).unwrap(),
+            out
+        );
+        assert!(
+            Args::try_parse_from([
+                "droidloom-update",
+                "wm-security-build",
+                "--work",
+                work.to_str().unwrap()
+            ])
+            .is_err()
+        );
+        for extra in [
+            &["services"][..],
+            &["--variant", "eng"][..],
+            &["--source-lock", "/other"][..],
+        ] {
+            let mut argv = valid.to_vec();
+            argv.extend_from_slice(extra);
+            assert!(Args::try_parse_from(argv).is_err());
+        }
+        for option in ["--clean", "--build-only", "--bootstrapped"] {
+            let args = Args::try_parse_from([
+                "droidloom-update",
+                option,
+                "wm-security-build",
+                "--work",
+                work.to_str().unwrap(),
+                "--out",
+                out.to_str().unwrap(),
+            ])
+            .unwrap();
+            assert!(
+                execute(args)
+                    .unwrap_err()
+                    .to_string()
+                    .contains("does not accept cleanup")
+            );
+        }
+        std::os::unix::fs::symlink(&work, &out).unwrap();
+        assert!(selected_build_out(args.command.as_ref(), &work).is_err());
+    }
+
+    #[test]
+    fn framework_security_cli_keeps_fixed_scope_and_explicit_output() {
+        let d = tempfile::tempdir().unwrap();
+        let work = d.path().join("work");
+        fs::create_dir(&work).unwrap();
+        let out = d.path().join("framework-out");
+        let valid = [
+            "droidloom-update",
+            "framework-security-build",
+            "--work",
+            work.to_str().unwrap(),
+            "--out",
+            out.to_str().unwrap(),
+        ];
+        let args = Args::try_parse_from(valid).unwrap();
+        assert!(matches!(
+            args.command,
+            Some(Action::FrameworkSecurityBuild { .. })
+        ));
+        assert_eq!(
+            selected_build_out(args.command.as_ref(), &work).unwrap(),
+            out
+        );
+        assert!(
+            Args::try_parse_from([
+                "droidloom-update",
+                "framework-security-build",
+                "--work",
+                work.to_str().unwrap()
+            ])
+            .is_err()
+        );
+        for extra in [
+            &["services"][..],
+            &["--variant", "eng"][..],
+            &["--source-lock", "/other"][..],
+        ] {
+            let mut argv = valid.to_vec();
+            argv.extend_from_slice(extra);
+            assert!(Args::try_parse_from(argv).is_err());
+        }
+        for option in ["--clean", "--build-only", "--bootstrapped"] {
+            let args = Args::try_parse_from([
+                "droidloom-update",
+                option,
+                "framework-security-build",
+                "--work",
+                work.to_str().unwrap(),
+                "--out",
+                out.to_str().unwrap(),
+            ])
+            .unwrap();
+            assert!(
+                execute(args)
+                    .unwrap_err()
+                    .to_string()
+                    .contains("does not accept cleanup")
+            );
+        }
+        std::os::unix::fs::symlink(&work, &out).unwrap();
+        assert!(selected_build_out(args.command.as_ref(), &work).is_err());
+    }
+
+    #[test]
+    fn vendor_policy_bundle_cli_is_fixed_without_source_target_or_variant_overrides() {
+        let valid = [
+            "droidloom-update",
+            "vendor-policy-bundle-build",
+            "--work",
+            "/not-executed",
+        ];
+        let args = Args::try_parse_from(valid).unwrap();
+        assert!(matches!(
+            args.command,
+            Some(Action::VendorPolicyBundleBuild { .. })
+        ));
+        assert_eq!(
+            selected_build_out(args.command.as_ref(), std::path::Path::new("/not-executed"))
+                .unwrap(),
+            PathBuf::from("/not-executed/android-user-vendor-policy-bundle-out")
+        );
+        assert!(Args::try_parse_from(["droidloom-update", "vendor-policy-bundle-build"]).is_err());
+        for extra in [
+            &["vendorimage"][..],
+            &["selinux_policy_vendor"][..],
+            &["--out", "/another"][..],
+            &["--variant", "userdebug"][..],
+            &["--source-lock", "/another"][..],
+        ] {
+            let mut argv = valid.to_vec();
+            argv.extend_from_slice(extra);
+            assert!(Args::try_parse_from(argv).is_err());
+        }
+        for option in ["--clean", "--build-only", "--bootstrapped"] {
+            let args = Args::try_parse_from([
+                "droidloom-update",
+                option,
+                "vendor-policy-bundle-build",
+                "--work",
+                "/not-executed",
+            ])
+            .unwrap();
+            assert!(
+                execute(args)
+                    .unwrap_err()
+                    .to_string()
+                    .contains("does not accept cleanup")
+            );
+        }
+    }
+
+    #[test]
+    fn vendor_policy_bundle_output_rejects_directory_and_ancestor_aliases() {
+        use std::os::unix::fs::symlink;
+        let d = tempfile::tempdir().unwrap();
+        let work = d.path().join("work");
+        fs::create_dir(&work).unwrap();
+        let args = Args::try_parse_from([
+            "droidloom-update",
+            "vendor-policy-bundle-build",
+            "--work",
+            work.to_str().unwrap(),
+        ])
+        .unwrap();
+        let output = work.join("android-user-vendor-policy-bundle-out");
+        symlink(&work, &output).unwrap();
+        assert!(selected_build_out(args.command.as_ref(), &work).is_err());
+        fs::remove_file(output).unwrap();
+        let alias = d.path().join("alias");
+        symlink(&work, &alias).unwrap();
+        assert!(selected_build_out(args.command.as_ref(), &alias).is_err());
+        assert!(
+            selected_build_out(args.command.as_ref(), std::path::Path::new("relative-work"))
+                .is_err()
+        );
+    }
+
+    use super::*;
+
+    #[test]
+    fn intentresolver_security_cli_rejects_widening_and_output_aliases() {
+        let d = tempfile::tempdir().unwrap();
+        let work = d.path();
+        let valid = [
+            "droidloom-update",
+            "intentresolver-security-build",
+            "--work",
+            work.to_str().unwrap(),
+        ];
+        let args = Args::try_parse_from(valid).unwrap();
+        assert!(matches!(
+            args.command,
+            Some(Action::IntentResolverSecurityBuild { .. })
+        ));
+        assert_eq!(
+            selected_build_out(args.command.as_ref(), work).unwrap(),
+            work.join("android-user-intentresolver-security-out")
+        );
+        for extra in [
+            &["services"][..],
+            &["--out", "/another"][..],
+            &["--variant", "eng"][..],
+            &["--source-lock", "/other"][..],
+        ] {
+            let mut argv = valid.to_vec();
+            argv.extend_from_slice(extra);
+            assert!(Args::try_parse_from(argv).is_err());
+        }
+        for option in ["--clean", "--build-only", "--bootstrapped"] {
+            let args = Args::try_parse_from([
+                "droidloom-update",
+                option,
+                "intentresolver-security-build",
+                "--work",
+                work.to_str().unwrap(),
+            ])
+            .unwrap();
+            assert!(
+                execute(args)
+                    .unwrap_err()
+                    .to_string()
+                    .contains("does not accept cleanup")
+            );
+        }
+        std::os::unix::fs::symlink(work, work.join("android-user-intentresolver-security-out"))
+            .unwrap();
+        assert!(selected_build_out(args.command.as_ref(), work).is_err());
+    }
+
+    #[test]
+    fn aac_security_cli_rejects_widening_and_output_aliases() {
+        let d = tempfile::tempdir().unwrap();
+        let work = d.path();
+        let valid = [
+            "droidloom-update",
+            "aac-security-build",
+            "--work",
+            work.to_str().unwrap(),
+        ];
+        let args = Args::try_parse_from(valid).unwrap();
+        assert!(matches!(
+            args.command,
+            Some(Action::AacSecurityBuild { .. })
+        ));
+        let out = work.join("android-user-aac-security-out");
+        assert_eq!(
+            selected_build_out(args.command.as_ref(), work).unwrap(),
+            out
+        );
+        for extra in [
+            &["services"][..],
+            &["--out", "/another"][..],
+            &["--variant", "eng"][..],
+            &["--source-lock", "/other"][..],
+        ] {
+            let mut argv = valid.to_vec();
+            argv.extend_from_slice(extra);
+            assert!(Args::try_parse_from(argv).is_err());
+        }
+        for option in ["--clean", "--build-only", "--bootstrapped"] {
+            let args = Args::try_parse_from([
+                "droidloom-update",
+                option,
+                "aac-security-build",
+                "--work",
+                work.to_str().unwrap(),
+            ])
+            .unwrap();
+            assert!(
+                execute(args)
+                    .unwrap_err()
+                    .to_string()
+                    .contains("does not accept cleanup")
+            );
+        }
+        std::os::unix::fs::symlink(work, out).unwrap();
+        assert!(selected_build_out(args.command.as_ref(), work).is_err());
+    }
+
+    #[test]
+    fn vendor_policy_cli_is_fixed_and_has_no_cleanup_or_target_override() {
+        let valid = [
+            "droidloom-update",
+            "vendor-policy-build",
+            "--work",
+            "/not-executed",
+        ];
+        let args = Args::try_parse_from(valid).unwrap();
+        assert!(matches!(
+            args.command,
+            Some(Action::VendorPolicyBuild { .. })
+        ));
+        assert_eq!(
+            selected_build_out(args.command.as_ref(), std::path::Path::new("/not-executed"))
+                .unwrap(),
+            PathBuf::from("/not-executed/android-user-vendor-policy-out")
+        );
+        assert!(Args::try_parse_from(["droidloom-update", "vendor-policy-build"]).is_err());
+        for extra in [
+            &["services"][..],
+            &["vendor_sepolicy.cil"][..],
+            &["--out", "/another-out"][..],
+            &["--variant", "userdebug"][..],
+            &["--source-lock", "/another-lock"][..],
+        ] {
+            let mut argv = valid.to_vec();
+            argv.extend_from_slice(extra);
+            assert!(Args::try_parse_from(argv).is_err());
+        }
+        for option in ["--clean", "--build-only", "--bootstrapped"] {
+            let argv = [
+                "droidloom-update",
+                option,
+                "vendor-policy-build",
+                "--work",
+                "/not-executed",
+            ];
+            let args = Args::try_parse_from(argv).unwrap();
+            assert!(
+                execute(args)
+                    .unwrap_err()
+                    .to_string()
+                    .contains("does not accept cleanup")
+            );
+        }
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn vendor_policy_output_rejects_aliases_and_uses_existing_two_lock_recovery() {
+        let d = tempfile::tempdir().unwrap();
+        let work = d.path();
+        let args = Args::try_parse_from([
+            "droidloom-update",
+            "vendor-policy-build",
+            "--work",
+            work.to_str().unwrap(),
+        ])
+        .unwrap();
+        let output = work.join("android-user-vendor-policy-out");
+        std::os::unix::fs::symlink(work, &output).unwrap();
+        assert!(selected_build_out(args.command.as_ref(), work).is_err());
+        fs::remove_file(&output).unwrap();
+        let source = work.join("aosp-source");
+        fs::create_dir(&source).unwrap();
+        let input = source.join("original");
+        fs::write(&input, b"original").unwrap();
+        use std::os::unix::fs::PermissionsExt;
+        let original_metadata = fs::metadata(&input).unwrap();
+        fs::write(&input, b"projected").unwrap();
+        let journal = work.join("source-projection.json");
+        let raw = serde_json::to_vec(&serde_json::json!({"schema_version":2,"originals":[{"path":input,"bytes":b"original".to_vec(),"modified":original_metadata.modified().unwrap(),"permissions_mode":original_metadata.permissions().mode()}]})).unwrap();
+        fs::write(&journal, &raw).unwrap();
+        for name in ["package-build.lock", "aosp-source-update.lock"] {
+            let held = Lock::acquire(&work.join(name)).unwrap();
+            assert!(recover_source_workspace(work).is_err());
+            assert_eq!(fs::read(&input).unwrap(), b"projected");
+            assert_eq!(fs::read(&journal).unwrap(), raw);
+            drop(held);
+        }
+        recover_source_workspace(work).unwrap();
+        assert_eq!(fs::read(&input).unwrap(), b"original");
+        assert!(!journal.exists());
+        assert!(!output.exists());
+    }
+
+    #[test]
+    fn source_recovery_cli_is_explicit_and_has_no_build_path() {
+        assert!(Args::try_parse_from(["droidloom-update", "recover-source"]).is_err());
+        assert!(
+            Args::try_parse_from([
+                "droidloom-update",
+                "recover-source",
+                "--work",
+                "/not-executed",
+                "services"
+            ])
+            .is_err()
+        );
+        let args = Args::try_parse_from([
+            "droidloom-update",
+            "recover-source",
+            "--work",
+            "/not-executed",
+        ])
+        .unwrap();
+        assert!(matches!(args.command, Some(Action::RecoverSource { .. })));
+        let args = Args::try_parse_from([
+            "droidloom-update",
+            "--clean",
+            "recover-source",
+            "--work",
+            "/not-executed",
+        ])
+        .unwrap();
+        assert!(
+            execute(args)
+                .unwrap_err()
+                .to_string()
+                .contains("does not accept build")
+        );
+    }
+
+    #[test]
+    fn source_recovery_requires_both_normal_locks_and_only_restores_journal() {
+        let d = tempfile::tempdir().unwrap();
+        let work = d.path();
+        let source = work.join("aosp-source");
+        fs::create_dir(&source).unwrap();
+        let input = source.join("original");
+        fs::write(&input, b"original").unwrap();
+        use std::os::unix::fs::PermissionsExt;
+        let original_metadata = fs::metadata(&input).unwrap();
+        fs::write(&input, b"projected").unwrap();
+        let journal = work.join("source-projection.json");
+        let raw = serde_json::to_vec(&serde_json::json!({"schema_version":2,"originals":[{"path":input,"bytes":b"original".to_vec(),"modified":original_metadata.modified().unwrap(),"permissions_mode":original_metadata.permissions().mode()}]})).unwrap();
+        fs::write(&journal, &raw).unwrap();
+        for name in ["package-build.lock", "aosp-source-update.lock"] {
+            let held = Lock::acquire(&work.join(name)).unwrap();
+            assert!(recover_source_workspace(work).is_err());
+            assert_eq!(fs::read(&input).unwrap(), b"projected");
+            assert_eq!(fs::read(&journal).unwrap(), raw);
+            drop(held);
+        }
+        recover_source_workspace(work).unwrap();
+        assert_eq!(fs::read(&input).unwrap(), b"original");
+        assert!(!journal.exists());
+        recover_source_workspace(work).unwrap();
+        let mut entries: Vec<_> = fs::read_dir(work)
+            .unwrap()
+            .map(|x| x.unwrap().file_name())
+            .collect();
+        entries.sort();
+        assert_eq!(
+            entries,
+            [
+                "aosp-source",
+                "aosp-source-update.lock",
+                "package-build.lock"
+            ]
+            .map(std::ffi::OsString::from)
+        );
+    }
+
+    #[test]
+    fn native_engine_cli_requires_prepared_workspace_and_has_no_arbitrary_targets() {
+        assert!(Args::try_parse_from(["droidloom-update", "native-engine-build"]).is_err());
+        assert!(
+            Args::try_parse_from([
+                "droidloom-update",
+                "native-engine-build",
+                "--work",
+                "/not-executed",
+                "services"
+            ])
+            .is_err()
+        );
+        let args = Args::try_parse_from([
+            "droidloom-update",
+            "-j",
+            "2",
+            "native-engine-build",
+            "--work",
+            "/not-executed",
+            "--tests",
+        ])
+        .unwrap();
+        assert!(matches!(
+            args.command,
+            Some(Action::NativeEngineBuild { tests: true, .. })
+        ));
+    }
+
+    #[test]
+    fn native_engine_output_selector_keeps_default_or_exact_explicit_directory() {
+        let work = std::path::Path::new("/prepared");
+        let parse = |extra: &[&str]| {
+            let mut argv = vec![
+                "droidloom-update",
+                "native-engine-build",
+                "--work",
+                "/prepared",
+                "--tests",
+            ];
+            argv.extend_from_slice(extra);
+            Args::try_parse_from(argv).unwrap()
+        };
+        let args = parse(&[]);
+        assert_eq!(
+            selected_build_out(args.command.as_ref(), work).unwrap(),
+            work.join("android-native-engine-out")
+        );
+        let args = parse(&["--out", "/prepared/android-native-engine-out-r9"]);
+        assert_eq!(
+            selected_build_out(args.command.as_ref(), work).unwrap(),
+            PathBuf::from("/prepared/android-native-engine-out-r9")
+        );
+        for path in [
+            "relative-out",
+            "/prepared",
+            "/prepared/aosp-source",
+            "/prepared/aosp-source/out",
+            "/prepared/new/../old",
+        ] {
+            let args = parse(&["--out", path]);
+            assert!(
+                selected_build_out(args.command.as_ref(), work).is_err(),
+                "{path}"
+            );
+        }
+        let temp = tempfile::tempdir().unwrap();
+        let alias = temp.path().join("alias");
+        std::os::unix::fs::symlink(temp.path(), &alias).unwrap();
+        let args = parse(&["--out", alias.join("new-out").to_str().unwrap()]);
+        assert!(selected_build_out(args.command.as_ref(), work).is_err());
+    }
+}
+
+#[cfg(test)]
+mod native_cli_tests {
+    use super::*;
+
+    #[test]
+    fn native_generation_pair_cli_requires_one_explicit_product() {
+        assert!(Args::try_parse_from(["droidloom-update", "native-generation-pair"]).is_err());
+        assert!(
+            Args::try_parse_from([
+                "droidloom-update",
+                "native-generation-pair",
+                "--product",
+                "/not-executed",
+                "libart"
+            ])
+            .is_err()
+        );
+        let args = Args::try_parse_from([
+            "droidloom-update",
+            "native-generation-pair",
+            "--product",
+            "/not-executed",
+        ])
+        .unwrap();
+        assert!(
+            matches!(args.command, Some(Action::NativeGenerationPair { product })
+            if product == PathBuf::from("/not-executed"))
+        );
+    }
+
+    #[test]
+    fn native_pair_reservation_is_applied_once_to_the_actual_job_budget() {
+        assert_eq!(native_pair_job_capacity(2, true, true), 2);
+        assert_eq!(native_pair_job_capacity(2, true, false), 1);
+        assert_eq!(native_pair_job_capacity(8, true, false), 6);
+        assert_eq!(native_pair_job_capacity(2, false, true), 1);
+        assert_eq!(native_pair_job_capacity(1, true, true), 1);
+    }
+
+    #[test]
+    fn ordinary_generation_cli_has_fixed_scope_and_explicit_fresh_output() {
+        assert!(Args::try_parse_from(["droidloom-update", "native-generation-build"]).is_err());
+        assert!(
+            Args::try_parse_from([
+                "droidloom-update",
+                "native-generation-build",
+                "--work",
+                "/prepared",
+                "--out",
+                "/fresh",
+                "services"
+            ])
+            .is_err()
+        );
+        assert!(
+            Args::try_parse_from([
+                "droidloom-update",
+                "native-generation-build",
+                "--work",
+                "/prepared",
+                "--out",
+                "/fresh",
+                "--resume-source-staging",
+                "/old"
+            ])
+            .is_err()
+        );
+        let parsed = Args::try_parse_from([
+            "droidloom-update",
+            "-j",
+            "1",
+            "native-generation-build",
+            "--work",
+            "/prepared",
+            "--out",
+            "/fresh",
+        ])
+        .unwrap();
+        assert!(matches!(
+            parsed.command,
+            Some(Action::NativeGenerationBuild { .. })
+        ));
+    }
+}

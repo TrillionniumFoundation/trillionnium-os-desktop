@@ -1,0 +1,40 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+abi <abi/5.0>,
+#include <tunables/global>
+# Entered only as the fixed NNP intersection with droidloom-production-broker.
+# SELinux supplies the separate capability-free reader domain. The original
+# framework root/PM metadata/PIDFDs still choose and retain every source APK.
+profile droidloom-native-leaf-apk-reader flags=(attach_disconnected.path=/.droidloom-native-leaf-apk) {
+  / r,
+  /{etc,usr,usr/lib,proc}/ r,
+  /etc/ld.so.cache r,
+  /{,usr/}lib{,64}/ld-linux-x86-64.so.2 mr,
+  /{,usr/}lib/x86_64-linux-gnu/{ld-linux-x86-64.so.2,lib*.so*} mr,
+  /usr/lib/droidloom/{,production/,production/current/} r,
+  /usr/lib/droidloom/production/current/droidloomd mrix,
+
+  # No foreign proc body, map, namespace or process-memory path is required.
+  owner @{PROC}/{self,thread-self,[0-9]*}/ r,
+  owner @{PROC}/{self,thread-self,[0-9]*}/exe r,
+  owner @{PROC}/{self,thread-self,[0-9]*}/fd/{,[0-9]*} r,
+  owner @{PROC}/{self,thread-self,[0-9]*}/attr/{,apparmor/,apparmor/current} r,
+  owner @{PROC}/[0-9]*/task/[0-9]*/{,attr/,attr/apparmor/,attr/apparmor/current} r,
+
+  # Anonymous shmem has no directory entry. Only this disconnected IS_ROOT
+  # path permits the new copy's pwrite/reopen; SELinux forbids execution/map,
+  # any filesystem writer and every comparison/installation-payload operation.
+  /.droidloom-native-leaf-apk/ rw,
+  # Real, early-slot and detached views of the same actual PM APK paths.
+  /{data/app,run/droidloom-early-slot/rootfs/data/app,.droidloom-native-leaf-apk/data/app}/**.apk r,
+  /{system,run/droidloom-early-slot/rootfs/system,.droidloom-native-leaf-apk/system}/{,product/,system_ext/}{app,priv-app}/**.apk r,
+  /{product,system_ext}/{app,priv-app}/**.apk r,
+  /{run/droidloom-early-slot/rootfs,.droidloom-native-leaf-apk}/{product,system_ext}/{app,priv-app}/**.apk r,
+
+  # The socket and EOF pipe were created by the original broker before exec.
+  # No listener, socket/pipe creation, namespace or secondary process is allowed.
+  unix (getattr, getopt) type=seqpacket,
+  unix (send, receive) type=seqpacket peer=(label=droidloom-production-broker),
+  signal (receive) set=(kill) peer=droidloom-production-broker,
+  signal (send) set=(chld) peer=droidloom-production-broker,
+  deny ptrace,
+}

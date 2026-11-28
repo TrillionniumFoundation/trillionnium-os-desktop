@@ -1,0 +1,51 @@
+// Copyright 2023 The Pigweed Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License"); you may not
+// use this file except in compliance with the License. You may obtain a copy of
+// the License at
+//
+//     https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+// License for the specific language governing permissions and limitations under
+// the License.
+
+package {
+    default_applicable_licenses: ["external_pigweed_license"],
+}
+
+cc_library_static {
+    name: "pw_chrono_stl",
+    defaults: [
+        "pw_android_common_target_support",
+    ],
+    export_include_dirs: [
+        "clock_public_overrides",
+        "public",
+        "timer_public_overrides",
+    ],
+    // Specify the module config flags found in pw_android_common_backends
+    // manually, since it depends on this target.
+    cflags: [
+        // Allow `pw::Function`s to exceed the inline size. This assumes all
+        // targets built with this backend can use dynamic allocation.
+        "-DPW_FUNCTION_ENABLE_DYNAMIC_ALLOCATION=1",
+    ],
+    header_libs: [
+        "pw_chrono",
+    ],
+    static_libs: [
+        "pw_function",
+    ],
+    export_header_lib_headers: [
+        "pw_chrono",
+    ],
+    export_static_lib_headers: [
+        "pw_function",
+    ],
+    srcs: [
+        "system_timer.cc",
+    ],
+}

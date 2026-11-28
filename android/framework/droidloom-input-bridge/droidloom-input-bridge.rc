@@ -1,0 +1,19 @@
+service droidloom-input-bridge /system/bin/app_process64 /system/bin com.android.droidloom.input.InputBridge
+    setenv CLASSPATH /system_ext/framework/droidloom-input-bridge.jar
+    seclabel u:r:droidloom_input_bridge:s0
+    class main
+    user root
+    group root system graphics
+    capabilities
+    task_profiles MaxPerformance
+
+service droidloom-ime-setup /system/bin/sh /droidloom/ime/setup
+    class late_start
+    user shell
+    group shell
+    disabled
+    oneshot
+    stdio_to_kmsg
+
+on property:sys.boot_completed=1
+    start droidloom-ime-setup

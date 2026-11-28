@@ -1,0 +1,27 @@
+[Unit]
+Description=Return the bounded working-copy qualification to the preserved original boot
+DefaultDependencies=no
+ConditionKernelCommandLine=droidloom.working
+After=droidloom-working-qualification.service
+Conflicts=shutdown.target
+Before=shutdown.target
+
+[Service]
+Type=exec
+ExecStart=/usr/lib/droidloom/production/current/droidloom-original-once-return --working-qualification-return
+User=root
+Group=root
+UMask=0077
+CapabilityBoundingSet=CAP_SETUID CAP_SETGID CAP_KILL
+AmbientCapabilities=
+NoNewPrivileges=no
+StandardInput=null
+StandardOutput=null
+StandardError=null
+KillMode=control-group
+TimeoutStartSec=30s
+TimeoutStopSec=30s
+RuntimeMaxSec=180s
+Restart=no
+SELinuxContext=u:system_r:p4_linux_working_return_t:s0
+AppArmorProfile=droidloom-working-qualification-return

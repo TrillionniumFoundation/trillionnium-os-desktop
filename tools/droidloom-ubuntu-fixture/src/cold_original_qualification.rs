@@ -1,0 +1,591 @@
+//! Typed ownership boundary for original-machine qualification transactions.
+//!
+//! All fields are private. A JSON plan, preserved journal or success boolean
+//! cannot construct this authority. The single source-owned dispatcher invokes
+//! the actual same-candidate material and owner factories before any mutation.
+//! Data and label writers accept only this non-serializable custody.
+#[path = "cold_original_once_cell.rs"]
+mod cell;
+#[path = "cold_original_once_commands.rs"]
+mod commands;
+#[path = "cold_original_once_files.rs"]
+mod configurations;
+pub(crate) use configurations::working::{
+    PublishedWorkingRuntime, RestoredWorkingRuntime, WorkingPublicationFailure,
+};
+pub(crate) use configurations::working_grub::PublishedWorkingBootFiles;
+#[path = "cold_original_once_dispatch.rs"]
+mod dispatcher;
+#[path = "cold_original_once_labels.rs"]
+mod labels;
+#[path = "cold_original_once_materials.rs"]
+mod materials;
+#[path = "cold_original_once_owner.rs"]
+mod owner;
+#[path = "cold_original_once_quiescence.rs"]
+mod quiescence;
+pub(crate) use quiescence::working::WorkingQuiescence;
+pub(crate) use quiescence::working_return::WorkingReturnQuiescence;
+#[path = "cold_original_once_retirement.rs"]
+mod retirement;
+#[path = "cold_original_once_window.rs"]
+mod window;
+pub(super) use window::{OriginalLabelWindow, OriginalRestoreLabelWindow};
+#[path = "cold_original_returned_custody.rs"]
+mod returned_custody;
+#[path = "cold_original_returned_history.rs"]
+mod returned_history;
+#[path = "cold_original_once_state.rs"]
+mod state;
+pub(crate) use returned_history::ReturnedOnceHistory;
+#[path = "cold_working_boot.rs"]
+mod working_boot;
+#[path = "cold_working_custody.rs"]
+mod working_custody;
+#[path = "cold_working_dispatch.rs"]
+mod working_dispatch;
+#[path = "cold_working_packages.rs"]
+mod working_packages;
+pub(crate) use working_packages::{WorkingGrubOperation, WorkingPackages};
+#[path = "cold_working_grub.rs"]
+mod working_grub;
+#[path = "cold_working_material_policy.rs"]
+mod working_material_policy;
+#[path = "cold_working_materials.rs"]
+mod working_materials;
+#[path = "cold_original_working_qualification.rs"]
+mod working_qualification;
+#[path = "cold_working_return_grub.rs"]
+mod working_return_grub;
+#[path = "cold_working_return_sources.rs"]
+mod working_return_sources;
+pub(crate) use working_return_grub::WorkingReturnGrubDisarmed;
+#[path = "cold_working_return_dispatch.rs"]
+mod working_return_dispatch;
+#[path = "cold_working_return_packages.rs"]
+mod working_return_packages;
+#[path = "cold_working_runtime.rs"]
+mod working_runtime;
+pub(crate) use configurations::working::roster as working_runtime_roster;
+pub(crate) use owner::{WorkingBootRetirement, WorkingReturnExpectation, WorkingReturnOwner};
+pub(super) use retirement::OriginalRetirement;
+pub(super) use working_qualification::inspect as inspect_returned_working_copy;
+pub(crate) use working_return_sources::{
+    RETAINED_ORIGINAL_HASH_SECONDS, ReturnedRuntimeFile, WorkingRecoverySources,
+};
+pub(crate) use working_runtime::{WorkingLabelSourceIdentity, WorkingRuntimeSources};
+
+use crate::{Result, boot_files as files, cold_original_data, ensure, fs, model::Identity};
+use files::FilePin;
+use owner::{OriginalOwner, SealedInput};
+use state::{Journal, Phase};
+use std::{
+    cell::RefCell,
+    fs::File,
+    path::{Path, PathBuf},
+};
+
+/// An adapter requests one fixed operation; this value cannot advance the
+/// journal or create authority. Every request is checked against actual state.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(super) enum OriginalDataStep {
+    Prepare,
+    Exchange,
+    Label,
+    PublishSelection,
+    WithdrawSelection,
+    RetireWorking,
+    Restore,
+}
+
+fn data_phase_allowed(phase: Phase, step: OriginalDataStep) -> bool {
+    use OriginalDataStep::*;
+    matches!(
+        (phase, step),
+        (Phase::CellPublished, Prepare)
+            | (Phase::PairExchangeIntent, Exchange)
+            | (Phase::LabelsIntent, Label)
+            | (Phase::SelectionPublishIntent, PublishSelection)
+            | (
+                Phase::SelectionWithdrawIntent | Phase::Aborting,
+                WithdrawSelection
+            )
+            | (
+                Phase::SelectionWithdrawn | Phase::PairRestored | Phase::Aborting,
+                RetireWorking
+            )
+            | (Phase::SelectionWithdrawn | Phase::Aborting, Restore)
+    )
+}
+
+enum RetirementSource {
+    Initial,
+    Prepared(SealedInput),
+}
+
+/// Non-serializable, non-cloneable custody retained by the sole once owner.
+/// There is no deserializing or caller-boolean constructor. The sole dispatcher
+/// obtains this type only through normal package, ended owned-guest, MAC,
+/// original-host, initrd and recovery admission under the real original locks.
+pub(super) struct OriginalQualificationAuthority {
+    owner: RefCell<OriginalOwner>,
+    candidate_id: String,
+    work: PathBuf,
+    work_fd: File,
+    work_identity: Identity,
+    intent: SealedInput,
+    admitted_inputs: Vec<SealedInput>,
+    original_cell: SealedInput,
+    new_cell: SealedInput,
+    expected_cell: FilePin,
+    selection: SealedInput,
+    cold_clone: SealedInput,
+    retirement: RefCell<RetirementSource>,
+    journal: RefCell<Journal>,
+    label_plan: RefCell<Option<labels::LabelPlanBinding>>,
+    materials: materials::Materials,
+}
+
+fn same_pin(a: &FilePin, b: &FilePin) -> bool {
+    a.path == b.path && a.bytes == b.bytes && a.sha256 == b.sha256
+}
+
+fn root_file_matches(pin: &FilePin) -> Result<bool> {
+    let tree = fs::Tree::open("/", 0)?;
+    let path = fs::absolute_string(&pin.path)?;
+    let held = tree.file(&path)?;
+    let before = fs::stat(&held)?;
+    ensure(
+        before.uid == 0 && before.gid == 0 && before.nlink == 1 && before.mode & 0o7777 == 0o644,
+        "actual original cell custody differs",
+    )?;
+    let matched = before.size == pin.bytes && fs::hash(&held)? == pin.sha256;
+    ensure(
+        fs::stat(&held)? == before && tree.identity(&path)? == before,
+        "actual original cell changed during complete readback",
+    )?;
+    Ok(matched)
+}
+
+impl OriginalQualificationAuthority {
+    pub(super) fn label_sources(
+        &self,
+    ) -> Result<&cold_original_data::labels::OriginalLabelSources> {
+        self.materials.sources()
+    }
+
+    pub(super) fn candidate_id(&self) -> &str {
+        &self.candidate_id
+    }
+    pub(super) fn work(&self) -> &Path {
+        &self.work
+    }
+    pub(super) fn expected_cell(&self) -> &FilePin {
+        &self.expected_cell
+    }
+    pub(super) fn selection(&self) -> &FilePin {
+        self.selection.pin()
+    }
+
+    pub(super) fn verify_data_step(&self, step: OriginalDataStep) -> Result<()> {
+        self.verify_current_owner()?;
+        let phase = self
+            .journal
+            .borrow()
+            .phase()
+            .ok_or("once mutation lacks a durable phase")?;
+        ensure(
+            data_phase_allowed(phase, step),
+            "data adapter operation is outside the owned durable phase",
+        )?;
+        if step == OriginalDataStep::Label {
+            let recorded = self
+                .journal
+                .borrow()
+                .observation(Phase::LabelsIntent)?
+                .ok_or("labels lack their durable source-plan intent")?;
+            let pin: FilePin = serde_json::from_value(recorded["label_plan"].clone())?;
+            self.verify_label_plan(&pin)?;
+        }
+        match (&*self.retirement.borrow(), step) {
+            (
+                RetirementSource::Initial,
+                OriginalDataStep::Prepare
+                | OriginalDataStep::WithdrawSelection
+                | OriginalDataStep::Restore,
+            )
+            | (
+                RetirementSource::Prepared(_),
+                OriginalDataStep::Exchange
+                | OriginalDataStep::Label
+                | OriginalDataStep::PublishSelection
+                | OriginalDataStep::WithdrawSelection
+                | OriginalDataStep::RetireWorking
+                | OriginalDataStep::Restore,
+            ) => Ok(()),
+            _ => Err("data adapter lacks the phase's actual immutable intent".into()),
+        }
+    }
+
+    /// Planning is read-only, after every public inode has been published.
+    pub(super) fn verify_label_preparation(&self) -> Result<()> {
+        self.verify_current_owner()?;
+        ensure(
+            self.journal.borrow().phase() == Some(Phase::GrubPublished)
+                && matches!(*self.retirement.borrow(), RetirementSource::Prepared(_)),
+            "complete labels may only be planned after public recovery and GRUB publication",
+        )
+    }
+
+    /// The actual dispatcher seals the plan before allowing the first xattr write.
+    fn begin_labels(&self, pin: &FilePin) -> Result<()> {
+        self.verify_label_preparation()?;
+        ensure(
+            self.label_plan.borrow().is_none(),
+            "label plan is already bound",
+        )?;
+        let binding = labels::LabelPlanBinding::open(self, pin)?;
+        let boot = self.owner.borrow().boot_id().to_owned();
+        self.journal.borrow_mut().append(
+            Phase::LabelsIntent,
+            &boot,
+            serde_json::json!({"label_plan":pin}),
+        )?;
+        *self.label_plan.borrow_mut() = Some(binding);
+        self.verify_label_plan(pin)?;
+        self.verify_current_owner()
+    }
+
+    pub(super) fn verify_label_plan(&self, pin: &FilePin) -> Result<()> {
+        let observation = self
+            .journal
+            .borrow()
+            .observation(Phase::LabelsIntent)?
+            .ok_or("source label plan was not durably selected before mutation")?;
+        let recorded: FilePin = serde_json::from_value(observation["label_plan"].clone())?;
+        ensure(
+            same_pin(pin, &recorded),
+            "label plan differs from the durable exact source pin",
+        )?;
+        if self.label_plan.borrow().is_none() {
+            let binding = labels::LabelPlanBinding::open(self, &recorded)?;
+            *self.label_plan.borrow_mut() = Some(binding);
+        }
+        self.label_plan
+            .borrow()
+            .as_ref()
+            .ok_or("label plan binding absent")?
+            .verify_pin(&recorded)
+    }
+
+    pub(super) fn accept_label_derivation(
+        &self,
+        derivation: &cold_original_data::labels::OriginalLabelDerivation,
+    ) -> Result<()> {
+        self.journal.borrow().revalidate()?;
+        ensure(
+            self.journal.borrow().phase() == Some(Phase::LabelsIntent),
+            "label derivation is outside the durable label intent",
+        )?;
+        self.intent.revalidate()?;
+        for input in &self.admitted_inputs {
+            input.revalidate()?;
+        }
+        derivation.revalidate()?;
+        ensure(
+            derivation.candidate_id() == self.candidate_id,
+            "opaque label derivation belongs to another candidate",
+        )?;
+        self.verify_label_plan(derivation.source_plan())?;
+        self.owner.borrow_mut().accept_lock_label(
+            derivation.path(),
+            derivation.before_identity(),
+            derivation.after_identity(),
+        )?;
+        self.verify_current_owner()?;
+        derivation.revalidate()
+    }
+
+    pub(super) fn verify_current_owner(&self) -> Result<()> {
+        self.owner.borrow().revalidate()?;
+        self.materials.revalidate()?;
+        ensure(
+            fs::valid_digest(&self.candidate_id)
+                && self.work.parent() == Some(Path::new("/var/lib/droidloom-qualification")),
+            "once candidate or protected work path differs",
+        )?;
+        let named = fs::Tree::open(&fs::absolute_string(&self.work)?, 0)?;
+        for actual in [fs::stat(&self.work_fd)?, fs::stat(&named.root)?] {
+            ensure(
+                (actual.dev, actual.ino, actual.mode, actual.uid, actual.gid)
+                    == (
+                        self.work_identity.dev,
+                        self.work_identity.ino,
+                        self.work_identity.mode,
+                        self.work_identity.uid,
+                        self.work_identity.gid,
+                    )
+                    && actual.uid == 0
+                    && actual.gid == 0
+                    && actual.mode & 0o7777 == 0o700,
+                "once work custody changed",
+            )?;
+        }
+        for input in [
+            &self.intent,
+            &self.original_cell,
+            &self.new_cell,
+            &self.selection,
+            &self.cold_clone,
+        ] {
+            input.revalidate()?;
+        }
+        for input in &self.admitted_inputs {
+            input.revalidate()?;
+        }
+        ensure(
+            self.expected_cell.path == Path::new("/etc/droidloom/cell.json")
+                && self.expected_cell.bytes == self.new_cell.pin().bytes
+                && self.expected_cell.sha256 == self.new_cell.pin().sha256
+                && self.selection.pin().path.parent() == Some(self.work()),
+            "once selected configuration lost its immutable source",
+        )?;
+        let journal = self.journal.borrow();
+        journal.revalidate()?;
+        let phase = journal
+            .phase()
+            .ok_or("once owner has no admitted intent event")?;
+        let original = FilePin {
+            path: self.expected_cell.path.clone(),
+            bytes: self.original_cell.pin().bytes,
+            sha256: self.original_cell.pin().sha256.clone(),
+        };
+        use Phase::*;
+        match phase {
+            Admitted | PublicInstallIntent | PublicInstalled | NativeInstallIntent
+            | NativeInstalled | CellRestored | NativeRestored | PublicRestored | GrubRestored
+            | Returned => {
+                ensure(
+                    root_file_matches(&original)?,
+                    "original cell is not the preserved preimage",
+                )?;
+            }
+            CellPublishIntent | CellRestoreIntent | Aborting => {
+                ensure(
+                    root_file_matches(&original)? || root_file_matches(&self.expected_cell)?,
+                    "interrupted cell publication is outside its two exact inode payloads",
+                )?;
+            }
+            _ => ensure(
+                root_file_matches(&self.expected_cell)?,
+                "candidate cell does not match the sealed exact recipe",
+            )?,
+        }
+        match &*self.retirement.borrow() {
+            RetirementSource::Initial => {
+                cold_original_data::assert_initial_pair_retired(self.cold_clone.pin())?;
+            }
+            RetirementSource::Prepared(intent) => {
+                intent.revalidate()?;
+                let actual = cold_original_data::assert_prepared_pair_retired(intent.pin())?;
+                ensure(
+                    actual["candidate_id"] == self.candidate_id,
+                    "actual prepared data transaction belongs to another candidate",
+                )?;
+                intent.revalidate()?;
+            }
+        }
+        if let Some(plan) = &*self.label_plan.borrow() {
+            plan.revalidate()?;
+        }
+        self.owner.borrow().revalidate()?;
+        self.intent.revalidate()?;
+        Ok(())
+    }
+
+    /// Only the once dispatcher may bind the adapter's real immutable intent.
+    /// This does not move images or grant a later phase from caller JSON.
+    fn bind_pair_intent(&self, pin: &FilePin) -> Result<()> {
+        self.verify_current_owner()?;
+        ensure(
+            matches!(self.journal.borrow().phase(), Some(Phase::CellPublished))
+                && matches!(*self.retirement.borrow(), RetirementSource::Initial),
+            "data intent can only be bound after the exact cell publication",
+        )?;
+        ensure(
+            pin.path == self.work.join("DATA-EXCHANGE-INTENT.json"),
+            "pair intent is outside the owned work",
+        )?;
+        let sealed = SealedInput::open(pin)?;
+        let intent: serde_json::Value = serde_json::from_slice(&sealed.read()?)?;
+        ensure(
+            intent["candidate_id"] == self.candidate_id
+                && intent["original_boot_id"] == self.owner.borrow().boot_id()
+                && intent["work"] == self.work.to_string_lossy().as_ref(),
+            "pair intent identity differs from the actual once owner",
+        )?;
+        for (field, expected) in [
+            ("expected_cell", self.expected_cell()),
+            ("selection", self.selection()),
+            ("cold_clone", self.cold_clone.pin()),
+        ] {
+            let actual: FilePin = serde_json::from_value(intent[field].clone())?;
+            ensure(
+                same_pin(&actual, expected),
+                "pair intent input differs from once immutable inputs",
+            )?;
+        }
+        cold_original_data::assert_prepared_pair_retired(pin)?;
+        sealed.revalidate()?;
+        *self.retirement.borrow_mut() = RetirementSource::Prepared(sealed);
+        self.verify_current_owner()
+    }
+}
+
+#[cfg(test)]
+mod operation_tests {
+    use super::*;
+    #[test]
+    fn adapter_cannot_skip_exchange_label_or_selection_retirement() {
+        assert!(data_phase_allowed(
+            Phase::CellPublished,
+            OriginalDataStep::Prepare
+        ));
+        assert!(!data_phase_allowed(
+            Phase::CellPublished,
+            OriginalDataStep::Exchange
+        ));
+        assert!(!data_phase_allowed(
+            Phase::PairExchanged,
+            OriginalDataStep::Label
+        ));
+        assert!(data_phase_allowed(
+            Phase::LabelsIntent,
+            OriginalDataStep::Label
+        ));
+        assert!(!data_phase_allowed(
+            Phase::LabelsApplied,
+            OriginalDataStep::PublishSelection
+        ));
+        assert!(data_phase_allowed(
+            Phase::SelectionPublishIntent,
+            OriginalDataStep::PublishSelection
+        ));
+        assert!(!data_phase_allowed(
+            Phase::OriginalReturned,
+            OriginalDataStep::Restore
+        ));
+        assert!(data_phase_allowed(
+            Phase::SelectionWithdrawn,
+            OriginalDataStep::Restore
+        ));
+        assert!(!data_phase_allowed(
+            Phase::OriginalReturned,
+            OriginalDataStep::WithdrawSelection
+        ));
+        assert!(data_phase_allowed(
+            Phase::SelectionWithdrawIntent,
+            OriginalDataStep::WithdrawSelection
+        ));
+        assert!(!data_phase_allowed(
+            Phase::SelectionWithdrawIntent,
+            OriginalDataStep::RetireWorking
+        ));
+        assert!(data_phase_allowed(
+            Phase::SelectionWithdrawn,
+            OriginalDataStep::RetireWorking
+        ));
+        assert!(data_phase_allowed(
+            Phase::PairRestored,
+            OriginalDataStep::RetireWorking
+        ));
+        assert!(!data_phase_allowed(
+            Phase::PairRestored,
+            OriginalDataStep::Exchange
+        ));
+        assert!(!data_phase_allowed(
+            Phase::PairRestored,
+            OriginalDataStep::PublishSelection
+        ));
+    }
+}
+
+pub(super) fn run(input: &Path, expected: &str) -> Result<serde_json::Value> {
+    dispatcher::run(input, expected)
+}
+pub(super) fn run_thaw_guard(input: &Path, expected: &str) -> Result<()> {
+    quiescence::run_thaw_guard(input, expected)
+}
+
+pub(super) fn prepare_working(input: &Path, expected: &str) -> Result<serde_json::Value> {
+    ensure(
+        fs::valid_digest(expected),
+        "complete working preparation input hash required",
+    )?;
+    let pin = files::pin_file(input)?;
+    ensure(
+        pin.sha256 == expected,
+        "actual working preparation input differs",
+    )?;
+    let materials = working_materials::WorkingQualificationMaterials::admit(&pin)?;
+    let boot = working_boot::PreparedWorkingBoot::prepare(materials)?;
+    let prepared = working_runtime::PreparedWorkingRuntime::prepare(boot)?;
+    let (sources, cell_preimage, grub_preimage) = prepared.into_publication_sources()?;
+    sources.revalidate()?;
+    cell_preimage.require_sources(&sources)?;
+    grub_preimage.require_sources(&sources)?;
+    let result: serde_json::Value =
+        serde_json::from_slice(&files::read_pin(sources.report(), 16 * 1024 * 1024)?)?;
+    ensure(
+        result["boot_armed"] == false && result["production_ready"] == false,
+        "normal working runtime preparation must not claim a later live phase",
+    )?;
+    cell_preimage.require_sources(&sources)?;
+    grub_preimage.require_sources(&sources)?;
+    sources.revalidate()?;
+    Ok(result)
+}
+
+pub(super) fn verify_working_publication(
+    input: &Path,
+    expected: &str,
+) -> Result<serde_json::Value> {
+    ensure(
+        fs::valid_digest(expected),
+        "complete working publication input hash required",
+    )?;
+    let pin = files::pin_file(input)?;
+    ensure(
+        pin.sha256 == expected,
+        "actual working publication input differs",
+    )?;
+    let materials = working_materials::WorkingQualificationMaterials::admit(&pin)?;
+    let boot = working_boot::PreparedWorkingBoot::prepare(materials)?;
+    let prepared = working_runtime::PreparedWorkingRuntime::prepare(boot)?;
+    working_dispatch::run(prepared)
+}
+
+pub(crate) fn run_working_thaw_guard(config: &Path, expected: &str) -> Result<()> {
+    quiescence::working::run_thaw_guard(config, expected)
+}
+pub(crate) fn run_working_return_thaw_guard(config: &Path, expected: &str) -> Result<()> {
+    quiescence::working_return::run_thaw_guard(config, expected)
+}
+
+pub(super) fn recover_working(input: &Path, expected: &str) -> Result<serde_json::Value> {
+    working_return_dispatch::recover(input, expected)
+}
+
+/// A single physical working attempt; the verification round trip remains separate.
+pub(super) fn run_working(input: &Path, expected: &str) -> Result<serde_json::Value> {
+    ensure(
+        fs::valid_digest(expected),
+        "complete working run input hash required",
+    )?;
+    let pin = files::pin_file(input)?;
+    ensure(pin.sha256 == expected, "actual working run input differs")?;
+    let materials = working_materials::WorkingQualificationMaterials::admit(&pin)?;
+    let boot = working_boot::PreparedWorkingBoot::prepare(materials)?;
+    let prepared = working_runtime::PreparedWorkingRuntime::prepare(boot)?;
+    working_dispatch::run_qualification(prepared)
+}

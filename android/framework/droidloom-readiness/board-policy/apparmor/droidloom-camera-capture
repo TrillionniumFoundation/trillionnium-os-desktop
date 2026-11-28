@@ -1,0 +1,35 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+abi <abi/5.0>,
+#include <tunables/global>
+# Entered only as an additional intersection with production-broker under NNP.
+# SELinux grants the UVC body only to the fixed zero-capability capture role.
+profile droidloom-camera-capture flags=(attach_disconnected.path=/.droidloom-kernel-apparmorfs) {
+  / r,
+  /{etc,usr,usr/lib,run,proc,dev}/ r,
+  /etc/ld.so.cache r,
+  /{,usr/}lib{,64}/ld-linux-x86-64.so.2 mr,
+  /{,usr/}lib/x86_64-linux-gnu/{ld-linux-x86-64.so.2,lib*.so*} mr,
+  /usr/lib/droidloom/{,production/,production/current/} r,
+  /usr/lib/droidloom/production/current/droidloomd mr,
+  /run/droidloom-early/ r,
+  /run/droidloom-early/host-{userns,pidns} r,
+  /{user,pid}:[0-9]* r,
+  owner @{PROC}/{self,[0-9]*}/ r,
+  owner @{PROC}/{self,[0-9]*}/exe r,
+  owner @{PROC}/{self,[0-9]*}/fd/ r,
+  owner @{PROC}/{self,[0-9]*}/fd/[0-9]* r,
+  /dev/v4l/{,by-id/} r,
+  /dev/v4l/by-id/usb-SunplusIT_Inc_Integrated_Camera_JX20250923V2-video-index0 rw,
+  /dev/video{[0-9],[0-9][0-9],[0-9][0-9][0-9]} rw,
+  /run/droidloom-frontend/{,android/} r,
+  /run/droidloom-frontend/android/camera rw,
+  # No Internet socket or abstract-name endpoint exists in this protocol.
+  deny unix (bind, listen, accept) addr="@**",
+  deny unix (connect, send, receive) peer=(addr="@**"),
+  network (create) unix seqpacket,
+  unix (create, getattr, getopt, setopt, shutdown) type=seqpacket,
+  unix (getattr, getopt, setopt, accept, shutdown) type=stream,
+  unix (send, receive) type=seqpacket peer=(label=droidloom-production-broker),
+  unix (send, receive) type=stream peer=(label=droidloom-production-android),
+  signal (receive) set=(kill) peer=droidloom-production-broker,
+}

@@ -1,0 +1,31 @@
+[Unit]
+Description=Seal the original systemd private socket label
+After=local-fs.target
+Before=droidloom-production.service
+
+[Service]
+Type=oneshot
+User=root
+Group=root
+ExecStart=/usr/lib/droidloom/production/current/droidloom-host-mac seal-systemd-private
+WorkingDirectory=/
+UMask=0077
+RemainAfterExit=no
+Restart=no
+TimeoutStartSec=30
+TimeoutStopSec=5
+KillMode=control-group
+SendSIGKILL=yes
+NoNewPrivileges=yes
+AppArmorProfile=droidloom-policy-loader
+MemoryMax=536870912
+MemoryHigh=402653184
+MemorySwapMax=0
+TasksMax=64
+CPUQuota=100%
+StandardInput=null
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=droidloom-manager-label
+LogRateLimitIntervalSec=30s
+LogRateLimitBurst=8

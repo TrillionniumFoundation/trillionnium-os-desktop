@@ -1,0 +1,21 @@
+[Unit]
+Description=Fresh fixture dynamic GDM environment proof
+PartOf=gnome-session@gnome-login.target
+Requisite=gnome-session-initialized.target
+After=gnome-session-initialized.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3.14 -I -B /usr/libexec/droidloom-fixture-greeter-proof.py
+WorkingDirectory=/
+StandardInput=null
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=droidloom-fixture-greeter-proof
+NoNewPrivileges=yes
+UMask=0077
+TimeoutStartSec=12s
+TimeoutStopSec=2s
+KillMode=control-group
+Restart=no
+RemainAfterExit=yes

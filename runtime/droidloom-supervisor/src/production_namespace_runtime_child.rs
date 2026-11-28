@@ -1,0 +1,1093 @@
+//! Fixed runtime-tree and original-init consumer in the actually owned PID 1.
+//! No path, mount flags, environment or executable can be supplied in a packet.
+//! A prepared runtime is not execution admission; the parent must separately
+//! possess the same-tree execution authority before sending the exec phase.
+use super::empty_root::{KernelStatfs, entry_record};
+use super::{CHILD_FD, Mode, Packet, Phase, finish, send};
+use crate::production_runtime_assets::{
+    ACTIVATION_FLAGS, ActivationRootRole, QueryLayout, QueryRole,
+};
+use std::ffi::CStr;
+use std::os::fd::RawFd;
+
+#[path = "production_namespace_runtime_sys_scaffold.rs"]
+mod sys_scaffold;
+
+const EMPTY_PATH: u32 = 0x1000;
+const MOVE_EMPTY: u32 = 0x04 | 0x40;
+const RO_IMAGE: u64 = 1 | 2 | 4;
+const NOEXEC: u64 = 8;
+const TMPFS_MAGIC: libc::c_long = 0x0102_1994;
+const EXT4_MAGIC: libc::c_long = 0xef53;
+const EROFS_MAGIC: libc::c_long = 0xe0f5_e1e2_u32 as libc::c_long;
+const EXEC_FD: RawFd = 4;
+
+#[repr(C)]
+struct MountAttr {
+    set: u64,
+    clear: u64,
+    propagation: u64,
+    userns: u64,
+}
+
+#[cfg(test)]
+static STAGE: std::sync::atomic::AtomicU32 = std::sync::atomic::AtomicU32::new(0);
+#[cfg(test)]
+pub(super) fn decode_private_failure(value: i32) -> Option<(u32, u32, i32)> {
+    let v = value as u32;
+    let stage = (v >> 24) & 15;
+    let line = (v >> 12) & 4095;
+    let errno = (v & 4095) as i32;
+    (v >> 28 == 4 && (1..=5).contains(&stage) && line != 0 && errno != 0)
+        .then_some((stage, line, errno))
+}
+unsafe fn failed(nonce: [u8; 16], line: u32) -> ! {
+    #[cfg(test)]
+    unsafe {
+        let errno = *libc::__errno_location();
+        let errno = if (1..4096).contains(&errno) {
+            errno as u32
+        } else {
+            libc::EIO as u32
+        };
+        let stage = STAGE.load(std::sync::atomic::Ordering::Relaxed);
+        send(
+            nonce,
+            Phase::Failed,
+            (0x4000_0000 | stage << 24 | line << 12 | errno) as i32,
+            1,
+        );
+        finish(127)
+    }
+    #[cfg(not(test))]
+    unsafe {
+        let _ = line;
+        super::fail(nonce, 1)
+    }
+}
+unsafe fn rejected(nonce: [u8; 16]) -> ! {
+    unsafe {
+        *libc::__errno_location() = libc::EPROTO;
+        failed(nonce, line!())
+    }
+}
+
+fn packet_query_layout(phase: u32, descriptors: usize) -> Option<Option<QueryLayout>> {
+    match (phase, descriptors) {
+        (p, 2) if p == Phase::MountRuntime as u32 => Some(None),
+        (p, 3) if p == Phase::MountRuntime as u32 => Some(Some(QueryLayout::Commands)),
+        (p, 3) if p == Phase::MountRuntimeContacts as u32 => Some(Some(QueryLayout::Contacts)),
+        (p, 4) if p == Phase::MountRuntimeActivation as u32 => Some(None),
+        (p, 5) if p == Phase::MountRuntimeActivation as u32 => Some(Some(QueryLayout::Commands)),
+        (p, 5) if p == Phase::MountRuntimeActivationContacts as u32 => {
+            Some(Some(QueryLayout::Contacts))
+        }
+        (p, 5) if p == Phase::MountRuntimeBootstrapActivation as u32 => Some(None),
+        (p, 6) if p == Phase::MountRuntimeBootstrapActivation as u32 => {
+            Some(Some(QueryLayout::Commands))
+        }
+        (p, 6) if p == Phase::MountRuntimeBootstrapActivationContacts as u32 => {
+            Some(Some(QueryLayout::Contacts))
+        }
+        _ => None,
+    }
+}
+
+unsafe fn receive_runtime(
+    nonce: [u8; 16],
+    parent_pid: u32,
+) -> ([RawFd; 6], Option<QueryLayout>, usize) {
+    let mut packet = Packet::zeroed();
+    let mut iov = libc::iovec {
+        iov_base: (&mut packet as *mut Packet).cast(),
+        iov_len: std::mem::size_of::<Packet>(),
+    };
+    let mut control = [0_usize; 16];
+    let mut msg: libc::msghdr = unsafe { std::mem::zeroed() };
+    msg.msg_iov = &mut iov;
+    msg.msg_iovlen = 1;
+    msg.msg_control = control.as_mut_ptr().cast();
+    msg.msg_controllen = std::mem::size_of_val(&control);
+    let n = unsafe {
+        libc::syscall(
+            libc::SYS_recvmsg,
+            CHILD_FD,
+            &mut msg,
+            libc::MSG_CMSG_CLOEXEC,
+        )
+    };
+    if n == 0 {
+        unsafe { finish(0) }
+    }
+    if n != std::mem::size_of::<Packet>() as libc::c_long
+        || msg.msg_flags & (libc::MSG_TRUNC | libc::MSG_CTRUNC) != 0
+        || !packet.matches(nonce, parent_pid)
+        || packet.errno != 0
+    {
+        unsafe { rejected(nonce) }
+    }
+    let header = unsafe { libc::CMSG_FIRSTHDR(&msg) };
+    if packet.phase == Phase::Stop as u32 {
+        if !header.is_null() {
+            unsafe { rejected(nonce) }
+        }
+        unsafe { finish(0) }
+    }
+    if ![
+        Phase::MountRuntime as u32,
+        Phase::MountRuntimeContacts as u32,
+        Phase::MountRuntimeActivation as u32,
+        Phase::MountRuntimeActivationContacts as u32,
+        Phase::MountRuntimeBootstrapActivation as u32,
+        Phase::MountRuntimeBootstrapActivationContacts as u32,
+    ]
+    .contains(&packet.phase)
+        || header.is_null()
+    {
+        unsafe { rejected(nonce) }
+    }
+    let h = unsafe { &*header };
+    if h.cmsg_level != libc::SOL_SOCKET
+        || h.cmsg_type != libc::SCM_RIGHTS
+        || ![
+            unsafe { libc::CMSG_LEN(8) } as usize,
+            unsafe { libc::CMSG_LEN(12) } as usize,
+            unsafe { libc::CMSG_LEN(16) } as usize,
+            unsafe { libc::CMSG_LEN(20) } as usize,
+            unsafe { libc::CMSG_LEN(24) } as usize,
+        ]
+        .contains(&h.cmsg_len)
+        || !unsafe { libc::CMSG_NXTHDR(&msg, header) }.is_null()
+    {
+        unsafe { rejected(nonce) }
+    }
+    let count = (h.cmsg_len - unsafe { libc::CMSG_LEN(0) } as usize) / 4;
+    let layout = match packet_query_layout(packet.phase, count) {
+        Some(layout) => layout,
+        None => unsafe { rejected(nonce) },
+    };
+    let p = unsafe { libc::CMSG_DATA(header).cast::<i32>() };
+    let mut raw = [-1; 6];
+    for i in 0..count {
+        raw[i] = unsafe { std::ptr::read_unaligned(p.add(i)) };
+        if raw[i] < 0 || raw[i] == CHILD_FD || raw[..i].contains(&raw[i]) {
+            unsafe { rejected(nonce) }
+        }
+    }
+    // Stdio was closed before TreeReady. Received FDs may therefore be 0/1.
+    // Duplicate both before closing either, never overwrite a live peer FD.
+    let mut held = [-1; 6];
+    for i in 0..count {
+        let fd = unsafe { libc::syscall(libc::SYS_fcntl, raw[i], libc::F_DUPFD_CLOEXEC, 4) };
+        if fd < 4 || fd > i32::MAX as libc::c_long {
+            unsafe { failed(nonce, line!()) }
+        }
+        held[i] = fd as i32;
+    }
+    for fd in &raw[..count] {
+        unsafe {
+            libc::syscall(libc::SYS_close, *fd);
+        }
+    }
+    let activation_count = if packet.phase == Phase::MountRuntimeBootstrapActivation as u32
+        || packet.phase == Phase::MountRuntimeBootstrapActivationContacts as u32
+    {
+        3
+    } else if packet.phase == Phase::MountRuntimeActivation as u32
+        || packet.phase == Phase::MountRuntimeActivationContacts as u32
+    {
+        2
+    } else {
+        0
+    };
+    (held, layout, activation_count)
+}
+
+unsafe fn meta(fd: RawFd, nonce: [u8; 16]) -> libc::stat {
+    let mut st: libc::stat = unsafe { std::mem::zeroed() };
+    if unsafe { libc::syscall(libc::SYS_fstat, fd, &mut st) } != 0 {
+        unsafe { failed(nonce, line!()) }
+    }
+    st
+}
+fn same_inode(a: &libc::stat, b: &libc::stat) -> bool {
+    (
+        a.st_dev,
+        a.st_ino,
+        a.st_mode,
+        a.st_uid,
+        a.st_gid,
+        a.st_nlink,
+        a.st_size,
+        a.st_mtime,
+        a.st_mtime_nsec,
+        a.st_ctime,
+        a.st_ctime_nsec,
+    ) == (
+        b.st_dev,
+        b.st_ino,
+        b.st_mode,
+        b.st_uid,
+        b.st_gid,
+        b.st_nlink,
+        b.st_size,
+        b.st_mtime,
+        b.st_mtime_nsec,
+        b.st_ctime,
+        b.st_ctime_nsec,
+    )
+}
+unsafe fn fs(fd: RawFd, nonce: [u8; 16]) -> KernelStatfs {
+    let mut v: KernelStatfs = unsafe { std::mem::zeroed() };
+    if unsafe { libc::syscall(libc::SYS_fstatfs, fd, &mut v) } != 0 {
+        unsafe { failed(nonce, line!()) }
+    }
+    v
+}
+unsafe fn opened(parent: RawFd, name: &CStr, flags: i32, nonce: [u8; 16]) -> RawFd {
+    let fd = unsafe {
+        libc::syscall(
+            libc::SYS_openat,
+            parent,
+            name.as_ptr(),
+            flags | libc::O_CLOEXEC | libc::O_NOFOLLOW | libc::O_NONBLOCK,
+            0,
+        )
+    };
+    if fd < 0 || fd > i32::MAX as libc::c_long {
+        unsafe { failed(nonce, line!()) }
+    }
+    fd as RawFd
+}
+unsafe fn directory(parent: RawFd, name: &CStr, nonce: [u8; 16]) -> RawFd {
+    unsafe { opened(parent, name, libc::O_PATH | libc::O_DIRECTORY, nonce) }
+}
+unsafe fn close(fd: RawFd) {
+    unsafe {
+        libc::syscall(libc::SYS_close, fd);
+    }
+}
+unsafe fn require_image(fd: RawFd, kind: u32, nonce: [u8; 16]) {
+    let v = unsafe { fs(fd, nonce) };
+    let s = unsafe { meta(fd, nonce) };
+    if !matches!(v.f_type, EXT4_MAGIC | EROFS_MAGIC)
+        || v.f_flags as u64 & RO_IMAGE != RO_IMAGE
+        || v.f_flags as u64 & NOEXEC != 0
+        || s.st_mode & libc::S_IFMT != kind
+    {
+        unsafe { rejected(nonce) }
+    }
+}
+unsafe fn require_root(fd: RawFd, nonce: [u8; 16]) {
+    unsafe { require_image(fd, libc::S_IFDIR, nonce) };
+    let s = unsafe { meta(fd, nonce) };
+    if s.st_uid != 0 || s.st_gid != 0 || s.st_mode & 0o022 != 0 {
+        unsafe { rejected(nonce) }
+    }
+}
+
+unsafe fn query_label(fd: RawFd, label: &[u8], nonce: [u8; 16]) {
+    let mut bytes = [0_u8; 38];
+    if label.is_empty() || label.len() > bytes.len() {
+        unsafe { rejected(nonce) }
+    }
+    let n = unsafe {
+        libc::syscall(
+            libc::SYS_fgetxattr,
+            fd,
+            c"security.selinux".as_ptr(),
+            bytes.as_mut_ptr(),
+            bytes.len(),
+        )
+    };
+    if n != label.len() as libc::c_long || &bytes[..label.len()] != label {
+        unsafe { rejected(nonce) }
+    }
+    let n = unsafe {
+        libc::syscall(
+            libc::SYS_fgetxattr,
+            fd,
+            c"security.capability".as_ptr(),
+            std::ptr::null_mut::<u8>(),
+            0_usize,
+        )
+    };
+    if n != -1 || unsafe { *libc::__errno_location() } != libc::ENODATA {
+        unsafe { rejected(nonce) }
+    }
+}
+
+unsafe fn require_query_root(fd: RawFd, layout: QueryLayout, nonce: [u8; 16]) {
+    let node = unsafe { meta(fd, nonce) };
+    let filesystem = unsafe { fs(fd, nonce) };
+    if filesystem.f_type != TMPFS_MAGIC
+        || filesystem.f_flags as u64 & RO_IMAGE != RO_IMAGE
+        || filesystem.f_flags as u64 & NOEXEC != 0
+        || node.st_mode != libc::S_IFDIR | 0o555
+        || node.st_uid != 0
+        || node.st_gid != 0
+    {
+        unsafe { rejected(nonce) }
+    }
+    let roles = layout.roles();
+    let mut expected: [&[u8]; 4] = [&[]; 4];
+    if roles.len() > expected.len() {
+        unsafe { rejected(nonce) }
+    }
+    for (name, role) in expected.iter_mut().zip(roles) {
+        *name = role.name().to_bytes();
+    }
+    unsafe {
+        exact_names(fd, &expected[..roles.len()], nonce);
+    }
+    let root = unsafe { opened(fd, c".", libc::O_RDONLY | libc::O_DIRECTORY, nonce) };
+    unsafe {
+        query_label(root, QueryRole::Cmd.private_label(), nonce);
+        close(root);
+    }
+    for role in roles {
+        let file = unsafe { opened(fd, role.name(), libc::O_RDONLY, nonce) };
+        let node = unsafe { meta(file, nonce) };
+        let filesystem = unsafe { fs(file, nonce) };
+        if node.st_mode != libc::S_IFREG | role.mode()
+            || node.st_nlink != 1
+            || node.st_uid != 0
+            || node.st_gid != 0
+            || !(64..=128 * 1024 * 1024).contains(&node.st_size)
+            || filesystem.f_type != TMPFS_MAGIC
+            || filesystem.f_flags as u64 & RO_IMAGE != RO_IMAGE
+            || filesystem.f_flags as u64 & NOEXEC != 0
+        {
+            unsafe { rejected(nonce) }
+        }
+        unsafe {
+            query_label(file, role.private_label(), nonce);
+            close(file);
+        }
+    }
+}
+unsafe fn exact_names(dir: RawFd, expected: &[&[u8]], nonce: [u8; 16]) {
+    if expected.len() > 63 {
+        unsafe { rejected(nonce) }
+    }
+    let fd = unsafe { opened(dir, c".", libc::O_RDONLY | libc::O_DIRECTORY, nonce) };
+    let mut seen = 0_u64;
+    let mut data = [0_u8; 4096];
+    loop {
+        let n = unsafe { libc::syscall(libc::SYS_getdents64, fd, data.as_mut_ptr(), data.len()) };
+        if n < 0 || n > data.len() as libc::c_long {
+            unsafe { failed(nonce, line!()) }
+        }
+        if n == 0 {
+            break;
+        }
+        let mut pos = 0;
+        while pos < n as usize {
+            let (length, name) = match entry_record(&data[pos..n as usize]) {
+                Some(v) => v,
+                None => unsafe { rejected(nonce) },
+            };
+            pos += length;
+            if name == b"." || name == b".." {
+                continue;
+            }
+            let i = match expected.iter().position(|v| *v == name) {
+                Some(i) => i,
+                None => unsafe { rejected(nonce) },
+            };
+            if seen & (1 << i) != 0 {
+                unsafe { rejected(nonce) }
+            }
+            seen |= 1 << i;
+        }
+    }
+    unsafe { close(fd) };
+    if seen != (1_u64 << expected.len()) - 1 {
+        unsafe { rejected(nonce) }
+    }
+}
+unsafe fn attach(source: RawFd, target: RawFd, nonce: [u8; 16]) {
+    if unsafe {
+        libc::syscall(
+            libc::SYS_move_mount,
+            source,
+            c"".as_ptr(),
+            target,
+            c"".as_ptr(),
+            MOVE_EMPTY,
+        )
+    } != 0
+    {
+        unsafe { failed(nonce, line!()) }
+    }
+}
+unsafe fn project(source: RawFd, target: RawFd, noexec: bool, nonce: [u8; 16]) {
+    // source is already attached inside this exact private mount namespace.
+    // Never clone a host-origin regular file descriptor in the mapped child.
+    let raw = unsafe {
+        libc::syscall(
+            libc::SYS_open_tree,
+            source,
+            c"".as_ptr(),
+            1_u32 | libc::O_CLOEXEC as u32 | EMPTY_PATH,
+        )
+    };
+    if raw < 0 || raw > i32::MAX as libc::c_long {
+        unsafe { failed(nonce, line!()) }
+    }
+    let fd = raw as RawFd;
+    let attr = MountAttr {
+        set: RO_IMAGE | if noexec { NOEXEC } else { 0 },
+        clear: 0,
+        propagation: 0,
+        userns: 0,
+    };
+    if unsafe {
+        libc::syscall(
+            libc::SYS_mount_setattr,
+            fd,
+            c"".as_ptr(),
+            EMPTY_PATH,
+            &attr,
+            std::mem::size_of::<MountAttr>(),
+        )
+    } != 0
+    {
+        unsafe { failed(nonce, line!()) }
+    }
+    unsafe {
+        attach(fd, target, nonce);
+        close(fd)
+    }
+}
+unsafe fn check_projection(
+    parent: RawFd,
+    name: &CStr,
+    source: &libc::stat,
+    noexec: bool,
+    nonce: [u8; 16],
+) -> RawFd {
+    let fd = unsafe { opened(parent, name, libc::O_PATH, nonce) };
+    let v = unsafe { fs(fd, nonce) };
+    if !same_inode(source, &unsafe { meta(fd, nonce) })
+        || v.f_flags as u64 & RO_IMAGE != RO_IMAGE
+        || (v.f_flags as u64 & NOEXEC != 0) != noexec
+    {
+        unsafe { rejected(nonce) }
+    }
+    fd
+}
+unsafe fn project_dir(runtime: RawFd, root: RawFd, name: &CStr, nonce: [u8; 16]) {
+    let source = unsafe { directory(runtime, name, nonce) };
+    let target = unsafe { directory(root, name, nonce) };
+    unsafe { require_root(source, nonce) };
+    let before = unsafe { meta(source, nonce) };
+    unsafe {
+        project(source, target, false, nonce);
+        close(target)
+    };
+    let after = unsafe { check_projection(root, name, &before, false, nonce) };
+    unsafe {
+        close(after);
+        close(source)
+    }
+}
+
+unsafe fn activation_root(fd: RawFd, role: ActivationRootRole, nonce: [u8; 16]) {
+    let node = unsafe { meta(fd, nonce) };
+    let filesystem = unsafe { fs(fd, nonce) };
+    if node.st_mode != libc::S_IFDIR | 0o755
+        || node.st_uid != 0
+        || node.st_gid != 0
+        || node.st_nlink != 2
+        || filesystem.f_type != TMPFS_MAGIC
+        || filesystem.f_flags as u64 & (ACTIVATION_FLAGS | 1) != ACTIVATION_FLAGS
+        || (filesystem.f_blocks as u64).checked_mul(filesystem.f_frsize as u64)
+            != Some(role.bytes())
+        || filesystem.f_files as u64 != role.inodes()
+    {
+        unsafe { rejected(nonce) }
+    }
+    unsafe { exact_names(fd, &[], nonce) };
+    let readable = unsafe { opened(fd, c".", libc::O_RDONLY | libc::O_DIRECTORY, nonce) };
+    unsafe {
+        query_label(readable, role.label(), nonce);
+        close(readable);
+    }
+}
+
+unsafe fn project_activation(
+    source: RawFd,
+    root: RawFd,
+    role: ActivationRootRole,
+    nonce: [u8; 16],
+) {
+    unsafe { activation_root(source, role, nonce) };
+    let original = unsafe { meta(source, nonce) };
+    let target = unsafe { directory(root, role.name(), nonce) };
+    unsafe { exact_names(target, &[], nonce) };
+    unsafe {
+        attach(source, target, nonce);
+        close(target);
+    }
+    let visible = unsafe { directory(root, role.name(), nonce) };
+    if !same_inode(&original, &unsafe { meta(visible, nonce) }) {
+        unsafe { rejected(nonce) }
+    }
+    unsafe {
+        activation_root(visible, role, nonce);
+        close(visible);
+    }
+}
+unsafe fn project_rc(
+    rc: RawFd,
+    source_name: &CStr,
+    target_dir: RawFd,
+    target_name: &CStr,
+    nonce: [u8; 16],
+) {
+    unsafe { project_file(rc, source_name, target_dir, target_name, true, nonce) }
+}
+unsafe fn project_file(
+    rc: RawFd,
+    source_name: &CStr,
+    target_dir: RawFd,
+    target_name: &CStr,
+    noexec: bool,
+    nonce: [u8; 16],
+) {
+    let source = unsafe { opened(rc, source_name, libc::O_PATH, nonce) };
+    let before = unsafe { meta(source, nonce) };
+    if before.st_mode & libc::S_IFMT != libc::S_IFREG
+        || before.st_nlink != 1
+        || before.st_uid != 0
+        || before.st_gid != 0
+        || before.st_mode & 0o022 != 0
+        || before.st_size < 0
+    {
+        unsafe { rejected(nonce) }
+    }
+    let target = unsafe { opened(target_dir, target_name, libc::O_PATH, nonce) };
+    if unsafe { meta(target, nonce) }.st_mode & libc::S_IFMT != libc::S_IFREG {
+        unsafe { rejected(nonce) }
+    }
+    unsafe {
+        project(source, target, noexec, nonce);
+        close(target)
+    };
+    let after = unsafe { check_projection(target_dir, target_name, &before, noexec, nonce) };
+    unsafe {
+        close(after);
+        close(source)
+    }
+}
+unsafe fn retain_init(fd: RawFd, nonce: [u8; 16]) {
+    if fd != EXEC_FD
+        && unsafe { libc::syscall(libc::SYS_dup3, fd, EXEC_FD, libc::O_CLOEXEC) }
+            != EXEC_FD as libc::c_long
+    {
+        unsafe { failed(nonce, line!()) }
+    }
+    if unsafe { libc::syscall(libc::SYS_close_range, 5_u32, u32::MAX, 0) } != 0 {
+        unsafe { failed(nonce, line!()) }
+    }
+    for n in 0..3 {
+        unsafe { close(n) }
+    }
+    if unsafe { libc::syscall(libc::SYS_fcntl, CHILD_FD, libc::F_GETFD) }
+        != libc::FD_CLOEXEC as libc::c_long
+        || unsafe { libc::syscall(libc::SYS_fcntl, EXEC_FD, libc::F_GETFD) }
+            != libc::FD_CLOEXEC as libc::c_long
+    {
+        unsafe { rejected(nonce) }
+    }
+}
+unsafe fn command(nonce: [u8; 16], parent_pid: u32, expected: Phase) {
+    // Descriptor-free command; the connected capability is the original
+    // inherited broker endpoint, not a pathname or caller-chosen PID.
+    let mut packet = Packet::zeroed();
+    let mut iov = libc::iovec {
+        iov_base: (&mut packet as *mut Packet).cast(),
+        iov_len: std::mem::size_of::<Packet>(),
+    };
+    let mut ancillary = [0_usize; 16];
+    let mut msg: libc::msghdr = unsafe { std::mem::zeroed() };
+    msg.msg_iov = &mut iov;
+    msg.msg_iovlen = 1;
+    msg.msg_control = ancillary.as_mut_ptr().cast();
+    msg.msg_controllen = std::mem::size_of_val(&ancillary);
+    let n = unsafe {
+        libc::syscall(
+            libc::SYS_recvmsg,
+            CHILD_FD,
+            &mut msg,
+            libc::MSG_CMSG_CLOEXEC,
+        )
+    };
+    if n == 0 {
+        unsafe { finish(0) }
+    }
+    if n != std::mem::size_of::<Packet>() as libc::c_long
+        || msg.msg_flags & (libc::MSG_TRUNC | libc::MSG_CTRUNC) != 0
+        || !packet.matches(nonce, parent_pid)
+        || packet.errno != 0
+        || !unsafe { libc::CMSG_FIRSTHDR(&msg) }.is_null()
+    {
+        unsafe { rejected(nonce) }
+    }
+    if packet.phase == Phase::Stop as u32 {
+        unsafe { finish(0) }
+    }
+    if packet.phase != expected as u32 {
+        unsafe { rejected(nonce) }
+    }
+}
+
+pub(super) unsafe fn run(
+    nonce: [u8; 16],
+    parent_pid: u32,
+    _mode: Mode,
+    activated: super::guest_cgroup::ActivatedPayload,
+) -> ! {
+    unsafe {
+        #[cfg(test)]
+        STAGE.store(1, std::sync::atomic::Ordering::Relaxed);
+        let (inputs, query_layout, activation_count) = receive_runtime(nonce, parent_pid);
+        let activation = activation_count != 0;
+        if libc::syscall(libc::SYS_getpid) != 1
+            || libc::syscall(libc::SYS_geteuid) != 0
+            || libc::syscall(libc::SYS_getegid) != 0
+        {
+            rejected(nonce)
+        }
+        require_root(inputs[0], nonce);
+        let initial_init = meta(inputs[1], nonce);
+        let init_fs = fs(inputs[1], nonce);
+        if initial_init.st_mode != libc::S_IFREG | 0o555
+            || initial_init.st_nlink != 1
+            || initial_init.st_uid != 0
+            || initial_init.st_gid != 0
+            || initial_init.st_size < 64
+            || init_fs.f_flags as u64 & RO_IMAGE != RO_IMAGE
+            || init_fs.f_flags as u64 & NOEXEC != 0
+        {
+            rejected(nonce)
+        }
+        let native_fd = libc::syscall(
+            libc::SYS_openat,
+            inputs[0],
+            c"lib64".as_ptr(),
+            libc::O_PATH | libc::O_DIRECTORY | libc::O_NOFOLLOW | libc::O_CLOEXEC,
+            0,
+        );
+        if native_fd < 0 && *libc::__errno_location() != libc::ENOENT {
+            failed(nonce, line!())
+        }
+        let native = native_fd >= 0;
+        if native_fd > i32::MAX as libc::c_long {
+            rejected(nonce)
+        }
+        if native {
+            close(native_fd as RawFd);
+        }
+        // The legacy shape remains usable only as an input component. The
+        // production PreparedRuntime constructor requires the native variant.
+        exact_names(
+            inputs[0],
+            if native {
+                &[b"apex", b"lib64", b"linkerconfig", b"rc"]
+            } else {
+                &[b"apex", b"linkerconfig", b"rc"]
+            },
+            nonce,
+        );
+        let root = directory(libc::AT_FDCWD, c"/", nonce);
+        if fs(root, nonce).f_type != TMPFS_MAGIC {
+            rejected(nonce)
+        }
+        if let Some(layout) = query_layout {
+            // The only optional input is the one selected, already sealed
+            // private query filesystem. No mount is added after readiness.
+            let query = inputs[2 + activation_count];
+            require_query_root(query, layout, nonce);
+            let original = meta(query, nonce);
+            if libc::syscall(
+                libc::SYS_mkdirat,
+                root,
+                c".droidloom-query".as_ptr(),
+                0o700_u32,
+            ) != 0
+            {
+                failed(nonce, line!())
+            }
+            let target = directory(root, c".droidloom-query", nonce);
+            attach(query, target, nonce);
+            close(target);
+            let target = directory(root, c".droidloom-query", nonce);
+            if !same_inode(&original, &meta(target, nonce)) {
+                rejected(nonce)
+            }
+            require_query_root(target, layout, nonce);
+            close(target);
+        }
+        if libc::syscall(
+            libc::SYS_mkdirat,
+            root,
+            c".droidloom-runtime".as_ptr(),
+            0o700_u32,
+        ) != 0
+        {
+            failed(nonce, line!())
+        }
+        let runtime_target = directory(root, c".droidloom-runtime", nonce);
+        attach(inputs[0], runtime_target, nonce);
+        close(runtime_target);
+        let runtime = directory(root, c".droidloom-runtime", nonce);
+        if !same_inode(&meta(inputs[0], nonce), &meta(runtime, nonce)) {
+            rejected(nonce)
+        }
+        #[cfg(test)]
+        STAGE.store(2, std::sync::atomic::Ordering::Relaxed);
+        if activation {
+            let mut devices = [0_u64; 3];
+            for (index, role) in ActivationRootRole::ALL
+                .into_iter()
+                .take(activation_count)
+                .enumerate()
+            {
+                let fd = inputs[2 + index];
+                let device = meta(fd, nonce).st_dev;
+                if devices[..index].contains(&device)
+                    || [meta(runtime, nonce).st_dev, meta(root, nonce).st_dev].contains(&device)
+                {
+                    rejected(nonce)
+                }
+                devices[index] = device;
+                if role != ActivationRootRole::BootstrapApex {
+                    let container = directory(runtime, role.name(), nonce);
+                    exact_names(container, &[], nonce);
+                    close(container);
+                }
+                project_activation(fd, root, role, nonce);
+            }
+        } else {
+            project_dir(runtime, root, c"apex", nonce);
+            project_dir(runtime, root, c"linkerconfig", nonce);
+        }
+        let rc = directory(runtime, c"rc", nonce);
+        require_root(rc, nonce);
+        exact_names(
+            rc,
+            if native {
+                &[
+                    b"init.rc",
+                    b"bootconfig",
+                    b"cgroup-v2-policy.json",
+                    b"cgroups.json",
+                    b"task_profiles.json",
+                ]
+            } else {
+                &[
+                    b"init.rc",
+                    b"bootconfig",
+                    b"cgroups.json",
+                    b"task_profiles.json",
+                ]
+            },
+            nonce,
+        );
+        let system = directory(root, c"system", nonce);
+        let bin = directory(system, c"bin", nonce);
+        let etc = directory(system, c"etc", nonce);
+        let init_dir = directory(etc, c"init", nonce);
+        let hw = directory(init_dir, c"hw", nonce);
+        let proc = directory(root, c"proc", nonce);
+        project_rc(rc, c"init.rc", hw, c"init.rc", nonce);
+        project_rc(rc, c"bootconfig", proc, c"bootconfig", nonce);
+        project_rc(rc, c"cgroups.json", etc, c"cgroups.json", nonce);
+        project_rc(rc, c"task_profiles.json", etc, c"task_profiles.json", nonce);
+        if native {
+            sys_scaffold::attach_native_scaffold(root, &activated, nonce);
+            let source_lib = directory(runtime, c"lib64", nonce);
+            exact_names(
+                source_lib,
+                &[b"libprocessgroup.so", b"libprocessgroup_setup.so"],
+                nonce,
+            );
+            let target_lib = directory(system, c"lib64", nonce);
+            project_file(
+                source_lib,
+                c"libprocessgroup.so",
+                target_lib,
+                c"libprocessgroup.so",
+                false,
+                nonce,
+            );
+            project_file(
+                source_lib,
+                c"libprocessgroup_setup.so",
+                target_lib,
+                c"libprocessgroup_setup.so",
+                false,
+                nonce,
+            );
+            close(target_lib);
+            close(source_lib);
+            let placeholder = libc::syscall(
+                libc::SYS_openat,
+                root,
+                c".droidloom-cgroup-v2-policy".as_ptr(),
+                libc::O_WRONLY | libc::O_CREAT | libc::O_EXCL | libc::O_NOFOLLOW | libc::O_CLOEXEC,
+                0o400_u32,
+            );
+            if placeholder < 0 || placeholder > i32::MAX as libc::c_long {
+                failed(nonce, line!())
+            }
+            close(placeholder as RawFd);
+            project_rc(
+                rc,
+                c"cgroup-v2-policy.json",
+                root,
+                c".droidloom-cgroup-v2-policy",
+                nonce,
+            );
+        }
+        #[cfg(test)]
+        STAGE.store(3, std::sync::atomic::Ordering::Relaxed);
+        let target = opened(bin, c"init", libc::O_PATH, nonce);
+        if meta(target, nonce).st_mode & libc::S_IFMT != libc::S_IFREG {
+            rejected(nonce)
+        }
+        // Already an anonymous detached file mount from the initial-root broker.
+        attach(inputs[1], target, nonce);
+        close(target);
+        let executable = check_projection(bin, c"init", &initial_init, false, nonce);
+        // Keep the original held identity through actual exec. Do not execute
+        // the host-origin pathname, or independently reopen an untrusted path.
+        retain_init(executable, nonce);
+        send(nonce, Phase::RuntimeReady, 0, 1);
+        command(nonce, parent_pid, Phase::ExecInitCp3aScoped);
+        #[cfg(test)]
+        STAGE.store(4, std::sync::atomic::Ordering::Relaxed);
+        let current = meta(EXEC_FD, nonce);
+        if !same_inode(&initial_init, &current) {
+            rejected(nonce)
+        }
+        // The parent selected the explicit exact-image profile from its held
+        // root-sealed runtime. The raw child independently proves that all
+        // authority namespaces belong to its subordinate user namespace and
+        // reads back the complete fixed masks before the original init exec.
+        let final_caps = super::final_exec::prepare(
+            super::final_exec::FinalCapabilityProfile::AndroidCp3aScoped,
+        );
+        if final_caps != 0 {
+            *libc::__errno_location() = final_caps;
+            failed(nonce, line!())
+        }
+        // NNP retains the enforcing broker profile. Arm the fixed Android
+        // profile as an additional on-exec layer using the explicit LSM
+        // proc interface, then let the parent observe the actual full stack.
+        let pending_mac = super::final_exec::arm_android_stack();
+        if pending_mac != 0 {
+            *libc::__errno_location() = pending_mac;
+            failed(nonce, line!())
+        }
+        let policy = crate::production_runtime_seccomp::install();
+        if policy != 0 {
+            *libc::__errno_location() = policy;
+            failed(nonce, line!())
+        }
+        // Stdio is private /dev/null, never the host journal, console or kmsg.
+        let null = opened(libc::AT_FDCWD, c"/dev/null", libc::O_RDWR, nonce);
+        let null_meta = meta(null, nonce);
+        if null_meta.st_mode & libc::S_IFMT != libc::S_IFCHR
+            || null_meta.st_rdev != libc::makedev(1, 3)
+        {
+            rejected(nonce)
+        }
+        for fd in 0..3 {
+            if null != fd && libc::syscall(libc::SYS_dup3, null, fd, 0) != fd as libc::c_long {
+                failed(nonce, line!())
+            }
+            // openat can reuse fd 0. In that case dup3 is deliberately skipped,
+            // so explicitly remove the original O_CLOEXEC and verify every
+            // standard descriptor before the fixed executable is entered.
+            if libc::syscall(libc::SYS_fcntl, fd, libc::F_SETFD, 0) != 0
+                || libc::syscall(libc::SYS_fcntl, fd, libc::F_GETFD) != 0
+            {
+                failed(nonce, line!())
+            }
+        }
+        if null > 2 {
+            close(null)
+        }
+        let notifications = match crate::production_apex_seccomp::install() {
+            Ok(fd) => fd,
+            Err(error) => {
+                *libc::__errno_location() = error;
+                failed(nonce, line!())
+            }
+        };
+        super::send_apex_listener(nonce, notifications);
+        close(notifications);
+        // Parent stores this original filter in the tree's resource custody
+        // before acknowledgement. No notification listener survives in init.
+        command(nonce, parent_pid, Phase::ApexNotifyAccepted);
+        // The same actual parent already owns this CLONE_PARENT/PIDFD child
+        // and its finite observer. No numeric attach or alternate task runs
+        // Android's namespace calls. The authenticated record precedes the
+        // real signal stop, which the parent must observe before exec.
+        if libc::syscall(libc::SYS_ptrace, libc::PTRACE_TRACEME, 0, 0, 0) != 0 {
+            failed(nonce, line!())
+        }
+        send(nonce, Phase::OriginalTraceReady, 0, 1);
+        let pid = libc::syscall(libc::SYS_getpid);
+        let tid = libc::syscall(libc::SYS_gettid);
+        if pid != 1 || tid != pid || libc::syscall(libc::SYS_tgkill, pid, tid, libc::SIGSTOP) != 0 {
+            failed(nonce, line!())
+        }
+        // No success is claimed here. The parent must observe CLOEXEC plus
+        // live exact pidfd/exe identity and later genuine property readiness.
+        send(nonce, Phase::ExecArmed, 0, 1);
+        #[cfg(test)]
+        STAGE.store(5, std::sync::atomic::Ordering::Relaxed);
+        let argv = [
+            c"/system/bin/init".as_ptr(),
+            c"second_stage".as_ptr(),
+            std::ptr::null(),
+        ];
+        let env = [
+            c"PATH=/system/bin:/system/xbin".as_ptr(),
+            c"ANDROID_ROOT=/system".as_ptr(),
+            c"ANDROID_DATA=/data".as_ptr(),
+            c"ANDROID_RUNTIME_ROOT=/apex/com.android.runtime".as_ptr(),
+            std::ptr::null(),
+        ];
+        *libc::__errno_location() =
+            super::final_exec::exec_held(EXEC_FD, argv.as_ptr(), env.as_ptr());
+        failed(nonce, line!())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn bootstrap_activation_packets_bind_three_roots_to_exact_five_or_six_descriptors() {
+        assert_eq!(
+            packet_query_layout(Phase::MountRuntimeBootstrapActivation as u32, 5),
+            Some(None)
+        );
+        assert_eq!(
+            packet_query_layout(Phase::MountRuntimeBootstrapActivation as u32, 6),
+            Some(Some(QueryLayout::Commands))
+        );
+        assert_eq!(
+            packet_query_layout(Phase::MountRuntimeBootstrapActivationContacts as u32, 6),
+            Some(Some(QueryLayout::Contacts))
+        );
+        assert_eq!(
+            packet_query_layout(Phase::MountRuntimeBootstrapActivationContacts as u32, 5),
+            None
+        );
+        for count in [0, 1, 2, 3, 4, 7, usize::MAX] {
+            for phase in [
+                Phase::MountRuntimeBootstrapActivation,
+                Phase::MountRuntimeBootstrapActivationContacts,
+            ] {
+                assert_eq!(packet_query_layout(phase as u32, count), None);
+            }
+        }
+        for phase in [
+            Phase::MountRuntime,
+            Phase::MountRuntimeContacts,
+            Phase::MountRuntimeActivation,
+            Phase::MountRuntimeActivationContacts,
+            Phase::ExecInitCp3aScoped,
+            Phase::RuntimeReady,
+        ] {
+            assert_eq!(packet_query_layout(phase as u32, 6), None);
+        }
+    }
+
+    #[test]
+    fn writable_activation_runtime_has_distinct_four_or_five_descriptor_phases() {
+        assert_eq!(
+            packet_query_layout(Phase::MountRuntimeActivation as u32, 4),
+            Some(None)
+        );
+        assert_eq!(
+            packet_query_layout(Phase::MountRuntimeActivation as u32, 5),
+            Some(Some(QueryLayout::Commands))
+        );
+        assert_eq!(
+            packet_query_layout(Phase::MountRuntimeActivationContacts as u32, 5),
+            Some(Some(QueryLayout::Contacts))
+        );
+        for count in [0, 1, 2, 3, 6, usize::MAX] {
+            assert_eq!(
+                packet_query_layout(Phase::MountRuntimeActivation as u32, count),
+                None
+            );
+            assert_eq!(
+                packet_query_layout(Phase::MountRuntimeActivationContacts as u32, count),
+                None
+            );
+        }
+        assert_eq!(
+            packet_query_layout(Phase::MountRuntimeActivationContacts as u32, 4),
+            None
+        );
+        for phase in [
+            Phase::MountRuntime,
+            Phase::MountRuntimeContacts,
+            Phase::ExecInitCp3aScoped,
+            Phase::RuntimeReady,
+        ] {
+            for count in [4, 5] {
+                assert_eq!(packet_query_layout(phase as u32, count), None);
+            }
+        }
+    }
+
+    #[test]
+    fn contacts_runtime_packet_requires_its_explicit_phase_and_three_descriptors() {
+        let nonce = [7_u8; 16];
+        let contacts = Packet::new(nonce, Phase::MountRuntimeContacts, 0, 91);
+        assert!(contacts.matches(nonce, 91));
+        assert_eq!(
+            packet_query_layout(contacts.phase, 3),
+            Some(Some(QueryLayout::Contacts))
+        );
+        for count in [0, 1, 2, 4, 5, usize::MAX] {
+            assert_eq!(packet_query_layout(contacts.phase, count), None);
+        }
+        let commands = Packet::new(nonce, Phase::MountRuntime, 0, 91);
+        assert_eq!(packet_query_layout(commands.phase, 2), Some(None));
+        assert_eq!(
+            packet_query_layout(commands.phase, 3),
+            Some(Some(QueryLayout::Commands))
+        );
+        for phase in [
+            Phase::Stop as u32,
+            Phase::ExecInit as u32,
+            Phase::RuntimeReady as u32,
+            u32::MAX,
+        ] {
+            assert_eq!(packet_query_layout(phase, 3), None);
+        }
+    }
+
+    #[test]
+    fn production_runtime_diagnostics_are_disjoint_from_previous_phases() {
+        let v = 0x4000_0000 | (5 << 24) | (123 << 12) | libc::EACCES as u32;
+        assert_eq!(
+            decode_private_failure(v as i32),
+            Some((5, 123, libc::EACCES))
+        );
+        for v in [0, -1, libc::EACCES, 0x31001001, 0x45000001, 0x46001001] {
+            assert_eq!(decode_private_failure(v), None)
+        }
+    }
+}

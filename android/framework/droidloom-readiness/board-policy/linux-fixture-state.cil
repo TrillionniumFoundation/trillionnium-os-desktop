@@ -1,0 +1,111 @@
+; Four source-owned QA fixtures expose only their bounded state Bundle.
+; The fixed Content.call factory runs as shell UID/GID 2000, without
+; capabilities, under the existing production-android AppArmor profile.
+; Original Android assertions require domain for Binder and coredomain for
+; the original system executable/property inputs. The independent verifier
+; derives every inherited permission from the nine pinned original sources.
+; No appdomain, network or MLS-trusted membership is added. Actual installed
+; provider identity and process labels remain runtime obligations.
+(type droidloom_fixture_state)
+(type droidloom_fixture_state_tmpfs)
+(roletype r droidloom_fixture_state)
+(roletype object_r droidloom_fixture_state_tmpfs)
+(typeattributeset p4_all_board_owned (droidloom_fixture_state droidloom_fixture_state_tmpfs))
+(typeattributeset domain (droidloom_fixture_state))
+(typeattributeset coredomain (droidloom_fixture_state))
+(typeattributeset file_type (droidloom_fixture_state_tmpfs))
+
+; The original factory owns the stopped child and fixed query entrypoint.
+(allow droidloom_query_birth droidloom_fixture_state (process (transition)))
+(allow droidloom_query_birth droidloom_fixture_state (process2 (nnp_transition nosuid_transition)))
+(allow kernel droidloom_fixture_state (process (getattr ptrace sigkill sigstop)))
+(allow droidloom_fixture_state droidloom_provider_exec (file (getattr open read map execute entrypoint)))
+(allow droidloom_fixture_state droidloom_provider_jar (file (getattr open read map)))
+(allow droidloom_fixture_state kernel (fd (use)))
+(allow droidloom_fixture_state kernel (process (sigchld)))
+; Ordinary query_io produces the actual pipes. Only bounded captured bytes,
+; never a provider FD or private database, reach the host caller.
+(allow droidloom_fixture_state droidloom_query_io (fd (use)))
+(allow droidloom_fixture_state droidloom_query_io (fifo_file (getattr write)))
+(allow droidloom_fixture_state null_device (chr_file (getattr read)))
+(allow droidloom_fixture_state self (process (fork sigchld getcap)))
+(allow droidloom_fixture_state self (dir (getattr search)))
+(allow droidloom_fixture_state self (file (getattr open read)))
+(allow droidloom_fixture_state self (lnk_file (getattr read)))
+(allow droidloom_fixture_state proc (dir (getattr search)))
+(allow droidloom_fixture_state proc (lnk_file (getattr read)))
+(allow droidloom_fixture_state device (dir (getattr search)))
+(allow droidloom_fixture_state p4_linux_query_mount_t (dir (getattr search)))
+(allow droidloom_fixture_state droidloom_query_tmpfs_t (dir (getattr search)))
+(allow droidloom_fixture_state droidloom_query_tmpfs_t (filesystem (getattr)))
+(allow droidloom_fixture_state labeledfs (filesystem (getattr)))
+
+; Existing immutable app_process/content.jar, interpreter and ART inputs.
+(allow droidloom_fixture_state p4_query_original_dirs (dir (getattr search)))
+(allow droidloom_fixture_state rootfs (lnk_file (getattr read)))
+(allow droidloom_fixture_state system_file (lnk_file (getattr read)))
+(allow droidloom_fixture_state apex_mnt_dir (lnk_file (getattr read)))
+(allow droidloom_fixture_state system_file (file (getattr open read map execute)))
+(allow droidloom_fixture_state system_lib_file (file (getattr open read map execute)))
+(allow droidloom_fixture_state system_linker_exec (file (getattr open read map execute)))
+(allow droidloom_fixture_state linkerconfig_file (file (getattr open read map)))
+(allow droidloom_fixture_state apex_info_file (file (getattr open read)))
+(allow droidloom_fixture_state properties_device (dir (getattr search)))
+(allow droidloom_fixture_state properties_serial (file (getattr open read map)))
+(allow droidloom_fixture_state default_prop (file (getattr open read map)))
+(allow droidloom_fixture_state exported_default_prop (file (getattr open read map)))
+(allow droidloom_fixture_state servicemanager_prop (file (getattr open read map)))
+(allow droidloom_fixture_state dalvik_prop (file (getattr open read map)))
+
+; Content.call obtains the one source-selected provider through ActivityManager.
+; Only the three concrete transaction peers are admitted. Bundle replies hold
+; one bounded string: no CursorWindow, application FD or private-file access.
+(allow droidloom_fixture_state binder_device (chr_file (getattr open read write map ioctl)))
+(allow droidloom_fixture_state servicemanager (binder (call transfer)))
+(allow servicemanager droidloom_fixture_state (binder (transfer)))
+(allow droidloom_fixture_state system_server (binder (call transfer)))
+(allow system_server droidloom_fixture_state (binder (call transfer)))
+(allow droidloom_fixture_state activity_service (service_manager (find)))
+(allow droidloom_fixture_state untrusted_app_32 (binder (call transfer)))
+(allow untrusted_app_32 droidloom_fixture_state (binder (call transfer)))
+
+; -Xint/-Xusejit:false keeps anonymous ART bookkeeping nonexecutable.
+(allow droidloom_fixture_state_tmpfs tmpfs (filesystem (associate)))
+(typetransition droidloom_fixture_state tmpfs file droidloom_fixture_state_tmpfs)
+(typetransition droidloom_fixture_state tmpfs memfd_file droidloom_fixture_state_tmpfs)
+(allow droidloom_fixture_state droidloom_fixture_state_tmpfs (file (create getattr open read write map)))
+(allow droidloom_fixture_state droidloom_fixture_state_tmpfs (memfd_file (create getattr open read write map)))
+
+; The maintained low-category observer reads only the actual stopped child.
+; Keep this role out of the older broad fixed-task and UI query groups.
+(allow droidloom_metadata_observer droidloom_fixture_state (process (getattr)))
+(allow droidloom_metadata_observer droidloom_fixture_state (dir (getattr search open read)))
+(allow droidloom_metadata_observer droidloom_fixture_state (file (getattr open read)))
+(allow droidloom_metadata_observer droidloom_fixture_state (lnk_file (getattr read)))
+
+; Source-fixed negative boundaries are also checked on the linked binary.
+(typeattribute p4_fixture_state_other_binder_peers)
+(typeattributeset p4_fixture_state_other_binder_peers (and p4_fixed_metadata_all_types (not (servicemanager system_server untrusted_app_32))))
+(typeattribute p4_fixture_state_other_services)
+; binder_stats_consumer_service find is an unchanged original domain rule.
+; No new board grant is made for it, and its original vector is checked.
+(typeattributeset p4_fixture_state_other_services (and service_manager_type (not (activity_service binder_stats_consumer_service))))
+(neverallow droidloom_fixture_state self (capability (all)))
+(neverallow droidloom_fixture_state self (capability2 (all)))
+(neverallow droidloom_fixture_state self (cap_userns (all)))
+(neverallow droidloom_fixture_state self (cap2_userns (all)))
+(neverallow droidloom_fixture_state self (process (execmem setexec setcurrent dyntransition setfscreate setsockcreate)))
+(neverallow droidloom_fixture_state p4_fixture_state_other_binder_peers (binder (all)))
+(neverallow p4_fixture_state_other_binder_peers droidloom_fixture_state (binder (all)))
+(neverallow droidloom_fixture_state p4_fixed_metadata_all_types (binder (impersonate set_context_mgr)))
+(neverallow droidloom_fixture_state p4_fixture_state_other_services (service_manager (all)))
+(neverallow droidloom_fixture_state service_manager_type (service_manager (add list)))
+(neverallow droidloom_fixture_state property_type (property_service (set)))
+(neverallow droidloom_fixture_state appdomain (fd (use)))
+(neverallow droidloom_fixture_state appdomain_tmpfs (file (open read write append map)))
+(neverallow droidloom_fixture_state app_data_file (file (open read write append map)))
+(neverallow droidloom_fixture_state privapp_data_file (file (open read write append map)))
+(neverallow droidloom_fixture_state system_app_data_file (file (open read write append map)))
+(neverallow droidloom_fixture_state droidloom_fixture_state_tmpfs (file (execute execute_no_trans entrypoint)))
+(neverallow droidloom_fixture_state droidloom_fixture_state_tmpfs (memfd_file (execute)))
+(neverallow droidloom_fixture_state p4_linux_data (file (write append create unlink link rename setattr relabelfrom relabelto entrypoint execute)))

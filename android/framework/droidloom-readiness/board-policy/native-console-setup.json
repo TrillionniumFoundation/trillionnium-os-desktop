@@ -1,0 +1,1431 @@
+{
+  "aliases": [
+    {
+      "class": "file",
+      "source": "p4_linux_native_bin_t",
+      "target": "p4_linux_console_helper_native_bin_t"
+    },
+    {
+      "class": "file",
+      "source": "p4_linux_native_bin_t",
+      "target": "p4_linux_console_vtrgb_native_bin_t"
+    },
+    {
+      "class": "file",
+      "source": "p4_linux_native_config_t",
+      "target": "p4_linux_console_cache_exec_native_config_t"
+    },
+    {
+      "class": "file",
+      "source": "p4_linux_native_config_t",
+      "target": "p4_linux_console_cache_native_config_t"
+    },
+    {
+      "class": "file",
+      "source": "p4_linux_native_config_t",
+      "target": "p4_linux_console_config_native_config_t"
+    },
+    {
+      "class": "file",
+      "source": "p4_linux_native_config_t",
+      "target": "p4_linux_console_public_native_config_t"
+    },
+    {
+      "class": "file",
+      "source": "p4_linux_native_data_t",
+      "target": "p4_linux_console_public_native_data_t"
+    },
+    {
+      "class": "dir",
+      "source": "p4_linux_rootdir_t",
+      "target": "p4_linux_console_cache_dir_t"
+    },
+    {
+      "class": "file",
+      "source": "p4_linux_runtime_lib_t",
+      "target": "p4_linux_console_entry_runtime_lib_t"
+    },
+    {
+      "class": "file",
+      "source": "p4_linux_runtime_lib_t",
+      "target": "p4_linux_console_library_runtime_lib_t"
+    },
+    {
+      "class": "file",
+      "source": "p4_linux_runtime_lib_t",
+      "target": "p4_linux_console_public_runtime_lib_t"
+    },
+    {
+      "class": "file",
+      "source": "p4_linux_native_bin_t",
+      "target": "p4_linux_console_interpreter_native_bin_t"
+    },
+    {
+      "class": "file",
+      "source": "p4_linux_native_config_t",
+      "target": "p4_linux_console_ld_cache_native_config_t"
+    },
+    {
+      "class": "file",
+      "source": "p4_linux_runtime_lib_t",
+      "target": "p4_linux_console_locale_runtime_lib_t"
+    }
+  ],
+  "command_links": [
+    {
+      "gid": 0,
+      "path": "/bin",
+      "target": "usr/bin",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "path": "/sbin",
+      "target": "usr/sbin",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "path": "/lib",
+      "target": "usr/lib",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "path": "/lib64",
+      "target": "usr/lib64",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "path": "/usr/bin/sh",
+      "target": "dash",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "path": "/usr/bin/rm",
+      "target": "gnurm",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "path": "/etc/default/locale",
+      "target": "../locale.conf",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "path": "/etc/vtrgb",
+      "target": "/etc/alternatives/vtrgb",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "path": "/etc/alternatives/vtrgb",
+      "target": "/etc/console-setup/vtrgb",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "path": "/usr/bin/uname",
+      "target": "../lib/cargo/bin/coreutils/uname",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "path": "/usr/bin/mkdir",
+      "target": "../lib/cargo/bin/coreutils/mkdir",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "path": "/usr/bin/ls",
+      "target": "../lib/cargo/bin/coreutils/ls",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "path": "/usr/bin/cat",
+      "target": "../lib/cargo/bin/coreutils/cat",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "path": "/usr/bin/cp",
+      "target": "gnucp",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "path": "/usr/bin/mktemp",
+      "target": "../lib/cargo/bin/coreutils/mktemp",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "path": "/usr/bin/chmod",
+      "target": "../lib/cargo/bin/coreutils/chmod",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "path": "/usr/bin/touch",
+      "target": "../lib/cargo/bin/coreutils/touch",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "path": "/usr/bin/tty",
+      "target": "../lib/cargo/bin/coreutils/tty",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "path": "/usr/bin/stty",
+      "target": "../lib/cargo/bin/coreutils/stty",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "path": "/usr/lib/x86_64-linux-gnu/libacl.so.1",
+      "target": "libacl.so.1.1.2302",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "path": "/usr/lib/x86_64-linux-gnu/libcrypt.so.1",
+      "target": "libcrypt.so.1.1.0",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "path": "/usr/lib/x86_64-linux-gnu/libsystemd.so.0",
+      "target": "libsystemd.so.0.42.0",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "path": "/usr/lib/x86_64-linux-gnu/libpcre2-8.so.0",
+      "target": "libpcre2-8.so.0.14.0",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "path": "/usr/lib64/ld-linux-x86-64.so.2",
+      "target": "../lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+      "uid": 0
+    },
+    {
+      "gid": 0,
+      "path": "/usr/lib/x86_64-linux-gnu/libattr.so.1",
+      "target": "libattr.so.1.1.2502",
+      "uid": 0
+    }
+  ],
+  "console_setup_version": "1.237ubuntu3.1",
+  "directory": {
+    "gid": 0,
+    "mode": 493,
+    "path": "/etc/console-setup",
+    "source_type": "p4_linux_rootdir_t",
+    "target_type": "p4_linux_console_cache_dir_t",
+    "uid": 0
+  },
+  "files": [
+    {
+      "bytes": 5085,
+      "category": "cache",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "paths": [
+        "/etc/console-setup/cached_UTF-8_del.kmap.gz"
+      ],
+      "sha256": "916b4203c5f2a000896c8269e1a0836ec1d4ea07a3d0aa113b157256f93b0d48",
+      "source_type": "p4_linux_native_config_t",
+      "target_type": "p4_linux_console_cache_native_config_t",
+      "uid": 0
+    },
+    {
+      "bytes": 4294,
+      "category": "cache",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "paths": [
+        "/etc/console-setup/cached_Uni2-Fixed16.psf.gz"
+      ],
+      "sha256": "8d41ccf0e0d973c628f8e6e1659d45e81b4e1fe784f9c88a8a3a510db88e9ab3",
+      "source_type": "p4_linux_native_config_t",
+      "target_type": "p4_linux_console_cache_native_config_t",
+      "uid": 0
+    },
+    {
+      "bytes": 467,
+      "category": "cache_exec",
+      "gid": 0,
+      "mode": 493,
+      "nlink": 1,
+      "paths": [
+        "/etc/console-setup/cached_setup_font.sh"
+      ],
+      "sha256": "3aab477e758d7f00759e00ad0260845c9a519b9bb2d93cf1653a2f8af90dae65",
+      "source_type": "p4_linux_native_config_t",
+      "target_type": "p4_linux_console_cache_exec_native_config_t",
+      "uid": 0
+    },
+    {
+      "bytes": 199,
+      "category": "cache_exec",
+      "gid": 0,
+      "mode": 493,
+      "nlink": 1,
+      "paths": [
+        "/etc/console-setup/cached_setup_keyboard.sh"
+      ],
+      "sha256": "e2a0991d913de84b6eba06a18c4c141a8f03fe9393b6079283b286cc8539e48f",
+      "source_type": "p4_linux_native_config_t",
+      "target_type": "p4_linux_console_cache_exec_native_config_t",
+      "uid": 0
+    },
+    {
+      "bytes": 73,
+      "category": "cache_exec",
+      "gid": 0,
+      "mode": 493,
+      "nlink": 1,
+      "paths": [
+        "/etc/console-setup/cached_setup_terminal.sh"
+      ],
+      "sha256": "944a6ff2b756619aa977ccadb27c7d32384c3a38a3126575dddc1bd054879991",
+      "source_type": "p4_linux_native_config_t",
+      "target_type": "p4_linux_console_cache_exec_native_config_t",
+      "uid": 0
+    },
+    {
+      "bytes": 4725,
+      "category": "public",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "paths": [
+        "/etc/console-setup/compose.ISO-8859-1.inc"
+      ],
+      "sha256": "6284eac65196d9d03866bc4b45b9afdd39897e32053532d93742944a54adab65",
+      "source_type": "p4_linux_native_config_t",
+      "target_type": "p4_linux_console_public_native_config_t",
+      "uid": 0
+    },
+    {
+      "bytes": 1359,
+      "category": "public",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "paths": [
+        "/etc/console-setup/remap.inc"
+      ],
+      "sha256": "b75c5424776d689df37efcb2e22e0657b8fdaa59684888bb14da887b9676bc36",
+      "source_type": "p4_linux_native_config_t",
+      "target_type": "p4_linux_console_public_native_config_t",
+      "uid": 0
+    },
+    {
+      "bytes": 158,
+      "category": "public",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "paths": [
+        "/etc/console-setup/vtrgb"
+      ],
+      "sha256": "684cd905549f78e025870dd5c8a3835e49f79f2bb08952eb7424537f6df5fa13",
+      "source_type": "p4_linux_native_config_t",
+      "target_type": "p4_linux_console_public_native_config_t",
+      "uid": 0
+    },
+    {
+      "bytes": 285,
+      "category": "config",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "paths": [
+        "/etc/default/console-setup"
+      ],
+      "sha256": "8910fde8c8dc59b33b8305bad3b517e09543256598a7bb0b2f46b44de718a44b",
+      "source_type": "p4_linux_native_config_t",
+      "target_type": "p4_linux_console_config_native_config_t",
+      "uid": 0
+    },
+    {
+      "bytes": 150,
+      "category": "config",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "paths": [
+        "/etc/default/keyboard"
+      ],
+      "sha256": "9d2d64b5b738ef55ecc80e236cd00caba19d3afe1921c74fa7d73c9477ebe6eb",
+      "source_type": "p4_linux_native_config_t",
+      "target_type": "p4_linux_console_config_native_config_t",
+      "uid": 0
+    },
+    {
+      "bytes": 51755,
+      "category": "mmap_data",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "paths": [
+        "/etc/ld.so.cache"
+      ],
+      "sha256": "dd7fe52f050a934fd422106aba76d07dd7de6c8e3c9f4845dc521c96ec201866",
+      "source_type": "p4_linux_native_config_t",
+      "target_type": "p4_linux_console_ld_cache_native_config_t",
+      "uid": 0
+    },
+    {
+      "bytes": 35,
+      "category": "config",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "paths": [
+        "/etc/locale.conf"
+      ],
+      "sha256": "ea21c3f039a2e14dbb824b404452a2cc54a1a49ea42366d3348dc48ae4b91125",
+      "source_type": "p4_linux_native_config_t",
+      "target_type": "p4_linux_console_config_native_config_t",
+      "uid": 0
+    },
+    {
+      "bytes": 150927,
+      "category": "helper",
+      "gid": 0,
+      "mode": 493,
+      "nlink": 1,
+      "paths": [
+        "/usr/bin/ckbcomp"
+      ],
+      "sha256": "9c6067632e056783983ca86d7bf5235547756d8ca8228cb1a6908502b05ed25c",
+      "source_type": "p4_linux_native_bin_t",
+      "target_type": "p4_linux_console_helper_native_bin_t",
+      "uid": 0
+    },
+    {
+      "bytes": 11807104,
+      "category": "helper",
+      "gid": 0,
+      "mode": 493,
+      "nlink": 116,
+      "paths": [
+        "/usr/bin/coreutils",
+        "/usr/lib/cargo/bin/coreutils/[",
+        "/usr/lib/cargo/bin/coreutils/arch",
+        "/usr/lib/cargo/bin/coreutils/b2sum",
+        "/usr/lib/cargo/bin/coreutils/b3sum",
+        "/usr/lib/cargo/bin/coreutils/base32",
+        "/usr/lib/cargo/bin/coreutils/base64",
+        "/usr/lib/cargo/bin/coreutils/basename",
+        "/usr/lib/cargo/bin/coreutils/basenc",
+        "/usr/lib/cargo/bin/coreutils/cat",
+        "/usr/lib/cargo/bin/coreutils/chcon",
+        "/usr/lib/cargo/bin/coreutils/chgrp",
+        "/usr/lib/cargo/bin/coreutils/chmod",
+        "/usr/lib/cargo/bin/coreutils/chown",
+        "/usr/lib/cargo/bin/coreutils/chroot",
+        "/usr/lib/cargo/bin/coreutils/cksum",
+        "/usr/lib/cargo/bin/coreutils/comm",
+        "/usr/lib/cargo/bin/coreutils/cp",
+        "/usr/lib/cargo/bin/coreutils/csplit",
+        "/usr/lib/cargo/bin/coreutils/cut",
+        "/usr/lib/cargo/bin/coreutils/date",
+        "/usr/lib/cargo/bin/coreutils/dd",
+        "/usr/lib/cargo/bin/coreutils/df",
+        "/usr/lib/cargo/bin/coreutils/dir",
+        "/usr/lib/cargo/bin/coreutils/dircolors",
+        "/usr/lib/cargo/bin/coreutils/dirname",
+        "/usr/lib/cargo/bin/coreutils/du",
+        "/usr/lib/cargo/bin/coreutils/echo",
+        "/usr/lib/cargo/bin/coreutils/env",
+        "/usr/lib/cargo/bin/coreutils/expand",
+        "/usr/lib/cargo/bin/coreutils/expr",
+        "/usr/lib/cargo/bin/coreutils/factor",
+        "/usr/lib/cargo/bin/coreutils/false",
+        "/usr/lib/cargo/bin/coreutils/fmt",
+        "/usr/lib/cargo/bin/coreutils/fold",
+        "/usr/lib/cargo/bin/coreutils/groups",
+        "/usr/lib/cargo/bin/coreutils/hashsum",
+        "/usr/lib/cargo/bin/coreutils/head",
+        "/usr/lib/cargo/bin/coreutils/hostid",
+        "/usr/lib/cargo/bin/coreutils/id",
+        "/usr/lib/cargo/bin/coreutils/install",
+        "/usr/lib/cargo/bin/coreutils/join",
+        "/usr/lib/cargo/bin/coreutils/link",
+        "/usr/lib/cargo/bin/coreutils/ln",
+        "/usr/lib/cargo/bin/coreutils/logname",
+        "/usr/lib/cargo/bin/coreutils/ls",
+        "/usr/lib/cargo/bin/coreutils/md5sum",
+        "/usr/lib/cargo/bin/coreutils/mkdir",
+        "/usr/lib/cargo/bin/coreutils/mkfifo",
+        "/usr/lib/cargo/bin/coreutils/mknod",
+        "/usr/lib/cargo/bin/coreutils/mktemp",
+        "/usr/lib/cargo/bin/coreutils/mv",
+        "/usr/lib/cargo/bin/coreutils/nice",
+        "/usr/lib/cargo/bin/coreutils/nl",
+        "/usr/lib/cargo/bin/coreutils/nohup",
+        "/usr/lib/cargo/bin/coreutils/nproc",
+        "/usr/lib/cargo/bin/coreutils/numfmt",
+        "/usr/lib/cargo/bin/coreutils/od",
+        "/usr/lib/cargo/bin/coreutils/paste",
+        "/usr/lib/cargo/bin/coreutils/pathchk",
+        "/usr/lib/cargo/bin/coreutils/pinky",
+        "/usr/lib/cargo/bin/coreutils/pr",
+        "/usr/lib/cargo/bin/coreutils/printenv",
+        "/usr/lib/cargo/bin/coreutils/printf",
+        "/usr/lib/cargo/bin/coreutils/ptx",
+        "/usr/lib/cargo/bin/coreutils/pwd",
+        "/usr/lib/cargo/bin/coreutils/readlink",
+        "/usr/lib/cargo/bin/coreutils/realpath",
+        "/usr/lib/cargo/bin/coreutils/relpath",
+        "/usr/lib/cargo/bin/coreutils/rm",
+        "/usr/lib/cargo/bin/coreutils/rmdir",
+        "/usr/lib/cargo/bin/coreutils/runcon",
+        "/usr/lib/cargo/bin/coreutils/seq",
+        "/usr/lib/cargo/bin/coreutils/sha1sum",
+        "/usr/lib/cargo/bin/coreutils/sha224sum",
+        "/usr/lib/cargo/bin/coreutils/sha256sum",
+        "/usr/lib/cargo/bin/coreutils/sha3-224sum",
+        "/usr/lib/cargo/bin/coreutils/sha3-256sum",
+        "/usr/lib/cargo/bin/coreutils/sha3-384sum",
+        "/usr/lib/cargo/bin/coreutils/sha3-512sum",
+        "/usr/lib/cargo/bin/coreutils/sha384sum",
+        "/usr/lib/cargo/bin/coreutils/sha3sum",
+        "/usr/lib/cargo/bin/coreutils/sha512sum",
+        "/usr/lib/cargo/bin/coreutils/shake128sum",
+        "/usr/lib/cargo/bin/coreutils/shake256sum",
+        "/usr/lib/cargo/bin/coreutils/shred",
+        "/usr/lib/cargo/bin/coreutils/shuf",
+        "/usr/lib/cargo/bin/coreutils/sleep",
+        "/usr/lib/cargo/bin/coreutils/sort",
+        "/usr/lib/cargo/bin/coreutils/split",
+        "/usr/lib/cargo/bin/coreutils/stat",
+        "/usr/lib/cargo/bin/coreutils/stdbuf",
+        "/usr/lib/cargo/bin/coreutils/stty",
+        "/usr/lib/cargo/bin/coreutils/sum",
+        "/usr/lib/cargo/bin/coreutils/sync",
+        "/usr/lib/cargo/bin/coreutils/tac",
+        "/usr/lib/cargo/bin/coreutils/tail",
+        "/usr/lib/cargo/bin/coreutils/tee",
+        "/usr/lib/cargo/bin/coreutils/test",
+        "/usr/lib/cargo/bin/coreutils/timeout",
+        "/usr/lib/cargo/bin/coreutils/touch",
+        "/usr/lib/cargo/bin/coreutils/tr",
+        "/usr/lib/cargo/bin/coreutils/true",
+        "/usr/lib/cargo/bin/coreutils/truncate",
+        "/usr/lib/cargo/bin/coreutils/tsort",
+        "/usr/lib/cargo/bin/coreutils/tty",
+        "/usr/lib/cargo/bin/coreutils/uname",
+        "/usr/lib/cargo/bin/coreutils/unexpand",
+        "/usr/lib/cargo/bin/coreutils/uniq",
+        "/usr/lib/cargo/bin/coreutils/unlink",
+        "/usr/lib/cargo/bin/coreutils/users",
+        "/usr/lib/cargo/bin/coreutils/vdir",
+        "/usr/lib/cargo/bin/coreutils/wc",
+        "/usr/lib/cargo/bin/coreutils/who",
+        "/usr/lib/cargo/bin/coreutils/whoami",
+        "/usr/lib/cargo/bin/coreutils/yes"
+      ],
+      "sha256": "f84e76ea4da1e0c4e92254bd0d7dccdabe2c8b3098e734f27997dae3ee5d8e02",
+      "source_type": "p4_linux_native_bin_t",
+      "target_type": "p4_linux_console_helper_native_bin_t",
+      "uid": 0
+    },
+    {
+      "bytes": 129856,
+      "category": "interpreter",
+      "gid": 0,
+      "mode": 493,
+      "nlink": 1,
+      "paths": [
+        "/usr/bin/dash"
+      ],
+      "sha256": "c626229526bb58ec2d0f585f3c3ae1412e6f973b4353385042d11c38d8426917",
+      "source_type": "p4_linux_native_bin_t",
+      "target_type": "p4_linux_console_interpreter_native_bin_t",
+      "uid": 0
+    },
+    {
+      "bytes": 137840,
+      "category": "helper",
+      "gid": 0,
+      "mode": 493,
+      "nlink": 1,
+      "paths": [
+        "/usr/bin/gnucp"
+      ],
+      "sha256": "8fcdb2485ebc68f00392d647b3d3d9130f0d4bb9f72c69ee258086dd63e1c122",
+      "source_type": "p4_linux_native_bin_t",
+      "target_type": "p4_linux_console_helper_native_bin_t",
+      "uid": 0
+    },
+    {
+      "bytes": 64096,
+      "category": "helper",
+      "gid": 0,
+      "mode": 493,
+      "nlink": 1,
+      "paths": [
+        "/usr/bin/gnurm"
+      ],
+      "sha256": "0362781f855d9de6396b71af947662758970ed09946c4a0a78ff740b20f5e6a6",
+      "source_type": "p4_linux_native_bin_t",
+      "target_type": "p4_linux_console_helper_native_bin_t",
+      "uid": 0
+    },
+    {
+      "bytes": 97560,
+      "category": "helper",
+      "gid": 0,
+      "mode": 493,
+      "nlink": 1,
+      "paths": [
+        "/usr/bin/gzip"
+      ],
+      "sha256": "2ba6fd35db5f0b5561e56b97124a08b067464b795e8e08278367f23dc539d549",
+      "source_type": "p4_linux_native_bin_t",
+      "target_type": "p4_linux_console_helper_native_bin_t",
+      "uid": 0
+    },
+    {
+      "bytes": 14792,
+      "category": "helper",
+      "gid": 0,
+      "mode": 493,
+      "nlink": 1,
+      "paths": [
+        "/usr/bin/kbd_mode"
+      ],
+      "sha256": "b3c2936471a18ddf4ca877529cadf9a0c80154c0febef88ae36ac6bb38d4b013",
+      "source_type": "p4_linux_native_bin_t",
+      "target_type": "p4_linux_console_helper_native_bin_t",
+      "uid": 0
+    },
+    {
+      "bytes": 207400,
+      "category": "helper",
+      "gid": 0,
+      "mode": 493,
+      "nlink": 1,
+      "paths": [
+        "/usr/bin/loadkeys"
+      ],
+      "sha256": "fff2c05bfb2f7398b698f0248bc9b4d76d63353748d00ac913cd7d76cf345802",
+      "source_type": "p4_linux_native_bin_t",
+      "target_type": "p4_linux_console_helper_native_bin_t",
+      "uid": 0
+    },
+    {
+      "bytes": 4064448,
+      "category": "helper",
+      "gid": 0,
+      "mode": 493,
+      "nlink": 2,
+      "paths": [
+        "/usr/bin/perl",
+        "/usr/bin/perl5.40.1"
+      ],
+      "sha256": "e75e795719ce5f0d1c30cbd54864a1b67178aedfe8e0a1f24902f3df8f65fd44",
+      "source_type": "p4_linux_native_bin_t",
+      "target_type": "p4_linux_console_helper_native_bin_t",
+      "uid": 0
+    },
+    {
+      "bytes": 117392,
+      "category": "helper",
+      "gid": 0,
+      "mode": 493,
+      "nlink": 1,
+      "paths": [
+        "/usr/bin/sed"
+      ],
+      "sha256": "e42dd92d4848435b6357af4c4a22691062e8f74869ca6c9f3900b4760d604a2f",
+      "source_type": "p4_linux_native_bin_t",
+      "target_type": "p4_linux_console_helper_native_bin_t",
+      "uid": 0
+    },
+    {
+      "bytes": 56232,
+      "category": "helper",
+      "gid": 0,
+      "mode": 493,
+      "nlink": 1,
+      "paths": [
+        "/usr/bin/setfont"
+      ],
+      "sha256": "7e429cb23b8c1423c013688d876c24beb1732e89af3eac8ce86bc50a45129cf6",
+      "source_type": "p4_linux_native_bin_t",
+      "target_type": "p4_linux_console_helper_native_bin_t",
+      "uid": 0
+    },
+    {
+      "bytes": 37856,
+      "category": "helper",
+      "gid": 0,
+      "mode": 493,
+      "nlink": 1,
+      "paths": [
+        "/usr/bin/setupcon"
+      ],
+      "sha256": "9cbb365d8a88b33ac0c129e09ab59fffcddd359224e357ce9f40729684cf0eb9",
+      "source_type": "p4_linux_native_bin_t",
+      "target_type": "p4_linux_console_helper_native_bin_t",
+      "uid": 0
+    },
+    {
+      "bytes": 920,
+      "category": "entry",
+      "gid": 0,
+      "mode": 493,
+      "nlink": 1,
+      "paths": [
+        "/usr/lib/console-setup/console-setup.sh"
+      ],
+      "sha256": "26565008e9dbc7332fd999dbe92fb66b2410b66460b2c844b836de672d6040d8",
+      "source_type": "p4_linux_runtime_lib_t",
+      "target_type": "p4_linux_console_entry_runtime_lib_t",
+      "uid": 0
+    },
+    {
+      "bytes": 390,
+      "category": "entry",
+      "gid": 0,
+      "mode": 493,
+      "nlink": 1,
+      "paths": [
+        "/usr/lib/console-setup/keyboard-setup.sh"
+      ],
+      "sha256": "f79265d2ad5b43ed44bbd6efa2b002f007cc97b369e45238b5385f35cdc00587",
+      "source_type": "p4_linux_runtime_lib_t",
+      "target_type": "p4_linux_console_entry_runtime_lib_t",
+      "uid": 0
+    },
+    {
+      "bytes": 38984,
+      "category": "library",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "paths": [
+        "/usr/lib/x86_64-linux-gnu/libacl.so.1.1.2302"
+      ],
+      "sha256": "534d062c6b873081a5f5623627bdeb7d8339087c434be758493ad87c87e257ab",
+      "source_type": "p4_linux_runtime_lib_t",
+      "target_type": "p4_linux_console_library_runtime_lib_t",
+      "uid": 0
+    },
+    {
+      "bytes": 26776,
+      "category": "library",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "paths": [
+        "/usr/lib/x86_64-linux-gnu/libattr.so.1.1.2502"
+      ],
+      "sha256": "bdaf51cec34ae2930638f55ebf752b1f66197c24cd13a16dc30f30c62f059458",
+      "source_type": "p4_linux_runtime_lib_t",
+      "target_type": "p4_linux_console_library_runtime_lib_t",
+      "uid": 0
+    },
+    {
+      "bytes": 2190608,
+      "category": "library",
+      "gid": 0,
+      "mode": 493,
+      "nlink": 1,
+      "paths": [
+        "/usr/lib/x86_64-linux-gnu/libc.so.6"
+      ],
+      "sha256": "9941dc28e68bc5fd788d9cd024c69e68c791d63799e7538a97b6040dd9f50fb6",
+      "source_type": "p4_linux_runtime_lib_t",
+      "target_type": "p4_linux_console_library_runtime_lib_t",
+      "uid": 0
+    },
+    {
+      "bytes": 215128,
+      "category": "library",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "paths": [
+        "/usr/lib/x86_64-linux-gnu/libcrypt.so.1.1.0"
+      ],
+      "sha256": "212437df8afcd4004965550cb6df2d0eeb8cad736f7a13a89dcec455182429a6",
+      "source_type": "p4_linux_runtime_lib_t",
+      "target_type": "p4_linux_console_library_runtime_lib_t",
+      "uid": 0
+    },
+    {
+      "bytes": 187120,
+      "category": "library",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "paths": [
+        "/usr/lib/x86_64-linux-gnu/libgcc_s.so.1"
+      ],
+      "sha256": "9d339ecb409578d6a5d587e6c537a8f9589b8a13fefba30d167433a4b5758bee",
+      "source_type": "p4_linux_runtime_lib_t",
+      "target_type": "p4_linux_console_library_runtime_lib_t",
+      "uid": 0
+    },
+    {
+      "bytes": 1198376,
+      "category": "library",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "paths": [
+        "/usr/lib/x86_64-linux-gnu/libm.so.6"
+      ],
+      "sha256": "37b9e6c977b2a0b02a110d93eb8f01b643c9848653f18bd51682c5279ac88f54",
+      "source_type": "p4_linux_runtime_lib_t",
+      "target_type": "p4_linux_console_library_runtime_lib_t",
+      "uid": 0
+    },
+    {
+      "bytes": 699056,
+      "category": "library",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "paths": [
+        "/usr/lib/x86_64-linux-gnu/libpcre2-8.so.0.14.0"
+      ],
+      "sha256": "1896c0dee31c0b04cf749092fafc383178817b02a2304e9128246108920d5156",
+      "source_type": "p4_linux_runtime_lib_t",
+      "target_type": "p4_linux_console_library_runtime_lib_t",
+      "uid": 0
+    },
+    {
+      "bytes": 199120,
+      "category": "library",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "paths": [
+        "/usr/lib/x86_64-linux-gnu/libselinux.so.1"
+      ],
+      "sha256": "c977b03dbb29e45ca7206ff0937cfda419dcacc0fbbe72be1f0a72cfc8c1b218",
+      "source_type": "p4_linux_runtime_lib_t",
+      "target_type": "p4_linux_console_library_runtime_lib_t",
+      "uid": 0
+    },
+    {
+      "bytes": 1127960,
+      "category": "library",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "paths": [
+        "/usr/lib/x86_64-linux-gnu/libsystemd.so.0.42.0"
+      ],
+      "sha256": "716def160eb37d6732c60042a5b8b042e483b30ea274c3c6db3af5eb0503033c",
+      "source_type": "p4_linux_runtime_lib_t",
+      "target_type": "p4_linux_console_library_runtime_lib_t",
+      "uid": 0
+    },
+    {
+      "bytes": 1606,
+      "category": "public",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "paths": [
+        "/usr/lib/x86_64-linux-gnu/perl-base/strict.pm"
+      ],
+      "sha256": "0d071a91d5ec74ac18dd74234e19ebe7f61d9271292607cfcbd75f44b7684846",
+      "source_type": "p4_linux_runtime_lib_t",
+      "target_type": "p4_linux_console_public_runtime_lib_t",
+      "uid": 0
+    },
+    {
+      "bytes": 30759,
+      "category": "public",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "paths": [
+        "/usr/lib/x86_64-linux-gnu/perl-base/warnings.pm"
+      ],
+      "sha256": "ee08e86d2ef593c2f52595c41fd8e8141642e833f63b4fe349759bbd0ec98ef4",
+      "source_type": "p4_linux_runtime_lib_t",
+      "target_type": "p4_linux_console_public_runtime_lib_t",
+      "uid": 0
+    },
+    {
+      "bytes": 14856,
+      "category": "vtrgb",
+      "gid": 0,
+      "mode": 493,
+      "nlink": 1,
+      "paths": [
+        "/usr/sbin/setvtrgb"
+      ],
+      "sha256": "41c41599f5e40277771584672d1904e965f434ad765af20b6ddbec56143b2c42",
+      "source_type": "p4_linux_native_bin_t",
+      "target_type": "p4_linux_console_vtrgb_native_bin_t",
+      "uid": 0
+    },
+    {
+      "bytes": 4294,
+      "category": "public",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "paths": [
+        "/usr/share/consolefonts/Uni2-Fixed16.psf.gz"
+      ],
+      "sha256": "8d41ccf0e0d973c628f8e6e1659d45e81b4e1fe784f9c88a8a3a510db88e9ab3",
+      "source_type": "p4_linux_native_data_t",
+      "target_type": "p4_linux_console_public_native_data_t",
+      "uid": 0
+    },
+    {
+      "bytes": 4113,
+      "category": "public",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "paths": [
+        "/usr/share/coreutils/locales/uucore/en-US.ftl"
+      ],
+      "sha256": "ae8de21ce91c43e2e4f15a7bcf39904ed9419d60d3e6541da64f3414d1989550",
+      "source_type": "p4_linux_native_data_t",
+      "target_type": "p4_linux_console_public_native_data_t",
+      "uid": 0
+    },
+    {
+      "bytes": 2176,
+      "category": "public",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "paths": [
+        "/usr/share/xkeyboard-config-2/keycodes/aliases"
+      ],
+      "sha256": "85f774170fc1526e8a909a1e2952423dae3891b721abc293a27dc450818dcc6d",
+      "source_type": "p4_linux_native_data_t",
+      "target_type": "p4_linux_console_public_native_data_t",
+      "uid": 0
+    },
+    {
+      "bytes": 8749,
+      "category": "public",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "paths": [
+        "/usr/share/xkeyboard-config-2/keycodes/xfree86"
+      ],
+      "sha256": "fe02da14c9216fce5278c4dbb7059a12063649b3bade565a808c1f5bb2f3a602",
+      "source_type": "p4_linux_native_data_t",
+      "target_type": "p4_linux_console_public_native_data_t",
+      "uid": 0
+    },
+    {
+      "bytes": 39286,
+      "category": "public",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "paths": [
+        "/usr/share/xkeyboard-config-2/rules/base"
+      ],
+      "sha256": "dc53104f4036b058f73ee4ceb05386d8ce9a4d72fecc455058ce5874c3f21ec9",
+      "source_type": "p4_linux_native_data_t",
+      "target_type": "p4_linux_console_public_native_data_t",
+      "uid": 0
+    },
+    {
+      "bytes": 83694,
+      "category": "public",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "paths": [
+        "/usr/share/xkeyboard-config-2/symbols/inet"
+      ],
+      "sha256": "b4c56aea0527b72d7589b8e7067df28616c0a511e0aba5139a52aa8744a4ae82",
+      "source_type": "p4_linux_native_data_t",
+      "target_type": "p4_linux_console_public_native_data_t",
+      "uid": 0
+    },
+    {
+      "bytes": 23990,
+      "category": "public",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "paths": [
+        "/usr/share/xkeyboard-config-2/symbols/keypad"
+      ],
+      "sha256": "c4044b7ae212b78f9bfa31dbe0deb2d25123d8e8f40b7f241f2b5508cfcf482f",
+      "source_type": "p4_linux_native_data_t",
+      "target_type": "p4_linux_console_public_native_data_t",
+      "uid": 0
+    },
+    {
+      "bytes": 2910,
+      "category": "public",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "paths": [
+        "/usr/share/xkeyboard-config-2/symbols/pc"
+      ],
+      "sha256": "e2e1c1501d8eedf2ba41ca153e244edf29ff8d7d83f9fa1a20d07d4729421794",
+      "source_type": "p4_linux_native_data_t",
+      "target_type": "p4_linux_console_public_native_data_t",
+      "uid": 0
+    },
+    {
+      "bytes": 1803,
+      "category": "public",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "paths": [
+        "/usr/share/xkeyboard-config-2/symbols/srvr_ctrl"
+      ],
+      "sha256": "652d16838143dbeb218aff2997cc603f9e9731e1e55e2300dee910d167e25d85",
+      "source_type": "p4_linux_native_data_t",
+      "target_type": "p4_linux_console_public_native_data_t",
+      "uid": 0
+    },
+    {
+      "bytes": 113892,
+      "category": "public",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "paths": [
+        "/usr/share/xkeyboard-config-2/symbols/us"
+      ],
+      "sha256": "cd38b88f81c4d37505fd4908d2bf37eedb26eb8dd80897b3120d987a97079b22",
+      "source_type": "p4_linux_native_data_t",
+      "target_type": "p4_linux_console_public_native_data_t",
+      "uid": 0
+    },
+    {
+      "bytes": 127,
+      "category": "mmap_data",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "paths": [
+        "/usr/lib/locale/C.utf8/LC_ADDRESS"
+      ],
+      "sha256": "26e2800affab801cb36d4ff9625a95c3abceeda2b6553a7aecd0cfcf34c98099",
+      "source_type": "p4_linux_runtime_lib_t",
+      "target_type": "p4_linux_console_locale_runtime_lib_t",
+      "uid": 0
+    },
+    {
+      "bytes": 1406,
+      "category": "mmap_data",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "paths": [
+        "/usr/lib/locale/C.utf8/LC_COLLATE"
+      ],
+      "sha256": "47a5f5359a8f324abc39d69a7f6241a2ac0e2fbbeae5b9c3a756e682b75d087b",
+      "source_type": "p4_linux_runtime_lib_t",
+      "target_type": "p4_linux_console_locale_runtime_lib_t",
+      "uid": 0
+    },
+    {
+      "bytes": 369120,
+      "category": "mmap_data",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "paths": [
+        "/usr/lib/locale/C.utf8/LC_CTYPE"
+      ],
+      "sha256": "40680545df4f92443c15e7c6f51a7fdc9154ebedd9eff1ed5c48437039add365",
+      "source_type": "p4_linux_runtime_lib_t",
+      "target_type": "p4_linux_console_locale_runtime_lib_t",
+      "uid": 0
+    },
+    {
+      "bytes": 258,
+      "category": "mmap_data",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "paths": [
+        "/usr/lib/locale/C.utf8/LC_IDENTIFICATION"
+      ],
+      "sha256": "38a1d8e5271c86f48910d9c684f64271955335736e71cec35eeac942f90eb091",
+      "source_type": "p4_linux_runtime_lib_t",
+      "target_type": "p4_linux_console_locale_runtime_lib_t",
+      "uid": 0
+    },
+    {
+      "bytes": 23,
+      "category": "mmap_data",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "paths": [
+        "/usr/lib/locale/C.utf8/LC_MEASUREMENT"
+      ],
+      "sha256": "bb14a6f2cbd5092a755e8f272079822d3e842620dd4542a8dfa1e5e72fc6115b",
+      "source_type": "p4_linux_runtime_lib_t",
+      "target_type": "p4_linux_console_locale_runtime_lib_t",
+      "uid": 0
+    },
+    {
+      "bytes": 48,
+      "category": "mmap_data",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "paths": [
+        "/usr/lib/locale/C.utf8/LC_MESSAGES/SYS_LC_MESSAGES"
+      ],
+      "sha256": "f9ad02f1d8eba721d4cbd50c365b5c681c39aec008f90bfc2be2dc80bfbaddcb",
+      "source_type": "p4_linux_runtime_lib_t",
+      "target_type": "p4_linux_console_locale_runtime_lib_t",
+      "uid": 0
+    },
+    {
+      "bytes": 270,
+      "category": "mmap_data",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "paths": [
+        "/usr/lib/locale/C.utf8/LC_MONETARY"
+      ],
+      "sha256": "bfd9e9975443b834582493fe9a8d7aefcd989376789c17470a1e548aee76fd55",
+      "source_type": "p4_linux_runtime_lib_t",
+      "target_type": "p4_linux_console_locale_runtime_lib_t",
+      "uid": 0
+    },
+    {
+      "bytes": 62,
+      "category": "mmap_data",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "paths": [
+        "/usr/lib/locale/C.utf8/LC_NAME"
+      ],
+      "sha256": "14507aad9f806112e464b9ca94c93b2e4d759ddc612b5f87922d7cac7170697d",
+      "source_type": "p4_linux_runtime_lib_t",
+      "target_type": "p4_linux_console_locale_runtime_lib_t",
+      "uid": 0
+    },
+    {
+      "bytes": 50,
+      "category": "mmap_data",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "paths": [
+        "/usr/lib/locale/C.utf8/LC_NUMERIC"
+      ],
+      "sha256": "f5976e6b3e6b24dfe03caad6a5b98d894d8110d8bd15507e690fd60fd3e04ab2",
+      "source_type": "p4_linux_runtime_lib_t",
+      "target_type": "p4_linux_console_locale_runtime_lib_t",
+      "uid": 0
+    },
+    {
+      "bytes": 34,
+      "category": "mmap_data",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "paths": [
+        "/usr/lib/locale/C.utf8/LC_PAPER"
+      ],
+      "sha256": "cde048b81e2a026517cc707c906aebbd50f5ee3957b6f0c1c04699dffcb7c015",
+      "source_type": "p4_linux_runtime_lib_t",
+      "target_type": "p4_linux_console_locale_runtime_lib_t",
+      "uid": 0
+    },
+    {
+      "bytes": 47,
+      "category": "mmap_data",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "paths": [
+        "/usr/lib/locale/C.utf8/LC_TELEPHONE"
+      ],
+      "sha256": "f4caf0d12844219b65ba42edc7ec2f5ac1b2fc36a3c88c28887457275daca1ee",
+      "source_type": "p4_linux_runtime_lib_t",
+      "target_type": "p4_linux_console_locale_runtime_lib_t",
+      "uid": 0
+    },
+    {
+      "bytes": 3360,
+      "category": "mmap_data",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "paths": [
+        "/usr/lib/locale/C.utf8/LC_TIME"
+      ],
+      "sha256": "0910b595d1d5d4e52cc0f415bbb1ff07c015d6860d34aae02505dd9973a63154",
+      "source_type": "p4_linux_runtime_lib_t",
+      "target_type": "p4_linux_console_locale_runtime_lib_t",
+      "uid": 0
+    },
+    {
+      "bytes": 5727920,
+      "category": "mmap_data",
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "paths": [
+        "/usr/lib/locale/locale-archive"
+      ],
+      "sha256": "dc0d80629dd3c805aff420244f479eefb5f8a0c096a0eb30763961a080149c8a",
+      "source_type": "p4_linux_runtime_lib_t",
+      "target_type": "p4_linux_console_locale_runtime_lib_t",
+      "uid": 0
+    }
+  ],
+  "ioctls": {
+    "GIO_UNIMAP": 19302,
+    "KDFONTOP": 19314,
+    "KDGETMODE": 19259,
+    "KDGKBMODE": 19268,
+    "KDGKBTYPE": 19251,
+    "KDSKBDIACRUC": 19451,
+    "KDSKBENT": 19271,
+    "KDSKBMODE": 19269,
+    "KDSKBSENT": 19273,
+    "PIO_CMAP": 19313,
+    "PIO_UNIMAP": 19303,
+    "PIO_UNIMAPCLR": 19304,
+    "TCGETS2": 21546,
+    "TIOCGWINSZ": 21523
+  },
+  "kbd_version": "2.7.1-2ubuntu2",
+  "packages": {
+    "console-setup": "1.237ubuntu3.1",
+    "console-setup-linux": "1.237ubuntu3.1",
+    "coreutils": "9.5-1ubuntu2+0.0.0~ubuntu25",
+    "dash": "0.5.12-12ubuntu3",
+    "gnu-coreutils": "9.7-3ubuntu2.1",
+    "gzip": "1.14-1~exp2ubuntu1.1",
+    "kbd": "2.7.1-2ubuntu2",
+    "keyboard-configuration": "1.237ubuntu3.1",
+    "libacl1": "2.3.2-2",
+    "libattr1": "1:2.5.2-4ubuntu0.1",
+    "libc-bin": "2.43-2ubuntu2.7",
+    "libc6": "2.43-2ubuntu2.7",
+    "libcrypt1": "1:4.5.1-1",
+    "libgcc-s1": "16-20260322-1ubuntu1",
+    "libpcre2-8-0": "10.46-1ubuntu0.1",
+    "libselinux1": "3.9-4build1+p4lsmexec4",
+    "libsystemd0": "259.9-0ubuntu0.1+p4gentmp2",
+    "locales": "2.43-2ubuntu2.7",
+    "perl-base": "5.40.1-7ubuntu0.4",
+    "rust-coreutils": "0.10.0-1ubuntu2~26.04.1",
+    "sed": "4.9-2ubuntu1",
+    "xkb-data": "2.46-2"
+  },
+  "runtime_qualified": false,
+  "schema": "droidloom.native-console-source-closure.v1",
+  "selected_keymap": [
+    "us",
+    "pc105",
+    "UTF-8",
+    "del"
+  ],
+  "source_documents": [
+    {
+      "bytes": 2160,
+      "origin": "https://archive.ubuntu.com/ubuntu/pool/main/k/kbd/kbd_2.7.1-2ubuntu2.dsc",
+      "sha256": "b216694607ec2341d7d51a7b81a0af8a6c427925ad806d8786ce237689f76e5b"
+    },
+    {
+      "bytes": 1955528,
+      "origin": "https://archive.ubuntu.com/ubuntu/pool/main/k/kbd/kbd_2.7.1.orig.tar.gz",
+      "sha256": "1fd74ac647c5ba5b3ebe09a204483544c5f1ef89ff42f37a11eab040cac9595d"
+    },
+    {
+      "bytes": 69936,
+      "origin": "https://archive.ubuntu.com/ubuntu/pool/main/k/kbd/kbd_2.7.1-2ubuntu2.debian.tar.xz",
+      "sha256": "aa3b9db4bb924f4e729d4cf542832be48e85e78a515fbafe0a52e5d39c6882f6"
+    },
+    {
+      "bytes": 3909416,
+      "origin": "https://archive.ubuntu.com/ubuntu/pool/main/c/console-setup/console-setup_1.237ubuntu3.1.tar.xz",
+      "sha256": "4f1d1461008117ae200aeef6258622d5691a93f86d3a7d3c0780fe74e9fce4f3"
+    },
+    {
+      "bytes": 30549,
+      "origin": "selected-kernel-6.18.64/drivers/tty/vt/vt_ioctl.c",
+      "sha256": "e6a4dab2a955cdc99396c54e181860a01dfd6adf2cafbde0a730503d8539e4b4"
+    },
+    {
+      "bytes": 54054,
+      "origin": "selected-kernel-6.18.64/drivers/tty/vt/keyboard.c",
+      "sha256": "9e06e7a7635785ab7fb870ae42f702c2d62f8db240e19fdf4a6fd226df7efefc"
+    },
+    {
+      "bytes": 9078,
+      "origin": "https://archive.ubuntu.com/ubuntu/pool/main/g/glibc/glibc_2.43-2ubuntu2.7.dsc",
+      "sha256": "f2ef1d49c67efaf54870b87f858ec8b7a97fa1d3be31ce1b91314697b3f080d5"
+    },
+    {
+      "bytes": 20297012,
+      "origin": "https://archive.ubuntu.com/ubuntu/pool/main/g/glibc/glibc_2.43.orig.tar.xz",
+      "sha256": "d9c86c6b5dbddb43a3e08270c5844fc5177d19442cf5b8df4be7c07cd5fa3831"
+    },
+    {
+      "bytes": 543520,
+      "origin": "https://archive.ubuntu.com/ubuntu/pool/main/g/glibc/glibc_2.43-2ubuntu2.7.debian.tar.xz",
+      "sha256": "d25b1964036d124e55f6852c93825c5bce5e5db0a0b76b2e8409e314fb99fcbf"
+    },
+    {
+      "bytes": 4358,
+      "origin": "selected-kernel-6.18.64/fs/binfmt_script.c",
+      "sha256": "81b0293a89908d56575f2b00b3550f927eb80714ef540f9634272bce56f9c656"
+    },
+    {
+      "bytes": 52354,
+      "origin": "selected-kernel-6.18.64/fs/exec.c",
+      "sha256": "8561930ae4ec56ef3adc173bde1dba2e5c43bc9055cf779556f3ad4d160369bb"
+    },
+    {
+      "bytes": 212133,
+      "origin": "selected-kernel-6.18.64/security/selinux/hooks.c",
+      "sha256": "4fa2a20bff2788fffc1f6bc95d49af3e1145e6a679f69ff5aa2d5a1bd85272a0"
+    },
+    {
+      "bytes": 91934,
+      "origin": "selected-kernel-6.18.64/drivers/tty/tty_io.c",
+      "sha256": "2c1942c2724019f290aff1948408db39003ec7fe5749a0f49b7c72e53f9da580"
+    },
+    {
+      "bytes": 123484,
+      "origin": "selected-kernel-6.18.64/drivers/tty/vt/vt.c",
+      "sha256": "f2ba757cf50eec1314665c1e926803586cde7a895823b1eb14febe3e8084de89"
+    },
+    {
+      "bytes": 11280,
+      "origin": "selected-kernel-6.18.64/drivers/base/devtmpfs.c",
+      "sha256": "6ae711234e2a65352d87a332467763d397097a61158ab3305a0d2960bb196012"
+    },
+    {
+      "path": "/home/qq/work/p4-lsm-peersec-kernel-20261124-516eec-r1/source/fs/proc/fd.c",
+      "bytes": 9103,
+      "sha256": "0252148d80564c87e085b6f6d745540c85b8ac6afadecb0218b167b2a7d82cb9",
+      "purpose": "selected kernel fixed VT and held proc-FD xattr semantics"
+    },
+    {
+      "path": "/home/qq/work/p4-lsm-peersec-kernel-20261124-516eec-r1/source/fs/xattr.c",
+      "bytes": 41618,
+      "sha256": "f0211a15f0e3e2bec046ae01f27e7a87982fa96465454faeddcb7bc4d6cdfdde",
+      "purpose": "selected kernel fixed VT and held proc-FD xattr semantics"
+    },
+    {
+      "path": "/home/qq/work/p4-lsm-peersec-kernel-20261124-516eec-r1/source/include/uapi/linux/xattr.h",
+      "bytes": 3316,
+      "sha256": "d32560f914b4b70448b980cb774181e03af9824a0c65acbfe628a51af0813b89",
+      "purpose": "selected kernel fixed VT and held proc-FD xattr semantics"
+    },
+    {
+      "path": "/home/qq/work/p4-lsm-peersec-kernel-20261124-516eec-r1/source/include/uapi/linux/vt.h",
+      "bytes": 3311,
+      "sha256": "193a6d67a3331f3badf5a9a889887957bbb97cb14fd8301391ccf619925769e1",
+      "purpose": "selected kernel fixed VT and held proc-FD xattr semantics"
+    },
+    {
+      "path": "/home/qq/work/p4-lsm-peersec-kernel-20261124-516eec-r1/source/fs/pidfs.c",
+      "bytes": 29306,
+      "sha256": "e94f42e40118fb76c6e1f318bc51c988b84e1ba2fbabca96fd39a21bca387a09",
+      "purpose": "selected post-load VT metadata and original namespace/status admission"
+    },
+    {
+      "path": "/home/qq/work/p4-lsm-peersec-kernel-20261124-516eec-r1/source/fs/nsfs.c",
+      "bytes": 14991,
+      "sha256": "fb1366d38c672d0fdfa0925fb6f89a5f25c31e3bc3b84e5b558643c46174829f",
+      "purpose": "selected post-load VT metadata and original namespace/status admission"
+    },
+    {
+      "path": "/home/qq/work/p4-lsm-peersec-kernel-20261124-516eec-r1/source/security/selinux/selinuxfs.c",
+      "bytes": 48593,
+      "sha256": "e9814f116535bb3418dc3207c9f87a45c74529e5ee194dd329e0b7f560a6aec5",
+      "purpose": "selected post-load VT metadata and original namespace/status admission"
+    },
+    {
+      "path": "/home/qq/work/p4-lsm-peersec-kernel-20261124-516eec-r1/source/security/security.c",
+      "bytes": 191795,
+      "sha256": "3b4afe19e5ba78ee68eff86eccbb1d58328b23e0b2920a2204afd958d4125248",
+      "purpose": "selected post-load VT metadata and original namespace/status admission"
+    }
+  ],
+  "unchanged_inputs": [
+    {
+      "bytes": 287,
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/systemd/system/keyboard-setup.service",
+      "sha256": "7bfae47456a8ccfd36c05494a6ec80256b4b2454fd737892c09e6c3c83b87e73",
+      "uid": 0
+    },
+    {
+      "bytes": 343,
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/systemd/system/console-setup.service",
+      "sha256": "2e7a84c20b1dd1773d906c3684e96c6c5356eefed1a00b3982899f7ab63b4220",
+      "uid": 0
+    },
+    {
+      "bytes": 330,
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/systemd/system/setvtrgb.service",
+      "sha256": "32e83e016d68d15c28f1d55f4c25ab742abe11851fbad32ae615d74c82fa63cc",
+      "uid": 0
+    },
+    {
+      "bytes": 265,
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/udev/rules.d/90-console-setup.rules",
+      "sha256": "01468d685ee97aecd6b66413f6bdf8ffe696ba7c65146fef842ff4fa3d814621",
+      "uid": 0
+    },
+    {
+      "bytes": 2284,
+      "gid": 0,
+      "mode": 420,
+      "path": "/usr/lib/systemd/system/systemd-udevd.service",
+      "sha256": "e3c2483b46e14dfb6074e30d4736298c3ff27d9811d3803d05af0cce9a1d3797",
+      "uid": 0
+    },
+    {
+      "bytes": 254864,
+      "gid": 0,
+      "mode": 493,
+      "path": "/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+      "sha256": "c0b20d6e1ced12abfe0b1ef2b5b68017950beaaea3df69eb6949d73e0ecf7b40",
+      "uid": 0
+    }
+  ]
+}

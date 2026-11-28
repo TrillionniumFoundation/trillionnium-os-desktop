@@ -1,0 +1,326 @@
+{
+  "schema": "droidloom.pocket4-shared-kernel-source.v1",
+  "upstream_version": "6.18.64",
+  "retained_base_release": "6.18.64-p4ctx6181-fusectl-aafs-r1",
+  "candidate_release": "6.18.64-p4ctx6181-fusectl-aafs-peer-r1",
+  "retained_base_source": "/home/qq/work/p4-r101-apparmorfs-genfs-kernel-20261124-r1/source",
+  "candidate_source": "/home/qq/work/p4-lsm-peersec-kernel-20261124-516eec-r1/source",
+  "full_source_comparison": {
+    "path": "/home/qq/work/p4-lsm-peersec-kernel-20261124-516eec-r1/receipts/SOURCE-COMPARED.json",
+    "bytes": 2288,
+    "sha256": "df9340c8e48342134bf7499f95c1fe7dc751626f7e32ad9f1bcda288a4f5704f"
+  },
+  "full_source_manifest": {
+    "path": "/home/qq/work/p4-lsm-peersec-kernel-20261124-516eec-r1/receipts/SOURCE-MANIFEST.json",
+    "bytes": 38102380,
+    "sha256": "0e171fe09d632d4e1043f91c05695ee33e8a4cdd86bde02e31e009a3933a9f73"
+  },
+  "changed_source": [
+    {
+      "path": "include/linux/security.h",
+      "original": {
+        "mode": 420,
+        "kind": "regular",
+        "size": 67794,
+        "sha256": "efcfdd3284b0bfbe1da7b22ea50a8db3d6f22f9f7dcd9421bd219712f8a0b8a0"
+      },
+      "candidate": {
+        "mode": 420,
+        "kind": "regular",
+        "size": 68114,
+        "sha256": "e1e1262dda630e332a764cd02ac940728369471763b3ec8f67a026c39b205d9c"
+      }
+    },
+    {
+      "path": "include/uapi/linux/p4_lsm_context.h",
+      "original": {
+        "mode": 384,
+        "kind": "regular",
+        "size": 905,
+        "sha256": "ed64c81e0c9e7883c331666ada1d10feff24574908fe52ec3d394b1918f9b2d7"
+      },
+      "candidate": {
+        "mode": 384,
+        "kind": "regular",
+        "size": 1955,
+        "sha256": "bf2a910bb2a9648eb5c19dd2ac2c217f72610c876482afa0238afc16fc5d023f"
+      }
+    },
+    {
+      "path": "net/core/sock.c",
+      "original": {
+        "mode": 420,
+        "kind": "regular",
+        "size": 113314,
+        "sha256": "74e2dd889d01b7aba501866362457cf0892db4f915352c6bb5969ac8f71db6fb"
+      },
+      "candidate": {
+        "mode": 420,
+        "kind": "regular",
+        "size": 113502,
+        "sha256": "a1baa145ef7e9f0b96e6dbc3b748f065209824cac796b95b67d66b29dddd792d"
+      }
+    },
+    {
+      "path": "security/security.c",
+      "original": {
+        "mode": 420,
+        "kind": "regular",
+        "size": 189647,
+        "sha256": "a1087a4c1e34694eb9d03e0b71ab241afe48295701b4f61e30f98f89e37ccaa1"
+      },
+      "candidate": {
+        "mode": 420,
+        "kind": "regular",
+        "size": 191795,
+        "sha256": "3b4afe19e5ba78ee68eff86eccbb1d58328b23e0b2920a2204afd958d4125248"
+      }
+    }
+  ],
+  "patch": {
+    "path": "patches/0002-readonly-socket-peer-lsm.patch",
+    "sha256": "a02ef3e3d92566de25b6c7f0e87cbfc2b8f61ac1c417918e6540ea56cde6a5a0"
+  },
+  "config": {
+    "path": "/home/qq/work/p4-lsm-peersec-kernel-20261124-516eec-r1/publication/root/usr/lib/modules/6.18.64-p4ctx6181-fusectl-aafs-peer-r1/config-6.18.64-p4ctx6181-fusectl-aafs-peer-r1",
+    "bytes": 304072,
+    "sha256": "bccb147083a909408e25dc63f1dd58cf465ee19bcabc660916a1fa28cc67a3e1"
+  },
+  "make_arguments": [
+    "/usr/bin/make",
+    "-C",
+    "/home/qq/work/p4-lsm-peersec-kernel-20261124-516eec-r1/source",
+    "O=/home/qq/work/p4-lsm-peersec-kernel-20261124-516eec-r1/out",
+    "ARCH=x86",
+    "LOCALVERSION=-fusectl-aafs-peer-r1",
+    "-j6",
+    "CC=/usr/bin/x86_64-linux-gnu-gcc-15",
+    "LD=/usr/bin/x86_64-linux-gnu-ld.bfd",
+    "RUSTC=/home/qq/work/p4-r101-apparmorfs-genfs-kernel-20261124-r1/tools/rustc",
+    "BINDGEN=/home/qq/work/p4-r101-apparmorfs-genfs-kernel-20261124-r1/toolchain/usr/bin/bindgen",
+    "PAHOLE=/home/qq/work/p4-r101-apparmorfs-genfs-kernel-20261124-r1/toolchain/usr/bin/pahole",
+    "STRIP=/usr/bin/x86_64-linux-gnu-strip",
+    "DEPMOD=/usr/sbin/depmod",
+    "HOSTCC=/home/qq/work/p4-r101-apparmorfs-genfs-kernel-20261124-r1/tools/hostcc"
+  ],
+  "build_environment": {
+    "PATH": "/home/qq/work/p4-r101-apparmorfs-genfs-kernel-20261124-r1/tools:/home/qq/work/p4-r101-apparmorfs-genfs-kernel-20261124-r1/toolchain/usr/bin:/usr/bin:/bin",
+    "LD_LIBRARY_PATH": "/home/qq/work/p4-r101-apparmorfs-genfs-kernel-20261124-r1/toolchain/usr/lib/x86_64-linux-gnu",
+    "RUST_LIB_SRC": "/home/qq/work/p4-r101-apparmorfs-genfs-kernel-20261124-r1/toolchain/usr/src/rustc-1.93.1/library",
+    "OPENSSL_CONF": "/home/qq/work/p4-ctx6181-normal-fusectl-full-cohort-20261122-r5/etc/openssl.cnf",
+    "TMPDIR": "/home/qq/work/p4-lsm-peersec-kernel-20261124-516eec-r1/tmp",
+    "LC_ALL": "C",
+    "LIBCLANG_PATH": "/usr/lib/llvm-21/lib"
+  },
+  "toolchain_packages": [
+    {
+      "archive": "/home/qq/work/p4-ctx6181-exact-kernel-rust-20261122-r1/bindgen_0.72.1-1_amd64.deb",
+      "bytes": 2269814,
+      "package": "bindgen",
+      "sha256": "d832caa2bce067120ab8ea583af728611611afa99d6c3ddde59f494b6b6b52db",
+      "verified_retained": true,
+      "version": "0.72.1-1",
+      "filename": "pool/universe/r/rust-bindgen-cli/bindgen_0.72.1-1_amd64.deb",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/universe/r/rust-bindgen-cli/bindgen_0.72.1-1_amd64.deb",
+      "destination": "/home/qq/work/p4-r101-apparmorfs-genfs-kernel-20261124-r1/packages/bindgen_0.72.1-1_amd64.deb",
+      "retrieval": "original-pinned-archive"
+    },
+    {
+      "archive": "/home/qq/work/p4-ctx6181-exact-kernel-rust-20261122-r1/rustc-1.93_1.93.1+dfsg-0ubuntu6_amd64.deb",
+      "bytes": 6100978,
+      "package": "rustc-1.93",
+      "sha256": "b9e85cdaa060bea3d41c776a457420acbc771601bec9bb4402dfa3b074bead7c",
+      "verified_retained": true,
+      "version": "1.93.1+dfsg-0ubuntu6",
+      "filename": "pool/main/r/rustc-1.93/rustc-1.93_1.93.1+dfsg-0ubuntu6_amd64.deb",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/r/rustc-1.93/rustc-1.93_1.93.1+dfsg-0ubuntu6_amd64.deb",
+      "destination": "/home/qq/work/p4-r101-apparmorfs-genfs-kernel-20261124-r1/packages/rustc-1.93_1.93.1+dfsg-0ubuntu6_amd64.deb",
+      "retrieval": "original-pinned-archive"
+    },
+    {
+      "archive": "/home/qq/work/p4-ctx6181-exact-kernel-rust-20261122-r1/libstd-rust-1.93_1.93.1+dfsg-0ubuntu6_amd64.deb",
+      "bytes": 22466716,
+      "package": "libstd-rust-1.93",
+      "sha256": "df63365a59b50263d9bc4d4d40f6d3b6ca86a1f08f6657e1209e6fef915b469d",
+      "verified_retained": true,
+      "version": "1.93.1+dfsg-0ubuntu6",
+      "filename": "pool/main/r/rustc-1.93/libstd-rust-1.93_1.93.1+dfsg-0ubuntu6_amd64.deb",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/r/rustc-1.93/libstd-rust-1.93_1.93.1+dfsg-0ubuntu6_amd64.deb",
+      "destination": "/home/qq/work/p4-r101-apparmorfs-genfs-kernel-20261124-r1/packages/libstd-rust-1.93_1.93.1+dfsg-0ubuntu6_amd64.deb",
+      "retrieval": "original-pinned-archive"
+    },
+    {
+      "archive": "/home/qq/work/p4-ctx6181-exact-kernel-rust-20261122-r2/libstd-rust-1.93-dev_1.93.1+dfsg-0ubuntu6_amd64.deb",
+      "bytes": 46264876,
+      "package": "libstd-rust-1.93-dev",
+      "sha256": "a66558d9699e5b0a636ee9d86c9ccf4c3f7416d85dbfb89ffded99ce0192571a",
+      "verified_retained": true,
+      "version": "1.93.1+dfsg-0ubuntu6",
+      "filename": "pool/main/r/rustc-1.93/libstd-rust-1.93-dev_1.93.1+dfsg-0ubuntu6_amd64.deb",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/r/rustc-1.93/libstd-rust-1.93-dev_1.93.1+dfsg-0ubuntu6_amd64.deb",
+      "destination": "/home/qq/work/p4-r101-apparmorfs-genfs-kernel-20261124-r1/packages/libstd-rust-1.93-dev_1.93.1+dfsg-0ubuntu6_amd64.deb",
+      "retrieval": "original-pinned-archive"
+    },
+    {
+      "archive": "/home/qq/work/p4-ctx6181-exact-kernel-rust-20261122-r2/rust-1.93-src_1.93.1+dfsg-0ubuntu6_all.deb",
+      "bytes": 27711784,
+      "package": "rust-1.93-src",
+      "sha256": "bc31da88ecbb851412ff45886da99761ba60eae2adaf5275c5113824cb633a3a",
+      "verified_retained": true,
+      "version": "1.93.1+dfsg-0ubuntu6",
+      "filename": "pool/universe/r/rustc-1.93/rust-1.93-src_1.93.1+dfsg-0ubuntu6_all.deb",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/universe/r/rustc-1.93/rust-1.93-src_1.93.1+dfsg-0ubuntu6_all.deb",
+      "destination": "/home/qq/work/p4-r101-apparmorfs-genfs-kernel-20261124-r1/packages/rust-1.93-src_1.93.1+dfsg-0ubuntu6_all.deb",
+      "retrieval": "original-pinned-archive"
+    },
+    {
+      "archive": "/home/qq/work/p4-ctx6181-fusectl-build-tools-20261121-r2/libdwarves1_1.31-2ubuntu1_amd64.deb",
+      "bytes": 93230,
+      "package": "libdwarves1",
+      "sha256": "f6b00e79db3d3683619918d14c32ab13871550591d1a1ffea855ac7a03e6244d",
+      "version": "1.31-2ubuntu1",
+      "filename": "pool/universe/d/dwarves/libdwarves1_1.31-2ubuntu1_amd64.deb",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/universe/d/dwarves/libdwarves1_1.31-2ubuntu1_amd64.deb",
+      "destination": "/home/qq/work/p4-r101-apparmorfs-genfs-kernel-20261124-r1/packages/libdwarves1_1.31-2ubuntu1_amd64.deb",
+      "retrieval": "original-pinned-archive"
+    },
+    {
+      "archive": "/home/qq/work/p4-ctx6181-fusectl-build-tools-20261121-r2/pahole_1.31-2ubuntu1_amd64.deb",
+      "bytes": 110574,
+      "package": "pahole",
+      "sha256": "dd3396a360290f7c04b1d55b836311e5da0ad15f93648d6f061f15c8554a9833",
+      "version": "1.31-2ubuntu1",
+      "filename": "pool/universe/d/dwarves/pahole_1.31-2ubuntu1_amd64.deb",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/universe/d/dwarves/pahole_1.31-2ubuntu1_amd64.deb",
+      "destination": "/home/qq/work/p4-r101-apparmorfs-genfs-kernel-20261124-r1/packages/pahole_1.31-2ubuntu1_amd64.deb",
+      "retrieval": "original-pinned-archive"
+    },
+    {
+      "package": "gawk",
+      "version": "1:5.3.2-1ubuntu1.1",
+      "bytes": 526516,
+      "sha256": "125782ea78a32a9df4e9b7ef49f458dc57f2b81473658c73a5a5930f950ea330",
+      "archive": "/home/qq/work/p4-ctx6181-private-gawk-20261122-r1/gawk-amd64.deb",
+      "filename": "pool/main/g/gawk/gawk_5.3.2-1ubuntu1.1_amd64.deb",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/g/gawk/gawk_5.3.2-1ubuntu1.1_amd64.deb",
+      "destination": "/home/qq/work/p4-r101-apparmorfs-genfs-kernel-20261124-r1/packages/gawk_5.3.2-1ubuntu1.1_amd64.deb",
+      "retrieval": "original-pinned-archive"
+    }
+  ],
+  "executable_pins": [
+    {
+      "path": "/usr/bin/make",
+      "bytes": 295120,
+      "sha256": "27c9f6d806aee15882b01c2c61848f7aa75caa14bc7b6f608ba422f9e46a7d49"
+    },
+    {
+      "path": "/usr/bin/x86_64-linux-gnu-gcc-15",
+      "bytes": 1305304,
+      "sha256": "b5f1b773a7c733738352000c92a077dc5852a1a2fc6d836b1e411be1e9ec5f88"
+    },
+    {
+      "path": "/usr/bin/x86_64-linux-gnu-ld.bfd",
+      "bytes": 1890472,
+      "sha256": "97f48d93b8b076a92d2809ec29dcb17f0f37c8827358f832255e2ed22fef6075"
+    },
+    {
+      "path": "/usr/bin/x86_64-linux-gnu-strip",
+      "bytes": 130504,
+      "sha256": "4d2ca6ba80677c3b2975e328306a779cd7bd6590a87948b5ebea9c1b41a049c8"
+    },
+    {
+      "path": "/usr/bin/kmod",
+      "bytes": 174472,
+      "sha256": "6edf62330978627d75d8de7e903f243b6ba765f8b54baa914ec83e21cd85bdc7"
+    },
+    {
+      "path": "/usr/bin/openssl",
+      "bytes": 1132128,
+      "sha256": "1d72cbc5bf62be3f3dbd7626c295b63c5fdc1dd8439f323ac47998d8a062b4c9"
+    },
+    {
+      "path": "/home/qq/work/p4-r101-apparmorfs-genfs-kernel-20261124-r1/toolchain/usr/bin/bindgen",
+      "bytes": 7939016,
+      "sha256": "6caad9ff3f9d5334fedbe35def3ba9d21928f699bf1e3148869c8e205cf59e1e"
+    },
+    {
+      "path": "/home/qq/work/p4-r101-apparmorfs-genfs-kernel-20261124-r1/toolchain/usr/bin/pahole",
+      "bytes": 68928,
+      "sha256": "8641cad0cda54800debbf800a29b34309bc857f1450d84195ff83e23ec7ec1ca"
+    },
+    {
+      "path": "/home/qq/work/p4-r101-apparmorfs-genfs-kernel-20261124-r1/toolchain/usr/lib/rust-1.93/bin/rustc",
+      "bytes": 14504,
+      "sha256": "8e509606d3aa8a69e7dd2c935c78a0c7a8803148cc80e8936812630b1b115ab0"
+    }
+  ],
+  "compiler_interfaces": [
+    {
+      "path": "/home/qq/work/p4-r101-apparmorfs-genfs-kernel-20261124-r1/tools/rustc",
+      "bytes": 466,
+      "sha256": "9ba60dcbaedd870c542e893d0084ed86b3627011692787de3b1803b84310b640",
+      "source": "#!/bin/sh\nexplicit=0\nfor argument\ndo\n case \"$argument\" in\n  --) break ;;\n  --sysroot|--sysroot=*) explicit=1 ;;\n esac\ndone\nif [ \"$explicit\" -eq 0 ]; then\n exec /home/qq/work/p4-r101-apparmorfs-genfs-kernel-20261124-r1/toolchain/usr/lib/rust-1.93/bin/rustc --sysroot /home/qq/work/p4-r101-apparmorfs-genfs-kernel-20261124-r1/toolchain/usr/lib/rust-1.93 \"$@\"\nfi\nexec /home/qq/work/p4-r101-apparmorfs-genfs-kernel-20261124-r1/toolchain/usr/lib/rust-1.93/bin/rustc \"$@\"\n"
+    },
+    {
+      "path": "/home/qq/work/p4-r101-apparmorfs-genfs-kernel-20261124-r1/tools/hostcc",
+      "bytes": 208,
+      "sha256": "d081670dd65ddc0e3d50bba393cf6fbedb79661847ff56b62f41aedc1ef4c638",
+      "source": "#!/bin/sh\nexec /usr/bin/x86_64-linux-gnu-gcc-15 -isystem /home/qq/work/p4-ctx6181-kernel-elfutils-dev-20261122-r2/sysroot/usr/include -L/home/qq/work/p4-ctx6181-kernel-elfutils-dev-20261122-r2/host-libs \"$@\"\n"
+    },
+    {
+      "path": "/home/qq/work/p4-r101-apparmorfs-genfs-kernel-20261124-r1/tools/awk",
+      "bytes": 901712,
+      "sha256": "a695aa25fdd3f207ece8b3628514c6506c45216ce5486f63d293a83e12dc9798",
+      "symbolic_link_target": "/home/qq/work/p4-r101-apparmorfs-genfs-kernel-20261124-r1/toolchain/usr/bin/gawk"
+    }
+  ],
+  "openssl_configuration": {
+    "path": "openssl.cnf",
+    "sha256": "58f823ebd017aa6f10e6a388f4175b5ba3dcee2beb28657ae601144807481c22"
+  },
+  "normal_build_receipt": {
+    "path": "/home/qq/work/p4-lsm-peersec-kernel-20261124-516eec-r1/BUILD-RESULT.json",
+    "bytes": 11028,
+    "sha256": "70f2d2da02aafca3d478feb140f7027087eb29331acf6ce05b85af26002df4a6"
+  },
+  "module_manifest": {
+    "path": "/home/qq/work/p4-lsm-peersec-kernel-20261124-516eec-r1/publication/MODULES.json",
+    "bytes": 2144597,
+    "sha256": "5399a707d1aa2b8511a936dbc1b056891613f6043b8eafe0a1c0ad5c45eb7fa8"
+  },
+  "public_signing_certificate": {
+    "path": "/home/qq/work/p4-lsm-peersec-kernel-20261124-516eec-r1/publication/module-signing-public.der",
+    "bytes": 1324,
+    "sha256": "c8085a1357354a180e49eae55a5f4a3d202b0f6aef1cd748cb31db5d8e5fefdf"
+  },
+  "private_signing_key_exported": false,
+  "physical_boot_qualified": false,
+  "predecessor": {
+    "release": "6.18.64-p4ctx6181-fusectl-aafs-r1",
+    "source": "/home/qq/work/p4-r101-apparmorfs-genfs-kernel-20261124-r1/source",
+    "source_lock": {
+      "path": "/home/qq/work/p4-lsm-peersec-kernel-20261124-516eec-r1/receipts/PREDECESSOR-SOURCE-LOCK.json",
+      "bytes": 12837,
+      "sha256": "6c239765ce19fcf1f019a1f63db41323b2d68a353972dc3dc878d3d54fc3145c"
+    },
+    "retained_apparmorfs_patch": {
+      "path": "patches/0001-selinux-apparmorfs-genfs.patch",
+      "sha256": "a727171541e1e149a10bfe79d58c839dd92767325d92c3200d7678b8f6b5949e"
+    }
+  },
+  "public_kernel_image": {
+    "path": "/home/qq/work/p4-lsm-peersec-kernel-20261124-516eec-r1/publication/root/boot/vmlinuz-6.18.64-p4ctx6181-fusectl-aafs-peer-r1",
+    "bytes": 16855552,
+    "sha256": "19052ac77e40a86147f6bc186739763628916033f7c36f3448b4a872914090df"
+  },
+  "public_material_archive": {
+    "path": "/home/qq/work/p4-lsm-peersec-kernel-20261124-516eec-r1/publication/kernel-material.tar",
+    "bytes": 695398400,
+    "sha256": "e5a305dfecff9dde1c7fc7a5980f606a67802963c31b363b412768c4e55949fc"
+  },
+  "publication_receipt": {
+    "path": "/home/qq/work/p4-lsm-peersec-kernel-20261124-516eec-r1/publication/RESULT.json",
+    "bytes": 2273,
+    "sha256": "7742d15dd8f3ba5ab6f60a32d7c9568ccc3555d310ebf87221951ab8fdb42d56"
+  }
+}

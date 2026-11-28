@@ -1,0 +1,30 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+abi <abi/5.0>,
+#include <tunables/global>
+# Only the fixed udev entry can reach this profile from the published ELF's
+# factory attachment. SELinux independently denies all device body I/O.
+profile droidloom-native-hardware-label flags=(attach_disconnected) {
+  / r,
+  /{etc,run,usr,usr/lib}/ r,
+  /etc/ld.so.cache r,
+  /{,usr/}lib{,64}/ld-linux-x86-64.so.2 mr,
+  /{,usr/}lib/x86_64-linux-gnu/{ld-linux-x86-64.so.2,lib*.so*} mr,
+  /usr/lib/droidloom/{,production/,production/current/} r,
+  /usr/lib/droidloom/production/current/droidloomd mr,
+  /run/droidloom-early/ r,
+  /run/droidloom-early/host-{userns,pidns} r,
+  /{user,pid}:[0-9]* r,
+  # The helper constructs only its own FD link, remains nondumpable and
+  # retains the original O_PATH. SELinux permits only its own proc role.
+  /proc/ r,
+  owner /proc/{self,[0-9]*}/ r,
+  owner /proc/{self,[0-9]*}/fd/ r,
+  owner /proc/{self,[0-9]*}/fd/[0-9]* r,
+  /dev/ rw,
+  /dev/null rw,
+  /dev/video{[0-9],[0-9][0-9],[0-9][0-9][0-9]} rw,
+  /dev/{dri,input}/ rw,
+  /dev/dri/{card,renderD}{[0-9],[0-9][0-9],[0-9][0-9][0-9],[0-9][0-9][0-9][0-9],[0-9][0-9][0-9][0-9][0-9],[0-9][0-9][0-9][0-9][0-9][0-9],[0-9][0-9][0-9][0-9][0-9][0-9][0-9]} rw,
+  /dev/input/event{[0-9],[0-9][0-9],[0-9][0-9][0-9],[0-9][0-9][0-9][0-9]} rw,
+  signal (receive) peer=unconfined,
+}

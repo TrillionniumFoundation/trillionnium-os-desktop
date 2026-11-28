@@ -1,0 +1,345 @@
+{
+  "actor": "p4_linux_module_loader_t",
+  "aliases": [
+    {
+      "class": "dir",
+      "source": "p4_linux_rootdir_t",
+      "target": "p4_linux_kmod_tmpfiles_dir_t"
+    },
+    {
+      "class": "file",
+      "source": "p4_linux_native_data_t",
+      "target": "p4_linux_kmod_static_nodes_t"
+    }
+  ],
+  "dropin": {
+    "bytes": 240,
+    "mode": 292,
+    "path": "/usr/lib/systemd/system/kmod-static-nodes.service.d/50-droidloom-runtime-directory.conf",
+    "sha256": "6a8391acd73957bfc0a81aa8b2353e702c120342aeee2d1b2b4f05244f895a7d",
+    "source": "ubuntu-kmod-static-nodes-runtime.conf"
+  },
+  "early_directory": {
+    "before_first_policy_load": true,
+    "create_only": true,
+    "generic_run_write_added": false,
+    "label": "droidloom_label_linux_tmpfiles",
+    "original_label": "u:object_r:tmpfs:s0",
+    "prepare": "droidloom_hold_linux_tmpfiles",
+    "producer": "droidloom_board_activate_policy",
+    "same_held_inode_after_load": true,
+    "selected_label": "u:object_r:p4_linux_kmod_tmpfiles_dir_t:s0",
+    "source_files": [
+      {
+        "bytes": 58619,
+        "path": "runtime/droidloom-early-boot/board_policy.c",
+        "sha256": "feb5ad943565e5ee8f716c8c86ee3d9bd874d433959636c271100faf207daa43"
+      },
+      {
+        "bytes": 88695,
+        "path": "runtime/droidloom-early-boot/linux_run_label.c",
+        "sha256": "2b077a453505bd7d9912a105993effe16c4278bc9cd247c300b3af0a66716d60"
+      },
+      {
+        "bytes": 4939,
+        "path": "runtime/droidloom-early-boot/linux_run_label.h",
+        "sha256": "cf67eb6b96cf8bf09e0b70c763b3407c10fd4ee5580ade5761579f368eadaf94"
+      }
+    ]
+  },
+  "executor": "p4_linux_service_executor_t",
+  "normal_files": [
+    {
+      "bytes": 174472,
+      "gid": 0,
+      "mode": 493,
+      "nlink": 1,
+      "path": "/usr/bin/kmod",
+      "sha256": "6edf62330978627d75d8de7e903f243b6ba765f8b54baa914ec83e21cd85bdc7",
+      "uid": 0
+    },
+    {
+      "bytes": 121544,
+      "gid": 0,
+      "mode": 493,
+      "nlink": 1,
+      "path": "/usr/bin/systemd-tmpfiles",
+      "sha256": "a647746774851ef136cea5ea1862c77e2b0ff0bd962629ce07da029ff5bd8cc8",
+      "uid": 0
+    },
+    {
+      "bytes": 771,
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "path": "/usr/lib/systemd/system/kmod-static-nodes.service",
+      "sha256": "aec86f5b56a23faf7e748914ec8362b2a8651f2aa114881184b7af5fb883687d",
+      "uid": 0
+    },
+    {
+      "bytes": 852,
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "path": "/usr/lib/systemd/system/systemd-tmpfiles-setup-dev-early.service",
+      "sha256": "6c9429db294f317608868337ca1befd1fc961886e0d4accf8997dfd33e1a61de",
+      "uid": 0
+    },
+    {
+      "bytes": 877,
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "path": "/usr/lib/systemd/system/systemd-tmpfiles-setup-dev.service",
+      "sha256": "9f0a6b2414d3b398357b7508f6a841acae0d8f0ff079e096c0bed78f0572122e",
+      "uid": 0
+    },
+    {
+      "bytes": 1023,
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "path": "/usr/lib/systemd/system/systemd-tmpfiles-setup.service",
+      "sha256": "f22a7dc686fc61d586bc8e44f46e76eb6d926c7919249b10848830eb4bf90c28",
+      "uid": 0
+    },
+    {
+      "bytes": 154176,
+      "gid": 0,
+      "mode": 493,
+      "nlink": 1,
+      "path": "/usr/lib/systemd/systemd-executor",
+      "sha256": "afdc9afa0073871b5b303c7eae2857da727abec5d9cfa5bcb63df96ac53da12f",
+      "uid": 0
+    }
+  ],
+  "original_policy_sha256": "334f85991aa8b821efbd8ee793083d0031ff1ffbb9bddac7e928c5fa2092d42c",
+  "output": {
+    "device_nodes_created_by_kmod": false,
+    "name": "static-nodes.conf",
+    "open_mode": "we",
+    "path": "/run/tmpfiles.d/static-nodes.conf",
+    "preserved_original_reader": "p4_linux_setup_t",
+    "reader": "p4_linux_tmpfiles_t",
+    "rename": false,
+    "type": "p4_linux_kmod_static_nodes_t",
+    "unlink": false
+  },
+  "runtime_directory": {
+    "gid": 0,
+    "mode": 493,
+    "name": "tmpfiles.d",
+    "path": "/run/tmpfiles.d",
+    "prepared_before_policy": true,
+    "preserve": "yes",
+    "quota_query": false,
+    "recursive_chown_if_owner_differs_only": true,
+    "type": "p4_linux_kmod_tmpfiles_dir_t",
+    "uid": 0
+  },
+  "runtime_qualified": false,
+  "schema": "droidloom.native-kmod-static-source.v1",
+  "source_admissions": {
+    "glibc": {
+      "bytes": 19073,
+      "sha256": "8b1d42efa9e602dbf104c7ca3b255c1e846f85f3e77e0eac10166095cad10081"
+    },
+    "kmod": {
+      "bytes": 14259,
+      "sha256": "b618c83a5999ab078c66bf6bf7d920bbc36273085259136c8e87008ee96dd012"
+    }
+  },
+  "source_documents": [
+    {
+      "admission": "normal-signed-apt-quilt-source",
+      "bytes": 43969,
+      "kind": "glibc",
+      "package": "glibc",
+      "path": "libio/fileops.c",
+      "sha256": "8c14eb902c1030b898a198b720bb6a9ba4925e05e85cbef71b9f571834a9d735",
+      "version": "2.43-2ubuntu2.7"
+    },
+    {
+      "admission": "selected-kernel-source",
+      "bytes": 153602,
+      "kind": "kernel",
+      "package": "linux",
+      "path": "fs/namei.c",
+      "sha256": "d8fe89b24c757861906d4b7fbcbe04b3d66736f8df813a21544d0f8f5f93dc63",
+      "version": "6.18.64-p4ctx6181-fusectl-aafs-peer-r1"
+    },
+    {
+      "admission": "selected-kernel-source",
+      "bytes": 212133,
+      "kind": "kernel",
+      "package": "linux",
+      "path": "security/selinux/hooks.c",
+      "sha256": "4fa2a20bff2788fffc1f6bc95d49af3e1145e6a679f69ff5aa2d5a1bd85272a0",
+      "version": "6.18.64-p4ctx6181-fusectl-aafs-peer-r1"
+    },
+    {
+      "admission": "selected-kernel-source",
+      "bytes": 96491,
+      "kind": "kernel",
+      "package": "linux",
+      "path": "security/selinux/ss/services.c",
+      "sha256": "a3dc132fceec9f42a8d1728cef1b45685d5d2e0f3b5dcb812bec4049c5c19f67",
+      "version": "6.18.64-p4ctx6181-fusectl-aafs-peer-r1"
+    },
+    {
+      "admission": "normal-signed-apt-quilt-source",
+      "bytes": 10505,
+      "kind": "kmod",
+      "package": "kmod",
+      "path": "shared/util.c",
+      "sha256": "4a79e8ff9b9acd8250909d230604515a9bface3bd04e50e994bdae6267ad374b",
+      "version": "34.2-2ubuntu2"
+    },
+    {
+      "admission": "normal-signed-apt-quilt-source",
+      "bytes": 6719,
+      "kind": "kmod",
+      "package": "kmod",
+      "path": "tools/static-nodes.c",
+      "sha256": "d53f1fd27317ddd94a8d2ec28ece809223502b1454502953147446e8aa8e8feb",
+      "version": "34.2-2ubuntu2"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 34859,
+      "kind": "source",
+      "package": "systemd",
+      "path": "src/basic/conf-files.c",
+      "sha256": "ee1d150afbc9ab9ec3714c67bf49a15ec452ff01368a4d61b2e9f84a969c1619",
+      "version": "259.9-0ubuntu0.1+p4gentmp2"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 3287,
+      "kind": "source",
+      "package": "systemd",
+      "path": "src/basic/constants.h",
+      "sha256": "8beabd68da7b1398a6239c04c8d510e0f93fb7809e09ba846204cfbd50820102",
+      "version": "259.9-0ubuntu0.1+p4gentmp2"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 52249,
+      "kind": "source",
+      "package": "systemd",
+      "path": "src/basic/fs-util.c",
+      "sha256": "de38f495f3be7fc9e80051487bac1242c71f2f38cffa4fba2d8f11380d3794d4",
+      "version": "259.9-0ubuntu0.1+p4gentmp2"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 9880,
+      "kind": "source",
+      "package": "systemd",
+      "path": "src/basic/mkdir.c",
+      "sha256": "88a9ce00bc2c05c0c5d329653c29846622356efcbc207639a5877b323d102756",
+      "version": "259.9-0ubuntu0.1+p4gentmp2"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 276788,
+      "kind": "source",
+      "package": "systemd",
+      "path": "src/core/exec-invoke.c",
+      "sha256": "24eda88ee0914d0c43d30ebfb13f0f3aadd00391b5820fb6d6509278f0925dfe",
+      "version": "259.9-0ubuntu0.1+p4gentmp2"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 111938,
+      "kind": "source",
+      "package": "systemd",
+      "path": "src/core/execute.c",
+      "sha256": "3fdc25491919ccbe96812a8d56d20e34bbf367a29555b304b5fa0b06838c8a26",
+      "version": "259.9-0ubuntu0.1+p4gentmp2"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 25855,
+      "kind": "source",
+      "package": "systemd",
+      "path": "src/core/execute.h",
+      "sha256": "ed2f451076685ec0ce043cb619a985bcd9c066436d583887b9de3e6a494c04cc",
+      "version": "259.9-0ubuntu0.1+p4gentmp2"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 94199,
+      "kind": "source",
+      "package": "systemd",
+      "path": "src/core/load-fragment-gperf.gperf.in",
+      "sha256": "5f3f314afa01340a071722f1656f5c40c0c4ffcf3bd82b14ce0471548c2556fa",
+      "version": "259.9-0ubuntu0.1+p4gentmp2"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 235363,
+      "kind": "source",
+      "package": "systemd",
+      "path": "src/core/load-fragment.c",
+      "sha256": "9985bb9569789696c80e0132ddd5abfdde2deef6f8be0dd2baddde67b5bf27b5",
+      "version": "259.9-0ubuntu0.1+p4gentmp2"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 250300,
+      "kind": "source",
+      "package": "systemd",
+      "path": "src/core/unit.c",
+      "sha256": "2c6ca36da9fc5324a1d168e161e63d4972f000a2921f00b6489597453dd393b6",
+      "version": "259.9-0ubuntu0.1+p4gentmp2"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 5635,
+      "kind": "source",
+      "package": "systemd",
+      "path": "src/shared/chown-recursive.c",
+      "sha256": "ce5d1a8d79b32011c479fdb78bd75faabdf3107bdffcd6bc5b1793967edf189f",
+      "version": "259.9-0ubuntu0.1+p4gentmp2"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 1389,
+      "kind": "source",
+      "package": "systemd",
+      "path": "src/shared/mkdir-label.c",
+      "sha256": "cb5470df867959d3668f22c41ef2d6a514e996f6c2348b8eee3f1c07800d6e5a",
+      "version": "259.9-0ubuntu0.1+p4gentmp2"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 25770,
+      "kind": "source",
+      "package": "systemd",
+      "path": "src/shared/selinux-util.c",
+      "sha256": "241a1cdb353d954a1a771e4b33709860a2df729bb7512130b5fb985fe1105df7",
+      "version": "259.9-0ubuntu0.1+p4gentmp2"
+    },
+    {
+      "admission": "normal-dsc-roundtrip",
+      "bytes": 180129,
+      "kind": "source",
+      "package": "systemd",
+      "path": "src/tmpfiles/tmpfiles.c",
+      "sha256": "f3aa633ad113f8ef4e98a3401a8b3403cb1af253ffb6cbcfc748ace70b9619e9",
+      "version": "259.9-0ubuntu0.1+p4gentmp2"
+    }
+  ],
+  "unit": {
+    "argv": [
+      "/usr/bin/kmod",
+      "static-nodes",
+      "--format=tmpfiles",
+      "--output=/run/tmpfiles.d/static-nodes.conf"
+    ],
+    "before": "systemd-tmpfiles-setup-dev-early.service",
+    "path": "/usr/lib/systemd/system/kmod-static-nodes.service"
+  },
+  "unit_changed": false
+}

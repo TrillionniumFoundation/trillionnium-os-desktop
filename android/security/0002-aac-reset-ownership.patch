@@ -1,0 +1,139 @@
+diff --git a/cpp/Android.bp b/cpp/Android.bp
+index 5b0558e..a217a1c 100644
+--- a/cpp/Android.bp
++++ b/cpp/Android.bp
+@@ -66,3 +66,29 @@
+     ],
+     min_sdk_version: "29",
+ }
++
++cc_test {
++    name: "libSBRdec_test",
++    team: "trendy_team_android_media_audio_framework",
++    host_supported: true,
++    srcs: [
++        "libSBRdec/tests/libSBRdec_test.cpp",
++    ],
++    static_libs: [
++        "libFraunhoferAAC",
++    ],
++    shared_libs: [
++        "liblog",
++    ],
++    local_include_dirs: [
++        "libSBRdec/src",
++    ],
++    cflags: [
++        "-Werror",
++        "-Wall",
++    ],
++    sanitize: {
++        cfi: true,
++    },
++    test_suites: ["device-tests"],
++}
+diff --git a/cpp/libSBRdec/src/psdec.cpp b/cpp/libSBRdec/src/psdec.cpp
+index 13a21bf..155eaeb 100644
+--- a/cpp/libSBRdec/src/psdec.cpp
++++ b/cpp/libSBRdec/src/psdec.cpp
+@@ -139,8 +139,9 @@
+ int CreatePsDec(HANDLE_PS_DEC *h_PS_DEC, /*!< pointer to the module state */
+                 int aacSamplesPerFrame) {
+   SBR_ERROR errorInfo = SBRDEC_OK;
+-  HANDLE_PS_DEC h_ps_d;
++  HANDLE_PS_DEC h_ps_d = NULL;
+   int i;
++  int h_ps_d_allocated = 0;
+ 
+   if (*h_PS_DEC == NULL) {
+     /* Get ps dec ram */
+@@ -148,6 +149,7 @@
+     if (h_ps_d == NULL) {
+       goto bail;
+     }
++    h_ps_d_allocated = 1;
+   } else {
+     /* Reset an open instance */
+     h_ps_d = *h_PS_DEC;
+@@ -205,7 +207,8 @@
+   return 0;
+ 
+ bail:
+-  if (h_ps_d != NULL) {
++  /* Only delete locally-allocated h_ps_d. */
++  if (h_ps_d_allocated && h_ps_d != NULL) {
+     DeletePsDec(&h_ps_d);
+   }
+ 
+diff --git a/cpp/libSBRdec/src/sbrdecoder.cpp b/cpp/libSBRdec/src/sbrdecoder.cpp
+index 7718695..495e412 100644
+--- a/cpp/libSBRdec/src/sbrdecoder.cpp
++++ b/cpp/libSBRdec/src/sbrdecoder.cpp
+@@ -401,6 +401,7 @@
+       case AOT_DRM_AAC:
+       case AOT_DRM_SURROUND:
+         if (CreatePsDec(&self->hParametricStereoDec, samplesPerFrame)) {
++          DeletePsDec(&self->hParametricStereoDec);
+           sbrError = SBRDEC_CREATE_ERROR;
+           goto bail;
+         }
+diff --git a/cpp/libSBRdec/tests/libSBRdec_test.cpp b/cpp/libSBRdec/tests/libSBRdec_test.cpp
+new file mode 100644
+index 0000000..f30da93
+--- /dev/null
++++ b/cpp/libSBRdec/tests/libSBRdec_test.cpp
+@@ -0,0 +1,54 @@
++/*
++ * Copyright (C) 2026 The Android Open Source Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++#include <gtest/gtest.h>
++#include "psdec.h"
++
++// This test verifies the fix for a Use-After-Free (UAF) / Double Free vulnerability
++// in CreatePsDec reset branch.
++// The vulnerability occurs when CreatePsDec is called to reset an open instance
++// (i.e., *h_PS_DEC is not NULL), and subsequently fails.
++// Prior to the fix, CreatePsDec would delete the PS decoder handle but not nullify
++// the caller's pointer, leading to a dangling pointer.
++// This test calls CreatePsDec directly to bypass other SBR decoder checks.
++TEST(LibSbrDecTest, CreatePsDecResetUAF) {
++  HANDLE_PS_DEC handle = nullptr;
++
++  // 1. First call: Allocate and initialize PS dec successfully with 1024 samples.
++  int err = CreatePsDec(&handle, 1024);
++  ASSERT_EQ(err, 0);
++  ASSERT_NE(handle, nullptr);
++
++  // 2. Second call: Reset with invalid samples (512) to force failure.
++  // Since 'handle' is not null, this triggers the reset path.
++  err = CreatePsDec(&handle, 512);
++  EXPECT_NE(err, 0);
++
++  // If the patch is NOT applied:
++  // - CreatePsDec already called DeletePsDec internally, freeing the memory.
++  // - But 'handle' was not nullified, so it is dangling.
++  // - The following DeletePsDec call will attempt to free it again (double free -> crash).
++  //
++  // If the patch IS applied:
++  // - CreatePsDec did NOT free the memory because it was not locally allocated.
++  // - 'handle' is still valid.
++  // - The following DeletePsDec call will safely free it and set 'handle' to nullptr.
++  if (handle != nullptr) {
++    DeletePsDec(&handle);
++  }
++
++  EXPECT_EQ(handle, nullptr);
++}

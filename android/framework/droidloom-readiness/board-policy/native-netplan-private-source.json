@@ -1,0 +1,143 @@
+{
+  "account_lookup": "unique-root-uid0-gid0-and-files-first",
+  "normal_service_umask": 18,
+  "normal_source_contract_sha256": "990b08faac8e856606c39957eb06e4cf2b2170388591a442833ec3002929cd5c",
+  "normal_unit_argv": [
+    "/usr/libexec/netplan/configure"
+  ],
+  "observation": {
+    "bytes": 13087,
+    "schema": "droidloom.netplan-private-profile-public-observation.v2",
+    "sha256": "7141e8380723a8be94c6c12a68b3d2dd66c1faaaa48df776c3abb8fdc4157166"
+  },
+  "policy_enforcement_qualified": false,
+  "private_contents_included": false,
+  "profiles": [
+    {
+      "bytes": 643,
+      "gid": 0,
+      "mode": 384,
+      "nlink": 1,
+      "path": "/etc/netplan/50-cloud-init.yaml",
+      "sha256": "d51300b83c2ac457b51443a3d18819a35aedd975106bc4446d393f679d6d2fb7",
+      "uid": 0
+    },
+    {
+      "bytes": 1127,
+      "gid": 0,
+      "mode": 384,
+      "nlink": 1,
+      "path": "/etc/netplan/90-NM-3c797701-51cb-45c5-a632-00f213232095.yaml",
+      "sha256": "f28560f4b906caf3c037e65f493d318efb3b7ad86f1487baa903b7ddcd31b41a",
+      "uid": 0
+    },
+    {
+      "bytes": 626,
+      "gid": 0,
+      "mode": 384,
+      "nlink": 1,
+      "path": "/etc/netplan/90-NM-899dbbd2-d128-4d5b-8001-5d3cad80b503.yaml",
+      "sha256": "ef613c6054427e5dd6b93fb99a433f84e822efb91c4787b72b65cca1238ee266",
+      "uid": 0
+    },
+    {
+      "bytes": 727,
+      "gid": 0,
+      "mode": 384,
+      "nlink": 1,
+      "path": "/etc/netplan/90-NM-c61cd9fc-00ef-49aa-8ed2-7bfd641c7097.yaml",
+      "sha256": "276c8814bb50181bfc89878e6823a1d36c75017bb1b295d6030678ff52f6813e",
+      "uid": 0
+    },
+    {
+      "bytes": 693,
+      "gid": 0,
+      "mode": 384,
+      "nlink": 1,
+      "path": "/etc/netplan/90-NM-d732669d-d34a-4baa-b97e-bd2563bdd648.yaml",
+      "sha256": "97f6fbd478c7425d9a0281a41c4fe9f53df2c72666e9de01b28eb462acd38722",
+      "uid": 0
+    },
+    {
+      "bytes": 780,
+      "gid": 0,
+      "mode": 384,
+      "nlink": 1,
+      "path": "/etc/netplan/90-NM-e80414a4-1077-49d3-953e-aaccddb3bf21.yaml",
+      "sha256": "0f478b2fed40415d6d9f148c9de734ef3f16019233c2b3243dcade848dedfc03",
+      "uid": 0
+    },
+    {
+      "bytes": 721,
+      "gid": 0,
+      "mode": 384,
+      "nlink": 1,
+      "path": "/etc/netplan/90-NM-f84d0c1a-dcde-4634-bf39-13ace1617de3.yaml",
+      "sha256": "db774272f095576c0b798e50418baf5c8cc0e7c56c5257e4ee7b785ada0804ed",
+      "uid": 0
+    }
+  ],
+  "public_account_paths": [
+    "/etc/passwd",
+    "/etc/group"
+  ],
+  "public_inputs": [
+    {
+      "bytes": 49,
+      "gid": 0,
+      "mode": 384,
+      "nlink": 1,
+      "path": "/usr/lib/netplan/00-network-manager-all.yaml",
+      "sha256": "d0fa4fd1b88a52f9b8eae641c7c84b7843197155c08df46c0057a4ea23094411",
+      "uid": 0
+    },
+    {
+      "bytes": 204,
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "path": "/usr/lib/netplan/PLACEHOLDER",
+      "sha256": "98e1a16aafba1ea8e1511582483063f3f05ef7e1d85c4a40770a942b20f7b318",
+      "uid": 0
+    },
+    {
+      "bytes": 594,
+      "gid": 0,
+      "mode": 420,
+      "nlink": 1,
+      "path": "/etc/nsswitch.conf",
+      "sha256": "f053e77f9d706a20cb52deecdf9602b1635ea64a3be77a4cb32205bfebb17d3e",
+      "uid": 0
+    }
+  ],
+  "runtime_qualified": false,
+  "schema": "droidloom.native-netplan-private-source.v1",
+  "selection": "pocket4-existing-seven-NetworkManager-profiles",
+  "source_documents": [
+    {
+      "bytes": 9569,
+      "path": "src/configure.c",
+      "sha256": "8339b5c630634ebd035491dd2969b9eb466b3ec4543bd662775c488a0ab7896b"
+    },
+    {
+      "bytes": 56615,
+      "path": "src/nm.c",
+      "sha256": "408765cfc54b7f1e198305593fb0589fd546dcc2a6e8e7812f350c6ef5eb87b7"
+    },
+    {
+      "bytes": 60196,
+      "path": "src/networkd.c",
+      "sha256": "222e91affef2b5a3abbc237c577e4096867abc7620c7f1fe309bfc0a525fe804"
+    },
+    {
+      "bytes": 42999,
+      "path": "src/util.c",
+      "sha256": "bab3ec6ee5eb4b45ed228bd80b81c2c01deff46aa6ffbf316d6afe01f67e11e4"
+    },
+    {
+      "bytes": 7518,
+      "path": "src/util-internal.h",
+      "sha256": "961e1c605256ef7be6e7dd244441406b6c0c0440e693fdf588cae5ac32c4db3a"
+    }
+  ]
+}

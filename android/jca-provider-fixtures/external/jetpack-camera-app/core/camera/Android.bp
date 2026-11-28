@@ -1,0 +1,33 @@
+package {
+    default_applicable_licenses: [
+        "Android-Apache-2.0",
+    ],
+}
+
+android_library {
+    name: "jetpack-camera-app_core_camera",
+    srcs: ["src/main/**/*.kt"],
+    static_libs: [
+        "androidx.concurrent_concurrent-futures-ktx",
+        "hilt_android",
+        "androidx.camera_camera-core",
+        "androidx.camera_camera-video",
+        "androidx.camera_camera-camera2",
+        "androidx.camera_camera-lifecycle",
+        "androidx.graphics_graphics-core",
+        "jetpack-camera-app_core_model",
+        "jetpack-camera-app_data_settings",
+        "jetpack-camera-app_core_common",
+        "jetpack-camera-app_core_camera_low-light",
+        "jetpack-camera-app_core_camera_postprocess",
+    ],
+    sdk_version: "35",
+    min_sdk_version: "23",
+    manifest: "src/main/AndroidManifest.xml",
+    kotlincflags: [
+        "-Xcontext-receivers",
+    ],
+    apex_available: [
+        "com.android.mediaprovider",
+    ],
+}

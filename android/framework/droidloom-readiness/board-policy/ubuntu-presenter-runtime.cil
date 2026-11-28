@@ -1,0 +1,49 @@
+; The normal desktop unit owns one private RuntimeDirectory. Clipboard files
+; retain their native file:// semantics without exposing arbitrary home/tmp.
+(type droidloom_presenter_runtime)
+(roletype object_r droidloom_presenter_runtime)
+(typeattributeset p4_linux_data (droidloom_presenter_runtime))
+(allow droidloom_presenter_runtime tmpfs (filesystem (associate)))
+
+(typeattribute p4_presenter_runtime_creators)
+(typeattributeset p4_presenter_runtime_creators (p4_linux_user_executor_t droidloom_presenter))
+(typetransition p4_presenter_runtime_creators p4_linux_user_run_t dir "droidloom-presenter" droidloom_presenter_runtime)
+; Stock user-unit RuntimeDirectory setup uses the original native LSM API.
+; File create/associate checks still constrain every selected future label.
+(allow p4_linux_user_executor_t self (process (setfscreate)))
+(allow p4_presenter_runtime_creators p4_linux_user_run_t (dir (getattr search write add_name)))
+(allow p4_presenter_runtime_creators droidloom_presenter_runtime (dir (getattr search open read create write add_name setattr)))
+(allow droidloom_presenter droidloom_presenter_runtime (dir (remove_name rmdir rename)))
+(allow droidloom_presenter droidloom_presenter_runtime (file (getattr create open read write append setattr unlink rename lock)))
+; Only development listeners use the private native socket pathname. Normal
+; Android bridges continue to use the original broker-issued descriptors.
+(allow droidloom_presenter droidloom_presenter_runtime (sock_file (getattr create write setattr unlink)))
+
+; Native file consumers can read exported clipboard data, never modify it.
+(typeattribute p4_presenter_clipboard_file_readers)
+(typeattributeset p4_presenter_clipboard_file_readers (p4_linux_user_session_t p4_linux_desktop_portal_t))
+(allow p4_presenter_clipboard_file_readers droidloom_presenter_runtime (dir (getattr search open read)))
+(allow p4_presenter_clipboard_file_readers droidloom_presenter_runtime (file (getattr open read map)))
+(neverallow p4_presenter_clipboard_file_readers droidloom_presenter_runtime (file (create write append setattr unlink rename link relabelto relabelfrom)))
+(neverallow p4_presenter_clipboard_file_readers droidloom_presenter_runtime (dir (create write add_name remove_name setattr rmdir rename relabelto relabelfrom)))
+
+; The original user manager retires this service's directory after its actual
+; processes stop. System runtime retirement retains the same metadata-only scope.
+(typeattribute p4_presenter_runtime_retirement)
+(typeattributeset p4_presenter_runtime_retirement (p4_linux_user_manager_t init_t p4_linux_setup_t))
+(allow p4_presenter_runtime_retirement droidloom_presenter_runtime (dir (getattr search open read write remove_name rmdir)))
+(allow p4_presenter_runtime_retirement droidloom_presenter_runtime (file (getattr unlink)))
+(allow p4_presenter_runtime_retirement droidloom_presenter_runtime (sock_file (getattr unlink)))
+(neverallow p4_presenter_runtime_retirement droidloom_presenter_runtime (file (open read write append create map execute)))
+
+; No runtime byte is executable and no live actor can relabel these inodes.
+(typeattribute p4_presenter_runtime_all_subjects)
+(typeattributeset p4_presenter_runtime_all_subjects (all))
+(neverallow p4_presenter_runtime_all_subjects droidloom_presenter_runtime (file (execute execute_no_trans entrypoint relabelto relabelfrom)))
+(neverallow p4_presenter_runtime_all_subjects droidloom_presenter_runtime (dir (relabelto relabelfrom mounton)))
+(neverallow droidloom_broker droidloom_presenter_runtime (dir (open read search write add_name remove_name create)))
+(neverallow droidloom_broker droidloom_presenter_runtime (file (getattr open read write create map)))
+(neverallow droidloom_public_control_client droidloom_presenter_runtime (dir (open read search write add_name remove_name create)))
+(neverallow droidloom_public_control_client droidloom_presenter_runtime (file (getattr open read write create map)))
+(neverallow p4_android_userspace droidloom_presenter_runtime (dir (open read search write add_name remove_name create)))
+(neverallow p4_android_userspace droidloom_presenter_runtime (file (getattr open read write create map)))

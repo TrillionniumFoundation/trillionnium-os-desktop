@@ -1,0 +1,4 @@
+# Original pam_selinux callers enter the existing native user session domain.
+# No generic or failsafe context is supplied for an unexpected caller.
+system_r:p4_linux_gdm_worker_t:s0 system_r:p4_linux_user_session_t:s0
+system_r:p4_linux_sshd_t:s0 system_r:p4_linux_user_session_t:s0

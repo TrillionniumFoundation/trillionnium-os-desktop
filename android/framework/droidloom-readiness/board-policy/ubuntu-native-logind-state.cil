@@ -1,0 +1,33 @@
+; The normal systemd executor implements StateDirectory=systemd/linger before
+; the fixed logind exec transition. Only the existing /var/lib/systemd parent
+; receives this alias. All other generic directories keep their old type.
+(type p4_linux_systemd_state_parent_t)
+(roletype object_r p4_linux_systemd_state_parent_t)
+(typeattributeset p4_linux_data (p4_linux_systemd_state_parent_t))
+
+; getattr/search/mounton are the executor's unchanged original rootdir vector.
+; mkdir_label uses the already selected file_contexts entry and setfscreate to
+; create p4_linux_logind_state_t. Its create/setattr/associate permissions and
+; the normal unit, service binary, ownership and mode remain unchanged.
+(allow p4_linux_service_executor_t p4_linux_systemd_state_parent_t (dir (getattr search mounton write add_name)))
+(neverallow p4_linux_service_executor_t p4_linux_systemd_state_parent_t (dir (not (getattr search mounton write add_name))))
+(neverallow p4_linux_service_executor_t p4_linux_systemd_state_parent_t (file (all)))
+(neverallow p4_linux_service_executor_t p4_linux_rootdir_t (dir (write add_name remove_name create setattr rename reparent rmdir relabelfrom relabelto)))
+
+; Keep the existing complete hardware directory validatetrans guard. Its
+; constrained actor cannot relabel either the original parent or its alias.
+(neverallow p4_linux_hardware_label_t p4_linux_rootdir_t (dir (relabelfrom relabelto)))
+(neverallow p4_linux_hardware_label_t p4_linux_systemd_state_parent_t (dir (relabelfrom relabelto)))
+
+; derive_native_logind_state_policy.py preserves every other actor's original
+; full directory AV/ioctl/transition view. It separately proves the executor's
+; exact raw additions, full unchanged object vectors and constrained MLS pairs.
+; There is no new fallback transition: absent/wrong normal label input fails.
+
+; Normal apply_exec_quotas() queries the held StateDirectory project ID before
+; testing whether quota accounting/enforcement is enabled. FSGETXATTR is read-only.
+; All pre-existing metadata permissions stay unchanged; no FSSETXATTR is allowed.
+(allow p4_linux_service_executor_t p4_linux_logind_state_t (dir (ioctl)))
+(allowx p4_linux_service_executor_t p4_linux_logind_state_t (ioctl dir (0x581f)))
+(neverallowx p4_linux_service_executor_t p4_linux_logind_state_t (ioctl dir (not (0x581f))))
+(neverallow p4_linux_service_executor_t p4_linux_logind_state_t (dir (not (getattr search open read create setattr ioctl))))

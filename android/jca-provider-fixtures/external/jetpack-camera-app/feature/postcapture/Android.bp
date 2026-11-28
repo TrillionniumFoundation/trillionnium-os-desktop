@@ -1,0 +1,43 @@
+package {
+    default_applicable_licenses: [
+        "Android-Apache-2.0",
+    ],
+}
+
+android_library {
+    name: "jetpack-camera-app_feature_postcapture",
+    srcs: ["src/main/**/*.kt"],
+    resource_dirs: [
+        "src/main/res",
+    ],
+    static_libs: [
+        "androidx.compose.runtime_runtime",
+        "androidx.compose.material3_material3",
+        "androidx.compose.material_material-icons-extended",
+        "androidx.compose.ui_ui-tooling-preview",
+        "androidx.hilt_hilt-navigation-compose",
+        "androidx.compose.ui_ui-tooling",
+        "androidx.lifecycle_lifecycle-viewmodel-compose",
+        "androidx.lifecycle_lifecycle-runtime-compose",
+        "androidx.media3.media3-common",
+        "androidx.media3.media3-exoplayer",
+        "androidx.media3.media3-ui-compose",
+        "hilt_android",
+        "kotlinx_coroutines_guava",
+        "jetpack-camera-app_ui_controller",
+        "jetpack-camera-app_ui_controller_impl",
+        "jetpack-camera-app_core_common",
+        "jetpack-camera-app_data_media",
+        "jetpack-camera-app_ui_uistate_postcapture",
+        "jetpack-camera-app_ui_uistate",
+        "jetpack-camera-app_ui_components_capture",
+        "jetpack-camera-app_ui_uistateadapter_capture",
+        "jetpack-camera-app_ui_uistateadapter_postcapture",
+    ],
+    sdk_version: "34",
+    min_sdk_version: "23",
+    manifest: "src/main/AndroidManifest.xml",
+    apex_available: [
+        "com.android.mediaprovider",
+    ],
+}

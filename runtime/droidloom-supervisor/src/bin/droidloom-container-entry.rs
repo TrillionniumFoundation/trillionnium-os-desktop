@@ -1,0 +1,652 @@
+//! PID 1 of the host-managed cell. Namespace and image ownership belong to
+//! the outer manager. This process owns the fixed Android bootstrap child.
+#[path = "../production_cp3a_init_identity.rs"]
+mod production_cp3a_init_identity;
+#[path = "../production_service_elf.rs"]
+mod production_service_elf;
+
+use std::fs::{self, File, OpenOptions};
+use std::io::{self, Read, Write};
+use std::os::fd::AsRawFd;
+use std::os::unix::fs::{MetadataExt, OpenOptionsExt};
+use std::os::unix::net::UnixStream;
+use std::os::unix::process::{CommandExt, ExitStatusExt};
+use std::path::Path;
+use std::process::{Child, Command, ExitStatus, Stdio};
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::thread;
+use std::time::{Duration, Instant};
+
+use serde::Deserialize;
+use sha2::{Digest, Sha256};
+
+const BOOTSTRAP: &str = "/droidloom/bin/container-bootstrap";
+const DECLARATION: &str = "/etc/droidloom/container-launcher.json";
+const START_LIMIT: Duration = Duration::from_secs(240);
+static STOP: AtomicBool = AtomicBool::new(false);
+
+fn error(s: &str) -> io::Error {
+    io::Error::other(s)
+}
+
+extern "C" fn stopping(_: libc::c_int) {
+    STOP.store(true, Ordering::Relaxed);
+}
+
+fn kernel_text(path: &str) -> io::Result<String> {
+    let f = File::open(path)?;
+    let mut stat = std::mem::MaybeUninit::<libc::statfs>::uninit();
+    if unsafe { libc::fstatfs(f.as_raw_fd(), stat.as_mut_ptr()) } != 0 {
+        return Err(io::Error::last_os_error());
+    }
+    if unsafe { stat.assume_init().f_type } != libc::PROC_SUPER_MAGIC {
+        return Err(error("cell identity must come from procfs"));
+    }
+    let mut text = String::new();
+    f.take(65537).read_to_string(&mut text)?;
+    if text.len() > 65536 {
+        return Err(error("oversized kernel state"));
+    }
+    Ok(text)
+}
+
+fn mapped_range(value: &str) -> bool {
+    let rows: Vec<_> = value.lines().collect();
+    if rows.len() != 1 {
+        return false;
+    }
+    let fields: Vec<_> = rows[0].split_whitespace().map(str::parse::<u32>).collect();
+    matches!(fields.as_slice(), [Ok(0), Ok(base), Ok(count)] if *base > 0 && u64::from(*count) >= droidloom_contracts::MIN_SUBORDINATE_IDS && base.checked_add(*count).is_some())
+}
+
+fn check_lsm_role(
+    role: &str,
+    path: &str,
+    expected: &str,
+    reader: impl FnOnce(&str) -> io::Result<String>,
+) -> io::Result<()> {
+    let identity = reader(path).map_err(|source| {
+        io::Error::new(
+            source.kind(),
+            format!("cannot read Android container entry {role} role from {path}: {source}"),
+        )
+    })?;
+    let actual = identity.trim_end_matches(['\0', '\n']);
+    if actual != expected {
+        return Err(io::Error::new(
+            io::ErrorKind::PermissionDenied,
+            format!(
+                "Android container entry {role} role at {path} is {actual:?}; expected {expected:?}"
+            ),
+        ));
+    }
+    Ok(())
+}
+
+fn entry_context() -> io::Result<()> {
+    if std::process::id() != 1 {
+        return Err(error("container entry must be PID 1 in its prepared cell"));
+    }
+    if !mapped_range(&kernel_text("/proc/self/uid_map")?)
+        || !mapped_range(&kernel_text("/proc/self/gid_map")?)
+    {
+        return Err(error(
+            "host-managed cell needs its subordinate user and group namespace maps",
+        ));
+    }
+    let status = kernel_text("/proc/self/status")?;
+    let field = |name| {
+        status
+            .lines()
+            .find_map(|line| line.strip_prefix(name))
+            .map(str::trim)
+    };
+    if field("NoNewPrivs:") != Some("1") || field("Seccomp:") != Some("2") {
+        return Err(error(
+            "the admitted cell seccomp filter and no_new_privs must be active",
+        ));
+    }
+    check_lsm_role(
+        "SELinux",
+        "/proc/self/attr/selinux/current",
+        "u:r:droidloom_container_entry:s0",
+        kernel_text,
+    )?;
+    check_lsm_role(
+        "AppArmor",
+        "/proc/self/attr/apparmor/current",
+        "droidloom-container-entry (enforce)",
+        kernel_text,
+    )?;
+    Ok(())
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct BootstrapRelease {
+    schema: String,
+    launcher: String,
+    selection_sha256: String,
+    entry_bytes: usize,
+    entry_sha256: String,
+    bootstrap_bytes: usize,
+    bootstrap_sha256: String,
+}
+
+fn held_file(
+    path: &str,
+    limit: usize,
+    executable: bool,
+    group: u32,
+) -> io::Result<(File, Vec<u8>)> {
+    let f = OpenOptions::new()
+        .read(true)
+        .custom_flags(libc::O_NOFOLLOW | libc::O_NONBLOCK)
+        .open(path)?;
+    let meta = f.metadata()?;
+    if !meta.is_file()
+        || meta.uid() != 0
+        || meta.gid() != group
+        || meta.nlink() != 1
+        || meta.mode() & 0o6022 != 0
+        || executable && meta.mode() & 0o111 == 0
+        || meta.len() == 0
+        || meta.len() > limit as u64
+    {
+        return Err(error("invalid immutable bootstrap package member"));
+    }
+    let mut fsstat = std::mem::MaybeUninit::<libc::statvfs>::uninit();
+    if unsafe { libc::fstatvfs(f.as_raw_fd(), fsstat.as_mut_ptr()) } != 0 {
+        return Err(io::Error::last_os_error());
+    }
+    if unsafe { fsstat.assume_init().f_flag } & libc::ST_RDONLY == 0 {
+        return Err(error(
+            "bootstrap inputs require a read-only mounted filesystem",
+        ));
+    }
+    let mut data = Vec::new();
+    (&f).take(limit as u64 + 1).read_to_end(&mut data)?;
+    if data.len() as u64 != meta.len() {
+        return Err(error("bootstrap package member changed during inspection"));
+    }
+    Ok((f, data))
+}
+
+#[path = "../container_shutdown.rs"]
+mod shutdown;
+
+fn bootstrap() -> io::Result<Bootstrap> {
+    let (_, data) = held_file(DECLARATION, 4096, false, 0)?;
+    let release: BootstrapRelease = serde_json::from_slice(&data).map_err(io::Error::other)?;
+    let digest = |s: &str| {
+        s.len() == 64
+            && s.bytes()
+                .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
+    };
+    if release.schema != "droidloom-public-launcher-v3"
+        || release.launcher != "host_managed_shared_kernel_v1"
+        || !digest(&release.selection_sha256)
+        || !digest(&release.entry_sha256)
+        || !digest(&release.bootstrap_sha256)
+        || !(64..=production_service_elf::MAX_SERVICE).contains(&release.entry_bytes)
+    {
+        return Err(error(
+            "the cell requires the same published host-managed launch selection as the host",
+        ));
+    }
+    let own = File::open("/proc/self/exe")?;
+    if own.metadata()?.len() != release.entry_bytes as u64 {
+        return Err(error("provider size differs from the published generation"));
+    }
+    let mut digest = Sha256::new();
+    let mut stream = own.take(release.entry_bytes as u64 + 1);
+    if io::copy(&mut stream, &mut digest)? != release.entry_bytes as u64
+        || format!("{:x}", digest.finalize()) != release.entry_sha256
+    {
+        return Err(error(
+            "running provider differs from the published generation",
+        ));
+    }
+    let (program, bytes) = held_file(BOOTSTRAP, production_service_elf::MAX_SERVICE, true, 0)?;
+    if release.bootstrap_bytes != bytes.len()
+        || release.bootstrap_sha256 != format!("{:x}", Sha256::digest(&bytes))
+    {
+        return Err(error(
+            "dedicated Android bootstrap does not match its immutable release",
+        ));
+    }
+    production_service_elf::inspect_container_service_elf(&bytes)?;
+    use std::os::fd::{FromRawFd, OwnedFd};
+    let copied = unsafe { libc::fcntl(program.as_raw_fd(), libc::F_DUPFD_CLOEXEC, 4) };
+    if copied < 0 {
+        return Err(io::Error::last_os_error());
+    }
+    let executable = unsafe { OwnedFd::from_raw_fd(copied) };
+    let (control, endpoint) = shutdown::Channel::pair()?;
+    let mut cmd = Command::new(format!("/proc/self/fd/{}", executable.as_raw_fd()));
+    cmd.arg0(BOOTSTRAP)
+        .current_dir("/")
+        .env_clear()
+        .env("PATH", "/system/bin:/system/xbin")
+        .env("ANDROID_ROOT", "/system")
+        .env("ANDROID_DATA", "/data")
+        .env("ANDROID_RUNTIME_ROOT", "/apex/com.android.runtime")
+        .stdin(Stdio::null())
+        .stdout(Stdio::null())
+        .stderr(Stdio::inherit());
+    shutdown::attach(&mut cmd, &endpoint);
+    let child = cmd.spawn()?;
+    Ok(Bootstrap {
+        child,
+        control,
+        exit: None,
+    })
+}
+
+struct Bootstrap {
+    child: Child,
+    control: shutdown::Channel,
+    exit: Option<ExitStatus>,
+}
+
+impl Bootstrap {
+    fn poll(&mut self) -> io::Result<Option<ExitStatus>> {
+        if self.exit.is_some() {
+            return Ok(self.exit);
+        }
+        loop {
+            let mut status = 0;
+            let pid = unsafe { libc::waitpid(-1, &mut status, libc::WNOHANG) };
+            if pid > 0 {
+                if pid as u32 == self.child.id() {
+                    self.exit = Some(ExitStatus::from_raw(status));
+                }
+                continue;
+            }
+            if pid == 0 {
+                return Ok(self.exit);
+            }
+            let e = io::Error::last_os_error();
+            if e.kind() == io::ErrorKind::Interrupted {
+                continue;
+            }
+            if e.raw_os_error() == Some(libc::ECHILD) && self.exit.is_some() {
+                return Ok(self.exit);
+            }
+            return Err(e);
+        }
+    }
+}
+
+struct AndroidProbes {
+    toolbox: File,
+    service: File,
+    cmd: File,
+}
+
+impl AndroidProbes {
+    fn from_selected_cp3a() -> io::Result<Self> {
+        if fs::read_link("/system/bin/getprop")? != Path::new("toolbox") {
+            return Err(error(
+                "selected CP3A getprop must be the original toolbox applet",
+            ));
+        }
+        let held = |path, length, digest: &str| -> io::Result<File> {
+            let (file, bytes) = held_file(path, length, true, 2000)?;
+            if bytes.len() != length || format!("{:x}", Sha256::digest(&bytes)) != digest {
+                return Err(error(
+                    "Android readiness program differs from the original CP3A image",
+                ));
+            }
+            Ok(file)
+        };
+        Ok(Self {
+            toolbox: held(
+                "/system/bin/toolbox",
+                169856,
+                "a1d2b30312db7b099cfc4f25b712420b46574affa0d73709add5bc7630d55ae8",
+            )?,
+            service: held(
+                "/system/bin/service",
+                51760,
+                "da64083b28a0f1855f0cfb71c27633378e562b926009e21d9fd2ab598504498e",
+            )?,
+            cmd: held(
+                "/system/bin/cmd",
+                52160,
+                "237410b6f4bfb9586a9a1135feaa4e75c189288483575890447aa5d492c56984",
+            )?,
+        })
+    }
+}
+
+enum ProbeAnswer {
+    Exact(&'static str),
+    CurrentUserId,
+}
+
+impl ProbeAnswer {
+    fn accepts(&self, output: &str) -> bool {
+        match self {
+            Self::Exact(value) => output.trim_end() == *value,
+            Self::CurrentUserId => {
+                let Some(number) = output.strip_suffix('\n') else {
+                    return false;
+                };
+                number
+                    .parse::<i32>()
+                    .is_ok_and(|id| id >= 0 && id.to_string() == number)
+            }
+        }
+    }
+}
+
+fn fixed_probe(
+    program: &File,
+    argv0: &str,
+    args: &[&str],
+    expected: ProbeAnswer,
+) -> io::Result<bool> {
+    let result = Command::new(format!("/proc/self/fd/{}", program.as_raw_fd()))
+        .arg0(argv0)
+        .args(args)
+        .env_clear()
+        .env("PATH", "/system/bin")
+        .env("ANDROID_ROOT", "/system")
+        .env("ANDROID_DATA", "/data")
+        .env("ANDROID_RUNTIME_ROOT", "/apex/com.android.runtime")
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::null())
+        .spawn();
+    let mut child = match result {
+        Ok(child) => child,
+        Err(e) if e.kind() == io::ErrorKind::NotFound => return Ok(false),
+        Err(e) => return Err(e),
+    };
+    let end = Instant::now() + Duration::from_secs(2);
+    loop {
+        if let Some(status) = child.try_wait()? {
+            let mut output = Vec::new();
+            if status.success() {
+                let stream = child.stdout.take().unwrap();
+                let fd = stream.as_raw_fd();
+                let flags = unsafe { libc::fcntl(fd, libc::F_GETFL) };
+                if flags < 0
+                    || unsafe { libc::fcntl(fd, libc::F_SETFL, flags | libc::O_NONBLOCK) } < 0
+                {
+                    return Err(io::Error::last_os_error());
+                }
+                match stream.take(513).read_to_end(&mut output) {
+                    Ok(_) => {}
+                    Err(e) if e.kind() == io::ErrorKind::WouldBlock => return Ok(false),
+                    Err(e) => return Err(e),
+                }
+            }
+            return Ok(output.len() <= 512
+                && std::str::from_utf8(&output).is_ok_and(|s| expected.accepts(s)));
+        }
+        if STOP.load(Ordering::Relaxed) || Instant::now() >= end {
+            child.kill()?;
+            child.wait()?;
+            return Ok(false);
+        }
+        thread::sleep(Duration::from_millis(20));
+    }
+}
+
+#[derive(Default)]
+struct Readiness {
+    binder: bool,
+    android: bool,
+}
+
+fn readiness(tools: &AndroidProbes) -> io::Result<Readiness> {
+    let binder = fixed_probe(
+        &tools.toolbox,
+        "/system/bin/getprop",
+        &["servicemanager.ready"],
+        ProbeAnswer::Exact("true"),
+    )? && fixed_probe(
+        &tools.service,
+        "/system/bin/service",
+        &["check", "manager"],
+        ProbeAnswer::Exact("Service manager: found"),
+    )?;
+    let android = binder
+        && fixed_probe(
+            &tools.toolbox,
+            "/system/bin/getprop",
+            &["sys.boot_completed"],
+            ProbeAnswer::Exact("1"),
+        )?
+        && fixed_probe(
+            &tools.service,
+            "/system/bin/service",
+            &["check", "activity"],
+            ProbeAnswer::Exact("Service activity: found"),
+        )?
+        && fixed_probe(
+            &tools.cmd,
+            "/system/bin/cmd",
+            &["activity", "get-current-user"],
+            ProbeAnswer::CurrentUserId,
+        )?;
+    Ok(Readiness { binder, android })
+}
+
+const HOST_CHANNEL: &str = "/run/droidloom/host-owner.sock";
+
+fn contact_host() -> io::Result<UnixStream> {
+    let end = Instant::now() + START_LIMIT;
+    loop {
+        match UnixStream::connect(HOST_CHANNEL) {
+            Ok(mut stream) => {
+                // Image verification can outlast one socket read interval.
+                // Stay on the authenticated connection and respond to service stop.
+                stream.set_read_timeout(Some(Duration::from_millis(250)))?;
+                loop {
+                    if STOP.load(Ordering::Relaxed) || Instant::now() >= end {
+                        return Err(error("host release validation stopped or timed out"));
+                    }
+                    let mut accepted = [0_u8; 1];
+                    match stream.read_exact(&mut accepted) {
+                        Ok(()) if accepted == [1] => {
+                            stream.set_write_timeout(Some(Duration::from_secs(2)))?;
+                            return Ok(stream);
+                        }
+                        Ok(()) => return Err(error("OCI host rejected the readiness protocol")),
+                        Err(e)
+                            if matches!(
+                                e.kind(),
+                                io::ErrorKind::TimedOut
+                                    | io::ErrorKind::WouldBlock
+                                    | io::ErrorKind::Interrupted
+                            ) =>
+                        {
+                            continue;
+                        }
+                        Err(e)
+                            if matches!(
+                                e.kind(),
+                                io::ErrorKind::UnexpectedEof | io::ErrorKind::ConnectionReset
+                            ) =>
+                        {
+                            break;
+                        }
+                        Err(e) => return Err(e),
+                    }
+                }
+                thread::sleep(Duration::from_millis(100));
+            }
+            Err(e)
+                if matches!(
+                    e.kind(),
+                    io::ErrorKind::NotFound | io::ErrorKind::ConnectionRefused
+                ) && !STOP.load(Ordering::Relaxed)
+                    && Instant::now() < end =>
+            {
+                thread::sleep(Duration::from_millis(50))
+            }
+            Err(e) => return Err(e),
+        }
+    }
+}
+
+fn serve(owner: &mut Bootstrap, host: &mut UnixStream, tools: &AndroidProbes) -> io::Result<()> {
+    host.set_nonblocking(true)?;
+    let end = Instant::now() + START_LIMIT;
+    let mut established = false;
+    let mut next = Instant::now();
+    while !STOP.load(Ordering::Relaxed) {
+        let mut command = [0u8; 1];
+        match host.read(&mut command) {
+            Ok(1) if command == [0x53] => break,
+            Ok(_) => return Err(error("unexpected or closed host command channel")),
+            Err(e)
+                if matches!(
+                    e.kind(),
+                    io::ErrorKind::WouldBlock | io::ErrorKind::Interrupted
+                ) => {}
+            Err(e) => return Err(e),
+        }
+        if let Some(status) = owner.poll()? {
+            return Err(io::Error::other(format!(
+                "Android bootstrap exited: {status}"
+            )));
+        }
+        if Instant::now() >= next {
+            let current = readiness(tools)?;
+            if owner.poll()?.is_some() {
+                return Err(error("Android bootstrap exited during readiness check"));
+            }
+            if established && !current.binder {
+                return Err(error(
+                    "the current Android Binder manager became unavailable",
+                ));
+            }
+            if !current.binder && Instant::now() >= end {
+                return Err(error(
+                    "Android Binder manager did not become ready before the startup deadline",
+                ));
+            }
+            established |= current.binder;
+            host.write_all(&[if current.android {
+                2
+            } else if current.binder {
+                1
+            } else {
+                0
+            }])?;
+            next = Instant::now() + Duration::from_secs(1);
+        }
+        thread::sleep(Duration::from_millis(40));
+    }
+    Ok(())
+}
+fn run() -> io::Result<()> {
+    if std::env::args_os().len() != 1 {
+        return Err(error("container entry accepts no arguments"));
+    }
+    entry_context()?;
+    for sig in [libc::SIGTERM, libc::SIGINT] {
+        if unsafe { libc::signal(sig, stopping as *const () as libc::sighandler_t) }
+            == libc::SIG_ERR
+        {
+            return Err(io::Error::last_os_error());
+        }
+    }
+    let tools = AndroidProbes::from_selected_cp3a()?;
+    let mut host = contact_host()?;
+    let mounts = shutdown::PersistentMounts::acquire()?;
+    let mut owner = bootstrap()?;
+    let live = serve(&mut owner, &mut host, &tools);
+    let retired = shutdown::retire(&mut owner, &mounts, Duration::from_secs(75));
+    if live.is_ok() && retired.is_ok() {
+        host.write_all(&[3])?;
+    }
+    retired.and(live)
+}
+
+fn main() {
+    if let Err(e) = run() {
+        eprintln!("droidloom-container-entry: {e}");
+        std::process::exit(1);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn framework_readiness_requires_activity_manager_to_return_an_actual_user() {
+        let reply = ProbeAnswer::CurrentUserId;
+        for value in ["0\n", "10\n", "2147483647\n"] {
+            assert!(reply.accepts(value));
+        }
+        for value in [
+            "Service activity: found\n",
+            "Current user not set\n",
+            "-10000\n",
+            "2147483648\n",
+            "00\n",
+            "+1\n",
+            "0\n0\n",
+            "0",
+            "0\nignored",
+        ] {
+            assert!(!reply.accepts(value), "{value:?}");
+        }
+    }
+
+    #[test]
+    fn child_without_android_shutdown_is_reaped_and_reported_as_failure() {
+        let child = Command::new("/usr/bin/sleep").arg("30").spawn().unwrap();
+        let (control, _peer) = shutdown::Channel::pair().unwrap();
+        let mut owner = Bootstrap {
+            child,
+            control,
+            exit: None,
+        };
+        assert!(owner.poll().unwrap().is_none());
+        assert!(
+            shutdown::retire(
+                &mut owner,
+                &shutdown::PersistentMounts::fixture(),
+                Duration::from_millis(20)
+            )
+            .is_err()
+        );
+        assert!(owner.poll().unwrap().is_some());
+    }
+    #[test]
+    fn original_pid1_and_subordinate_namespace_are_required() {
+        assert!(entry_context().is_err());
+        assert!(mapped_range("0 200000 100000\n"));
+        assert!(!mapped_range("0 200000 65536\n"));
+        assert!(!mapped_range("0 0 4294967295\n"));
+        assert!(!mapped_range("0 1000 1\n"));
+    }
+}
+
+#[cfg(test)]
+mod lsm_diagnostics {
+    use super::*;
+    #[test]
+    fn lsm_missing_keeps_kind_and_reports_the_specific_kernel_attribute() {
+        for (role, path) in [
+            ("SELinux", "/proc/self/attr/selinux/current"),
+            ("AppArmor", "/proc/self/attr/apparmor/current"),
+        ] {
+            let e = check_lsm_role(role, path, "expected", |_| {
+                Err(io::Error::from_raw_os_error(libc::ENOENT))
+            })
+            .unwrap_err();
+            assert_eq!(e.kind(), io::ErrorKind::NotFound);
+            assert!(e.to_string().contains(path) && e.to_string().contains(role));
+            let e = check_lsm_role(role, path, "expected", |_| Ok("other".into())).unwrap_err();
+            assert_eq!(e.kind(), io::ErrorKind::PermissionDenied);
+            assert!(e.to_string().contains("other") && e.to_string().contains("expected"));
+        }
+    }
+}

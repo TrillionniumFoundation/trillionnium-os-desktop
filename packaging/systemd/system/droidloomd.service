@@ -1,0 +1,15 @@
+[Unit]
+Description=Droidloom Android cell lifecycle daemon
+Requires=systemd-tmpfiles-setup.service
+After=network.target systemd-tmpfiles-setup.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/droidloomd
+TimeoutStopSec=20s
+KillMode=mixed
+Restart=on-failure
+RestartSec=1s
+
+[Install]
+WantedBy=multi-user.target

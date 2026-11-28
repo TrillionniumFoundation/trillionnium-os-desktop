@@ -1,0 +1,8 @@
+# Only the isolated diskless peer-LSM mechanism VM loads this profile.
+abi <abi/5.0>,
+profile p4-peer-deny {
+  /dev/console rw,
+  /proc/*/attr/apparmor/{current,exec} rw,
+  /sys/module/apparmor/parameters/enabled r,
+  deny unix (getopt),
+}

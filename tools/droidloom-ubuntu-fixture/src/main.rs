@@ -1,0 +1,597 @@
+#![forbid(unsafe_code)]
+
+mod boot;
+mod boot_apparmor_candidate;
+mod boot_candidate;
+mod boot_child;
+mod boot_collect;
+mod boot_complete;
+mod boot_empty_meituan;
+mod boot_empty_meituan_plan;
+mod boot_files;
+mod boot_gdm_candidate;
+mod boot_gdm_proof;
+mod boot_host;
+mod boot_kernel;
+mod boot_native;
+mod boot_native_candidates;
+mod boot_netplan_profiles;
+mod boot_owned_evidence;
+mod boot_packages;
+mod boot_privilege_xattr;
+mod boot_public_apks;
+mod boot_qemu;
+mod boot_query;
+mod boot_query_image;
+mod boot_release;
+mod boot_runtime;
+mod boot_systemd_candidate;
+mod boot_vm;
+mod capture;
+mod cold_original_data;
+mod cold_original_initramfs;
+mod cold_original_once_initramfs;
+mod cold_original_once_recovery;
+mod cold_original_qualification;
+mod cold_recovery_recipe;
+mod cold_working_initramfs;
+mod cold_working_recovery;
+mod cold_working_retained_contract;
+mod cold_working_retained_read;
+mod complete_native;
+mod complete_snapshot;
+#[path = "../../../runtime/droidloom-supervisor/src/empty_meituan_contract.rs"]
+mod empty_meituan_contract;
+mod fs;
+mod materialize;
+mod model;
+#[path = "../../../runtime/droidloom-supervisor/src/normal_host_release.rs"]
+mod normal_host_release;
+mod paths;
+#[cfg(test)]
+mod tests;
+
+use clap::{Parser, Subcommand};
+use model::{Manifest, Selection};
+use std::path::PathBuf;
+
+type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
+fn ensure(ok: bool, message: &str) -> Result<()> {
+    if ok {
+        Ok(())
+    } else {
+        Err(message.to_owned().into())
+    }
+}
+
+#[derive(Parser)]
+#[command(
+    about = "Capture, initialize, and boot a private real Ubuntu qualification root. Runtime and application acceptance remain independent."
+)]
+struct Cli {
+    #[command(subcommand)]
+    command: Command,
+}
+
+#[derive(Subcommand)]
+enum Command {
+    /// Derive only the next fixed EMPTY guest configuration from actual normal inputs.
+    PlanEmptyMeituan {
+        #[arg(long)]
+        config: PathBuf,
+        #[arg(long)]
+        config_sha256: String,
+        #[arg(long, value_enum)]
+        phase: boot_empty_meituan_plan::Phase,
+    },
+    RunOriginalOnce {
+        #[arg(long)]
+        config: PathBuf,
+        #[arg(long)]
+        config_sha256: String,
+    },
+    #[command(name = "__original-once-thaw", hide = true)]
+    OriginalOnceThawGuard {
+        #[arg(long)]
+        config: PathBuf,
+        #[arg(long)]
+        config_sha256: String,
+    },
+    #[command(name = "__working-cold-thaw", hide = true)]
+    WorkingColdThawGuard {
+        #[arg(long)]
+        config: PathBuf,
+        #[arg(long)]
+        config_sha256: String,
+    },
+    #[command(name = "__working-return-thaw", hide = true)]
+    WorkingReturnThawGuard {
+        #[arg(long)]
+        config: PathBuf,
+        #[arg(long)]
+        config_sha256: String,
+    },
+    #[command(hide = true)]
+    OriginalOnceEarlyRecovery,
+    #[command(hide = true)]
+    WorkingQualificationEarlyRecovery,
+    VerifyNetplanProfiles {
+        #[arg(long)]
+        root: PathBuf,
+    },
+    VerifyPublicApkInputs {
+        #[arg(long)]
+        config: PathBuf,
+        #[arg(long)]
+        config_sha256: String,
+    },
+    /// Admit the returned pair and build its new source-bound working initramfs.
+    PrepareWorkingQualification {
+        #[arg(long)]
+        config: PathBuf,
+        #[arg(long)]
+        config_sha256: String,
+    },
+    /// Publish and reverse actual cold runtime, data and working boot files.
+    VerifyWorkingPublication {
+        #[arg(long)]
+        config: PathBuf,
+        #[arg(long)]
+        config_sha256: String,
+    },
+    /// Perform one real working boot and retain an automatic original-host recovery entry.
+    RunWorkingQualification {
+        #[arg(long)]
+        config: PathBuf,
+        #[arg(long)]
+        config_sha256: String,
+    },
+    /// Reacquire the actual original host and finish a working boot's inverse.
+    RecoverWorkingQualification {
+        #[arg(long)]
+        config: PathBuf,
+        #[arg(long)]
+        config_sha256: String,
+    },
+    /// Observe the exact returned first-once history and retired working pair.
+    InspectReturnedWorkingCopy {
+        #[arg(long)]
+        candidate: String,
+    },
+    InspectOriginalDataPair {
+        #[arg(long)]
+        config: PathBuf,
+        #[arg(long)]
+        config_sha256: String,
+    },
+    InspectOriginalLabels {
+        #[arg(long)]
+        config: PathBuf,
+        #[arg(long)]
+        config_sha256: String,
+    },
+    VerifyOriginalInitramfs {
+        #[arg(long)]
+        config: PathBuf,
+        #[arg(long)]
+        config_sha256: String,
+    },
+    PrepareOriginalInitramfs {
+        #[arg(long)]
+        config: PathBuf,
+        #[arg(long)]
+        config_sha256: String,
+    },
+    #[command(hide = true)]
+    OriginalInitramfsNamespace {
+        #[arg(long)]
+        config: PathBuf,
+        #[arg(long)]
+        config_sha256: String,
+    },
+    #[command(hide = true)]
+    OriginalInitramfsBuild {
+        #[arg(long)]
+        config: PathBuf,
+        #[arg(long)]
+        config_sha256: String,
+    },
+    VerifyNativeCandidates {
+        #[arg(long)]
+        config: PathBuf,
+        #[arg(long)]
+        config_sha256: String,
+    },
+    VerifyOwnedGuest {
+        #[arg(long)]
+        config: PathBuf,
+        #[arg(long)]
+        config_sha256: String,
+    },
+    VerifySystemdCandidate {
+        #[arg(long)]
+        config: PathBuf,
+        #[arg(long)]
+        config_sha256: String,
+    },
+    CollectBoot {
+        #[arg(long)]
+        config: PathBuf,
+        #[arg(long)]
+        config_sha256: String,
+    },
+    VerifyBootMaterials {
+        #[arg(long)]
+        config: PathBuf,
+        #[arg(long)]
+        config_sha256: String,
+    },
+    VerifyHostImport {
+        #[arg(long)]
+        config: PathBuf,
+        #[arg(long)]
+        config_sha256: String,
+    },
+    Boot {
+        #[arg(long)]
+        config: PathBuf,
+        #[arg(long)]
+        config_sha256: String,
+    },
+    PrepareBoot {
+        #[arg(long)]
+        config: PathBuf,
+        #[arg(long)]
+        config_sha256: String,
+    },
+    PrepareNative {
+        #[arg(long)]
+        config: PathBuf,
+        #[arg(long)]
+        config_sha256: String,
+    },
+    PrepareCompleteNative {
+        #[arg(long)]
+        config: PathBuf,
+        #[arg(long)]
+        config_sha256: String,
+    },
+    CaptureCompleteNative {
+        #[arg(long)]
+        source_receipt: PathBuf,
+        #[arg(long)]
+        source_receipt_sha256: String,
+        #[arg(long)]
+        target_kernel_release: String,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    MaterializeCompleteNative {
+        #[arg(long)]
+        manifest: PathBuf,
+        #[arg(long)]
+        manifest_sha256: String,
+        #[arg(long)]
+        destination: PathBuf,
+        #[arg(long)]
+        receipt: PathBuf,
+    },
+    VerifyCompleteNative {
+        #[arg(long)]
+        manifest: PathBuf,
+        #[arg(long)]
+        manifest_sha256: String,
+        #[arg(long)]
+        destination: PathBuf,
+        #[arg(long)]
+        receipt: PathBuf,
+    },
+    Capture {
+        #[arg(long)]
+        selection: PathBuf,
+        #[arg(long)]
+        selection_sha256: String,
+        #[arg(long)]
+        output: PathBuf,
+        #[arg(long)]
+        module_output: Option<PathBuf>,
+    },
+    Materialize {
+        #[arg(long)]
+        manifest: PathBuf,
+        #[arg(long)]
+        manifest_sha256: String,
+        #[arg(long)]
+        destination: PathBuf,
+        #[arg(long)]
+        receipt: PathBuf,
+    },
+    Verify {
+        #[arg(long)]
+        manifest: PathBuf,
+        #[arg(long)]
+        manifest_sha256: String,
+        #[arg(long)]
+        destination: PathBuf,
+        #[arg(long)]
+        receipt: PathBuf,
+    },
+}
+
+fn run() -> Result<()> {
+    let cli = Cli::parse();
+    // Only the internal synthetic tests accept their temporary tree owner's UID.
+    ensure(
+        rustix::process::geteuid().as_raw() == 0,
+        "real source capture/copy requires existing root rights; no privilege helper is installed",
+    )?;
+    match cli.command {
+        Command::PlanEmptyMeituan {
+            config,
+            config_sha256,
+            phase,
+        } => boot_empty_meituan_plan::run(&config, &config_sha256, phase)?,
+        Command::RunOriginalOnce {
+            config,
+            config_sha256,
+        } => {
+            let actual = cold_original_qualification::run(&config, &config_sha256)?;
+            println!("{}", serde_json::to_string(&actual)?);
+        }
+        Command::OriginalOnceThawGuard {
+            config,
+            config_sha256,
+        } => cold_original_qualification::run_thaw_guard(&config, &config_sha256)?,
+        Command::WorkingColdThawGuard {
+            config,
+            config_sha256,
+        } => cold_original_qualification::run_working_thaw_guard(&config, &config_sha256)?,
+        Command::WorkingReturnThawGuard {
+            config,
+            config_sha256,
+        } => cold_original_qualification::run_working_return_thaw_guard(&config, &config_sha256)?,
+        Command::OriginalOnceEarlyRecovery => cold_original_once_recovery::early()?,
+        Command::WorkingQualificationEarlyRecovery => cold_working_recovery::early()?,
+        Command::VerifyNetplanProfiles { root } => boot_netplan_profiles::run(&root)?,
+        Command::VerifyPublicApkInputs {
+            config,
+            config_sha256,
+        } => boot_public_apks::verify_inputs(&config, &config_sha256)?,
+        Command::PrepareWorkingQualification {
+            config,
+            config_sha256,
+        } => {
+            let actual = cold_original_qualification::prepare_working(&config, &config_sha256)?;
+            println!("{}", serde_json::to_string_pretty(&actual)?);
+        }
+        Command::VerifyWorkingPublication {
+            config,
+            config_sha256,
+        } => {
+            let actual =
+                cold_original_qualification::verify_working_publication(&config, &config_sha256)?;
+            println!("{}", serde_json::to_string_pretty(&actual)?);
+        }
+        Command::RunWorkingQualification {
+            config,
+            config_sha256,
+        } => {
+            let value = cold_original_qualification::run_working(&config, &config_sha256)?;
+            println!("{}", serde_json::to_string_pretty(&value)?);
+        }
+        Command::RecoverWorkingQualification {
+            config,
+            config_sha256,
+        } => {
+            let actual = cold_original_qualification::recover_working(&config, &config_sha256)?;
+            println!("{}", serde_json::to_string_pretty(&actual)?);
+        }
+        Command::InspectReturnedWorkingCopy { candidate } => {
+            let observation =
+                cold_original_qualification::inspect_returned_working_copy(&candidate)?;
+            println!("{}", serde_json::to_string_pretty(&observation)?);
+        }
+        Command::InspectOriginalDataPair {
+            config,
+            config_sha256,
+        } => {
+            cold_original_data::inspect(&config, &config_sha256)?;
+        }
+        Command::InspectOriginalLabels {
+            config,
+            config_sha256,
+        } => cold_original_data::labels::inspect_original_labels_files(&config, &config_sha256)?,
+        Command::VerifyOriginalInitramfs {
+            config,
+            config_sha256,
+        } => cold_original_initramfs::verify_original_initramfs_files(&config, &config_sha256)?,
+        Command::PrepareOriginalInitramfs {
+            config,
+            config_sha256,
+        } => cold_original_initramfs::prepare(&config, &config_sha256)?,
+        Command::OriginalInitramfsNamespace {
+            config,
+            config_sha256,
+        } => cold_original_initramfs::namespace(&config, &config_sha256)?,
+        Command::OriginalInitramfsBuild {
+            config,
+            config_sha256,
+        } => cold_original_initramfs::build(&config, &config_sha256)?,
+        Command::VerifyNativeCandidates {
+            config,
+            config_sha256,
+        } => boot_native_candidates::run(&config, &config_sha256)?,
+        Command::VerifyOwnedGuest {
+            config,
+            config_sha256,
+        } => boot_owned_evidence::run(&config, &config_sha256)?,
+        Command::VerifySystemdCandidate {
+            config,
+            config_sha256,
+        } => boot_systemd_candidate::run(&config, &config_sha256)?,
+        Command::CollectBoot {
+            config,
+            config_sha256,
+        } => boot_collect::run(&config, &config_sha256)?,
+        Command::VerifyBootMaterials {
+            config,
+            config_sha256,
+        } => boot::verify_boot_materials(&config, &config_sha256)?,
+        Command::VerifyHostImport {
+            config,
+            config_sha256,
+        } => boot::verify_host_import(&config, &config_sha256)?,
+        Command::Boot {
+            config,
+            config_sha256,
+        } => boot_vm::run(&config, &config_sha256)?,
+        Command::PrepareBoot {
+            config,
+            config_sha256,
+        } => boot::prepare_boot(&config, &config_sha256)?,
+        Command::PrepareNative {
+            config,
+            config_sha256,
+        } => boot::prepare_native(&config, &config_sha256)?,
+        Command::PrepareCompleteNative {
+            config,
+            config_sha256,
+        } => {
+            boot_complete::prepare(&config, &config_sha256)?;
+        }
+        Command::CaptureCompleteNative {
+            source_receipt,
+            source_receipt_sha256,
+            target_kernel_release,
+            output,
+        } => {
+            let result = complete_native::capture(
+                &source_receipt,
+                &source_receipt_sha256,
+                &target_kernel_release,
+            )?;
+            let source_stage = complete_native::validate(&result)?.stage;
+            let sha = fs::write_json(&fs::absolute_string(&output)?, &result, 0)?;
+            println!(
+                "{}",
+                serde_json::json!({"manifest_sha256":sha,
+                "entries":result.entries.len()+result.static_devices.len(),
+                "complete_package_database":true,"source_stage":source_stage,"guest_qualified":false})
+            );
+        }
+        Command::MaterializeCompleteNative {
+            manifest,
+            manifest_sha256,
+            destination,
+            receipt,
+        } => {
+            let input: complete_native::CompleteManifest =
+                fs::read_json(&fs::absolute_string(&manifest)?, &manifest_sha256)?;
+            let result = complete_native::materialize(&input, &manifest_sha256, &destination)?;
+            let sha = fs::write_json(&fs::absolute_string(&receipt)?, &result, 0)?;
+            println!(
+                "{}",
+                serde_json::json!({"receipt_sha256":sha,"materialization_complete":true,"guest_qualified":false})
+            );
+        }
+        Command::VerifyCompleteNative {
+            manifest,
+            manifest_sha256,
+            destination,
+            receipt,
+        } => {
+            let input: complete_native::CompleteManifest =
+                fs::read_json(&fs::absolute_string(&manifest)?, &manifest_sha256)?;
+            let result = complete_native::verify(&input, &manifest_sha256, &destination)?;
+            let sha = fs::write_json(&fs::absolute_string(&receipt)?, &result, 0)?;
+            println!(
+                "{}",
+                serde_json::json!({"receipt_sha256":sha,"materialization_complete":true,"guest_qualified":false})
+            );
+        }
+        Command::Capture {
+            selection,
+            selection_sha256,
+            output,
+            module_output,
+        } => {
+            let input: Selection =
+                fs::read_json(&fs::absolute_string(&selection)?, &selection_sha256)?;
+            ensure(
+                input.kernel.is_none() || module_output.is_some(),
+                "target-kernel admission requires a separate module-output manifest",
+            )?;
+            let result = capture::capture(input, &selection_sha256, 0)?;
+            let module_hash = if let Some(path) = module_output {
+                let entries: Vec<_> = result
+                    .entries
+                    .iter()
+                    .filter(|e| e.component == model::Component::TargetModule)
+                    .collect();
+                Some(fs::write_json(
+                    &fs::absolute_string(&path)?,
+                    &serde_json::json!({
+                        "schema":"droidloom.ubuntu-target-module-content.v1", "selection_sha256":selection_sha256,
+                        "kernel":result.kernel, "entries":entries, "guest_qualified":false
+                    }),
+                    0,
+                )?)
+            } else {
+                None
+            };
+            let sha = fs::write_json(&fs::absolute_string(&output)?, &result, 0)?;
+            println!(
+                "{}",
+                serde_json::json!({"manifest_sha256":sha,"entries":result.entries.len(),"module_manifest_sha256":module_hash,"guest_qualified":false})
+            );
+        }
+        Command::Materialize {
+            manifest,
+            manifest_sha256,
+            destination,
+            receipt,
+        } => {
+            let input: Manifest =
+                fs::read_json(&fs::absolute_string(&manifest)?, &manifest_sha256)?;
+            let result = materialize::materialize(
+                &input,
+                &manifest_sha256,
+                &fs::absolute_string(&destination)?,
+                0,
+            )?;
+            let sha = fs::write_json(&fs::absolute_string(&receipt)?, &result, 0)?;
+            println!(
+                "{}",
+                serde_json::json!({"receipt_sha256":sha,"entries_verified":result.entries_verified,"unique_regular_bytes":result.unique_regular_bytes,"materialization_complete":true,"guest_qualified":false})
+            );
+        }
+        Command::Verify {
+            manifest,
+            manifest_sha256,
+            destination,
+            receipt,
+        } => {
+            let input: Manifest =
+                fs::read_json(&fs::absolute_string(&manifest)?, &manifest_sha256)?;
+            let result = materialize::verify(
+                &input,
+                &manifest_sha256,
+                &fs::absolute_string(&destination)?,
+                0,
+            )?;
+            let sha = fs::write_json(&fs::absolute_string(&receipt)?, &result, 0)?;
+            println!(
+                "{}",
+                serde_json::json!({"receipt_sha256":sha,"entries_verified":result.entries_verified,"materialization_complete":true,"guest_qualified":false})
+            );
+        }
+    }
+    Ok(())
+}
+
+fn main() {
+    if let Err(error) = run() {
+        eprintln!("fixture materialization refused: {error}");
+        std::process::exit(1);
+    }
+}

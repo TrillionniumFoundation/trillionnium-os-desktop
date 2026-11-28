@@ -1,0 +1,55 @@
+diff --git a/core/java/android/os/Binder.java b/core/java/android/os/Binder.java
+index 6b1e918..3186de7 100644
+--- a/core/java/android/os/Binder.java
++++ b/core/java/android/os/Binder.java
+@@ -1152,6 +1152,24 @@
+     }
+ 
+     /**
++     * Enforces that the calling UID is either {@link Process#ROOT_UID}
++     * or {@link Process#SHELL_UID}. If not, sends a failure code to
++     * {@code resultReceiver} (if non-null) and throws a
++     * {@link SecurityException}.
++     *
++     * @hide
++     */
++    public static void enforceShellCommandUid(@Nullable ResultReceiver resultReceiver) {
++        final int callingUid = Binder.getCallingUid();
++        if (callingUid != Process.ROOT_UID && callingUid != Process.SHELL_UID) {
++            if (resultReceiver != null) {
++                resultReceiver.send(-1, null);
++            }
++            throw new SecurityException("Shell commands are only callable by ADB");
++        }
++    }
++
++    /**
+      * Handle a call to {@link #shellCommand}.
+      *
+      * <p>The default implementation performs a caller check to make sure the caller UID is of
+@@ -1167,12 +1185,7 @@
+             @Nullable FileDescriptor err,
+             @NonNull String[] args, @Nullable ShellCallback callback,
+             @NonNull ResultReceiver resultReceiver) throws RemoteException {
+-
+-        final int callingUid = Binder.getCallingUid();
+-        if (callingUid != Process.ROOT_UID && callingUid != Process.SHELL_UID) {
+-            resultReceiver.send(-1, null);
+-            throw new SecurityException("Shell commands are only callable by ADB");
+-        }
++        enforceShellCommandUid(resultReceiver);
+ 
+         // First, convert in, out and err to @NonNull, by redirecting any that's null to /dev/null.
+         try {
+diff --git a/services/core/java/com/android/server/wm/WindowManagerService.java b/services/core/java/com/android/server/wm/WindowManagerService.java
+index 00652c8..0c79581 100644
+--- a/services/core/java/com/android/server/wm/WindowManagerService.java
++++ b/services/core/java/com/android/server/wm/WindowManagerService.java
+@@ -1231,6 +1231,7 @@
+     @Override
+     public void onShellCommand(FileDescriptor in, FileDescriptor out, FileDescriptor err,
+             String[] args, ShellCallback callback, ResultReceiver result) {
++        Binder.enforceShellCommandUid(result);
+         new WindowManagerShellCommand(this).exec(this, in, out, err, args, callback, result);
+     }
+ 

@@ -1,0 +1,116 @@
+{
+  "Attributes": [
+    {
+      "Name": "LowCapacityCPUs",
+      "Controller": "cpuset",
+      "File": "background/cpus",
+      "FileV2": "cpuset.cpus.effective"
+    },
+    {
+      "Name": "HighCapacityCPUs",
+      "Controller": "cpuset",
+      "File": "foreground/cpus",
+      "FileV2": "cpuset.cpus.effective"
+    },
+    {
+      "Name": "HighCapacityWICPUs",
+      "Controller": "cpuset",
+      "File": "foreground_window/cpus",
+      "FileV2": "cpuset.cpus.effective"
+    },
+    {
+      "Name": "MaxCapacityCPUs",
+      "Controller": "cpuset",
+      "File": "top-app/cpus",
+      "FileV2": "cpuset.cpus.effective"
+    },
+    {
+      "Name": "DroidloomIoWeight",
+      "Controller": "io",
+      "File": "io.weight"
+    },
+    {
+      "Name": "DroidloomIoPriorityClass",
+      "Controller": "io",
+      "File": "io.prio.class"
+    }
+  ],
+  "Profiles": [
+    {
+      "Name": "LowIoPriority",
+      "Actions": [
+        {
+          "Name": "SetAttribute",
+          "Params": {
+            "Name": "DroidloomIoWeight",
+            "Value": "default 200"
+          }
+        },
+        {
+          "Name": "SetAttribute",
+          "Params": {
+            "Name": "DroidloomIoPriorityClass",
+            "Value": "restrict-to-be"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "NormalIoPriority",
+      "Actions": [
+        {
+          "Name": "SetAttribute",
+          "Params": {
+            "Name": "DroidloomIoWeight",
+            "Value": "default 1000"
+          }
+        },
+        {
+          "Name": "SetAttribute",
+          "Params": {
+            "Name": "DroidloomIoPriorityClass",
+            "Value": "no-change"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "HighIoPriority",
+      "Actions": [
+        {
+          "Name": "SetAttribute",
+          "Params": {
+            "Name": "DroidloomIoWeight",
+            "Value": "default 1000"
+          }
+        },
+        {
+          "Name": "SetAttribute",
+          "Params": {
+            "Name": "DroidloomIoPriorityClass",
+            "Value": "no-change"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "MaxIoPriority",
+      "Actions": [
+        {
+          "Name": "SetAttribute",
+          "Params": {
+            "Name": "DroidloomIoWeight",
+            "Value": "default 1000"
+          }
+        },
+        {
+          "Name": "SetAttribute",
+          "Params": {
+            "Name": "DroidloomIoPriorityClass",
+            "Value": "no-change"
+          }
+        }
+      ]
+    }
+  ]
+}

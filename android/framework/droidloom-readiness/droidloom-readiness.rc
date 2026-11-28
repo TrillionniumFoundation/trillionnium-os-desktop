@@ -1,0 +1,23 @@
+on init
+    start droidloom_readiness
+    start droidloom_shutdown
+
+service droidloom_readiness /system_ext/bin/droidloom-readiness
+    class core
+    user nobody
+    group nobody
+    restart_period 5
+
+service droidloom_shutdown /system_ext/bin/droidloom-shutdown
+    class core
+    user nobody
+    group nobody
+    oneshot
+
+service droidloom_commit_shutdown /system_ext/bin/droidloom-shutdown --commit
+    class core
+    disabled
+    oneshot
+    user nobody
+    group nobody
+    reboot_on_failure shutdown

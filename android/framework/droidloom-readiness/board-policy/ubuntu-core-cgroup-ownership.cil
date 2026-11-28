@@ -1,0 +1,172 @@
+
+; The kernel supports SELinux labels on kernfs cgroups. Existing Android
+; labeling defaults and all original neverallows stay in the joined policy.
+(policycap cgroup_seclabel)
+(typeattribute p4_cgroup_original_types)
+(typeattributeset p4_cgroup_original_types (cgroup cgroup_v2 cgroup_app))
+(typeattribute p4_non_kernel_cgroup_actor)
+(typeattributeset p4_non_kernel_cgroup_actor (not (kernel)))
+(neverallow p4_non_kernel_cgroup_actor p4_cgroup_original_types (dir (relabelfrom relabelto)))
+(neverallow p4_non_kernel_cgroup_actor p4_cgroup_original_types (file (relabelfrom relabelto)))
+(neverallow p4_non_kernel_cgroup_actor p4_cgroup_original_types (lnk_file (relabelfrom relabelto)))
+(type p4_linux_cgroup_root_t)
+(type p4_linux_cgroup_init_scope_t)
+(type p4_linux_cgroup_init_tasks_t)
+(roletype object_r p4_linux_cgroup_root_t)
+(roletype object_r p4_linux_cgroup_init_scope_t)
+(roletype object_r p4_linux_cgroup_init_tasks_t)
+(typeattribute p4_linux_init_cgroup_inodes)
+(typeattributeset p4_linux_init_cgroup_inodes (p4_linux_cgroup_root_t p4_linux_cgroup_init_scope_t p4_linux_cgroup_init_tasks_t))
+(typeattributeset p4_linux_data (p4_linux_init_cgroup_inodes))
+(allow kernel cgroup_v2 (dir (relabelfrom getattr)))
+(allow kernel cgroup_v2 (file (relabelfrom getattr)))
+(allow kernel p4_linux_cgroup_root_t (dir (getattr relabelto)))
+(allow kernel p4_linux_cgroup_init_scope_t (dir (getattr relabelto)))
+(allow kernel p4_linux_cgroup_init_tasks_t (file (getattr relabelto)))
+(allow p4_linux_init_cgroup_inodes cgroup_v2 (filesystem (associate)))
+(allow init_t p4_linux_cgroup_root_t (dir (getattr search)))
+(allow init_t p4_linux_cgroup_init_scope_t (dir (getattr search)))
+(allow init_t p4_linux_cgroup_init_tasks_t (file (getattr open write)))
+(neverallow p4_non_kernel_cgroup_actor p4_linux_init_cgroup_inodes (dir (relabelfrom relabelto)))
+; Stock ProtectControlGroups makes only the native cgroup root read-only in
+; the sealed executor's new mount namespace; no membership or label changes.
+(typeattribute p4_non_kernel_cgroup_nonexecutor)
+(typeattributeset p4_non_kernel_cgroup_nonexecutor (and (p4_non_kernel_cgroup_actor) (not (p4_linux_service_executor_t))))
+(typeattribute p4_native_cgroup_nonroot_inodes)
+(typeattributeset p4_native_cgroup_nonroot_inodes (and (p4_linux_init_cgroup_inodes) (not (p4_linux_cgroup_root_t))))
+(neverallow p4_non_kernel_cgroup_nonexecutor p4_linux_init_cgroup_inodes (dir (mounton)))
+(neverallow p4_linux_service_executor_t p4_native_cgroup_nonroot_inodes (dir (mounton)))
+(neverallow p4_non_kernel_cgroup_actor p4_linux_init_cgroup_inodes (file (relabelfrom relabelto mounton)))
+
+
+; This file contains only the names of controllers supported at the real root.
+(type p4_linux_cgroup_controller_list_t)
+(roletype object_r p4_linux_cgroup_controller_list_t)
+(typeattributeset p4_linux_init_cgroup_inodes (p4_linux_cgroup_controller_list_t))
+(allow kernel p4_linux_cgroup_controller_list_t (file (getattr relabelto)))
+(allow init_t p4_linux_cgroup_controller_list_t (file (getattr open read)))
+(neverallow p4_non_kernel_cgroup_actor p4_linux_cgroup_controller_list_t (file (write append setattr)))
+
+; The ordinary manager owns its top-level system slice, independently of Android's payload.
+(type p4_linux_system_slice_t)
+(type p4_linux_unit_cgroup_t)
+(roletype object_r p4_linux_system_slice_t)
+(roletype object_r p4_linux_unit_cgroup_t)
+(typeattributeset p4_linux_init_cgroup_inodes (p4_linux_system_slice_t p4_linux_unit_cgroup_t))
+(allow kernel p4_linux_system_slice_t (dir (getattr)))
+; system.slice is created before policy activation. Its generation must stay
+; label-free in kernfs storage so that each new dentry receives its native
+; genfs label. An explicit system.slice xattr would be copied into children.
+(genfscon cgroup2 "/system.slice" (u object_r p4_linux_system_slice_t ((s0) (s0))))
+(genfscon cgroup2 "/system.slice/" (u object_r p4_linux_unit_cgroup_t ((s0) (s0))))
+; The trusted manager fixes cell-u1000, keeper and payload under the selected
+; systemd unit. Only the payload is the Android namespace root. The original
+; Android rule classifies children of apps. The fixed shared payload retains
+; exactly the original Android cgroup_v2 access through the normal linker.
+(genfscon cgroup2 "/system.slice/droidloom-production.service/cell-u1000/payload" (u object_r p4_android_payload_cgroup_t ((s0) (s0))))
+(genfscon cgroup2 "/system.slice/droidloom-production.service/cell-u1000/payload/apps/" (u object_r cgroup_app ((s0) (s0))))
+(allow init_t p4_linux_system_slice_t (dir (getattr search read open write add_name remove_name)))
+(typetransition init_t p4_linux_system_slice_t dir p4_linux_unit_cgroup_t)
+(allow init_t p4_linux_unit_cgroup_t (dir (getattr search read open create write add_name remove_name rmdir)))
+
+; Only host unit cgroups receive this type. The Android payload subtree keeps
+; original Android types. systemd monitors cgroup.events and manages its units.
+(allow init_t p4_linux_unit_cgroup_t (file (getattr open read watch create write)))
+(allow init_t p4_linux_unit_cgroup_t (dir (setattr)))
+(allow init_t p4_linux_system_slice_t (dir (setattr)))
+
+; Linux checks MAY_WRITE against the common ancestor of source and target.
+; Only the immutable system manager/executor receive that decision. PID 1
+; moves logind session tasks from system.slice to user.slice through the
+; kernel's common-ancestor check. No userspace role can open this root
+; membership file or use it to read running PIDs.
+(type p4_linux_cgroup_root_membership_t)
+(roletype object_r p4_linux_cgroup_root_membership_t)
+(typeattributeset p4_linux_init_cgroup_inodes (p4_linux_cgroup_root_membership_t))
+(allow kernel p4_linux_cgroup_root_membership_t (file (getattr relabelto)))
+(allow p4_linux_service_executor_t p4_linux_cgroup_root_membership_t (file (write)))
+(allow init_t p4_linux_cgroup_root_membership_t (file (write)))
+; Other executor-specific contracts keep their original closed actor set.
+(typeattribute p4_not_service_executor)
+(typeattributeset p4_not_service_executor (not (p4_linux_service_executor_t)))
+(typeattribute p4_not_native_task_migrator)
+(typeattributeset p4_not_native_task_migrator (not (or (init_t) (p4_linux_service_executor_t))))
+(neverallow p4_not_native_task_migrator p4_linux_cgroup_root_membership_t (file (write append)))
+(neverallow p4_non_kernel_cgroup_actor p4_linux_cgroup_root_membership_t (file (open read append setattr map ioctl)))
+
+; systemd's production unit requests DelegateSubgroup=broker. The original
+; executor may prepare that exact one child and attach its own process there.
+; Other proposed directory names receive the parent type, for which the
+; executor has no create permission.
+(type p4_linux_production_unit_cgroup_t)
+(roletype object_r p4_linux_production_unit_cgroup_t)
+(typeattributeset p4_linux_init_cgroup_inodes (p4_linux_production_unit_cgroup_t))
+(genfscon cgroup2 "/system.slice/droidloom-production.service" (u object_r p4_linux_production_unit_cgroup_t ((s0) (s0))))
+(genfscon cgroup2 "/system.slice/droidloom-production.service/" (u object_r p4_linux_production_subtree_t ((s0) (s0))))
+(typetransition init_t p4_linux_system_slice_t dir "droidloom-production.service" p4_linux_production_unit_cgroup_t)
+(typetransition init_t p4_linux_production_unit_cgroup_t dir "broker" p4_linux_production_subtree_t)
+(typetransition p4_linux_service_executor_t p4_linux_production_unit_cgroup_t dir "broker" p4_linux_production_subtree_t)
+(allow init_t p4_linux_production_unit_cgroup_t (dir (getattr search open read create write add_name remove_name rmdir setattr)))
+(allow p4_linux_service_executor_t p4_linux_production_unit_cgroup_t (dir (getattr search open write add_name)))
+(allow p4_linux_service_executor_t p4_linux_unit_cgroup_t (dir (create)))
+(neverallow p4_linux_service_executor_t p4_linux_production_unit_cgroup_t (dir (create rmdir rename setattr relabelfrom relabelto mounton)))
+(auditallow p4_linux_service_executor_t p4_linux_cgroup_root_membership_t (file (write)))
+
+; The normal distro manager must turn on the delegated controllers before
+; its service units can apply their resource limits. Allow just the retained
+; top-level subtree_control inode, independently of the unopened root
+; membership inode used only by the kernel's common-ancestor check.
+(type p4_linux_cgroup_subtree_control_t)
+(roletype object_r p4_linux_cgroup_subtree_control_t)
+(typeattributeset p4_linux_init_cgroup_inodes (p4_linux_cgroup_subtree_control_t))
+(allow kernel p4_linux_cgroup_subtree_control_t (file (getattr relabelto)))
+(allow init_t p4_linux_cgroup_subtree_control_t (file (getattr open read write)))
+(auditallow init_t p4_linux_cgroup_subtree_control_t (file (write)))
+(neverallow p4_not_ubuntu_pid1 p4_linux_cgroup_subtree_control_t (file (open read write append)))
+
+; Ubuntu's installed systemd-udevd.service uses DelegateSubgroup=udev.
+; The manager creates its service directory. Within it, the executor can
+; create only the named udev subgroup, using the normal host membership type.
+(type p4_linux_udevd_unit_cgroup_t)
+(roletype object_r p4_linux_udevd_unit_cgroup_t)
+(typeattributeset p4_linux_init_cgroup_inodes (p4_linux_udevd_unit_cgroup_t))
+(genfscon cgroup2 "/system.slice/systemd-udevd.service" (u object_r p4_linux_udevd_unit_cgroup_t ((s0) (s0))))
+(genfscon cgroup2 "/system.slice/systemd-udevd.service/" (u object_r p4_linux_unit_cgroup_t ((s0) (s0))))
+(typetransition init_t p4_linux_system_slice_t dir "systemd-udevd.service" p4_linux_udevd_unit_cgroup_t)
+(typetransition init_t p4_linux_udevd_unit_cgroup_t dir "udev" p4_linux_unit_cgroup_t)
+(typetransition p4_linux_service_executor_t p4_linux_udevd_unit_cgroup_t dir "udev" p4_linux_unit_cgroup_t)
+(allow init_t p4_linux_udevd_unit_cgroup_t (dir (getattr search open read create write add_name remove_name rmdir setattr)))
+(allow p4_linux_service_executor_t p4_linux_udevd_unit_cgroup_t (dir (getattr search open write add_name)))
+(neverallow p4_linux_service_executor_t p4_linux_udevd_unit_cgroup_t (dir (create rmdir rename setattr relabelfrom relabelto mounton)))
+(neverallow p4_linux_service_executor_t p4_linux_unit_cgroup_t (dir (write add_name)))
+
+
+; The stock perpetual root mount is extrinsic (systemd unit.c) and therefore
+; belongs to -.slice, not system.slice. kernfs computes this exact named
+; transition from the held native root SID; unknown top-level children retain
+; the root type, for which no process has create permission. Its generated
+; control files inherit the ordinary native unit type. Android remains below
+; the separately labelled production payload and receives no new authority.
+(typetransition init_t p4_linux_cgroup_root_t dir "-.mount" p4_linux_unit_cgroup_t)
+(allow init_t p4_linux_cgroup_root_t (dir (write add_name remove_name)))
+(neverallow p4_not_ubuntu_pid1 p4_linux_cgroup_root_t (dir (write add_name remove_name)))
+(neverallow p4_linux_procs p4_linux_cgroup_root_t (dir (create rmdir rename reparent)))
+
+; init.scope is created and held before policy activation, like system.slice.
+; Never store a parent kernfs xattr: it would override genfs labeling of newly
+; generated controller files. The early handoff verifies these original inodes
+; after policy activation and retains the separate unopened root membership.
+(genfscon cgroup2 "/init.scope" (u object_r p4_linux_cgroup_init_scope_t ((s0) (s0))))
+(genfscon cgroup2 "/init.scope/" (u object_r p4_linux_cgroup_init_scope_t ((s0) (s0))))
+(genfscon cgroup2 "/init.scope/cgroup.procs" (u object_r p4_linux_cgroup_init_tasks_t ((s0) (s0))))
+(genfscon cgroup2 "/init.scope/cgroup.threads" (u object_r p4_linux_cgroup_init_tasks_t ((s0) (s0))))
+(allow init_t p4_linux_cgroup_root_t (dir (setattr)))
+(allow init_t p4_linux_cgroup_init_scope_t (dir (open read write setattr)))
+(allow init_t p4_linux_cgroup_init_scope_t (file (getattr open read write create watch)))
+(allow init_t p4_linux_system_slice_t (file (create)))
+(allow init_t p4_linux_udevd_unit_cgroup_t (file (create)))
+(neverallow p4_not_ubuntu_pid1 p4_linux_cgroup_root_t (dir (setattr)))
+(neverallow p4_not_ubuntu_pid1 p4_linux_cgroup_init_scope_t (dir (write setattr)))
+(neverallow p4_not_ubuntu_pid1 p4_linux_cgroup_init_scope_t (file (create write append)))
+(neverallow p4_linux_procs p4_linux_cgroup_init_scope_t (file (execute execute_no_trans entrypoint map unlink rename link relabelfrom relabelto)))
+(neverallow p4_linux_procs p4_linux_cgroup_init_tasks_t (file (read append map ioctl execute execute_no_trans entrypoint)))

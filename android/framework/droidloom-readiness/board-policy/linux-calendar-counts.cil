@@ -1,0 +1,135 @@
+; Calendar counts: one source-fixed readonly provider database query.
+; These roles deliberately inherit neither domain/appdomain/coredomain nor
+; mlstrustedsubject/mlstrustedobject. UID 10017 and s0:c512,c768 are fixed
+; source comparisons; actual provider/DB identity remains a runtime gate.
+(type droidloom_calendar_counts)
+(type droidloom_calendar_metadata)
+(type droidloom_calendar_tmpfs)
+(roletype r droidloom_calendar_counts)
+(roletype r droidloom_calendar_metadata)
+(roletype object_r droidloom_calendar_tmpfs)
+(typeattributeset p4_all_board_owned (droidloom_calendar_counts droidloom_calendar_metadata droidloom_calendar_tmpfs))
+(typeattributeset file_type (droidloom_calendar_tmpfs))
+
+; The existing kernel-origin factory alone births the high query. The closed
+; Calendar selector first enters query_birth at the same high level, then
+; executes only the retained original app_process copy and normal bound JAR.
+(allow droidloom_query_birth droidloom_calendar_counts (process (transition)))
+(allow droidloom_query_birth droidloom_calendar_counts (process2 (nnp_transition nosuid_transition)))
+(allow kernel droidloom_calendar_counts (process (getattr ptrace sigkill sigstop)))
+(allow droidloom_calendar_counts droidloom_provider_exec (file (getattr open read map execute entrypoint)))
+(allow droidloom_calendar_counts droidloom_provider_jar (file (getattr open read map)))
+(allow droidloom_calendar_counts kernel (fd (use)))
+(allow droidloom_calendar_counts kernel (process (sigchld)))
+; Actual independent kernel creator -> factory-owned pipes. No kernel FIFO
+; reaches broker/host. Only captured bounded output bytes leave the factory.
+(allow droidloom_calendar_counts kernel (fifo_file (getattr write)))
+(allow droidloom_calendar_counts null_device (chr_file (getattr read)))
+(allow droidloom_calendar_counts self (process (fork sigchld getcap)))
+(allow droidloom_calendar_counts self (dir (getattr search)))
+(allow droidloom_calendar_counts self (file (getattr open read)))
+(allow droidloom_calendar_counts self (lnk_file (getattr read)))
+(allow droidloom_calendar_counts proc (dir (getattr search)))
+(allow droidloom_calendar_counts proc (lnk_file (getattr read)))
+(allow droidloom_calendar_counts device (dir (getattr search)))
+(allow droidloom_calendar_counts p4_linux_query_mount_t (dir (getattr search)))
+(allow droidloom_calendar_counts droidloom_query_tmpfs_t (dir (getattr search)))
+(allow droidloom_calendar_counts droidloom_query_tmpfs_t (filesystem (getattr)))
+(allow droidloom_calendar_counts labeledfs (filesystem (getattr)))
+(allow droidloom_calendar_counts p4_query_original_dirs (dir (getattr search)))
+(allow droidloom_calendar_counts rootfs (lnk_file (getattr read)))
+(allow droidloom_calendar_counts system_file (lnk_file (getattr read)))
+(allow droidloom_calendar_counts apex_mnt_dir (lnk_file (getattr read)))
+(allow droidloom_calendar_counts system_file (file (getattr open read map execute)))
+(allow droidloom_calendar_counts system_lib_file (file (getattr open read map execute)))
+(allow droidloom_calendar_counts system_linker_exec (file (getattr open read map execute)))
+(allow droidloom_calendar_counts linkerconfig_file (file (getattr open read map)))
+(allow droidloom_calendar_counts properties_device (dir (getattr search)))
+(allow droidloom_calendar_counts properties_serial (file (getattr open read map)))
+(allow droidloom_calendar_counts default_prop (file (getattr open read map)))
+(allow droidloom_calendar_counts exported_default_prop (file (getattr open read map)))
+(allow droidloom_calendar_counts dalvik_prop (file (getattr open read map)))
+; ART app_process initializes its driver thread pool even for a fixed local
+; main class. This is driver bookkeeping only: no Binder transaction or
+; service lookup is permitted below.
+(allow droidloom_calendar_counts binder_device (chr_file (getattr open read write map ioctl)))
+; SQLite uses only the exact source-fixed calendar.db and its already-existing
+; WAL/SHM siblings, with original DAC UID and MLS retained. AA fixes the paths.
+; No body is copied to the host; only the eight counts are emitted.
+(allow droidloom_calendar_counts privapp_data_file (dir (getattr search)))
+(allow droidloom_calendar_counts privapp_data_file (file (getattr open read lock map)))
+(allow droidloom_calendar_tmpfs tmpfs (filesystem (associate)))
+(typetransition droidloom_calendar_counts tmpfs file droidloom_calendar_tmpfs)
+(typetransition droidloom_calendar_counts tmpfs memfd_file droidloom_calendar_tmpfs)
+(allow droidloom_calendar_counts droidloom_calendar_tmpfs (file (create getattr open read write map)))
+(allow droidloom_calendar_counts droidloom_calendar_tmpfs (memfd_file (create getattr open read write map)))
+
+; A separate direct child of the same original factory is the only observer
+; allowed to read the stopped high query. It executes no image after birth.
+(allow kernel droidloom_calendar_metadata (process (dyntransition getattr sigkill)))
+(allow droidloom_calendar_metadata kernel (process (getattr sigchld)))
+(allow droidloom_calendar_metadata kernel (fd (use)))
+(allow droidloom_calendar_metadata kernel (file (getattr open read)))
+(allow droidloom_calendar_metadata kernel (lnk_file (getattr read)))
+(allow droidloom_calendar_metadata kernel (fifo_file (getattr read)))
+(allow droidloom_calendar_metadata kernel (unix_stream_socket (getattr getopt read write)))
+(allow kernel droidloom_calendar_metadata (fd (use)))
+; These returned descriptions are only the actual public executable, root and
+; seven namespaces. Stdio remains inside the original factory.
+(allow droidloom_broker droidloom_calendar_metadata (fd (use)))
+(allow droidloom_calendar_metadata self (process (getcap setcap)))
+; commoncap's held-USERNS owner branch does not bypass the SELinux callback.
+; Enter that one namespace, then capset exactly its SYS_PTRACE until exit.
+(allow droidloom_calendar_metadata self (cap_userns (sys_admin sys_ptrace)))
+(allow droidloom_calendar_metadata droidloom_calendar_counts (process (getattr)))
+(allow droidloom_calendar_metadata droidloom_calendar_counts (dir (getattr search open read)))
+(allow droidloom_calendar_metadata droidloom_calendar_counts (file (getattr open read)))
+(allow droidloom_calendar_metadata droidloom_calendar_counts (lnk_file (getattr read)))
+(allow droidloom_calendar_metadata proc (dir (getattr search)))
+(allow droidloom_calendar_metadata proc (lnk_file (getattr read)))
+(allow droidloom_calendar_metadata self (dir (getattr search)))
+(allow droidloom_calendar_metadata self (file (getattr open read)))
+(allow droidloom_calendar_metadata self (lnk_file (getattr read)))
+(allow droidloom_calendar_metadata droidloom_provider_exec (file (getattr open read)))
+(allow droidloom_calendar_metadata rootfs (dir (getattr open read)))
+(allow droidloom_calendar_metadata system_file (dir (getattr)))
+(allow droidloom_calendar_metadata p4_kernel_ns_handle_t (file (getattr open read ioctl)))
+(allowx droidloom_calendar_metadata p4_kernel_ns_handle_t (ioctl file (0xb703)))
+(allow droidloom_calendar_metadata p4_kernel_ns_handle_t (filesystem (getattr)))
+(allow droidloom_calendar_metadata proc (filesystem (getattr)))
+(allow droidloom_calendar_metadata p4_kernel_pid_handle_t (file (getattr)))
+(allow droidloom_calendar_metadata labeledfs (filesystem (getattr)))
+(allow droidloom_calendar_metadata tmpfs (filesystem (getattr)))
+(allow droidloom_calendar_metadata droidloom_query_tmpfs_t (filesystem (getattr)))
+
+; Independent complete verifier checks all inbound/outbound raw, extended,
+; audit, transition, original membership and effective category vectors.
+(neverallow droidloom_calendar_counts self (capability (all)))
+(neverallow droidloom_calendar_counts self (capability2 (all)))
+(neverallow droidloom_calendar_counts self (cap_userns (all)))
+(neverallow droidloom_calendar_counts self (cap2_userns (all)))
+(neverallow droidloom_calendar_metadata self (capability (all)))
+(neverallow droidloom_calendar_metadata self (capability2 (all)))
+(neverallow droidloom_calendar_metadata self (cap_userns (not (sys_admin sys_ptrace))))
+(neverallow droidloom_calendar_metadata self (cap2_userns (all)))
+(neverallow droidloom_calendar_counts self (process (execmem setexec setcurrent dyntransition setfscreate setsockcreate)))
+(neverallow droidloom_calendar_metadata self (process (fork setexec setcurrent dyntransition setfscreate setsockcreate)))
+(neverallow droidloom_calendar_metadata p4_fixed_metadata_all_types (process (ptrace signal sigkill sigstop transition dyntransition setexec setcurrent)))
+(neverallowx droidloom_calendar_metadata p4_kernel_ns_handle_t (ioctl file (not (0xb703))))
+(neverallow droidloom_calendar_counts privapp_data_file (file (write append create unlink link rename setattr relabelfrom relabelto execute execute_no_trans entrypoint)))
+(neverallow droidloom_calendar_counts privapp_data_file (dir (write add_name remove_name create setattr relabelfrom relabelto mounton)))
+(neverallow droidloom_calendar_counts app_data_file (file (open read write append map)))
+(neverallow droidloom_calendar_counts system_app_data_file (file (open read write append map)))
+(neverallow droidloom_calendar_metadata app_data_file (file (open read write append map)))
+(neverallow droidloom_calendar_metadata privapp_data_file (file (open read write append map)))
+(neverallow droidloom_calendar_metadata system_app_data_file (file (open read write append map)))
+(neverallow droidloom_calendar_counts droidloom_calendar_tmpfs (file (execute execute_no_trans entrypoint)))
+(neverallow droidloom_calendar_counts droidloom_calendar_tmpfs (memfd_file (execute)))
+(neverallow droidloom_calendar_counts p4_fixed_metadata_all_types (binder (call transfer impersonate set_context_mgr)))
+(neverallow droidloom_calendar_metadata p4_fixed_metadata_all_types (binder (call transfer impersonate set_context_mgr)))
+(neverallow droidloom_calendar_counts service_manager_type (service_manager (add find list)))
+(neverallow droidloom_calendar_metadata service_manager_type (service_manager (add find list)))
+(neverallow droidloom_calendar_counts property_type (property_service (set)))
+(neverallow droidloom_calendar_metadata property_type (property_service (set)))
+(neverallow droidloom_calendar_counts p4_linux_data (file (write append create unlink link rename setattr relabelfrom relabelto entrypoint execute)))
+(neverallow droidloom_calendar_metadata p4_linux_data (file (write append create unlink link rename setattr relabelfrom relabelto entrypoint execute)))

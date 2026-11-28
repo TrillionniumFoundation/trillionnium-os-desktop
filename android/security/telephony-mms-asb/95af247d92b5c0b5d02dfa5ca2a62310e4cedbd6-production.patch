@@ -1,0 +1,26 @@
+diff --git a/src/com/android/providers/telephony/MmsProvider.java b/src/com/android/providers/telephony/MmsProvider.java
+index 769941b6649b01622289076b2cda7ebb65b509d5..71bc82548bc19867b88655e3d6c1a936d34c9cae 100644
+--- a/src/com/android/providers/telephony/MmsProvider.java
++++ b/src/com/android/providers/telephony/MmsProvider.java
+@@ -752,14 +752,14 @@
+             }
+         }
+ 
+-        if (table.equals(TABLE_PDU)) {
+-            if (!ProviderUtil.allowInteractingWithEntryOfSubscription(getContext(), subId,
+-                    callerUserHandle)) {
+-                TelephonyUtils.showSwitchToManagedProfileDialogIfAppropriate(getContext(), subId,
+-                        callerUid, callerPkg);
+-                return null;
+-            }
++        if (!ProviderUtil.allowInteractingWithEntryOfSubscription(
++                getContext(), subId, callerUserHandle)) {
++            TelephonyUtils.showSwitchToManagedProfileDialogIfAppropriate(
++                    getContext(), subId, callerUid, callerPkg);
++            return null;
++        }
+ 
++        if (table.equals(TABLE_PDU)) {
+             boolean addDate = !values.containsKey(Mms.DATE);
+             boolean addMsgBox = !values.containsKey(Mms.MESSAGE_BOX);
+ 

@@ -1,0 +1,22 @@
+[package]
+name = "droidloom-update"
+default-run = "droidloom-update"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+clap.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+sha2.workspace = true
+hex.workspace = true
+tempfile.workspace = true
+libc.workspace = true
+droidloom-contracts = { path = "../../runtime/droidloom-contracts" }
+droidloom-supervisor = { path = "../../runtime/droidloom-supervisor" }
+droidloom-source = { path = "../droidloom-source" }
+
+
+droidloom-image = { path = "../droidloom-image" }
+droidloom-mesa = { path = "../droidloom-mesa" }

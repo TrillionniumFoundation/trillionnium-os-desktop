@@ -1,0 +1,32 @@
+package {
+    default_applicable_licenses: [
+        "Android-Apache-2.0",
+    ],
+}
+
+android_library {
+    name: "jetpack-camera-app_ui_controller_impl",
+    srcs: ["src/main/**/*.kt"],
+    resource_dirs: [
+        "src/main/res",
+    ],
+    static_libs: [
+        "androidx.compose.runtime_runtime",
+        "androidx.camera_camera-compose",
+        "androidx.tracing_tracing-ktx",
+        "jetpack-camera-app_ui_controller",
+        "jetpack-camera-app_core_camera",
+        "jetpack-camera-app_core_common",
+        "jetpack-camera-app_core_model",
+        "jetpack-camera-app_data_media",
+        "jetpack-camera-app_ui_components_capture",
+        "jetpack-camera-app_ui_uistate",
+        "jetpack-camera-app_ui_uistate_capture",
+    ],
+    sdk_version: "34",
+    min_sdk_version: "23",
+    manifest: "src/main/AndroidManifest.xml",
+    apex_available: [
+        "com.android.mediaprovider",
+    ],
+}
